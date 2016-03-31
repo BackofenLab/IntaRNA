@@ -1,0 +1,43 @@
+// Tetra-loops from mfold Version 3.0 (Mathews,Sabina, Zuker & Turner:JMB1999)
+
+//#include <string>
+
+double tetra_loop_energy(char* str)
+{
+   double energy = 0.0;
+  
+   //              Seq              Energy 
+   // -------------------------------------- 
+   if      (str=="GGGGAC") energy =  -3.00 ;
+   else if (str=="GGUGAC") energy =  -3.00 ;
+   else if (str=="CGAAAG") energy =  -3.00 ;
+   else if (str=="GGAGAC") energy =  -3.00 ;
+   else if (str=="CGCAAG") energy =  -3.00 ;
+   else if (str=="GGAAAC") energy =  -3.00 ;
+   else if (str=="CGGAAG") energy =  -3.00 ;
+   else if (str=="CUUCGG") energy =  -3.00 ;
+   else if (str=="CGUGAG") energy =  -3.00 ;
+   else if (str=="CGAAGG") energy =  -2.50 ;
+   else if (str=="CUACGG") energy =  -2.50 ;
+   else if (str=="GGCAAC") energy =  -2.50 ;
+   else if (str=="CGCGAG") energy =  -2.50 ;
+   else if (str=="UGAGAG") energy =  -2.50 ;
+   else if (str=="CGAGAG") energy =  -2.00 ;
+   else if (str=="AGAAAU") energy =  -2.00 ;
+   else if (str=="CGUAAG") energy =  -2.00 ;
+   else if (str=="CUAACG") energy =  -2.00 ;
+   else if (str=="UGAAAG") energy =  -2.00 ;
+   else if (str=="GGAAGC") energy =  -1.50 ;
+   else if (str=="GGGAAC") energy =  -1.50 ;
+   else if (str=="UGAAAA") energy =  -1.50 ;
+   else if (str=="AGCAAU") energy =  -1.50 ;
+   else if (str=="AGUAAU") energy =  -1.50 ;
+   else if (str=="CGGGAG") energy =  -1.50 ;
+   else if (str=="AGUGAU") energy =  -1.50 ;
+   else if (str=="GGCGAC") energy =  -1.50 ;
+   else if (str=="GGGAGC") energy =  -1.50 ;
+   else if (str=="GUGAAC") energy =  -1.50 ;
+   else if (str=="UGGAAA") energy =  -1.50 ;
+  
+   return energy;
+};

@@ -1,0 +1,71 @@
+2011-06-10 Andreas Richter      version 1.2.5
+   * fixed bug in string clearing when option -v is used and no
+     significant interactions are found
+   * fixed bug in parameter checking
+
+2011-03-24 Andreas Richter      version 1.2.4
+   * changes in error messages
+
+2010-08-13 Andreas Richter	version 1.2.3
+   * fixed bug in computation of C matrix for parameter -n
+
+2009-10-08 Andreas Richter
+   * added support for ambiguous nucleotide(s) "N"
+
+2009-09-11 Andreas Richter      version 1.2.2
+   * fixed bug in automated setting the maximal length of unpaired region in
+     target
+
+2009-09-07 Andreas Richter
+   * fixed bug in range check for parameter -w (disallow values <3)
+   * fixed bugs in calculation of ED values of target RNA and binding RNA with
+     RNAplfold and RNAup, respectively, concerning pf_scale for RNAplfold and in
+     combination with values 0 for parameter -a/-b (weights for ED values) 
+
+2009-06-11 Andreas Richter
+   * threshold for seed accessibility added as EXPERIMENTAL FEATURE
+
+2009-06-11 Andreas Richter      version 1.2.1
+   * fixed bug of wrong seed region positions when options -f, -m and -t are used together
+   * fixed bug in range check of parameter -f
+
+2009-05-29 Andreas Richter
+   * weight for ED values of target RNA and binding RNA in energy added
+
+2009-02-23 Andreas Richter      version 1.2
+   * new default parameters (-p 6, -U, -P)
+   * ED calculation of target RNA now by new RNAplfold of Vienna Package 1.8.x
+
+2008-12-10 Andreas Richter      version 1.1.1
+   * ED calculation of small RNA by RNAup (-U option) added
+
+2008-10-31 Anke Busch           version 1.1
+   * bug in ED calculation of small RNA fixed
+
+2008-10-24 Andreas Richter
+   * bug in calculation of suboptimal solutions fixed
+
+2008-10-02 Andreas Richter
+   * new parameter -f that allows to defined search region for seed
+   * more efficient calculation of matrices
+   * minor bug in dangling end contributions fixed
+
+2008-09-03 Andreas Richter
+   * temperature-dependent calculation of interaction implemented
+
+2008-08-04 Andreas Richter
+   * intermolecular initiation free energy added
+
+2008-07-16 Andreas Richter
+   * complete approach without heuristic (-n option) added
+
+2008-07-11 Andreas Richter
+   * seed calculation corrected (C matrix indices)
+
+2008-07-08  Andreas Richter
+   * dangling end energy contributions corrected
+
+2008-07-03  Andreas Richter
+   * integrity check for -u parameter added
+   
+2008-06-11  Anke Busch          version 1.0.0
