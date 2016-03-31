@@ -1,0 +1,17 @@
+sudo: false
+language: cpp
+
+os:
+  - linux
+  #- osx
+
+compiler:
+  #- clang
+  - gcc
+  
+script:
+ - wget https://depot.galaxyproject.org/software/vienna_rna/vienna_rna_1.8_src_all.tar.gz
+ - tar xvfz vienna_rna_1.8_src_all.tar.gz
+ - cd ViennaRNA-1.8.5 && ./configure --prefix=$HOME/vienna && make && make install
+ - cd $TRAVIS_BUILD_DIR && ./configure --with-RNA=$HOME/vienna --prefix=$HOME/IntaRNA && make && make install
+ - $HOME/IntaRNA/IntaRNA -h
