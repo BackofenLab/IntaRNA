@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/BackofenLab/IntaRNA.svg?branch=master)](https://travis-ci.org/BackofenLab/IntaRNA)
+
 # IntaRNA
 Efficient target prediction incorporating accessibility of interaction sites
 
