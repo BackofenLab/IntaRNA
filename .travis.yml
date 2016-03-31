@@ -3,10 +3,10 @@ language: cpp
 
 os:
   - linux
-  #- osx
+  - osx
 
 compiler:
-  #- clang
+  - clang
   - gcc
   
 script:
