@@ -3,3 +3,4 @@
 .deps
 config.h
 Makefile
+stamp-*
