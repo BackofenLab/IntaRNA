@@ -8,8 +8,8 @@ compiler:
   
 script:
  # download and compile ViennaRNA dependency
- - wget https://depot.galaxyproject.org/software/vienna_rna/vienna_rna_1.8_src_all.tar.gz
- - tar xvfz vienna_rna_1.8_src_all.tar.gz
- - cd ViennaRNA-1.8.5 && ./configure --prefix=$HOME/vienna --without-perl && make && make install
- - cd $TRAVIS_BUILD_DIR && ./configure --with-RNA=$HOME/vienna --prefix=$HOME/IntaRNA && make && make install
+ - wget http://www.tbi.univie.ac.at/RNA/download/sourcecode/2_2_x/ViennaRNA-2.2.10.tar.gz
+ - tar xvfz ViennaRNA-2.2.10.tar.gz
+ - cd ViennaRNA-2.2.10 && ./configure --prefix=$HOME/vienna --without-doc --without-python --without-python3 --without-check --without-perl --without-swig --without-cluster --without-forester --without-kinfold --without-json --without-svm --disable-unittests --without-kinwalker && make && make install
+ - cd $TRAVIS_BUILD_DIR && ./autotools-init.sh && ./configure --with-RNA=$HOME/vienna --prefix=$HOME/IntaRNA && make && make install
  - $HOME/IntaRNA/bin/IntaRNA -h
