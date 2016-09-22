@@ -135,7 +135,7 @@ CommandLineParsing::CommandLineParsing( std::ostream& logStream )
 			, value<T_type>(&(temperature.val))
 				->default_value(temperature.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_temperature,this,_1))
-			, std::string("temperature to define energy parameters (arg in range ["+toString(temperature.min)+","+toString(temperature.max)+"])").c_str())
+			, std::string("temperature in Celsius to setup the energy parameters (arg in range ["+toString(temperature.min)+","+toString(temperature.max)+"])").c_str())
 		;
 
 	// TODO parse energy function selection
