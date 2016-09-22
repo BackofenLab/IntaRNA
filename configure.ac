@@ -59,11 +59,32 @@ AC_LANG([C++])
 
 AC_MSG_CHECKING([whether to build with 2011 ISO C++ standard])
 cpp11=no
-AC_ARG_ENABLE([c++11],
-	[AS_HELP_STRING([--enable-c++11],
+AC_ARG_ENABLE([c11],
+	[AS_HELP_STRING([--enable-c11],
 	    [enable build with 2011 ISO C++ standard (Check if supported by your compiler! def=no)])],
   	[cpp11="$enableval"])
 AC_MSG_RESULT([$cpp11])
+if test x"$cpp11" = x"yes"; then
+  AC_MSG_CHECKING([whether the C++ compiler allows unnamed unions of unnamed structs])
+  AC_LANG_PUSH([C++])
+  AC_RUN_IFELSE([AC_LANG_SOURCE([[extern "C" {
+                                    #include <stdlib.h>
+                                    struct bla {
+                                      union {
+                                        struct { int a; char  b;};
+                                        struct { long c; double d;};
+                                      };
+                                    };
+                                  };
+                                  int main (void) { return 0;} ]])],
+                                  [cpp11=yes],
+                                  [cpp11=no],
+                                  [cpp11=no])
+
+  AC_LANG_POP([C++])
+  AC_MSG_RESULT([$cpp11])
+fi
+# final compiler flag setup	
 if test x"$cpp11" = x"yes"; then
 	AM_CXXFLAGS="$AM_CXXFLAGS -std=c++11"
 fi
@@ -102,7 +123,7 @@ AC_ARG_WITH([RNA],
 )
 if test  $RNAPATHSET = 1 ; then
 	# set compiler and linker flags if needed
-	AM_CXXFLAGS="-I$with_RNA/include $AM_CXXFLAGS"
+	AM_CXXFLAGS="-I$with_RNA/include $AM_CXXFLAGS -fopenmp"
 	AM_LDFLAGS="-L$with_RNA/lib $AM_LDFLAGS"
 fi
 
@@ -151,21 +172,24 @@ fi
 ###############################################################################
 # check for Vienna RNA headers
 AC_MSG_CHECKING([for the Vienna RNA package 2.* headers])
+OLD_CPPFLAGS=$CPPFLAGS
 OLD_CXXFLAGS=$CXXFLAGS
 OLD_LDFLAGS=$LDFLAGS
+CPPFLAGS="$CPPFLAGS $AM_CXXFLAGS"
 CXXFLAGS="$CXXFLAGS $AM_CXXFLAGS"
 LDFLAGS="$LDFLAGS $AM_LDFLAGS"
 AC_COMPILE_IFELSE(
-     [AC_LANG_SOURCE([[#include <ViennaRNA/2Dfold.h>]])],
+     [AC_LANG_SOURCE([[#include <ViennaRNA/utils.h>]])],
      [ 
 		AC_MSG_RESULT([yes])
-		AC_CHECK_LIB([RNA], [fold_par], [RNANOTFOUND=0], [ RNANOTFOUND=1])
+#		AC_CHECK_LIB([RNA], [var_time_stamp], [RNANOTFOUND=0], [ RNANOTFOUND=1])
      ],
      [
        AC_MSG_RESULT([no])
        RNANOTFOUND=1;
      ]
 )
+CPPFLAGS=$OLD_CPPFLAGS
 CXXFLAGS=$OLD_CXXFLAGS
 LDFLAGS=$OLD_LDFLAGS
 
