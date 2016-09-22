@@ -29,3 +29,22 @@
 
 # eclipse files
 .project
+.settings
+.cproject
+
+# temporary autotools files
+config.*
+Makefile
+autom4te.cache
+configure
+missing
+install-sh
+depcomp
+aclocal.m4
+*.in
+
+
+# temp dir
+tmp
+tmp/*
+
