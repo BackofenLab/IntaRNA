@@ -1,4 +1,4 @@
-sudo: false
+sudo: true
 language: cpp
 
 os:
@@ -14,5 +14,7 @@ script:
  - wget http://www.tbi.univie.ac.at/RNA/download/sourcecode/2_2_x/ViennaRNA-2.2.10.tar.gz
  - tar xvfz ViennaRNA-2.2.10.tar.gz
  - cd ViennaRNA-2.2.10 && ./configure --prefix=$HOME/vienna --without-doc --without-python --without-python3 --without-check --without-perl --without-swig --without-cluster --without-forester --without-kinfold --without-json --without-svm --disable-unittests --without-kinwalker && make && make install
- - cd $TRAVIS_BUILD_DIR && bash autotools-init.sh && ./configure --with-RNA=$HOME/vienna --prefix=$HOME/IntaRNA && make && make install
+ # generate autotools's files and compile IntaRNA
+ - cd $TRAVIS_BUILD_DIR && bash autotools-init.sh && ./configure --enable-c11 --with-RNA=$HOME/vienna --prefix=$HOME/IntaRNA && make && make install
+ # run IntaRNA
  - $HOME/IntaRNA/bin/IntaRNA -h
