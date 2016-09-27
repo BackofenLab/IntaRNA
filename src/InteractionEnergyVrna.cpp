@@ -17,7 +17,7 @@ extern "C" {
 InteractionEnergyVrna::InteractionEnergyVrna(
 		const Accessibility & accS1
 		, const ReverseAccessibility & accS2
-		, const VrnaHandler &vrnaHandler
+		, VrnaHandler &vrnaHandler
 		, const size_t maxInternalLoopSize1
 		, const size_t maxInternalLoopSize2
 	)

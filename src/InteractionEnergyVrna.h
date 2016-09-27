@@ -44,12 +44,12 @@ public:
 	 */
 	InteractionEnergyVrna( const Accessibility & accS1
 					, const ReverseAccessibility & accS2
-					, const VrnaHandler &vrnaHandler
+					, VrnaHandler &vrnaHandler
 					, const size_t maxInternalLoopSize1 = 16
 					, const size_t maxInternalLoopSize2 = 16
 				);
 
-	virtual ~EnergyVienna();
+	virtual ~InteractionEnergyVrna();
 
 
 	/**
