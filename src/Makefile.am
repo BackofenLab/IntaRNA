@@ -1,6 +1,6 @@
 
 # the program to build
-bin_PROGRAMS = intaRNA
+bin_PROGRAMS = intaRNA 
 
 # intaRNA sources
 intaRNA_SOURCES =	intaRNA.cpp \
@@ -10,18 +10,20 @@ intaRNA_SOURCES =	intaRNA.cpp \
 					Accessibility.h \
 					Accessibility.cpp \
 					AccessibilityNone.h \
-					AccessibilityVienna.h \
-					AccessibilityVienna.cpp \
+					AccessibilityVrna.h \
+					AccessibilityVrna.cpp \
+					AccessibilityVrna3.h \
+					AccessibilityVrna3.cpp \
 					ReverseAccessibility.h \
 					ReverseAccessibility.cpp \
-					Energy.h \
-					Energy.cpp \
-					EnergyBasePair.h \
-					EnergyBasePair.cpp \
-					EnergyVienna.h \
-					EnergyVienna.cpp \
 					Interaction.h \
 					Interaction.cpp \
+					InteractionEnergy.h \
+					InteractionEnergy.cpp \
+					InteractionEnergyBasePair.h \
+					InteractionEnergyBasePair.cpp \
+					InteractionEnergyVrna.h \
+					InteractionEnergyVrna.cpp \
 					Predictor.h \
 					Predictor.cpp \
 					OutputHandler.h \
@@ -29,5 +31,7 @@ intaRNA_SOURCES =	intaRNA.cpp \
 					OutputHandlerText.h \
 					OutputHandlerText.cpp \
 					CommandLineParsing.h \
-					CommandLineParsing.cpp
+					CommandLineParsing.cpp \
+					VrnaHandler.h \
+					VrnaHandler.cpp
 
