@@ -46,7 +46,7 @@ public:
 	 * @param log if not NULL, the stream to write log messages to
 	 */
 	AccessibilityVrna( const RnaSequence& sequence
-			, const VrnaHandler & vrnaHandler
+			, VrnaHandler & vrnaHandler
 			, const size_t maxLength = 0
 			, const std::string & accConstraint = ""
 			, std::ostream * log = NULL
@@ -80,9 +80,6 @@ protected:
 
 	//! the ED values for the given sequence
 	EdMatrix edValues;
-
-	//! Vienna RNA package : energy model parameters
-	vrna_md_t modelDetails;
 
 	//! Vienna RNA package : partition function folding parameters to be used
 	//! for the energy computation

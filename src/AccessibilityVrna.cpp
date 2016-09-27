@@ -22,7 +22,7 @@ extern "C" {
 
 AccessibilityVrna::AccessibilityVrna(
 			const RnaSequence& seq
-			, const VrnaHandler & vrnaHandler
+			, VrnaHandler & vrnaHandler
 			, const size_t maxLength
 			, const std::string & accConstraint
 			, std::ostream * log
@@ -30,16 +30,15 @@ AccessibilityVrna::AccessibilityVrna(
  :
 	Accessibility( seq, maxLength, accConstraint ),
 	edValues( getSequence().size(), getSequence().size() ),
-	modelDetails( vrnaHandler.getModel() ),
 	partFoldParams( NULL )
 {
 
 
 	// get scaling factor to avoid math problems in partition function computation
-	const double pfScale = getPfScale( seq, modelDetails );
+	const double pfScale = getPfScale( seq, vrnaHandler.getModel() );
 
 	// Vienna RNA : get final partition function folding parameters
-	partFoldParams = get_boltzmann_factors( modelDetails.temperature, modelDetails.betaScale, modelDetails, pfScale);
+	partFoldParams = get_boltzmann_factors( vrnaHandler.getModel().temperature, vrnaHandler.getModel().betaScale, vrnaHandler.getModel(), pfScale);
 
 
 	// compute free energy of whole structure ensemble
