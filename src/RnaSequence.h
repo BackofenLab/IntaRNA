@@ -103,6 +103,14 @@ public:
 	bool
 	isAmbiguous() const;
 
+	/**
+	 * prints the sequence id and the sequence to stream
+	 * @out the ostream to write to
+	 * @rna the RnaSequence object to add
+	 * @return the altered stream out
+	 */
+	friend std::ostream& operator<<(std::ostream& out, const RnaSequence& rna);
+
 public:
 
 	/////////////////////  STATIC UTILITY  //////////////////////////////

@@ -161,3 +161,13 @@ isValidSequence( const std::string & sequence )
 
 /////////////////////////////////////////////////////////////////////////////
 
+std::ostream&
+operator<<(std::ostream& out, const RnaSequence& rna)
+{
+	// add ID(SEQUENCE) to stream
+	out <<rna.id <<'(' <<rna.asString() <<')';
+	return out;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
