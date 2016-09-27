@@ -1,12 +1,3 @@
-/*
- * intaRNA.cpp
- *
- * Main file for IntaRNA 2.0
- *
- *  Created on: 17.06.2014
- *      Author: Martin Mann
- */
-
 
 #include "config.h"
 #include "general.h"
@@ -18,12 +9,8 @@
 #include "RnaSequence.h"
 
 #include "Accessibility.h"
-#include "AccessibilityDisabled.h"
-#include "AccessibilityVienna.h"
 
-#include "Energy.h"
-#include "EnergyBasePair.h"
-#include "EnergyVienna.h"
+#include "InteractionEnergy.h"
 
 #include "Predictor.h"
 
@@ -83,7 +70,7 @@ int main(int argc, char **argv) {
 				}
 
 				// get energy computation handler for both sequences
-				Energy* energy = parameters.getEnergyHandler( *queryAcc, *targetAcc );
+				InteractionEnergy* energy = parameters.getEnergyHandler( *queryAcc, *targetAcc );
 				CHECKNOTNULL(energy,"energy initialization failed");
 
 				// TODO get seed computation handler
@@ -97,10 +84,11 @@ int main(int argc, char **argv) {
 
 					output = new OutputHandlerText(std::cout);
 					Interaction i(queryAcc->getSequence(), targetAcc->getAccessibilityOrigin().getSequence());
-					i.addInteraction(13,17);
-					i.addInteraction(16,14);
-					i.addInteraction(15,16);
-					i.addInteraction(27,2);
+					if (queryAcc->getSequence().size() > 4 && targetAcc->getSequence().size() > 5) {
+						i.addInteraction(4,1);
+						i.addInteraction(0,5);
+						i.addInteraction(3,4);
+					}
 					i.sort();
 					output->add(i);
 

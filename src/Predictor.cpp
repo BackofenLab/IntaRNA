@@ -4,7 +4,7 @@
 
 ////////////////////////////////////////////////////////////////////////////
 
-Predictor::Predictor( const Energy & energy, const OutputHandler & output )
+Predictor::Predictor( const InteractionEnergy & energy, const OutputHandler & output )
 :
 	energy(energy)
 	, output(output)

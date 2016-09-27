@@ -2,7 +2,7 @@
 #ifndef PREDICTOR_H_
 #define PREDICTOR_H_
 
-#include "Energy.h"
+#include "InteractionEnergy.h"
 
 #include "OutputHandler.h"
 
@@ -20,7 +20,7 @@ public:
 	 * Constructs an RNA-RNA interaction prediction handler and sets the
 	 * central data members.
 	 */
-	Predictor( const Energy & energy, const OutputHandler & output );
+	Predictor( const InteractionEnergy & energy, const OutputHandler & output );
 
 	/**
 	 * destruction
@@ -30,7 +30,7 @@ public:
 protected:
 
 	//! energy computation handler
-	const Energy & energy;
+	const InteractionEnergy & energy;
 
 	//! interaction output handler
 	const OutputHandler & output;
