@@ -25,17 +25,19 @@ class VrnaHandler {
 
 protected:
 
-	//! Folding temperature in Celsius
-	double temperature;
+//	//! Folding temperature in Celsius
+//	double temperature;
+//
+//	//! Maximal distance between base pair partners within one RNA
+//	//! or -1 if no constraint needed
+//	int max_bp_span;
+//
+//	//! Size of the sliding window for locally folding within one RNA
+//	//! or -1 if no constraint needed
+//	int window_size;
 
-	//! Maximal distance between base pair partners within one RNA
-	//! or -1 if no constraint needed
-	int max_bp_span;
-
-	//! Size of the sliding window for locally folding within one RNA
-	//! or -1 if no constraint needed
-	int window_size;
-
+	//! VRNA parameter model
+	vrna_md_t model;
 
 public:
 
@@ -62,8 +64,8 @@ public:
 	 * Generates a new VRNA parameter model according to the global settings
 	 * @return the model to be used for VRNA computations
 	 */
-	vrna_md_t
-	getModel() const;
+	vrna_md_t&
+	getModel();
 
 
 };
