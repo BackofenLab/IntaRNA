@@ -95,12 +95,22 @@ public:
 	const std::string&
 	getAccConstraint() const;
 
+
+	/**
+	 * Prints the accessibility values to stream as upper triangular matrix
+	 * @param out the ostream to write to
+	 * @param acc the Accessibility object to add
+	 * @return the altered stream out
+	 */
+	friend std::ostream& operator<<(std::ostream& out, const Accessibility& acc);
+
+
 protected:
 
 	//! the RNA sequence the accessibilities correspond to
 	const RnaSequence & seq;
 
-	//! the maximal length of a unpaired regions to be considered
+	//! the maximal length of an unpaired regions to be considered
 	const size_t maxLength;
 
 	//! accessibility constraint: all positions marked not as unconstrained (.)
