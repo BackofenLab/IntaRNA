@@ -15,15 +15,15 @@
 
 #include <boost/program_options.hpp>
 
-	namespace po = boost::program_options;
 
 #include <iostream>
 #include <cstdarg>
 
 #include "Accessibility.h"
-#include "Energy.h"
+#include "InteractionEnergy.h"
 #include "Predictor.h"
 #include "OutputHandler.h"
+#include "VrnaHandler.h"
 
 /**
  * Central handler for all command line arguments etc.
@@ -103,7 +103,14 @@ public:
 	 * @param accTarget the (reversed) accessibility object of the target sequence
 	 * @return the newly allocated Energy object or NULL in error case
 	 */
-	Energy* getEnergyHandler( const Accessibility& accQuery, const ReverseAccessibility& accTarget ) const;
+	InteractionEnergy* getEnergyHandler( const Accessibility& accQuery, const ReverseAccessibility& accTarget ) const;
+
+
+	/**
+	 * Access to the set folding temperature in Celsius.
+	 * @return the chosen temperature in Celsisus
+	 */
+	T_type getTemperature() const;
 
 protected:
 
@@ -184,18 +191,18 @@ protected:
 
 
 	//! query specific options
-	po::options_description opts_query;
+	boost::program_options::options_description opts_query;
 	//! target specific options
-	po::options_description opts_target;
+	boost::program_options::options_description opts_target;
 	//! seed specific options
-	po::options_description opts_seed;
+	boost::program_options::options_description opts_seed;
 	//! interaction/energy specific options
-	po::options_description opts_inter;
+	boost::program_options::options_description opts_inter;
 	//! general options
-	po::options_description opts_general;
+	boost::program_options::options_description opts_general;
 
 	//! overall option list
-	po::options_description opts_cmdline_all;
+	boost::program_options::options_description opts_cmdline_all;
 
 	//! central result code to be set by validate_* functions in error case
 	int parsingCode;
@@ -239,6 +246,9 @@ protected:
 
 	//! the selected energy model
 	CharParameter energy;
+
+	//! the vienna energy parameter handler initialized by #parse()
+	mutable VrnaHandler vrnaHandler;
 
 protected:
 
@@ -406,7 +416,7 @@ inline
 void
 CommandLineParsing::checkIfParsed() const {
 	if (parsingCode == parsingCodeNotSet) {
-		throw std::runtime_error("CommandLineParsing::getQuerySequences() : parse() function was not called yet");
+		throw std::runtime_error("CommandLineParsing::checkIfParsed() : parse() function was not called yet");
 	}
 }
 

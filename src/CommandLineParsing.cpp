@@ -14,15 +14,15 @@
 #include <boost/filesystem.hpp>
 
 #include "AccessibilityDisabled.h"
-#include "AccessibilityVienna.h"
+#include "AccessibilityVrna.h"
+#include "AccessibilityVrna3.h"
 
-#include "EnergyBasePair.h"
-#include "EnergyVienna.h"
+#include "InteractionEnergyBasePair.h"
+#include "InteractionEnergyVrna.h"
 
 #include "OutputHandlerText.h"
 
 
-using namespace boost::program_options;
 
 
 const int CommandLineParsing::parsingCodeNotSet = 9999;
@@ -46,14 +46,14 @@ CommandLineParsing::CommandLineParsing( std::ostream& logStream )
 	qAcc("NF",'F'),
 	qAccConstr(""),
 	qIntLenMax( 0, 99999, 0),
-	qIntLoopMax( 0, 100, 16),
+	qIntLoopMax( 4, 100, 16),
 
 	targetArg(""),
 	target(),
 	tAcc("NF",'F'),
 	tAccConstr(""),
 	tIntLenMax( 0, 99999, 0),
-	tIntLoopMax( 0, 100, 16),
+	tIntLoopMax( 4, 100, 16),
 
 	seedMinBP(3,20,7),
 
@@ -62,6 +62,15 @@ CommandLineParsing::CommandLineParsing( std::ostream& logStream )
 	energy("BF",'F')
 
 {
+	using namespace boost::program_options;
+
+
+	RnaSequence seq("debug","CGCGUGCGCGUCGCG");
+	logStream <<"\n ### cmd-begin : debug check for "<<seq.getId()<<std::endl;
+	logStream <<"\n ### temp "<<vrnaHandler.getModel().temperature<<std::endl;
+	AccessibilityVrna3 accTmp( seq, vrnaHandler, 16, "", &logStream );
+	logStream <<accTmp<<std::endl;
+
 	////  SEQUENCE OPTIONS  ////////////////////////////////////
 
 	opts_query.add_options()
@@ -88,7 +97,7 @@ CommandLineParsing::CommandLineParsing( std::ostream& logStream )
 			, value<int>(&(qIntLoopMax.val))
 				->default_value(qIntLoopMax.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_qIntLoopMax,this,_1))
-			, std::string("maximal internal loop size to be considered in interactions within the query (arg in range ["+toString(qIntLoopMax.min)+","+toString(qIntLoopMax.max)+"]; 0 enforces stackings only)").c_str())
+			, std::string("maximal distance between neighbored interacting bases to be considered in interactions within the query (arg in range ["+toString(qIntLoopMax.min)+","+toString(qIntLoopMax.max)+"]; 0 enforces stackings only)").c_str())
 		;
 
 	opts_target.add_options()
@@ -115,7 +124,7 @@ CommandLineParsing::CommandLineParsing( std::ostream& logStream )
 			, value<int>(&(tIntLoopMax.val))
 				->default_value(tIntLoopMax.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_tIntLoopMax,this,_1))
-			, std::string("maximal internal loop size to be considered in interactions within the target (arg in range ["+toString(tIntLoopMax.min)+","+toString(tIntLoopMax.max)+"]; 0 enforces stackings only)").c_str())
+			, std::string("maximal distance between neighbored interacting bases to be considered in interactions within the target (arg in range ["+toString(tIntLoopMax.min)+","+toString(tIntLoopMax.max)+"]; 0 enforces stackings only)").c_str())
 		;
 
 	////  SEED OPTIONS  ////////////////////////////////////
@@ -165,7 +174,9 @@ int
 CommandLineParsing::parse(int argc, char** argv)
 {
 	// setup default parsing code = all ok
-	parsingCode = 1;
+	parsingCode = 0;
+
+	using namespace boost::program_options;
 
 	variables_map vm;
 	try {
@@ -176,7 +187,7 @@ CommandLineParsing::parse(int argc, char** argv)
 	}
 
 	// if parsing was successful, check for help request
-	if (parsingCode > 0) {
+	if (parsingCode == 0) {
 		if (vm.count("help")) {
 			logStream
 				<<"\nIntaRNA predicts RNA-RNA interactions.\n"
@@ -192,7 +203,7 @@ CommandLineParsing::parse(int argc, char** argv)
 	}
 
 	// if parsing was successful, continue with additional checks
-	if (parsingCode > 0) {
+	if (parsingCode == 0) {
 		try {
 			// run all notifier checks
 			notify(vm);
@@ -206,7 +217,7 @@ CommandLineParsing::parse(int argc, char** argv)
 	}
 
 	// if parsing was successful, continue with final parsing
-	if (parsingCode > 0) {
+	if (parsingCode == 0) {
 		try {
 
 			// parse the sequences
@@ -217,14 +228,12 @@ CommandLineParsing::parse(int argc, char** argv)
 			// check for minimal sequence length (>=seedMinBP)
 			for( size_t i=0; i<query.size(); i++) {
 				if (query.at(i).size() < getSeedMinBp()) {
-					logStream <<"\n length of query sequence "<<(i+1) <<" is below minimal number of seed base pairs (seedMinBP="<<getSeedMinBp()<<")\n";
-					parsingCode = std::min(-1,parsingCode);
+					throw error("length of query sequence "+toString(i+1)+" is below minimal number of seed base pairs (seedMinBP="+toString(getSeedMinBp())+")");
 				}
 			}
 			for( size_t i=0; i<target.size(); i++) {
 				if (target.at(i).size() < getSeedMinBp()) {
-					logStream <<"\n length of target sequence "<<(i+1) <<" is below minimal number of seed base pairs (seedMinBP="<<getSeedMinBp()<<")\n";
-					parsingCode = std::min(-1,parsingCode);
+					throw error("length of target sequence "+toString(i+1)+" is below minimal number of seed base pairs (seedMinBP="+toString(getSeedMinBp())+")");
 				}
 			}
 
@@ -234,10 +243,15 @@ CommandLineParsing::parse(int argc, char** argv)
 				if (validateSequenceNumber("qAccConstr",query,1,1)) {
 					// check length
 					if (qAccConstr.size() != query.at(0).size()) {
-						logStream <<"\n qAccConstr and query sequence differ in size\n";
-						parsingCode = std::min(-1,parsingCode);
+						throw error("qAccConstr and query sequence differ in size");
 					}
+				} else {
+					// TODO report error
+					NOTIMPLEMENTED("check not implemented");
 				}
+			} else {
+				// generate empty constraint
+				qAccConstr = std::string(query.at(0).size(),'.');
 			}
 			// check tAccConstr - target sequence compatibility
 			if (vm.count("tAccConstr") > 0) {
@@ -245,12 +259,20 @@ CommandLineParsing::parse(int argc, char** argv)
 				if (validateSequenceNumber("tAccConstr",target,1,1)) {
 					// check length
 					if (tAccConstr.size() != target.at(0).size()) {
-						logStream <<"\n tAccConstr and target sequence differ in size\n";
-						parsingCode = std::min(-1,parsingCode);
+						throw error("tAccConstr and target sequence differ in size");
 					}
+				} else {
+					// TODO report error
+					NOTIMPLEMENTED("check not implemented");
 				}
+			} else {
+				// generate empty constraint
+				tAccConstr = std::string(target.at(0).size(),'.');
 			}
 
+		} catch (error& e) {
+			logStream <<e.what() << "\n";
+			parsingCode = std::min(-1,parsingCode);
 		} catch (std::exception& e) {
 			logStream <<e.what() << "\n";
 			parsingCode = std::min(-1,parsingCode);
@@ -258,7 +280,27 @@ CommandLineParsing::parse(int argc, char** argv)
 	}
 
 
-
+//	logStream <<" # DEBUG : temp = "<<(double)temperature.val<<std::endl;
+	logStream <<" # DEBUG : temp = "<<(double)30.0<<std::endl;
+	// setup Vienna parameter handler
+//	vrnaHandler = VrnaHandler( (double)temperature.val /* TODO max_bp_span, window_size */ );
+	vrnaHandler = VrnaHandler( (double)30.0 /* TODO max_bp_span, window_size */ );
+//
+//
+	RnaSequence seq("debug","CGCGUGCGCGUCGCG");
+	logStream <<" debug check for "<<seq.getId()<<std::endl;
+//	AccessibilityVienna3 accTmp( seq, vrnaHandler, qIntLenMax.val, qAccConstr, &logStream );
+	AccessibilityVrna3 accTmp( seq, vrnaHandler, 16, "", &logStream );
+	logStream <<accTmp <<std::endl;
+////	Accessibility* accTmp = NULL;
+////	accTmp = new AccessibilityVienna3 ( seq, vrnaHandler, qIntLenMax.val, qAccConstr, &logStream );
+////	accTmp->print( logStream );
+////	CLEANUP(accTmp);
+////	accTmp = new AccessibilityVienna( seq, vrnaHandler, qIntLenMax.val, qAccConstr, &logStream );
+////	accTmp->print( logStream );
+////	CLEANUP(accTmp);
+//
+//
 	// flush all content that was pushed to the log stream
 	logStream.flush();
 	// return validate_* dependent parsing code
@@ -466,9 +508,26 @@ getQueryAccessibility( const size_t sequenceNumber ) const
 		throw std::runtime_error("CommandLineParsing::getQueryAccessibility : sequence number "+toString(sequenceNumber)+" is out of range (<"+toString(getQuerySequences().size())+")");
 	}
 	const RnaSequence& seq = getQuerySequences().at(sequenceNumber);
+logStream <<"\n### get query acc : " <<seq <<"\n" <<std::endl;
+
+Accessibility* accTmp = NULL;
+//logStream <<"\n### get query acc : acc new ("<<seq<<","<<vrnaHandler.getModel().temperature<<","<<qAccConstr<<")\n" <<std::endl;
+	accTmp = new AccessibilityVrna3( seq, vrnaHandler, qIntLenMax.val, qAccConstr, &logStream );
+	logStream <<(*accTmp) <<std::endl;
+	CLEANUP(accTmp);
+logStream <<"\n### get query acc : acc old \n" <<std::endl;
+	accTmp = new AccessibilityVrna( seq, vrnaHandler, qIntLenMax.val, qAccConstr, &logStream );
+	logStream <<(*accTmp) <<std::endl;
+	CLEANUP(accTmp);
+logStream <<"\n### get query acc : acc new ("<<seq<<","<<vrnaHandler.getModel().temperature<<","<<qAccConstr<<")\n" <<std::endl;
+	accTmp = new AccessibilityVrna3( seq, vrnaHandler, qIntLenMax.val, qAccConstr, &logStream );
+	logStream <<(*accTmp) <<std::endl;
+	CLEANUP(accTmp);
+
+logStream <<"\n### get query acc : done \n" <<std::endl;
 	switch(qAcc.val) {
 	case 'N' : return new AccessibilityDisabled( seq, qIntLenMax.val );
-	case 'F' : return new AccessibilityVienna( seq, qIntLenMax.val, qAccConstr, temperature.val, &logStream );
+	case 'F' : return new AccessibilityVrna( seq, vrnaHandler, qIntLenMax.val, qAccConstr, &logStream );
 	default :
 		NOTIMPLEMENTED("CommandLineParsing::getQueryAccessibility : qAcc = '"+toString(qAcc.val)+"' is not supported");
 	}
@@ -489,7 +548,7 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 	const RnaSequence& seq = getTargetSequences().at(sequenceNumber);
 	switch(tAcc.val) {
 	case 'N' : return new AccessibilityDisabled( seq, tIntLenMax.val );
-	case 'F' : return new AccessibilityVienna( seq, tIntLenMax.val, tAccConstr, temperature.val, &logStream );
+	case 'F' : return new AccessibilityVrna( seq, vrnaHandler, tIntLenMax.val, tAccConstr, &logStream );
 	default :
 		NOTIMPLEMENTED("CommandLineParsing::getTargetAccessibility : tAcc = '"+toString(tAcc.val)+"' is not supported");
 	}
@@ -498,14 +557,14 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 
 ////////////////////////////////////////////////////////////////////////////
 
-Energy*
+InteractionEnergy*
 CommandLineParsing::
 getEnergyHandler( const Accessibility& accQuery, const ReverseAccessibility& accTarget ) const
 {
 	checkIfParsed();
 	switch( energy.val ) {
-	case 'B' : return new EnergyBasePair( accQuery, accTarget, qIntLoopMax.val, tIntLoopMax.val );
-	case 'F' : return new EnergyVienna( accQuery, accTarget, qIntLoopMax.val, tIntLoopMax.val, temperature.val );
+	case 'B' : return new InteractionEnergyBasePair( accQuery, accTarget, qIntLoopMax.val, tIntLoopMax.val );
+	case 'F' : return new InteractionEnergyVrna( accQuery, accTarget, vrnaHandler, qIntLoopMax.val, tIntLoopMax.val );
 	default :
 		NOTIMPLEMENTED("CommandLineParsing::getEnergyHandler : energy = '"+toString(energy.val)+"' is not supported");
 	}
@@ -605,6 +664,14 @@ int  CommandLineParsing::getSeedMinBp() const {
 	checkIfParsed();
 	// TODO check if obsolete when using getSeed()
 	return seedMinBP.val;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+T_type
+CommandLineParsing::
+getTemperature() const {
+	return temperature.val;
 }
 
 ////////////////////////////////////////////////////////////////////////////
