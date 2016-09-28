@@ -1,13 +1,23 @@
-sudo: true
 language: cpp
+
+cache:
+  apt: true
+
+addons:
+  apt:
+    sources:
+    - boost-latest
+    - ubuntu-toolchain-r-test
+    packages:
+    - gcc-4.9
+    - g++-4.9
+    - libboost1.55-all-dev
 
 os:
   - linux
+
 compiler:
   - gcc
-
-before_install:
- - sudo apt-get install libboost-dev
   
 script:
  # download and compile ViennaRNA dependency
