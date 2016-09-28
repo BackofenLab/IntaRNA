@@ -18,9 +18,6 @@ os:
 
 compiler:
   - gcc
-
-before_install:
- - sudo apt-get install libboost-dev
   
 script:
  # download and compile ViennaRNA dependency
