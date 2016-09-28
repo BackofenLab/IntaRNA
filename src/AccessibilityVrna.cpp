@@ -11,6 +11,7 @@
 #include <cassert>
 #include <algorithm>
 #include <limits>
+#include <stdexcept>
 
 // constraint-based ED filling
 extern "C" {
@@ -52,14 +53,19 @@ AccessibilityVrna::AccessibilityVrna(
 	edValues( getSequence().size(), getSequence().size(), 0, getMaxLength() )
 {
 
-	fillByConstraints(vrnaHandler,log);
-	(*log) <<"\n################### constrained-based ##################\n" <<(*this) <<std::endl;
-	fillByRNAup(vrnaHandler,log);
-	(*log) <<"\n################### RNAup-based ##################\n" <<(*this) <<std::endl;
-	fillByRNAplfold(vrnaHandler,log);
-	(*log) <<"\n################### RNAplfold-based ##################\n" <<(*this) <<std::endl;
+	// check if constraint given
+	if (getAccConstraint().size() > 0 && getAccConstraint().find_first_not_of(".")!=std::string::npos) {
+		fillByRNAup(vrnaHandler,log);
+//		(*log) <<"\n################### RNAup-based ##################\n" <<(*this) <<std::endl;
+		// old inefficient intarna-1 ED value computation
+//		fillByConstraints(vrnaHandler,log);
+//		(*log) <<"\n################### constrained-based ##################\n" <<(*this) <<std::endl;
+	} else {
+		fillByRNAplfold(vrnaHandler,log);
+//		(*log) <<"\n################### RNAplfold-based ##################\n" <<(*this) <<std::endl;
+	}
+//	(*log) <<"\n################### done ##################\n" <<std::endl;
 
-	(*log) <<"\n################### done ##################\n" <<std::endl;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -78,7 +84,7 @@ getED( const size_t from, const size_t to ) const
 	// input range check
 	checkIndices(from,to);
 
-	if ((to-from+1) <= maxLength) {
+	if ((to-from+1) <= getMaxLength()) {
 		// return according ED value from the precomputed matrix
 		return edValues (from,to);
 	} else {
@@ -115,13 +121,13 @@ calc_ensemble_free_energy( const int start_unfold, const int end_unfold, vrna_ex
 	if (start_unfold < 0) {
 		for (int i=0; i<len; i++) {
 			// copy constraint from global accessibility constraint
-			c_structure[i] = getAccConstraint().at(i);
+			c_structure[i] = (getAccConstraint().size()>0 ? getAccConstraint().at(i) : '.');
 		}
 	} else {
 		int i=0;
 		// first : constrained by global accessibility constraint
 		for (i=0; i<start_unfold; i++) {
-			c_structure[i] = getAccConstraint().at(i);
+			c_structure[i] = (getAccConstraint().size()>0 ? getAccConstraint().at(i) : '.');
 		}
 		// followed by unpaired region for interaction
 		for (; i<=end_unfold; i++) {
@@ -129,7 +135,7 @@ calc_ensemble_free_energy( const int start_unfold, const int end_unfold, vrna_ex
 		}
 		// at the end : constrained by global accessibility constraint
 		for (; i<len; i++) {
-			c_structure[i] = getAccConstraint().at(i);
+			c_structure[i] = (getAccConstraint().size()>0 ? getAccConstraint().at(i) : '.');
 		}
 
 	}
@@ -158,15 +164,15 @@ getPfScale( const RnaSequence & seq, VrnaHandler & vrnaHandler )
 {
 
 	// get sequence length
-	int len = (int)seq.size();
+	int len = (int)getSequence().size();
 
 	// generate structure constraint
 	// ('.' = 'unconstrained' and 'x' = 'unstructured/unpaired')
 	char c_structure[len+1];
 	c_structure[len] = '\0';
 	for (int i=0; i<len; i++) {
-		// unconstrained
-		c_structure[i] = '.';
+		// copy global accessibility constraint if present
+		c_structure[i] = (getAccConstraint().size()>0 ? getAccConstraint().at(i) : '.');
 	}
 
 	// Vienna RNA : get final folding parameters
@@ -175,7 +181,7 @@ getPfScale( const RnaSequence & seq, VrnaHandler & vrnaHandler )
 	// Vienna RNA : get mfe value
 	char structure[len+1];
 	strncpy(structure, c_structure, len+1);
-	const double min_en = fold_par(	seq.asString().c_str()
+	const double min_en = fold_par(	getSequence().asString().c_str()
 									, structure
 									, foldParams
 									, 0
@@ -215,17 +221,18 @@ fillByConstraints( VrnaHandler &vrnaHandler, std::ostream * log )
 	E_type E_all = calc_ensemble_free_energy(-1, -1, partFoldParams);
 
 //	const std::string prefix =" ED("+getSequence().getId()+") computation: " ;
+	const bool noConstraintPresent = getAccConstraint().size() == 0;
 	int count=0;
 	const int seq_len = (int)getSequence().size();
 	// compute ED values for _all_ regions [i,j]
 	for(int i=0; i<seq_len; i++)
 	{
-		bool regionUnconstrained = getAccConstraint().at(i) == '.';
+		bool regionUnconstrained = (noConstraintPresent || getAccConstraint().at(i) == '.');
 		// compute only for region lengths (j-i+1) <= maxLength
-		for(int j=i; j<std::min(seq_len,i+(int)maxLength); j++)
+		for(int j=i; j<std::min(seq_len,i+(int)getMaxLength()); j++)
 		{
 			// extend knowledge about "unconstrainedness" for the region
-			regionUnconstrained = regionUnconstrained && getAccConstraint().at(j) == '.';
+			regionUnconstrained = regionUnconstrained && (noConstraintPresent || getAccConstraint().at(j) == '.');
 			// check if unconstrained within region (i,j)
 			if (regionUnconstrained) {
 				// compute ED value = E(unstructured in [i,j]) - E_all
@@ -263,21 +270,28 @@ void
 AccessibilityVrna::
 fillByRNAplfold( VrnaHandler &vrnaHandler, std::ostream * log )
 {
-
-	char * sequence = (char *) vrna_alloc(sizeof(char) * (seq.size() + 1));
-	char * structure = (char *) vrna_alloc(sizeof(char) * (seq.size() + 1));
-	for (int i=0; i<seq.size(); i++) {
-		sequence[i] = seq.asString().at(i);
-		structure[i] = this->getAccConstraint().at(i);
+#ifdef NDEBUG           /* required by ANSI standard */
+	// no check
+#else
+	// check if structure constraint given
+	if (getAccConstraint().size() > 0 && getAccConstraint().find_first_not_of(".")!=std::string::npos) {
+		throw std::exception("AccessibilityVrna::fillByRNAplfold() called but structure constraint present for sequence "+getSequence().getId());
 	}
-	sequence[seq.size()] = structure[seq.size()] = '\0';
+#endif
 
-	int length = seq.size();
+	// copy sequence into C data structure
+	char * sequence = (char *) vrna_alloc(sizeof(char) * (getSequence().size() + 1));
+	for (int i=0; i<getSequence().size(); i++) {
+		sequence[i] = getSequence().asString().at(i);
+	}
+	sequence[getSequence().size()] = '\0';
+
+	int length = getSequence().size();
 
 	double ** pup = NULL;
     pup       =(double **)  vrna_alloc((length+1)*sizeof(double *));
     pup[0]    =(double *)   vrna_alloc(sizeof(double)); /*I only need entry 0*/
-    pup[0][0] = std::min((int)(maxLength>0?maxLength:length),length); // length of unpaired stretch in window
+    pup[0][0] = (int)getMaxLength(); // length of unpaired stretch in window
 
     vrna_plist_t * dpp = NULL; // ?? whatever..
 
@@ -297,12 +311,14 @@ fillByRNAplfold( VrnaHandler &vrnaHandler, std::ostream * log )
 
     const double RT = vrnaHandler.getRT();
 
+    // check if any constraint present
+    const bool noConstraintPresent = getAccConstraint().size() == 0;
     // copy data
     for (int j=1; j<=length; j++) {
-		bool regionUnconstrained = getAccConstraint().at(j-1) == '.';
+		bool regionUnconstrained = noConstraintPresent || getAccConstraint().at(j-1) == '.';
     	for (int i=std::max(1,j-(int)pup[0][0]);i<=j; i++) {
 			// extend knowledge about "unconstrainedness" for the region
-			regionUnconstrained = regionUnconstrained && getAccConstraint().at(i-1) == '.';
+			regionUnconstrained = regionUnconstrained && (noConstraintPresent || getAccConstraint().at(i-1) == '.');
 			// check if unconstrained within region (i,j)
 			if (regionUnconstrained) {
 				// compute overall unpaired probability
@@ -327,7 +343,6 @@ fillByRNAplfold( VrnaHandler &vrnaHandler, std::ostream * log )
     }
     free(pup[0]);
     free(pup);
-    free(structure);
     free(sequence);
 
 }
@@ -351,13 +366,15 @@ fillByRNAup( VrnaHandler &vrnaHandler, std::ostream * log )
 
 		////////  RNAup-like (VRNA2-API) unpaired probability calculation  ///////
 
-		char * sequence = (char *) vrna_alloc(sizeof(char) * (seq.size() + 1));
-		char * structure = (char *) vrna_alloc(sizeof(char) * (seq.size() + 1));
-		for (int i=0; i<seq.size(); i++) {
-			sequence[i] = seq.asString().at(i);
-			structure[i] = this->getAccConstraint().at(i);
+		char * sequence = (char *) vrna_alloc(sizeof(char) * (getSequence().size() + 1));
+		char * structure = (char *) vrna_alloc(sizeof(char) * (getSequence().size() + 1));
+		for (int i=0; i<getSequence().size(); i++) {
+			// copy sequence
+			sequence[i] = getSequence().asString().at(i);
+			// copy accessibility constraint if present
+			structure[i] = (getAccConstraint().size()>0 ? getAccConstraint().at(i) : '.');
 		}
-		sequence[seq.size()] = structure[seq.size()] = '\0';
+		sequence[getSequence().size()] = structure[getSequence().size()] = '\0';
 
 		// get used RT from vienna package
 		const double RT = vrnaHandler.getRT();
@@ -366,26 +383,28 @@ fillByRNAup( VrnaHandler &vrnaHandler, std::ostream * log )
 		// get mfe for this sequence (for scaling reasons)
 	    const double min_energy = fold( sequence, structure );
 	    // overwrite structure again with constraint since it now holds the mfe structure
-	    for (int i=0; i<seq.size(); i++) { structure[i] = this->getAccConstraint().at(i); }
+	    for (int i=0; i<getSequence().size(); i++) { structure[i] = (getAccConstraint().size()>0 ? getAccConstraint().at(i) : '.'); }
 	    // compute the partition function scaling value
-	    const double pf_scale = std::exp(-(vrnaHandler.getModel().sfact*min_energy)/RT/seq.size());
+	    const double pf_scale = std::exp(-(vrnaHandler.getModel().sfact*min_energy)/RT/getSequence().size());
 	    // compute partition function matrices to prepare unpaired probability calculation
 	    const double ensemble_energy = pf_fold(sequence, structure);
 	    // compute unpaired probabilities (cast-hack due to non-conform VRNA interface)
-	    pu_contrib* unstr_out = pf_unstru( sequence, (int)maxLength);
+	    pu_contrib* unstr_out = pf_unstru( sequence, (int)getMaxLength());
 	    // free folding data and Q matrices
 	    free_pf_arrays();
 	    free(structure);
 	    free(sequence);
 
+	    // check if any constraint present
+	    const bool noConstraintPresent = getAccConstraint().size() == 0;
 		// compute ED values for _all_ regions [i,j]
-	    for (int i=(int)seq.size(); i>0; i--) {
-			bool regionUnconstrained = getAccConstraint().at(i-1) == '.';
+	    for (int i=(int)getSequence().size(); i>0; i--) {
+			bool regionUnconstrained = noConstraintPresent || getAccConstraint().at(i-1) == '.';
 			// compute only for region lengths (j-i+1) <= maxLength
-			for(int j=i; j<=std::min((int)seq.size(),i+(int)maxLength)-1;j++)
+			for(int j=i; j<=std::min((int)getSequence().size(),i+(int)getMaxLength())-1;j++)
 			{
 				// extend knowledge about "unconstrainedness" for the region
-				regionUnconstrained = regionUnconstrained && getAccConstraint().at(j-1) == '.';
+				regionUnconstrained = regionUnconstrained && (noConstraintPresent || getAccConstraint().at(j-1) == '.');
 				// check if unconstrained within region (i,j)
 				if (regionUnconstrained) {
 					// compute overall unpaired probability
