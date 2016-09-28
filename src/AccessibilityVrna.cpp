@@ -49,7 +49,7 @@ AccessibilityVrna::AccessibilityVrna(
 		)
  :
 	Accessibility( seq, maxLength, accConstraint ),
-	edValues( getSequence().size(), getSequence().size() )
+	edValues( getSequence().size(), getSequence().size(), 0, getMaxLength() )
 {
 
 	fillByConstraints(vrnaHandler,log);
@@ -204,7 +204,11 @@ fillByConstraints( VrnaHandler &vrnaHandler, std::ostream * log )
 	const double pfScale = getPfScale( seq, vrnaHandler );
 
 	// Vienna RNA : get final partition function folding parameters
-	vrna_exp_param_s* partFoldParams = get_boltzmann_factors( vrnaHandler.getModel().temperature, vrnaHandler.getModel().betaScale, vrnaHandler.getModel(), pfScale);
+	vrna_exp_param_s* partFoldParams
+		= get_boltzmann_factors( vrnaHandler.getModel().temperature
+								, vrnaHandler.getModel().betaScale
+								, vrnaHandler.getModel()
+								, pfScale);
 
 
 	// compute free energy of whole structure ensemble
