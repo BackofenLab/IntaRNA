@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
 		CommandLineParsing parameters(std::cout);
 		{
 			int retCode = parameters.parse( argc, argv );
-			if (retCode <= 0) {
+			if (retCode != 0) {
 				return retCode;
 			}
 		}
