@@ -34,7 +34,7 @@ InteractionEnergyVrna::~InteractionEnergyVrna()
 {
 	// garbage collection
 	if (foldParams != NULL) {
-		delete foldParams;
+		free(foldParams);
 		foldParams = NULL;
 	}
 }
