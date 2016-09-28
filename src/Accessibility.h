@@ -35,10 +35,10 @@ public:
 	 * Construction
 	 * @param sequence the sequence the accessibility data belongs to
 	 * @param maxLength the maximal length of accessible regions (>0) to be
-	 *          considered. 0 defaults to the sequence's length, otherwise
+	 *          considered. 0 defaults to the full sequence's length, otherwise
 	 *          is is internally set to min(maxLength,seq.length).
 	 * @param accConstr accessibility constraint: all positions marked not as
-	 * 			unconstrained (.) are ommited from interaction prediction, thus
+	 * 			unconstrained (.) are omitted from interaction prediction, thus
 	 * 			resulting in ED_UPPER_BOUND. Empty string input is equivalent
 	 * 			to fully unconstrained accessibility computation.
 	 */
@@ -142,19 +142,16 @@ Accessibility::Accessibility( const RnaSequence& seq
 							, const std::string& accConstraint_ )
  :
 	seq(seq)
+	// set maxLength to appropriate value
 	, maxLength( maxLength==0 ? seq.size() : std::min(maxLength,seq.size()) )
 	, accConstraint(accConstraint_)
 {
-	// fill accessibility constraint if not initialized
-	if (accConstraint.empty()) {
-		accConstraint = std::string(seq.size(), '.');
-	}
 
 #ifdef NDEBUG           /* required by ANSI standard */
 	// no check
 #else
 	// debug checks
-	if(accConstraint.size() != getSequence().size()) {
+	if(accConstraint.size() > 0 && accConstraint.size() != getSequence().size()) {
 		throw std::runtime_error("Accessibility : sequence and accConstr differ in length");
 	}
 	if (accConstraint.find_first_not_of(AccessibilityConstraintAlphabet)!=std::string::npos) {
@@ -177,9 +174,13 @@ void
 Accessibility::
 checkIndices( const size_t from, const size_t to ) const
 {
+#ifdef NDEBUG           /* required by ANSI standard */
+	// no check
+#else
 	if (from > to || to >= getSequence().size()) {
 		throw std::runtime_error("Accessibility::checkIndices : region ["+toString(from)+","+toString(to)+"] do not fulfill 0 <= from <= to < seq.length");
 	}
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////
