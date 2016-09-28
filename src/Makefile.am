@@ -12,8 +12,6 @@ intaRNA_SOURCES =	intaRNA.cpp \
 					AccessibilityNone.h \
 					AccessibilityVrna.h \
 					AccessibilityVrna.cpp \
-					AccessibilityVrna3.h \
-					AccessibilityVrna3.cpp \
 					ReverseAccessibility.h \
 					ReverseAccessibility.cpp \
 					Interaction.h \
