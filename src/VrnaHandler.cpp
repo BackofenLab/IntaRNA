@@ -11,7 +11,7 @@
 #include <iostream>
 
 extern "C" {
-//	#include <ViennaRNA/model.h>
+	#include <ViennaRNA/energy_const.h>
 }
 
 
@@ -149,6 +149,12 @@ getModel( )
 
 ////////////////////////////////////////////////////////////////////////////
 
+double
+VrnaHandler::
+getRT( ) const
+{
+	return ((model.temperature+K0)*GASCONST/1000.0);
+}
 
 
 ////////////////////////////////////////////////////////////////////////////

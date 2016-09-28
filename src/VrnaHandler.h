@@ -67,6 +67,14 @@ public:
 	vrna_md_t&
 	getModel();
 
+	/**
+	 * Provides RT for the current setup
+	 * @return R*temperature
+	 */
+	double
+	getRT() const;
+
+
 
 };
 
