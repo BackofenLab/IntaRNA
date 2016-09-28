@@ -179,13 +179,16 @@ CPPFLAGS="$CPPFLAGS $AM_CXXFLAGS"
 CXXFLAGS="$CXXFLAGS $AM_CXXFLAGS"
 LDFLAGS="$LDFLAGS $AM_LDFLAGS"
 AC_COMPILE_IFELSE(
-     [AC_LANG_SOURCE([[#include <ViennaRNA/utils.h>]])],
+     [AC_LANG_PROGRAM([[#include <ViennaRNA/model.h>]],[[vrna_md_s tmp;]])],
      [ 
 		AC_MSG_RESULT([yes])
 #		AC_CHECK_LIB([RNA], [var_time_stamp], [RNANOTFOUND=0], [ RNANOTFOUND=1])
      ],
      [
        AC_MSG_RESULT([no])
+	   AC_MSG_NOTICE([DEBUG : used CXXFLAGS = $CXXFLAGS])
+	   AC_MSG_NOTICE([DEBUG : used CPPFLAGS = $CPPFLAGS])
+	   AC_MSG_NOTICE([DEBUG : used  LDFLAGS = $LDFLAGS])
        RNANOTFOUND=1;
      ]
 )
