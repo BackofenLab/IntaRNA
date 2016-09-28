@@ -27,4 +27,4 @@ script:
  # generate autotools's files and compile IntaRNA
  - cd $TRAVIS_BUILD_DIR && bash autotools-init.sh && CC=gcc-4.9 CXX=g++-4.9 ./configure --enable-c11 --with-RNA=$HOME/vienna --prefix=$HOME/IntaRNA && make && make install
  # run IntaRNA
- - $HOME/IntaRNA/bin/IntaRNA -h
+ - $HOME/IntaRNA/bin/intaRNA -h
