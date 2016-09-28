@@ -15,7 +15,6 @@
 
 #include "AccessibilityDisabled.h"
 #include "AccessibilityVrna.h"
-#include "AccessibilityVrna3.h"
 
 #include "InteractionEnergyBasePair.h"
 #include "InteractionEnergyVrna.h"
@@ -65,11 +64,11 @@ CommandLineParsing::CommandLineParsing( std::ostream& logStream )
 	using namespace boost::program_options;
 
 
-	RnaSequence seq("debug","CGCGUGCGCGUCGCG");
-	logStream <<"\n ### cmd-begin : debug check for "<<seq.getId()<<std::endl;
-	logStream <<"\n ### temp "<<vrnaHandler.getModel().temperature<<std::endl;
-	AccessibilityVrna3 accTmp( seq, vrnaHandler, 16, "", &logStream );
-	logStream <<accTmp<<std::endl;
+//	RnaSequence seq("debug","CGCGUGCGCGUCGCG");
+//	logStream <<"\n ### cmd-begin : debug check for "<<seq.getId()<<std::endl;
+//	logStream <<"\n ### temp "<<vrnaHandler.getModel().temperature<<std::endl;
+//	AccessibilityVrna accTmp( seq, vrnaHandler, 16, "", &logStream );
+//	logStream <<accTmp<<std::endl;
 
 	////  SEQUENCE OPTIONS  ////////////////////////////////////
 
@@ -280,27 +279,6 @@ CommandLineParsing::parse(int argc, char** argv)
 	}
 
 
-//	logStream <<" # DEBUG : temp = "<<(double)temperature.val<<std::endl;
-	logStream <<" # DEBUG : temp = "<<(double)30.0<<std::endl;
-	// setup Vienna parameter handler
-//	vrnaHandler = VrnaHandler( (double)temperature.val /* TODO max_bp_span, window_size */ );
-	vrnaHandler = VrnaHandler( (double)30.0 /* TODO max_bp_span, window_size */ );
-//
-//
-	RnaSequence seq("debug","CGCGUGCGCGUCGCG");
-	logStream <<" debug check for "<<seq.getId()<<std::endl;
-//	AccessibilityVienna3 accTmp( seq, vrnaHandler, qIntLenMax.val, qAccConstr, &logStream );
-	AccessibilityVrna3 accTmp( seq, vrnaHandler, 16, "", &logStream );
-	logStream <<accTmp <<std::endl;
-////	Accessibility* accTmp = NULL;
-////	accTmp = new AccessibilityVienna3 ( seq, vrnaHandler, qIntLenMax.val, qAccConstr, &logStream );
-////	accTmp->print( logStream );
-////	CLEANUP(accTmp);
-////	accTmp = new AccessibilityVienna( seq, vrnaHandler, qIntLenMax.val, qAccConstr, &logStream );
-////	accTmp->print( logStream );
-////	CLEANUP(accTmp);
-//
-//
 	// flush all content that was pushed to the log stream
 	logStream.flush();
 	// return validate_* dependent parsing code
@@ -508,23 +486,8 @@ getQueryAccessibility( const size_t sequenceNumber ) const
 		throw std::runtime_error("CommandLineParsing::getQueryAccessibility : sequence number "+toString(sequenceNumber)+" is out of range (<"+toString(getQuerySequences().size())+")");
 	}
 	const RnaSequence& seq = getQuerySequences().at(sequenceNumber);
-logStream <<"\n### get query acc : " <<seq <<"\n" <<std::endl;
 
-Accessibility* accTmp = NULL;
-//logStream <<"\n### get query acc : acc new ("<<seq<<","<<vrnaHandler.getModel().temperature<<","<<qAccConstr<<")\n" <<std::endl;
-	accTmp = new AccessibilityVrna3( seq, vrnaHandler, qIntLenMax.val, qAccConstr, &logStream );
-	logStream <<(*accTmp) <<std::endl;
-	CLEANUP(accTmp);
-logStream <<"\n### get query acc : acc old \n" <<std::endl;
-	accTmp = new AccessibilityVrna( seq, vrnaHandler, qIntLenMax.val, qAccConstr, &logStream );
-	logStream <<(*accTmp) <<std::endl;
-	CLEANUP(accTmp);
-logStream <<"\n### get query acc : acc new ("<<seq<<","<<vrnaHandler.getModel().temperature<<","<<qAccConstr<<")\n" <<std::endl;
-	accTmp = new AccessibilityVrna3( seq, vrnaHandler, qIntLenMax.val, qAccConstr, &logStream );
-	logStream <<(*accTmp) <<std::endl;
-	CLEANUP(accTmp);
-
-logStream <<"\n### get query acc : done \n" <<std::endl;
+	// construct selected accessibility object
 	switch(qAcc.val) {
 	case 'N' : return new AccessibilityDisabled( seq, qIntLenMax.val );
 	case 'F' : return new AccessibilityVrna( seq, vrnaHandler, qIntLenMax.val, qAccConstr, &logStream );
@@ -643,7 +606,7 @@ validateSequenceAlphabet( const std::string& paramName,
 	for (int i=0; i<sequences.size(); i++) {
 		// check if valid
 		if (! RnaSequence::isValidSequence(sequences.at(i).asString())) {
-			logStream <<"\n sequence " <<i<<" for parameter "<<paramName<<" is not valid!\n";
+			logStream <<"\n sequence " <<(i+1)<<" for parameter "<<paramName<<" is not valid!\n";
 			parsingCode = std::min(-1,parsingCode);
 			allValid = false;
 		}
