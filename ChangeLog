@@ -1,4 +1,49 @@
 
+160928 Martin Mann :
+ * AccessibilityVrna :
+   + fillByConstraints() : intarna-1 way of computing ED values
+   + fillByRNAup() : RNAup-like ED value computation
+   + fillByRNAplfold() : RNAplfold-like ED value computation
+   * remaining interface adapted to local computation and data structures
+ * CommandLineParsing :
+   * cleanup 
+ * intaRNA :
+   * adaption to parse return value change
+ * InteractionEnergyVrna :
+   * destructor : bugfix : has to use 'free' for VRNA cleanup
+ * VrnaHandler :
+   + getRT() : computes the RT constant for the current temperature
+
+160927 Martin Mann :
+ + AccessibilityVrna : vrna-based accessibility computation 
+   (former AccessibilityVienna)
+ + InteractionEnergy : former Energy
+ + InteractionEnergyBasePair : former EnergyBasePair
+ + InteractionEnergyVrna : former EnergyVienna
+ - AccessibilityVienna : renamed 
+ - Energy : renamed
+ - EnergyBasePair : renamed
+ - EnergyVienna : renamed
+ * Accessibility :
+   + ostream operator : prints ED values
+ * AccessibilityVrna :
+   - modelDetails : obsolete
+ * RnaSequence :
+   + ostream operator : prints "ID(Sequence)"
+ + VrnaHandler : central handler for VRNA folding parameter setup
+   * model generation now done in constructor
+   * model access non-const due to VRNA interface ("features" on the fly 
+     initialization of model if not initialized yet, thus non-const)
+ * CommandLineParsing : 
+   + vrnaHandler
+   + getTemperature() : getter for user defined temperature
+   * adaption to renames
+ 
+
+160923 Martin Mann :
+ * .travis :
+   * sudo: true (was false)
+
 160922 Martin Mann :
 ############### MOVE FROM CVS TO GIT INTARNA REPO ############################
  * README : 
