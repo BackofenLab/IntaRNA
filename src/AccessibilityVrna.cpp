@@ -275,7 +275,7 @@ fillByRNAplfold( VrnaHandler &vrnaHandler, std::ostream * log )
 #else
 	// check if structure constraint given
 	if (getAccConstraint().size() > 0 && getAccConstraint().find_first_not_of(".")!=std::string::npos) {
-		throw std::exception("AccessibilityVrna::fillByRNAplfold() called but structure constraint present for sequence "+getSequence().getId());
+		throw std::runtime_error("AccessibilityVrna::fillByRNAplfold() called but structure constraint present for sequence "+getSequence().getId());
 	}
 #endif
 

@@ -108,7 +108,6 @@ protected:
 	 * @param seq the sequence the parameter is for
 	 * @param vrnaHandler the VRNA handler to be used
 	 */
-	static
 	double
 	getPfScale( const RnaSequence & seq
 				, VrnaHandler & vrnaHandler );
