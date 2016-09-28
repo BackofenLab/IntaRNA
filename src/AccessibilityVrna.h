@@ -81,11 +81,6 @@ protected:
 	//! the ED values for the given sequence
 	EdMatrix edValues;
 
-	//! Vienna RNA package : partition function folding parameters to be used
-	//! for the energy computation
-	vrna_exp_param_s* partFoldParams;
-
-
 	/**
 	 * Computes the free energy of the structure ensemble that is unstructured
 	 * in the region [start_unfold,end_unfold] including the boundaries.
@@ -96,7 +91,7 @@ protected:
 	 * structure constraint is to be set
 	 * @param end_unfold last position to be unstructured, or -1 if no
 	 * structure constraint is to be set
-	 * @param T temperature used to compute folding energies in Celsius
+	 * @param partFoldParams the folding parameters to be used
 	 *
 	 * @return the energy of the structure ensemble
 	 */
@@ -104,6 +99,7 @@ protected:
 	calc_ensemble_free_energy(
 			const int start_unfold
 			, const int end_unfold
+			, vrna_exp_param_s * partFoldParams
 			);
 
 	/**
@@ -111,13 +107,40 @@ protected:
 	 * computation.
 	 *
 	 * @param seq the sequence the parameter is for
-	 * @param modelDetails the Vienna RNA energy model details to be used
-	 * @param T the temperatue in Celsius to be used for energy computations
+	 * @param vrnaHandler the VRNA handler to be used
 	 */
 	static
 	double
 	getPfScale( const RnaSequence & seq
-				, const model_detailsT & modelDetails );
+				, VrnaHandler & vrnaHandler );
+
+
+	/**
+	 * Use the old intaRNA way using n^2 constrained folding to fill ED-values
+	 *
+	 * @param vrnaHandler the VRNA handler to be used
+	 * @param logStream stream to log debug output etc.
+	 */
+	void
+	fillByConstraints( VrnaHandler &vrnaHandler, std::ostream * log );
+
+	/**
+	 * Use RNAup-like style to fill ED-values
+	 *
+	 * @param vrnaHandler the VRNA handler to be used
+	 * @param logStream stream to log debug output etc.
+	 */
+	void
+	fillByRNAup( VrnaHandler &vrnaHandler, std::ostream * log );
+
+	/**
+	 * Use RNAplfold-like style to fill ED-values
+	 *
+	 * @param vrnaHandler the VRNA handler to be used
+	 * @param logStream stream to log debug output etc.
+	 */
+	void
+	fillByRNAplfold( VrnaHandler &vrnaHandler, std::ostream * log );
 
 };
 
