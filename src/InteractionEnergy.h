@@ -27,11 +27,11 @@ public:
 	 * @param maxInternalLoopSize1 maximal number of enclosed unpaired positions
 	 *          between two intermolecular base pairs in sequence 1, ie it holds
 	 *          for an intermolecular loop closed by base pairs (i1,i2) and
-	 *          (j1,j2) : (j1-i1+1) <= maxInternalLoopSize1
+	 *          (j1,j2) : (j1-i1) <= (1+maxInternalLoopSize1)
 	 * @param maxInternalLoopSize2 maximal number of enclosed unpaired positions
 	 *          between two intermolecular base pairs in sequence 2, ie it holds
 	 *          for an intermolecular loop closed by base pairs (i1,i2) and
-	 *          (j1,j2) : (j2-i2+1) <= maxInternalLoopSize2
+	 *          (j1,j2) : (j2-i2) <= (1+maxInternalLoopSize2)
 	 *
 	 */
 	InteractionEnergy( const Accessibility & accS1
@@ -65,7 +65,7 @@ public:
 	 */
 	virtual
 	E_type
-	getInterLoopE( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) = 0;
+	getInterLoopE( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const = 0;
 
 
 	/**
@@ -80,7 +80,7 @@ public:
 	 */
 	virtual
 	E_type
-	getDanglingLeft( const size_t i1, const size_t i2 ) = 0;
+	getDanglingLeft( const size_t i1, const size_t i2 ) const = 0;
 
 
 	/**
@@ -95,7 +95,7 @@ public:
 	 */
 	virtual
 	E_type
-	getDanglingRight( const size_t j1, const size_t j2 ) = 0;
+	getDanglingRight( const size_t j1, const size_t j2 ) const = 0;
 
 
 	/**
@@ -116,23 +116,23 @@ public:
 	const ReverseAccessibility &
 	getAccessibility2() const;
 
+	/**
+	 * Access to the maximal size of an unpaired stretch within seq1 within
+	 * an interaction.
+	 * @return the maximal internal loop size of an interaction for seq1
+	 */
+	const size_t getMaxInternalLoopSize1() const {
+		return maxInternalLoopSize1;
+	}
 
-protected:
-
-	//! accessibility values for sequence S1
-	const Accessibility & accS1;
-
-	//! accessibility values for sequence S2 (reversed index order)
-	const ReverseAccessibility & accS2;
-
-	//! maximally allowed unpaired range between two base pairs in sequence S1
-	//! forming an intermolecular internal loop
-	const size_t maxInternalLoopSize1;
-
-	//! maximally allowed unpaired range between two base pairs in sequence S2
-	//! forming an intermolecular internal loop
-	const size_t maxInternalLoopSize2;
-
+	/**
+	 * Access to the maximal size of an unpaired stretch within seq2 within
+	 * an interaction.
+	 * @return the maximal internal loop size of an interaction for seq2
+	 */
+	const size_t getMaxInternalLoopSize2() const {
+		return maxInternalLoopSize2;
+	}
 
 	/**
 	 * Checks whether or not the given indices are valid index region within the
@@ -151,6 +151,42 @@ protected:
 	static
 	bool
 	isAllowedLoopRegion( const RnaSequence& seq, const size_t i, const size_t j, const size_t maxInternalLoopSize );
+
+	/**
+	 * Checks whether or not the given indices mark valid internal loop
+	 * boundaries, i.e.
+	 *  - (i1,i2) and (j1,j2) are complementary
+	 *  - i1..j1 and i2..j2 are allowed loop regions
+	 *  - no boundary overlap ( (j1-i1==0 && j2-i2==0) || (j1-i1>0 && j2-i2>0) )
+	 *
+	 * @param i1 the index of the first sequence interacting with i2
+	 * @param j1 the index of the first sequence interacting with j2 with i1<=j1
+	 * @param i2 the index of the second sequence interacting with i1
+	 * @param j2 the index of the second sequence interacting with j1 with i2<=j2
+	 *
+	 * @return true if the boundaries are sound for internal loop calculation;
+	 *         false otherwise
+	 */
+	bool
+	isValidInternalLoop( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const;
+
+
+protected:
+
+	//! accessibility values for sequence S1
+	const Accessibility & accS1;
+
+	//! accessibility values for sequence S2 (reversed index order)
+	const ReverseAccessibility & accS2;
+
+	//! maximally allowed unpaired range between two base pairs in sequence S1
+	//! forming an intermolecular internal loop
+	const size_t maxInternalLoopSize1;
+
+	//! maximally allowed unpaired range between two base pairs in sequence S2
+	//! forming an intermolecular internal loop
+	const size_t maxInternalLoopSize2;
+
 
 
 };
