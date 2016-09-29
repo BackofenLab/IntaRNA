@@ -67,7 +67,7 @@ AC_MSG_RESULT([$cpp11])
 if test x"$cpp11" = x"yes"; then
   AC_MSG_CHECKING([whether the C++ compiler allows unnamed unions of unnamed structs])
   AC_LANG_PUSH([C++])
-  AC_RUN_IFELSE([AC_LANG_SOURCE([[extern "C" {
+  AC_RUN_IFELSE([AC_LANG_PROGRAM([[extern "C" {
                                     #include <stdlib.h>
                                     struct bla {
                                       union {
@@ -75,8 +75,8 @@ if test x"$cpp11" = x"yes"; then
                                         struct { long c; double d;};
                                       };
                                     };
-                                  };
-                                  int main (void) { return 0;} ]])],
+                                  };]],
+                                  [[ bla x; ]])],
                                   [cpp11=yes],
                                   [cpp11=no],
                                   [cpp11=no])
@@ -86,7 +86,23 @@ if test x"$cpp11" = x"yes"; then
 fi
 # final compiler flag setup	
 if test x"$cpp11" = x"yes"; then
-	AM_CXXFLAGS="$AM_CXXFLAGS -std=c++11"
+	AC_MSG_CHECKING([whether the C++ compiler understands '-std=c++11'])
+	OLD_CXXFLAGS=$CXXFLAGS
+	CXXFLAGS="$CXXFLAGS -std=c++11"
+	AC_COMPILE_IFELSE(
+	     [AC_LANG_PROGRAM([[#include <string>]],[[std::string s("lala");]])],
+	     [ 
+			AC_MSG_RESULT([yes])
+	     ],
+	     [
+	       AC_MSG_RESULT([no])
+	       cpp11=no;
+	     ]
+	)
+	CPPFLAGS=$OLD_CPPFLAGS
+	if test x"$cpp11" = x"yes"; then
+		AM_CXXFLAGS="$AM_CXXFLAGS -std=c++11"
+	fi
 fi
 
 ###############################################################################
