@@ -19,6 +19,10 @@ public:
 	/**
 	 * Constructs an RNA-RNA interaction prediction handler and sets the
 	 * central data members.
+	 *
+	 * @param energy the handler for interaction energy computation
+	 * @param output the output handler for identified interactions
+	 *
 	 */
 	Predictor( const InteractionEnergy & energy, const OutputHandler & output );
 
