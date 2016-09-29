@@ -24,6 +24,8 @@ intaRNA_SOURCES =	intaRNA.cpp \
 					InteractionEnergyVrna.cpp \
 					Predictor.h \
 					Predictor.cpp \
+					PredictorRNAup.h \
+					PredictorRNAup.cpp \
 					OutputHandler.h \
 					OutputHandler.cpp \
 					OutputHandlerText.h \
