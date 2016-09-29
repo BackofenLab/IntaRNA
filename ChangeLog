@@ -6,6 +6,19 @@
    * adaption to ReturnCode usage
  * intaRNA :
    * adaption to ReturnCode
+ + unit tests added using Catch header library
+   * configure.ac : 
+     + generate tests/Makefile
+     + AM_EXTRA_RECURSIVE_TARGETS([tests]) : recursive "tests" make target
+     * AM_INIT_AUTOMAKE([1.13]) : need v1.13 for AM_EXTRA_RECURSIVE_TARGETS
+   * Makefile.am :
+     + go to subdir 'tests' for 'tests' make directive only
+   + tests/Makefile.am : compile and run tests 
+   + catch.hpp : Catch library version 1.5.7
+   + tests/runTests.cpp : central test program
+   + tests/testInteractionEnergy.cpp 
+   + tests/testInteractionEnergyBasePair.cpp 
+   + tests/testRnaSequence.cpp
 
 160928 Martin Mann :
  * AccessibilityVrna :

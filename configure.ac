@@ -1,6 +1,6 @@
 # this is example-file: configure.ac
 
-AC_PREREQ([2.59])
+AC_PREREQ([2.65])
 # 5 argument version only available with aclocal >= 2.64
 AC_INIT( [IntaRNA], [2.0], [], [intaRNA], [http://www.bioinf.uni-freiburg.de] )
 
@@ -43,7 +43,7 @@ CXXFLAGS=$OLD_CXXFLAGS
 CFLAGS=$OLD_CFLAGS
 
 # automake initialisation (mandatory) and check for minimal automake API version
-AM_INIT_AUTOMAKE([1.9])
+AM_INIT_AUTOMAKE([1.13])
 
 # use the C++ compiler for the following checks
 AC_LANG([C++])
@@ -254,9 +254,12 @@ AC_SUBST([AM_CXXFLAGS])
 AC_SUBST([AM_LDFLAGS])
 AC_SUBST([LIBS])
 
+# generate test make directive
+AM_EXTRA_RECURSIVE_TARGETS([tests])
 # files to generate via autotools (.am or .in source files)
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([src/Makefile])
+AC_CONFIG_FILES([tests/Makefile])
 
 # generate the final Makefile etc.
 AC_OUTPUT

@@ -43,6 +43,7 @@ install-sh
 depcomp
 aclocal.m4
 *.in
+compile
 
 
 # temp dir

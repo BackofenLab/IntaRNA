@@ -1,3 +1,7 @@
 
 # sub directories to check for Makefiles
-SUBDIRS = src
+SUBDIRS = src .
+
+# global test directive # ensure all is compiled (need object files for tests)
+tests-local: all
+	@$(MAKE) tests -s -C tests
