@@ -165,6 +165,21 @@ public:
 	bool
 	isValidSequence( const std::string& sequence );
 
+
+	/**
+	 * Whether or not two positions of two RNAs are complementary, ie. can
+	 * form a base pair
+	 * @param s1 first RNA
+	 * @param s2 second RNA
+	 * @param p1 position within s1
+	 * @param p2 position within s2
+	 * @return true if s1[p1] can form a base pair with s2[p2]; false otherwise
+	 */
+	static
+	bool
+	areComplementary( const RnaSequence & s1, const RnaSequence & s2,
+					const size_t p1, const size_t p2 );
+
 protected:
 
 	/////////////////////  DATA MEMBERS  //////////////////////////////

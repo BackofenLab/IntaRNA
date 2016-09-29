@@ -33,6 +33,17 @@ RnaSequence::RnaSequence(
 	, seqCode(getCodeForString(this->seqString))
 	, ambiguous(seqString.find_first_of("nN")!=std::string::npos)
 {
+#ifdef NDEBUG
+	// no check
+#else
+	if (id.size() == 0) {
+		throw std::runtime_error("RnaSequence::RnaSequence : id empty");
+	}
+	if (seqString.size() == 0) {
+		throw std::runtime_error("RnaSequence::RnaSequence : seqString empty");
+	}
+#endif
+
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -167,6 +178,27 @@ operator<<(std::ostream& out, const RnaSequence& rna)
 	// add ID(SEQUENCE) to stream
 	out <<rna.id <<'(' <<rna.asString() <<')';
 	return out;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+bool
+RnaSequence::
+areComplementary( const RnaSequence & s1, const RnaSequence & s2,
+					const size_t p1, const size_t p2 )
+{
+	// check if valid positions
+	if (p1<s1.size() && p2<s2.size()) {
+		// check via VRNA util
+		return BP_pair[s1.seqCode.at(p1)][s2.seqCode.at(p2)] > 0;
+	} else {
+		throw new std::runtime_error("RnaSequence::areComplementary : index positions p1/p2 ("
+				+ toString(p1)+"/"+toString(p2)
+				+ ") are out of bounds s1/s2 ("
+				+ toString(s1.size())+"/"+toString(s2.size())
+				+")"
+				);
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////
