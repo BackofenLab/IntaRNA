@@ -65,7 +65,7 @@ getInterLoopE( const size_t i1, const size_t j1, const size_t i2, const size_t j
 								, accS2.getSequence().asCodes().at(j2-1)
 								, foldParams)
 					// correct from dcal/mol to kcal/mol
-					/ (E_type)10.0
+					/ (E_type)100.0
 					;
 		}
 	} else {
@@ -85,7 +85,9 @@ getDanglingLeft( const size_t i1, const size_t i2 ) const
 							  , -1+(int)i2
 							  , 1 // is an external loop  : TODO check if return value higher than ML-dangles (should be)
 							  , foldParams
-							  );
+							  )
+					// correct from dcal/mol to kcal/mol
+							  /(E_type)100.0;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -100,7 +102,9 @@ getDanglingRight( const size_t j1, const size_t j2 ) const
 							  , ( accS1.getSequence().size()-j1-1 == 0 ? -1 : (int)j1+1)  // check if last position in S1
 							  , 1 // is an external loop  : TODO check if return value higher than ML-dangles (should be)
 							  , foldParams
-							  );
+							  )
+					// correct from dcal/mol to kcal/mol
+							  /(E_type)100.0;
 }
 
 ////////////////////////////////////////////////////////////////////////////
