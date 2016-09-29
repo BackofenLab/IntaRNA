@@ -74,7 +74,7 @@ public:
 
 protected:
 
-	//! type for the ED value matrix (upper triangular matrix sufficient)
+	//! type for the ED value matrix (upper triangular matrix banded by maxLength)
 	typedef boost::numeric::ublas::banded_matrix<E_type> EdMatrix;
 
 	//! the ED values for the given sequence
