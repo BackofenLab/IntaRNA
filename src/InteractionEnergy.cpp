@@ -42,22 +42,20 @@ isAllowedLoopRegion( const RnaSequence& seq, const size_t i, const size_t j, con
 
 ////////////////////////////////////////////////////////////////////////////
 
-size_t
+const Accessibility &
 InteractionEnergy::
-getLength1() const
+getAccessibility1() const
 {
-	// sequence length access
-	return accS1.getSequence().size();
+	return accS1;
 }
 
 ////////////////////////////////////////////////////////////////////////////
 
-size_t
+const ReverseAccessibility &
 InteractionEnergy::
-getLength2() const
+getAccessibility2() const
 {
-	// sequence length access
-	return accS2.getSequence().size();
+	return accS2;
 }
 
 ////////////////////////////////////////////////////////////////////////////

@@ -99,20 +99,23 @@ public:
 
 
 	/**
-	 * Access to the sequence length of the first interacting RNA.
-	 * @return length of the first RNA sequence
+	 * Access to the accessibility object of the first sequence
+	 * (including sequence access)
+	 * @return the accessibility object for the first sequence
 	 */
 	virtual
-	size_t
-	getLength1() const;
+	const Accessibility &
+	getAccessibility1() const;
 
 	/**
-	 * Access to the sequence length of the second interacting RNA.
-	 * @return length of the second RNA sequence
+	 * Access to the accessibility object of the second sequence
+	 * (including sequence access)
+	 * @return the reverse accessibility object for the second sequence
 	 */
 	virtual
-	size_t
-	getLength2() const;
+	const ReverseAccessibility &
+	getAccessibility2() const;
+
 
 protected:
 
@@ -149,6 +152,12 @@ protected:
 	bool
 	isAllowedLoopRegion( const RnaSequence& seq, const size_t i, const size_t j, const size_t maxInternalLoopSize );
 
+
 };
+
+
+
+
+
 
 #endif /* INTERACTIONENERGY_H_ */
