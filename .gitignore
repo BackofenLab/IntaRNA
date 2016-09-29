@@ -44,7 +44,8 @@ depcomp
 aclocal.m4
 *.in
 compile
-
+*/.deps
+*/.deps/*
 
 # temp dir
 tmp

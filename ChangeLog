@@ -6,6 +6,7 @@
    * adaption to ReturnCode usage
  * intaRNA :
    * adaption to ReturnCode
+   + PredictorRNAup temporarily hard-coded
  + unit tests added using Catch header library
    * configure.ac : 
      + generate tests/Makefile
@@ -19,6 +20,36 @@
    + tests/testInteractionEnergy.cpp 
    + tests/testInteractionEnergyBasePair.cpp 
    + tests/testRnaSequence.cpp
+ * RnaSequence :
+   + areComplementary() : tests for base pair complementarity
+   * constructor : input checks in debug mode
+ * Accessibility + subclasses :
+   * constructor : accConstraint now pointer to enable NULL argument
+ * CommandLineParsing :
+   * argument docu extended
+   * adaption to Accessibility interface change
+ * InteractionEnergy :
+   * energy getters now const
+   * isAllowedLoopRegion() 
+     * now public
+     * bugfix of maxInternalLoppSize check 
+   + getMaxInternalLoopSize*() to access individual max internal loop size
+   + isValidInternalLoop() : checks an internal loop request
+ * InteractionEnergyVrna :
+   * interface adaption
+   * getInterLoopE() : 
+   * getDanglingLeft() : 
+   * getDanglingRight() : 
+     * bugfix of sequence access
+ * InteractionEnergyBasePair :
+   * interface adaption
+ * PredictorRNAup :
+   * E2dMatrix : now quadratic matrix for interaction widths w1,w2
+   * E4dMatrix : now quadratic matrix for interaction starts i1,i2
+   + hybridEmin : global minimal energy value computed
+   * (de/con)structor : matrix deletion/initialization adapted
+   * fillHybridE() :
+     + two round computation: first hybridizations only, than ED values added
 
 160928 Martin Mann :
  * AccessibilityVrna :
