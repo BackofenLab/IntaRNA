@@ -17,14 +17,13 @@ class PredictorRNAup: public Predictor {
 
 protected:
 
-	//! type for a 2D DP-matrix element
-	//! (upper triangular matrix banded by acc.maxLength)
-	typedef boost::numeric::ublas::banded_matrix<E_type> E2dMatrix;
+	//! matrix type to cover the energies for different interaction site widths
+	typedef boost::numeric::ublas::matrix<E_type> E2dMatrix;
 
-	//! type of the full 4D DP-matrix for computation (banded by acc.maxLength)
-	//! first index = (i,j) of query
-	//! second index = (k,l) of target
-	typedef boost::numeric::ublas::banded_matrix< E2dMatrix* > E4dMatrix;
+	//! full 4D DP-matrix for computation to hold all start position combinations
+	//! first index = start positions (i1,i2) of (seq1,seq2)
+	//! second index = interaction window sizes (w1,w2) or NULL if (i1,i2) not complementary
+	typedef boost::numeric::ublas::matrix< E2dMatrix* > E4dMatrix;
 
 
 public:
@@ -49,8 +48,14 @@ protected:
 	//! access to the output handler of the super class
 	using Predictor::output;
 
-	//! energy of all interaction hybrids computed by the recursion
+	//! energy of all interaction hybrids computed by the recursion with indices
+	//! hybridE(i1,i2)->(w1,w2), with interaction start i1 (seq1) and i2 (seq2) and
+	//! ineraction end j1=i1+w1 and j2=j2+w2
+	//! NOTE: hybridE(i1,i2)==NULL if not complementary(seq1[i1],seq2[i2])
 	E4dMatrix hybridE;
+
+	//! minimal value within hybridE
+	E_type hybridEmin;
 
 protected:
 
