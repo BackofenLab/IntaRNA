@@ -35,6 +35,14 @@ public:
 	//! type for a set of sequences
 	typedef std::vector< RnaSequence > RnaSequenceVec;
 
+	//! different exit codes for parsing
+	enum ReturnCode {
+		KEEP_GOING = -1,
+		STOP_ALL_FINE = 0,
+		STOP_PARSING_ERROR = 1,
+		NOT_PARSED = 999
+	};
+
 public:
 
 	/**
@@ -50,10 +58,10 @@ public:
 	 * @param argc the number of arguments
 	 * @param argv the argument array
 	 *
-	 * @return the parsing code: 1 (>0) if all went fine, otherwise the exit code to return
+	 * @return the parsing code: KEEP_GOING if all went fine, otherwise the exit code to return
 	 *
 	 */
-	int
+	ReturnCode
 	parse( int argc, char ** argv );
 
 public:
@@ -205,9 +213,7 @@ protected:
 	boost::program_options::options_description opts_cmdline_all;
 
 	//! central result code to be set by validate_* functions in error case
-	int parsingCode;
-	//! value to mark that parsingCode was not set yet, ie. parse() not called
-	const static int parsingCodeNotSet;
+	ReturnCode parsingCode;
 
 	//! stream to be used for log messages in validate_* functions
 	std::ostream & logStream;
@@ -345,7 +351,7 @@ protected:
 		// alphabet check
 		if ( ! param.isInRange(value) ) {
 			logStream <<"\n "<<name<<" = " <<value <<" : has to be in the range [" <<param.min <<","<<param.max<<"]\n";
-			parsingCode = std::min(-1,parsingCode);
+			parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
 		}
 	}
 
@@ -415,7 +421,7 @@ protected:
 inline
 void
 CommandLineParsing::checkIfParsed() const {
-	if (parsingCode == parsingCodeNotSet) {
+	if (parsingCode == ReturnCode::NOT_PARSED) {
 		throw std::runtime_error("CommandLineParsing::checkIfParsed() : parse() function was not called yet");
 	}
 }

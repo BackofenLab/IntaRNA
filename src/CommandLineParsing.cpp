@@ -24,7 +24,6 @@
 
 
 
-const int CommandLineParsing::parsingCodeNotSet = 9999;
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -37,7 +36,7 @@ CommandLineParsing::CommandLineParsing( std::ostream& logStream )
 	opts_general("General"),
 	opts_cmdline_all(),
 
-	parsingCode(parsingCodeNotSet),
+	parsingCode(NOT_PARSED),
 	logStream(logStream),
 
 	queryArg(""),
@@ -169,54 +168,59 @@ CommandLineParsing::~CommandLineParsing() {
 
 ////////////////////////////////////////////////////////////////////////////
 
-int
-CommandLineParsing::parse(int argc, char** argv)
+CommandLineParsing::ReturnCode
+CommandLineParsing::
+parse(int argc, char** argv)
 {
-	// setup default parsing code = all ok
-	parsingCode = 0;
+	// init: nothing parsed yet
+	parsingCode = ReturnCode::NOT_PARSED;
 
 	using namespace boost::program_options;
 
 	variables_map vm;
 	try {
 		store( parse_command_line(argc, argv, opts_cmdline_all), vm);
+		// parsing fine so far
+		parsingCode = ReturnCode::KEEP_GOING;
 	} catch (error& e) {
 		logStream <<"\nError : " <<e.what() << " : run with '--help' for allowed arguments\n\n";
-		parsingCode = -1;
+		parsingCode = ReturnCode::STOP_PARSING_ERROR;
 	}
 
 	// if parsing was successful, check for help request
-	if (parsingCode == 0) {
+	if (parsingCode == ReturnCode::KEEP_GOING) {
 		if (vm.count("help")) {
 			logStream
 				<<"\nIntaRNA predicts RNA-RNA interactions.\n"
 				<<"\nThe following program arguments are supported:\n"
 				<< opts_cmdline_all
 				<< "\n";
-			parsingCode = 0;
+			parsingCode = ReturnCode::STOP_ALL_FINE;
+			return parsingCode;
 		}
 		if (vm.count("version")) {
 			logStream <<PACKAGE_STRING << "\n";
-			parsingCode = 0;
+			parsingCode = ReturnCode::STOP_ALL_FINE;
+			return parsingCode;
 		}
 	}
 
 	// if parsing was successful, continue with additional checks
-	if (parsingCode == 0) {
+	if (parsingCode == ReturnCode::KEEP_GOING) {
 		try {
 			// run all notifier checks
 			notify(vm);
 		} catch (required_option& e) {
 			logStream <<"\n mandatory option '"<<e.get_option_name() << "' not provided\n";
-			parsingCode = std::min(-1,parsingCode);
+			parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
 		} catch (error& e) {
 			logStream <<e.what() << "\n";
-			parsingCode = std::min(-1,parsingCode);
+			parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
 		}
 	}
 
 	// if parsing was successful, continue with final parsing
-	if (parsingCode == 0) {
+	if (parsingCode == ReturnCode::KEEP_GOING) {
 		try {
 
 			// parse the sequences
@@ -271,10 +275,10 @@ CommandLineParsing::parse(int argc, char** argv)
 
 		} catch (error& e) {
 			logStream <<e.what() << "\n";
-			parsingCode = std::min(-1,parsingCode);
+			parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
 		} catch (std::exception& e) {
 			logStream <<e.what() << "\n";
-			parsingCode = std::min(-1,parsingCode);
+			parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
 		}
 	}
 
@@ -385,7 +389,7 @@ void CommandLineParsing::validate_charArgument(const std::string & name, const C
 	// alphabet check
 	if ( ! param.isInAlphabet(value) ) {
 		logStream <<"\n "<<name<<" = " <<value <<" : has to be one of '" <<param.alphabet <<"'\n";
-		parsingCode = std::min(-1,parsingCode);
+		parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
 	}
 }
 
@@ -406,14 +410,14 @@ void CommandLineParsing::validate_sequenceArgument(const std::string & name, con
 			if ( !boost::filesystem::exists( value ) )
 			{
 				logStream <<"\n "<<name<<" '"<<value <<"' : Can't find the file!\n";
-				parsingCode = std::min(-1,parsingCode);
+				parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
 			}
 			else
 			// check if it is a file
 			if ( !boost::filesystem::is_regular_file( value ) )
 			{
 				logStream <<"\n "<<name<<" '"<<value <<"' : Is no file!\n";
-				parsingCode = std::min(-1,parsingCode);
+				parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
 			}
 			// TODO no file support yet
 			NOTIMPLEMENTED("\n "+name+" '"+value +"' : Currently only direct single sequence input supported.\n");
@@ -435,7 +439,7 @@ void CommandLineParsing::validate_structureConstraintArgument(const std::string 
 	// check if valid alphabet
 	if (value.find_first_not_of(Accessibility::AccessibilityConstraintAlphabet) != std::string::npos) {
 		logStream <<"\n "<<name<<" '"<<value <<"' : contains invalid characters!\n";
-		parsingCode = std::min(-1,parsingCode);
+		parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
 	} else {
 		// check for base pair balance / nestedness
 		int bpStackLvl = 0;
@@ -447,7 +451,7 @@ void CommandLineParsing::validate_structureConstraintArgument(const std::string 
 			}
 			if (bpStackLvl<0) {
 				logStream <<"\n "<<name<<" '"<<value <<"' : unbalanced base pairs!\n";
-				parsingCode = std::min(-1,parsingCode);
+				parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
 			}
 		}
 
@@ -582,12 +586,12 @@ validateSequenceNumber( const std::string& paramName,
 	// check sequence number boundaries
 	if (sequences.size() < min) {
 		logStream <<"\n "<<paramName<<" requires at least "<<min <<" sequences!\n";
-		parsingCode = std::min(-1,parsingCode);
+		parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
 		return false;
 	} else
 	if (sequences.size() > max) {
 		logStream <<"\n "<<paramName<<" allows at most "<<max <<" sequences!\n";
-		parsingCode = std::min(-1,parsingCode);
+		parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
 		return false;
 	}
 	// boundaries are met
@@ -607,7 +611,7 @@ validateSequenceAlphabet( const std::string& paramName,
 		// check if valid
 		if (! RnaSequence::isValidSequence(sequences.at(i).asString())) {
 			logStream <<"\n sequence " <<(i+1)<<" for parameter "<<paramName<<" is not valid!\n";
-			parsingCode = std::min(-1,parsingCode);
+			parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
 			allValid = false;
 		}
 		// warn about ambiguous positions
