@@ -95,7 +95,7 @@ CommandLineParsing::CommandLineParsing( std::ostream& logStream )
 			, value<int>(&(qIntLoopMax.val))
 				->default_value(qIntLoopMax.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_qIntLoopMax,this,_1))
-			, std::string("maximal distance between neighbored interacting bases to be considered in interactions within the query (arg in range ["+toString(qIntLoopMax.min)+","+toString(qIntLoopMax.max)+"]; 0 enforces stackings only)").c_str())
+			, std::string("maximal number of unpaired bases between neighbored interacting bases to be considered in interactions within the query (arg in range ["+toString(qIntLoopMax.min)+","+toString(qIntLoopMax.max)+"]; 0 enforces stackings only)").c_str())
 		;
 
 	opts_target.add_options()
@@ -122,7 +122,7 @@ CommandLineParsing::CommandLineParsing( std::ostream& logStream )
 			, value<int>(&(tIntLoopMax.val))
 				->default_value(tIntLoopMax.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_tIntLoopMax,this,_1))
-			, std::string("maximal distance between neighbored interacting bases to be considered in interactions within the target (arg in range ["+toString(tIntLoopMax.min)+","+toString(tIntLoopMax.max)+"]; 0 enforces stackings only)").c_str())
+			, std::string("maximal number of unpaired bases between neighbored interacting bases to be considered in interactions within the target (arg in range ["+toString(tIntLoopMax.min)+","+toString(tIntLoopMax.max)+"]; 0 enforces stackings only)").c_str())
 		;
 
 	////  SEED OPTIONS  ////////////////////////////////////
@@ -494,7 +494,7 @@ getQueryAccessibility( const size_t sequenceNumber ) const
 	// construct selected accessibility object
 	switch(qAcc.val) {
 	case 'N' : return new AccessibilityDisabled( seq, qIntLenMax.val );
-	case 'F' : return new AccessibilityVrna( seq, vrnaHandler, qIntLenMax.val, qAccConstr, &logStream );
+	case 'F' : return new AccessibilityVrna( seq, vrnaHandler, qIntLenMax.val, &qAccConstr, &logStream );
 	default :
 		NOTIMPLEMENTED("CommandLineParsing::getQueryAccessibility : qAcc = '"+toString(qAcc.val)+"' is not supported");
 	}
@@ -515,7 +515,7 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 	const RnaSequence& seq = getTargetSequences().at(sequenceNumber);
 	switch(tAcc.val) {
 	case 'N' : return new AccessibilityDisabled( seq, tIntLenMax.val );
-	case 'F' : return new AccessibilityVrna( seq, vrnaHandler, tIntLenMax.val, tAccConstr, &logStream );
+	case 'F' : return new AccessibilityVrna( seq, vrnaHandler, tIntLenMax.val, &tAccConstr, &logStream );
 	default :
 		NOTIMPLEMENTED("CommandLineParsing::getTargetAccessibility : tAcc = '"+toString(tAcc.val)+"' is not supported");
 	}
