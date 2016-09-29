@@ -57,7 +57,7 @@ public:
 	 */
 	virtual
 	E_type
-	getInterLoopE( const size_t i1, const size_t j1, const size_t i2, const size_t j2 );
+	getInterLoopE( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const;
 
 	/**
 	 * Computes the dangling end energy penalty estimate for the left side of
@@ -73,7 +73,7 @@ public:
 	 */
 	virtual
 	E_type
-	getDanglingLeft( const size_t i1, const size_t i2 );
+	getDanglingLeft( const size_t i1, const size_t i2 ) const;
 
 
 	/**
@@ -88,7 +88,7 @@ public:
 	 */
 	virtual
 	E_type
-	getDanglingRight( const size_t j1, const size_t j2 );
+	getDanglingRight( const size_t j1, const size_t j2 ) const;
 
 
 };

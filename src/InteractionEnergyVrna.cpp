@@ -44,12 +44,10 @@ InteractionEnergyVrna::~InteractionEnergyVrna()
 
 E_type
 InteractionEnergyVrna::
-getInterLoopE( const size_t i1, const size_t j1, const size_t i2, const size_t j2 )
+getInterLoopE( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const
 {
-	// if region indices and loop sizes are ok
-	if (InteractionEnergy::isAllowedLoopRegion(accS1.getSequence(), i1, j1, maxInternalLoopSize1)
-		&& InteractionEnergy::isAllowedLoopRegion(accS2.getSequence(), i2, j2, maxInternalLoopSize2)
-	) {
+	// if valid internal loop
+	if ( isValidInternalLoop(i1,j1,i2,j2) ) {
 		if (i1 == j1 ) {
 			assert( i2==j2 );
 			// no internal loop --> no energy
@@ -59,8 +57,8 @@ getInterLoopE( const size_t i1, const size_t j1, const size_t i2, const size_t j
 			// Vienna RNA : compute internal loop / stacking energy for base pair [i1,i2]
 			return (E_type)E_IntLoop(	(int)j1-i1-1	// unpaired region 1
 								, (int)j2-i2-1	// unpaired region 2
-								, BP_pair[accS1.getSequence().asCodes().at(i1)][accS1.getSequence().asCodes().at(i2)]	// type BP (i1,i2)
-								, BP_pair[accS1.getSequence().asCodes().at(j2)][accS1.getSequence().asCodes().at(j1)]	// type BP (j2,j1)
+								, BP_pair[accS1.getSequence().asCodes().at(i1)][accS2.getSequence().asCodes().at(i2)]	// type BP (i1,i2)
+								, BP_pair[accS2.getSequence().asCodes().at(j2)][accS1.getSequence().asCodes().at(j1)]	// type BP (j2,j1)
 								, accS1.getSequence().asCodes().at(i1+1)
 								, accS2.getSequence().asCodes().at(i2+1)
 								, accS1.getSequence().asCodes().at(j1-1)
@@ -79,10 +77,10 @@ getInterLoopE( const size_t i1, const size_t j1, const size_t i2, const size_t j
 
 E_type
 InteractionEnergyVrna::
-getDanglingLeft( const size_t i1, const size_t i2 )
+getDanglingLeft( const size_t i1, const size_t i2 ) const
 {
 	// Vienna RNA : dangling end contribution
-	return (E_type) E_Stem( BP_pair[accS1.getSequence().asCodes().at(i1)][accS1.getSequence().asCodes().at(i2)]
+	return (E_type) E_Stem( BP_pair[accS1.getSequence().asCodes().at(i1)][accS2.getSequence().asCodes().at(i2)]
 							  , -1+(int)i1
 							  , -1+(int)i2
 							  , 1 // is an external loop  : TODO check if return value higher than ML-dangles (should be)
@@ -94,10 +92,10 @@ getDanglingLeft( const size_t i1, const size_t i2 )
 
 E_type
 InteractionEnergyVrna::
-getDanglingRight( const size_t j1, const size_t j2 )
+getDanglingRight( const size_t j1, const size_t j2 ) const
 {
 	// Vienna RNA : dangling end contribution (reverse base pair to be sequence end conform)
-	return (E_type) E_Stem( BP_pair[accS1.getSequence().asCodes().at(j2)][accS1.getSequence().asCodes().at(j1)]
+	return (E_type) E_Stem( BP_pair[accS2.getSequence().asCodes().at(j2)][accS1.getSequence().asCodes().at(j1)]
 							  , ( accS2.getSequence().size()-j2-1 == 0 ? -1 : (int)j2+1)  // check if last position in S2
 							  , ( accS1.getSequence().size()-j1-1 == 0 ? -1 : (int)j1+1)  // check if last position in S1
 							  , 1 // is an external loop  : TODO check if return value higher than ML-dangles (should be)

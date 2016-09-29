@@ -2,7 +2,6 @@
 #include "InteractionEnergyBasePair.h"
 
 
-
 ////////////////////////////////////////////////////////////////////////////
 
 InteractionEnergyBasePair::InteractionEnergyBasePair(
@@ -27,13 +26,10 @@ InteractionEnergyBasePair::~InteractionEnergyBasePair()
 
 E_type
 InteractionEnergyBasePair::
-getInterLoopE( const size_t i1, const size_t j1, const size_t i2, const size_t j2 )
+getInterLoopE( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const
 {
-	// if region indices and loop sizes are ok
-	if (InteractionEnergy::isAllowedLoopRegion(accS1.getSequence(), i1, j1, maxInternalLoopSize1)
-		&& InteractionEnergy::isAllowedLoopRegion(accS2.getSequence(), i2, j2, maxInternalLoopSize2)
-		// TODO check if interaction base pair is possible
-	) {
+	// if valid internal loop
+	if ( isValidInternalLoop(i1,j1,i2,j2) ) {
 		// return negated number of gained base pairs by closing this loop = -1
 		return (E_type)-1.0;
 	} else {
@@ -45,7 +41,7 @@ getInterLoopE( const size_t i1, const size_t j1, const size_t i2, const size_t j
 
 E_type
 InteractionEnergyBasePair::
-getDanglingLeft( const size_t i1, const size_t i2 )
+getDanglingLeft( const size_t i1, const size_t i2 ) const
 {
 	// no dangling end contribution
 	return (E_type)0;
@@ -55,7 +51,7 @@ getDanglingLeft( const size_t i1, const size_t i2 )
 
 E_type
 InteractionEnergyBasePair::
-getDanglingRight( const size_t j1, const size_t j2 )
+getDanglingRight( const size_t j1, const size_t j2 ) const
 {
 	// no dangling end contribution
 	return (E_type)0;
