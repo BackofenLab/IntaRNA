@@ -45,7 +45,7 @@ AccessibilityVrna::AccessibilityVrna(
 			const RnaSequence& seq
 			, VrnaHandler & vrnaHandler
 			, const size_t maxLength
-			, const std::string & accConstraint
+			, const std::string * const accConstraint
 			, std::ostream * log
 		)
  :

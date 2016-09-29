@@ -37,14 +37,14 @@ public:
 	 * @param maxLength the maximal length of accessible regions (>0) to be
 	 *          considered. 0 defaults to the full sequence's length, otherwise
 	 *          is is internally set to min(maxLength,seq.length).
-	 * @param accConstr accessibility constraint: all positions marked not as
+	 * @param accConstr optional accessibility constraint: all positions marked not as
 	 * 			unconstrained (.) are omitted from interaction prediction, thus
-	 * 			resulting in ED_UPPER_BOUND. Empty string input is equivalent
+	 * 			resulting in ED_UPPER_BOUND. Empty string and NULL input is equivalent
 	 * 			to fully unconstrained accessibility computation.
 	 */
 	Accessibility( const RnaSequence& sequence
 					, const size_t maxLength
-					, const std::string& accConstr
+					, const std::string * const accConstr
 				);
 
 	/**
@@ -139,12 +139,12 @@ protected:
 inline
 Accessibility::Accessibility( const RnaSequence& seq
 							, const size_t maxLength
-							, const std::string& accConstraint_ )
+							, const std::string * const accConstraint_ )
  :
 	seq(seq)
 	// set maxLength to appropriate value
 	, maxLength( maxLength==0 ? seq.size() : std::min(maxLength,seq.size()) )
-	, accConstraint(accConstraint_)
+	, accConstraint(accConstraint_==NULL?"":*accConstraint_)
 {
 
 #ifdef NDEBUG           /* required by ANSI standard */

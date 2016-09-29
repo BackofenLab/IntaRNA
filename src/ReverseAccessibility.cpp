@@ -12,7 +12,7 @@
 
 ReverseAccessibility::ReverseAccessibility( Accessibility & origAcc )
  :
-	Accessibility( origAcc.getSequence(), origAcc.getMaxLength(), origAcc.getAccConstraint() )
+	Accessibility( origAcc.getSequence(), origAcc.getMaxLength(), &origAcc.getAccConstraint() )
 	, origAcc(origAcc)
 	, seqReversed( seq.getId(), getReversedString(seq) )
 	, accConstrReversed( getReversedString(origAcc.getAccConstraint()) )

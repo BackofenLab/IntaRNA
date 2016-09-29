@@ -32,7 +32,7 @@ public:
 	 */
 	AccessibilityDisabled( const RnaSequence& sequence
 							, const size_t maxLength = 0
-							, const std::string & accConstr = ""
+							, const std::string  * const accConstr = NULL
 						);
 
 	/**
@@ -64,7 +64,7 @@ public:
 inline
 AccessibilityDisabled::AccessibilityDisabled(const RnaSequence& seq
 				, const size_t maxLength
-				, const std::string & accConstr)
+				, const std::string * const accConstr)
  :
 	Accessibility(seq, maxLength, accConstr)
 {
@@ -87,10 +87,10 @@ getED( const size_t from, const size_t to ) const
 	// input check
 	checkIndices(from,to);
 
-	if ((to-from+1) <= maxLength) {
+	if ((to-from+1) <= getMaxLength()) {
 		// check for constrained positions within region
 		for (size_t i=from; i<=to; ++i) {
-			if (accConstraint[i] != '.') {
+			if (getAccConstraint().size() > 0 && accConstraint[i] != '.') {
 				// regions covers a constrained position --> omit accessibility
 				return ED_UPPER_BOUND;
 			}

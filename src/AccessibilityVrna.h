@@ -41,14 +41,14 @@ public:
 	 * @param vrnaHandler the VRNA parameter handler to be used
 	 * @param maxLength the maximal length of accessible regions to be
 	 *           considered. 0 defaults to the sequence's length.
-	 * @param accConstraint accessibility constraint that enforces some regions
+	 * @param accConstraint if not NULL, accessibility constraint that enforces some regions
 	 *        to be unstructured both in sequence and interaction
 	 * @param log if not NULL, the stream to write log messages to
 	 */
 	AccessibilityVrna( const RnaSequence& sequence
 			, VrnaHandler & vrnaHandler
 			, const size_t maxLength = 0
-			, const std::string & accConstraint = ""
+			, const std::string * const accConstraint = NULL
 			, std::ostream * log = NULL
 			);
 
