@@ -138,11 +138,16 @@ CommandLineParsing::CommandLineParsing( std::ostream& logStream )
 	////  INTERACTION/ENERGY OPTIONS  ////////////////////////
 
 	opts_inter.add_options()
+		("energy,e"
+			, value<char>(&(energy.val))
+				->default_value(energy.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_energy,this,_1))
+			, std::string("energy computation : 'B'ase pair == -1, or 'F'ull VRNA-based computation").c_str())
 		("temperature"
 			, value<T_type>(&(temperature.val))
 				->default_value(temperature.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_temperature,this,_1))
-			, std::string("temperature in Celsius to setup the energy parameters (arg in range ["+toString(temperature.min)+","+toString(temperature.max)+"])").c_str())
+			, std::string("temperature in Celsius to setup the VRNA energy parameters (arg in range ["+toString(temperature.min)+","+toString(temperature.max)+"])").c_str())
 		;
 
 	// TODO parse energy function selection
@@ -380,6 +385,14 @@ void CommandLineParsing::validate_seedMinBP(const int & value) {
 void CommandLineParsing::validate_temperature(const T_type & value) {
 	// forward check to general method
 	validate_numberArgument("temperature", temperature, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void CommandLineParsing::validate_energy(const char & value)
+{
+	// forward check to general method
+	validate_charArgument("energy", energy, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////

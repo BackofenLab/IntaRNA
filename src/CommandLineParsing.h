@@ -331,6 +331,12 @@ protected:
 	void validate_temperature(const T_type & value);
 
 	/**
+	 * Validates the temperature arguments.
+	 * @param value the argument value to validate
+	 */
+	void validate_energy(const char & value);
+
+	/**
 	 * Validates a CharParameter.
 	 * @param argName the name of the parameter (for exception handling)
 	 * @param param the parameter object
