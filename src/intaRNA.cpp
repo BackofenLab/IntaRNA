@@ -13,6 +13,7 @@
 #include "InteractionEnergy.h"
 
 #include "Predictor.h"
+#include "PredictorRNAup.h"
 
 #include "OutputHandler.h"
 #include "OutputHandlerText.h"
@@ -79,19 +80,19 @@ int main(int argc, char **argv) {
 				// TODO get output/storage handler
 				OutputHandler * output = NULL;
 //				CHECKNOTNULL(output,"output handler initialization failed");
+				output = new OutputHandlerText(std::cout);
 
 				// TEST ####################
 
-					output = new OutputHandlerText(std::cout);
-					Interaction i(queryAcc->getSequence(), targetAcc->getAccessibilityOrigin().getSequence());
-					if (queryAcc->getSequence().size() > 4 && targetAcc->getSequence().size() > 5) {
-						i.addInteraction(4,1);
-						i.addInteraction(0,5);
-						i.addInteraction(3,4);
-					}
-					i.sort();
-					output->add(i);
-
+//					Interaction i(queryAcc->getSequence(), targetAcc->getAccessibilityOrigin().getSequence());
+//					if (queryAcc->getSequence().size() > 4 && targetAcc->getSequence().size() > 5) {
+//						i.addInteraction(4,1);
+//						i.addInteraction(0,5);
+//						i.addInteraction(3,4);
+//					}
+//					i.sort();
+//					output->add(i);
+//
 
 				// TEST END ####################
 
@@ -99,6 +100,7 @@ int main(int argc, char **argv) {
 				// TODO get interaction prediction handler
 				Predictor * predictor = NULL;
 //				CHECKNOTNULL(predictor,"predictor initialization failed");
+				predictor = new PredictorRNAup( *energy, *output );
 
 				// TODO run prediction
 
