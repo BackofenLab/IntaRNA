@@ -1,10 +1,28 @@
 
+160929 Martin Mann :
+ * CommandLineParsing :
+   + ReturnCode : enum for different return codes for parsing
+   - parsingResultNotSet : obsolete (covered by ReturnCode)
+   * adaption to ReturnCode usage
+ * intaRNA :
+   * adaption to ReturnCode
+
 160928 Martin Mann :
  * AccessibilityVrna :
    + fillByConstraints() : intarna-1 way of computing ED values
    + fillByRNAup() : RNAup-like ED value computation
    + fillByRNAplfold() : RNAplfold-like ED value computation
    * remaining interface adapted to local computation and data structures
+   * using boost::banded_matrix for ED storage
+   * constructor() :
+     + ED setup depends on whether or not structure constraint present
+   * getPfScale() : bugfix : now use global accessibility constraint for 
+     mfe/ensemble energy computation
+   * Accessibility member access now via getter
+   * adaption to possibly empty accConstraint
+ * Accessibility :
+   * constructor() : accConstraint now empty if not provided to reduce memory
+   * checkIndices() : checks only in DEBUG mode enabled
  * CommandLineParsing :
    * cleanup 
  * intaRNA :
@@ -13,6 +31,15 @@
    * destructor : bugfix : has to use 'free' for VRNA cleanup
  * VrnaHandler :
    + getRT() : computes the RT constant for the current temperature
+ * configure.ac :
+   * VRNA check extended
+ + PredictorRNAup : RNAup-like interaction prediction
+ * Makefile.am : adaption to source file changes
+ * configure.ac :
+   + additional check for "-std=c++11" support of the compiler
+ * InteractioNEnergy :
+   + getAccessibility* : access to full accessibility objects
+   - getLength* : obsolete
 
 160927 Martin Mann :
  + AccessibilityVrna : vrna-based accessibility computation 
