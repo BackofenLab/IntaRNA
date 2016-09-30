@@ -100,7 +100,9 @@ E_type
 AccessibilityVrna::
 calc_ensemble_free_energy( const int start_unfold, const int end_unfold, vrna_exp_param_s * partFoldParams )
 {
-#ifdef DEBUG
+#ifdef NDEBUG           /* required by ANSI standard */
+	// no check
+#else
 	if (start_unfold >= 0 && end_unfold >= 0) {
 		checkIndices((size_t)start_unfold, (size_t)end_unfold);
 	} else {
@@ -363,6 +365,9 @@ fillByRNAup( VrnaHandler &vrnaHandler, std::ostream * log )
 	    noGU = 0;
 	    no_closingGU = 0;
 	    energy_set = 0;
+
+	    // TODO CHECK IF TO BE CALLED OR NOT
+//	    update_fold_params();
 
 		////////  RNAup-like (VRNA2-API) unpaired probability calculation  ///////
 

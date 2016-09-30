@@ -251,6 +251,8 @@ add( const Interaction & i )
 		<<pos2.str() <<'\n'
 		// get ID of s2
 		<<i.s2.getId() <<'\n'
+		// print energy
+		<<"\n interaction energy = "<<i.getEnergy() <<'\n'
 		;
 
 }

@@ -22,6 +22,10 @@ std::locale RnaSequence::codeLocale = std::locale();
 const std::string RnaSequence::SequenceAlphabet	= "aAuUcCgGnN";
 
 
+////////////////////////////////////////////////////////////////////////////
+
+const size_t RnaSequence::lastPos = std::string::npos;
+
 /////////////////////////////////////////////////////////////////////////////
 
 RnaSequence::RnaSequence(

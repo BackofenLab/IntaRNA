@@ -71,6 +71,15 @@ public:
 	getAccessibilityOrigin() const;
 
 
+	/**
+	 * Provides the reverse index of a given sequence position.
+	 * @param i the index of interest
+	 * @return the reverse index, i.e. (seq.size()-i-1)
+	 */
+	size_t
+	getReversedIndex( const size_t i ) const;
+
+
 protected:
 
 

@@ -70,18 +70,43 @@ public:
 	void
 	clear();
 
-
 	/**
-	 * Access to the interacting base pairs between s1 and s2.
+	 * Const access to the interacting base pairs between s1 and s2.
 	 * @return the list of interacting base pairs (idx s1, idx s2)
 	 */
 	const PairingVec &
 	getBasePairs() const;
 
+	/**
+	 * Access to the interacting base pairs between s1 and s2.
+	 * @return the list of interacting base pairs (idx s1, idx s2)
+	 */
+	PairingVec &
+	getBasePairs();
+
+	/**
+	 * Access to the stored energy value for this interaction
+	 * @return the energy value or NaN if not stored
+	 */
+	E_type getEnergy() const {
+		return energy;
+	}
+
+	/**
+	 * Sets the energy value for this interaction
+	 * @param energy the new energy value to set
+	 */
+	void setEnergy(E_type energy) {
+		this->energy = energy;
+	}
+
 protected:
 
 	//! interacting indices
 	PairingVec interaction;
+
+	//! energy of the interaction (can be NaN)
+	E_type energy;
 
 };
 

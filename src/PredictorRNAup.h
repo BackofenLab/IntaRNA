@@ -3,6 +3,7 @@
 #define PREDICTORRNAUP_H_
 
 #include "Predictor.h"
+#include "Interaction.h"
 
 #include <boost/numeric/ublas/banded.hpp>
 
@@ -13,7 +14,7 @@
  * @author Martin Mann
  *
  */
-class PredictorRNAup: public Predictor {
+class PredictorMfeRNAup: public Predictor {
 
 protected:
 
@@ -28,16 +29,37 @@ protected:
 
 public:
 
-
 	/**
-	 * construction
+	 * Constructs a predictor and stores the energy and output handler
 	 *
 	 * @param energy the interaction energy handler
-	 * @param output the output handler
+	 * @param output the output handler to fill with mfe interactions
 	 */
-	PredictorRNAup( const InteractionEnergy & energy, const OutputHandler & output );
+	PredictorMfeRNAup( const InteractionEnergy & energy, OutputHandler & output );
 
-	virtual ~PredictorRNAup();
+	virtual ~PredictorMfeRNAup();
+
+	/**
+	 * Computes the mfe for the given sequence ranges (i1-j1) in the first
+	 * sequence and (i2-j2) in the second sequence.
+	 *
+	 * Furthermore, the mfe interaction is identified and reported to the
+	 * output handler
+	 *
+	 * @param i1 the index of the first sequence interacting with i2
+	 * @param j1 the index of the first sequence interacting with j2
+	 * @param i2 the index of the second sequence interacting with i1
+	 * @param j2 the index of the second sequence interacting with j1
+	 */
+	void
+	predict( const size_t i1 = 0, const size_t j1 = RnaSequence::lastPos
+			, const size_t i2 = 0, const size_t j2 = RnaSequence::lastPos);
+
+	/**
+	 * Removes all temporary data structures and resets the predictor
+	 */
+	void
+	clear();
 
 
 protected:
@@ -54,8 +76,11 @@ protected:
 	//! NOTE: hybridE(i1,i2)==NULL if not complementary(seq1[i1],seq2[i2])
 	E4dMatrix hybridE;
 
-	//! minimal value within hybridE
-	E_type hybridEmin;
+	size_t i1offset;
+	size_t i2offset;
+
+	//! the mfe interaction
+	Interaction mfeInteraction;
 
 protected:
 
@@ -66,6 +91,34 @@ protected:
 	void
 	fillHybridE( const InteractionEnergy & energy );
 
+	/**
+	 * Initializes the global energy minimum
+	 */
+	void
+	initMfe();
+
+	/**
+	 * updates the global energy minimum if needed
+	 * @param i1 the index of the first sequence interacting with i2
+	 * @param j1 the index of the first sequence interacting with j2
+	 * @param i2 the index of the second sequence interacting with i1
+	 * @param j2 the index of the second sequence interacting with j1
+	 * @param eH the energy of the hybridization only (just base pairs etc)
+	 * @param eE the energy of the hybridization's dangling ends (left+right)
+	 * @param eD the energy needed to make it accessible (seq1[i-j]+seq2[i-j])
+	 */
+	void
+	updateMfe( const size_t i1, const size_t j1
+			, const size_t i2, const size_t j2
+			, const E_type eH, const E_type eE, const E_type eD );
+
+	/**
+	 * Fills a given interaction (boundaries given) with the according
+	 * hybridizing base pairs.
+	 * @param interaction IN/OUT the interaction to fill
+	 */
+	void
+	traceBack( Interaction & interaction ) const;
 
 };
 

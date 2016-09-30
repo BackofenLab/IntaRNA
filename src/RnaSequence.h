@@ -46,6 +46,9 @@ public:
 	 */
 	const static std::string SequenceAlphabet;
 
+	//! constant that serves as a placeholder for the last position within a
+	//! sequence independent of its real size
+	static const size_t lastPos;
 
 public:
 

@@ -109,3 +109,15 @@ getAccessibilityOrigin() const
 }
 
 ////////////////////////////////////////////////////////////////////////////
+
+size_t
+ReverseAccessibility::
+getReversedIndex( const size_t i ) const
+{
+	// check indices
+	checkIndices(i,i);
+	// compute reverse index
+	return this->seq.size() -i -1;
+}
+
+////////////////////////////////////////////////////////////////////////////

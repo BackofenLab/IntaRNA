@@ -79,8 +79,8 @@ int main(int argc, char **argv) {
 
 				// TODO get output/storage handler
 				OutputHandler * output = NULL;
-//				CHECKNOTNULL(output,"output handler initialization failed");
 				output = new OutputHandlerText(std::cout);
+				CHECKNOTNULL(output,"output handler initialization failed");
 
 				// TEST ####################
 
@@ -99,10 +99,13 @@ int main(int argc, char **argv) {
 
 				// TODO get interaction prediction handler
 				Predictor * predictor = NULL;
-//				CHECKNOTNULL(predictor,"predictor initialization failed");
-				predictor = new PredictorRNAup( *energy, *output );
+				predictor = new PredictorMfeRNAup( *energy, *output );
+				CHECKNOTNULL(predictor,"predictor initialization failed");
 
-				// TODO run prediction
+				// run prediction
+				// TODO we can also limit the prediction range eg. for streamed predictions
+				predictor->predict();
+
 
 				// garbage collection
 				CLEANUP(predictor)

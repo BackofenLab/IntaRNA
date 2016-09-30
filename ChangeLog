@@ -1,4 +1,42 @@
 
+160930 Martin Mann :
+ * InteractionEnergyVrna :
+   * getDangling*() : bugfix : dangling sequence code was not given
+ * ReverseAccessibility :
+   + getReversedIndex() : get index in reversed sequence
+ * Interaction :
+   + energy + get/set() : optional energy value for the interaction (init NaN)
+ * Predictor :
+   * output non-const
+   * constructor :
+     * output non-const (otherwise no filling possible)
+   + predict() : triggers prediction
+ - PredictorRNAup : renamed PredictorMfeRNAup
+ + PredictorMfeRNAup :
+   + mfeInteraction : holds the mfe interaction
+   - hybridEmin : now part of mfeInteraction
+   + initMfe() : initializes mfe and mfe interaction
+   + updateMfe() : updated mfe and mfe interaction
+   * fillHybridE() :
+     * global temp variables to reduce allocation effort
+     + dangling end contribution added
+   * constructor() : only initializes data structures, no computation triggered
+   + predict() : does the computation and output reporting
+   + clear() : clears temporary data structures
+   * destructor() : calls now only clear()
+   + i1offset : the offset for the first sequence for index handling
+   + i2offset : the offset for the second sequence for index handling
+ * OutputHandlerText :
+   + add() : 
+     + prints interaction energy
+ * RnaSequence
+   + last : placeholder to represent the last position within a sequence
+ * intaRNA :
+   * calls predictor->predict()
+ * AccessibilityVrna :
+   * calc_ensemble_free_energy() 
+     * input check preprocessor defines corrected
+
 160929 Martin Mann :
  * CommandLineParsing :
    + ReturnCode : enum for different return codes for parsing
@@ -28,6 +66,8 @@
  * CommandLineParsing :
    * argument docu extended
    * adaption to Accessibility interface change
+   + energy argument added
+   + validate_energy()
  * InteractionEnergy :
    * energy getters now const
    * isAllowedLoopRegion() 
@@ -36,6 +76,7 @@
    + getMaxInternalLoopSize*() to access individual max internal loop size
    + isValidInternalLoop() : checks an internal loop request
  * InteractionEnergyVrna :
+   * energy getters : bugfix normalization dcal to kcal
    * interface adaption
    * getInterLoopE() : 
    * getDanglingLeft() : 

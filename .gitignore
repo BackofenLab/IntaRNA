@@ -47,8 +47,10 @@ compile
 */.deps
 */.deps/*
 
+
 # temp dir
 tmp
 tmp/*
 
 /1
+/RNAup
