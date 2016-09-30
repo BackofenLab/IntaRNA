@@ -33,7 +33,7 @@ public:
 	 * Constructs a predictor and stores the energy and output handler
 	 *
 	 * @param energy the interaction energy handler
-	 * @param output the output handler to fill with mfe interactions
+	 * @param output the output handler to report mfe interactions to
 	 */
 	PredictorMfeRNAup( const InteractionEnergy & energy, OutputHandler & output );
 

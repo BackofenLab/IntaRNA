@@ -90,6 +90,16 @@ public:
 	E_type
 	getDanglingRight( const size_t j1, const size_t j2 ) const;
 
+	/**
+	 * Returns always RT=1 due to the lack of reasonable values for this energy
+	 * function.
+	 * @return 1.0
+	 */
+	virtual
+	E_type
+	getRT() const {
+		return 1.0;
+	}
 
 };
 

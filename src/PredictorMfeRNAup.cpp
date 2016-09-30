@@ -74,7 +74,7 @@ predict( const size_t i1, const size_t j1
 	}
 	}
 
-	// fill matrix and report mfe interaction
+	// fill matrix
 	fillHybridE( energy );
 
 	// fill mfe interaction with according base pairs

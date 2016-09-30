@@ -107,12 +107,23 @@ public:
 	getDanglingRight( const size_t j1, const size_t j2 ) const;
 
 
+	/**
+	 * Returns the normalized energy in mol/kcal unit
+	 * @return R*temperature
+	 */
+	virtual
+	E_type
+	getRT() const;
+
 
 protected:
 
 	//! Vienna RNA package : folding parameters to be used for the energy
 	//! computation
 	vrna_param_t * foldParams;
+
+	//! the RT constant to be used for Boltzmann weight computations
+	E_type RT;
 
 };
 

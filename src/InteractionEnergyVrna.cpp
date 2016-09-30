@@ -25,6 +25,7 @@ InteractionEnergyVrna::InteractionEnergyVrna(
 	InteractionEnergy(accS1, accS2, maxInternalLoopSize1, maxInternalLoopSize2)
 // get final VRNA folding parameters
 	, foldParams( vrna_params( &vrnaHandler.getModel() ) )
+	, RT(vrnaHandler.getRT())
 {
 }
 
@@ -83,7 +84,7 @@ getDanglingLeft( const size_t i1, const size_t i2 ) const
 	return (E_type) E_Stem( BP_pair[accS1.getSequence().asCodes().at(i1)][accS2.getSequence().asCodes().at(i2)]
 							  , ( i1==0 ? -1 : accS1.getSequence().asCodes().at(i1-1) )
 							  , ( i2==0 ? -1 : accS2.getSequence().asCodes().at(i2-1) )
-							  , 1 // is an external loop  : TODO check if return value higher than ML-dangles (should be)
+							  , 1 // is an external loop
 							  , foldParams
 							  )
 					// correct from dcal/mol to kcal/mol
@@ -100,7 +101,7 @@ getDanglingRight( const size_t j1, const size_t j2 ) const
 	return (E_type) E_Stem( BP_pair[accS2.getSequence().asCodes().at(j2)][accS1.getSequence().asCodes().at(j1)]
 							  , ( j2+1==accS2.getSequence().size() ? -1 : accS2.getSequence().asCodes().at(j2+1) )
 							  , ( j1+1==accS1.getSequence().size() ? -1 : accS1.getSequence().asCodes().at(j1+1) )
-							  , 1 // is an external loop  : TODO check if return value higher than ML-dangles (should be)
+							  , 1 // is an external loop
 							  , foldParams
 							  )
 					// correct from dcal/mol to kcal/mol
@@ -108,6 +109,14 @@ getDanglingRight( const size_t j1, const size_t j2 ) const
 }
 
 ////////////////////////////////////////////////////////////////////////////
+
+E_type
+InteractionEnergyVrna::
+getRT() const
+{
+	return RT;
+}
+
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 

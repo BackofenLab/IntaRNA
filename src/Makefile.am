@@ -24,6 +24,8 @@ intaRNA_SOURCES =	intaRNA.cpp \
 					InteractionEnergyVrna.cpp \
 					Predictor.h \
 					Predictor.cpp \
+					PredictorMaxProb.h \
+					PredictorMaxProb.cpp \
 					PredictorMfeRNAup.h \
 					PredictorMfeRNAup.cpp \
 					OutputHandler.h \

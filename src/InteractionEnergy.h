@@ -170,6 +170,12 @@ public:
 	bool
 	isValidInternalLoop( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const;
 
+	/**
+	 * Access to the normalized temperature for Boltzmann weight computation
+	 */
+	virtual
+	E_type
+	getRT() const = 0;
 
 protected:
 
@@ -186,8 +192,6 @@ protected:
 	//! maximally allowed unpaired range between two base pairs in sequence S2
 	//! forming an intermolecular internal loop
 	const size_t maxInternalLoopSize2;
-
-
 
 };
 
