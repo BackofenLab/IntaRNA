@@ -13,10 +13,8 @@
 #include "InteractionEnergy.h"
 
 #include "Predictor.h"
-#include "PredictorRNAup.h"
 
 #include "OutputHandler.h"
-#include "OutputHandlerText.h"
 
 /////////////////////////////////////////////////////////////////////
 /**
@@ -77,29 +75,12 @@ int main(int argc, char **argv) {
 				// TODO get seed computation handler
 //				Seed* seed = parameters.getSeedHandler( *energy );
 
-				// TODO get output/storage handler
-				OutputHandler * output = NULL;
-				output = new OutputHandlerText(std::cout);
+				// get output/storage handler
+				OutputHandler * output = parameters.getOutputHandler();
 				CHECKNOTNULL(output,"output handler initialization failed");
 
-				// TEST ####################
-
-//					Interaction i(queryAcc->getSequence(), targetAcc->getAccessibilityOrigin().getSequence());
-//					if (queryAcc->getSequence().size() > 4 && targetAcc->getSequence().size() > 5) {
-//						i.addInteraction(4,1);
-//						i.addInteraction(0,5);
-//						i.addInteraction(3,4);
-//					}
-//					i.sort();
-//					output->add(i);
-//
-
-				// TEST END ####################
-
-
-				// TODO get interaction prediction handler
-				Predictor * predictor = NULL;
-				predictor = new PredictorMfeRNAup( *energy, *output );
+				// get interaction prediction handler
+				Predictor * predictor = parameters.getPredictor( *energy, *output );
 				CHECKNOTNULL(predictor,"predictor initialization failed");
 
 				// run prediction

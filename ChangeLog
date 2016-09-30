@@ -1,4 +1,15 @@
 
+ * PredictorMfeRNAup :
+   * mfeInteraction base pairs now updated instead of recreation (reduced memory
+     allocation events) 
+ - PredictorRNAup.* : renamed to PredictorMfeRNAup.*
+ + PredictorMfeRNAup.* : rename to be class name conform
+ * Makefile.am : adaption to file rename
+ * intaRNA : 
+   + call CommandLineParsing.getPredictor() to get predictor
+ * CommandLineParsing :
+   + getPredictor() : generates the predictor according to the user request
+
 160930 Martin Mann :
  * InteractionEnergyVrna :
    * getDangling*() : bugfix : dangling sequence code was not given

@@ -19,6 +19,8 @@
 #include "InteractionEnergyBasePair.h"
 #include "InteractionEnergyVrna.h"
 
+#include "PredictorMfeRNAup.h"
+
 #include "OutputHandlerText.h"
 
 
@@ -652,6 +654,26 @@ T_type
 CommandLineParsing::
 getTemperature() const {
 	return temperature.val;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+Predictor*
+CommandLineParsing::
+getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
+{
+	// TODO add according arguments and parsing
+	return new PredictorMfeRNAup( energy, output );
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+OutputHandler*
+CommandLineParsing::
+getOutputHandler() const
+{
+	// TODO add according arguments and parsing
+	return new OutputHandlerText(std::cout);
 }
 
 ////////////////////////////////////////////////////////////////////////////

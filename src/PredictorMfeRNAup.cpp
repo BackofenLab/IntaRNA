@@ -1,5 +1,5 @@
 
-#include "PredictorRNAup.h"
+#include "PredictorMfeRNAup.h"
 
 #include <stdexcept>
 
@@ -10,12 +10,11 @@ PredictorMfeRNAup::
 PredictorMfeRNAup( const InteractionEnergy & energy, OutputHandler & output )
  : Predictor(energy,output)
 	, hybridE( 0,0 )
+	, mfeInteraction(energy.getAccessibility1().getSequence()
+			,energy.getAccessibility2().getAccessibilityOrigin().getSequence())
 	, i1offset(0)
 	, i2offset(0)
-	, mfeInteraction(energy.getAccessibility1().getSequence()
-							,energy.getAccessibility2().getAccessibilityOrigin().getSequence())
 {
-
 }
 
 
@@ -34,12 +33,12 @@ PredictorMfeRNAup::
 void
 PredictorMfeRNAup::
 predict( const size_t i1, const size_t j1
-		, const size_t i2, const size_t j2)
+				, const size_t i2, const size_t j2)
 {
 	// TODO check indices
 
 	// clear data
-	this->clear();
+	clear();
 
 	// resize matrix
 	hybridE.resize( std::min( energy.getAccessibility1().getSequence().size()
@@ -75,15 +74,14 @@ predict( const size_t i1, const size_t j1
 	}
 	}
 
-	// fill matrix and find mfe
+	// fill matrix and report mfe interaction
 	fillHybridE( energy );
 
-	// get mfe interaction details
+	// fill mfe interaction with according base pairs
 	traceBack( mfeInteraction );
 
 	// report mfe interaction
 	output.add( mfeInteraction );
-
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -168,7 +166,7 @@ fillHybridE( const InteractionEnergy & energy )
 
 	//////////  SECOND ROUND : COMPUTE FINAL ENERGIES AND MFE  ////////////
 
-	// set initial global minimal value
+	// initialize mfe interaction for updates
 	initMfe();
 
 	// iterate increasingly over all window sizes w1 (seq1) and w2 (seq2)
@@ -217,12 +215,18 @@ void
 PredictorMfeRNAup::
 initMfe()
 {
-	// delete stored global E min interaction
-	mfeInteraction.clear();
 	// initialize global E minimum
 	mfeInteraction.setEnergy(E_MAX);
+	// ensure it holds only the boundary
+	if (mfeInteraction.getBasePairs().size()!=2) {
+		mfeInteraction.getBasePairs().resize(2);
+	}
+	// reset boundary base pairs
+	mfeInteraction.getBasePairs()[0].first = RnaSequence::lastPos;
+	mfeInteraction.getBasePairs()[0].second = RnaSequence::lastPos;
+	mfeInteraction.getBasePairs()[1].first = RnaSequence::lastPos;
+	mfeInteraction.getBasePairs()[1].second = RnaSequence::lastPos;
 }
-
 ////////////////////////////////////////////////////////////////////////////
 
 void
@@ -240,9 +244,12 @@ updateMfe( const size_t i1, const size_t j1
 		// store new global min
 		mfeInteraction.setEnergy(eH+eE+eD);
 		// store interaction boundaries
-		mfeInteraction.clear();
-		mfeInteraction.addInteraction(i1+i1offset, energy.getAccessibility2().getReversedIndex(i2+i2offset));
-		mfeInteraction.addInteraction(j1+i1offset, energy.getAccessibility2().getReversedIndex(j2+i2offset));
+		// left
+		mfeInteraction.getBasePairs()[0].first = i1+i1offset;
+		mfeInteraction.getBasePairs()[0].second = energy.getAccessibility2().getReversedIndex(i2+i2offset);
+		// right
+		mfeInteraction.getBasePairs()[1].first = j1+i1offset;
+		mfeInteraction.getBasePairs()[1].second = energy.getAccessibility2().getReversedIndex(j2+i2offset);
 //		mfeInteraction.addInteraction(i1, energy.getAccessibility2().getReversedIndex(i2));
 //		mfeInteraction.addInteraction(j1, energy.getAccessibility2().getReversedIndex(j2));
 	}
@@ -270,6 +277,14 @@ traceBack( Interaction & interaction ) const
 		throw std::runtime_error("PredictorRNAup::traceBack() : given interaction does not contain boundaries only");
 	}
 #endif
+
+	// check for single interaction
+	if (interaction.getBasePairs().at(0).first == interaction.getBasePairs().at(1).first) {
+		// delete second boundary (identical to first)
+		interaction.getBasePairs().resize(1);
+		// update done
+		return;
+	}
 
 	// ensure sorting
 	interaction.sort();

@@ -34,7 +34,7 @@ public:
 	/**
 	 * Computes the predictors optimization target for the given sequence
 	 * ranges (i1-j1) in the first sequence and (i2-j2) in the second sequence.
-	 * The according interaction is given to the output handler.
+	 * The according optimal interaction is given to the output handler.
 	 *
 	 * @param i1 the index of the first sequence interacting with i2
 	 * @param j1 the index of the first sequence interacting with j2

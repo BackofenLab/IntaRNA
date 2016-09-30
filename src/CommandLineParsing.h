@@ -109,10 +109,29 @@ public:
 	 * parameters.
 	 * @param accQuery the accessibility object of the query sequence
 	 * @param accTarget the (reversed) accessibility object of the target sequence
-	 * @return the newly allocated Energy object or NULL in error case
+	 * @return the newly allocated Energy object to be deleted by the calling
+	 * function or NULL in error case
 	 */
 	InteractionEnergy* getEnergyHandler( const Accessibility& accQuery, const ReverseAccessibility& accTarget ) const;
 
+	/**
+	 * Provides a newly allocated output handler according to the user request.
+	 *
+	 * @return the newly allocated OutputHandler object to be deleted by the
+	 * calling function
+	 */
+	OutputHandler* getOutputHandler() const;
+
+	/**
+	 * Provides a newly allocated predictor according to the user defined
+	 * parameters
+	 * @param energy the interaction energy handler to be used
+	 * @param output the output handler to be used
+	 * @return the newly allocated Predictor object to be deleted by the calling
+	 * function
+	 */
+	Predictor* getPredictor( const InteractionEnergy & energy
+			, OutputHandler & output ) const;
 
 	/**
 	 * Access to the set folding temperature in Celsius.
