@@ -43,7 +43,7 @@ CXXFLAGS=$OLD_CXXFLAGS
 CFLAGS=$OLD_CFLAGS
 
 # automake initialisation (mandatory) and check for minimal automake API version
-AM_INIT_AUTOMAKE([1.13])
+AM_INIT_AUTOMAKE([1.11])
 
 # use the C++ compiler for the following checks
 AC_LANG([C++])
@@ -254,8 +254,6 @@ AC_SUBST([AM_CXXFLAGS])
 AC_SUBST([AM_LDFLAGS])
 AC_SUBST([LIBS])
 
-# generate test make directive
-AM_EXTRA_RECURSIVE_TARGETS([tests])
 # files to generate via autotools (.am or .in source files)
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([src/Makefile])

@@ -24,7 +24,9 @@ script:
  - wget http://www.tbi.univie.ac.at/RNA/download/sourcecode/2_2_x/ViennaRNA-2.2.10.tar.gz
  - tar xvfz ViennaRNA-2.2.10.tar.gz
  - cd ViennaRNA-2.2.10 && CC=gcc-4.9 CXX=g++-4.9 ./configure --prefix=$HOME/vienna --without-doc --without-python --without-python3 --without-check --without-perl --without-swig --without-cluster --without-forester --without-kinfold --without-json --disable-unittests --without-kinwalker && make && make install
- # generate autotools's files and compile IntaRNA
+ # generate autotools's files 
+ - cd $TRAVIS_BUILD_DIR && bash autotools-init.sh && CC=gcc-4.9 CXX=g++-4.9 ./configure --enable-c11 --with-RNA=$HOME/vienna --prefix=$HOME/IntaRNA
+ # compile, test and install IntaRNA
  - cd $TRAVIS_BUILD_DIR && bash autotools-init.sh && CC=gcc-4.9 CXX=g++-4.9 ./configure --enable-c11 --with-RNA=$HOME/vienna --prefix=$HOME/IntaRNA && make && make install
  # run IntaRNA
  - $HOME/IntaRNA/bin/intaRNA -h

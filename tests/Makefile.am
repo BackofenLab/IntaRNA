@@ -17,5 +17,5 @@ runTests_CXXFLAGS =	-I$(top_srcdir)/src @AM_CXXFLAGS@ @CXXFLAGS@
 all:
 
 # global test directive
-tests-local: all-am
+tests: all-am
 	@./runTests
