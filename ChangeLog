@@ -1,4 +1,10 @@
 
+161001 Martin Mann :
+ - tests/test* : renamed to *_test
+ + tests/*_test.cpp : test files for the according classes
+ * tests/Makefile : 
+   + wildcard based test file listing
+
 160930 Martin Mann :
  * InteractionEnergy* :
    + getRT() : provides the RT constant for this energy model to compute

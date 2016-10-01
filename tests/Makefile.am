@@ -4,9 +4,7 @@ bin_PROGRAMS = runTests
 
 # test sources
 runTests_SOURCES =	catch.hpp \
-					testRnaSequence.cpp \
-					testInteractionEnergy.cpp \
-					testInteractionEnergyBasePair.cpp \
+					$(wildcard *_test.cpp) \
 					runTests.cpp
 
 # add source objects for linking
