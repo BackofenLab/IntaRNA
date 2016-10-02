@@ -27,7 +27,7 @@ before_install:
     - export CONDA_PATH=/home/travis/miniconda2/
     - export CONDA_LIB_PATH=/home/travis/miniconda2/lib
     - ls $CONDA_LIB_PATH
-    - ls $CONDA_LIB_PATH/include
+    - ls $CONDA_PATH/include
 
 script:
     - RNAalifold --version
