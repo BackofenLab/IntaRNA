@@ -1,0 +1,6 @@
+# autotools' temporary files
+*.in
+.deps
+config.h
+Makefile
+stamp-*
