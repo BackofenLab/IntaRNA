@@ -6,27 +6,36 @@ cache:
 addons:
   apt:
     sources:
-    - boost-latest
     - ubuntu-toolchain-r-test
     packages:
     - gcc-4.9
     - g++-4.9
-    - libboost1.55-all-dev
 
 os:
-  - linux
+    - linux
 
 compiler:
-  - gcc
-  
+    - gcc
+
+before_install:
+    - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+    - chmod +x miniconda.sh
+    - "./miniconda.sh -b"
+    - export PATH=/home/travis/miniconda2/bin:$PATH
+    - conda update --yes conda
+    - conda install --yes viennarna automake boost -c conda-forge -c bioconda
+    - export CONDA_PATH=/home/travis/miniconda2/
+    - export CONDA_LIB_PATH=/home/travis/miniconda2/lib
+    - ls $CONDA_LIB_PATH
+    - ls $CONDA_PATH/include
+
 script:
- # download and compile ViennaRNA dependency
- - wget http://www.tbi.univie.ac.at/RNA/download/sourcecode/2_2_x/ViennaRNA-2.2.10.tar.gz
- - tar xvfz ViennaRNA-2.2.10.tar.gz
- - cd ViennaRNA-2.2.10 && CC=gcc-4.9 CXX=g++-4.9 ./configure --prefix=$HOME/vienna --without-doc --without-python --without-python3 --without-check --without-perl --without-swig --without-cluster --without-forester --without-kinfold --without-json --disable-unittests --without-kinwalker && make && make install
- # generate autotools's files 
- - cd $TRAVIS_BUILD_DIR && bash autotools-init.sh && CC=gcc-4.9 CXX=g++-4.9 ./configure --enable-c11 --with-RNA=$HOME/vienna --prefix=$HOME/IntaRNA
- # compile, test and install IntaRNA
- - cd $TRAVIS_BUILD_DIR && bash autotools-init.sh && CC=gcc-4.9 CXX=g++-4.9 ./configure --enable-c11 --with-RNA=$HOME/vienna --prefix=$HOME/IntaRNA && make && make install
- # run IntaRNA
- - $HOME/IntaRNA/bin/intaRNA -h
+    - RNAalifold --version
+    # generate autotools's files 
+    - cd $TRAVIS_BUILD_DIR && bash autotools-init.sh && CC=gcc-4.9 CXX=g++-4.9 ./configure --enable-c11 --with-boost=$CONDA_PATH/include --with-RNA=$CONDA_PATH --prefix=$HOME/IntaRNA
+    # compile, test and install IntaRNA
+    - cd $TRAVIS_BUILD_DIR && bash autotools-init.sh && CC=gcc-4.9 CXX=g++-4.9 ./configure --enable-c11 --with-boost=$CONDA_PATH/include --with-RNA=$CONDA_PATH --prefix=$HOME/IntaRNA
+    - make
+    - make install
+    # run IntaRNA
+    - $HOME/IntaRNA/bin/intaRNA -h
