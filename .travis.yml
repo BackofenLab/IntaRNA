@@ -23,7 +23,7 @@ before_install:
     - "./miniconda.sh -b"
     - export PATH=/home/travis/miniconda2/bin:$PATH
     - conda update --yes conda
-    - conda install --yes viennarna automake
+    - conda install --yes viennarna automake -c conda-forge -c bioconda
 
 script:
  - RNAalifold --version
