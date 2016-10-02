@@ -24,12 +24,17 @@ before_install:
     - export PATH=/home/travis/miniconda2/bin:$PATH
     - conda update --yes conda
     - conda install --yes viennarna automake -c conda-forge -c bioconda
+    - export CONDA_PATH=/home/travis/miniconda2/
+    - export CONDA_LIB_PATH=/home/travis/miniconda2/lib
+    - ls $CONDA_LIB_PATH
 
 script:
  - RNAalifold --version
  # generate autotools's files 
- - cd $TRAVIS_BUILD_DIR && bash autotools-init.sh && CC=gcc-4.9 CXX=g++-4.9 ./configure --enable-c11 --with-RNA=$HOME/vienna --prefix=$HOME/IntaRNA
+ - cd $TRAVIS_BUILD_DIR && bash autotools-init.sh && CC=gcc-4.9 CXX=g++-4.9 ./configure --enable-c11 --with-RNA=$CONDA_PATH --prefix=$HOME/IntaRNA
  # compile, test and install IntaRNA
- - cd $TRAVIS_BUILD_DIR && bash autotools-init.sh && CC=gcc-4.9 CXX=g++-4.9 ./configure --enable-c11 --with-RNA=$HOME/vienna --prefix=$HOME/IntaRNA && make && make install
+ - cd $TRAVIS_BUILD_DIR && bash autotools-init.sh && CC=gcc-4.9 CXX=g++-4.9 ./configure --enable-c11 --with-RNA=$CONDA_PATH --prefix=$HOME/IntaRNA
+ - make
+ - make install
  # run IntaRNA
  - $HOME/IntaRNA/bin/intaRNA -h
