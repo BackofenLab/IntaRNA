@@ -12,10 +12,10 @@ addons:
     - g++-4.9
 
 os:
-  - linux
+    - linux
 
 compiler:
-  - gcc
+    - gcc
 
 before_install:
     - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
@@ -29,12 +29,12 @@ before_install:
     - ls $CONDA_LIB_PATH
 
 script:
- - RNAalifold --version
- # generate autotools's files 
- - cd $TRAVIS_BUILD_DIR && bash autotools-init.sh && CC=gcc-4.9 CXX=g++-4.9 ./configure --enable-c11 --with-RNA=$CONDA_PATH --prefix=$HOME/IntaRNA
- # compile, test and install IntaRNA
- - cd $TRAVIS_BUILD_DIR && bash autotools-init.sh && CC=gcc-4.9 CXX=g++-4.9 ./configure --enable-c11 --with-RNA=$CONDA_PATH --prefix=$HOME/IntaRNA
- - make
- - make install
- # run IntaRNA
- - $HOME/IntaRNA/bin/intaRNA -h
+    - RNAalifold --version
+    # generate autotools's files 
+    - cd $TRAVIS_BUILD_DIR && bash autotools-init.sh && CC=gcc-4.9 CXX=g++-4.9 ./configure --enable-c11 --with-boost=$CONDA_PATH --with-RNA=$CONDA_PATH --prefix=$HOME/IntaRNA
+    # compile, test and install IntaRNA
+    - cd $TRAVIS_BUILD_DIR && bash autotools-init.sh && CC=gcc-4.9 CXX=g++-4.9 ./configure --enable-c11 --with-boost=$CONDA_PATH --with-RNA=$CONDA_PATH --prefix=$HOME/IntaRNA
+    - make
+    - make install
+    # run IntaRNA
+    - $HOME/IntaRNA/bin/intaRNA -h
