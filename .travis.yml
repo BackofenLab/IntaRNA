@@ -23,7 +23,7 @@ before_install:
     - "./miniconda.sh -b"
     - export PATH=/home/travis/miniconda2/bin:$PATH
     - conda update --yes conda
-    - conda install --yes viennarna automake boost -c conda-forge -c bioconda
+    - conda install --yes viennarna boost -c conda-forge -c bioconda
     - export CONDA_PATH=/home/travis/miniconda2/
     - export CONDA_LIB_PATH=/home/travis/miniconda2/lib
     - ls $CONDA_LIB_PATH
@@ -37,9 +37,7 @@ script:
     - bash autotools-init.sh 
     - CC=gcc-4.9 CXX=g++-4.9 ./configure --enable-c11 --with-boost=$CONDA_PATH --with-RNA=$CONDA_PATH --prefix=$HOME/IntaRNA
     # compile, test and install IntaRNA
-    - make 
-    - make test 
-    - make install
+    - make && make tests && make install
     ##### check IntaRNA build #####
     # run IntaRNA with help output
     - $HOME/IntaRNA/bin/intaRNA -h
