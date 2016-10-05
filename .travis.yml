@@ -41,4 +41,4 @@ script:
     - make && make tests && make install
     ##### check IntaRNA build #####
     # run IntaRNA with help output
-    - $? && $HOME/IntaRNA/bin/intaRNA -h
+    - $HOME/IntaRNA/bin/intaRNA -h
