@@ -33,28 +33,55 @@ PredictorMaxProb::
 
 void
 PredictorMaxProb::
-predict( const size_t i1, const size_t j1
-				, const size_t i2, const size_t j2)
+predict( const IndexRange & r1
+		, const IndexRange & r2 )
 {
-	// TODO check indices
+#ifdef NDEBUG
+	// no check
+#else
+	// check indices (both regions ascending due to reversing of seq2)
+	if (!(r1.isAscending() && r2.isAscending()) )
+		throw std::runtime_error("PredictorMfeRNAup::predict("+toString(r1)+","+toString(r2)+") is not sane");
+#endif
 
 	// clear data
 	clear();
 
 	// resize matrix
 	hybridZ.resize( std::min( energy.getAccessibility1().getSequence().size()
-						, (j1==RnaSequence::lastPos?energy.getAccessibility1().getSequence().size()-1:j1)-i1+1 )
+						, (r1.to==RnaSequence::lastPos?energy.getAccessibility1().getSequence().size()-1:r1.to)-r1.from+1 )
 				, std::min( energy.getAccessibility2().getSequence().size()
-						, (j2==RnaSequence::lastPos?energy.getAccessibility2().getSequence().size()-1:j2)-i2+1 ) );
+						, (r2.to==RnaSequence::lastPos?energy.getAccessibility2().getSequence().size()-1:r2.to)-r2.from+1 ) );
 
-	i1offset = i1;
-	i2offset = i2;
+	i1offset = r1.from;
+	i2offset = r2.from;
 
+	size_t debug_count_cells_null=0, debug_count_cells_nonNull = 0, debug_cellNumber=0;
+
+	bool i1blocked, i1or2blocked;
 	// initialize 3rd and 4th dimension of the matrix
 	for (size_t i1=0; i1<hybridZ.size1(); i1++) {
+		// check if i1 is blocked for interaction
+		i1blocked =
+		// - shows ambiguous nucleotide encoding
+			energy.getAccessibility1().getSequence().isAmbiguous( i1 )
+		// - is blocked by an accessibility constraint
+			|| energy.getAccessibility1().getAccConstraint().isBlocked(i1);
 	for (size_t i2=0; i2<hybridZ.size2(); i2++) {
-		// check if i and k can form a base pair
-		if (RnaSequence::areComplementary(
+		// check whether i1 or i2 is blocked for interaction
+		i1or2blocked = i1blocked
+		// - shows ambiguous nucleotide encoding
+			|| energy.getAccessibility2().getSequence().isAmbiguous( i2 )
+		// - is blocked by an accessibility constraint
+			|| energy.getAccessibility2().getAccConstraint().isBlocked(i2);
+
+		debug_cellNumber =
+				/*w1 = */ std::min(energy.getAccessibility1().getMaxLength(), hybridZ.size1()-i1)
+			*	/*w2 = */ std::min(energy.getAccessibility2().getMaxLength(), hybridZ.size2()-i2);
+
+		// check if i1 and i2 are not blocked and can form a base pair
+		if ( ! i1or2blocked
+			&& RnaSequence::areComplementary(
 				  energy.getAccessibility1().getSequence()
 				, energy.getAccessibility2().getSequence()
 				, i1+i1offset, i2+i2offset ))
@@ -63,12 +90,19 @@ predict( const size_t i1, const size_t j1
 			hybridZ(i1,i2) = new E2dMatrix(
 				/*w1 = */ std::min(energy.getAccessibility1().getMaxLength(), hybridZ.size1()-i1),
 				/*w2 = */ std::min(energy.getAccessibility2().getMaxLength(), hybridZ.size2()-i2));
+
+			debug_count_cells_nonNull += debug_cellNumber;
 		} else {
-			// reduce memory consumption
+			// reduce memory consumption and avoid computation for this start index combination
 			hybridZ(i1,i2) = NULL;
+			debug_count_cells_null += debug_cellNumber;
 		}
 	}
 	}
+
+	std::cerr <<"#DEBUG: init 4d matrix : "<<debug_count_cells_nonNull <<" to be filled ("
+				<<((double)debug_count_cells_nonNull/(double)(debug_count_cells_nonNull+debug_count_cells_null))
+				<<"%) and "<<debug_count_cells_null <<" not allocated" <<std::endl;
 
 	// fill matrix
 	fillHybridZ( energy );
@@ -77,7 +111,7 @@ predict( const size_t i1, const size_t j1
 	// double maxProb = (double)maxProbInteraction.getEnergy() / Z;
 
 	// convert the partition function into an ensemble energy
-	maxProbInteraction.setEnergy( - energy.getRT() * std::log( maxProbInteraction.getEnergy() ) );
+	maxProbInteraction.energy = ( - energy.getRT() * std::log( maxProbInteraction.energy ) );
 
 	// report interaction site with maximal probability
 	output.add( maxProbInteraction );
@@ -113,8 +147,8 @@ fillHybridZ( const InteractionEnergy & energy )
 
 	//////////  FIRST ROUND : COMPUTE HYBRIDIZATION ENERGIES ONLY  ////////////
 
-	// current minimal value
-	E_type curZ = E_MAX;
+	// current Z value
+	E_type curZ = 0;
 	// iterate increasingly over all window sizes w1 (seq1) and w2 (seq2)
 	for (w1=0; w1<energy.getAccessibility1().getMaxLength(); w1++) {
 	for (w2=0; w2<energy.getAccessibility2().getMaxLength(); w2++) {
@@ -133,7 +167,7 @@ fillHybridZ( const InteractionEnergy & energy )
 			// check if right boundary is complementary
 			if (hybridZ(j1,j2) == NULL) {
 				// not complementary -> ignore this entry
-				(*hybridZ(i1,i2))(w1,w2) = E_MAX;
+				(*hybridZ(i1,i2))(w1,w2) = E_INF;
 			} else {
 				// compute entry
 				curZ = 0;
@@ -183,7 +217,7 @@ fillHybridZ( const InteractionEnergy & energy )
 				continue;
 			}
 			// check if reasonable entry
-			if ((*hybridZ(i1,i2))(w1,w2) < E_MAX) {
+			if ((*hybridZ(i1,i2))(w1,w2) < E_INF) {
 				// get window ends j (seq1) and l (seq2)
 				j1=i1+w1;
 				j2=i2+w2;
@@ -214,16 +248,12 @@ PredictorMaxProb::
 initMaxProbInteraction()
 {
 	// initialize max prob interaction (partition function value)
-	maxProbInteraction.setEnergy(0.0);
-	// ensure it holds only the boundary
-	if (maxProbInteraction.getBasePairs().size()!=2) {
-		maxProbInteraction.getBasePairs().resize(2);
-	}
+	maxProbInteraction.energy = 0.0;
 	// reset boundary base pairs
-	maxProbInteraction.getBasePairs()[0].first = RnaSequence::lastPos;
-	maxProbInteraction.getBasePairs()[0].second = RnaSequence::lastPos;
-	maxProbInteraction.getBasePairs()[1].first = RnaSequence::lastPos;
-	maxProbInteraction.getBasePairs()[1].second = RnaSequence::lastPos;
+	maxProbInteraction.r1.from = RnaSequence::lastPos;
+	maxProbInteraction.r1.to = RnaSequence::lastPos;
+	maxProbInteraction.r2.from = RnaSequence::lastPos;
+	maxProbInteraction.r2.to = RnaSequence::lastPos;
 }
 ////////////////////////////////////////////////////////////////////////////
 
@@ -241,16 +271,16 @@ updateMaxProbInteraction( const size_t i1, const size_t j1
 	// update overall partition function
 	Z += (double)curZ;
 
-	if (curZ > maxProbInteraction.getEnergy()) {
+	if (curZ > maxProbInteraction.energy) {
 		// store new global min
-		maxProbInteraction.setEnergy(curZ);
+		maxProbInteraction.energy = curZ;
 		// store interaction boundaries
 		// left
-		maxProbInteraction.getBasePairs()[0].first = i1+i1offset;
-		maxProbInteraction.getBasePairs()[0].second = energy.getAccessibility2().getReversedIndex(i2+i2offset);
+		maxProbInteraction.r1.from = i1+i1offset;
+		maxProbInteraction.r2.from = energy.getAccessibility2().getReversedIndex(i2+i2offset);
 		// right
-		maxProbInteraction.getBasePairs()[1].first = j1+i1offset;
-		maxProbInteraction.getBasePairs()[1].second = energy.getAccessibility2().getReversedIndex(j2+i2offset);
+		maxProbInteraction.r1.to = j1+i1offset;
+		maxProbInteraction.r2.to = energy.getAccessibility2().getReversedIndex(j2+i2offset);
 	}
 }
 

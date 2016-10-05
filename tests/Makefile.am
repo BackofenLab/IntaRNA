@@ -4,7 +4,13 @@ bin_PROGRAMS = runTests
 
 # test sources
 runTests_SOURCES =	catch.hpp \
-					$(wildcard *_test.cpp) \
+					AccessibilityConstraint_test.cpp \
+					InteractionEnergyBasePair_test.cpp  \
+					InteractionRange_test.cpp  \
+					RnaSequence_test.cpp \
+					IndexRange_test.cpp  \
+					InteractionEnergy_test.cpp \
+					OutputRangeOnly_test.cpp \
 					runTests.cpp
 
 # add source objects for linking
@@ -15,6 +21,8 @@ runTests_CXXFLAGS =	-I$(top_srcdir)/src @AM_CXXFLAGS@ @CXXFLAGS@
 
 # disable general build
 all:
+
+
 
 # global test directive
 tests: all-am

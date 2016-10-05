@@ -40,7 +40,7 @@ add( const Interaction & i )
 #endif
 
 	// special handling if no base pairs present
-	if (i.getBasePairs().size() == 0) {
+	if (i.basePairs.size() == 0) {
 		// TODO
 		return;
 	}
@@ -48,10 +48,10 @@ add( const Interaction & i )
 	// TODO generate data structures and push to stream
 
 	// get interaction start/end per sequence
-	const size_t i1 = i.getBasePairs().begin()->first;
-	const size_t j1 = i.getBasePairs().rbegin()->first;
-	const size_t i2 = i.getBasePairs().begin()->second;
-	const size_t j2 = i.getBasePairs().rbegin()->second;
+	const size_t i1 = i.basePairs.begin()->first;
+	const size_t j1 = i.basePairs.rbegin()->first;
+	const size_t i2 = i.basePairs.begin()->second;
+	const size_t j2 = i.basePairs.rbegin()->second;
 
 	// decompose printing into several rows
 	std::ostringstream s1Unbound;
@@ -66,13 +66,13 @@ add( const Interaction & i )
 	s1Unbound <<std::right;
 	if (i1 < flankingLength) {
 		// full sequence prefix
-		s1Unbound <<("5'-" + i.s1.asString().substr( 0, i1));
+		s1Unbound <<("5'-" + i.s1->asString().substr( 0, i1));
 	} else {
 		// prefix shortening needed
 		s1Unbound <<("5'-"
-					+ i.s1.asString().substr( 0,3)
+					+ i.s1->asString().substr( 0,3)
 					+ "..."
-					+ i.s1.asString().substr( (size_t)std::max(0,(int)i1+6-(int)flankingLength), flankingLength-6)
+					+ i.s1->asString().substr( (size_t)std::max(0,(int)i1+6-(int)flankingLength), flankingLength-6)
 					);
 	}
 	// bound region
@@ -81,50 +81,50 @@ add( const Interaction & i )
 	s2Bound.width(flankingLength+3); s2Bound <<' ';
 	// unbound region s2
 	s2Unbound.width(flankingLength+3);
-	s2Unbound <<std::right; // <<("3'-" + i.s2.asString().substr( (size_t)std::max(0,(int)i2-(int)flankingLength), std::min(i2,flankingLength) ));
+	s2Unbound <<std::right; // <<("3'-" + i.s2->asString().substr( (size_t)std::max(0,(int)i2-(int)flankingLength), std::min(i2,flankingLength) ));
 //	if (i2 < flankingLength) {
 //		// full sequence prefix
-//		s2Unbound <<("3'-" + i.s2.asString().substr( 0, i2));
+//		s2Unbound <<("3'-" + i.s2->asString().substr( 0, i2));
 //	} else {
 //		// prefix shortening needed
 //		s2Unbound <<("3'-"
-//					+ i.s2.asString().substr( 0,3)
+//					+ i.s2->asString().substr( 0,3)
 //					+ "..."
-//					+ i.s2.asString().substr( (size_t)std::max(0,(int)i2+6-(int)flankingLength), flankingLength-6)
+//					+ i.s2->asString().substr( (size_t)std::max(0,(int)i2+6-(int)flankingLength), flankingLength-6)
 //					);
 //	}
-	if (i2+flankingLength > i.s2.size()) {
+	if (i2+flankingLength > i.s2->size()) {
 		// add remaining sequence
-		s2Unbound <<("3'-" + reverse(i.s2.asString().substr(i2+1)));
+		s2Unbound <<("3'-" + reverse(i.s2->asString().substr(i2+1)));
 	} else {
 		// shortening needed
 		s2Unbound <<("3'-"
-					+ reverse(i.s2.asString().substr(i.s2.size()-3))
+					+ reverse(i.s2->asString().substr(i.s2->size()-3))
 					+ "..."
-					+ reverse(i.s2.asString().substr(i2+1, flankingLength-6))
+					+ reverse(i.s2->asString().substr(i2+1, flankingLength-6))
 					);
 	}
 
 	// interaction start left
-	Interaction::PairingVec::const_iterator leftBP = i.getBasePairs().begin();
-	char nt1 = i.s1.asString().at(leftBP->first);
-	char nt2 = i.s2.asString().at(leftBP->second);
+	Interaction::PairingVec::const_iterator leftBP = i.basePairs.begin();
+	char nt1 = i.s1->asString().at(leftBP->first);
+	char nt2 = i.s2->asString().at(leftBP->second);
 	// print start
 	s1Unbound.width(1);	 s1Unbound <<std::left <<' ';
-	s1Bound.width(1);	 s1Bound   <<std::left <<i.s1.asString().at(leftBP->first);
+	s1Bound.width(1);	 s1Bound   <<std::left <<i.s1->asString().at(leftBP->first);
 	pairing.width(1);	 pairing   <<std::left;
 	if ((nt1=='G' && nt2=='U') || (nt1=='U' && nt2=='G')) {
 		pairing   <<':';
 	} else {
 		pairing   <<'|';
 	}
-	s2Bound.width(1);	 s2Bound   <<std::left <<i.s2.asString().at(leftBP->second);
+	s2Bound.width(1);	 s2Bound   <<std::left <<i.s2->asString().at(leftBP->second);
 	s2Unbound.width(1);	 s2Unbound <<std::left <<' ';
 
 	// iterate loops in interaction region
-	Interaction::PairingVec::const_iterator curBP = i.getBasePairs().begin();
+	Interaction::PairingVec::const_iterator curBP = i.basePairs.begin();
 	size_t loop1=0, loop2=0, loop=0, interactionLength = 1;
-	for (++curBP; curBP != i.getBasePairs().end(); ++curBP, ++leftBP) {
+	for (++curBP; curBP != i.basePairs.end(); ++curBP, ++leftBP) {
 		// handle internal loop region
 		// get specific loop lengths
 		loop1 = curBP->first - leftBP->first -1;
@@ -135,7 +135,7 @@ add( const Interaction & i )
 			// unbound region s1
 			s1Unbound.width(loop);
 			if (loop1 > 0) {
-				s1Unbound <<i.s1.asString().substr( leftBP->first +1, loop1 );
+				s1Unbound <<i.s1->asString().substr( leftBP->first +1, loop1 );
 			} else {
 				s1Unbound <<' ';
 			}
@@ -146,7 +146,7 @@ add( const Interaction & i )
 			// unbound region s2
 			s2Unbound.width(loop);
 			if (loop2 > 0) {
-				s2Unbound <<reverse(i.s2.asString().substr( curBP->second +1, loop2 ));
+				s2Unbound <<reverse(i.s2->asString().substr( curBP->second +1, loop2 ));
 			} else {
 				s2Unbound <<' ';
 			}
@@ -154,8 +154,8 @@ add( const Interaction & i )
 		interactionLength += loop;
 
 		// print current base pair (right end of internal loop)
-		nt1 = i.s1.asString().at(curBP->first);
-		nt2 = i.s2.asString().at(curBP->second);
+		nt1 = i.s1->asString().at(curBP->first);
+		nt2 = i.s2->asString().at(curBP->second);
 		s1Unbound.width(1);	 s1Unbound <<' ';
 		s1Bound.width(1);	 s1Bound   <<nt1;
 		pairing.width(1);
@@ -171,34 +171,34 @@ add( const Interaction & i )
 
 	// flanking right
 	// unbound region s1
-	if (j1+flankingLength > i.s1.size()) {
+	if (j1+flankingLength > i.s1->size()) {
 		// add remaining sequence
-		s1Unbound <<i.s1.asString().substr(j1+1);
+		s1Unbound <<i.s1->asString().substr(j1+1);
 	} else {
 		// shortening needed
-		s1Unbound <<i.s1.asString().substr(j1+1, flankingLength-6)
+		s1Unbound <<i.s1->asString().substr(j1+1, flankingLength-6)
 					<<"..."
-					<<i.s1.asString().substr(i.s1.size()-3);
+					<<i.s1->asString().substr(i.s1->size()-3);
 	}
 	s1Unbound <<"-3'";
 	// unbound region s2
-//	if (j2+flankingLength > i.s2.size()) {
+//	if (j2+flankingLength > i.s2->size()) {
 //		// add remaining sequence
-//		s2Unbound <<i.s2.asString().substr(j2+1);
+//		s2Unbound <<i.s2->asString().substr(j2+1);
 //	} else {
 //		// shortening needed
-//		s2Unbound <<i.s2.asString().substr(j2+1, flankingLength-6)
+//		s2Unbound <<i.s2->asString().substr(j2+1, flankingLength-6)
 //					<<"..."
-//					<<i.s2.asString().substr(i.s2.size()-3);
+//					<<i.s2->asString().substr(i.s2->size()-3);
 //	}
 	if (j2 < flankingLength) {
 		// full sequence prefix
-		s2Unbound <<reverse(i.s2.asString().substr( 0, j2));
+		s2Unbound <<reverse(i.s2->asString().substr( 0, j2));
 	} else {
 		// prefix shortening needed
-		s2Unbound 	<<reverse(i.s2.asString().substr( (size_t)std::max(0,(int)j2+6-(int)flankingLength), flankingLength-6))
+		s2Unbound 	<<reverse(i.s2->asString().substr( (size_t)std::max(0,(int)j2+6-(int)flankingLength), flankingLength-6))
 					<<"..."
-					<<reverse(i.s2.asString().substr( 0,3))
+					<<reverse(i.s2->asString().substr( 0,3))
 					;
 	}
 	s2Unbound <<"-5'";
@@ -216,7 +216,7 @@ add( const Interaction & i )
 		pos1tag	<<std::setw(interactionLength - 1) <<'|';
 	}
 	std::ostringstream pos2, pos2tag;
-	numberSize = numStringLength(i.s2.size()-i2-1);
+	numberSize = numStringLength(i.s2->size()-i2-1);
 	// put left (3') end only if not overlapping with 5' start position (right)
 	pos2	<<std::setw(flankingLength+3+1);
 	pos2tag	<<std::setw(flankingLength+3+1);
@@ -236,7 +236,7 @@ add( const Interaction & i )
 	// print full interaction to output stream
 	out <<'\n'
 		// get ID of s1
-		<<i.s1.getId() <<'\n'
+		<<i.s1->getId() <<'\n'
 		// get position in s1
 		<<pos1.str() <<'\n'
 		<<pos1tag.str() <<'\n'
@@ -250,15 +250,22 @@ add( const Interaction & i )
 		<<pos2tag.str() <<'\n'
 		<<pos2.str() <<'\n'
 		// get ID of s2
-		<<i.s2.getId() <<'\n'
+		<<i.s2->getId() <<'\n'
 		// print energy
-		<<"\n interaction energy = "<<i.getEnergy() <<'\n'
+		<<"\n interaction energy = "<<i.energy <<'\n'
 		;
 
 }
 
 
 ////////////////////////////////////////////////////////////////////////////
+
+void
+OutputHandlerText::
+add( const InteractionRange & range )
+{
+	add( Interaction(range) );
+}
 
 ////////////////////////////////////////////////////////////////////////////
 

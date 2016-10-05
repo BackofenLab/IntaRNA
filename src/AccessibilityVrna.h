@@ -48,7 +48,7 @@ public:
 	AccessibilityVrna( const RnaSequence& sequence
 			, VrnaHandler & vrnaHandler
 			, const size_t maxLength = 0
-			, const std::string * const accConstraint = NULL
+			, const AccessibilityConstraint * const accConstraint = NULL
 			, std::ostream * log = NULL
 			);
 

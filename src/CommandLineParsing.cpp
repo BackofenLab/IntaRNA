@@ -13,6 +13,8 @@
 #include <boost/bind.hpp>
 #include <boost/filesystem.hpp>
 
+#include "AccessibilityConstraint.h"
+
 #include "AccessibilityDisabled.h"
 #include "AccessibilityVrna.h"
 
@@ -39,7 +41,7 @@ CommandLineParsing::CommandLineParsing( std::ostream& logStream )
 	opts_general("General"),
 	opts_cmdline_all(),
 
-	parsingCode(NOT_PARSED),
+	parsingCode(NOT_PARSED_YET),
 	logStream(logStream),
 
 	queryArg(""),
@@ -66,12 +68,6 @@ CommandLineParsing::CommandLineParsing( std::ostream& logStream )
 	using namespace boost::program_options;
 
 
-//	RnaSequence seq("debug","CGCGUGCGCGUCGCG");
-//	logStream <<"\n ### cmd-begin : debug check for "<<seq.getId()<<std::endl;
-//	logStream <<"\n ### temp "<<vrnaHandler.getModel().temperature<<std::endl;
-//	AccessibilityVrna accTmp( seq, vrnaHandler, 16, "", &logStream );
-//	logStream <<accTmp<<std::endl;
-
 	////  SEQUENCE OPTIONS  ////////////////////////////////////
 
 	opts_query.add_options()
@@ -88,17 +84,17 @@ CommandLineParsing::CommandLineParsing( std::ostream& logStream )
 		("qAccConstr"
 			, value<std::string>(&(qAccConstr))
 				->notifier(boost::bind(&CommandLineParsing::validate_qAccConstr,this,_1))
-			, std::string("accessibility computation : structure constraint for each sequence position: '.' no constraint, 'x' unpaired. Note, unpaired positions are excluded from interaction prediction as well!").c_str())
+			, std::string("accessibility computation : structure constraint for each sequence position: '.' no constraint, '"+toString(AccessibilityConstraint::dotBracket_accessible)+"' unpaired, '"+toString(AccessibilityConstraint::dotBracket_blocked)+"' blocked. Note, blocked positions are excluded from interaction prediction and considered unpaired!").c_str())
 		("qIntLenMax"
 			, value<int>(&(qIntLenMax.val))
 				->default_value(qIntLenMax.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_qIntLenMax,this,_1))
-			, std::string("maximal window size to be considered for interaction (and thus accessible) within the query (arg in range ["+toString(qIntLenMax.min)+","+toString(qIntLenMax.max)+"]; 0 defaults to the full sequence length)").c_str())
+			, std::string("interaction site : maximal window size to be considered for interaction (and thus accessible) within the query (arg in range ["+toString(qIntLenMax.min)+","+toString(qIntLenMax.max)+"]; 0 defaults to the full sequence length)").c_str())
 		("qIntLoopMax"
 			, value<int>(&(qIntLoopMax.val))
 				->default_value(qIntLoopMax.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_qIntLoopMax,this,_1))
-			, std::string("maximal number of unpaired bases between neighbored interacting bases to be considered in interactions within the query (arg in range ["+toString(qIntLoopMax.min)+","+toString(qIntLoopMax.max)+"]; 0 enforces stackings only)").c_str())
+			, std::string("interaction site : maximal number of unpaired bases between neighbored interacting bases to be considered in interactions within the query (arg in range ["+toString(qIntLoopMax.min)+","+toString(qIntLoopMax.max)+"]; 0 enforces stackings only)").c_str())
 		;
 
 	opts_target.add_options()
@@ -115,17 +111,17 @@ CommandLineParsing::CommandLineParsing( std::ostream& logStream )
 		("tAccConstr"
 			, value<std::string>(&(tAccConstr))
 				->notifier(boost::bind(&CommandLineParsing::validate_tAccConstr,this,_1))
-			, std::string("accessibility computation : structure constraint for each sequence position: '.' no constraint, 'x' unpaired. Note, unpaired positions are excluded from interaction prediction as well!").c_str())
+			, std::string("accessibility computation : structure constraint for each sequence position: '.' no constraint, '"+toString(AccessibilityConstraint::dotBracket_accessible)+"' unpaired, '"+toString(AccessibilityConstraint::dotBracket_blocked)+"' blocked. Note, blocked positions are excluded from interaction prediction and considered unpaired!").c_str())
 		("tIntLenMax"
 			, value<int>(&(tIntLenMax.val))
 				->default_value(tIntLenMax.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_tIntLenMax,this,_1))
-			, std::string("maximal window size to be considered for interaction (and thus accessible) within the target (arg in range ["+toString(tIntLenMax.min)+","+toString(tIntLenMax.max)+"]; 0 defaults to the full sequence length)").c_str())
+			, std::string("interaction site : maximal window size to be considered for interaction (and thus accessible) within the target (arg in range ["+toString(tIntLenMax.min)+","+toString(tIntLenMax.max)+"]; 0 defaults to the full sequence length)").c_str())
 		("tIntLoopMax"
 			, value<int>(&(tIntLoopMax.val))
 				->default_value(tIntLoopMax.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_tIntLoopMax,this,_1))
-			, std::string("maximal number of unpaired bases between neighbored interacting bases to be considered in interactions within the target (arg in range ["+toString(tIntLoopMax.min)+","+toString(tIntLoopMax.max)+"]; 0 enforces stackings only)").c_str())
+			, std::string("interaction site : maximal number of unpaired bases between neighbored interacting bases to be considered in interactions within the target (arg in range ["+toString(tIntLoopMax.min)+","+toString(tIntLoopMax.max)+"]; 0 enforces stackings only)").c_str())
 		;
 
 	////  SEED OPTIONS  ////////////////////////////////////
@@ -181,7 +177,7 @@ CommandLineParsing::
 parse(int argc, char** argv)
 {
 	// init: nothing parsed yet
-	parsingCode = ReturnCode::NOT_PARSED;
+	parsingCode = ReturnCode::NOT_PARSED_YET;
 
 	using namespace boost::program_options;
 
@@ -453,7 +449,7 @@ void CommandLineParsing::validate_sequenceArgument(const std::string & name, con
 void CommandLineParsing::validate_structureConstraintArgument(const std::string & name, const std::string & value)
 {
 	// check if valid alphabet
-	if (value.find_first_not_of(Accessibility::AccessibilityConstraintAlphabet) != std::string::npos) {
+	if (value.find_first_not_of(AccessibilityConstraint::dotBracketAlphabet) != std::string::npos) {
 		logStream <<"\n "<<name<<" '"<<value <<"' : contains invalid characters!\n";
 		parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
 	} else {
@@ -510,7 +506,11 @@ getQueryAccessibility( const size_t sequenceNumber ) const
 	// construct selected accessibility object
 	switch(qAcc.val) {
 	case 'N' : return new AccessibilityDisabled( seq, qIntLenMax.val );
-	case 'F' : return new AccessibilityVrna( seq, vrnaHandler, qIntLenMax.val, &qAccConstr, &logStream );
+	case 'F' : {
+		// create temporary constraint object (will be copied)
+		AccessibilityConstraint accConstraint(qAccConstr);
+		return new AccessibilityVrna( seq, vrnaHandler, qIntLenMax.val, &accConstraint, &logStream );
+	}
 	default :
 		NOTIMPLEMENTED("CommandLineParsing::getQueryAccessibility : qAcc = '"+toString(qAcc.val)+"' is not supported");
 	}
@@ -531,7 +531,11 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 	const RnaSequence& seq = getTargetSequences().at(sequenceNumber);
 	switch(tAcc.val) {
 	case 'N' : return new AccessibilityDisabled( seq, tIntLenMax.val );
-	case 'F' : return new AccessibilityVrna( seq, vrnaHandler, tIntLenMax.val, &tAccConstr, &logStream );
+	case 'F' : {
+			// create temporary constraint object (will be copied)
+			AccessibilityConstraint accConstraint(tAccConstr);
+			return new AccessibilityVrna( seq, vrnaHandler, tIntLenMax.val, &accConstraint, &logStream );
+		}
 	default :
 		NOTIMPLEMENTED("CommandLineParsing::getTargetAccessibility : tAcc = '"+toString(tAcc.val)+"' is not supported");
 	}

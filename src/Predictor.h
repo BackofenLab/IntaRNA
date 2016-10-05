@@ -33,19 +33,19 @@ public:
 
 	/**
 	 * Computes the predictors optimization target for the given sequence
-	 * ranges (i1-j1) in the first sequence and (i2-j2) in the second sequence.
+	 * ranges in the first sequence and second sequence.
 	 * The according optimal interaction is given to the output handler.
 	 *
-	 * @param i1 the index of the first sequence interacting with i2
-	 * @param j1 the index of the first sequence interacting with j2
-	 * @param i2 the index of the second sequence interacting with i1
-	 * @param j2 the index of the second sequence interacting with j1
+	 * @param r1 the index range of the first sequence interacting with r2
+	 * @param 22 the index range of the second sequence interacting with r1
+	 *
+	 * TODO @param seed InteractionRange/Interaction pointer (default NULL) that centers interaction prediction
 	 *
 	 */
 	virtual
 	void
-	predict( const size_t i1 = 0, const size_t j1 = RnaSequence::lastPos
-			, const size_t i2 = 0, const size_t j2 = RnaSequence::lastPos) = 0;
+	predict( const IndexRange & r1 = IndexRange(0,RnaSequence::lastPos)
+			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos) ) = 0;
 
 protected:
 

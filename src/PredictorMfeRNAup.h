@@ -44,14 +44,14 @@ public:
 	 * sequence and (i2-j2) in the second sequence and reports it to the output
 	 * handler.
 	 *
-	 * @param i1 the index of the first sequence interacting with i2
-	 * @param j1 the index of the first sequence interacting with j2
-	 * @param i2 the index of the second sequence interacting with i1
-	 * @param j2 the index of the second sequence interacting with j1
+	 * @param r1 the index range of the first sequence interacting with r2
+	 * @param 22 the index range of the second sequence interacting with r1
+	 *
 	 */
+	virtual
 	void
-	predict( const size_t i1 = 0, const size_t j1 = RnaSequence::lastPos
-				, const size_t i2 = 0, const size_t j2 = RnaSequence::lastPos);
+	predict( const IndexRange & r1 = IndexRange(0,RnaSequence::lastPos)
+			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos) );
 
 protected:
 
@@ -90,6 +90,19 @@ protected:
 	fillHybridE( const InteractionEnergy & energy );
 
 	/**
+	 * Computes the final energy for an interaction given the hybridization
+	 * energy
+	 * @param hybridE the hybridization energy
+	 * @param i1 the index of the first sequence interacting with i2
+	 * @param j1 the index of the first sequence interacting with j2
+	 * @param i2 the index of the second sequence interacting with i1
+	 * @param j2 the index of the second sequence interacting with j1
+	 * @return the overall energy = hybridE + ED1 + ED2 + EdangleLeft + EdangleRight
+	 */
+	E_type
+	getE( const E_type hybridE, const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const;
+
+	/**
 	 * Fills a given interaction (boundaries given) with the according
 	 * hybridizing base pairs.
 	 * @param interaction IN/OUT the interaction to fill
@@ -111,15 +124,13 @@ protected:
 	 * @param j1 the index of the first sequence interacting with j2
 	 * @param i2 the index of the second sequence interacting with i1
 	 * @param j2 the index of the second sequence interacting with j1
-	 * @param eH the energy of the hybridization only (just base pairs etc)
-	 * @param eE the energy of the hybridization's dangling ends (left+right)
-	 * @param eD the energy needed to make it accessible (seq1[i-j]+seq2[i-j])
+	 * @param energy the overall energy of the interaction
 	 */
 	virtual
 	void
 	updateMfe( const size_t i1, const size_t j1
 			, const size_t i2, const size_t j2
-			, const E_type eH, const E_type eE, const E_type eD );
+			, const E_type energy );
 
 };
 

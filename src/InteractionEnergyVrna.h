@@ -57,7 +57,7 @@ public:
 	 * the intermolecular base pairs (i1,i2) and (j1,j2) where the regions
 	 * [i1,j1] and [i2,j2] are considered unpaired.
 	 * The energy estimate is derived via the Vienna RNA package loop energies
-	 * or is E_MAX if the internal loop size exceeds
+	 * or is E_INF if the internal loop size exceeds
 	 * the allowed maximum (see constructor).
 	 *
 	 * @param i1 the index of the first sequence interacting with i2
@@ -67,7 +67,7 @@ public:
 	 *
 	 * @return energy in kcal/mol for the loop closed by (i1,i2)
 	 *         or
-	 *         E_MAX if the allowed loop size is exceeded
+	 *         E_INF if the allowed loop size is exceeded
 	 */
 	virtual
 	E_type
@@ -115,6 +115,33 @@ public:
 	E_type
 	getRT() const;
 
+	/**
+	 * Provides the minimal energy gain via stacking possible for this energy
+	 * model
+	 * @return the minimal energy possible for any stacking combination
+	 */
+	virtual
+	E_type
+	getBestStackingEnergy() const;
+
+	/**
+	 * Provides the minimal energy gain possible for interaction initiation
+	 * for this energy model
+	 * @return the initiation constant used
+	 */
+	virtual
+	E_type
+	getBestInitEnergy() const;
+
+	/**
+	 * Provides the minimal energy gain possible for left/right dangling ends
+	 * for this energy model
+	 * @return the best initiation energy gain produced by getDanglingLef() or
+	 *          getDanglingRight()
+	 */
+	virtual
+	E_type
+	getBestDangleEnergy() const;
 
 protected:
 

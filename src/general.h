@@ -59,6 +59,8 @@
 
 ////////////////  GLOBAL CONSTANTS  /////////////////////
 
-	const E_type E_MAX = 999999.0;
+#include <limits>
+
+	const E_type E_INF = std::numeric_limits<E_type>::infinity();
 
 #endif /* GENERAL_H_ */

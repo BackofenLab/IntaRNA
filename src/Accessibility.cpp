@@ -8,10 +8,9 @@
 
 #include "Accessibility.h"
 
-const E_type Accessibility::ED_UPPER_BOUND = (E_type) E_MAX;
+////////////////////////////////////////////////////////////////////
 
-const std::string Accessibility::AccessibilityConstraintAlphabet = ".x";
-
+const E_type Accessibility::ED_UPPER_BOUND = (E_type) E_INF;
 
 ////////////////////////////////////////////////////////////////////
 

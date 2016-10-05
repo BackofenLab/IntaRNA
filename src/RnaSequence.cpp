@@ -107,6 +107,16 @@ isAmbiguous() const
 
 /////////////////////////////////////////////////////////////////////////////
 
+bool
+RnaSequence::
+isAmbiguous( const size_t i ) const
+{
+	// TODO ensure sequence is upper case and reduce the test accordingly
+	return this->seqString.at(i) == 'N' || this->seqString.at(i) == 'n';
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
 
 RnaSequence::
 String_type

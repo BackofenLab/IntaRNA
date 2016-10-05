@@ -3,7 +3,7 @@
 #define PREDICTORMAXPROB_H_
 
 #include "Predictor.h"
-#include "Interaction.h"
+#include "InteractionRange.h"
 
 #include <boost/numeric/ublas/matrix.hpp>
 
@@ -45,14 +45,14 @@ public:
 	 * sequence and (i2-j2) in the second sequence and reports it to the output
 	 * handler.
 	 *
-	 * @param i1 the index of the first sequence interacting with i2
-	 * @param j1 the index of the first sequence interacting with j2
-	 * @param i2 the index of the second sequence interacting with i1
-	 * @param j2 the index of the second sequence interacting with j1
+	 * @param r1 the index range of the first sequence interacting with r2
+	 * @param 22 the index range of the second sequence interacting with r1
+	 *
 	 */
+	virtual
 	void
-	predict( const size_t i1 = 0, const size_t j1 = RnaSequence::lastPos
-				, const size_t i2 = 0, const size_t j2 = RnaSequence::lastPos);
+	predict( const IndexRange & r1 = IndexRange(0,RnaSequence::lastPos)
+			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos) );
 
 protected:
 
@@ -72,7 +72,7 @@ protected:
 	double Z;
 
 	//! interaction boundaries with maximal probability
-	Interaction maxProbInteraction;
+	InteractionRange maxProbInteraction;
 
 	//! offset for indices in sequence 1 for current computation
 	size_t i1offset;

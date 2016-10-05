@@ -7,6 +7,10 @@
 
 #include "RnaSequence.h"
 
+// dummy declaration to avoid inclusion loop
+class InteractionRange;
+
+
 /**
  * Data structure to describe and store an Interaction
  */
@@ -23,10 +27,16 @@ public:
 public:
 
 	//! the first interaction partner
-	const RnaSequence & s1;
+	const RnaSequence * s1;
 
 	//! the second interaction partner
-	const RnaSequence & s2;
+	const RnaSequence * s2;
+
+	//! interacting indices
+	PairingVec basePairs;
+
+	//! energy of the interaction (can be NaN)
+	E_type energy;
 
 
 	/**
@@ -35,6 +45,16 @@ public:
 	 * @param s2 the sequence of the second interaction partner
 	 */
 	Interaction( const RnaSequence & s1, const RnaSequence & s2 );
+
+	/**
+	 * construction from interaction range, ie. forming base pairs at the
+	 * beginning and end of the interaction range.
+	 *
+	 * NOTE: the ends have to be complementary nucleotides
+	 *
+	 * @param range the interaction range to be used for initialization
+	 */
+	Interaction( const InteractionRange & range );
 
 	/**
 	 * destruction
@@ -59,6 +79,13 @@ public:
 	isValid() const;
 
 	/**
+	 * Checks whether or not the interaction contains no base pairs.
+	 * @return true if the interaction encodes no base pair; false otherwise
+	 */
+	bool
+	isEmpty() const;
+
+	/**
 	 * Sorts the stored interacting base pairs.
 	 */
 	void
@@ -70,43 +97,20 @@ public:
 	void
 	clear();
 
-	/**
-	 * Const access to the interacting base pairs between s1 and s2.
-	 * @return the list of interacting base pairs (idx s1, idx s2)
-	 */
-	const PairingVec &
-	getBasePairs() const;
 
 	/**
-	 * Access to the interacting base pairs between s1 and s2.
-	 * @return the list of interacting base pairs (idx s1, idx s2)
+	 * Creates an interaction with one base pair for each interaction range
+	 * boundary.
+	 *
+	 * NOTE: the ends have to be complementary nucleotides
+	 *
+	 * NOTE: the interaction energy is reset too.
+	 *
+	 * @param range the interaction range to get the boundaries from
+	 * @return the altered range object (*this)
 	 */
-	PairingVec &
-	getBasePairs();
-
-	/**
-	 * Access to the stored energy value for this interaction
-	 * @return the energy value or NaN if not stored
-	 */
-	E_type getEnergy() const {
-		return energy;
-	}
-
-	/**
-	 * Sets the energy value for this interaction
-	 * @param energy the new energy value to set
-	 */
-	void setEnergy(E_type energy) {
-		this->energy = energy;
-	}
-
-protected:
-
-	//! interacting indices
-	PairingVec interaction;
-
-	//! energy of the interaction (can be NaN)
-	E_type energy;
+	Interaction &
+	operator= ( const InteractionRange & range );
 
 };
 

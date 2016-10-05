@@ -59,7 +59,7 @@ public:
 	 * @return the global accessibility constraint applied
 	 */
 	virtual
-	const std::string&
+	const AccessibilityConstraint&
 	getAccConstraint() const;
 
 	/**
@@ -90,7 +90,7 @@ protected:
 	RnaSequence seqReversed;
 
 	//! reversed accessibility constraint object
-	std::string accConstrReversed;
+	AccessibilityConstraint accConstrReversed;
 
 
 	/**

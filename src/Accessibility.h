@@ -11,6 +11,8 @@
 
 #include "general.h"
 #include "RnaSequence.h"
+#include "AccessibilityConstraint.h"
+
 #include <stdexcept>
 
 /**
@@ -26,9 +28,6 @@ public:
 	//! upper bound for all ED return values
 	const static E_type ED_UPPER_BOUND;
 
-	//! allowed alphabet for accessibility constraint encoding
-	const static std::string AccessibilityConstraintAlphabet;
-
 public:
 
 	/**
@@ -37,14 +36,11 @@ public:
 	 * @param maxLength the maximal length of accessible regions (>0) to be
 	 *          considered. 0 defaults to the full sequence's length, otherwise
 	 *          is is internally set to min(maxLength,seq.length).
-	 * @param accConstr optional accessibility constraint: all positions marked not as
-	 * 			unconstrained (.) are omitted from interaction prediction, thus
-	 * 			resulting in ED_UPPER_BOUND. Empty string and NULL input is equivalent
-	 * 			to fully unconstrained accessibility computation.
+	 * @param accConstr optional accessibility constraint
 	 */
 	Accessibility( const RnaSequence& sequence
 					, const size_t maxLength
-					, const std::string * const accConstr
+					, const AccessibilityConstraint * const accConstr
 				);
 
 	/**
@@ -92,7 +88,7 @@ public:
 	 * @return the global accessibility constraint applied
 	 */
 	virtual
-	const std::string&
+	const AccessibilityConstraint&
 	getAccConstraint() const;
 
 
@@ -113,10 +109,8 @@ protected:
 	//! the maximal length of an unpaired regions to be considered
 	const size_t maxLength;
 
-	//! accessibility constraint: all positions marked not as unconstrained (.)
-	//! are ommited from interaction prediction, thus resulting in
-	//! ED_UPPER_BOUND
-	std::string accConstraint;
+	//! accessibility constraint
+	AccessibilityConstraint accConstraint;
 
 	/**
 	 * Checks the given indices to be in the range 0 <= from <= to < seq.length
@@ -139,25 +133,17 @@ protected:
 inline
 Accessibility::Accessibility( const RnaSequence& seq
 							, const size_t maxLength
-							, const std::string * const accConstraint_ )
+							, const AccessibilityConstraint * const accConstraint_ )
  :
 	seq(seq)
 	// set maxLength to appropriate value
 	, maxLength( maxLength==0 ? seq.size() : std::min(maxLength,seq.size()) )
-	, accConstraint(accConstraint_==NULL?"":*accConstraint_)
+	, accConstraint( seq.size() )
 {
-
-#ifdef NDEBUG           /* required by ANSI standard */
-	// no check
-#else
-	// debug checks
-	if(accConstraint.size() > 0 && accConstraint.size() != getSequence().size()) {
-		throw std::runtime_error("Accessibility : sequence and accConstr differ in length");
+	// set constraint if needed
+	if (accConstraint_ != NULL) {
+		accConstraint = *accConstraint_;
 	}
-	if (accConstraint.find_first_not_of(AccessibilityConstraintAlphabet)!=std::string::npos) {
-		throw std::runtime_error("Accessibility : accConstr '"+accConstraint+"' contains unsupported characters");
-	}
-#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -206,7 +192,7 @@ getMaxLength() const
 /////////////////////////////////////////////////////////////////////////////
 
 inline
-const std::string&
+const AccessibilityConstraint&
 Accessibility::
 getAccConstraint() const
 {

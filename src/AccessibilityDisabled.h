@@ -25,14 +25,11 @@ public:
 	 * @param sequence the sequence the accessibility data belongs to
 	 * @param maxLength the maximal length of accessible regions to be
 	 *          considered. 0 defaults to the sequence's length.
-	 * @param accConstr accessibility constraint: all positions marked not as
-	 * 			unconstrained (.) are ommited from interaction prediction, thus
-	 * 			resulting in ED_UPPER_BOUND. Empty string input is equivalent
-	 * 			to fully unconstrained accessibility computation.
+	 * @param accConstr optional accessibility constraint
 	 */
 	AccessibilityDisabled( const RnaSequence& sequence
 							, const size_t maxLength = 0
-							, const std::string  * const accConstr = NULL
+							, const AccessibilityConstraint * const accConstr = NULL
 						);
 
 	/**
@@ -64,7 +61,7 @@ public:
 inline
 AccessibilityDisabled::AccessibilityDisabled(const RnaSequence& seq
 				, const size_t maxLength
-				, const std::string * const accConstr)
+				, const AccessibilityConstraint * const accConstr)
  :
 	Accessibility(seq, maxLength, accConstr)
 {
@@ -90,8 +87,8 @@ getED( const size_t from, const size_t to ) const
 	if ((to-from+1) <= getMaxLength()) {
 		// check for constrained positions within region
 		for (size_t i=from; i<=to; ++i) {
-			if (getAccConstraint().size() > 0 && accConstraint[i] != '.') {
-				// regions covers a constrained position --> omit accessibility
+			if (getAccConstraint().isBlocked(i)) {
+				// position covers a blocked position --> omit accessibility
 				return ED_UPPER_BOUND;
 			}
 		}

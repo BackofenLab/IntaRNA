@@ -1,10 +1,81 @@
 
+161005 Martin Mann :
+ * Accessibility* :
+   - AccessibilityConstraintAlphabet : now part of AccessibilityConstraint
+   * ED_UPPER_BOUND = E_INF
+   * uses now AccessibilityConstraint object instead of dot-bracket string
+ + AccessibilityConstraint : encodes an accessibility constraint based
+   + init via dot-bracket VRNA-like encoding
+   + getVrnaDotBracket() : get according VRNA-styled dot-bracket encoding
+   + isAccessible() : check for explicit "accessible" marking
+   + isBlocked() : check for explicit "blocked" marking
+   + isEmpty() : check if any constraint information present
+ * CommandLineParsing :
+   * getTargetAccessibility() : creation of AccessibilityConstraint object
+   * getQueryAccessibility() : creation of AccessibilityConstraint object
+ + IndexRange : represents an ascending or descending range of (sequence) indices
+   + isAscending() : check if ascending range encoding
+   + isDescending() : check if descending range encoding
+   + ostream operator
+   + less-than operator
+ * Interaction :
+   + construction from InteractionRange
+   * sequence handling via pointers to enable assignment operator
+   * basePairs : public
+   - getBasePairs() : obsolete for public member
+   * energy : public
+   - get/setEnergy() : obsolete for public member
+   + isEmpty() : check if any base pairs present
+   + assignment operator (InteractionRange)
+ * InteractionEnergy* :
+   + getBestStackingEnergy() : access to the best stacking energy contribution
+   + getBestInitEnergy() : access to the best initiation energy contribution
+   + getBestDangleEnergy() : access to the best dangling end energy contribution
+ + InteractionRange : represents two interacting ranges of two sequences based
+   on two according IndexRange objects
+   + construction from Interaction (boundaries)
+   + isSane() : checks ordering of index ranges
+   + ostream operator
+   + less-than operator
+   + assignment operator (Interaction)
+ * src/Makefile.am : adaption to source changes
+ * OutputHandler* :
+   + add(InteractionRange)
+ + OutputHandlerRangeOnly : converts reported Interactions into an 
+   InteractionRange and forwards the output to a successive OutputHandler
+ * OutputHandlerText :
+   * adaption to Interaction interface changes
+ * Predictor* :
+   * predict(IndexRange,IndexRange) : takes to ranges instead of 4 coordinates
+ * PredictorMaxProb :
+   * maxProbInteraction : now an InteractionRange 
+ * PredictorMfeRNAup :
+   + getE() : computes the overall energy for a given interaction site
+   * updateMfe() : takes only the overall energy instead of individual contribs
+ * ReverseAccessibility :
+   * adaption to AccessibilityConstraint usage
+ * RnaSequence :
+   + isAmbiguous() : checks a certain sequence position for ambiguity
+ + test/AccessibilityConstraint
+ + test/IndexRange
+ + test/InteractionRange
+ + test/OutputRangeOnly
+
+161004 Martin Mann :
+ * general :
+   - E_MAX : replaced by E_INF
+   + E_INF : infinity representation for E_type
+
 161001 Martin Mann :
  - tests/test* : renamed to *_test
  + tests/*_test.cpp : test files for the according classes
  * tests/Makefile : 
    + wildcard based test file listing
-
+ * travis :
+   + make test added
+ * configure.ac : back to automake 1.11 features
+ * */Makefile.am : test target adapted to configure change
+ 
 160930 Martin Mann :
  * InteractionEnergy* :
    + getRT() : provides the RT constant for this energy model to compute

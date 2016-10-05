@@ -40,7 +40,7 @@ public:
 		KEEP_GOING = -1,
 		STOP_ALL_FINE = 0,
 		STOP_PARSING_ERROR = 1,
-		NOT_PARSED = 999
+		NOT_PARSED_YET = 999
 	};
 
 public:
@@ -446,7 +446,7 @@ protected:
 inline
 void
 CommandLineParsing::checkIfParsed() const {
-	if (parsingCode == ReturnCode::NOT_PARSED) {
+	if (parsingCode == ReturnCode::NOT_PARSED_YET) {
 		throw std::runtime_error("CommandLineParsing::checkIfParsed() : parse() function was not called yet");
 	}
 }

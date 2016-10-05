@@ -31,9 +31,9 @@ getInterLoopE( const size_t i1, const size_t j1, const size_t i2, const size_t j
 	// if valid internal loop
 	if ( isValidInternalLoop(i1,j1,i2,j2) ) {
 		// return negated number of gained base pairs by closing this loop = -1
-		return (E_type)-1.0;
+		return getBestStackingEnergy();
 	} else {
-		return E_MAX;
+		return E_INF;
 	}
 }
 
@@ -58,5 +58,31 @@ getDanglingRight( const size_t j1, const size_t j2 ) const
 }
 
 ////////////////////////////////////////////////////////////////////////////
+
+E_type
+InteractionEnergyBasePair::
+getBestStackingEnergy() const
+{
+	return getBestInitEnergy();
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+E_type
+InteractionEnergyBasePair::
+getBestInitEnergy() const
+{
+	return (E_type)-1.0;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+E_type
+InteractionEnergyBasePair::
+getBestDangleEnergy() const
+{
+	return (E_type)0.0;
+}
+
 ////////////////////////////////////////////////////////////////////////////
 

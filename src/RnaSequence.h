@@ -107,6 +107,17 @@ public:
 	isAmbiguous() const;
 
 	/**
+	 * Whether or not a specific sequence position shows an ambiguous nucleotide
+	 * encoding.
+	 * @param i the sequence position of interest
+	 * @return true if the sequence contains an ambiguous nucleotide encoding
+	 *         at position i;
+	 *         false otherwise
+	 */
+	bool
+	isAmbiguous( const size_t i ) const;
+
+	/**
 	 * prints the sequence id and the sequence to stream
 	 * @out the ostream to write to
 	 * @rna the RnaSequence object to add

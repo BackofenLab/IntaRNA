@@ -44,7 +44,7 @@ public:
 	 * the intermolecular base pairs (i1,i2) and (j1,j2) where the regions
 	 * [i1,j1] and [i2,j2] are considered unpaired.
 	 * The energy estimate is the negated number of gained base pairs by
-	 * closing this loop, i.e. -1 or E_MAX is the internal loop size exceeds
+	 * closing this loop, i.e. -1 or E_INF is the internal loop size exceeds
 	 * the allowed maximum (see constructor).
 	 *
 	 * @param i1 the index of the first sequence interacting with i2
@@ -52,7 +52,7 @@ public:
 	 * @param i2 the index of the second sequence interacting with i1
 	 * @param j2 the index of the second sequence interacting with j1
 	 *
-	 * @return -1 or E_MAX if the allowed loop size is
+	 * @return -1 or E_INF if the allowed loop size is
 	 *         exceeded
 	 */
 	virtual
@@ -101,6 +101,32 @@ public:
 		return 1.0;
 	}
 
+	/**
+	 * Provides the best energy gain via stacking possible for this energy
+	 * model
+	 * @return -1
+	 */
+	virtual
+	E_type
+	getBestStackingEnergy() const;
+
+	/**
+	 * Provides the best energy gain possible for interaction initiation
+	 * for this energy model
+	 * @return -1
+	 */
+	virtual
+	E_type
+	getBestInitEnergy() const;
+
+	/**
+	 * Provides the best energy gain possible for left/right dangle
+	 * for this energy model
+	 * @return 0
+	 */
+	virtual
+	E_type
+	getBestDangleEnergy() const;
 };
 
 #endif /* INTERACTIONENERGYBASEPAIR_H_ */
