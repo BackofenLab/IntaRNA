@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <stdexcept>
 
+
 ////////////////////////////////////////////////////////////////////////////
 
 Interaction::Interaction( const RnaSequence & s1, const RnaSequence & s2 )
@@ -73,17 +74,17 @@ bool
 Interaction::
 isValid() const
 {
-	bool isValid = true;
 
 	// no or single interaction
 	if (basePairs.size() < 2) {
 		// check if at least one interacting base pair
-		return isEmpty();
+		return !isEmpty();
 	}
 
 	// multiple interacting base pairs
 	PairingVec::const_iterator i = basePairs.begin(), j = basePairs.begin();
 	// index order and duplicate check
+	bool isValid = true;
 	for (++j; isValid && j!=basePairs.end(); ++i,++j ) {
 		isValid = (i->first < j->first) && (i->second > j->second);
 	}

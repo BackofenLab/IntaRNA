@@ -7,6 +7,10 @@
    * matrix initialization of end regions reduced to the accessible window
      widths using getMaxInteractionWidth()
    * adaption of recursion to varying matrix sizes
+ + test/Interaction
+ * test/Makefile.am : clear binary before each test run (ensures relinking)
+ * Interaction :
+   * isValid() : bugfix : wrong return for single bp interaction
 
 161005 Martin Mann :
  * Accessibility* :
