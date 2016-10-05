@@ -66,6 +66,8 @@ predict( const IndexRange & r1
 	const E_type bestInitEnergy = energy.getBestInitEnergy();
 	const E_type bestDangleEnergy = energy.getBestDangleEnergy();
 
+	size_t maxWidthFori1i2 = 0;
+
 	bool i1blocked, i1or2blocked, skipw1w2;
 	// initialize 3rd and 4th dimension of the matrix
 	for (size_t i1=0; i1<hybridE.size1(); i1++) {
@@ -83,9 +85,15 @@ predict( const IndexRange & r1
 		// - is blocked by an accessibility constraint
 			|| energy.getAccessibility2().getAccConstraint().isBlocked(i2+i2offset);
 
+		if (hybridE.size1()-i1 < hybridE.size2()-i2) {
+			maxWidthFori1i2 = getMaxInteractionWidth( hybridE.size1()-i1, energy.getMaxInternalLoopSize1() );
+		} else {
+			maxWidthFori1i2 = getMaxInteractionWidth( hybridE.size2()-i2, energy.getMaxInternalLoopSize2() );
+		}
+
 		debug_cellNumber =
-				/*w1 = */ std::min(energy.getAccessibility1().getMaxLength(), hybridE.size1()-i1)
-			*	/*w2 = */ std::min(energy.getAccessibility2().getMaxLength(), hybridE.size2()-i2);
+				/*w1 = */ std::min(energy.getAccessibility1().getMaxLength(), std::min( hybridE.size1()-i1, maxWidthFori1i2) )
+			*	/*w2 = */ std::min(energy.getAccessibility2().getMaxLength(), std::min( hybridE.size2()-i2, maxWidthFori1i2) );
 
 		// check if i1 and i2 are not blocked and can form a base pair
 		if ( ! i1or2blocked
@@ -96,8 +104,8 @@ predict( const IndexRange & r1
 		{
 			// create new 2d matrix for different interaction site widths
 			hybridE(i1,i2) = new E2dMatrix(
-				/*w1 = */ std::min(energy.getAccessibility1().getMaxLength(), hybridE.size1()-i1),
-				/*w2 = */ std::min(energy.getAccessibility2().getMaxLength(), hybridE.size2()-i2));
+				/*w1 = */ std::min(energy.getAccessibility1().getMaxLength(), std::min( hybridE.size1()-i1, maxWidthFori1i2) ),
+				/*w2 = */ std::min(energy.getAccessibility2().getMaxLength(), std::min( hybridE.size2()-i2, maxWidthFori1i2) ));
 
 			debug_count_cells_nonNull += debug_cellNumber;
 
@@ -109,19 +117,21 @@ predict( const IndexRange & r1
 				w2 = w2x-1;
 
 				// check if window size too large
-				skipw1w2 = 1+(w1*(energy.getMaxInternalLoopSize1()+1)) < w2
-						|| 1+(w2*(energy.getMaxInternalLoopSize2()+1)) < w1;
+				skipw1w2 = false;
 
 				// check if ED penalty exceeds maximal energy gain
-				if (!skipw1w2) {
-					// check if all larger windows are already set to INF
+				{
+					// check if all larger windows needing this site are already set to INF
 					bool largerWindowsINF = w1x==(*hybridE(i1,i2)).size1() && w2x==(*hybridE(i1,i2)).size2();
-					// check all larger windows (that might need this window for computation)
-					for (size_t w1p=w1+1; largerWindowsINF && w1p<(*hybridE(i1,i2)).size1(); w1p++) {
-					for (size_t w2p=w2+1; largerWindowsINF && w2p<(*hybridE(i1,i2)).size2(); w2p++) {
+					// check all larger windows w1 + w2p (that might need this window for computation)
+					for (size_t w2p=(*hybridE(i1,i2)).size2()-1; largerWindowsINF && w2p>w2; w2p++) {
 						// check if larger window is E_INF
-						largerWindowsINF = (std::numeric_limits<E_type>::max() < (*hybridE(i1,i2))(w1p,w2p));
+						largerWindowsINF = (std::numeric_limits<E_type>::max() < (*hybridE(i1,i2))(w1+1,w2p));
 					}
+					// check all larger windows w2 + w1p (that might need this window for computation)
+					for (size_t w1p=(*hybridE(i1,i2)).size1()-1; largerWindowsINF && w1p>w1; w1p++) {
+						// check if larger window is E_INF
+						largerWindowsINF = (std::numeric_limits<E_type>::max() < (*hybridE(i1,i2))(w1p,w2+1));
 					}
 
 					// if it holds for all w'>=w: ED1(i1+w1')+ED2(i2+w2')+dangle > -1*(min(w1',w2')*EmaxStacking + Einit)
@@ -161,6 +171,7 @@ predict( const IndexRange & r1
 
 	// fill matrix
 	fillHybridE( energy );
+	std::cerr<<"#DEBUG : trace"<<std::endl;
 
 	// check if interaction is better than no interaction (E==0)
 	if (mfeInteraction.energy < 0.0) {
@@ -172,6 +183,7 @@ predict( const IndexRange & r1
 		mfeInteraction.clear();
 		mfeInteraction.energy = 0.0;
 	}
+	std::cerr<<"#DEBUG : report"<<std::endl;
 
 	// report mfe interaction
 	output.add( mfeInteraction );
@@ -212,50 +224,66 @@ fillHybridE( const InteractionEnergy & energy )
 	// iterate increasingly over all window sizes w1 (seq1) and w2 (seq2)
 	for (w1=0; w1<energy.getAccessibility1().getMaxLength(); w1++) {
 	for (w2=0; w2<energy.getAccessibility2().getMaxLength(); w2++) {
-		// iterate over all window starts i (seq1) and k (seq2)
+		// iterate over all window starts i1 (seq1) and i2 (seq2)
 		// TODO PARALLELIZE THIS DOUBLE LOOP ?!
 		for (i1=0; i1+w1<hybridE.size1(); i1++) {
 		for (i2=0; i2+w2<hybridE.size2(); i2++) {
 			// check if left boundary is complementary
 			if (hybridE(i1,i2) == NULL) {
-				// nothing to do
+				// interaction not possible: nothing to do, since no storage reserved
 				continue;
 			}
+			// and widths are possible (ie available within data structure)
+			if (hybridE(i1,i2)->size1()<=w1 || hybridE(i1,i2)->size2()<=w2) {
+				// interaction not possible: nothing to do, since no storage reserved
+				continue;
+			}
+			// check if interaction exceeds possible with due to max-loop-length
+			if ( getMaxInteractionWidth( 1+w1, energy.getMaxInternalLoopSize1() ) < w2
+				|| getMaxInteractionWidth( 1+w2, energy.getMaxInternalLoopSize2() ) < w1)
+			{
+				// ignore this entry
+				(*hybridE(i1,i2))(w1,w2) = E_INF;
+				continue;
+			}
+
 			// get window ends j (seq1) and l (seq2)
 			j1=i1+w1;
 			j2=i2+w2;
+
 			// check if right boundary is complementary
 			if (hybridE(j1,j2) == NULL)
 			{
 				// not complementary -> ignore this entry
 				(*hybridE(i1,i2))(w1,w2) = E_INF;
-			} else {
+				continue;
+			}
+			// check if this cell is to be computed (!=E_INF)
+			if( (*hybridE(i1,i2))(w1,w2) < std::numeric_limits<E_type>::infinity()) {
 
-				// check if this cell is to be computed (!=E_INF)
-				if( (*hybridE(i1,i2))(w1,w2) < std::numeric_limits<E_type>::infinity()) {
-
-					// compute entry
-					// get full internal loop energy (nothing between i and j)
-					curMinE = energy.getInterLoopE(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset) + energy.getInterLoopE(j1+i1offset,j1+i1offset,j2+i2offset,j2+i2offset);
+				// compute entry
+				// get full internal loop energy (nothing between i and j)
+				curMinE = energy.getInterLoopE(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset)
+						+ energy.getInterLoopE(j1+i1offset,j1+i1offset,j2+i2offset,j2+i2offset);
 
 
-					if (w1 > 1 && w2 > 1) {
-						// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
-						for (k1=std::min(j1-1,i1+energy.getMaxInternalLoopSize1()+1); k1>i1; k1--) {
-						for (k2=std::min(j2-1,i2+energy.getMaxInternalLoopSize2()+1); k2>i2; k2--) {
-							// check if (k1,k2) are complementary
-							if (hybridE(k1,k2) != NULL) {
-								curMinE = std::min( curMinE,
-										(energy.getInterLoopE(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset) + (*hybridE(k1,k2))(j1-k1,j2-k2))
-										);
-							}
-						}
+				if (w1 > 1 && w2 > 1) {
+					// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
+					for (k1=std::min(j1-1,i1+energy.getMaxInternalLoopSize1()+1); k1>i1; k1--) {
+					for (k2=std::min(j2-1,i2+energy.getMaxInternalLoopSize2()+1); k2>i2; k2--) {
+						// check if (k1,k2) are complementary
+						if (hybridE(k1,k2) != NULL && hybridE(k1,k2)->size1() > (j1-k1) && hybridE(k1,k2)->size2() > (j2-k2)) {
+							curMinE = std::min( curMinE,
+									(energy.getInterLoopE(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
+											+ (*hybridE(k1,k2))(j1-k1,j2-k2))
+									);
 						}
 					}
-					// store value
-					(*hybridE(i1,i2))(w1,w2) = curMinE;
-
+					}
 				}
+				// store value
+				(*hybridE(i1,i2))(w1,w2) = curMinE;
+				continue;
 			}
 		}
 		}
@@ -270,12 +298,13 @@ fillHybridE( const InteractionEnergy & energy )
 	// iterate increasingly over all window sizes w1 (seq1) and w2 (seq2)
 	for (w1=0; w1<energy.getAccessibility1().getMaxLength(); w1++) {
 	for (w2=0; w2<energy.getAccessibility2().getMaxLength(); w2++) {
-		// iterate over all window starts i (seq1) and k (seq2)
+		// iterate over all window starts i1 (seq1) and i2 (seq2)
 		for (i1=0; i1+w1<hybridE.size1(); i1++) {
 		for (i2=0; i2+w2<hybridE.size2(); i2++) {
 			// check if left boundary is complementary
-			if (hybridE(i1,i2) == NULL) {
-				// nothing to do
+			// and widths are possible
+			if (hybridE(i1,i2) == NULL || hybridE(i1,i2)->size1()<=w1 || hybridE(i1,i2)->size2()<=w2) {
+				// interaction not possible: nothing to do
 				continue;
 			}
 			// check if reasonable entry
@@ -402,7 +431,9 @@ traceBack( Interaction & interaction ) const
 	// trace back
 	do {
 		// check if just internal loop
-		if (curE == (energy.getInterLoopE(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset) + energy.getInterLoopE(j1+i1offset,j1+i1offset,j2+i2offset,j2+i2offset))) {
+		if (curE == (energy.getInterLoopE(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset)
+				+ energy.getInterLoopE(j1+i1offset,j1+i1offset,j2+i2offset,j2+i2offset)))
+		{
 			break;
 		}
 		// check all interval splits
@@ -414,8 +445,10 @@ traceBack( Interaction & interaction ) const
 			for (k1=std::min(j1-1,i1+energy.getMaxInternalLoopSize1()+1); traceNotFound && k1>i1; k1--) {
 			for (k2=std::min(j2-1,i2+energy.getMaxInternalLoopSize2()+1); traceNotFound && k2>i2; k2--) {
 				// check if (k1,k2) are complementary
-				if (hybridE(k1,k2) != NULL) {
-					if (curE == (energy.getInterLoopE(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset) + (*hybridE(k1,k2))(j1-k1,j2-k2)) ) {
+				if (hybridE(k1,k2) != NULL && hybridE(k1,k2)->size1() > (j1-k1) && hybridE(k1,k2)->size2() > (j2-k2)) {
+					if (curE == (energy.getInterLoopE(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
+							+ (*hybridE(k1,k2))(j1-k1,j2-k2)) )
+					{
 						// stop searching
 						traceNotFound = false;
 						// store splitting base pair

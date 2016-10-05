@@ -1,5 +1,14 @@
 
 161005 Martin Mann :
+ * Predictor :
+   + getMaxInteractionWidth() : upper width bound for an interacting site
+ * PredictorMaxProb :
+ * PredictorMfeRNAup :
+   * matrix initialization of end regions reduced to the accessible window
+     widths using getMaxInteractionWidth()
+   * adaption of recursion to varying matrix sizes
+
+161005 Martin Mann :
  * Accessibility* :
    - AccessibilityConstraintAlphabet : now part of AccessibilityConstraint
    * ED_UPPER_BOUND = E_INF

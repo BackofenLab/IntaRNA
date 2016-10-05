@@ -47,6 +47,19 @@ public:
 	predict( const IndexRange & r1 = IndexRange(0,RnaSequence::lastPos)
 			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos) ) = 0;
 
+	/**
+	 * Computes the maximal width of an interaction for a given site width and
+	 * maximal size of interaction loops.
+	 *
+	 * @param w the width to compute the maximal interacting width for
+	 * @param maxLoopSize the maximal size of loops within interactions
+	 *
+	 * @return 1 + (w-1)*(maxLoopSize+1): if w>0; 0 otherwise
+	 */
+	static
+	size_t
+	getMaxInteractionWidth( const size_t w, const size_t maxLoopSize );
+
 protected:
 
 	//! energy computation handler

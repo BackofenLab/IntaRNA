@@ -58,6 +58,8 @@ predict( const IndexRange & r1
 
 	size_t debug_count_cells_null=0, debug_count_cells_nonNull = 0, debug_cellNumber=0;
 
+	size_t maxWidthFori1i2 = 0;
+
 	bool i1blocked, i1or2blocked;
 	// initialize 3rd and 4th dimension of the matrix
 	for (size_t i1=0; i1<hybridZ.size1(); i1++) {
@@ -75,9 +77,15 @@ predict( const IndexRange & r1
 		// - is blocked by an accessibility constraint
 			|| energy.getAccessibility2().getAccConstraint().isBlocked(i2);
 
+		if (hybridZ.size1()-i1 < hybridZ.size2()-i2) {
+			maxWidthFori1i2 = getMaxInteractionWidth( hybridZ.size1()-i1, energy.getMaxInternalLoopSize1() );
+		} else {
+			maxWidthFori1i2 = getMaxInteractionWidth( hybridZ.size2()-i2, energy.getMaxInternalLoopSize2() );
+		}
+
 		debug_cellNumber =
-				/*w1 = */ std::min(energy.getAccessibility1().getMaxLength(), hybridZ.size1()-i1)
-			*	/*w2 = */ std::min(energy.getAccessibility2().getMaxLength(), hybridZ.size2()-i2);
+				/*w1 = */ std::min(energy.getAccessibility1().getMaxLength(), std::min( hybridZ.size1()-i1, maxWidthFori1i2) )
+			*	/*w2 = */ std::min(energy.getAccessibility2().getMaxLength(), std::min( hybridZ.size2()-i2, maxWidthFori1i2) );
 
 		// check if i1 and i2 are not blocked and can form a base pair
 		if ( ! i1or2blocked
@@ -88,8 +96,8 @@ predict( const IndexRange & r1
 		{
 			// create new 2d matrix for different interaction site widths
 			hybridZ(i1,i2) = new E2dMatrix(
-				/*w1 = */ std::min(energy.getAccessibility1().getMaxLength(), hybridZ.size1()-i1),
-				/*w2 = */ std::min(energy.getAccessibility2().getMaxLength(), hybridZ.size2()-i2));
+				/*w1 = */ std::min(energy.getAccessibility1().getMaxLength(), std::min( hybridZ.size1()-i1, maxWidthFori1i2) ),
+				/*w2 = */ std::min(energy.getAccessibility2().getMaxLength(), std::min( hybridZ.size2()-i2, maxWidthFori1i2) ));
 
 			debug_count_cells_nonNull += debug_cellNumber;
 		} else {
@@ -152,47 +160,58 @@ fillHybridZ( const InteractionEnergy & energy )
 	// iterate increasingly over all window sizes w1 (seq1) and w2 (seq2)
 	for (w1=0; w1<energy.getAccessibility1().getMaxLength(); w1++) {
 	for (w2=0; w2<energy.getAccessibility2().getMaxLength(); w2++) {
-		// iterate over all window starts i (seq1) and k (seq2)
+		// iterate over all window starts i1 (seq1) and i2 (seq2)
 		// TODO PARALLELIZE THIS DOUBLE LOOP ?!
 		for (i1=0; i1+w1<hybridZ.size1(); i1++) {
 		for (i2=0; i2+w2<hybridZ.size2(); i2++) {
 			// check if left boundary is complementary
-			if (hybridZ(i1,i2) == NULL) {
-				// nothing to do
+			// and widths are possible
+			if (hybridZ(i1,i2) == NULL || hybridZ(i1,i2)->size1()<=w1 || hybridZ(i1,i2)->size2()<=w2) {
+				// interaction not possible: nothing to do
 				continue;
 			}
-			// get window ends j (seq1) and l (seq2)
-			j1=i1+w1;
-			j2=i2+w2;
+			// check if interaction exceeds possible with due to max-loop-length
+			if ( getMaxInteractionWidth( 1+w1, energy.getMaxInternalLoopSize1() ) < w2
+				|| getMaxInteractionWidth( 1+w2, energy.getMaxInternalLoopSize2() ) < w1)
+			{
+				// ignore this entry
+				(*hybridZ(i1,i2))(w1,w2) = 0;
+				continue;
+			}
 			// check if right boundary is complementary
 			if (hybridZ(j1,j2) == NULL) {
 				// not complementary -> ignore this entry
-				(*hybridZ(i1,i2))(w1,w2) = E_INF;
-			} else {
-				// compute entry
-				curZ = 0;
-				// get full internal loop energy (nothing between i and j)
-				// if allowed distance between i and j
-				if ( (w1+1) <= energy.getMaxInternalLoopSize1() && (w2+1) <= energy.getMaxInternalLoopSize2()) {
-					curZ += getBoltzmannWeight(energy.getInterLoopE(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset))
-						* getBoltzmannWeight(energy.getInterLoopE(j1+i1offset,j1+i1offset,j2+i2offset,j2+i2offset));
-				}
-
-				if (w1 > 1 && w2 > 1) {
-					// sum all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
-					for (k1=std::min(j1-1,i1+energy.getMaxInternalLoopSize1()+1); k1>i1; k1--) {
-					for (k2=std::min(j2-1,i2+energy.getMaxInternalLoopSize2()+1); k2>i2; k2--) {
-						// check if (k1,k2) are complementary
-						if (hybridZ(k1,k2) != NULL) {
-							curZ += getBoltzmannWeight(energy.getInterLoopE(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset))
-									* ((*hybridZ(k1,k2))(j1-k1,j2-k2));
-						}
-					}
-					}
-				}
-				// store value
-				(*hybridZ(i1,i2))(w1,w2) = curZ;
+				(*hybridZ(i1,i2))(w1,w2) = 0;
+				continue;
 			}
+
+			// get window ends j (seq1) and l (seq2)
+			j1=i1+w1;
+			j2=i2+w2;
+			// compute entry
+			curZ = 0;
+
+			// get full internal loop energy (nothing between i and j)
+			// if allowed distance between i and j
+			if ( (w1+1) <= energy.getMaxInternalLoopSize1() && (w2+1) <= energy.getMaxInternalLoopSize2()) {
+				curZ += getBoltzmannWeight(energy.getInterLoopE(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset))
+					* getBoltzmannWeight(energy.getInterLoopE(j1+i1offset,j1+i1offset,j2+i2offset,j2+i2offset));
+			}
+
+			if (w1 > 1 && w2 > 1) {
+				// sum all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
+				for (k1=std::min(j1-1,i1+energy.getMaxInternalLoopSize1()+1); k1>i1; k1--) {
+				for (k2=std::min(j2-1,i2+energy.getMaxInternalLoopSize2()+1); k2>i2; k2--) {
+					// check if (k1,k2) are complementary
+					if (hybridZ(k1,k2) != NULL) {
+						curZ += getBoltzmannWeight(energy.getInterLoopE(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset))
+								* ((*hybridZ(k1,k2))(j1-k1,j2-k2));
+					}
+				}
+				}
+			}
+			// store value
+			(*hybridZ(i1,i2))(w1,w2) = curZ;
 		}
 		}
 	}
@@ -208,12 +227,13 @@ fillHybridZ( const InteractionEnergy & energy )
 	// iterate increasingly over all window sizes w1 (seq1) and w2 (seq2)
 	for (w1=0; w1<energy.getAccessibility1().getMaxLength(); w1++) {
 	for (w2=0; w2<energy.getAccessibility2().getMaxLength(); w2++) {
-		// iterate over all window starts i (seq1) and k (seq2)
+		// iterate over all window starts i1 (seq1) and i2 (seq2)
 		for (i1=0; i1+w1<hybridZ.size1(); i1++) {
 		for (i2=0; i2+w2<hybridZ.size2(); i2++) {
 			// check if left boundary is complementary
-			if (hybridZ(i1,i2) == NULL) {
-				// nothing to do
+			// and widths are possible
+			if (hybridZ(i1,i2) == NULL || hybridZ(i1,i2)->size1()<=w1 || hybridZ(i1,i2)->size2()<=w2) {
+				// interaction not possible: nothing to do
 				continue;
 			}
 			// check if reasonable entry
