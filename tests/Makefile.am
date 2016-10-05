@@ -5,6 +5,7 @@ bin_PROGRAMS = runTests
 # test sources
 runTests_SOURCES =	catch.hpp \
 					AccessibilityConstraint_test.cpp \
+					Interaction_test.cpp  \
 					InteractionEnergyBasePair_test.cpp  \
 					InteractionRange_test.cpp  \
 					RnaSequence_test.cpp \
@@ -22,8 +23,6 @@ runTests_CXXFLAGS =	-I$(top_srcdir)/src @AM_CXXFLAGS@ @CXXFLAGS@
 # disable general build
 all:
 
-
-
 # global test directive
-tests: all-am
+tests: clean-binPROGRAMS all-am
 	@./runTests

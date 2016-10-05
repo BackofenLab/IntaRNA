@@ -6,7 +6,9 @@
 #include "OutputHandlerRangeOnly.h"
 #include <stdexcept>
 
-
+/**
+ * Dummy class for testing the add result
+ */
 class RangeStore : public OutputHandler {
 public:
 
@@ -15,11 +17,11 @@ public:
 	RangeStore( const RnaSequence& s ) : lastAdded(s,s) {}
 
 	void add( const Interaction& i ) {
-		// reset
+		// reset, ignoring the given interaction
 		lastAdded = InteractionRange(*(i.s1),*(i.s2));
 	}
 	void add( const InteractionRange& r ) {
-		// store
+		// store the range
 		lastAdded = r;
 	}
 };
@@ -40,12 +42,18 @@ TEST_CASE( "OutputHandlerRangeOnly", "[OutputHandlerRangeOnly]" ) {
 	InteractionRange ir(i);
 
 	SECTION("add interaction") {
+		// ensure difference before add
+		REQUIRE( ((succOut.lastAdded < ir)  ||  (ir < succOut.lastAdded)));
 		out.add(i);
+		// check equivalence after add
 		REQUIRE( (!(succOut.lastAdded < ir)  &&  !(ir < succOut.lastAdded)));
 	}
 
 	SECTION("add interaction range") {
+		// ensure difference before add
+		REQUIRE( ((succOut.lastAdded < ir)  ||  (ir < succOut.lastAdded)));
 		out.add(ir);
+		// check equivalence after add
 		REQUIRE( (!(succOut.lastAdded < ir)  &&  !(ir < succOut.lastAdded)));
 	}
 
