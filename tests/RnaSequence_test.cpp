@@ -5,61 +5,71 @@
 
 #include "RnaSequence.h"
 
-TEST_CASE( "RnaSequence - id empty", "[RNAsequence]" ) {
+TEST_CASE( "RnaSequence", "[RNAsequence]" ) {
+
 	bool exceptionRaised = false;
-	try {
-		RnaSequence rna("","AAAUUUGGGCCC");
-	} catch (std::exception & ex) {
-		exceptionRaised = true;
+
+#ifndef NDEBUG // only checked in NDEBUG
+	SECTION("id empty") {
+		try {
+			RnaSequence rna("","AAAUUUGGGCCC");
+		} catch (std::exception & ex) {
+			exceptionRaised = true;
+		}
+		REQUIRE( exceptionRaised );
 	}
-	REQUIRE( exceptionRaised );
-}
+#endif
 
-TEST_CASE( "RnaSequence - sequence empty", "[RNAsequence]" ) {
-	bool exceptionRaised = false;
-	try {
-		RnaSequence rna("test","");
-	} catch (std::exception & ex) {
-		exceptionRaised = true;
+#ifndef NDEBUG // only checked in NDEBUG
+	SECTION( "sequence empty" ) {
+		bool exceptionRaised = false;
+		try {
+			RnaSequence rna("test","");
+		} catch (std::exception & ex) {
+			exceptionRaised = true;
+		}
+		REQUIRE( exceptionRaised );
 	}
-	REQUIRE( exceptionRaised );
-}
+#endif
 
-TEST_CASE( "RnaSequence - sequence with non-ACGU", "[RNAsequence]" ) {
-	bool exceptionRaised = false;
-	try {
-		RnaSequence rna("test","ACUGACerror");
-	} catch (std::exception & ex) {
-		exceptionRaised = true;
+	SECTION( "sequence with non-ACGU" ) {
+		bool exceptionRaised = false;
+		try {
+			RnaSequence rna("test","ACUGACerror");
+		} catch (std::exception & ex) {
+			exceptionRaised = true;
+		}
+		REQUIRE( exceptionRaised );
 	}
-	REQUIRE( exceptionRaised );
-}
 
-TEST_CASE( "RnaSequence - getter", "[RNAsequence]" ) {
+	SECTION( "getter", "[RNAsequence]" ) {
 
-	std::string id= "test", seq="AAAUUUGGGCCC";
+		std::string id= "test", seq="AAAUUUGGGCCC";
 
-	RnaSequence rna(id, seq);
+		RnaSequence rna(id, seq);
 
-	// check data access
-	REQUIRE( rna.size() == seq.size() );
-	REQUIRE( rna.getId() == id );
-	REQUIRE( rna.asString() == seq );
-	REQUIRE( rna.asCodes().size() == seq.size() );
-}
+		// check data access
+		REQUIRE( rna.size() == seq.size() );
+		REQUIRE( rna.getId() == id );
+		REQUIRE( rna.asString() == seq );
+		REQUIRE( rna.asCodes().size() == seq.size() );
+	}
 
-TEST_CASE( "RnaSequence - areComplementary()", "[RNAsequence]" ) {
 
-	std::string id= "test", seq="AAAUUUGGGCCC";
+	SECTION( "areComplementary()" ) {
 
-	RnaSequence rna(id, seq);
+		std::string id= "test", seq="AAAUUUGGGCCC";
 
-	// check complementarity
-	REQUIRE( RnaSequence::areComplementary( rna, rna, 0, 3) );
-	REQUIRE_FALSE( RnaSequence::areComplementary( rna, rna, 0, 6) );
-	REQUIRE_FALSE( RnaSequence::areComplementary( rna, rna, 0, 9) );
-	REQUIRE( RnaSequence::areComplementary( rna, rna, 3, 6) );
-	REQUIRE_FALSE( RnaSequence::areComplementary( rna, rna, 3, 9) );
-	REQUIRE( RnaSequence::areComplementary( rna, rna, 6, 9) );
+		RnaSequence rna(id, seq);
+
+		// check complementarity
+		REQUIRE( RnaSequence::areComplementary( rna, rna, 0, 3) );
+		REQUIRE_FALSE( RnaSequence::areComplementary( rna, rna, 0, 6) );
+		REQUIRE_FALSE( RnaSequence::areComplementary( rna, rna, 0, 9) );
+		REQUIRE( RnaSequence::areComplementary( rna, rna, 3, 6) );
+		REQUIRE_FALSE( RnaSequence::areComplementary( rna, rna, 3, 9) );
+		REQUIRE( RnaSequence::areComplementary( rna, rna, 6, 9) );
+
+	}
 
 }
