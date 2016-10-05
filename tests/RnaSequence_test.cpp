@@ -7,35 +7,6 @@
 
 TEST_CASE( "RnaSequence", "[RNAsequence]" ) {
 
-	bool exceptionRaised = false;
-
-#ifdef NDEBUG
-	// no check
-#else
- // only checked in NDEBUG
-	SECTION("id empty") {
-		try {
-			RnaSequence rna("","AAAUUUGGGCCC");
-		} catch (std::exception & ex) {
-			exceptionRaised = true;
-		}
-		REQUIRE( exceptionRaised );
-	}
-#endif
-
-#ifdef NDEBUG
-	// no check
-#else // only checked in NDEBUG
-	SECTION( "sequence empty" ) {
-		bool exceptionRaised = false;
-		try {
-			RnaSequence rna("test","");
-		} catch (std::exception & ex) {
-			exceptionRaised = true;
-		}
-		REQUIRE( exceptionRaised );
-	}
-#endif
 
 	SECTION( "sequence with non-ACGU" ) {
 		bool exceptionRaised = false;
