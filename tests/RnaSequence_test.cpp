@@ -9,7 +9,10 @@ TEST_CASE( "RnaSequence", "[RNAsequence]" ) {
 
 	bool exceptionRaised = false;
 
-#ifndef NDEBUG // only checked in NDEBUG
+#ifdef NDEBUG
+	// no check
+#else
+ // only checked in NDEBUG
 	SECTION("id empty") {
 		try {
 			RnaSequence rna("","AAAUUUGGGCCC");
@@ -20,7 +23,9 @@ TEST_CASE( "RnaSequence", "[RNAsequence]" ) {
 	}
 #endif
 
-#ifndef NDEBUG // only checked in NDEBUG
+#ifdef NDEBUG
+	// no check
+#else // only checked in NDEBUG
 	SECTION( "sequence empty" ) {
 		bool exceptionRaised = false;
 		try {
