@@ -1,13 +1,13 @@
 
-#include "PredictorMfeRNAup.h"
+#include "PredictorMfe4d.h"
 
 #include <stdexcept>
 
 
 ////////////////////////////////////////////////////////////////////////////
 
-PredictorMfeRNAup::
-PredictorMfeRNAup( const InteractionEnergy & energy, OutputHandler & output )
+PredictorMfe4d::
+PredictorMfe4d( const InteractionEnergy & energy, OutputHandler & output )
  : Predictor(energy,output)
 	, hybridE( 0,0 )
 	, mfeInteraction(energy.getAccessibility1().getSequence()
@@ -20,8 +20,8 @@ PredictorMfeRNAup( const InteractionEnergy & energy, OutputHandler & output )
 
 ////////////////////////////////////////////////////////////////////////////
 
-PredictorMfeRNAup::
-~PredictorMfeRNAup()
+PredictorMfe4d::
+~PredictorMfe4d()
 {
 	// clean up
 	this->clear();
@@ -31,7 +31,7 @@ PredictorMfeRNAup::
 ////////////////////////////////////////////////////////////////////////////
 
 void
-PredictorMfeRNAup::
+PredictorMfe4d::
 predict( const IndexRange & r1
 		, const IndexRange & r2 )
 {
@@ -40,7 +40,7 @@ predict( const IndexRange & r1
 #else
 	// check indices
 	if (!(r1.isAscending() && r2.isAscending()) )
-		throw std::runtime_error("PredictorMfeRNAup::predict("+toString(r1)+","+toString(r2)+") is not sane");
+		throw std::runtime_error("PredictorMfe4d::predict("+toString(r1)+","+toString(r2)+") is not sane");
 #endif
 
 	// clear data
@@ -65,6 +65,7 @@ predict( const IndexRange & r1
 	const E_type bestStackingEnergy = energy.getBestStackingEnergy();
 	const E_type bestInitEnergy = energy.getBestInitEnergy();
 	const E_type bestDangleEnergy = energy.getBestDangleEnergy();
+	const E_type bestEndEnergy = energy.getBestEndEnergy();
 
 	size_t maxWidthFori1i2 = 0;
 
@@ -73,93 +74,93 @@ predict( const IndexRange & r1
 	for (size_t i1=0; i1<hybridE.size1(); i1++) {
 		// check if i1 is blocked for interaction
 		i1blocked =
-		// - shows ambiguous nucleotide encoding
+				// - i1 shows ambiguous nucleotide encoding
 			energy.getAccessibility1().getSequence().isAmbiguous( i1+i1offset )
-		// - is blocked by an accessibility constraint
+				// - i1 is blocked by an accessibility constraint
 			|| energy.getAccessibility1().getAccConstraint().isBlocked(i1+i1offset);
-	for (size_t i2=0; i2<hybridE.size2(); i2++) {
-		// check whether i1 or i2 is blocked for interaction
-		i1or2blocked = i1blocked
-		// - shows ambiguous nucleotide encoding
-			|| energy.getAccessibility2().getSequence().isAmbiguous( i2+i2offset )
-		// - is blocked by an accessibility constraint
-			|| energy.getAccessibility2().getAccConstraint().isBlocked(i2+i2offset);
+		for (size_t i2=0; i2<hybridE.size2(); i2++) {
+			// check whether i1 or i2 is blocked for interaction
+			i1or2blocked = i1blocked
+					// - i2 shows ambiguous nucleotide encoding
+				|| energy.getAccessibility2().getSequence().isAmbiguous( i2+i2offset )
+					// - i2 is blocked by an accessibility constraint
+				|| energy.getAccessibility2().getAccConstraint().isBlocked(i2+i2offset);
 
-		if (hybridE.size1()-i1 < hybridE.size2()-i2) {
-			maxWidthFori1i2 = getMaxInteractionWidth( hybridE.size1()-i1, energy.getMaxInternalLoopSize1() );
-		} else {
-			maxWidthFori1i2 = getMaxInteractionWidth( hybridE.size2()-i2, energy.getMaxInternalLoopSize2() );
-		}
-
-		debug_cellNumber =
-				/*w1 = */ std::min(energy.getAccessibility1().getMaxLength(), std::min( hybridE.size1()-i1, maxWidthFori1i2) )
-			*	/*w2 = */ std::min(energy.getAccessibility2().getMaxLength(), std::min( hybridE.size2()-i2, maxWidthFori1i2) );
-
-		// check if i1 and i2 are not blocked and can form a base pair
-		if ( ! i1or2blocked
-			&& RnaSequence::areComplementary(
-				  energy.getAccessibility1().getSequence()
-				, energy.getAccessibility2().getSequence()
-				, i1+i1offset, i2+i2offset ))
-		{
-			// create new 2d matrix for different interaction site widths
-			hybridE(i1,i2) = new E2dMatrix(
-				/*w1 = */ std::min(energy.getAccessibility1().getMaxLength(), std::min( hybridE.size1()-i1, maxWidthFori1i2) ),
-				/*w2 = */ std::min(energy.getAccessibility2().getMaxLength(), std::min( hybridE.size2()-i2, maxWidthFori1i2) ));
-
-			debug_count_cells_nonNull += debug_cellNumber;
-
-			// screen for cells that can be skipped from computation
-			for (size_t w1x = (*hybridE(i1,i2)).size1(); w1x>0; w1x--) {
-				w1 = w1x-1;
-
-			for (size_t w2x = (*hybridE(i1,i2)).size2(); w2x>0; w2x--) {
-				w2 = w2x-1;
-
-				// check if window size too large
-				skipw1w2 = false;
-
-				// check if ED penalty exceeds maximal energy gain
-				{
-					// check if all larger windows needing this site are already set to INF
-					bool largerWindowsINF = w1x==(*hybridE(i1,i2)).size1() && w2x==(*hybridE(i1,i2)).size2();
-					// check all larger windows w1 + w2p (that might need this window for computation)
-					for (size_t w2p=(*hybridE(i1,i2)).size2()-1; largerWindowsINF && w2p>w2; w2p++) {
-						// check if larger window is E_INF
-						largerWindowsINF = (std::numeric_limits<E_type>::max() < (*hybridE(i1,i2))(w1+1,w2p));
-					}
-					// check all larger windows w2 + w1p (that might need this window for computation)
-					for (size_t w1p=(*hybridE(i1,i2)).size1()-1; largerWindowsINF && w1p>w1; w1p++) {
-						// check if larger window is E_INF
-						largerWindowsINF = (std::numeric_limits<E_type>::max() < (*hybridE(i1,i2))(w1p,w2+1));
-					}
-
-					// if it holds for all w'>=w: ED1(i1+w1')+ED2(i2+w2')+dangle > -1*(min(w1',w2')*EmaxStacking + Einit)
-					// ie. the ED values exceed the max possible energy gain of an interaction
-					skipw1w2 = skipw1w2
-							|| ( largerWindowsINF &&
-									( -1.0*(std::min(w1,w2)*bestStackingEnergy + bestInitEnergy + bestDangleEnergy) >
-										(energy.getAccessibility1().getED(i1+i1offset,i1+w1+i1offset)
-												+ energy.getAccessibility2().getED(i2+i2offset,i2+w2+i2offset)))
-								)
-								;
-				}
-
-				if (skipw1w2) {
-					// init with infinity to mark that this cell is not to be computed later on
-					(*hybridE(i1,i2))(w1,w2) = E_INF;
-					debug_count_cells_inf++;
-				}
-
-			}
+			if (hybridE.size1()-i1 < hybridE.size2()-i2) {
+				maxWidthFori1i2 = getMaxInteractionWidth( hybridE.size1()-i1, energy.getMaxInternalLoopSize1() );
+			} else {
+				maxWidthFori1i2 = getMaxInteractionWidth( hybridE.size2()-i2, energy.getMaxInternalLoopSize2() );
 			}
 
-		} else {
-			// reduce memory consumption and avoid computation for this start index combination
-			hybridE(i1,i2) = NULL;
-			debug_count_cells_null += debug_cellNumber;
+			debug_cellNumber =
+					/*w1 = */ std::min(energy.getAccessibility1().getMaxLength(), std::min( hybridE.size1()-i1, maxWidthFori1i2) )
+				*	/*w2 = */ std::min(energy.getAccessibility2().getMaxLength(), std::min( hybridE.size2()-i2, maxWidthFori1i2) );
+
+			// check if i1 and i2 are not blocked and can form a base pair
+			if ( ! i1or2blocked
+				&& RnaSequence::areComplementary(
+					  energy.getAccessibility1().getSequence()
+					, energy.getAccessibility2().getSequence()
+					, i1+i1offset, i2+i2offset ))
+			{
+				// create new 2d matrix for different interaction site widths
+				hybridE(i1,i2) = new E2dMatrix(
+					/*w1 = */ std::min(energy.getAccessibility1().getMaxLength(), std::min( hybridE.size1()-i1, maxWidthFori1i2) ),
+					/*w2 = */ std::min(energy.getAccessibility2().getMaxLength(), std::min( hybridE.size2()-i2, maxWidthFori1i2) ));
+
+				debug_count_cells_nonNull += debug_cellNumber;
+
+				// screen for cells that can be skipped from computation (decreasing window sizes)
+				for (size_t w1x = (*hybridE(i1,i2)).size1(); w1x>0; w1x--) {
+					w1 = w1x-1;
+
+				for (size_t w2x = (*hybridE(i1,i2)).size2(); w2x>0; w2x--) {
+					w2 = w2x-1;
+
+					// check if window size too large
+					skipw1w2 = false;
+
+					// check if ED penalty exceeds maximal energy gain
+					{
+						// check if all larger windows needing this site are already set to INF
+						bool largerWindowsINF = w1x==(*hybridE(i1,i2)).size1() && w2x==(*hybridE(i1,i2)).size2();
+						// check all larger windows w1 + w2p (that might need this window for computation)
+						for (size_t w2p=(*hybridE(i1,i2)).size2()-1; largerWindowsINF && w2p>w2; w2p++) {
+							// check if larger window is E_INF
+							largerWindowsINF = (std::numeric_limits<E_type>::max() < (*hybridE(i1,i2))(w1+1,w2p));
+						}
+						// check all larger windows w2 + w1p (that might need this window for computation)
+						for (size_t w1p=(*hybridE(i1,i2)).size1()-1; largerWindowsINF && w1p>w1; w1p++) {
+							// check if larger window is E_INF
+							largerWindowsINF = (std::numeric_limits<E_type>::max() < (*hybridE(i1,i2))(w1p,w2+1));
+						}
+
+						// if it holds for all w'>=w: ED1(i1+w1')+ED2(i2+w2') > -1*(min(w1',w2')*EmaxStacking + Einit + 2*Edangle + 2*Eend)
+						// ie. the ED values exceed the max possible energy gain of an interaction
+						skipw1w2 = skipw1w2
+								|| ( largerWindowsINF &&
+										( -1.0*(std::min(w1,w2)*bestStackingEnergy + bestInitEnergy + 2.0*bestDangleEnergy + 2.0*bestEndEnergy) >
+											(energy.getAccessibility1().getED(i1+i1offset,i1+w1+i1offset)
+													+ energy.getAccessibility2().getED(i2+i2offset,i2+w2+i2offset)))
+									)
+									;
+					}
+
+					if (skipw1w2) {
+						// init with infinity to mark that this cell is not to be computed later on
+						(*hybridE(i1,i2))(w1,w2) = E_INF;
+						debug_count_cells_inf++;
+					}
+
+				}
+				}
+
+			} else {
+				// reduce memory consumption and avoid computation for this start index combination
+				hybridE(i1,i2) = NULL;
+				debug_count_cells_null += debug_cellNumber;
+			}
 		}
-	}
 	}
 
 	std::cerr <<"#DEBUG: init 4d matrix : "<<(debug_count_cells_nonNull-debug_count_cells_inf)<<" (-"<<debug_count_cells_inf <<") to be filled ("
@@ -171,7 +172,6 @@ predict( const IndexRange & r1
 
 	// fill matrix
 	fillHybridE( energy );
-	std::cerr<<"#DEBUG : trace"<<std::endl;
 
 	// check if interaction is better than no interaction (E==0)
 	if (mfeInteraction.energy < 0.0) {
@@ -183,7 +183,6 @@ predict( const IndexRange & r1
 		mfeInteraction.clear();
 		mfeInteraction.energy = 0.0;
 	}
-	std::cerr<<"#DEBUG : report"<<std::endl;
 
 	// report mfe interaction
 	output.add( mfeInteraction );
@@ -192,7 +191,7 @@ predict( const IndexRange & r1
 ////////////////////////////////////////////////////////////////////////////
 
 void
-PredictorMfeRNAup::
+PredictorMfe4d::
 clear()
 {
 	// delete 3rd and 4th dimension of the matrix
@@ -210,12 +209,15 @@ clear()
 ////////////////////////////////////////////////////////////////////////////
 
 void
-PredictorMfeRNAup::
+PredictorMfe4d::
 fillHybridE( const InteractionEnergy & energy )
 {
 
 	// global vars to avoid reallocation
 	size_t i1,i2,j1,j2,w1,w2,k1,k2;
+
+	// initialize mfe interaction for updates
+	initMfe();
 
 	//////////  FIRST ROUND : COMPUTE HYBRIDIZATION ENERGIES ONLY  ////////////
 
@@ -283,6 +285,10 @@ fillHybridE( const InteractionEnergy & energy )
 				}
 				// store value
 				(*hybridE(i1,i2))(w1,w2) = curMinE;
+				// update mfe if needed
+				updateMfe( i1,j1,i2,j2
+						, (*hybridE(i1,i2))(w1,w2)
+						);
 				continue;
 			}
 		}
@@ -292,64 +298,47 @@ fillHybridE( const InteractionEnergy & energy )
 
 	//////////  SECOND ROUND : COMPUTE FINAL ENERGIES AND MFE  ////////////
 
-	// initialize mfe interaction for updates
-	initMfe();
-
-	// iterate increasingly over all window sizes w1 (seq1) and w2 (seq2)
-	for (w1=0; w1<energy.getAccessibility1().getMaxLength(); w1++) {
-	for (w2=0; w2<energy.getAccessibility2().getMaxLength(); w2++) {
-		// iterate over all window starts i1 (seq1) and i2 (seq2)
-		for (i1=0; i1+w1<hybridE.size1(); i1++) {
-		for (i2=0; i2+w2<hybridE.size2(); i2++) {
-			// check if left boundary is complementary
-			// and widths are possible
-			if (hybridE(i1,i2) == NULL || hybridE(i1,i2)->size1()<=w1 || hybridE(i1,i2)->size2()<=w2) {
-				// interaction not possible: nothing to do
-				continue;
-			}
-			// check if reasonable entry
-			if ((*hybridE(i1,i2))(w1,w2) < E_INF) {
-				// get window ends j (seq1) and l (seq2)
-				j1=i1+w1;
-				j2=i2+w2;
-
-				// update mfe if needed
-				updateMfe( i1,j1,i2,j2
-						, getE( (*hybridE(i1,i2))(w1,w2), i1,j1,i2,j2)
-						);
-
-			}
-
-		} // i2
-		} // i1
-	} // w2
-	} // w1
+//	// iterate increasingly over all window sizes w1 (seq1) and w2 (seq2)
+//	for (w1=0; w1<energy.getAccessibility1().getMaxLength(); w1++) {
+//	for (w2=0; w2<energy.getAccessibility2().getMaxLength(); w2++) {
+//		// iterate over all window starts i1 (seq1) and i2 (seq2)
+//		for (i1=0; i1+w1<hybridE.size1(); i1++) {
+//		for (i2=0; i2+w2<hybridE.size2(); i2++) {
+//			// check if left boundary is complementary
+//			// and widths are possible
+//			if (hybridE(i1,i2) == NULL || hybridE(i1,i2)->size1()<=w1 || hybridE(i1,i2)->size2()<=w2) {
+//				// interaction not possible: nothing to do
+//				continue;
+//			}
+//			// check if reasonable entry
+//			if ((*hybridE(i1,i2))(w1,w2) < E_INF) {
+//				// get window ends j (seq1) and l (seq2)
+//				j1=i1+w1;
+//				j2=i2+w2;
+//
+//				// update mfe if needed
+//				updateMfe( i1,j1,i2,j2
+//						, (*hybridE(i1,i2))(w1,w2)
+//						);
+//
+//			}
+//
+//		} // i2
+//		} // i1
+//	} // w2
+//	} // w1
 
 }
 
-
-////////////////////////////////////////////////////////////////////////////
-
-E_type
-PredictorMfeRNAup::
-getE( const E_type hybridE, const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const
-{
-	return hybridE
-			+ energy.getDanglingLeft(i1+i1offset,i2+i2offset)
-			+ energy.getDanglingRight(j1+i1offset,j2+i2offset)
-			+ energy.getAccessibility1().getED(i1+i1offset,j1+i1offset)
-			+ energy.getAccessibility2().getED(i2+i2offset,j2+i2offset)
-			;
-}
 
 ////////////////////////////////////////////////////////////////////////////
 
 void
-PredictorMfeRNAup::
+PredictorMfe4d::
 initMfe()
 {
-	// initialize global E minimum
-	mfeInteraction.energy = E_INF;
+	// initialize global E minimum : should be below 0.0
+	mfeInteraction.energy = 0.0;
 	// ensure it holds only the boundary
 	if (mfeInteraction.basePairs.size()!=2) {
 		mfeInteraction.basePairs.resize(2);
@@ -363,15 +352,23 @@ initMfe()
 ////////////////////////////////////////////////////////////////////////////
 
 void
-PredictorMfeRNAup::
+PredictorMfe4d::
 updateMfe( const size_t i1, const size_t j1
 		, const size_t i2, const size_t j2
-		, const E_type curE )
+		, const E_type hybridE )
 {
 //				std::cerr <<"#DEBUG : energy( "<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" ) = "
 //						<<ecurE
 //						<<" = " <<(eH + eE + eD)
 //						<<std::endl;
+
+	// TODO check if reasonable to check only interactions with hybridE < 0
+	if (hybridE > 0) {
+		return;
+	}
+
+	// get final energy of current interaction
+	E_type curE = energy.getE( i1,j1, i2,j2, hybridE );
 
 	if (curE < mfeInteraction.energy) {
 		// store new global min
@@ -389,7 +386,7 @@ updateMfe( const size_t i1, const size_t j1
 ////////////////////////////////////////////////////////////////////////////
 
 void
-PredictorMfeRNAup::
+PredictorMfe4d::
 traceBack( Interaction & interaction ) const
 {
 	// check if something to trace
@@ -402,10 +399,10 @@ traceBack( Interaction & interaction ) const
 #else
 	// sanity checks
 	if ( ! interaction.isValid() ) {
-		throw std::runtime_error("PredictorRNAup::traceBack() : given interaction not valid");
+		throw std::runtime_error("PredictorMfe4d::traceBack() : given interaction not valid");
 	}
 	if ( interaction.basePairs.size() != 2 ) {
-		throw std::runtime_error("PredictorRNAup::traceBack() : given interaction does not contain boundaries only");
+		throw std::runtime_error("PredictorMfe4d::traceBack() : given interaction does not contain boundaries only");
 	}
 #endif
 

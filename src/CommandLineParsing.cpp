@@ -21,7 +21,7 @@
 #include "InteractionEnergyBasePair.h"
 #include "InteractionEnergyVrna.h"
 
-#include "PredictorMfeRNAup.h"
+#include "PredictorMfe4d.h"
 #include "PredictorMaxProb.h"
 
 #include "OutputHandlerText.h"
@@ -668,7 +668,7 @@ CommandLineParsing::
 getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 {
 	// TODO add according arguments and parsing
-	return new PredictorMfeRNAup( energy, output );
+	return new PredictorMfe4d( energy, output );
 //	return new PredictorMaxProb( energy, output );
 }
 

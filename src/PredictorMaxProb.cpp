@@ -41,7 +41,7 @@ predict( const IndexRange & r1
 #else
 	// check indices (both regions ascending due to reversing of seq2)
 	if (!(r1.isAscending() && r2.isAscending()) )
-		throw std::runtime_error("PredictorMfeRNAup::predict("+toString(r1)+","+toString(r2)+") is not sane");
+		throw std::runtime_error("PredictorMaxProb::predict("+toString(r1)+","+toString(r2)+") is not sane");
 #endif
 
 	// clear data
@@ -194,8 +194,8 @@ fillHybridZ( const InteractionEnergy & energy )
 			// get full internal loop energy (nothing between i and j)
 			// if allowed distance between i and j
 			if ( (w1+1) <= energy.getMaxInternalLoopSize1() && (w2+1) <= energy.getMaxInternalLoopSize2()) {
-				curZ += getBoltzmannWeight(energy.getInterLoopE(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset))
-					* getBoltzmannWeight(energy.getInterLoopE(j1+i1offset,j1+i1offset,j2+i2offset,j2+i2offset));
+				curZ += energy.getBoltzmannWeight(energy.getInterLoopE(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset))
+					* energy.getBoltzmannWeight(energy.getInterLoopE(j1+i1offset,j1+i1offset,j2+i2offset,j2+i2offset));
 			}
 
 			if (w1 > 1 && w2 > 1) {
@@ -204,7 +204,7 @@ fillHybridZ( const InteractionEnergy & energy )
 				for (k2=std::min(j2-1,i2+energy.getMaxInternalLoopSize2()+1); k2>i2; k2--) {
 					// check if (k1,k2) are complementary
 					if (hybridZ(k1,k2) != NULL) {
-						curZ += getBoltzmannWeight(energy.getInterLoopE(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset))
+						curZ += energy.getBoltzmannWeight(energy.getInterLoopE(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset))
 								* ((*hybridZ(k1,k2))(j1-k1,j2-k2));
 					}
 				}
@@ -243,12 +243,10 @@ fillHybridZ( const InteractionEnergy & energy )
 				j2=i2+w2;
 
 				// update if needed
+				// TODO : intaRNA-1 uses dangling contribs only, if dangling base is in ED region, ie additional cases used
+				// TODO AU-end penalty missing
 				updateMaxProbInteraction( i1,j1,i2,j2
 						, (*hybridZ(i1,i2))(w1,w2)
-						 * getBoltzmannWeight(energy.getDanglingLeft(i1+i1offset,i2+i2offset))
-						 * getBoltzmannWeight(energy.getDanglingRight(j1+i1offset,j2+i2offset))
-						 * getBoltzmannWeight(energy.getAccessibility1().getED(i1+i1offset,j1+i1offset))
-						 * getBoltzmannWeight(energy.getAccessibility2().getED(i2+i2offset,j2+i2offset))
 						);
 
 			}
@@ -281,12 +279,15 @@ void
 PredictorMaxProb::
 updateMaxProbInteraction( const size_t i1, const size_t j1
 		, const size_t i2, const size_t j2
-		, const E_type curZ )
+		, const E_type hybridZ )
 {
 //				std::cerr <<"#DEBUG : Z( "<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" ) = "
 //						<<curZ
 //						<<" = " <<(eH + eE + eD)
 //						<<std::endl;
+
+	// add Boltzmann weights of all penalties
+	E_type curZ = hybridZ * energy.getBoltzmannWeight( energy.getE(i1,j1,i2,j2,0.0) );
 
 	// update overall partition function
 	Z += (double)curZ;
@@ -302,16 +303,6 @@ updateMaxProbInteraction( const size_t i1, const size_t j1
 		maxProbInteraction.r1.to = j1+i1offset;
 		maxProbInteraction.r2.to = energy.getAccessibility2().getReversedIndex(j2+i2offset);
 	}
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-E_type
-PredictorMaxProb::
-getBoltzmannWeight( const E_type e )
-{
-	// TODO can be optimized when using exp-energies from VRNA
-	return std::exp( - e / energy.getRT() );
 }
 
 

@@ -47,6 +47,28 @@ public:
 
 
 	/**
+	 * Provides the overall energy for an interaction from [i1,j1] in the first
+	 * sequence and [i2,j2] in the second sequence given the hybridization
+	 * energy contribution.
+	 *
+	 * @param i1 the index of the first sequence interacting with i2
+	 * @param j1 the index of the first sequence interacting with j2 with i1<=j1
+	 * @param i2 the index of the second sequence interacting with i1
+	 * @param j2 the index of the second sequence interacting with j1 with i2<=j2
+	 * @param hybridE the hybridization energy for the interaction
+	 *
+	 * @return E = hybridE
+	 * 				+ ED1(i1,j1) + ED2(i2,j2)
+	 * 				+ Edangle(i1,i2) + Edangle(j1,j2)
+	 * 				+ Eend(i1,i2) + Eend(j1,j2)
+	 */
+	virtual
+	E_type
+	getE( const size_t i1, const size_t j1
+			, const size_t i2, const size_t j2
+			, const E_type hybridE ) const;
+
+	/**
 	 * Computes the energy estimate for the interaction loop region closed by
 	 * the intermolecular base pairs (i1,i2) and (j1,j2) where the regions
 	 * [i1,j1] and [i2,j2] are considered unpaired or E_INF is the internal
@@ -97,6 +119,31 @@ public:
 	E_type
 	getDanglingRight( const size_t j1, const size_t j2 ) const = 0;
 
+	/**
+	 * Provides the penalty for closing an interaction with the given
+	 * base pair on the "left side" (i1 = 5' end of seq1 of the interaction)
+	 *
+	 * @param i1 the index of the first sequence interacting with i2
+	 * @param i2 the index of the second sequence interacting with i1
+	 *
+	 * @return the loop closure penalty for the left side of the interaction
+	 */
+	virtual
+	E_type
+	getEndLeft( const size_t i1, const size_t i2 ) const = 0;
+
+	/**
+	 * Provides the penalty for closing an interaction with the given
+	 * base pair on the "right side" (j1 = 3' end of seq1 of the interaction)
+	 *
+	 * @param i1 the index of the first sequence interacting with i2
+	 * @param i2 the index of the second sequence interacting with i1
+	 *
+	 * @return the loop closure penalty for the right side of the interaction
+	 */
+	virtual
+	E_type
+	getEndRight( const size_t j1, const size_t j2 ) const = 0;
 
 	/**
 	 * Access to the accessibility object of the first sequence
@@ -199,12 +246,33 @@ public:
 	/**
 	 * Provides the best energy gain possible for left/right dangle
 	 * for this energy model
-	 * @return the best initiation energy gain produced by getDanglingLef() or
+	 * @return the best initiation energy gain produced by getDanglingLeft() or
 	 *          getDanglingRight()
 	 */
 	virtual
 	E_type
 	getBestDangleEnergy() const = 0;
+
+	/**
+	 * Provides the best energy gain possible for left/right interaction ends
+	 * for this energy model
+	 * @return the best end energy gain produced by getEndLeft() or
+	 *          getEndRight()
+	 */
+	virtual
+	E_type
+	getBestEndEnergy() const = 0;
+
+
+	/**
+	 * Provides the Boltzmann weight for a given energy.
+	 * @param energ the energy the Boltzmann weight is to be computed for
+	 * @return the Boltzmann weight, i.e. exp( - energy / RT );
+	 */
+	virtual
+	E_type
+	getBoltzmannWeight( const E_type energy ) const ;
+
 
 protected:
 

@@ -9,12 +9,12 @@
 
 /**
  * Predictor for RNAup-like computation, i.e. full DP-implementation without
- * seed-heuristic
+ * seed-heuristic using a 4D matrix
  *
  * @author Martin Mann
  *
  */
-class PredictorMfeRNAup: public Predictor {
+class PredictorMfe4d: public Predictor {
 
 protected:
 
@@ -35,9 +35,9 @@ public:
 	 * @param energy the interaction energy handler
 	 * @param output the output handler to report mfe interactions to
 	 */
-	PredictorMfeRNAup( const InteractionEnergy & energy, OutputHandler & output );
+	PredictorMfe4d( const InteractionEnergy & energy, OutputHandler & output );
 
-	virtual ~PredictorMfeRNAup();
+	virtual ~PredictorMfe4d();
 
 	/**
 	 * Computes the mfe for the given sequence ranges (i1-j1) in the first
@@ -60,6 +60,8 @@ protected:
 
 	//! access to the output handler of the super class
 	using Predictor::output;
+
+	// TODO provide all data structures as arguments to make predict() call threadsafe
 
 	//! energy of all interaction hybrids computed by the recursion with indices
 	//! hybridE(i1,i2)->(w1,w2), with interaction start i1 (seq1) and i2 (seq2) and
@@ -90,19 +92,6 @@ protected:
 	fillHybridE( const InteractionEnergy & energy );
 
 	/**
-	 * Computes the final energy for an interaction given the hybridization
-	 * energy
-	 * @param hybridE the hybridization energy
-	 * @param i1 the index of the first sequence interacting with i2
-	 * @param j1 the index of the first sequence interacting with j2
-	 * @param i2 the index of the second sequence interacting with i1
-	 * @param j2 the index of the second sequence interacting with j1
-	 * @return the overall energy = hybridE + ED1 + ED2 + EdangleLeft + EdangleRight
-	 */
-	E_type
-	getE( const E_type hybridE, const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const;
-
-	/**
 	 * Fills a given interaction (boundaries given) with the according
 	 * hybridizing base pairs.
 	 * @param interaction IN/OUT the interaction to fill
@@ -124,7 +113,7 @@ protected:
 	 * @param j1 the index of the first sequence interacting with j2
 	 * @param i2 the index of the second sequence interacting with i1
 	 * @param j2 the index of the second sequence interacting with j1
-	 * @param energy the overall energy of the interaction
+	 * @param hybridE the energy of the interaction only (init+loops)
 	 */
 	virtual
 	void

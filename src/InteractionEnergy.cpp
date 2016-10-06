@@ -1,6 +1,7 @@
 
 #include "InteractionEnergy.h"
 
+#include <cmath>
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -71,6 +72,51 @@ InteractionEnergy::
 getAccessibility2() const
 {
 	return accS2;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+E_type
+InteractionEnergy::
+getE( const size_t i1, const size_t j1
+		, const size_t i2, const size_t j2
+		, const E_type hybridE ) const
+{
+	return hybridE
+			// accessibility penalty
+			+ getAccessibility1().getED( i1, j1 )
+			+ getAccessibility2().getED( i2, j2 )
+			// dangling end penalty
+			// weighted by the probability that ends are unpaired (not included in RNAup)
+			+ (getDanglingLeft( i1, i2 )
+					// Pr( i1-1 is unpaired | i1..j1 unpaired )
+					*getBoltzmannWeight( getAccessibility1().getED( (i1==0?i1:i1-1), j1 ) - getAccessibility1().getED( i1, j1 ) )
+					// Pr( i2-1 is unpaired | i2..j2 unpaired )
+					*getBoltzmannWeight( getAccessibility2().getED( (i2==0?i2:i2-1), j2 ) - getAccessibility2().getED( i2, j2 ) )
+					)
+			+ (getDanglingRight( j1, j2 )
+					// Pr( j1+1 is unpaired | i1..j1 unpaired )
+					*getBoltzmannWeight( getAccessibility1().getED( i1, std::min(getAccessibility1().getSequence().size()-1,j1+1) ) - getAccessibility1().getED( i1, j1 ) )
+					// Pr( j2+1 is unpaired | i2..j2 unpaired )
+					*getBoltzmannWeight( getAccessibility2().getED( i2, std::min(getAccessibility2().getSequence().size()-1,j2+1) ) - getAccessibility2().getED( i2, j2 ) )
+					)
+			// helix closure penalty (not included in RNAup)
+			+ getEndLeft( i1, i2 )
+			+ getEndRight( j1, j2 )
+			;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////////////
+
+E_type
+InteractionEnergy::
+getBoltzmannWeight( const E_type e ) const
+{
+	// TODO can be optimized when using exp-energies from VRNA
+	return std::exp( - e / getRT() );
 }
 
 ////////////////////////////////////////////////////////////////////////////

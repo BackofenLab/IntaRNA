@@ -1,4 +1,25 @@
 
+161006 Martin Mann :
+ - PredictorMfeRNAup : renamed to PredictorMfe4d
+ + PredictorMfe4d : former PredictorMfeRNAup
+   * overall energies computed in updateMfeInteraction()
+ * InteractionEnergy : 
+   + getE() : computes the overall energy for a given interaction site and
+     hybridization energy
+     E = hybridE + ED1 + ED2 
+         + dangleLeftE*prob(leftFree) + dangleRightE*prob(rightFree)
+         + closeLeftE + closeRightE
+   + getBoltzmannWeight() : the Boltzmann weight for a given energy
+ * InteractionEnergy* : 
+   + getEndLeft/Right() : the penalty for ending the interaction
+   + getBestEndEnergy() : best energy penalty for interaction ends
+ * InteractionEnergyVrna :
+   + bpGC/CG : base pair type encoding for GC/CG base pair
+   + isGC() : tests whether two positions resemble a GC/CG base pair
+ * PredictorMaxProb :
+   - getBoltzmannWeight() : now part of InteractionEnergy 
+   * overall energies/weights computed in updateMaxProbInteraction()
+
 161005 Martin Mann :
  * Predictor :
    + getMaxInteractionWidth() : upper width bound for an interacting site

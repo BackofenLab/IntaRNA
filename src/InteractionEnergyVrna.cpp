@@ -27,6 +27,8 @@ InteractionEnergyVrna::InteractionEnergyVrna(
 // get final VRNA folding parameters
 	, foldParams( vrna_params( &vrnaHandler.getModel() ) )
 	, RT(vrnaHandler.getRT())
+	, bpCG( BP_pair[RnaSequence::getCodeForChar('C')][RnaSequence::getCodeForChar('G')] )
+	, bpGC( BP_pair[RnaSequence::getCodeForChar('G')][RnaSequence::getCodeForChar('C')] )
 {
 }
 
@@ -113,9 +115,39 @@ getDanglingRight( const size_t j1, const size_t j2 ) const
 
 E_type
 InteractionEnergyVrna::
+getEndLeft( const size_t i1, const size_t i2 ) const
+{
+	// VRNA non-GC penalty
+	return isGC(i1,i2) ? 0.0 : (E_type)foldParams->TerminalAU/(E_type)100.0;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+E_type
+InteractionEnergyVrna::
+getEndRight( const size_t j1, const size_t j2 ) const
+{
+	// VRNA non-GC penalty
+	return isGC(j1,j2) ? 0.0 : (E_type)foldParams->TerminalAU/(E_type)100.0;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+E_type
+InteractionEnergyVrna::
 getRT() const
 {
 	return RT;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+bool
+InteractionEnergyVrna::
+isGC( const size_t i1, const size_t i2 ) const
+{
+	const int bpType = BP_pair[accS1.getSequence().asCodes().at(i1)][accS2.getSequence().asCodes().at(i2)];
+	return (bpType==bpCG || bpType==bpGC);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -206,6 +238,15 @@ getBestDangleEnergy() const
 	}
 
 	return minDangleE;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+E_type
+InteractionEnergyVrna::
+getBestEndEnergy() const
+{
+	return (E_type)std::min(0,foldParams->TerminalAU)/(E_type)100.0;
 }
 
 ////////////////////////////////////////////////////////////////////////////

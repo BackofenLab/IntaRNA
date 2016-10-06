@@ -107,21 +107,13 @@ protected:
 	 * @param j1 the index of the first sequence interacting with j2
 	 * @param i2 the index of the second sequence interacting with i1
 	 * @param j2 the index of the second sequence interacting with j1
-	 * @param curZ the partition function for the interaction site
+	 * @param hybridZ partition function for the interaction only (init+loops)
 	 */
 	virtual
 	void
 	updateMaxProbInteraction( const size_t i1, const size_t j1
 			, const size_t i2, const size_t j2
-			, const E_type curZ );
-
-	/**
-	 * Provides the Boltzmann weight for a given energy.
-	 * @param energ the energy the Boltzmann weight is to be computed for
-	 * @return the Boltzmann weight, i.e. exp( - energy / RT );
-	 */
-	E_type
-	getBoltzmannWeight( const E_type energy );
+			, const E_type hybridZ );
 
 };
 

@@ -91,6 +91,36 @@ public:
 	getDanglingRight( const size_t j1, const size_t j2 ) const;
 
 	/**
+	 * Provides the penalty for closing an interaction with the given
+	 * base pair on the "left side" (i1 = 5' end of seq1 of the interaction)
+	 *
+	 * @param i1 the index of the first sequence interacting with i2
+	 * @param i2 the index of the second sequence interacting with i1
+	 *
+	 * @return 0.0
+	 */
+	virtual
+	E_type
+	getEndLeft( const size_t i1, const size_t i2 ) const {
+		return 0.0;
+	}
+
+	/**
+	 * Provides the penalty for closing an interaction with the given
+	 * base pair on the "right side" (j1 = 3' end of seq1 of the interaction)
+	 *
+	 * @param i1 the index of the first sequence interacting with i2
+	 * @param i2 the index of the second sequence interacting with i1
+	 *
+	 * @return 0.0
+	 */
+	virtual
+	E_type
+	getEndRight( const size_t j1, const size_t j2 ) const {
+		return 0.0;
+	}
+
+	/**
 	 * Returns always RT=1 due to the lack of reasonable values for this energy
 	 * function.
 	 * @return 1.0
@@ -127,6 +157,18 @@ public:
 	virtual
 	E_type
 	getBestDangleEnergy() const;
+
+	/**
+	 * Provides the best energy gain possible for left/right interaction ends
+	 * for this energy model
+	 * @return 0
+	 */
+	virtual
+	E_type
+	getBestEndEnergy() const {
+		return 0;
+	}
+
 };
 
 #endif /* INTERACTIONENERGYBASEPAIR_H_ */

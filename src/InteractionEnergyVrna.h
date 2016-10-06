@@ -108,6 +108,33 @@ public:
 
 
 	/**
+	 * Provides the penalty for closing an interaction with the given
+	 * base pair on the "left side" (i1 = 5' end of seq1 of the interaction)
+	 *
+	 * @param i1 the index of the first sequence interacting with i2
+	 * @param i2 the index of the second sequence interacting with i1
+	 *
+	 * @return the loop closure penalty for the left side of the interaction
+	 */
+	virtual
+	E_type
+	getEndLeft( const size_t i1, const size_t i2 ) const;
+
+	/**
+	 * Provides the penalty for closing an interaction with the given
+	 * base pair on the "right side" (j1 = 3' end of seq1 of the interaction)
+	 *
+	 * @param i1 the index of the first sequence interacting with i2
+	 * @param i2 the index of the second sequence interacting with i1
+	 *
+	 * @return the loop closure penalty for the right side of the interaction
+	 */
+	virtual
+	E_type
+	getEndRight( const size_t j1, const size_t j2 ) const;
+
+
+	/**
 	 * Returns the normalized energy in mol/kcal unit
 	 * @return R*temperature
 	 */
@@ -143,6 +170,16 @@ public:
 	E_type
 	getBestDangleEnergy() const;
 
+	/**
+	 * Provides the best energy gain possible for left/right interaction ends
+	 * for this energy model
+	 * @return the best end energy gain produced by getEndLeft() or
+	 *          getEndRight()
+	 */
+	virtual
+	E_type
+	getBestEndEnergy() const;
+
 protected:
 
 	//! Vienna RNA package : folding parameters to be used for the energy
@@ -151,6 +188,21 @@ protected:
 
 	//! the RT constant to be used for Boltzmann weight computations
 	E_type RT;
+
+	//! base pair code for (C,G)
+	const int bpCG;
+
+	//! base pair code for (G,C)
+	const int bpGC;
+
+	/**
+	 * Checks whether or not a given base pair is a GC base pair
+	 * @param i1 the index in the first sequence
+	 * @param i2 the index in the second sequence
+	 * @return true if (seq1(i1),seq2(i2)) is (G,C) or (C,G)
+	 */
+	bool
+	isGC( const size_t i1, const size_t i2 ) const;
 
 };
 
