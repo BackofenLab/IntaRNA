@@ -19,6 +19,8 @@
  * Abstract interface that represents accessibility data for a given RNA
  * sequence.
  *
+ * TODO : init function to trigger accessibility computation for a certain region
+ *
  * @author Martin Mann 2014
  */
 class Accessibility {

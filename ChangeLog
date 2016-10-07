@@ -12,6 +12,7 @@
    - PredictorMfe members
    * using energy.areComplementary()
    * bugfix : single interaction energy was doubled
+   * bugfix : ED-based cell computation skipping was check reversed
    * fillHybridE() :
      - energy argument was obsolete
  + PredictorMfe2d : space efficient mfe predictor using 2D matrices only
@@ -19,6 +20,7 @@
      interaction ends
    + initHybridE() : initializes the cells used for current right interaction 
      ends
+     * bugfix : ED-based cell computation skipping was check reversed
    + fillHybridE() : computes all possible interactions for current right
      interaction ends and reports them to updateMfe()
    + traceBack() : recomputes interactions for the right side of the current

@@ -10,6 +10,7 @@ PredictorMfe2d::
 PredictorMfe2d( const InteractionEnergy & energy, OutputHandler & output )
  : PredictorMfe(energy,output)
 	, hybridE_pq( 0,0 )
+	, hybridErange( energy.getAccessibility1().getSequence(), energy.getAccessibility2().getSequence() )
 {
 }
 
@@ -90,8 +91,16 @@ predict( const IndexRange & r1
 
 void
 PredictorMfe2d::
-initHybridE( const size_t j1, const size_t j2 )
+initHybridE( const size_t j1, const size_t j2, const size_t i1init, const size_t i2init )
 {
+#ifdef NDEBUG
+	// nothing
+#else
+	if (i1init > j1)
+		throw std::runtime_error("PredictorMfe2d::initHybridE() : i1init > j1 : "+toString(i1init)+" > "+toString(j1));
+	if (i2init > j2)
+		throw std::runtime_error("PredictorMfe2d::initHybridE() : i2init > j2 : "+toString(i2init)+" > "+toString(j2));
+#endif
 
 	// global vars to avoid reallocation
 	size_t i1,i2,w1,w2,k1,k2;
@@ -99,34 +108,38 @@ initHybridE( const size_t j1, const size_t j2 )
 
 	const E_type E_MAX = std::numeric_limits<E_type>::max();
 
+
+	hybridErange.r1.from = std::max(i1init,j1-std::min(j1,energy.getAccessibility1().getMaxLength()+1));
+	hybridErange.r1.to = j1;
+	hybridErange.r2.from = std::max(i2init,j2-std::min(j2,energy.getAccessibility2().getMaxLength()+1));
+	hybridErange.r2.to = j2;
+
 	// init used part with E_INF - 1 and E_INF if ED test fails
 	// iterating decreasing window size seq1 (only sane windows)
-	const size_t minI1 = j1-std::min(j1,energy.getAccessibility1().getMaxLength()+2);
-	const size_t minI2 = j2-std::min(j2,energy.getAccessibility2().getMaxLength()+2);
-	for (i1=minI1; i1<=j1; i1++ ) {
+	for (i1=hybridErange.r1.from; i1<=j1; i1++ ) {
 		w1 = j1-i1+1;
 		// iterating decreasing window size seq2 (only sane windows)
-		for (i2=minI2; i2<=j2; i2++) {
+		for (i2=hybridErange.r2.from; i2<=j2; i2++) {
 			w2 = j2-i2+1;
 			// check if ED penalty exceeds maximal energy gain
 			{
 				// check if all larger windows needing this site are already set to INF
-				bool largerWindowsINF = i1==minI1 && i2==minI2;
+				bool largerWindowsINF = i1==hybridErange.r1.from && i2==hybridErange.r2.from;
 				// check all larger windows w1 + i2p..j2 (that might need this window for computation)
-				for (size_t i2p=minI2; largerWindowsINF && i2p>i2; i2p++) {
+				for (size_t i2p=hybridErange.r2.from; largerWindowsINF && i2p>i2; i2p++) {
 					// check if larger window is E_INF
-					largerWindowsINF = (hybridE_pq(i1,i2p) < E_INF);
+					largerWindowsINF = (E_MAX < hybridE_pq(i1,i2p));
 				}
 				// check all larger windows w2 + w1p (that might need this window for computation)
-				for (size_t i1p=minI1; largerWindowsINF && i1p>i1; i1p++) {
+				for (size_t i1p=hybridErange.r1.from; largerWindowsINF && i1p>i1; i1p++) {
 					// check if larger window is E_INF
-					largerWindowsINF = (hybridE_pq(i1,i2) < E_INF);
+					largerWindowsINF = (E_MAX < hybridE_pq(i1,i2));
 				}
 
 				// if it holds for all w'>=w: ED1(i1+w1')+ED2(i2+w2') > -1*(min(w1',w2')*EmaxStacking + Einit + 2*Edangle + 2*Eend)
 				// ie. the ED values exceed the max possible energy gain of an interaction
 				if( largerWindowsINF &&
-								( -1.0*(std::min(w1,w2)*minStackingEnergy + minInitEnergy + 2.0*minDangleEnergy + 2.0*minEndEnergy) >
+								( -1.0*(std::min(w1,w2)*minStackingEnergy + minInitEnergy + 2.0*minDangleEnergy + 2.0*minEndEnergy) <
 									(energy.getAccessibility1().getED(i1+i1offset,j1+i1offset)
 											+ energy.getAccessibility2().getED(i2+i2offset,j2+i2offset)))
 							)
@@ -141,6 +154,7 @@ initHybridE( const size_t j1, const size_t j2 )
 			hybridE_pq(i1,i2) = E_MAX;
 		}
 	}
+
 }
 
 
@@ -148,11 +162,11 @@ initHybridE( const size_t j1, const size_t j2 )
 
 void
 PredictorMfe2d::
-fillHybridE( const size_t j1, const size_t j2 )
+fillHybridE( const size_t j1, const size_t j2, const size_t i1init, const size_t i2init )
 {
 
 	// init for right interaction end (j1,j2)
-	initHybridE( j1, j2 );
+	initHybridE( j1, j2, i1init, i2init );
 
 	// global vars to avoid reallocation
 	size_t i1,i2,w1,w2,k1,k2;
@@ -163,23 +177,15 @@ fillHybridE( const size_t j1, const size_t j2 )
 	E_type curMinE = E_INF;
 	// iterate over all window starts i1 (seq1) and i2 (seq2)
 	// TODO PARALLELIZE THIS DOUBLE LOOP ?!
-	for (i1=j1+1; i1-->0; ) {
+	for (i1=j1+1; i1-->hybridErange.r1.from; ) {
 		w1 = j1-i1+1;
-		// check if maximal interaction length exceeded (seq1)
-		if ( w1 > energy.getAccessibility1().getMaxLength() ) {
-			// skip all remaining i1, since only increasing width
-			break;
-		}
+		// w1 width check obsolete due to hybridErange setup
 		// get maximal w2 for this w1
 		const size_t maxW2 = getMaxInteractionWidth( w1, energy.getMaxInternalLoopSize1());
 		// screen for left boundaries in seq2
-		for (i2=j2+1; i2-->0; ) {
+		for (i2=j2+1; i2-->hybridErange.r2.from; ) {
 			w2 = j2-i2+1;
-			// check if maximal interaction length exceeded (seq2)
-			if ( w2 > energy.getAccessibility2().getMaxLength() ) {
-				// skip all remaining i2, since only increasing width
-				break;
-			}
+			// w2 width check obsolete due to hybridErange setup
 			// check if widths' combination possible
 			if ( w2 > maxW2 || w1 > getMaxInteractionWidth( w2, energy.getMaxInternalLoopSize2()) )
 			{
@@ -269,18 +275,15 @@ traceBack( Interaction & interaction )
 			j2 = energy.getAccessibility2().getReversedIndex(interaction.basePairs.at(1).second - i2offset);
 
 
-	// TODO RESTRICT RECOMPUTATION AND TRACEBACK TO I1-J1 I2-J2
-
-	// fill matrix and store best interaction
-	fillHybridE( j1, j2 );
-
+	// refill submatrix of mfe interaction
+	fillHybridE( j1, j2, i1, i2 );
 
 	// the currently traced value for i1-j1, i2-j2
 	E_type curE = hybridE_pq(i1,i2);
 
 	// trace back
 	do {
-		// check if just internal loop
+		// check if just internal loo´p
 		if (curE == (energy.getInterLoopE(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset)
 				+ (i1<j1 ? hybridE_pq(j1,j2) : 0.0 )) )
 		{

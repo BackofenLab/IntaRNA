@@ -127,7 +127,7 @@ predict( const IndexRange & r1
 						// ie. the ED values exceed the max possible energy gain of an interaction
 						skipw1w2 = skipw1w2
 								|| ( largerWindowsINF &&
-										( -1.0*(std::min(w1,w2)*minStackingEnergy + minInitEnergy + 2.0*minDangleEnergy + 2.0*minEndEnergy) >
+										( -1.0*(std::min(w1,w2)*minStackingEnergy + minInitEnergy + 2.0*minDangleEnergy + 2.0*minEndEnergy) <
 											(energy.getAccessibility1().getED(i1+i1offset,i1+w1+i1offset)
 													+ energy.getAccessibility2().getED(i2+i2offset,i2+w2+i2offset)))
 									)

@@ -70,6 +70,9 @@ protected:
 	//! q (seq2)
 	E2dMatrix hybridE_pq;
 
+	//! the current range of computed entries within hybridE_pq set by initHybridE()
+	InteractionRange hybridErange;
+
 protected:
 
 	/**
@@ -81,7 +84,7 @@ protected:
 	 * @param j2 end of the interaction within seq 2
 	 */
 	void
-	initHybridE( const size_t j1, const size_t j2 );
+	initHybridE( const size_t j1, const size_t j2, const size_t i1init=0, const size_t i2init=0 );
 
 	/**
 	 * Computes all entries of the hybridE matrix for interactions ending in
@@ -93,7 +96,7 @@ protected:
 	 *
 	 */
 	void
-	fillHybridE( const size_t j1, const size_t j2  );
+	fillHybridE( const size_t j1, const size_t j2, const size_t i1init=0, const size_t i2init=0  );
 
 	/**
 	 * Fills a given interaction (boundaries given) with the according
