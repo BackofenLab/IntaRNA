@@ -195,7 +195,7 @@ fillHybridZ( const InteractionEnergy & energy )
 			// if allowed distance between i and j
 			if ( (w1+1) <= energy.getMaxInternalLoopSize1() && (w2+1) <= energy.getMaxInternalLoopSize2()) {
 				curZ += energy.getBoltzmannWeight(energy.getInterLoopE(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset))
-					* energy.getBoltzmannWeight(energy.getInterLoopE(j1+i1offset,j1+i1offset,j2+i2offset,j2+i2offset));
+					* (i1<j1 ? (*hybridZ(j1,j2))(0,0) : 1.0 );
 			}
 
 			if (w1 > 1 && w2 > 1) {

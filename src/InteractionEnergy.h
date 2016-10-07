@@ -69,6 +69,16 @@ public:
 			, const E_type hybridE ) const;
 
 	/**
+	 * Checks whether or not two positions can for a base pair
+	 * @param i1 index in first sequence
+	 * @param i2 index in second sequence
+	 * @return true if seq1(i1) can form a base pair with seq2(i2)
+	 */
+	virtual
+	bool
+	areComplementary( const size_t i1, const size_t i2 ) const;
+
+	/**
 	 * Computes the energy estimate for the interaction loop region closed by
 	 * the intermolecular base pairs (i1,i2) and (j1,j2) where the regions
 	 * [i1,j1] and [i2,j2] are considered unpaired or E_INF is the internal

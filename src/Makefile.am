@@ -35,6 +35,10 @@ intaRNA_SOURCES =	intaRNA.cpp \
 					Predictor.cpp \
 					PredictorMaxProb.h \
 					PredictorMaxProb.cpp \
+					PredictorMfe.h \
+					PredictorMfe.cpp \
+					PredictorMfe2d.h \
+					PredictorMfe2d.cpp \
 					PredictorMfe4d.h \
 					PredictorMfe4d.cpp \
 					ReverseAccessibility.h \

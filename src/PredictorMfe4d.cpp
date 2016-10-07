@@ -8,12 +8,8 @@
 
 PredictorMfe4d::
 PredictorMfe4d( const InteractionEnergy & energy, OutputHandler & output )
- : Predictor(energy,output)
+ : PredictorMfe(energy,output)
 	, hybridE( 0,0 )
-	, mfeInteraction(energy.getAccessibility1().getSequence()
-			,energy.getAccessibility2().getAccessibilityOrigin().getSequence())
-	, i1offset(0)
-	, i2offset(0)
 {
 }
 
@@ -61,11 +57,6 @@ predict( const IndexRange & r1
 			, debug_cellNumber=0
 			, w1, w2;
 
-	// get best possible energy contributions to skip certain cell computations
-	const E_type bestStackingEnergy = energy.getBestStackingEnergy();
-	const E_type bestInitEnergy = energy.getBestInitEnergy();
-	const E_type bestDangleEnergy = energy.getBestDangleEnergy();
-	const E_type bestEndEnergy = energy.getBestEndEnergy();
 
 	size_t maxWidthFori1i2 = 0;
 
@@ -98,10 +89,7 @@ predict( const IndexRange & r1
 
 			// check if i1 and i2 are not blocked and can form a base pair
 			if ( ! i1or2blocked
-				&& RnaSequence::areComplementary(
-					  energy.getAccessibility1().getSequence()
-					, energy.getAccessibility2().getSequence()
-					, i1+i1offset, i2+i2offset ))
+				&& energy.areComplementary( i1+i1offset, i2+i2offset ))
 			{
 				// create new 2d matrix for different interaction site widths
 				hybridE(i1,i2) = new E2dMatrix(
@@ -139,7 +127,7 @@ predict( const IndexRange & r1
 						// ie. the ED values exceed the max possible energy gain of an interaction
 						skipw1w2 = skipw1w2
 								|| ( largerWindowsINF &&
-										( -1.0*(std::min(w1,w2)*bestStackingEnergy + bestInitEnergy + 2.0*bestDangleEnergy + 2.0*bestEndEnergy) >
+										( -1.0*(std::min(w1,w2)*minStackingEnergy + minInitEnergy + 2.0*minDangleEnergy + 2.0*minEndEnergy) >
 											(energy.getAccessibility1().getED(i1+i1offset,i1+w1+i1offset)
 													+ energy.getAccessibility2().getED(i2+i2offset,i2+w2+i2offset)))
 									)
@@ -171,7 +159,7 @@ predict( const IndexRange & r1
 				<<std::endl;
 
 	// fill matrix
-	fillHybridE( energy );
+	fillHybridE( );
 
 	// check if interaction is better than no interaction (E==0)
 	if (mfeInteraction.energy < 0.0) {
@@ -210,7 +198,7 @@ clear()
 
 void
 PredictorMfe4d::
-fillHybridE( const InteractionEnergy & energy )
+fillHybridE( )
 {
 
 	// global vars to avoid reallocation
@@ -261,16 +249,18 @@ fillHybridE( const InteractionEnergy & energy )
 				continue;
 			}
 			// check if this cell is to be computed (!=E_INF)
-			if( (*hybridE(i1,i2))(w1,w2) < std::numeric_limits<E_type>::infinity()) {
+			if( (*hybridE(i1,i2))(w1,w2) < E_INF) {
 
 				// compute entry
-				// get full internal loop energy (nothing between i and j)
+
+				// either interaction initiation (i1==j2)
+				// or full internal loop energy (nothing between i and j)
 				curMinE = energy.getInterLoopE(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset)
-						+ energy.getInterLoopE(j1+i1offset,j1+i1offset,j2+i2offset,j2+i2offset);
+						+ (i1<j1 ? (*hybridE(j1,j2))(0,0) : 0.0 ) ;
 
 
+				// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
 				if (w1 > 1 && w2 > 1) {
-					// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
 					for (k1=std::min(j1-1,i1+energy.getMaxInternalLoopSize1()+1); k1>i1; k1--) {
 					for (k2=std::min(j2-1,i2+energy.getMaxInternalLoopSize2()+1); k2>i2; k2--) {
 						// check if (k1,k2) are complementary
@@ -286,9 +276,8 @@ fillHybridE( const InteractionEnergy & energy )
 				// store value
 				(*hybridE(i1,i2))(w1,w2) = curMinE;
 				// update mfe if needed
-				updateMfe( i1,j1,i2,j2
-						, (*hybridE(i1,i2))(w1,w2)
-						);
+				updateMfe( i1,j1,i2,j2 , (*hybridE(i1,i2))(w1,w2) );
+
 				continue;
 			}
 		}
@@ -296,92 +285,8 @@ fillHybridE( const InteractionEnergy & energy )
 	}
 	}
 
-	//////////  SECOND ROUND : COMPUTE FINAL ENERGIES AND MFE  ////////////
-
-//	// iterate increasingly over all window sizes w1 (seq1) and w2 (seq2)
-//	for (w1=0; w1<energy.getAccessibility1().getMaxLength(); w1++) {
-//	for (w2=0; w2<energy.getAccessibility2().getMaxLength(); w2++) {
-//		// iterate over all window starts i1 (seq1) and i2 (seq2)
-//		for (i1=0; i1+w1<hybridE.size1(); i1++) {
-//		for (i2=0; i2+w2<hybridE.size2(); i2++) {
-//			// check if left boundary is complementary
-//			// and widths are possible
-//			if (hybridE(i1,i2) == NULL || hybridE(i1,i2)->size1()<=w1 || hybridE(i1,i2)->size2()<=w2) {
-//				// interaction not possible: nothing to do
-//				continue;
-//			}
-//			// check if reasonable entry
-//			if ((*hybridE(i1,i2))(w1,w2) < E_INF) {
-//				// get window ends j (seq1) and l (seq2)
-//				j1=i1+w1;
-//				j2=i2+w2;
-//
-//				// update mfe if needed
-//				updateMfe( i1,j1,i2,j2
-//						, (*hybridE(i1,i2))(w1,w2)
-//						);
-//
-//			}
-//
-//		} // i2
-//		} // i1
-//	} // w2
-//	} // w1
-
 }
 
-
-////////////////////////////////////////////////////////////////////////////
-
-void
-PredictorMfe4d::
-initMfe()
-{
-	// initialize global E minimum : should be below 0.0
-	mfeInteraction.energy = 0.0;
-	// ensure it holds only the boundary
-	if (mfeInteraction.basePairs.size()!=2) {
-		mfeInteraction.basePairs.resize(2);
-	}
-	// reset boundary base pairs
-	mfeInteraction.basePairs[0].first = RnaSequence::lastPos;
-	mfeInteraction.basePairs[0].second = RnaSequence::lastPos;
-	mfeInteraction.basePairs[1].first = RnaSequence::lastPos;
-	mfeInteraction.basePairs[1].second = RnaSequence::lastPos;
-}
-////////////////////////////////////////////////////////////////////////////
-
-void
-PredictorMfe4d::
-updateMfe( const size_t i1, const size_t j1
-		, const size_t i2, const size_t j2
-		, const E_type hybridE )
-{
-//				std::cerr <<"#DEBUG : energy( "<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" ) = "
-//						<<ecurE
-//						<<" = " <<(eH + eE + eD)
-//						<<std::endl;
-
-	// TODO check if reasonable to check only interactions with hybridE < 0
-	if (hybridE > 0) {
-		return;
-	}
-
-	// get final energy of current interaction
-	E_type curE = energy.getE( i1,j1, i2,j2, hybridE );
-
-	if (curE < mfeInteraction.energy) {
-		// store new global min
-		mfeInteraction.energy = (curE);
-		// store interaction boundaries
-		// left
-		mfeInteraction.basePairs[0].first = i1+i1offset;
-		mfeInteraction.basePairs[0].second = energy.getAccessibility2().getReversedIndex(i2+i2offset);
-		// right
-		mfeInteraction.basePairs[1].first = j1+i1offset;
-		mfeInteraction.basePairs[1].second = energy.getAccessibility2().getReversedIndex(j2+i2offset);
-	}
-}
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -429,7 +334,7 @@ traceBack( Interaction & interaction ) const
 	do {
 		// check if just internal loop
 		if (curE == (energy.getInterLoopE(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset)
-				+ energy.getInterLoopE(j1+i1offset,j1+i1offset,j2+i2offset,j2+i2offset)))
+					+ (i1<j1 ? (*hybridE(j1,j2))(0,0) : 0.0 )))
 		{
 			break;
 		}

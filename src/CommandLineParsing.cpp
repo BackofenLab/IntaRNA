@@ -6,6 +6,7 @@
  */
 
 #include "CommandLineParsing.h"
+#include "general.h"
 
 #include <cmath>
 #include <stdexcept>
@@ -21,6 +22,7 @@
 #include "InteractionEnergyBasePair.h"
 #include "InteractionEnergyVrna.h"
 
+#include "PredictorMfe2d.h"
 #include "PredictorMfe4d.h"
 #include "PredictorMaxProb.h"
 
@@ -61,6 +63,8 @@ CommandLineParsing::CommandLineParsing( std::ostream& logStream )
 	seedMinBP(3,20,7),
 
 	temperature(0,100,37),
+
+	predMode(1,3,1),
 
 	energy("BF",'F')
 
@@ -137,6 +141,11 @@ CommandLineParsing::CommandLineParsing( std::ostream& logStream )
 	////  INTERACTION/ENERGY OPTIONS  ////////////////////////
 
 	opts_inter.add_options()
+		("mode,m"
+			, value<int>(&(predMode.val))
+				->default_value(predMode.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_predMode,this,_1))
+			, std::string("prediction mode : 1 (default) : MFE (2D), 2 : MFE (4D), 3 : MaxProb (4D)").c_str())
 		("energy,e"
 			, value<char>(&(energy.val))
 				->default_value(energy.def)
@@ -384,6 +393,14 @@ void CommandLineParsing::validate_seedMinBP(const int & value) {
 void CommandLineParsing::validate_temperature(const T_type & value) {
 	// forward check to general method
 	validate_numberArgument("temperature", temperature, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void CommandLineParsing::validate_predMode(const int & value)
+{
+	// forward check to general method
+	validate_numberArgument("mode", predMode, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -667,9 +684,12 @@ Predictor*
 CommandLineParsing::
 getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 {
-	// TODO add according arguments and parsing
-	return new PredictorMfe4d( energy, output );
-//	return new PredictorMaxProb( energy, output );
+	switch ( predMode.val ) {
+	case 1 :  return new PredictorMfe2d( energy, output );
+	case 2 :  return new PredictorMfe4d( energy, output );
+	case 3 :  return new PredictorMaxProb( energy, output );
+	default: throw std::runtime_error("CommandLineParsing::getPredictor() : unknown predMode value "+toString(predMode.val));
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////

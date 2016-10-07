@@ -1,6 +1,6 @@
 
-#ifndef PREDICTORMFE4D_H_
-#define PREDICTORMFE4D_H_
+#ifndef PREDICTORMFE2D_H_
+#define PREDICTORMFE2D_H_
 
 #include "PredictorMfe.h"
 #include "Interaction.h"
@@ -8,24 +8,18 @@
 #include <boost/numeric/ublas/matrix.hpp>
 
 /**
- * Predictor for RNAup-like computation, i.e. full DP-implementation without
- * seed-heuristic using a 4D matrix
+ * Memory efficient predictor for RNAup-like computation, i.e. full
+ * DP-implementation without seed-heuristic, using 2D matrices
  *
  * @author Martin Mann
  *
  */
-class PredictorMfe4d: public PredictorMfe {
+class PredictorMfe2d: public PredictorMfe {
 
 protected:
 
-	//! matrix type to cover the energies for different interaction site widths
+	//! matrix type to hold the mfe energies for interaction site starts
 	typedef boost::numeric::ublas::matrix<E_type> E2dMatrix;
-
-	//! full 4D DP-matrix for computation to hold all start position combinations
-	//! first index = start positions (i1,i2) of (seq1,seq2)
-	//! second index = interaction window sizes (w1,w2) or NULL if (i1,i2) not complementary
-	typedef boost::numeric::ublas::matrix< E2dMatrix* > E4dMatrix;
-
 
 public:
 
@@ -35,9 +29,9 @@ public:
 	 * @param energy the interaction energy handler
 	 * @param output the output handler to report mfe interactions to
 	 */
-	PredictorMfe4d( const InteractionEnergy & energy, OutputHandler & output );
+	PredictorMfe2d( const InteractionEnergy & energy, OutputHandler & output );
 
-	virtual ~PredictorMfe4d();
+	virtual ~PredictorMfe2d();
 
 	/**
 	 * Computes the mfe for the given sequence ranges (i1-j1) in the first
@@ -72,25 +66,34 @@ protected:
 
 	// TODO provide all data structures as arguments to make predict() call threadsafe
 
-	//! energy of all interaction hybrids computed by the recursion with indices
-	//! hybridE(i1,i2)->(w1,w2), with interaction start i1 (seq1) and i2 (seq2) and
-	//! ineraction end j1=i1+w1 and j2=j2+w2
-	//! NOTE: hybridE(i1,i2)==NULL if not complementary(seq1[i1],seq2[i2])
-	E4dMatrix hybridE;
+	//! energy of all interaction hybrids that end in position p (seq1) and
+	//! q (seq2)
+	E2dMatrix hybridE_pq;
 
 protected:
 
 	/**
-	 * Removes all temporary data structures and resets the predictor
+	 * Initializes the hybridE_pq table for the computation for interactions
+	 * ending in p=j1 and q=j2
+	 *
+	 * @param energy the energy function to use
+	 * @param j1 end of the interaction within seq 1
+	 * @param j2 end of the interaction within seq 2
 	 */
 	void
-	clear();
+	initHybridE( const size_t j1, const size_t j2 );
 
 	/**
-	 * computes all entries of the hybridE matrix
+	 * Computes all entries of the hybridE matrix for interactions ending in
+	 * p=j1 and q=j2
+	 *
+	 * @param energy the energy function to use
+	 * @param j1 end of the interaction within seq 1
+	 * @param j2 end of the interaction within seq 2
+	 *
 	 */
 	void
-	fillHybridE( );
+	fillHybridE( const size_t j1, const size_t j2  );
 
 	/**
 	 * Fills a given interaction (boundaries given) with the according
@@ -98,8 +101,8 @@ protected:
 	 * @param interaction IN/OUT the interaction to fill
 	 */
 	void
-	traceBack( Interaction & interaction ) const;
+	traceBack( Interaction & interaction );
 
 };
 
-#endif /* PREDICTORMFE4D_H_ */
+#endif /* PREDICTORMFE2D_H_ */

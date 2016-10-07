@@ -269,6 +269,9 @@ protected:
 	//! the temperature to be used for energy computations
 	NumberParameter<T_type> temperature;
 
+	//! the prediction mode
+	NumberParameter<int> predMode;
+
 	//! the selected energy model
 	CharParameter energy;
 
@@ -348,6 +351,12 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_temperature(const T_type & value);
+
+	/**
+	 * Validates the prediction mode arguments.
+	 * @param value the argument value to validate
+	 */
+	void validate_predMode(const int & value);
 
 	/**
 	 * Validates the temperature arguments.

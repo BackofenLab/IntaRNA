@@ -1,4 +1,37 @@
 
+161007 Martin Mann :
+ + PredictorMfe : generic interface for mfe predictors to reduce code redundancy
+   + mfeInteraction
+   + i1offset
+   + i2offset
+   + initMfe()
+   + updateMfe()
+   + min..E() : minimal energy contributions to avoid recomputation
+ * PredictorMfe4d 
+   * now PredictorMfe subclass
+   - PredictorMfe members
+   * using energy.areComplementary()
+   * bugfix : single interaction energy was doubled
+   * fillHybridE() :
+     - energy argument was obsolete
+ + PredictorMfe2d : space efficient mfe predictor using 2D matrices only
+   + predict() : computes best interaction screening all possible right 
+     interaction ends
+   + initHybridE() : initializes the cells used for current right interaction 
+     ends
+   + fillHybridE() : computes all possible interactions for current right
+     interaction ends and reports them to updateMfe()
+   + traceBack() : recomputes interactions for the right side of the current
+     interaction site and traces the details of the interaction of interest
+ * PredictorMaxProb :
+   * bugfix : single interaction energy was doubled
+ * InteractionEnergy :
+   + areComplementary() : checks two positions if complementary
+ * CommandLineParsing :
+   + predMode argument (mode,m)
+   + validate_predMode() : checks the argument value
+   * getPredictor() : returns predictor by argument setup
+
 161006 Martin Mann :
  - PredictorMfeRNAup : renamed to PredictorMfe4d
  + PredictorMfe4d : former PredictorMfeRNAup
