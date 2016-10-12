@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
 //				Seed* seed = parameters.getSeedHandler( *energy );
 
 				// get output/storage handler
-				OutputHandler * output = parameters.getOutputHandler();
+				OutputHandler * output = parameters.getOutputHandler( *energy );
 				CHECKNOTNULL(output,"output handler initialization failed");
 
 				// get interaction prediction handler

@@ -66,7 +66,10 @@ CommandLineParsing::CommandLineParsing( std::ostream& logStream )
 
 	predMode(1,3,1),
 
-	energy("BF",'F')
+	energy("BF",'F'),
+	energyFile(""),
+
+	vrnaHandler()
 
 {
 	using namespace boost::program_options;
@@ -151,6 +154,10 @@ CommandLineParsing::CommandLineParsing( std::ostream& logStream )
 				->default_value(energy.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_energy,this,_1))
 			, std::string("energy computation : 'B'ase pair == -1, or 'F'ull VRNA-based computation").c_str())
+		("energyVRNA"
+			, value<std::string>(&energyFile)
+				->notifier(boost::bind(&CommandLineParsing::validate_energyFile,this,_1))
+			, std::string("energy parameter file of VRNA package to be used").c_str())
 		("temperature"
 			, value<T_type>(&(temperature.val))
 				->default_value(temperature.def)
@@ -225,10 +232,10 @@ parse(int argc, char** argv)
 			notify(vm);
 		} catch (required_option& e) {
 			logStream <<"\n mandatory option '"<<e.get_option_name() << "' not provided\n";
-			parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
+			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 		} catch (error& e) {
 			logStream <<e.what() << "\n";
-			parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
+			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 		}
 	}
 
@@ -286,13 +293,23 @@ parse(int argc, char** argv)
 				tAccConstr = std::string(target.at(0).size(),'.');
 			}
 
+			// check energy setup
+			if (vm.count("energyVRNA") > 0 && energy.val != 'F') {
+				throw error("energyVRNA provided but no (F)ull energy computation requested");
+			}
+
 		} catch (error& e) {
 			logStream <<e.what() << "\n";
-			parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
+			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 		} catch (std::exception& e) {
 			logStream <<e.what() << "\n";
-			parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
+			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 		}
+	}
+
+	// setup new VRNA handler with the given arguments
+	if ( energy.val == 'F') {
+		vrnaHandler = VrnaHandler( temperature.val, (energyFile.size() > 0 ? & energyFile : NULL) );
 	}
 
 
@@ -413,12 +430,24 @@ void CommandLineParsing::validate_energy(const char & value)
 
 ////////////////////////////////////////////////////////////////////////////
 
+void
+CommandLineParsing::
+validate_energyFile(const std::string & value)
+{
+	// check if file exists and is readable
+	if (!validateFile( value )) {
+		logStream <<"\n provided VRNA energy parameter file '" <<value <<"' could not be processed.\n";
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
 void CommandLineParsing::validate_charArgument(const std::string & name, const CommandLineParsing::CharParameter& param, const char & value)
 {
 	// alphabet check
 	if ( ! param.isInAlphabet(value) ) {
 		logStream <<"\n "<<name<<" = " <<value <<" : has to be one of '" <<param.alphabet <<"'\n";
-		parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
 }
 
@@ -433,23 +462,18 @@ void CommandLineParsing::validate_sequenceArgument(const std::string & name, con
 
 			// do nothing, all fine
 
-		} else { // it is NOT a sequence !!!!!!!!!!!!!!!!!!
+		} else { // it is NOT a sequence! can be a file name!
 
-			// check if file accessible
-			if ( !boost::filesystem::exists( value ) )
-			{
-				logStream <<"\n "<<name<<" '"<<value <<"' : Can't find the file!\n";
-				parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
+			// check if a file of this name exists and is readable
+			if (validateFile( value )) {
+
+				// TODO no file support yet
+				NOTIMPLEMENTED("\n "+name+" '"+value +"' : Currently only direct single sequence input supported.\n");
+
+			} else {
+				logStream <<"\n "<<name<<" '"<<value <<"' : is neither a file nor a sequence!\n";
+				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 			}
-			else
-			// check if it is a file
-			if ( !boost::filesystem::is_regular_file( value ) )
-			{
-				logStream <<"\n "<<name<<" '"<<value <<"' : Is no file!\n";
-				parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
-			}
-			// TODO no file support yet
-			NOTIMPLEMENTED("\n "+name+" '"+value +"' : Currently only direct single sequence input supported.\n");
 		}
 
 	} else {
@@ -468,7 +492,7 @@ void CommandLineParsing::validate_structureConstraintArgument(const std::string 
 	// check if valid alphabet
 	if (value.find_first_not_of(AccessibilityConstraint::dotBracketAlphabet) != std::string::npos) {
 		logStream <<"\n "<<name<<" '"<<value <<"' : contains invalid characters!\n";
-		parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	} else {
 		// check for base pair balance / nestedness
 		int bpStackLvl = 0;
@@ -480,11 +504,34 @@ void CommandLineParsing::validate_structureConstraintArgument(const std::string 
 			}
 			if (bpStackLvl<0) {
 				logStream <<"\n "<<name<<" '"<<value <<"' : unbalanced base pairs!\n";
-				parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
+				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 			}
 		}
 
 	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+bool
+CommandLineParsing::
+validateFile( const std::string & filename )
+{
+	// check if file accessible
+	if ( !boost::filesystem::exists( filename ) )
+	{
+		logStream <<"\n Can't find the file '"<<filename<<"'!\n";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+		return false;
+	}
+	// check if it is a file
+	if ( !boost::filesystem::is_regular_file( filename ) )
+	{
+		logStream <<"\n '"<<filename<<"' : Is no file!\n";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+		return false;
+	}
+	return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -623,12 +670,12 @@ validateSequenceNumber( const std::string& paramName,
 	// check sequence number boundaries
 	if (sequences.size() < min) {
 		logStream <<"\n "<<paramName<<" requires at least "<<min <<" sequences!\n";
-		parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 		return false;
 	} else
 	if (sequences.size() > max) {
 		logStream <<"\n "<<paramName<<" allows at most "<<max <<" sequences!\n";
-		parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 		return false;
 	}
 	// boundaries are met
@@ -648,7 +695,7 @@ validateSequenceAlphabet( const std::string& paramName,
 		// check if valid
 		if (! RnaSequence::isValidSequence(sequences.at(i).asString())) {
 			logStream <<"\n sequence " <<(i+1)<<" for parameter "<<paramName<<" is not valid!\n";
-			parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
+			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 			allValid = false;
 		}
 		// warn about ambiguous positions
@@ -696,10 +743,19 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 
 OutputHandler*
 CommandLineParsing::
-getOutputHandler() const
+getOutputHandler( const InteractionEnergy & energy ) const
 {
 	// TODO add according arguments and parsing
-	return new OutputHandlerText(std::cout);
+	return new OutputHandlerText(std::cout, energy );
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void
+CommandLineParsing::
+updateParsingCode( const ReturnCode currentParsingCode )
+{
+	parsingCode = std::max( parsingCode, currentParsingCode );
 }
 
 ////////////////////////////////////////////////////////////////////////////

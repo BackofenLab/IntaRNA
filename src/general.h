@@ -50,11 +50,15 @@
 
 ////////////////  GLOBAL TYPEDEFS  //////////////////////
 
+#include <cmath>
+
 	//! type for energy values (energy + accessibility [ED])
 	typedef float E_type;
 
 	//! type for temperature values
 	typedef E_type T_type;
+
+#define E_equal( e1, e2 ) ( std::abs((e1)-(e2)) < 1000.0*std::numeric_limits<E_type>::epsilon())
 
 
 ////////////////  GLOBAL CONSTANTS  /////////////////////

@@ -1,4 +1,81 @@
 
+161012 Martin Mann :
+ * AccessibilityVrna :
+   * getPf* :
+     + local vrna_md_t model for according window sizes
+ * CommandLineParsing :
+   * getOutputHandler() : + energy handler as argument
+   + energyFile : file name of the VRNA energy parameter file to be used
+   + validate_energyFile()
+   + validateFile() : generic file existence and readability check
+   + updateParsingCode() : central utility function for parsing code updates
+   * parse() :
+     + update of vrnaHandler after parsing
+     + energFile handling
+     + updateParsingCode() usage
+   * validate_sequenceArgument() 
+     + validateFile() usage
+ * general.h
+   + E_equal() : checks for (semi)equality for floating point variables
+ * intaRNA : adaptions to interface changes
+ * InteractionEnergy :
+   + EnergyContributions : individual energy contributions for an interaction
+   + getE_contributions() : provides an EnergyContributions container for a 
+     given interaction
+   + getE_init() : the duplex initiation energy
+   + getE_interLoop() : former getInterLoopE()
+   + getE_danglingLeft() : former getDanglingLeft()
+   + getE_danglingRight() : former getDanglingRight()
+   + getE_endLeft() : former getEndLeft()
+   + getE_endRight() : former getEndRight()
+   + getBestE_interLoop() : former getBestStackingEnergy()
+   + getBestE_dangling() : former getBestDangleEnergy()
+   + getBestE_end() : former getBestEndEnergy()
+   - getInterLoopE() : renamed
+   - getDangling*() : renamed
+   - getEnd*() : renamed
+   - getBest*Energy() : renamed
+   - getBestInitEnergy() : obsolete
+   * isValidInternalLoop() :
+     + returns false on (i1==j1 || i2==j2)
+ * InteractionEnergyBasePair :
+   * adaptions to interface changes
+   + getE_init() : returns -1.0
+   * getE_interLoop() : returns only interior loop energies (no init)
+ * InteractionEnergyVrna :
+   * adaptions to interface changes
+   * getE_interLoop() : returns only interior loop energies (no init)
+   * getE_dangling*() : substracts end energies to get dangling end 
+     contributions only (combined value from the VRNA interface)
+ * OutputHandlerText :
+   + energy : used energy handler for interaction computation
+   * construction() : + energy argument
+   * add() : 
+     + provide energy contribution details
+ * PredictorMaxProb :
+   * fillHybridZ() :
+     + explicit energy.getE_init() handling
+ * PredictorMfe :
+   * adaption to interface changes
+ * PredictorMfe2d/4d :
+   * fillHybridE() :
+     + explicit energy.getE_init() handling
+   * traceback() :
+     * bugfix: i2/j2 index computation for offset > 0
+     + explicit energy.getE_init() handling
+ * VrnaHandler :
+   * constructor() :
+     + vrnaParamFile argument : for loading non-default energy parameters
+     - max_bp_span : now in getModel()
+     - window_size : now in getModel()
+     * default for max_bp_span/window_size = -1
+   * getModel() :
+     * now creates a new model object per call to enable different parameters
+       e.g. for different accessibility computations
+     + max_bp_span argument
+     + window_size argument
+ * test/InteractionEnergyBasePair : adaption to interface changes
+
 161007 Martin Mann :
  + PredictorMfe : generic interface for mfe predictors to reduce code redundancy
    + mfeInteraction

@@ -26,12 +26,21 @@ InteractionEnergyBasePair::~InteractionEnergyBasePair()
 
 E_type
 InteractionEnergyBasePair::
-getInterLoopE( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const
+getE_init() const
+{
+	return -1.0;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+E_type
+InteractionEnergyBasePair::
+getE_interLoop( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const
 {
 	// if valid internal loop
 	if ( isValidInternalLoop(i1,j1,i2,j2) ) {
 		// return negated number of gained base pairs by closing this loop = -1
-		return getBestStackingEnergy();
+		return getBestE_interLoop();
 	} else {
 		return E_INF;
 	}
@@ -41,7 +50,7 @@ getInterLoopE( const size_t i1, const size_t j1, const size_t i2, const size_t j
 
 E_type
 InteractionEnergyBasePair::
-getDanglingLeft( const size_t i1, const size_t i2 ) const
+getE_danglingLeft( const size_t i1, const size_t i2 ) const
 {
 	// no dangling end contribution
 	return (E_type)0;
@@ -51,7 +60,7 @@ getDanglingLeft( const size_t i1, const size_t i2 ) const
 
 E_type
 InteractionEnergyBasePair::
-getDanglingRight( const size_t j1, const size_t j2 ) const
+getE_danglingRight( const size_t j1, const size_t j2 ) const
 {
 	// no dangling end contribution
 	return (E_type)0;
@@ -61,25 +70,16 @@ getDanglingRight( const size_t j1, const size_t j2 ) const
 
 E_type
 InteractionEnergyBasePair::
-getBestStackingEnergy() const
+getBestE_interLoop() const
 {
-	return getBestInitEnergy();
+	return getE_init();
 }
 
 ////////////////////////////////////////////////////////////////////////////
 
 E_type
 InteractionEnergyBasePair::
-getBestInitEnergy() const
-{
-	return (E_type)-1.0;
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-E_type
-InteractionEnergyBasePair::
-getBestDangleEnergy() const
+getBestE_dangling() const
 {
 	return (E_type)0.0;
 }

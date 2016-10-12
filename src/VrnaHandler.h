@@ -8,6 +8,7 @@
 #ifndef VIENNASETUP_H_
 #define VIENNASETUP_H_
 
+#include <string>
 
 extern "C" {
 	#include <ViennaRNA/model.h>
@@ -25,17 +26,6 @@ class VrnaHandler {
 
 protected:
 
-//	//! Folding temperature in Celsius
-//	double temperature;
-//
-//	//! Maximal distance between base pair partners within one RNA
-//	//! or -1 if no constraint needed
-//	int max_bp_span;
-//
-//	//! Size of the sliding window for locally folding within one RNA
-//	//! or -1 if no constraint needed
-//	int window_size;
-
 	//! VRNA parameter model
 	vrna_md_t model;
 
@@ -45,15 +35,12 @@ public:
 	 * Construction with global VRNA folding parameter setup
 	 *
 	 * @param temperature Folding temperature in Celsius
-	 * @param max_bp_span Maximal distance between base pair partners within one RNA
-	 * 				or -1 if no constraint needed
-	 * @param window_size Size of the sliding window for locally folding within one RNA
-	 * 				or -1 if no constraint needed
+	 * @param vrnaParamFile name of a VRNA parameter file to be used for
+	 *        parameter setup or NULL if defaults are to be used
 	 */
 	VrnaHandler(
 			double temperature = 37.0,
-			int max_bp_span = -1,
-			int window_size = -1 );
+			const std::string * const vrnaParamFile = NULL );
 
 	/**
 	 * destruction
@@ -61,11 +48,19 @@ public:
 	virtual ~VrnaHandler();
 
 	/**
-	 * Generates a new VRNA parameter model according to the global settings
+	 * Generates a new VRNA parameter model according to the global and local settings
+	 *
+	 * NOTE: you have to call vrna_md_defaults_reset() to broadcast
+	 * the model details before using non-VRNA-API-3 functions.
+	 *
+	 * @param max_bp_span Maximal distance between base pair partners within one RNA
+	 * 				or -1 if no constraint needed
+	 * @param window_size Size of the sliding window for locally folding within one RNA
+	 * 				or -1 if no constraint needed
 	 * @return the model to be used for VRNA computations
 	 */
-	vrna_md_t&
-	getModel();
+	vrna_md_t
+	getModel( int max_bp_span = -1, int window_size = -1 ) const;
 
 	/**
 	 * Provides RT for the current setup

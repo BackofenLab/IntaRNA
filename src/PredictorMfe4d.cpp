@@ -253,10 +253,14 @@ fillHybridE( )
 
 				// compute entry
 
-				// either interaction initiation (i1==j2)
-				// or full internal loop energy (nothing between i and j)
-				curMinE = energy.getInterLoopE(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset)
-						+ (i1<j1 ? (*hybridE(j1,j2))(0,0) : 0.0 ) ;
+				// either interaction initiation
+				if ( w1==0 && w2==0 )  {
+					curMinE = energy.getE_init();
+				} else {
+				// or only internal loop energy (nothing between i and j)
+					curMinE = energy.getE_interLoop(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset)
+							+ (*hybridE(j1,j2))(0,0) ;
+				}
 
 
 				// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
@@ -266,7 +270,7 @@ fillHybridE( )
 						// check if (k1,k2) are complementary
 						if (hybridE(k1,k2) != NULL && hybridE(k1,k2)->size1() > (j1-k1) && hybridE(k1,k2)->size2() > (j2-k2)) {
 							curMinE = std::min( curMinE,
-									(energy.getInterLoopE(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
+									(energy.getE_interLoop(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
 											+ (*hybridE(k1,k2))(j1-k1,j2-k2))
 									);
 						}
@@ -324,17 +328,20 @@ traceBack( Interaction & interaction ) const
 	// get indices in hybridE for boundary base pairs
 	size_t	i1 = interaction.basePairs.at(0).first - i1offset,
 			j1 = interaction.basePairs.at(1).first - i1offset,
-			i2 = energy.getAccessibility2().getReversedIndex(interaction.basePairs.at(0).second - i2offset),
-			j2 = energy.getAccessibility2().getReversedIndex(interaction.basePairs.at(1).second - i2offset);
+			i2 = energy.getAccessibility2().getReversedIndex(interaction.basePairs.at(0).second) - i2offset,
+			j2 = energy.getAccessibility2().getReversedIndex(interaction.basePairs.at(1).second) - i2offset;
 
 	// the currently traced value for i1-j1, i2-j2
 	E_type curE = (*hybridE(i1,i2))(j1-i1,j2-i2);
 
 	// trace back
-	do {
+	// do until only right boundary is left over
+	while( i1 != j1 ) {
+		// check if
 		// check if just internal loop
-		if (curE == (energy.getInterLoopE(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset)
-					+ (i1<j1 ? (*hybridE(j1,j2))(0,0) : 0.0 )))
+		if ( E_equal( curE,
+					(energy.getE_interLoop(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset)
+					+ (*hybridE(j1,j2))(0,0) )) )
 		{
 			break;
 		}
@@ -348,8 +355,9 @@ traceBack( Interaction & interaction ) const
 			for (k2=std::min(j2-1,i2+energy.getMaxInternalLoopSize2()+1); traceNotFound && k2>i2; k2--) {
 				// check if (k1,k2) are complementary
 				if (hybridE(k1,k2) != NULL && hybridE(k1,k2)->size1() > (j1-k1) && hybridE(k1,k2)->size2() > (j2-k2)) {
-					if (curE == (energy.getInterLoopE(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
-							+ (*hybridE(k1,k2))(j1-k1,j2-k2)) )
+					if ( E_equal( curE,
+							(energy.getE_interLoop(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
+							+ (*hybridE(k1,k2))(j1-k1,j2-k2)) ) )
 					{
 						// stop searching
 						traceNotFound = false;
@@ -364,8 +372,7 @@ traceBack( Interaction & interaction ) const
 			}
 			}
 		}
-	// do until only right boundary is left over
-	} while( i1 != j1 );
+	}
 
 	// sort final interaction (to make valid) (faster than calling sort())
 	if (interaction.basePairs.size() > 2) {

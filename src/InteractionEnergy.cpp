@@ -61,7 +61,7 @@ isValidInternalLoop( const size_t i1, const size_t j1, const size_t i2, const si
 		&& areComplementary( j1, j2)
 		&& InteractionEnergy::isAllowedLoopRegion(accS1.getSequence(), i1, j1, maxInternalLoopSize1)
 		&& InteractionEnergy::isAllowedLoopRegion(accS2.getSequence(), i2, j2, maxInternalLoopSize2)
-		&& ( (j1-i1==0 && j2-i2==0) || (j1-i1>0 && j2-i2>0) )
+		&& (j1-i1>0 && j2-i2>0)
 		;
 }
 
@@ -97,26 +97,71 @@ getE( const size_t i1, const size_t j1
 			+ getAccessibility2().getED( i2, j2 )
 			// dangling end penalty
 			// weighted by the probability that ends are unpaired (not included in RNAup)
-			+ (getDanglingLeft( i1, i2 )
+			+ (getE_danglingLeft( i1, i2 )
 					// Pr( i1-1 is unpaired | i1..j1 unpaired )
 					*getBoltzmannWeight( getAccessibility1().getED( (i1==0?i1:i1-1), j1 ) - getAccessibility1().getED( i1, j1 ) )
 					// Pr( i2-1 is unpaired | i2..j2 unpaired )
 					*getBoltzmannWeight( getAccessibility2().getED( (i2==0?i2:i2-1), j2 ) - getAccessibility2().getED( i2, j2 ) )
 					)
-			+ (getDanglingRight( j1, j2 )
+			+ (getE_danglingRight( j1, j2 )
 					// Pr( j1+1 is unpaired | i1..j1 unpaired )
 					*getBoltzmannWeight( getAccessibility1().getED( i1, std::min(getAccessibility1().getSequence().size()-1,j1+1) ) - getAccessibility1().getED( i1, j1 ) )
 					// Pr( j2+1 is unpaired | i2..j2 unpaired )
 					*getBoltzmannWeight( getAccessibility2().getED( i2, std::min(getAccessibility2().getSequence().size()-1,j2+1) ) - getAccessibility2().getED( i2, j2 ) )
 					)
 			// helix closure penalty (not included in RNAup)
-			+ getEndLeft( i1, i2 )
-			+ getEndRight( j1, j2 )
+			+ getE_endLeft( i1, i2 )
+			+ getE_endRight( j1, j2 )
 			;
 }
 
 ////////////////////////////////////////////////////////////////////////////
 
+InteractionEnergy::
+EnergyContributions
+InteractionEnergy::
+getE_contributions( const Interaction & interaction ) const
+{
+
+	// temporary access to range indices
+	const size_t i1 = interaction.basePairs.begin()->first;
+	const size_t i2 = getAccessibility2().getReversedIndex(interaction.basePairs.begin()->second);
+	const size_t j1 = interaction.basePairs.rbegin()->first;
+	const size_t j2 = getAccessibility2().getReversedIndex(interaction.basePairs.rbegin()->second);
+
+	// fill contribution data structure
+	EnergyContributions contr;
+	contr.init = getE_init();
+	contr.ED1 = getAccessibility1().getED( i1, j1 );
+	contr.ED2 = getAccessibility2().getED( i2, j2 );
+	contr.dangleLeft = (getE_danglingLeft( i1, i2 )
+							// Pr( i1-1 is unpaired | i1..j1 unpaired )
+							*getBoltzmannWeight( getAccessibility1().getED( (i1==0?i1:i1-1), j1 ) - getAccessibility1().getED( i1, j1 ) )
+							// Pr( i2-1 is unpaired | i2..j2 unpaired )
+							*getBoltzmannWeight( getAccessibility2().getED( (i2==0?i2:i2-1), j2 ) - getAccessibility2().getED( i2, j2 ) )
+							);
+	contr.dangleRight = (getE_danglingRight( j1, j2 )
+							// Pr( j1+1 is unpaired | i1..j1 unpaired )
+							*getBoltzmannWeight( getAccessibility1().getED( i1, std::min(getAccessibility1().getSequence().size()-1,j1+1) ) - getAccessibility1().getED( i1, j1 ) )
+							// Pr( j2+1 is unpaired | i2..j2 unpaired )
+							*getBoltzmannWeight( getAccessibility2().getED( i2, std::min(getAccessibility2().getSequence().size()-1,j2+1) ) - getAccessibility2().getED( i2, j2 ) )
+							);
+	contr.endLeft = getE_endLeft( i1, i2 );
+	contr.endRight = getE_endRight( j1, j2 );
+	// compute loop energy
+	contr.loops = interaction.energy
+					- contr.init
+					- contr.ED1
+					- contr.ED2
+					- contr.dangleLeft
+					- contr.dangleRight
+					- contr.endLeft
+					- contr.endRight
+					;
+
+	// final contribution distribution
+	return contr;
+}
 
 ////////////////////////////////////////////////////////////////////////////
 

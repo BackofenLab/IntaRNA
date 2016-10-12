@@ -1,6 +1,8 @@
 
 #include "PredictorMfe.h"
 
+#include <iostream>
+
 ////////////////////////////////////////////////////////////////////////////
 
 PredictorMfe::PredictorMfe( const InteractionEnergy & energy, OutputHandler & output )
@@ -9,10 +11,10 @@ PredictorMfe::PredictorMfe( const InteractionEnergy & energy, OutputHandler & ou
 			,energy.getAccessibility2().getAccessibilityOrigin().getSequence())
 	, i1offset(0)
 	, i2offset(0)
-	, minStackingEnergy( energy.getBestStackingEnergy() )
-	, minInitEnergy( energy.getBestInitEnergy() )
-	, minDangleEnergy( energy.getBestDangleEnergy() )
-	, minEndEnergy( energy.getBestEndEnergy() )
+	, minStackingEnergy( energy.getBestE_interLoop() )
+	, minInitEnergy( energy.getE_init() )
+	, minDangleEnergy( energy.getBestE_dangling() )
+	, minEndEnergy( energy.getBestE_end() )
 
 {
 
@@ -52,10 +54,9 @@ updateMfe( const size_t i1, const size_t j1
 		, const size_t i2, const size_t j2
 		, const E_type hybridE )
 {
-//				std::cerr <<"#DEBUG : energy( "<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" ) = "
-//						<<ecurE
-//						<<" = " <<(eH + eE + eD)
-//						<<std::endl;
+//	std::cerr <<"#DEBUG : energy( "<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" ) = "
+//			<<hybridE
+//			<<std::endl;
 
 	// TODO check if reasonable to check only interactions with hybridE < 0
 	if (hybridE > 0) {

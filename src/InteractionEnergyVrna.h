@@ -53,6 +53,15 @@ public:
 
 
 	/**
+	 * Provides the duplex initiation energy.
+	 *
+	 * @return the energy for duplex initiation
+	 */
+	virtual
+	E_type
+	getE_init() const;
+
+	/**
 	 * Computes the energy estimate for the interaction loop region closed by
 	 * the intermolecular base pairs (i1,i2) and (j1,j2) where the regions
 	 * [i1,j1] and [i2,j2] are considered unpaired.
@@ -60,27 +69,24 @@ public:
 	 * or is E_INF if the internal loop size exceeds
 	 * the allowed maximum (see constructor).
 	 *
-	 * @param i1 the index of the first sequence interacting with i2
-	 * @param j1 the index of the first sequence interacting with j2
-	 * @param i2 the index of the second sequence interacting with i1
-	 * @param j2 the index of the second sequence interacting with j1
+	 * @param i1 the index of the first sequence (<j1) interacting with i2
+	 * @param j1 the index of the first sequence (>i1) interacting with j2
+	 * @param i2 the index of the second sequence (<j2) interacting with i1
+	 * @param j2 the index of the second sequence (>i2) interacting with j1
 	 *
 	 * @return energy in kcal/mol for the loop closed by (i1,i2)
 	 *         or
-	 *         E_INF if the allowed loop size is exceeded
+	 *         E_INF if the allowed loop size is exceeded or no valid internal loop boundaries
 	 */
 	virtual
 	E_type
-	getInterLoopE( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const;
+	getE_interLoop( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const;
 
 
 	/**
-	 * Computes the dangling end energy penalty estimate for the left side of
-	 * an interaction loop region closed on the left by the intermolecular
+	 * Computes the dangling end energy penalties for the left side
+	 * (i1-1 and i2-1) of the interaction closed by the intermolecular
 	 * base pair (i1,i2).
-	 *
-	 * This incorporates an additional penalty for stems not closed by a GC
-	 * base pair.
 	 *
 	 * @param i1 the index of the first sequence interacting with i2
 	 * @param i2 the index of the second sequence interacting with i1
@@ -89,12 +95,12 @@ public:
 	 */
 	virtual
 	E_type
-	getDanglingLeft( const size_t i1, const size_t i2 ) const;
+	getE_danglingLeft( const size_t i1, const size_t i2 ) const;
 
 
 	/**
-	 * Computes the dangling end energy penalty estimate for the right side of
-	 * an interaction loop region closed on the right by the intermolecular
+	 * Computes the dangling end energy penalties for the right side
+	 * (j1+1 and j2+1) of the interaction closed by the intermolecular
 	 * base pair (j1,j2).
 	 *
 	 * @param j1 the index of the first sequence interacting with j2
@@ -104,7 +110,7 @@ public:
 	 */
 	virtual
 	E_type
-	getDanglingRight( const size_t j1, const size_t j2 ) const;
+	getE_danglingRight( const size_t j1, const size_t j2 ) const;
 
 
 	/**
@@ -118,7 +124,7 @@ public:
 	 */
 	virtual
 	E_type
-	getEndLeft( const size_t i1, const size_t i2 ) const;
+	getE_endLeft( const size_t i1, const size_t i2 ) const;
 
 	/**
 	 * Provides the penalty for closing an interaction with the given
@@ -131,7 +137,7 @@ public:
 	 */
 	virtual
 	E_type
-	getEndRight( const size_t j1, const size_t j2 ) const;
+	getE_endRight( const size_t j1, const size_t j2 ) const;
 
 
 	/**
@@ -149,38 +155,33 @@ public:
 	 */
 	virtual
 	E_type
-	getBestStackingEnergy() const;
-
-	/**
-	 * Provides the minimal energy gain possible for interaction initiation
-	 * for this energy model
-	 * @return the initiation constant used
-	 */
-	virtual
-	E_type
-	getBestInitEnergy() const;
+	getBestE_interLoop() const;
 
 	/**
 	 * Provides the minimal energy gain possible for left/right dangling ends
 	 * for this energy model
 	 * @return the best initiation energy gain produced by getDanglingLef() or
-	 *          getDanglingRight()
+	 *          getE_danglingRight()
 	 */
 	virtual
 	E_type
-	getBestDangleEnergy() const;
+	getBestE_dangling() const;
 
 	/**
 	 * Provides the best energy gain possible for left/right interaction ends
 	 * for this energy model
-	 * @return the best end energy gain produced by getEndLeft() or
-	 *          getEndRight()
+	 * @return the best end energy gain produced by getE_endLeft() or
+	 *          getE_endRight()
 	 */
 	virtual
 	E_type
-	getBestEndEnergy() const;
+	getBestE_end() const;
 
 protected:
+
+
+	//! Vienna RNA package : folding model to be used for the energy computation
+	vrna_md_t foldModel;
 
 	//! Vienna RNA package : folding parameters to be used for the energy
 	//! computation

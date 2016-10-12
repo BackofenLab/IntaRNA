@@ -11,6 +11,7 @@
 extern "C" {
 	#include <ViennaRNA/part_func.h>
 	#include <ViennaRNA/fold.h>
+	#include <ViennaRNA/model.h>
 }
 
 // RNAup-like ED filling
@@ -171,8 +172,11 @@ getPfScale( const RnaSequence & seq, VrnaHandler & vrnaHandler )
 		c_structure[i] = getAccConstraint().getVrnaDotBracket(i);
 	}
 
+	// TODO add maximal BP span
+	vrna_md_t curModel = vrnaHandler.getModel( getMaxLength(), getMaxLength() );
+
 	// Vienna RNA : get final folding parameters
-	paramT * foldParams = get_scaled_parameters( vrnaHandler.getModel().temperature, vrnaHandler.getModel());
+	paramT * foldParams = get_scaled_parameters( curModel.temperature, curModel );
 
 	// Vienna RNA : get mfe value
 	char structure[len+1];
@@ -190,7 +194,7 @@ getPfScale( const RnaSequence & seq, VrnaHandler & vrnaHandler )
 	free(foldParams);
 
 	// compute a scaling factor to avoid overflow in partition function
-	return std::exp(-(vrnaHandler.getModel().sfact*min_en)/ vrnaHandler.getRT() /(double)len);
+	return std::exp(-(curModel.sfact*min_en)/ vrnaHandler.getRT() /(double)len);
 
 }
 
@@ -205,11 +209,14 @@ fillByConstraints( VrnaHandler &vrnaHandler, std::ostream * log )
 	// get scaling factor to avoid math problems in partition function computation
 	const double pfScale = getPfScale( seq, vrnaHandler );
 
+	// TODO add maximal BP span
+	vrna_md_t curModel = vrnaHandler.getModel( getMaxLength(), getMaxLength() );
+
 	// Vienna RNA : get final partition function folding parameters
 	vrna_exp_param_s* partFoldParams
-		= get_boltzmann_factors( vrnaHandler.getModel().temperature
-								, vrnaHandler.getModel().betaScale
-								, vrnaHandler.getModel()
+		= get_boltzmann_factors( curModel.temperature
+								, curModel.betaScale
+								, curModel
 								, pfScale);
 
 
@@ -231,8 +238,8 @@ fillByConstraints( VrnaHandler &vrnaHandler, std::ostream * log )
 			// check if unconstrained within region (i,j)
 			if (regionUnconstrained) {
 				// compute ED value = E(unstructured in [i,j]) - E_all
-				edValues (i,j) = (calc_ensemble_free_energy(i,j, partFoldParams) - E_all);
 			} else {
+				edValues (i,j) = (calc_ensemble_free_energy(i,j, partFoldParams) - E_all);
 				// region covers constrained elements --> set to upper bound
 				edValues (i,j) = ED_UPPER_BOUND;
 			}
@@ -274,6 +281,9 @@ fillByRNAplfold( VrnaHandler &vrnaHandler, std::ostream * log )
 	}
 #endif
 
+	// TODO add maximal BP span
+	vrna_md_t curModel = vrnaHandler.getModel( getMaxLength(), getMaxLength() );
+
 	// copy sequence into C data structure
 	char * sequence = (char *) vrna_alloc(sizeof(char) * (getSequence().size() + 1));
 	for (int i=0; i<getSequence().size(); i++) {
@@ -290,7 +300,7 @@ fillByRNAplfold( VrnaHandler &vrnaHandler, std::ostream * log )
 
     vrna_plist_t * dpp = NULL; // ?? whatever..
 
-    vrna_exp_param_t * pf_parameters = vrna_exp_params(& vrnaHandler.getModel());
+    vrna_exp_param_t * pf_parameters = vrna_exp_params(& curModel);
 
 	// call folding and unpaired prob calculation
     vrna_plist_t * pl = pfl_fold_par(sequence
@@ -349,18 +359,21 @@ void
 AccessibilityVrna::
 fillByRNAup( VrnaHandler &vrnaHandler, std::ostream * log )
 {
+	// TODO add maximal BP span
+	vrna_md_t curModel = vrnaHandler.getModel( getMaxLength(), getMaxLength() );
 
 	// make model parameters accessible in VRNA2-API
-	vrna_md_defaults_reset( &(vrnaHandler.getModel()) );
+	vrna_md_defaults_reset( &curModel );
 	fold_constrained=1;
 	tetra_loop=1;
-	noLonelyPairs = 0;
-	noGU = 0;
-	no_closingGU = 0;
-	energy_set = 0;
+	noLonelyPairs = curModel.noLP;
+	noGU = curModel.noGU;
+	no_closingGU = curModel.noGUclosure;
+	energy_set = curModel.energy_set;
 
 	// TODO CHECK IF TO BE CALLED OR NOT
-//	    update_fold_params();
+//	update_fold_params();
+//	    vrna_params_subst();
 
 	////////  RNAup-like (VRNA2-API) unpaired probability calculation  ///////
 
@@ -382,8 +395,8 @@ fillByRNAup( VrnaHandler &vrnaHandler, std::ostream * log )
 	const double min_energy = fold( sequence, structure );
 	// overwrite structure again with constraint since it now holds the mfe structure
 	for (int i=0; i<getSequence().size(); i++) { structure[i] = getAccConstraint().getVrnaDotBracket(i); }
-	// compute the partition function scaling value
-	const double pf_scale = std::exp(-(vrnaHandler.getModel().sfact*min_energy)/RT/getSequence().size());
+//	// compute the partition function scaling value
+//	const double pf_scale = std::exp(-(curModel.sfact*min_energy)/RT/getSequence().size());
 	// compute partition function matrices to prepare unpaired probability calculation
 	const double ensemble_energy = pf_fold(sequence, structure);
 	// compute unpaired probabilities (cast-hack due to non-conform VRNA interface)

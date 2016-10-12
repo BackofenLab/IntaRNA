@@ -191,11 +191,15 @@ fillHybridZ( const InteractionEnergy & energy )
 			// compute entry
 			curZ = 0;
 
-			// get full internal loop energy (nothing between i and j)
-			// if allowed distance between i and j
-			if ( (w1+1) <= energy.getMaxInternalLoopSize1() && (w2+1) <= energy.getMaxInternalLoopSize2()) {
-				curZ += energy.getBoltzmannWeight(energy.getInterLoopE(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset))
-					* (i1<j1 ? (*hybridZ(j1,j2))(0,0) : 1.0 );
+			// either interaction initiation
+			if ( w1==0 && w2==0 )  {
+				curZ += energy.getBoltzmannWeight(energy.getE_init());
+			} else {
+			// or only internal loop energy (nothing between i and j)
+				if ( (w1+1) <= energy.getMaxInternalLoopSize1() && (w2+1) <= energy.getMaxInternalLoopSize2()) {
+					curZ += energy.getBoltzmannWeight(energy.getE_interLoop(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset))
+						* (*hybridZ(j1,j2))(0,0);
+				}
 			}
 
 			if (w1 > 1 && w2 > 1) {
@@ -204,7 +208,7 @@ fillHybridZ( const InteractionEnergy & energy )
 				for (k2=std::min(j2-1,i2+energy.getMaxInternalLoopSize2()+1); k2>i2; k2--) {
 					// check if (k1,k2) are complementary
 					if (hybridZ(k1,k2) != NULL) {
-						curZ += energy.getBoltzmannWeight(energy.getInterLoopE(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset))
+						curZ += energy.getBoltzmannWeight(energy.getE_interLoop(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset))
 								* ((*hybridZ(k1,k2))(j1-k1,j2-k2));
 					}
 				}

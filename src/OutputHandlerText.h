@@ -3,6 +3,7 @@
 #define OUTPUTHANDLERTEXT_H_
 
 #include "OutputHandler.h"
+#include "InteractionEnergy.h"
 
 #include <iostream>
 
@@ -23,6 +24,7 @@ public:
 	 *        interaction to be printed in the output
 	 */
 	OutputHandlerText( std::ostream & out
+				, const InteractionEnergy & energy
 				, const size_t flankingLength = 10 );
 
 	/**
@@ -55,6 +57,9 @@ protected:
 
 	//! the output stream to write the interaction text representation to
 	std::ostream & out;
+
+	//! the interaction energy handler used for the energy computations
+	const InteractionEnergy & energy;
 
 	//! number of flanking bases left/right of the interaction to print
 	const size_t flankingLength;

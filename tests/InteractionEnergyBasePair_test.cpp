@@ -31,35 +31,37 @@ TEST_CASE( "InteractionEnergyBasePair", "[InteractionEnergyBasePair]" ) {
 	SECTION("energy computation" ) {
 
 		// dangling end check
-		REQUIRE( energy.getDanglingLeft(0,0) == 0.0 );
-		REQUIRE( energy.getDanglingLeft(2,2) == 0.0 );
-		REQUIRE( energy.getDanglingRight(0,0) == 0.0 );
-		REQUIRE( energy.getDanglingRight(2,2) == 0.0 );
+		REQUIRE( energy.getE_danglingLeft(0,0) == 0.0 );
+		REQUIRE( energy.getE_danglingLeft(2,2) == 0.0 );
+		REQUIRE( energy.getE_danglingRight(0,0) == 0.0 );
+		REQUIRE( energy.getE_danglingRight(2,2) == 0.0 );
 
 		// dangling end check
-		REQUIRE( energy.getDanglingLeft(0,0) == 0.0 );
-		REQUIRE( energy.getDanglingLeft(2,2) == 0.0 );
-		REQUIRE( energy.getDanglingRight(0,0) == 0.0 );
-		REQUIRE( energy.getDanglingRight(2,2) == 0.0 );
+		REQUIRE( energy.getE_danglingLeft(0,0) == 0.0 );
+		REQUIRE( energy.getE_danglingLeft(2,2) == 0.0 );
+		REQUIRE( energy.getE_danglingRight(0,0) == 0.0 );
+		REQUIRE( energy.getE_danglingRight(2,2) == 0.0 );
+
+		// init only, but interior loop called
+		REQUIRE( energy.getE_interLoop( 0,0, 0,0 ) > 0.0 );
 
 		// base pairs possible
-		REQUIRE( energy.getInterLoopE( 0,0, 0,0 ) < 0.0 );
-		REQUIRE( energy.getInterLoopE( 0,1, 0,1 ) < 0.0 );
+		REQUIRE( energy.getE_interLoop( 0,1, 0,1 ) < 0.0 );
 
 		// base pairs overlapping
-		REQUIRE_FALSE( energy.getInterLoopE( 0,0, 0,1 ) < 0.0 );
-		REQUIRE_FALSE( energy.getInterLoopE( 0,1, 0,0 ) < 0.0 );
+		REQUIRE_FALSE( energy.getE_interLoop( 0,0, 0,1 ) < 0.0 );
+		REQUIRE_FALSE( energy.getE_interLoop( 0,1, 0,0 ) < 0.0 );
 
 		// base pairs not possible
-		REQUIRE_FALSE( energy.getInterLoopE( 0,0, 1,1 ) < 0.0 );
-		REQUIRE_FALSE( energy.getInterLoopE( 0,1, 2,3 ) < 0.0 );
-		REQUIRE_FALSE( energy.getInterLoopE( 0,1, 0,2 ) < 0.0 );
-		REQUIRE_FALSE( energy.getInterLoopE( 0,2, 1,2 ) < 0.0 );
+		REQUIRE_FALSE( energy.getE_interLoop( 0,0, 1,1 ) < 0.0 );
+		REQUIRE_FALSE( energy.getE_interLoop( 0,1, 2,3 ) < 0.0 );
+		REQUIRE_FALSE( energy.getE_interLoop( 0,1, 0,2 ) < 0.0 );
+		REQUIRE_FALSE( energy.getE_interLoop( 0,2, 1,2 ) < 0.0 );
 
 		// loop size exceeded
-		REQUIRE_FALSE( energy.getInterLoopE( 0,3, 1,2 ) < 0.0 );
-		REQUIRE_FALSE( energy.getInterLoopE( 1,2, 0,3 ) < 0.0 );
-		REQUIRE_FALSE( energy.getInterLoopE( 0,3, 0,3 ) < 0.0 );
+		REQUIRE_FALSE( energy.getE_interLoop( 0,3, 1,2 ) < 0.0 );
+		REQUIRE_FALSE( energy.getE_interLoop( 1,2, 0,3 ) < 0.0 );
+		REQUIRE_FALSE( energy.getE_interLoop( 0,3, 0,3 ) < 0.0 );
 
 	}
 

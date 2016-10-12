@@ -4,6 +4,7 @@
 
 
 #include "general.h"
+#include "Interaction.h"
 #include "Accessibility.h"
 #include "ReverseAccessibility.h"
 
@@ -17,6 +18,31 @@
 class InteractionEnergy {
 
 public:
+
+	/**
+	 * Container that provides the different energy contributions for an interaction
+	 */
+	struct EnergyContributions {
+	public:
+		//! the energy for all intermolecular loops
+		E_type loops;
+		//! the energy penalty for initiating the interaction
+		E_type init;
+		//! the energy penalty for making the interaction site accessible in seq1
+		E_type ED1;
+		//! the energy penalty for making the interaction site accessible in seq2
+		E_type ED2;
+		//! the energy for the dangling ends at the left end of the interaction
+		E_type dangleLeft;
+		//! the energy for the dangling ends at the right end of the interaction
+		E_type dangleRight;
+		//! the energy penalty for the left end of the interaction
+		E_type endLeft;
+		//! the energy penalty for the right end of the interaction
+		E_type endRight;
+	};
+
+
 	/**
 	 * Construct energy utility object given the accessibility ED values for
 	 * two RNA sequences.
@@ -69,6 +95,16 @@ public:
 			, const E_type hybridE ) const;
 
 	/**
+	 * Provides details about the energy contributions for the given interaction
+	 *
+	 * @param interaction the interaction of interest
+	 *
+	 * @return the individual energy contributions
+	 */
+	EnergyContributions
+	getE_contributions( const Interaction & interaction ) const;
+
+	/**
 	 * Checks whether or not two positions can for a base pair
 	 * @param i1 index in first sequence
 	 * @param i2 index in second sequence
@@ -77,6 +113,15 @@ public:
 	virtual
 	bool
 	areComplementary( const size_t i1, const size_t i2 ) const;
+
+	/**
+	 * Provides the duplex initiation energy.
+	 *
+	 * @return the energy for duplex initiation
+	 */
+	virtual
+	E_type
+	getE_init( ) const = 0;
 
 	/**
 	 * Computes the energy estimate for the interaction loop region closed by
@@ -92,17 +137,17 @@ public:
 	 * @param i2 the index of the second sequence interacting with i1
 	 * @param j2 the index of the second sequence interacting with j1 with i2<=j2
 	 *
-	 * @return the energy for the loop or E_INF if the allowed loop size is
-	 *         exceeded
+	 * @return the energy for the loop
+	 *         or E_INF if the allowed loop size is exceeded or no valid internal loop boundaries
 	 */
 	virtual
 	E_type
-	getInterLoopE( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const = 0;
+	getE_interLoop( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const = 0;
 
 
 	/**
-	 * Computes the dangling end energy penalty estimate for the left side of
-	 * an interaction loop region closed on the left by the intermolecular
+	 * Computes the dangling end energy penalties for the left side
+	 * (i1-1 and i2-1) of the interaction closed by the intermolecular
 	 * base pair (i1,i2).
 	 *
 	 * @param i1 the index of the first sequence interacting with i2
@@ -112,12 +157,12 @@ public:
 	 */
 	virtual
 	E_type
-	getDanglingLeft( const size_t i1, const size_t i2 ) const = 0;
+	getE_danglingLeft( const size_t i1, const size_t i2 ) const = 0;
 
 
 	/**
-	 * Computes the dangling end energy penalty estimate for the right side of
-	 * an interaction loop region closed on the right by the intermolecular
+	 * Computes the dangling end energy penalties for the right side
+	 * (j1+1 and j2+1) of the interaction closed by the intermolecular
 	 * base pair (j1,j2).
 	 *
 	 * @param j1 the index of the first sequence interacting with j2
@@ -127,7 +172,7 @@ public:
 	 */
 	virtual
 	E_type
-	getDanglingRight( const size_t j1, const size_t j2 ) const = 0;
+	getE_danglingRight( const size_t j1, const size_t j2 ) const = 0;
 
 	/**
 	 * Provides the penalty for closing an interaction with the given
@@ -140,7 +185,7 @@ public:
 	 */
 	virtual
 	E_type
-	getEndLeft( const size_t i1, const size_t i2 ) const = 0;
+	getE_endLeft( const size_t i1, const size_t i2 ) const = 0;
 
 	/**
 	 * Provides the penalty for closing an interaction with the given
@@ -153,7 +198,7 @@ public:
 	 */
 	virtual
 	E_type
-	getEndRight( const size_t j1, const size_t j2 ) const = 0;
+	getE_endRight( const size_t j1, const size_t j2 ) const = 0;
 
 	/**
 	 * Access to the accessibility object of the first sequence
@@ -238,40 +283,31 @@ public:
 	/**
 	 * Provides the best energy gain via stacking possible for this energy
 	 * model
-	 * @return the best stacking energy gain produced by getInterLoopE()
+	 * @return the best stacking energy gain produced by getE_interLoop()
 	 */
 	virtual
 	E_type
-	getBestStackingEnergy() const = 0;
-
-	/**
-	 * Provides the best energy gain possible for interaction initiation
-	 * for this energy model
-	 * @return the best initiation energy gain produced by getInterLoopE()
-	 */
-	virtual
-	E_type
-	getBestInitEnergy() const = 0;
+	getBestE_interLoop() const = 0;
 
 	/**
 	 * Provides the best energy gain possible for left/right dangle
 	 * for this energy model
-	 * @return the best initiation energy gain produced by getDanglingLeft() or
-	 *          getDanglingRight()
+	 * @return the best initiation energy gain produced by getE_danglingLeft() or
+	 *          getE_danglingRight()
 	 */
 	virtual
 	E_type
-	getBestDangleEnergy() const = 0;
+	getBestE_dangling() const = 0;
 
 	/**
 	 * Provides the best energy gain possible for left/right interaction ends
 	 * for this energy model
-	 * @return the best end energy gain produced by getEndLeft() or
-	 *          getEndRight()
+	 * @return the best end energy gain produced by getE_endLeft() or
+	 *          getE_endRight()
 	 */
 	virtual
 	E_type
-	getBestEndEnergy() const = 0;
+	getBestE_end() const = 0;
 
 
 	/**

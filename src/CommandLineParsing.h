@@ -1,9 +1,3 @@
-/*
- * CommandLineParsing.h
- *
- *  Created on: 18.06.2014
- *      Author: Mmann
- */
 
 #ifndef COMMANDLINEPARSING_H_
 #define COMMANDLINEPARSING_H_
@@ -117,10 +111,12 @@ public:
 	/**
 	 * Provides a newly allocated output handler according to the user request.
 	 *
+	 * @param energy the energy handler used for interaction computation
+	 *
 	 * @return the newly allocated OutputHandler object to be deleted by the
 	 * calling function
 	 */
-	OutputHandler* getOutputHandler() const;
+	OutputHandler* getOutputHandler(const InteractionEnergy & energy) const;
 
 	/**
 	 * Provides a newly allocated predictor according to the user defined
@@ -274,11 +270,15 @@ protected:
 
 	//! the selected energy model
 	CharParameter energy;
+	//! the provided energy parameter file of the VRNA package
+	std::string energyFile;
 
 	//! the vienna energy parameter handler initialized by #parse()
 	mutable VrnaHandler vrnaHandler;
 
 protected:
+
+	////////////  INDIVIDUAL TESTS  //////////////////
 
 	/**
 	 * Validates the query sequence argument.
@@ -341,28 +341,37 @@ protected:
 	void validate_tIntLoopMax(const int & value);
 
 	/**
-	 * Validates the seedMinBP arguments.
+	 * Validates the seedMinBP argument.
 	 * @param value the argument value to validate
 	 */
 	void validate_seedMinBP(const int & value);
 
 	/**
-	 * Validates the temperature arguments.
+	 * Validates the temperature argument.
 	 * @param value the argument value to validate
 	 */
 	void validate_temperature(const T_type & value);
 
 	/**
-	 * Validates the prediction mode arguments.
+	 * Validates the prediction mode argument.
 	 * @param value the argument value to validate
 	 */
 	void validate_predMode(const int & value);
 
 	/**
-	 * Validates the temperature arguments.
+	 * Validates the temperature argument.
 	 * @param value the argument value to validate
 	 */
 	void validate_energy(const char & value);
+
+	/**
+	 * Validates the energy parameter file argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_energyFile(const std::string & value);
+
+
+	////////////  GENERIC TESTS  /////////////////
 
 	/**
 	 * Validates a CharParameter.
@@ -406,6 +415,7 @@ protected:
 
 	void validate_structureConstraintArgument(const std::string& argument, const std::string & value);
 
+
 	/**
 	 * Parses the target parameter and returns all parsed sequences.
 	 * @param paramName the name of the parameter (for exception handling)
@@ -444,11 +454,26 @@ protected:
 	bool validateSequenceAlphabet(const std::string & paramName
 						, const RnaSequenceVec & sequences );
 
+
+	/**
+	 * Checks whether or not a fil with the given file name exists and is
+	 * readable.
+	 * @param filename the file name to check
+	 * @return true if the file can be accessed and is readable; false otherwise
+	 */
+	bool validateFile( const std::string & filename );
+
 	/**
 	 * Checks whether or not any command line argument were parsed. Throws a
 	 * std::runtime_error if not.
 	 */
 	void checkIfParsed() const;
+
+	/**
+	 * Updates the overall parsing code according to the given one
+	 * @param currentParsingCode the current parsing code to be used for the update
+	 */
+	void updateParsingCode( const ReturnCode currentParsingCode );
 
 };
 

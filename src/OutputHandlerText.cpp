@@ -8,9 +8,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 OutputHandlerText::OutputHandlerText( std::ostream & out,
+		const InteractionEnergy & energy,
 		const size_t flankingLength_ )
  :
 	out(out)
+	, energy(energy)
 	, flankingLength(flankingLength_)
 {
 	if (flankingLength < 10) {
@@ -233,6 +235,9 @@ add( const Interaction & i )
 		pos2tag	<<std::setw(interactionLength - 1) <<'|';
 	}
 
+	// get individual energy contributions
+	InteractionEnergy::EnergyContributions contr = energy.getE_contributions(i);
+
 	// print full interaction to output stream
 	out <<'\n'
 		// get ID of s1
@@ -252,7 +257,15 @@ add( const Interaction & i )
 		// get ID of s2
 		<<i.s2->getId() <<'\n'
 		// print energy
-		<<"\n interaction energy = "<<i.energy <<'\n'
+		<<"\ninteraction energy = "<<i.energy <<'\n'
+		<<"  = E(init)        = "<<contr.init<<'\n'
+		<<"  + E(loops)       = "<<contr.loops<<'\n'
+		<<"  + E(dangleLeft)  = "<<contr.dangleLeft<<'\n'
+		<<"  + E(dangleRight) = "<<contr.dangleRight<<'\n'
+		<<"  + E(endLeft)     = "<<contr.endLeft<<'\n'
+		<<"  + E(endRight)    = "<<contr.endRight<<'\n'
+		<<"  + ED(query)      = "<<contr.ED1<<'\n'
+		<<"  + ED(target)     = "<<contr.ED2<<'\n'
 		;
 
 }
