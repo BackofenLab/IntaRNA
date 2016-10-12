@@ -109,7 +109,7 @@ predict( const IndexRange & r1
 					skipw1w2 = false;
 
 					// check if ED penalty exceeds maximal energy gain
-					{
+					if (w1 > 0 && w2 > 0){
 						// check if all larger windows needing this site are already set to INF
 						bool largerWindowsINF = w1x==(*hybridE(i1,i2)).size1() && w2x==(*hybridE(i1,i2)).size2();
 						// check all larger windows w1 + w2p (that might need this window for computation)
@@ -228,7 +228,7 @@ fillHybridE( )
 				// interaction not possible: nothing to do, since no storage reserved
 				continue;
 			}
-			// check if interaction exceeds possible with due to max-loop-length
+			// check if interaction exceeds possible width due to max-loop-length
 			if ( getMaxInteractionWidth( 1+w1, energy.getMaxInternalLoopSize1() ) < w2
 				|| getMaxInteractionWidth( 1+w2, energy.getMaxInternalLoopSize2() ) < w1)
 			{
@@ -242,8 +242,7 @@ fillHybridE( )
 			j2=i2+w2;
 
 			// check if right boundary is complementary
-			if (hybridE(j1,j2) == NULL)
-			{
+			if (hybridE(j1,j2) == NULL) {
 				// not complementary -> ignore this entry
 				(*hybridE(i1,i2))(w1,w2) = E_INF;
 				continue;
@@ -257,26 +256,28 @@ fillHybridE( )
 				if ( w1==0 && w2==0 )  {
 					curMinE = energy.getE_init();
 				} else {
-				// or only internal loop energy (nothing between i and j)
+				
+					// or only internal loop energy (nothing between i and j)
 					curMinE = energy.getE_interLoop(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset)
 							+ (*hybridE(j1,j2))(0,0) ;
-				}
 
-
-				// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
-				if (w1 > 1 && w2 > 1) {
-					for (k1=std::min(j1-1,i1+energy.getMaxInternalLoopSize1()+1); k1>i1; k1--) {
-					for (k2=std::min(j2-1,i2+energy.getMaxInternalLoopSize2()+1); k2>i2; k2--) {
-						// check if (k1,k2) are complementary
-						if (hybridE(k1,k2) != NULL && hybridE(k1,k2)->size1() > (j1-k1) && hybridE(k1,k2)->size2() > (j2-k2)) {
-							curMinE = std::min( curMinE,
-									(energy.getE_interLoop(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
-											+ (*hybridE(k1,k2))(j1-k1,j2-k2))
-									);
+					// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
+					if (w1 > 1 && w2 > 1) {
+						for (k1=std::min(j1-1,i1+energy.getMaxInternalLoopSize1()+1); k1>i1; k1--) {
+						for (k2=std::min(j2-1,i2+energy.getMaxInternalLoopSize2()+1); k2>i2; k2--) {
+							// check if (k1,k2) are complementary
+							if (hybridE(k1,k2) != NULL && hybridE(k1,k2)->size1() > (j1-k1) && hybridE(k1,k2)->size2() > (j2-k2)) {
+								curMinE = std::min( curMinE,
+										(energy.getE_interLoop(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
+												+ (*hybridE(k1,k2))(j1-k1,j2-k2))
+										);
+							}
+						}
 						}
 					}
-					}
 				}
+
+
 				// store value
 				(*hybridE(i1,i2))(w1,w2) = curMinE;
 				// update mfe if needed

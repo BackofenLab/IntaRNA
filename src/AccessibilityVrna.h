@@ -39,15 +39,19 @@ public:
 	 * Construction
 	 * @param sequence the sequence the accessibility data belongs to
 	 * @param vrnaHandler the VRNA parameter handler to be used
-	 * @param maxLength the maximal length of accessible regions to be
+	 * @param maxWindow the maximal window size of accessible regions to be
 	 *           considered. 0 defaults to the sequence's length.
+	 * @param plFoldW the sliding window size to be used for plFold computations
+	 * @param plFoldL the maximal base pair span to be used for plFold computations
 	 * @param accConstraint if not NULL, accessibility constraint that enforces some regions
 	 *        to be unstructured both in sequence and interaction
 	 * @param log if not NULL, the stream to write log messages to
 	 */
 	AccessibilityVrna( const RnaSequence& sequence
 			, VrnaHandler & vrnaHandler
-			, const size_t maxLength = 0
+			, const size_t maxWindow = 0
+			, const size_t plFoldW = 0
+			, const size_t plFoldL = 0
 			, const AccessibilityConstraint * const accConstraint = NULL
 			, std::ostream * log = NULL
 			);
@@ -135,10 +139,15 @@ protected:
 	 * Use RNAplfold-like style to fill ED-values
 	 *
 	 * @param vrnaHandler the VRNA handler to be used
+	 * @param plFoldW the sliding window size to be used or 0 for full length
+	 * @param plFoldL the maximal base pair span to be used or 0 for plFoldW
 	 * @param logStream stream to log debug output etc.
 	 */
 	void
-	fillByRNAplfold( VrnaHandler &vrnaHandler, std::ostream * log );
+	fillByRNAplfold( VrnaHandler &vrnaHandler
+			, const size_t plFoldW
+			, const size_t plFoldL
+			, std::ostream * log );
 
 };
 

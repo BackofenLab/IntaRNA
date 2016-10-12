@@ -112,6 +112,14 @@ public:
 	Interaction &
 	operator= ( const InteractionRange & range );
 
+	/**
+	 * Prints the interacting base pairs to stream
+	 * @param out the ostream to write to
+	 * @param i the Interaction object to add
+	 * @return the altered stream out
+	 */
+	friend std::ostream& operator<<(std::ostream& out, const Interaction& i);
+
 };
 
 #endif /* INTERACTION_H_ */

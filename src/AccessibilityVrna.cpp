@@ -40,6 +40,8 @@ AccessibilityVrna::AccessibilityVrna(
 			const RnaSequence& seq
 			, VrnaHandler & vrnaHandler
 			, const size_t maxLength
+			, const size_t plFoldW
+			, const size_t plFoldL
 			, const AccessibilityConstraint * const accConstraint
 			, std::ostream * log
 		)
@@ -50,13 +52,16 @@ AccessibilityVrna::AccessibilityVrna(
 
 	// check if constraint given
 	if ( ! getAccConstraint().isEmpty() ) {
+		if (plFoldW > 0 || plFoldL > 0) {
+			throw std::runtime_error("AccessibilityVrna() : cannot compute accessibility with sliding window when constraints given");
+		}
 		fillByRNAup(vrnaHandler,log);
 //		(*log) <<"\n################### RNAup-based ##################\n" <<(*this) <<std::endl;
 		// old inefficient intarna-1 ED value computation
 //		fillByConstraints(vrnaHandler,log);
 //		(*log) <<"\n################### constrained-based ##################\n" <<(*this) <<std::endl;
 	} else {
-		fillByRNAplfold(vrnaHandler,log);
+		fillByRNAplfold(vrnaHandler, plFoldW, plFoldL, log);
 //		(*log) <<"\n################### RNAplfold-based ##################\n" <<(*this) <<std::endl;
 	}
 //	(*log) <<"\n################### done ##################\n" <<std::endl;
@@ -270,7 +275,10 @@ fillByConstraints( VrnaHandler &vrnaHandler, std::ostream * log )
 
 void
 AccessibilityVrna::
-fillByRNAplfold( VrnaHandler &vrnaHandler, std::ostream * log )
+fillByRNAplfold( VrnaHandler &vrnaHandler
+		, const size_t plFoldW
+		, const size_t plFoldL
+		, std::ostream * log )
 {
 #ifdef NDEBUG           /* required by ANSI standard */
 	// no check
@@ -278,6 +286,9 @@ fillByRNAplfold( VrnaHandler &vrnaHandler, std::ostream * log )
 	// check if structure constraint given
 	if ( ! getAccConstraint().isEmpty() ) {
 		throw std::runtime_error("AccessibilityVrna::fillByRNAplfold() called but structure constraint present for sequence "+getSequence().getId());
+	}
+	if ( plFoldW > 0 && plFoldW < 3) {
+		throw std::runtime_error("AccessibilityVrna::fillByRNAplfold() : plFoldW > 0 && plFoldW < 3");
 	}
 #endif
 
@@ -302,10 +313,12 @@ fillByRNAplfold( VrnaHandler &vrnaHandler, std::ostream * log )
 
     vrna_exp_param_t * pf_parameters = vrna_exp_params(& curModel);
 
+    int slidingWindow = (plFoldW==0? -1 : std::min(plFoldW,getSequence().size()));
+
 	// call folding and unpaired prob calculation
     vrna_plist_t * pl = pfl_fold_par(sequence
-    		, length // winsize
-    		, length // base pair distance
+    		, slidingWindow // winsize
+    		, (plFoldL==0? slidingWindow : (int)plFoldL) // base pair distance
     		, 0.0 // printing probability cut-off
     		, pup // the unpaired probabilities to be filled
     		, &dpp

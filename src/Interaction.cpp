@@ -156,4 +156,17 @@ operator= ( const InteractionRange & range )
 }
 
 
+
+////////////////////////////////////////////////////////////////////////////
+
+std::ostream&
+operator<<(std::ostream& out, const Interaction& i)
+{
+	for (int p=0; p<i.basePairs.size(); p++) {
+		out <<(p==0?"":",")
+			<<"("<<i.basePairs.at(p).first<<"-"<<i.basePairs.at(p).second<<")";
+	}
+	return out;
+}
+
 ////////////////////////////////////////////////////////////////////////////

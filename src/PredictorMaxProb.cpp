@@ -65,17 +65,17 @@ predict( const IndexRange & r1
 	for (size_t i1=0; i1<hybridZ.size1(); i1++) {
 		// check if i1 is blocked for interaction
 		i1blocked =
-		// - shows ambiguous nucleotide encoding
-			energy.getAccessibility1().getSequence().isAmbiguous( i1 )
-		// - is blocked by an accessibility constraint
-			|| energy.getAccessibility1().getAccConstraint().isBlocked(i1);
+		// - i1 shows ambiguous nucleotide encoding
+			energy.getAccessibility1().getSequence().isAmbiguous( i1+i1offset )
+		// - i1 is blocked by an accessibility constraint
+			|| energy.getAccessibility1().getAccConstraint().isBlocked(i1+i1offset);
 	for (size_t i2=0; i2<hybridZ.size2(); i2++) {
 		// check whether i1 or i2 is blocked for interaction
 		i1or2blocked = i1blocked
-		// - shows ambiguous nucleotide encoding
-			|| energy.getAccessibility2().getSequence().isAmbiguous( i2 )
-		// - is blocked by an accessibility constraint
-			|| energy.getAccessibility2().getAccConstraint().isBlocked(i2);
+		// - i2 shows ambiguous nucleotide encoding
+			|| energy.getAccessibility2().getSequence().isAmbiguous( i2+i2offset )
+		// - i2 is blocked by an accessibility constraint
+			|| energy.getAccessibility2().getAccConstraint().isBlocked(i2+i2offset);
 
 		if (hybridZ.size1()-i1 < hybridZ.size2()-i2) {
 			maxWidthFori1i2 = getMaxInteractionWidth( hybridZ.size1()-i1, energy.getMaxInternalLoopSize1() );
@@ -89,10 +89,7 @@ predict( const IndexRange & r1
 
 		// check if i1 and i2 are not blocked and can form a base pair
 		if ( ! i1or2blocked
-			&& RnaSequence::areComplementary(
-				  energy.getAccessibility1().getSequence()
-				, energy.getAccessibility2().getSequence()
-				, i1+i1offset, i2+i2offset ))
+			&& energy.areComplementary( i1+i1offset, i2+i2offset ))
 		{
 			// create new 2d matrix for different interaction site widths
 			hybridZ(i1,i2) = new E2dMatrix(
@@ -113,7 +110,7 @@ predict( const IndexRange & r1
 				<<"%) and "<<debug_count_cells_null <<" not allocated" <<std::endl;
 
 	// fill matrix
-	fillHybridZ( energy );
+	fillHybridZ( );
 
 	// maximal probability is
 	// double maxProb = (double)maxProbInteraction.getEnergy() / Z;
@@ -147,7 +144,7 @@ clear()
 
 void
 PredictorMaxProb::
-fillHybridZ( const InteractionEnergy & energy )
+fillHybridZ()
 {
 
 	// global vars to avoid reallocation
@@ -155,8 +152,13 @@ fillHybridZ( const InteractionEnergy & energy )
 
 	//////////  FIRST ROUND : COMPUTE HYBRIDIZATION ENERGIES ONLY  ////////////
 
+	// initialize max prob interaction for updates
+	initMaxProbInteraction();
+	// reset overall partition function
+	Z = 0.0;
+
 	// current Z value
-	E_type curZ = 0;
+	E_type curZ = 0.0;
 	// iterate increasingly over all window sizes w1 (seq1) and w2 (seq2)
 	for (w1=0; w1<energy.getAccessibility1().getMaxLength(); w1++) {
 	for (w2=0; w2<energy.getAccessibility2().getMaxLength(); w2++) {
@@ -170,7 +172,7 @@ fillHybridZ( const InteractionEnergy & energy )
 				// interaction not possible: nothing to do
 				continue;
 			}
-			// check if interaction exceeds possible with due to max-loop-length
+			// check if interaction exceeds possible width due to max-loop-length
 			if ( getMaxInteractionWidth( 1+w1, energy.getMaxInternalLoopSize1() ) < w2
 				|| getMaxInteractionWidth( 1+w2, energy.getMaxInternalLoopSize2() ) < w1)
 			{
@@ -178,16 +180,17 @@ fillHybridZ( const InteractionEnergy & energy )
 				(*hybridZ(i1,i2))(w1,w2) = 0;
 				continue;
 			}
+
+			// get window ends j (seq1) and l (seq2)
+			j1=i1+w1;
+			j2=i2+w2;
+
 			// check if right boundary is complementary
 			if (hybridZ(j1,j2) == NULL) {
 				// not complementary -> ignore this entry
 				(*hybridZ(i1,i2))(w1,w2) = 0;
 				continue;
 			}
-
-			// get window ends j (seq1) and l (seq2)
-			j1=i1+w1;
-			j2=i2+w2;
 			// compute entry
 			curZ = 0;
 
@@ -216,49 +219,13 @@ fillHybridZ( const InteractionEnergy & energy )
 			}
 			// store value
 			(*hybridZ(i1,i2))(w1,w2) = curZ;
+			// update max prob interaction
+			updateMaxProbInteraction( i1,j1,i2,j2, (*hybridZ(i1,i2))(w1,w2) );
 		}
 		}
 	}
 	}
 
-	//////////  SECOND ROUND : COMPUTE FINAL ENERGIES AND MFE  ////////////
-
-	// initialize max prob interaction for updates
-	initMaxProbInteraction();
-	// reset overall partition function
-	Z = (E_type)0.0;
-
-	// iterate increasingly over all window sizes w1 (seq1) and w2 (seq2)
-	for (w1=0; w1<energy.getAccessibility1().getMaxLength(); w1++) {
-	for (w2=0; w2<energy.getAccessibility2().getMaxLength(); w2++) {
-		// iterate over all window starts i1 (seq1) and i2 (seq2)
-		for (i1=0; i1+w1<hybridZ.size1(); i1++) {
-		for (i2=0; i2+w2<hybridZ.size2(); i2++) {
-			// check if left boundary is complementary
-			// and widths are possible
-			if (hybridZ(i1,i2) == NULL || hybridZ(i1,i2)->size1()<=w1 || hybridZ(i1,i2)->size2()<=w2) {
-				// interaction not possible: nothing to do
-				continue;
-			}
-			// check if reasonable entry
-			if ((*hybridZ(i1,i2))(w1,w2) < E_INF) {
-				// get window ends j (seq1) and l (seq2)
-				j1=i1+w1;
-				j2=i2+w2;
-
-				// update if needed
-				// TODO : intaRNA-1 uses dangling contribs only, if dangling base is in ED region, ie additional cases used
-				// TODO AU-end penalty missing
-				updateMaxProbInteraction( i1,j1,i2,j2
-						, (*hybridZ(i1,i2))(w1,w2)
-						);
-
-			}
-
-		} // i2
-		} // i1
-	} // w2
-	} // w1
 
 }
 

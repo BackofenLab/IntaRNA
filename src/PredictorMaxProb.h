@@ -91,7 +91,7 @@ protected:
 	 * computes all entries of the hybridZ matrix
 	 */
 	void
-	fillHybridZ( const InteractionEnergy & energy );
+	fillHybridZ( );
 
 	/**
 	 * Initializes the interaction site with maximal probability

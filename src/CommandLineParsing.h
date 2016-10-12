@@ -239,6 +239,10 @@ protected:
 	RnaSequenceVec query;
 	//! accessibility computation mode for query sequences
 	CharParameter qAcc;
+	//! window length for query accessibility computation (plFold)
+	NumberParameter<int> qAccW;
+	//! maximal base pair span for query accessibility computation (plFold)
+	NumberParameter<int> qAccL;
 	//! constraint for accessibility computation for query sequences
 	std::string qAccConstr;
 	//! window length to be considered accessible/interacting within query
@@ -252,6 +256,10 @@ protected:
 	RnaSequenceVec target;
 	//! accessibility computation mode for target sequences
 	CharParameter tAcc;
+	//! window length for target accessibility computation (plFold)
+	NumberParameter<int> tAccW;
+	//! maximal base pair span for target accessibility computation (plFold)
+	NumberParameter<int> tAccL;
 	//! constraint for accessibility computation for target sequences
 	std::string tAccConstr;
 	//! window length to be considered accessible/interacting within target
@@ -293,6 +301,18 @@ protected:
 	void validate_qAcc(const char & value);
 
 	/**
+	 * Validates the query accessibility sliding window size argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_qAccW(const int & value);
+
+	/**
+	 * Validates the query accessibility maximal loop length argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_qAccL(const int & value);
+
+	/**
 	 * Validates the query accessibility constraint argument.
 	 * @param value the argument value to validate
 	 */
@@ -321,6 +341,18 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_tAcc(const char & value);
+
+	/**
+	 * Validates the target accessibility sliding window size argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_tAccW(const int & value);
+
+	/**
+	 * Validates the target accessibility maximal loop length argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_tAccL(const int & value);
 
 	/**
 	 * Validates the target accessibility constraint argument.

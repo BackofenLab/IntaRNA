@@ -65,8 +65,14 @@ updateMfe( const size_t i1, const size_t j1
 
 	// get final energy of current interaction
 	E_type curE = energy.getE( i1,j1, i2,j2, hybridE );
+//	std::cerr <<"#DEBUG : energy( "<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" ) = "
+//			<<hybridE <<" : total = "<<curE
+//			<<std::endl;
 
 	if (curE < mfeInteraction.energy) {
+//	std::cerr <<"#DEBUG : new mfe( "<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" ) = "
+//			<<hybridE
+//			<<std::endl;
 		// store new global min
 		mfeInteraction.energy = (curE);
 		// store interaction boundaries

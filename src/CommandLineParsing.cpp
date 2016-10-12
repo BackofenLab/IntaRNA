@@ -49,16 +49,20 @@ CommandLineParsing::CommandLineParsing( std::ostream& logStream )
 	queryArg(""),
 	query(),
 	qAcc("NF",'F'),
+	qAccW( 0, 99999, 150),
+	qAccL( 0, 99999, 100),
 	qAccConstr(""),
 	qIntLenMax( 0, 99999, 0),
-	qIntLoopMax( 4, 100, 16),
+	qIntLoopMax( 0, 100, 16),
 
 	targetArg(""),
 	target(),
 	tAcc("NF",'F'),
+	tAccW( 0, 99999, 150),
+	tAccL( 0, 99999, 100),
 	tAccConstr(""),
 	tIntLenMax( 0, 99999, 0),
-	tIntLoopMax( 4, 100, 16),
+	tIntLoopMax( 0, 100, 16),
 
 	seedMinBP(3,20,7),
 
@@ -88,16 +92,26 @@ CommandLineParsing::CommandLineParsing( std::ostream& logStream )
 				->default_value(qAcc.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_qAcc,this,_1))
 			, std::string("accessibility computation : 'N'o accessibility contributions, or 'F'ull accessibility computation").c_str())
+		("qAccW"
+			, value<int>(&(qAccW.val))
+				->default_value(qAccW.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_qAccW,this,_1))
+			, std::string("accessibility computation : sliding window size for query accessibility computation (arg in range ["+toString(qAccW.min)+","+toString(qAccW.max)+"]; 0 defaults to the full sequence length)").c_str())
+		("qAccL"
+			, value<int>(&(qAccL.val))
+				->default_value(qAccL.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_qAccL,this,_1))
+			, std::string("accessibility computation : sliding window size for query accessibility computation (arg in range ["+toString(qAccL.min)+","+toString(qAccL.max)+"]; 0 defaults to sliding window size 'qAccW')").c_str())
 		("qAccConstr"
 			, value<std::string>(&(qAccConstr))
 				->notifier(boost::bind(&CommandLineParsing::validate_qAccConstr,this,_1))
 			, std::string("accessibility computation : structure constraint for each sequence position: '.' no constraint, '"+toString(AccessibilityConstraint::dotBracket_accessible)+"' unpaired, '"+toString(AccessibilityConstraint::dotBracket_blocked)+"' blocked. Note, blocked positions are excluded from interaction prediction and considered unpaired!").c_str())
-		("qIntLenMax"
+		("qIntW"
 			, value<int>(&(qIntLenMax.val))
 				->default_value(qIntLenMax.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_qIntLenMax,this,_1))
 			, std::string("interaction site : maximal window size to be considered for interaction (and thus accessible) within the query (arg in range ["+toString(qIntLenMax.min)+","+toString(qIntLenMax.max)+"]; 0 defaults to the full sequence length)").c_str())
-		("qIntLoopMax"
+		("qIntL"
 			, value<int>(&(qIntLoopMax.val))
 				->default_value(qIntLoopMax.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_qIntLoopMax,this,_1))
@@ -115,6 +129,16 @@ CommandLineParsing::CommandLineParsing( std::ostream& logStream )
 				->default_value(tAcc.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_tAcc,this,_1))
 			, std::string("accessibility computation : 'N'o accessibility contributions, or 'F'ull accessibility computation").c_str())
+		("tAccW"
+			, value<int>(&(tAccW.val))
+				->default_value(tAccW.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_tAccW,this,_1))
+			, std::string("accessibility computation : sliding window size for query accessibility computation (arg in range ["+toString(tAccW.min)+","+toString(tAccW.max)+"]; 0 defaults to the full sequence length)").c_str())
+		("tAccL"
+			, value<int>(&(tAccL.val))
+				->default_value(tAccL.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_tAccL,this,_1))
+			, std::string("accessibility computation : sliding window size for query accessibility computation (arg in range ["+toString(tAccL.min)+","+toString(tAccL.max)+"]; 0 defaults to sliding window size 'tAccW')").c_str())
 		("tAccConstr"
 			, value<std::string>(&(tAccConstr))
 				->notifier(boost::bind(&CommandLineParsing::validate_tAccConstr,this,_1))
@@ -331,7 +355,7 @@ void CommandLineParsing::validate_query(const std::string & value)
 void CommandLineParsing::validate_qIntLenMax(const int & value)
 {
 	// forward check to general method
-	validate_numberArgument("qIntLenMax", qIntLenMax, value);
+	validate_numberArgument("qIntW", qIntLenMax, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -339,7 +363,7 @@ void CommandLineParsing::validate_qIntLenMax(const int & value)
 void CommandLineParsing::validate_qIntLoopMax(const int & value)
 {
 	// forward check to general method
-	validate_numberArgument("qIntLoopMax", qIntLoopMax, value);
+	validate_numberArgument("qIntL", qIntLoopMax, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -352,10 +376,46 @@ void CommandLineParsing::validate_qAcc(const char & value)
 
 ////////////////////////////////////////////////////////////////////////////
 
+void CommandLineParsing::validate_qAccW(const int & value)
+{
+	// forward check to general method
+	validate_numberArgument("qAccW", qAccW, value);
+	// check lower bound
+	if (qAccW.val > 0 && qAccW.val < 3) {
+		logStream <<"\n qAccW = " <<value <<" : has to be 0 or > 3\n";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void CommandLineParsing::validate_qAccL(const int & value)
+{
+	// forward check to general method
+	validate_numberArgument("qAccL", qAccL, value);
+	// check upper bound
+	if (qAccL.val > qAccW.val) {
+		logStream <<"\n qAccL = " <<value <<" : has to be <= qAccW (=" <<qAccW.val<<")\n";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+	}
+	// check lower bound
+	if (qAccL.val > 0 && qAccL.val < 3) {
+		logStream <<"\n qAccL = " <<value <<" : has to be 0 or > 3\n";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
 void CommandLineParsing::validate_qAccConstr(const std::string & value)
 {
 	// forward check to general method
 	validate_structureConstraintArgument("qAccConstr", value);
+	// check if no sliding window computation requested
+	if (qAccW.val > 0 || qAccL.val > 0) {
+		logStream <<"\n query accessibility constraint not possible for sliding window computation (qAccL/W > 0)\n";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -392,10 +452,46 @@ void CommandLineParsing::validate_tAcc(const char & value)
 
 ////////////////////////////////////////////////////////////////////////////
 
+void CommandLineParsing::validate_tAccW(const int & value)
+{
+	// forward check to general method
+	validate_numberArgument("tAccW", tAccW, value);
+	// check lower bound
+	if (tAccW.val > 0 && tAccW.val < 3) {
+		logStream <<"\n tAccW = " <<value <<" : has to be 0 or > 3\n";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void CommandLineParsing::validate_tAccL(const int & value)
+{
+	// forward check to general method
+	validate_numberArgument("tAccL", tAccL, value);
+	// check upper bound
+	if (tAccL.val > tAccW.val) {
+		logStream <<"\n tAccL = " <<value <<" : has to be <= tAccW (=" <<tAccW.val<<")\n";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+	}
+	// check lower bound
+	if (tAccL.val > 0 && tAccL.val < 3) {
+		logStream <<"\n tAccL = " <<value <<" : has to be 0 or > 3\n";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
 void CommandLineParsing::validate_tAccConstr(const std::string & value)
 {
 	// forward check to general method
 	validate_structureConstraintArgument("tAccConstr", value);
+	// check if no sliding window computation requested
+	if (tAccW.val > 0 || tAccL.val > 0) {
+		logStream <<"\n query accessibility constraint not possible for sliding window computation (tAccL/W > 0)\n";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -573,7 +669,7 @@ getQueryAccessibility( const size_t sequenceNumber ) const
 	case 'F' : {
 		// create temporary constraint object (will be copied)
 		AccessibilityConstraint accConstraint(qAccConstr);
-		return new AccessibilityVrna( seq, vrnaHandler, qIntLenMax.val, &accConstraint, &logStream );
+		return new AccessibilityVrna( seq, vrnaHandler, qIntLenMax.val, qAccW.val, qAccL.val, &accConstraint, &logStream );
 	}
 	default :
 		NOTIMPLEMENTED("CommandLineParsing::getQueryAccessibility : qAcc = '"+toString(qAcc.val)+"' is not supported");
@@ -598,7 +694,7 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 	case 'F' : {
 			// create temporary constraint object (will be copied)
 			AccessibilityConstraint accConstraint(tAccConstr);
-			return new AccessibilityVrna( seq, vrnaHandler, tIntLenMax.val, &accConstraint, &logStream );
+			return new AccessibilityVrna( seq, vrnaHandler, tIntLenMax.val, tAccW.val, tAccL.val, &accConstraint, &logStream );
 		}
 	default :
 		NOTIMPLEMENTED("CommandLineParsing::getTargetAccessibility : tAcc = '"+toString(tAcc.val)+"' is not supported");

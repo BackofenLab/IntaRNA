@@ -3,6 +3,8 @@
 
 #include <cmath>
 
+#include <iostream>
+
 ////////////////////////////////////////////////////////////////////////////
 
 InteractionEnergy::InteractionEnergy( const Accessibility & accS1

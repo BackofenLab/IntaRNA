@@ -36,8 +36,8 @@ add( const Interaction & i )
 	// no check
 #else
 	// debug checks
-	if ( ! i.isValid() ) {
-		throw std::runtime_error("OutputHandlerText::add: given interaction is not valid");
+	if ( i.basePairs.size() > 0 && ! i.isValid() ) {
+		throw std::runtime_error("OutputHandlerText::add() : given interaction is not valid : "+toString(i));
 	}
 #endif
 
