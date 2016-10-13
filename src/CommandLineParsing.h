@@ -449,15 +449,25 @@ protected:
 
 
 	/**
-	 * Parses the target parameter and returns all parsed sequences.
+	 * Parses the parameter value and returns all parsed sequences.
 	 * @param paramName the name of the parameter (for exception handling)
 	 * @param paramArg the given argument for the parameter
 	 * @param sequences the container to fill
-	 * TODO exception handling
 	 */
 	void parseSequences(const std::string & paramName,
 					const std::string& paramArg,
 					RnaSequenceVec& sequences );
+
+	/**
+	 * Parses the parameter input stream from FASTA format and returns all
+	 * parsed sequences.
+	 * @param paramName the name of the parameter (for exception handling)
+	 * @param input the input stream from where to read the FASTA data
+	 * @param sequences the container to fill
+	 */
+	void parseSequencesFasta( const std::string & paramName,
+					std::istream& input,
+					RnaSequenceVec& sequences);
 
 	/**
 	 * Checks whether or not a sequence container holds a specific number of

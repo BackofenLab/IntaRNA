@@ -1,5 +1,15 @@
 
 161012 Martin Mann :
+ * CommandLineParsing :
+   + parseSequencesFasta() : read FASTA format from input stream
+   * validate_sequenceArgument() :
+     + stream/file support enabled
+   * parseSequence() :
+     + stream/file support enabled
+ * intaRNA :
+   * bugfix: queryAcc cleanup in inner loop
+
+161012 Martin Mann :
  * AccessibilityVrna :
    * getPf* :
      + local vrna_md_t model for according window sizes

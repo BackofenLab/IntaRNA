@@ -86,7 +86,7 @@ CommandLineParsing::CommandLineParsing( std::ostream& logStream )
 			, value<std::string>(&queryArg)
 				->required()
 				->notifier(boost::bind(&CommandLineParsing::validate_query,this,_1))
-			, "either an RNA sequence or the stream/file from where to read the query sequences; use 'STDIN' or 'STDERR' to read from standard input or error stream")
+			, "either an RNA sequence or the stream/file name from where to read the query sequences; use 'STDIN' to read from standard input stream")
 		("qAcc"
 			, value<char>(&(qAcc.val))
 				->default_value(qAcc.def)
@@ -123,7 +123,7 @@ CommandLineParsing::CommandLineParsing( std::ostream& logStream )
 			, value<std::string>(&targetArg)
 				->required()
 				->notifier(boost::bind(&CommandLineParsing::validate_target,this,_1))
-			, "either an RNA sequence or the stream/file from where to read the target sequences; use 'STDIN' or 'STDERR' to read from standard input or error stream")
+				, "either an RNA sequence or the stream/file name from where to read the target sequences; use 'STDIN' to read from standard input stream")
 		("tAcc"
 			, value<char>(&(tAcc.val))
 				->default_value(tAcc.def)
@@ -551,7 +551,7 @@ void CommandLineParsing::validate_charArgument(const std::string & name, const C
 
 void CommandLineParsing::validate_sequenceArgument(const std::string & name, const std::string & value)
 {
-	if (value.compare("STDIN") != 0 && value.compare("STDERR") != 0) {
+	if (value.compare("STDIN") != 0) {
 
 		// check if it is a sequence
 		if ( RnaSequence::isValidSequence(value) ) {
@@ -561,20 +561,12 @@ void CommandLineParsing::validate_sequenceArgument(const std::string & name, con
 		} else { // it is NOT a sequence! can be a file name!
 
 			// check if a file of this name exists and is readable
-			if (validateFile( value )) {
-
-				// TODO no file support yet
-				NOTIMPLEMENTED("\n "+name+" '"+value +"' : Currently only direct single sequence input supported.\n");
-
-			} else {
-				logStream <<"\n "<<name<<" '"<<value <<"' : is neither a file nor a sequence!\n";
+			if ( ! validateFile( value ) ) {
+				logStream <<"\n "<<name<<" '"<<value <<"' : is neither STDIN, a file name, or a sequence!\n";
 				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 			}
 		}
 
-	} else {
-		// TODO no stream support yet
-		NOTIMPLEMENTED("\n "+name+" '"+value +"' : Currently only direct single sequence input supported.\n");
 	}
 
 	// TODO : check for ambiguous nucleotides 'N' --> give warning that these are ignored for pairing in interactions
@@ -730,17 +722,30 @@ parseSequences(const std::string & paramName,
 	// clear sequence container
 	sequences.clear();
 
-	if (paramArg.compare("STDIN") == 0 ||paramArg.compare("STDERR") == 0 ) {
-		// TODO stream handling
-		NOTIMPLEMENTED("CommandLineParsing::parseSequences : stream handling missing");
+	// read FASTA from STDIN stream
+	if (paramArg.compare("STDIN") == 0) {
+		parseSequencesFasta(paramName, std::cin, sequences);
 	} else
 	if (RnaSequence::isValidSequence(paramArg)) {
 		// direct sequence input
 		sequences.push_back(RnaSequence(paramName,paramArg));
 	} else
 	{
-		// TODO file handling
-		NOTIMPLEMENTED("CommandLineParsing::parseSequences : file handling missing");
+		// open file handle
+		std::ifstream infile(paramArg);
+		try {
+			if(!infile.good()){
+				logStream <<"\n FASTA parsing of "<<paramName<<" : could not open FASTA file  '"<<paramArg<<"'\n"<<std::endl;
+				updateParsingCode( ReturnCode::STOP_PARSING_ERROR );
+			} else {
+				parseSequencesFasta(paramName, infile, sequences);
+			}
+		} catch (std::exception & ex) {
+			logStream <<"\n error while FASTA parsing of "<<paramName<<" : "<<ex.what()<<std::endl;
+			updateParsingCode( ReturnCode::STOP_PARSING_ERROR );
+		}
+		// close stream
+		infile.close();
 	}
 
 	// holds current validation status to supress checks once a validation failed
@@ -753,6 +758,80 @@ parseSequences(const std::string & paramName,
 
 }
 
+
+////////////////////////////////////////////////////////////////////////////
+
+void
+CommandLineParsing::
+parseSequencesFasta( const std::string & paramName,
+					std::istream& input,
+					RnaSequenceVec& sequences)
+{
+	// temporary variables
+	std::string line, name, sequence;
+	int trimStart = 0;
+
+	// read linewise
+	while( ! std::getline( input, line ).eof() ) {
+		// ignore empty lines
+		if( line.empty() ) {
+			continue;
+		}
+		// check of ID marker
+		if ( line[0] == '>' ){ // Identifier marker
+			if( !name.empty() ){ // we had read a name before
+				// store last sequence
+				// check if data complete
+				if (sequence.empty())  {
+					logStream <<"\n FASTA parsing of "<<paramName<<" : no sequence for ID '"<<name<<"'\n"<<std::endl;
+					updateParsingCode( ReturnCode::STOP_PARSING_ERROR );
+				} else {
+					// store sequence
+					sequences.push_back( RnaSequence( name, sequence ) );
+				}
+				// clear name data
+				name.clear();
+			}
+			// read new name
+			if( !line.empty() ){
+				// trim leading '>' plus successive and trailing whitespaces
+				trimStart = line.find_first_not_of(" \t",1);
+				line = line.substr( trimStart, std::max(0,(int)line.find_last_not_of(" \t\n\r")+1-trimStart) );
+				name = line;
+			}
+			// clear sequence data
+			sequence.clear();
+		} else
+		// has to be a sequence
+		if( !name.empty() ){
+			// trim leading/trailing whitespaces
+			trimStart = line.find_first_not_of(" \t");
+			line = line.substr( trimStart, std::max(0,(int)line.find_last_not_of(" \t\n\r")+1-trimStart) );
+			// check for enclosed whitespaces
+			if( line.find(' ') != std::string::npos ){ // Invalid sequence--no spaces allowed
+				logStream <<"\n FASTA parsing of "<<paramName<<" : sequence for ID '"<<name<<"' contains spaces\n"<<std::endl;
+				updateParsingCode( ReturnCode::STOP_PARSING_ERROR );
+				name.clear();
+				sequence.clear();
+			} else {
+				// store sequence line
+				sequence += line;
+			}
+		} else {
+			logStream <<"\n FASTA parsing of "<<paramName<<" : found sequence data without leading ID\n"<<std::endl;
+			updateParsingCode( ReturnCode::STOP_PARSING_ERROR );
+		}
+	}
+	// store last sequence
+	// check if data complete
+	if (sequence.empty())  {
+		logStream <<"\n FASTA parsing of "<<paramName<<" : no sequence for ID '"<<name<<"'\n"<<std::endl;
+		updateParsingCode( ReturnCode::STOP_PARSING_ERROR );
+	} else {
+		// store sequence
+		sequences.push_back( RnaSequence( name, sequence ) );
+	}
+}
 
 ////////////////////////////////////////////////////////////////////////////
 

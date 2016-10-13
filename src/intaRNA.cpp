@@ -94,8 +94,9 @@ int main(int argc, char **argv) {
 				CLEANUP(energy)
 				CLEANUP(targetAcc)
 				CLEANUP(targetAccOrig)
-				CLEANUP(queryAcc)
 			}
+			// garbage collection
+			CLEANUP(queryAcc)
 
 		}
 
