@@ -93,28 +93,35 @@ getE( const size_t i1, const size_t j1
 		, const size_t i2, const size_t j2
 		, const E_type hybridE ) const
 {
-	return hybridE
-			// accessibility penalty
-			+ getAccessibility1().getED( i1, j1 )
-			+ getAccessibility2().getED( i2, j2 )
-			// dangling end penalty
-			// weighted by the probability that ends are unpaired (not included in RNAup)
-			+ (getE_danglingLeft( i1, i2 )
-					// Pr( i1-1 is unpaired | i1..j1 unpaired )
-					*getBoltzmannWeight( getAccessibility1().getED( (i1==0?i1:i1-1), j1 ) - getAccessibility1().getED( i1, j1 ) )
-					// Pr( i2-1 is unpaired | i2..j2 unpaired )
-					*getBoltzmannWeight( getAccessibility2().getED( (i2==0?i2:i2-1), j2 ) - getAccessibility2().getED( i2, j2 ) )
-					)
-			+ (getE_danglingRight( j1, j2 )
-					// Pr( j1+1 is unpaired | i1..j1 unpaired )
-					*getBoltzmannWeight( getAccessibility1().getED( i1, std::min(getAccessibility1().getSequence().size()-1,j1+1) ) - getAccessibility1().getED( i1, j1 ) )
-					// Pr( j2+1 is unpaired | i2..j2 unpaired )
-					*getBoltzmannWeight( getAccessibility2().getED( i2, std::min(getAccessibility2().getSequence().size()-1,j2+1) ) - getAccessibility2().getED( i2, j2 ) )
-					)
-			// helix closure penalty (not included in RNAup)
-			+ getE_endLeft( i1, i2 )
-			+ getE_endRight( j1, j2 )
-			;
+	// check if hybridization energy is not infinite
+	if ( E_isNotINF(hybridE) ) {
+		// compute overall interaction energy
+		return hybridE
+				// accessibility penalty
+				+ getAccessibility1().getED( i1, j1 )
+				+ getAccessibility2().getED( i2, j2 )
+				// dangling end penalty
+				// weighted by the probability that ends are unpaired (not included in RNAup)
+				+ (getE_danglingLeft( i1, i2 )
+						// Pr( i1-1 is unpaired | i1..j1 unpaired )
+						*getBoltzmannWeight( getAccessibility1().getED( (i1==0?i1:i1-1), j1 ) - getAccessibility1().getED( i1, j1 ) )
+						// Pr( i2-1 is unpaired | i2..j2 unpaired )
+						*getBoltzmannWeight( getAccessibility2().getED( (i2==0?i2:i2-1), j2 ) - getAccessibility2().getED( i2, j2 ) )
+						)
+				+ (getE_danglingRight( j1, j2 )
+						// Pr( j1+1 is unpaired | i1..j1 unpaired )
+						*getBoltzmannWeight( getAccessibility1().getED( i1, std::min(getAccessibility1().getSequence().size()-1,j1+1) ) - getAccessibility1().getED( i1, j1 ) )
+						// Pr( j2+1 is unpaired | i2..j2 unpaired )
+						*getBoltzmannWeight( getAccessibility2().getED( i2, std::min(getAccessibility2().getSequence().size()-1,j2+1) ) - getAccessibility2().getED( i2, j2 ) )
+						)
+				// helix closure penalty (not included in RNAup)
+				+ getE_endLeft( i1, i2 )
+				+ getE_endRight( j1, j2 )
+				;
+	} else {
+		// hybridE is infinite, thus overall energy is infinity as well
+		return E_INF;
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////

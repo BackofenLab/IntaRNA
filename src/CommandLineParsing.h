@@ -15,8 +15,9 @@
 
 #include "Accessibility.h"
 #include "InteractionEnergy.h"
-#include "Predictor.h"
 #include "OutputHandler.h"
+#include "Predictor.h"
+#include "SeedConstraint.h"
 #include "VrnaHandler.h"
 
 /**
@@ -61,12 +62,6 @@ public:
 public:
 
 	/////////  GETTERS  ///////////////////////////////////////////////////
-
-	/**
-	 * Access to the minimal number of inter-molecular base pairs in the seed.
-	 * @return the minimal number of base pairs in the seed region
-	 */
-	int getSeedMinBp() const;
 
 	/**
 	 * Parses the query parameter and returns all parsed sequences.
@@ -128,6 +123,13 @@ public:
 	 */
 	Predictor* getPredictor( const InteractionEnergy & energy
 			, OutputHandler & output ) const;
+
+
+	/**
+	 * Provides the seed constraint according to the user settings
+	 * @return the user defined seed constraints
+	 */
+	SeedConstraint getSeedConstraint() const;
 
 	/**
 	 * Access to the set folding temperature in Celsius.
@@ -267,8 +269,16 @@ protected:
 	//! maximal internal loop length to be considered accessible/interacting within target
 	NumberParameter<int> tIntLoopMax;
 
-	//! minimal number of base pairs in seed
-	NumberParameter<int> seedMinBP;
+	//! whether or not a seed is to be required for an interaction or not
+	bool noSeedRequired;
+	//! number of base pairs in seed
+	NumberParameter<int> seedBP;
+	//! max overall unpaired in seed
+	NumberParameter<int> seedMaxUP;
+	//! max unpaired in query's seed
+	NumberParameter<int> seedMaxUPq;
+	//! max unpaired in query's seed
+	NumberParameter<int> seedMaxUPt;
 
 	//! the temperature to be used for energy computations
 	NumberParameter<T_type> temperature;
@@ -373,10 +383,28 @@ protected:
 	void validate_tIntLoopMax(const int & value);
 
 	/**
-	 * Validates the seedMinBP argument.
+	 * Validates the seedBP argument.
 	 * @param value the argument value to validate
 	 */
-	void validate_seedMinBP(const int & value);
+	void validate_seedBP(const int & value);
+
+	/**
+	 * Validates the seedMaxUP argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_seedMaxUP(const int & value);
+
+	/**
+	 * Validates the seedMaxUPq argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_seedMaxUPq(const int & value);
+
+	/**
+	 * Validates the seedMaxUPt argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_seedMaxUPt(const int & value);
 
 	/**
 	 * Validates the temperature argument.

@@ -210,7 +210,7 @@ fillHybridZ()
 				for (k1=std::min(j1-1,i1+energy.getMaxInternalLoopSize1()+1); k1>i1; k1--) {
 				for (k2=std::min(j2-1,i2+energy.getMaxInternalLoopSize2()+1); k2>i2; k2--) {
 					// check if (k1,k2) are complementary
-					if (hybridZ(k1,k2) != NULL) {
+					if (hybridZ(k1,k2) != NULL && hybridZ(k1,k2)->size1()>(j1-k1) && hybridZ(k1,k2)->size2()>(j2-k2)) {
 						curZ += energy.getBoltzmannWeight(energy.getE_interLoop(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset))
 								* ((*hybridZ(k1,k2))(j1-k1,j2-k2));
 					}
@@ -258,7 +258,7 @@ updateMaxProbInteraction( const size_t i1, const size_t j1
 //						<<std::endl;
 
 	// add Boltzmann weights of all penalties
-	E_type curZ = hybridZ * energy.getBoltzmannWeight( energy.getE(i1,j1,i2,j2,0.0) );
+	E_type curZ = hybridZ * energy.getBoltzmannWeight( energy.getE(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset,0.0) );
 
 	// update overall partition function
 	Z += (double)curZ;

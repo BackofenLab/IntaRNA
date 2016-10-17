@@ -25,6 +25,7 @@
 #include "PredictorMfe2d.h"
 #include "PredictorMfe4d.h"
 #include "PredictorMaxProb.h"
+#include "PredictorMfe2dSeed.h"
 
 #include "OutputHandlerText.h"
 
@@ -64,7 +65,11 @@ CommandLineParsing::CommandLineParsing( std::ostream& logStream )
 	tIntLenMax( 0, 99999, 0),
 	tIntLoopMax( 0, 100, 16),
 
-	seedMinBP(3,20,7),
+	noSeedRequired(false),
+	seedBP(3,20,7),
+	seedMaxUP(0,20,0),
+	seedMaxUPq(-1,20,-1),
+	seedMaxUPt(-1,20,-1),
 
 	temperature(0,100,37),
 
@@ -157,12 +162,41 @@ CommandLineParsing::CommandLineParsing( std::ostream& logStream )
 
 	////  SEED OPTIONS  ////////////////////////////////////
 
+
 	opts_seed.add_options()
-		("seedMinBP"
-			, value<int>(&(seedMinBP.val))
-				->default_value(seedMinBP.def)
-				->notifier(boost::bind(&CommandLineParsing::validate_seedMinBP,this,_1))
-			, std::string("minimal number of inter-molecular base pairs within the seed region (arg in range ["+toString(seedMinBP.min)+","+toString(seedMinBP.max)+"])").c_str())
+	    ("noSeed", "if present, no seed is enforced within the predicted interactions")
+	    ;
+
+	opts_seed.add_options()
+		("seedBP"
+			, value<int>(&(seedBP.val))
+				->default_value(seedBP.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_seedBP,this,_1))
+			, std::string("number of inter-molecular base pairs within the seed region (arg in range ["+toString(seedBP.min)+","+toString(seedBP.max)+"])").c_str())
+		;
+
+	opts_seed.add_options()
+		("seedMaxUP"
+			, value<int>(&(seedMaxUP.val))
+				->default_value(seedMaxUP.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_seedMaxUP,this,_1))
+			, std::string("maximal overall number (query+target) of unpaired bases within the seed region (arg in range ["+toString(seedMaxUP.min)+","+toString(seedMaxUP.max)+"])").c_str())
+		;
+
+	opts_seed.add_options()
+		("seedMaxUPq"
+			, value<int>(&(seedMaxUPq.val))
+				->default_value(seedMaxUPq.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_seedMaxUPq,this,_1))
+			, std::string("maximal number of unpaired bases within the query's seed region (arg in range ["+toString(seedMaxUPq.min)+","+toString(seedMaxUPq.max)+"]); if -1 the value of seedMaxUP is used.").c_str())
+		;
+
+	opts_seed.add_options()
+		("seedMaxUPt"
+			, value<int>(&(seedMaxUPt.val))
+				->default_value(seedMaxUPt.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_seedMaxUPt,this,_1))
+			, std::string("maximal number of unpaired bases within the target's seed region (arg in range ["+toString(seedMaxUPt.min)+","+toString(seedMaxUPt.max)+"]); if -1 the value of seedMaxUP is used.").c_str())
 		;
 
 	////  INTERACTION/ENERGY OPTIONS  ////////////////////////
@@ -272,15 +306,15 @@ parse(int argc, char** argv)
 			// parse the sequences
 			parseSequences("target",targetArg,target);
 
-			// check for minimal sequence length (>=seedMinBP)
+			// check for minimal sequence length (>=seedBP)
 			for( size_t i=0; i<query.size(); i++) {
-				if (query.at(i).size() < getSeedMinBp()) {
-					throw error("length of query sequence "+toString(i+1)+" is below minimal number of seed base pairs (seedMinBP="+toString(getSeedMinBp())+")");
+				if (query.at(i).size() < seedBP.val) {
+					throw error("length of query sequence "+toString(i+1)+" is below minimal number of seed base pairs (seedBP="+toString(seedBP.val)+")");
 				}
 			}
 			for( size_t i=0; i<target.size(); i++) {
-				if (target.at(i).size() < getSeedMinBp()) {
-					throw error("length of target sequence "+toString(i+1)+" is below minimal number of seed base pairs (seedMinBP="+toString(getSeedMinBp())+")");
+				if (target.at(i).size() < seedBP.val) {
+					throw error("length of target sequence "+toString(i+1)+" is below minimal number of seed base pairs (seedBP="+toString(seedBP.val)+")");
 				}
 			}
 
@@ -321,6 +355,9 @@ parse(int argc, char** argv)
 			if (vm.count("energyVRNA") > 0 && energy.val != 'F') {
 				throw error("energyVRNA provided but no (F)ull energy computation requested");
 			}
+
+			// check seed setup
+			noSeedRequired = vm.count("noSeed") > 0;
 
 		} catch (error& e) {
 			logStream <<e.what() << "\n";
@@ -496,9 +533,30 @@ void CommandLineParsing::validate_tAccConstr(const std::string & value)
 
 ////////////////////////////////////////////////////////////////////////////
 
-void CommandLineParsing::validate_seedMinBP(const int & value) {
+void CommandLineParsing::validate_seedBP(const int & value) {
 	// forward check to general method
-	validate_numberArgument("seedMinBP", seedMinBP, value);
+	validate_numberArgument("seedBP", seedBP, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void CommandLineParsing::validate_seedMaxUP(const int & value) {
+	// forward check to general method
+	validate_numberArgument("seedMaxUP", seedMaxUP, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void CommandLineParsing::validate_seedMaxUPq(const int & value) {
+	// forward check to general method
+	validate_numberArgument("seedMaxUPq", seedMaxUPq, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void CommandLineParsing::validate_seedMaxUPt(const int & value) {
+	// forward check to general method
+	validate_numberArgument("seedMaxUPt", seedMaxUPt, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -514,6 +572,9 @@ void CommandLineParsing::validate_predMode(const int & value)
 {
 	// forward check to general method
 	validate_numberArgument("mode", predMode, value);
+
+	// TODO check if mode with seed and "no-seed" requested
+
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -885,13 +946,6 @@ validateSequenceAlphabet( const std::string& paramName,
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
-
-int  CommandLineParsing::getSeedMinBp() const {
-	checkIfParsed();
-	// TODO check if obsolete when using getSeed()
-	return seedMinBP.val;
-}
-
 ////////////////////////////////////////////////////////////////////////////
 
 T_type
@@ -906,11 +960,20 @@ Predictor*
 CommandLineParsing::
 getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 {
-	switch ( predMode.val ) {
-	case 1 :  return new PredictorMfe2d( energy, output );
-	case 2 :  return new PredictorMfe4d( energy, output );
-	case 3 :  return new PredictorMaxProb( energy, output );
-	default: throw std::runtime_error("CommandLineParsing::getPredictor() : unknown predMode value "+toString(predMode.val));
+	if (noSeedRequired) {
+		switch ( predMode.val ) {
+		case 1 :  return new PredictorMfe2d( energy, output );
+		case 2 :  return new PredictorMfe4d( energy, output );
+		case 3 :  return new PredictorMaxProb( energy, output );
+		default: throw std::runtime_error("CommandLineParsing::getPredictor() : unknown predMode value "+toString(predMode.val));
+		}
+	} else {
+		switch ( predMode.val ) {
+		case 1 :  return new PredictorMfe2dSeed( energy, output, getSeedConstraint() );
+		case 2 :  NOTIMPLEMENTED("mode "+toString(predMode.val)+" not implemented for seed constraint (try --noSeed)"); return NULL;
+		case 3 :  NOTIMPLEMENTED("mode "+toString(predMode.val)+" not implemented for seed constraint (try --noSeed)"); return NULL;
+		default: throw std::runtime_error("CommandLineParsing::getPredictor() : unknown predMode value "+toString(predMode.val));
+		}
 	}
 }
 
@@ -931,6 +994,20 @@ CommandLineParsing::
 updateParsingCode( const ReturnCode currentParsingCode )
 {
 	parsingCode = std::max( parsingCode, currentParsingCode );
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+SeedConstraint
+CommandLineParsing::
+getSeedConstraint() const
+{
+	// setup according to user data
+	return SeedConstraint( seedBP.val
+							, seedMaxUP.val
+							, seedMaxUPq.val<0 ? seedMaxUP.val : seedMaxUPq.val
+							, seedMaxUPt.val<0 ? seedMaxUP.val : seedMaxUPt.val
+						);
 }
 
 ////////////////////////////////////////////////////////////////////////////

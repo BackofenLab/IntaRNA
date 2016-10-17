@@ -39,7 +39,7 @@ public:
 	 * handler.
 	 *
 	 * @param r1 the index range of the first sequence interacting with r2
-	 * @param 22 the index range of the second sequence interacting with r1
+	 * @param r2 the index range of the second sequence interacting with r1
 	 *
 	 */
 	virtual
@@ -82,17 +82,21 @@ protected:
 	 * @param energy the energy function to use
 	 * @param j1 end of the interaction within seq 1
 	 * @param j2 end of the interaction within seq 2
+	 * @param i1init smallest value for i1
+	 * @param i2init smallest value for i2
 	 */
 	void
 	initHybridE( const size_t j1, const size_t j2, const size_t i1init=0, const size_t i2init=0 );
 
 	/**
 	 * Computes all entries of the hybridE matrix for interactions ending in
-	 * p=j1 and q=j2
+	 * p=j1 and q=j2 and report all valid interactions to updateMfe()
 	 *
 	 * @param energy the energy function to use
 	 * @param j1 end of the interaction within seq 1
 	 * @param j2 end of the interaction within seq 2
+	 * @param i1init smallest value for i1
+	 * @param i2init smallest value for i2
 	 *
 	 */
 	void

@@ -58,7 +58,14 @@
 	//! type for temperature values
 	typedef E_type T_type;
 
+	//! check if two energies are equal according to some epsilon
 #define E_equal( e1, e2 ) ( std::abs((e1)-(e2)) < 1000.0*std::numeric_limits<E_type>::epsilon())
+
+	//! check if a given energy is NOT set to E_INF
+#define E_isNotINF( e ) ( std::numeric_limits<E_type>::max() >= e )
+
+	//! check if a given energy is set to E_INF
+#define E_isINF( e ) (  std::numeric_limits<E_type>::max() < e )
 
 
 ////////////////  GLOBAL CONSTANTS  /////////////////////

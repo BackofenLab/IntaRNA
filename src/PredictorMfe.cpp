@@ -58,13 +58,13 @@ updateMfe( const size_t i1, const size_t j1
 //			<<hybridE
 //			<<std::endl;
 
-	// TODO check if reasonable to check only interactions with hybridE < 0
-	if (hybridE > 0) {
+	// TODO check if reasonable to check only interactions with hybridE+dangleE < 0
+	if (hybridE + 2*energy.getBestE_dangling() > 0) {
 		return;
 	}
 
 	// get final energy of current interaction
-	E_type curE = energy.getE( i1,j1, i2,j2, hybridE );
+	E_type curE = energy.getE( i1+i1offset,j1+i1offset, i2+i2offset,j2+i2offset, hybridE );
 //	std::cerr <<"#DEBUG : energy( "<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" ) = "
 //			<<hybridE <<" : total = "<<curE
 //			<<std::endl;

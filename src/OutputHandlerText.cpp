@@ -43,7 +43,7 @@ add( const Interaction & i )
 
 	// special handling if no base pairs present
 	if (i.basePairs.size() == 0) {
-		// TODO
+		out <<"\nno favorable interaction (E<0) for "<<i.s1->getId() <<" and "<<i.s2->getId()<<std::endl;
 		return;
 	}
 

@@ -37,9 +37,7 @@ public:
 	 * The according optimal interaction is given to the output handler.
 	 *
 	 * @param r1 the index range of the first sequence interacting with r2
-	 * @param 22 the index range of the second sequence interacting with r1
-	 *
-	 * TODO @param seed InteractionRange/Interaction pointer (default NULL) that centers interaction prediction
+	 * @param r2 the index range of the second sequence interacting with r1
 	 *
 	 */
 	virtual

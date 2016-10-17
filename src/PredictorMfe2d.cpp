@@ -77,7 +77,6 @@ predict( const IndexRange & r1
 		// fill mfe interaction with according base pairs
 		traceBack( mfeInteraction );
 	} else {
-		// TODO : check if better to skip output handler report instead of overwrite
 		// replace mfeInteraction with no interaction
 		mfeInteraction.clear();
 		mfeInteraction.energy = 0.0;
@@ -105,9 +104,8 @@ initHybridE( const size_t j1, const size_t j2, const size_t i1init, const size_t
 	// global vars to avoid reallocation
 	size_t i1,i2,w1,w2,k1,k2;
 
-
+	// to mark as to be computed
 	const E_type E_MAX = std::numeric_limits<E_type>::max();
-
 
 	hybridErange.r1.from = std::max(i1init,j1-std::min(j1,energy.getAccessibility1().getMaxLength()+1));
 	hybridErange.r1.to = j1;
@@ -128,12 +126,12 @@ initHybridE( const size_t j1, const size_t j2, const size_t i1init, const size_t
 				// check all larger windows w1 + i2p..j2 (that might need this window for computation)
 				for (size_t i2p=hybridErange.r2.from; largerWindowsINF && i2p>i2; i2p++) {
 					// check if larger window is E_INF
-					largerWindowsINF = (E_MAX < hybridE_pq(i1,i2p));
+					largerWindowsINF = E_isINF(hybridE_pq(i1,i2p));
 				}
 				// check all larger windows w2 + w1p (that might need this window for computation)
 				for (size_t i1p=hybridErange.r1.from; largerWindowsINF && i1p>i1; i1p++) {
 					// check if larger window is E_INF
-					largerWindowsINF = (E_MAX < hybridE_pq(i1,i2));
+					largerWindowsINF = E_isINF(hybridE_pq(i1,i2));
 				}
 
 				// if it holds for all w'>=w: ED1(i1+w1')+ED2(i2+w2') > -1*(min(w1',w2')*EmaxStacking + Einit + 2*Edangle + 2*Eend)
@@ -201,7 +199,7 @@ fillHybridE( const size_t j1, const size_t j2, const size_t i1init, const size_t
 			}
 
 			// check if this cell is to be computed (!=E_INF)
-			if( hybridE_pq(i1,i2) < E_INF) {
+			if( E_isNotINF( hybridE_pq(i1,i2) ) ) {
 
 				// compute entry
 
@@ -219,7 +217,7 @@ fillHybridE( const size_t j1, const size_t j2, const size_t i1init, const size_t
 					for (k1=std::min(j1-1,i1+energy.getMaxInternalLoopSize1()+1); k1>i1; k1--) {
 					for (k2=std::min(j2-1,i2+energy.getMaxInternalLoopSize2()+1); k2>i2; k2--) {
 						// check if (k1,k2) are valid left boundary
-						if (hybridE_pq(k1,k2) < E_INF) {
+						if ( E_isNotINF( hybridE_pq(k1,k2) ) ) {
 							curMinE = std::min( curMinE,
 									(energy.getE_interLoop(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
 											+ hybridE_pq(k1,k2) )
@@ -302,7 +300,7 @@ traceBack( Interaction & interaction )
 			for (k1=std::min(j1-1,i1+energy.getMaxInternalLoopSize1()+1); traceNotFound && k1>i1; k1--) {
 			for (k2=std::min(j2-1,i2+energy.getMaxInternalLoopSize2()+1); traceNotFound && k2>i2; k2--) {
 				// check if (k1,k2) are valid left boundary
-				if (hybridE_pq(k1,k2) < E_INF) {
+				if ( E_isNotINF( hybridE_pq(k1,k2) ) ) {
 					if ( E_equal( curE,
 							(energy.getE_interLoop(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
 							+ hybridE_pq(k1,k2)) ) )

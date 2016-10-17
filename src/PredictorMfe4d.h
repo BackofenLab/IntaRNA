@@ -45,7 +45,7 @@ public:
 	 * handler.
 	 *
 	 * @param r1 the index range of the first sequence interacting with r2
-	 * @param 22 the index range of the second sequence interacting with r1
+	 * @param r2 the index range of the second sequence interacting with r1
 	 *
 	 */
 	virtual

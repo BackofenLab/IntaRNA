@@ -1,4 +1,45 @@
 
+161017 Martin Mann :
+ * CommandLineParsing :
+   - seedMinBP : renamed to seedBP
+   - getSeedMinBp : obsolete
+   + noSeedRequired : whether or not to enforce seed constraint for interactions
+   + seedBP : number of base pairs within seed
+   + seedMaxUP : maximal overall number of unpaired bases in seed
+   + seedMaxUPq : maximal number of unpaired bases within query's seed
+   + seedMaxUPt : maximal number of unpaired bases within target's seed
+   + validator_*() for arguments
+   + getSeedConstraint() : provides the seed according to the arguments
+   * parse() :
+     + noSeedRequired setup
+   * getPredictor() : predictor type depends now on noSeedRequired member setup
+ * general.h :
+   + E_isNotINF() : check for energy != E_INF
+   + E_isINF() : check for energy == E_INF
+ * InteractionEnergy :
+   * getE() :
+     + overall energy only computed if hybridE != E_INF
+ * OutputHandlerText :
+   * add() :
+     + output text for empty interaction
+ * PredictorMaxProb :
+   * fillHybridZ() : bugfix of boundary checks
+   * updateMaxProbInteraction() : bugfix : offset missing
+ * PredictorMfe :
+   * updateMfe() :
+     * feasibility check extended with dangling end energies (can be < 0)
+     * bugfix : offset missing
+ * PredictorMfe2d/4d :
+   * checks via E_isINF and E_isNotINF
+ + PredictorMfe2dSeed : predicts interactions that fulfill the seed constraint
+ + SeedConstraint : defines a seed constraint
+   + bp : number of base pairs
+   + maxUnpairedOverall : maximal overall number of unpaired bases
+   + maxUnpaired1 : maximal number of unpaired bases in first sequence
+   + maxUnpaired2 : maximal number of unpaired bases in second sequence
+   + getMaxLength*() : provides maximal length of a seed given the constraints
+   + ostream operator
+
 161012 Martin Mann :
  * CommandLineParsing :
    + parseSequencesFasta() : read FASTA format from input stream

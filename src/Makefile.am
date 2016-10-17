@@ -39,12 +39,16 @@ intaRNA_SOURCES =	intaRNA.cpp \
 					PredictorMfe.cpp \
 					PredictorMfe2d.h \
 					PredictorMfe2d.cpp \
+					PredictorMfe2dSeed.h \
+					PredictorMfe2dSeed.cpp \
 					PredictorMfe4d.h \
 					PredictorMfe4d.cpp \
 					ReverseAccessibility.h \
 					ReverseAccessibility.cpp \
 					RnaSequence.h \
 					RnaSequence.cpp \
+					SeedConstraint.h \
+					SeedConstraint.cpp \
 					VrnaHandler.h \
 					VrnaHandler.cpp
 

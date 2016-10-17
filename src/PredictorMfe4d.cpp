@@ -166,7 +166,6 @@ predict( const IndexRange & r1
 		// fill mfe interaction with according base pairs
 		traceBack( mfeInteraction );
 	} else {
-		// TODO : check if better to skip output handler report instead of overwrite
 		// replace mfeInteraction with no interaction
 		mfeInteraction.clear();
 		mfeInteraction.energy = 0.0;
@@ -223,6 +222,7 @@ fillHybridE( )
 				// interaction not possible: nothing to do, since no storage reserved
 				continue;
 			}
+
 			// and widths are possible (ie available within data structure)
 			if (hybridE(i1,i2)->size1()<=w1 || hybridE(i1,i2)->size2()<=w2) {
 				// interaction not possible: nothing to do, since no storage reserved
@@ -248,7 +248,7 @@ fillHybridE( )
 				continue;
 			}
 			// check if this cell is to be computed (!=E_INF)
-			if( (*hybridE(i1,i2))(w1,w2) < E_INF) {
+			if( E_isNotINF( (*hybridE(i1,i2))(w1,w2) ) ) {
 
 				// compute entry
 
