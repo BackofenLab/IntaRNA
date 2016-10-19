@@ -6,15 +6,12 @@
 #include "CommandLineParsing.h"
 
 #include "RnaSequence.h"
-
 #include "Accessibility.h"
-
 #include "InteractionEnergy.h"
-
 #include "Predictor.h"
-
 #include "OutputHandler.h"
 
+#include "easylogging++.h"
 
 // initialize logging for binary
 INITIALIZE_EASYLOGGINGPP

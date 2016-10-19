@@ -5,6 +5,8 @@
 #include "general.h"
 #include "RnaSequence.h"
 
+#include "easylogging++.h"
+
 #include <boost/program_options.hpp>
 
 #include <iostream>
@@ -245,6 +247,10 @@ protected:
 	NumberParameter<int> qIntLenMax;
 	//! maximal internal loop length to be considered accessible/interacting within query
 	NumberParameter<int> qIntLoopMax;
+	//! the string encoding of the interaction intervals for the query(s)
+	std::string qRegionString;
+	//! the list of interaction intervals for each query sequence
+	std::vector<IndexRangeList> qRegion;
 
 	//! the target command line argument
 	std::string targetArg;
@@ -262,6 +268,10 @@ protected:
 	NumberParameter<int> tIntLenMax;
 	//! maximal internal loop length to be considered accessible/interacting within target
 	NumberParameter<int> tIntLoopMax;
+	//! the string encoding of the interaction intervals for the target(s)
+	std::string tRegionString;
+	//! the list of interaction intervals for each target sequence
+	std::vector<IndexRangeList> tRegion;
 
 	//! whether or not a seed is to be required for an interaction or not
 	bool noSeedRequired;

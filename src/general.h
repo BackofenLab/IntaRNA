@@ -26,8 +26,6 @@
 	#define ELPP_DISABLE_LOG_FILE_FROM_ARG 1
 #endif
 
-#include "easylogging++.h"
-
 ////////////////  GARBAGE COLLECTION  ///////////////////
 
 #define CLEANUP(pointer) if (pointer != NULL) {delete pointer; pointer=NULL;}

@@ -3,6 +3,7 @@
 
 #include "general.h"
 
+#include "easylogging++.h"
 
 #include <cmath>
 #include <stdexcept>
@@ -50,6 +51,8 @@ CommandLineParsing::CommandLineParsing()
 	qAccConstr(""),
 	qIntLenMax( 0, 99999, 0),
 	qIntLoopMax( 0, 100, 16),
+	qRegionString(""),
+	qRegion(),
 
 	targetArg(""),
 	target(),
@@ -59,6 +62,8 @@ CommandLineParsing::CommandLineParsing()
 	tAccConstr(""),
 	tIntLenMax( 0, 99999, 0),
 	tIntLoopMax( 0, 100, 16),
+	tRegionString(""),
+	tRegion(),
 
 	noSeedRequired(false),
 	seedBP(2,20,7),
@@ -118,6 +123,10 @@ CommandLineParsing::CommandLineParsing()
 				->default_value(qIntLoopMax.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_qIntLoopMax,this,_1))
 			, std::string("interaction site : maximal number of unpaired bases between neighbored interacting bases to be considered in interactions within the query (arg in range ["+toString(qIntLoopMax.min)+","+toString(qIntLoopMax.max)+"]; 0 enforces stackings only)").c_str())
+		("qRegion"
+			, value<std::string>(&(qRegionString))
+				->notifier(boost::bind(&CommandLineParsing::validate_qRegion,this,_1))
+			, std::string("interaction site : query regions to be considered for interaction prediction. Either given as BED file (for multi-sequence FASTA input) or in the format 'from1-to1,from2-to2,..'").c_str())
 		;
 
 	opts_target.add_options()
@@ -155,6 +164,10 @@ CommandLineParsing::CommandLineParsing()
 				->default_value(tIntLoopMax.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_tIntLoopMax,this,_1))
 			, std::string("interaction site : maximal number of unpaired bases between neighbored interacting bases to be considered in interactions within the target (arg in range ["+toString(tIntLoopMax.min)+","+toString(tIntLoopMax.max)+"]; 0 enforces stackings only)").c_str())
+		("tRegion"
+			, value<std::string>(&(tRegionString))
+				->notifier(boost::bind(&CommandLineParsing::validate_tRegion,this,_1))
+			, std::string("interaction site : target regions to be considered for interaction prediction. Either given as BED file (for multi-sequence FASTA input) or in the format 'from1-to1,from2-to2,..'").c_str())
 		;
 
 	////  SEED OPTIONS  ////////////////////////////////////

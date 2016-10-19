@@ -59,15 +59,15 @@ AccessibilityConstraint( const AccessibilityConstraint& toCopy
 			, const bool reverseIndices)
 	:
 	length(toCopy.length)
-	, blocked(toCopy.blocked.begin(), toCopy.blocked.end())
-	, accessible(toCopy.accessible.begin(), toCopy.accessible.end())
+	, blocked(toCopy.blocked)
+	, accessible(toCopy.accessible)
 {
 	// TODO copy structure constraints etc.
 
 	if (reverseIndices) {
 
 		// reverse blocked
-		for (RangeList::iterator it=blocked.begin(); it!= blocked.end(); it++) {
+		for (IndexRangeList::iterator it=blocked.begin(); it!= blocked.end(); it++) {
 			it->from = length - (it->from +1);
 			it->to = length - (it->to +1);
 		}
@@ -75,7 +75,7 @@ AccessibilityConstraint( const AccessibilityConstraint& toCopy
 		std::sort(accessible.begin(), accessible.end());
 
 		// reverse accessible
-		for (RangeList::iterator it=accessible.begin(); it!= accessible.end(); it++) {
+		for (IndexRangeList::iterator it=accessible.begin(); it!= accessible.end(); it++) {
 			it->from = length - (it->from +1);
 			it->to = length - (it->to +1);
 		}
@@ -98,19 +98,7 @@ bool
 AccessibilityConstraint::
 isBlocked(const size_t i) const
 {
-	// quick check
-	if (blocked.empty()) {
-		return false;
-	}
-
-	// find first range that with begin > i
-	RangeList::const_iterator r = std::upper_bound( blocked.begin(), blocked.end(), IndexRange(i,RnaSequence::lastPos) );
-	if ( r == blocked.begin() ) {
-		return false;
-	} else {
-		// go to preceding range and check if <= the end of the blocked range
-		return i <= (--r)->to;
-	}
+	return blocked.covers(i);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -119,19 +107,7 @@ bool
 AccessibilityConstraint::
 isAccessible(const size_t i) const
 {
-	// quick check
-	if (accessible.empty()) {
-		return false;
-	}
-
-	// find first range that with begin > i
-	RangeList::const_iterator r = std::upper_bound( accessible.begin(), accessible.end(), IndexRange(i,RnaSequence::lastPos) );
-	if ( r == accessible.begin() ) {
-		return false;
-	} else {
-		// go to preceding range and check if <= the end of the accessible range
-		return i <= (--r)->to;
-	}
+	return accessible.covers(i);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -178,7 +154,7 @@ void
 AccessibilityConstraint::
 screenDotBracket( const std::string& dotBracket
 				, const char marker
-				, RangeList & storage )
+				, IndexRangeList & storage )
 {
 	// temporary variable holding the start of the current region
 	size_t lastRegionStart = std::string::npos;

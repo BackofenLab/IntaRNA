@@ -2,7 +2,7 @@
 #ifndef ACCESSIBILITYCONSTRAINT_H_
 #define ACCESSIBILITYCONSTRAINT_H_
 
-#include "IndexRange.h"
+#include "IndexRangeList.h"
 #include "RnaSequence.h"
 
 #include <utility>
@@ -31,11 +31,6 @@ public:
 	//! the alphabet to encode accessibility constraints in dot-bracket notation
 	static const std::string dotBracketAlphabet;
 
-
-protected:
-
-	//! List of ranges
-	typedef std::vector< IndexRange > RangeList;
 
 public:
 
@@ -113,10 +108,10 @@ protected:
 	size_t length;
 
 	//! sorted list of ranges that are marked as blocked
-	RangeList blocked;
+	IndexRangeList blocked;
 
 	//! sorted list of ranges that are marked as accessible
-	RangeList accessible;
+	IndexRangeList accessible;
 
 protected:
 
@@ -131,7 +126,7 @@ protected:
 	void
 	screenDotBracket( const std::string& dotBracket
 					, const char marker
-					, RangeList & storage );
+					, IndexRangeList & storage );
 
 };
 

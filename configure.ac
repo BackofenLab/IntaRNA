@@ -50,7 +50,7 @@ AM_INIT_AUTOMAKE([1.11])
 AC_LANG([C++])
 
 # ensure we are using c11 C++ standard
-AX_CXX_COMPILE_STDCXX( [11], [], [mandatory])
+AX_CXX_COMPILE_STDCXX( [11], [noext], [mandatory])
 
 ###############################################################################
 ###############################################################################

@@ -16,6 +16,8 @@ intaRNA_SOURCES =	intaRNA.cpp \
 					CommandLineParsing.h \
 					CommandLineParsing.cpp \
 					IndexRange.h \
+					IndexRangeList.h \
+					IndexRangeList.cpp \
 					Interaction.h \
 					Interaction.cpp \
 					InteractionEnergy.h \
