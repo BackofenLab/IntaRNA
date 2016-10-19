@@ -3,8 +3,6 @@
 
 #include "general.h"
 
-#include "easylogging++.h"
-
 #include <cmath>
 #include <stdexcept>
 
@@ -486,6 +484,12 @@ void CommandLineParsing::validate_qAccConstr(const std::string & value)
 
 ////////////////////////////////////////////////////////////////////////////
 
+void CommandLineParsing::validate_qRegion(const std::string & value) {
+	NOTIMPLEMENTED("query regions not supported yet")
+}
+
+////////////////////////////////////////////////////////////////////////////
+
 void CommandLineParsing::validate_target(const std::string & value)
 {
 	validate_sequenceArgument("target",value);
@@ -558,6 +562,12 @@ void CommandLineParsing::validate_tAccConstr(const std::string & value)
 		LOG(ERROR) <<"query accessibility constraint not possible for sliding window computation (tAccL/W > 0)";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void CommandLineParsing::validate_tRegion(const std::string & value) {
+	NOTIMPLEMENTED("target regions not supported yet")
 }
 
 ////////////////////////////////////////////////////////////////////////////

@@ -12,9 +12,6 @@
 //! central compiler flag whether or not debug mode is enabled
 #define IN_DEBUG_MODE ((defined(_DEBUG)) || (!defined (NDEBUG)))
 
-//#undef TIMED_FUNC_IF_VLOG
-//#define TIMED_FUNC_IF_VLOG(obj, vlog_level) (true ? TIMED_FUNC(obj) : NULL)
-
 ////////////////  CENTRAL LOGGING LIB  //////////////////
 
 // disable default log file creation
@@ -25,6 +22,8 @@
 #ifndef ELPP_DISABLE_LOG_FILE_FROM_ARG
 	#define ELPP_DISABLE_LOG_FILE_FROM_ARG 1
 #endif
+
+#include "easylogging++.h"
 
 ////////////////  GARBAGE COLLECTION  ///////////////////
 

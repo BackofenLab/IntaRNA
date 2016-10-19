@@ -5,8 +5,6 @@
 #include "general.h"
 #include "RnaSequence.h"
 
-#include "easylogging++.h"
-
 #include <boost/program_options.hpp>
 
 #include <iostream>
@@ -349,6 +347,12 @@ protected:
 	void validate_qIntLoopMax(const int & value);
 
 	/**
+	 * Validates the query's region argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_qRegion(const std::string & value);
+
+	/**
 	 * Validates the target sequence argument.
 	 * @param value the argument value to validate
 	 */
@@ -389,6 +393,12 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_tIntLoopMax(const int & value);
+
+	/**
+	 * Validates the target's region argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_tRegion(const std::string & value);
 
 	/**
 	 * Validates the seedBP argument.

@@ -1,9 +1,6 @@
 
 #include "AccessibilityVrna.h"
 
-#include "easylogging++.h"
-
-
 #include <cmath>
 #include <cassert>
 #include <algorithm>

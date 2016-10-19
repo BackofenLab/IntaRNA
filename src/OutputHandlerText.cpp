@@ -1,8 +1,6 @@
 
 #include "OutputHandlerText.h"
 
-#include "easylogging++.h"
-
 #include <sstream>
 #include <iomanip>
 
