@@ -3,6 +3,7 @@
 #define SEEDCONSTRAINT_H_
 
 
+#include "general.h"
 #include <cstddef>
 #include <iostream>
 
@@ -26,11 +27,13 @@ public:
 	 *        allowed within a seed
 	 * @param maxUnpaired2 the maximal number of unpaired bases within seq2
 	 *        allowed within a seed
+	 * @param maxE maximal energy a seed is allowed to have
 	 */
 	SeedConstraint(  const size_t bp
 				, const size_t maxUnpairedOverall
 				, const size_t maxUnpaired1
 				, const size_t maxUnpaired2
+				, const E_type maxE
 				);
 
 	virtual ~SeedConstraint();
@@ -43,6 +46,15 @@ public:
 	 */
 	size_t
 	getBasePairs() const;
+
+	/**
+	 * Provides the overall maximal number of unpaired bases within a seed
+	 *
+	 * @return the overall maximal number of unpaired bases within
+	 *         a seed is allowed to have
+	 */
+	size_t
+	getMaxUnpairedOverall() const;
 
 	/**
 	 * Provides the maximal number of unpaired bases within the first sequence
@@ -65,13 +77,12 @@ public:
 	getMaxUnpaired2() const;
 
 	/**
-	 * Provides the overall maximal number of unpaired bases within a seed
+	 * Provides the maximally allowed energy for seeds to be considered
 	 *
-	 * @return the overall maximal number of unpaired bases within
-	 *         a seed is allowed to have
+	 * @return the maximally allowed energy for a seed
 	 */
-	size_t
-	getMaxUnpairedOverall() const;
+	E_type
+	getMaxE() const;
 
 	/**
 	 * Provides the maximal length of the seed in seq1
@@ -109,6 +120,9 @@ protected:
 
 	//! the maximally allowed number of unpaired bases in seed seq2
 	const size_t maxUnpaired2;
+
+	//! the maximal energy allowed for a seed
+	const E_type maxE;
 
 };
 

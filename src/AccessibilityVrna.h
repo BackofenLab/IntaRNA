@@ -45,7 +45,6 @@ public:
 	 * @param plFoldL the maximal base pair span to be used for plFold computations
 	 * @param accConstraint if not NULL, accessibility constraint that enforces some regions
 	 *        to be unstructured both in sequence and interaction
-	 * @param log if not NULL, the stream to write log messages to
 	 */
 	AccessibilityVrna( const RnaSequence& sequence
 			, VrnaHandler & vrnaHandler
@@ -53,7 +52,6 @@ public:
 			, const size_t plFoldW = 0
 			, const size_t plFoldL = 0
 			, const AccessibilityConstraint * const accConstraint = NULL
-			, std::ostream * log = NULL
 			);
 
 	/**
@@ -111,29 +109,33 @@ protected:
 	 *
 	 * @param seq the sequence the parameter is for
 	 * @param vrnaHandler the VRNA handler to be used
+	 * @param plFoldL the maximal base pair span to be used or 0 for plFoldW
 	 */
 	double
 	getPfScale( const RnaSequence & seq
-				, VrnaHandler & vrnaHandler );
+				, VrnaHandler & vrnaHandler
+				, const size_t plFoldL );
 
 
 	/**
 	 * Use the old intaRNA way using n^2 constrained folding to fill ED-values
 	 *
 	 * @param vrnaHandler the VRNA handler to be used
-	 * @param logStream stream to log debug output etc.
+	 * @param plFoldL the maximal base pair span to be used or 0 for plFoldW
 	 */
 	void
-	fillByConstraints( VrnaHandler &vrnaHandler, std::ostream * log );
+	fillByConstraints( VrnaHandler &vrnaHandler
+						, const size_t plFoldL );
 
 	/**
 	 * Use RNAup-like style to fill ED-values
 	 *
 	 * @param vrnaHandler the VRNA handler to be used
-	 * @param logStream stream to log debug output etc.
+	 * @param plFoldL the maximal base pair span to be used or 0 for plFoldW
 	 */
 	void
-	fillByRNAup( VrnaHandler &vrnaHandler, std::ostream * log );
+	fillByRNAup( VrnaHandler &vrnaHandler
+					, const size_t plFoldL );
 
 	/**
 	 * Use RNAplfold-like style to fill ED-values
@@ -141,13 +143,11 @@ protected:
 	 * @param vrnaHandler the VRNA handler to be used
 	 * @param plFoldW the sliding window size to be used or 0 for full length
 	 * @param plFoldL the maximal base pair span to be used or 0 for plFoldW
-	 * @param logStream stream to log debug output etc.
 	 */
 	void
 	fillByRNAplfold( VrnaHandler &vrnaHandler
-			, const size_t plFoldW
-			, const size_t plFoldL
-			, std::ostream * log );
+						, const size_t plFoldW
+						, const size_t plFoldL );
 
 };
 

@@ -31,9 +31,12 @@ PredictorMfe4d::
 predict( const IndexRange & r1
 		, const IndexRange & r2 )
 {
-#ifdef NDEBUG
-	// no check
-#else
+
+	VLOG(2) <<"predicting mfe interactions in O(n^4) space...";
+
+#if IN_DEBUG_MODE
+	// measure timing
+	TIMED_FUNC(timerObj);
 	// check indices
 	if (!(r1.isAscending() && r2.isAscending()) )
 		throw std::runtime_error("PredictorMfe4d::predict("+toString(r1)+","+toString(r2)+") is not sane");
@@ -151,12 +154,11 @@ predict( const IndexRange & r1
 		}
 	}
 
-	std::cerr <<"#DEBUG: init 4d matrix : "<<(debug_count_cells_nonNull-debug_count_cells_inf)<<" (-"<<debug_count_cells_inf <<") to be filled ("
+	LOG(DEBUG) <<"init 4d matrix : "<<(debug_count_cells_nonNull-debug_count_cells_inf)<<" (-"<<debug_count_cells_inf <<") to be filled ("
 				<<((double)(debug_count_cells_nonNull-debug_count_cells_inf)/(double)(debug_count_cells_nonNull+debug_count_cells_null))
 				<<"%) and "<<debug_count_cells_null <<" not allocated ("
 				<<((double)(debug_count_cells_null)/(double)(debug_count_cells_nonNull+debug_count_cells_null))
-				<<"%)"
-				<<std::endl;
+				<<"%)";
 
 	// fill matrix
 	fillHybridE( );
@@ -258,7 +260,7 @@ fillHybridE( )
 				} else {
 				
 					// or only internal loop energy (nothing between i and j)
-					curMinE = energy.getE_interLoop(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset)
+					curMinE = energy.getE_interLeft(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset)
 							+ (*hybridE(j1,j2))(0,0) ;
 
 					// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
@@ -268,7 +270,7 @@ fillHybridE( )
 							// check if (k1,k2) are complementary
 							if (hybridE(k1,k2) != NULL && hybridE(k1,k2)->size1() > (j1-k1) && hybridE(k1,k2)->size2() > (j2-k2)) {
 								curMinE = std::min( curMinE,
-										(energy.getE_interLoop(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
+										(energy.getE_interLeft(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
 												+ (*hybridE(k1,k2))(j1-k1,j2-k2))
 										);
 							}
@@ -304,9 +306,7 @@ traceBack( Interaction & interaction ) const
 		return;
 	}
 
-#ifdef NDEBUG           /* required by ANSI standard */
-	// no check
-#else
+#if IN_DEBUG_MODE
 	// sanity checks
 	if ( ! interaction.isValid() ) {
 		throw std::runtime_error("PredictorMfe4d::traceBack() : given interaction not valid");
@@ -341,7 +341,7 @@ traceBack( Interaction & interaction ) const
 		// check if
 		// check if just internal loop
 		if ( E_equal( curE,
-					(energy.getE_interLoop(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset)
+					(energy.getE_interLeft(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset)
 					+ (*hybridE(j1,j2))(0,0) )) )
 		{
 			break;
@@ -357,7 +357,7 @@ traceBack( Interaction & interaction ) const
 				// check if (k1,k2) are complementary
 				if (hybridE(k1,k2) != NULL && hybridE(k1,k2)->size1() > (j1-k1) && hybridE(k1,k2)->size2() > (j2-k2)) {
 					if ( E_equal( curE,
-							(energy.getE_interLoop(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
+							(energy.getE_interLeft(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
 							+ (*hybridE(k1,k2))(j1-k1,j2-k2)) ) )
 					{
 						// stop searching

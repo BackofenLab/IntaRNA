@@ -117,7 +117,7 @@ protected:
 	using PredictorMfe2d::hybridErange;
 
 	//! the seed constraints
-	const SeedConstraint& seedConstraint;
+	const SeedConstraint & seedConstraint;
 
 	//! for fixed interaction end p=j1,q=j2: each cell (i1,i2) provides the mfe
 	//! for the interaction i1..j1 with i2..j2 given that the range contains

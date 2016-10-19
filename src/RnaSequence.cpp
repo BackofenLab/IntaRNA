@@ -37,9 +37,7 @@ RnaSequence::RnaSequence(
 	, seqCode(getCodeForString(this->seqString))
 	, ambiguous(seqString.find_first_of("nN")!=std::string::npos)
 {
-#ifdef NDEBUG
-	// no check
-#else
+#if IN_DEBUG_MODE
 	if (id.size() == 0) {
 		throw std::runtime_error("RnaSequence::RnaSequence : id empty");
 	}

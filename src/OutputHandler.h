@@ -2,6 +2,7 @@
 #ifndef OUTPUTHANDLER_H_
 #define OUTPUTHANDLER_H_
 
+#include "general.h"
 #include "Interaction.h"
 #include "InteractionRange.h"
 #include <string>

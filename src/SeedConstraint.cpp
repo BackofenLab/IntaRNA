@@ -8,18 +8,19 @@
 /////////////////////////////////////////////////////////////////////////////
 
 SeedConstraint::SeedConstraint(
-		 const size_t bp
-		, const size_t maxUnpairedOverall
-		, const size_t maxUnpaired1
-		, const size_t maxUnpaired2
+		 const size_t bp_
+		, const size_t maxUnpairedOverall_
+		, const size_t maxUnpaired1_
+		, const size_t maxUnpaired2_
+		, const E_type maxE_
 		)
  :
-	  bp(bp)
-	, maxUnpairedOverall(maxUnpairedOverall)
-	, maxUnpaired1(std::min(maxUnpaired1,maxUnpairedOverall)) // exclude too large boundaries
-	, maxUnpaired2(std::min(maxUnpaired2,maxUnpairedOverall)) // exclude too large boundaries
+	  bp(bp_)
+	, maxUnpairedOverall(maxUnpairedOverall_)
+	, maxUnpaired1(std::min(maxUnpaired1_,maxUnpairedOverall_)) // exclude too large boundaries
+	, maxUnpaired2(std::min(maxUnpaired2_,maxUnpairedOverall_)) // exclude too large boundaries
+	, maxE(maxE_)
 {
-	if (bp < 2) throw std::runtime_error("SeedHandler() : base pair number < 2 ("+toString(bp)+")");
 	if (bp < 2) throw std::runtime_error("SeedHandler() : base pair number < 2 ("+toString(bp)+")");
 }
 
@@ -34,6 +35,14 @@ size_t
 SeedConstraint::
 getBasePairs() const {
 	return bp;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+E_type
+SeedConstraint::
+getMaxE() const {
+	return maxE;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -85,6 +94,7 @@ operator<<(std::ostream& out, const SeedConstraint& c)
 			<<", up="<<c.getMaxUnpairedOverall()
 			<<", up1="<<c.getMaxUnpaired1()
 			<<", up2="<<c.getMaxUnpaired2()
+			<<", E="<<c.getMaxE()
 			<<")";
 	return out;
 }

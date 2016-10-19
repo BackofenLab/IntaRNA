@@ -80,7 +80,7 @@ public:
 	 */
 	virtual
 	E_type
-	getE_interLoop( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const;
+	getE_interLeft( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const;
 
 
 	/**

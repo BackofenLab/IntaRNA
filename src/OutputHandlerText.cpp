@@ -1,7 +1,6 @@
 
 #include "OutputHandlerText.h"
 
-#include <stdexcept>
 #include <sstream>
 #include <iomanip>
 
@@ -32,9 +31,7 @@ void
 OutputHandlerText::
 add( const Interaction & i )
 {
-#ifdef NDEBUG           /* required by ANSI standard */
-	// no check
-#else
+#if IN_DEBUG_MODE
 	// debug checks
 	if ( i.basePairs.size() > 0 && ! i.isValid() ) {
 		throw std::runtime_error("OutputHandlerText::add() : given interaction is not valid : "+toString(i));
@@ -54,6 +51,8 @@ add( const Interaction & i )
 	const size_t j1 = i.basePairs.rbegin()->first;
 	const size_t i2 = i.basePairs.begin()->second;
 	const size_t j2 = i.basePairs.rbegin()->second;
+
+	LOG(DEBUG) <<"OutputHandlerText.add() : "<<i1<<"-"<<j1 <<" : "<<i.s2->size()-i2-1<<"-"<<i.s2->size()-j2-1;
 
 	// decompose printing into several rows
 	std::ostringstream s1Unbound;

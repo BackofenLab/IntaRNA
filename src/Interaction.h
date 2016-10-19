@@ -5,6 +5,7 @@
 #include <vector>
 #include <utility>
 
+#include "general.h"
 #include "RnaSequence.h"
 
 // dummy declaration to avoid inclusion loop

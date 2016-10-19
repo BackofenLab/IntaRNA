@@ -124,10 +124,10 @@ public:
 	getE_init( ) const = 0;
 
 	/**
-	 * Computes the energy estimate for the interaction loop region closed by
-	 * the intermolecular base pairs (i1,i2) and (j1,j2) where the regions
-	 * [i1,j1] and [i2,j2] are considered unpaired or E_INF is the internal
-	 * loop size exceeds the allowed maximum (see constructor).
+	 * Computes the energy estimate for the 'left side' interaction loop region
+	 * closed by the intermolecular base pairs (i1,i2) and enclosing (j1,j2)
+	 * where the regions [i1,j1] and [i2,j2] are considered unpaired or E_INF
+	 * is the internal loop size exceeds the allowed maximum (see constructor).
 	 *
 	 * Note, the right interaction base pair (j1,j2) is not included in the
 	 * returned energy value.
@@ -142,7 +142,7 @@ public:
 	 */
 	virtual
 	E_type
-	getE_interLoop( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const = 0;
+	getE_interLeft( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const = 0;
 
 
 	/**
@@ -199,6 +199,38 @@ public:
 	virtual
 	E_type
 	getE_endRight( const size_t j1, const size_t j2 ) const = 0;
+
+	/**
+	 * Computes the probability of the dangling ends for the left side
+	 * (i1-1 and i2-1) of the interaction closed by the intermolecular
+	 * base pair (i1,i2) for an interaction of [i1,j1] with [i2,j2].
+	 *
+	 * @param i1 the index of the first sequence interacting with i2
+	 * @param j1 the index of the first sequence interacting with j2 with i1<=j1
+	 * @param i2 the index of the second sequence interacting with i1
+	 * @param j2 the index of the second sequence interacting with j1 with i2<=j2
+	 *
+	 * @return the dangling end probability for the left side of the interaction
+	 */
+	virtual
+	E_type
+	getPr_danglingLeft( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const;
+
+	/**
+	 * Computes the probability of the dangling ends for the right side
+	 * (j1+1 and j2+1) of the interaction closed by the intermolecular
+	 * base pair (j1,j2) for an interaction of [i1,j1] with [i2,j2].
+	 *
+	 * @param i1 the index of the first sequence interacting with i2
+	 * @param j1 the index of the first sequence interacting with j2 with i1<=j1
+	 * @param i2 the index of the second sequence interacting with i1
+	 * @param j2 the index of the second sequence interacting with j1 with i2<=j2
+	 *
+	 * @return the dangling end probability for the right side of the interaction
+	 */
+	virtual
+	E_type
+	getPr_danglingRight( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const;
 
 	/**
 	 * Access to the accessibility object of the first sequence

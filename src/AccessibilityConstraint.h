@@ -76,6 +76,13 @@ public:
 	isAccessible( const size_t i ) const;
 
 	/**
+	 * Checks whether or not a sequence position is not constrained
+	 * @return true if position i is not constrained
+	 */
+	bool
+	isUnconstrained( const size_t i ) const;
+
+	/**
 	 * Checks whether or not any accessibility constraints (base pairs, blocked,
 	 * accessible, etc.) are given
 	 * @return true if no structural constraints are present; false otherwise

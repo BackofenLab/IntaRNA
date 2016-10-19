@@ -52,9 +52,7 @@ public:
 		, r2((r2.from > rna2.size()?rna2.size()-1:r2.from), r2.to)
 		, energy(energy)
 	{
-#ifdef NDEBUG
-	// no check
-#else
+#if IN_DEBUG_MODE
 		if (!isSane())
 			throw std::runtime_error("InteractionRange("+toString(*this)+") not sane!");
 #endif

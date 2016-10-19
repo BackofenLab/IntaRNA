@@ -1,7 +1,6 @@
 
 #include "PredictorMfe2dSeed.h"
 
-
 //////////////////////////////////////////////////////////////////////////
 
 PredictorMfe2dSeed::
@@ -38,22 +37,16 @@ void
 PredictorMfe2dSeed::
 predict( const IndexRange & r1, const IndexRange & r2 )
 {
-	// resize hybridE, seed, hybridE_seed
 
-	// for each j1,j2:
-		// init hybridE
-		// compute hybridE and update seed via this->updateMfe()
-		// compute hybridE_seed and update mfe via PredictorMfe2d::updateMfe()
+	VLOG(2) <<"predicting mfe interactions in O(n^2) space using seed constraint...";
 
-#ifdef NDEBUG
-	// no check
-#else
+#if IN_DEBUG_MODE
+	// measure timing
+	TIMED_FUNC(timerObj);
 	// check indices
 	if (!(r1.isAscending() && r2.isAscending()) )
 		throw std::runtime_error("PredictorMfe2d::predict("+toString(r1)+","+toString(r2)+") is not sane");
 #endif
-
-	std::cerr<<"#DEBUG: predict with "<<this->seedConstraint <<std::endl;
 
 	// resize matrix
 	hybridE_pq.resize( std::min( energy.getAccessibility1().getSequence().size()
@@ -125,12 +118,13 @@ void
 PredictorMfe2dSeed::
 fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size_t i2max)
 {
-	// TODO throw exceptions
-	assert( i1min < i1max );
-	assert( i2min < i2max );
-	assert( i1max < seed.size1() );
-	assert( i2max < seed.size2() );
 
+#if IN_DEBUG_MODE
+	if ( i1min > i1max ) throw std::runtime_error("PredictorMfe2dSeed::fillSeed: i1min("+toString(i1min)+") > i1max("+toString(i1max)+")");
+	if ( i2min > i2max ) throw std::runtime_error("PredictorMfe2dSeed::fillSeed: i2min("+toString(i2min)+") > i2max("+toString(i2max)+")");
+	if ( i1min > seed.size1() ) throw std::runtime_error("PredictorMfe2dSeed::fillSeed: i1min("+toString(i1min)+") > seed.size1("+toString(seed.size1())+")");
+	if ( i2min > seed.size2() ) throw std::runtime_error("PredictorMfe2dSeed::fillSeed: i2min("+toString(i2min)+") > seed.size2("+toString(seed.size2())+")");
+#endif
 
 	// temporary variables
 	size_t i1, i2, bp, u1, u2, j1, j2, u1p, u2p, k1,k2, u1best, u2best;
@@ -171,7 +165,7 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 					// base case: only left and right base pair present
 					if (bp==0) {
 						// energy for stacking/bulge/interior depending on u1/u2
-						curE = energy.getE_interLoop(i1,j1,i2,j2);
+						curE = energy.getE_interLeft(i1,j1,i2,j2);
 
 					} else {
 						// split seed recursively into all possible leading interior loops
@@ -190,7 +184,7 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 
 							// update mfe for split at k1,k2
 							curE = std::min( curE,
-									energy.getE_interLoop(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
+									energy.getE_interLeft(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
 									+ getSeedE( k1, k2, bp-1, u1-u1p, u2-u2p )
 									);
 						} // u2p
@@ -223,7 +217,7 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 					j2 = i2+bp+1+u2;
 
 					// get overall interaction energy
-					curE = energy.getE( i1, j1, i2, j2, getSeedE( i1, i2, bp, u1, u2 ) );
+					curE = energy.getE( i1, j1, i2, j2, getSeedE( i1, i2, bp, u1, u2 ) ) + energy.getE_init();
 
 					// check if better than what is known so far
 					if ( curE < bestE ) {
@@ -236,12 +230,13 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 
 				// reduce bestE to hybridization energy only (init+loops)
 				if (E_isNotINF( bestE )) {
-					// overwrite all seeds that have positive energy -> infeasible start interactions
-					if (bestE > 0) {
+					// overwrite all seeds with too high energy -> infeasible start interactions
+					if (bestE > seedConstraint.getMaxE()) {
 						bestE = E_INF;
 					} else {
-						// get seed's hybridization energy only
+						// get seed's hybridization loop energies only
 						bestE -= energy.getE( i1, i1+bp+1+u1best, i2, i2+bp+1+u2best, 0.0 );
+						bestE -= energy.getE_init();
 					}
 				}
 
@@ -322,7 +317,7 @@ fillHybridE_seed( const size_t j1, const size_t j2, const size_t i1init, const s
 					// check if (k1,k2) are valid left boundaries including a seed
 					if ( E_isNotINF( hybridE_pq_seed(k1,k2) ) ) {
 						curMinE = std::min( curMinE,
-								(energy.getE_interLoop(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
+								(energy.getE_interLeft(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
 										+ hybridE_pq_seed(k1,k2) )
 								);
 					}
@@ -350,9 +345,7 @@ traceBack( Interaction & interaction )
 		return;
 	}
 
-#ifdef NDEBUG           /* required by ANSI standard */
-	// no check
-#else
+#if IN_DEBUG_MODE
 	// sanity checks
 	if ( ! interaction.isValid() ) {
 		throw std::runtime_error("PredictorMfe2dSeed::traceBack() : given interaction not valid");
@@ -379,9 +372,7 @@ traceBack( Interaction & interaction )
 			j2 = energy.getAccessibility2().getReversedIndex(interaction.basePairs.at(1).second) - i2offset
 			;
 
-#ifdef NDEBUG           /* required by ANSI standard */
-	// no check
-#else
+#if IN_DEBUG_MODE
 	// check if it is possible to have a seed ending on the right at (j1,j2)
 	if (j1+1 < seedConstraint.getBasePairs() || j2+1 < seedConstraint.getBasePairs()) {
 		// no seed possible, abort computation
@@ -437,7 +428,7 @@ traceBack( Interaction & interaction )
 					if ( E_isNotINF( hybridE_pq_seed(k1,k2) ) ) {
 						// check if correct split
 						if (E_equal ( curE,
-								(energy.getE_interLoop(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
+								(energy.getE_interLeft(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
 										+ hybridE_pq_seed(k1,k2) )
 								) )
 						{
@@ -507,7 +498,7 @@ traceBackSeed( Interaction & interaction
 	size_t 	  i1 = i1_
 			, i2 = i2_
 			, j1 = i1+bpInbetween+1+u1_
-			, j2 = i1+bpInbetween+1+u1_
+			, j2 = i2+bpInbetween+1+u2_
 			, u1max = u1_
 			, u2max = u2_
 			, uMax = u1_+u2_
@@ -554,7 +545,7 @@ traceBackSeed( Interaction & interaction
 				if ( E_isNotINF( getSeedE( k1, k2, bpIn-1, u1max-u1, u2max-u2 ) ) ) {
 
 					// check if correct trace
-					if ( E_equal( curE, energy.getE_interLoop(i1,k1,i2,k2)
+					if ( E_equal( curE, energy.getE_interLeft(i1,k1,i2,k2)
 										+ getSeedE( k1, k2, bpIn-1, u1max-u1, u2max-u2 )) )
 					{
 						// store left base pair if not left seed boundary

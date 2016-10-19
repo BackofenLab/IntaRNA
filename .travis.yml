@@ -36,7 +36,7 @@ script:
     - cd $TRAVIS_BUILD_DIR 
     # generate autotools's files 
     - bash autotools-init.sh 
-    - CC=gcc-4.9 CXX=g++-4.9 ./configure --enable-c11 --with-boost=$CONDA_PATH --with-RNA=$CONDA_PATH --prefix=$HOME/IntaRNA
+    - CC=gcc-4.9 CXX=g++-4.9 ./configure --with-boost=$CONDA_PATH --with-RNA=$CONDA_PATH --prefix=$HOME/IntaRNA
     # compile, test and install IntaRNA
     - make && make tests && make install
     ##### check IntaRNA build #####

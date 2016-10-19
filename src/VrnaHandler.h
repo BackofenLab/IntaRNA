@@ -8,6 +8,7 @@
 #ifndef VIENNASETUP_H_
 #define VIENNASETUP_H_
 
+#include "general.h"
 #include <string>
 
 extern "C" {

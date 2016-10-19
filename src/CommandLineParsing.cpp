@@ -1,12 +1,8 @@
-/*
- * CommandLineParsing.cpp
- *
- *  Created on: 18.06.2014
- *      Author: Mmann
- */
 
 #include "CommandLineParsing.h"
+
 #include "general.h"
+
 
 #include <cmath>
 #include <stdexcept>
@@ -35,7 +31,7 @@
 
 ////////////////////////////////////////////////////////////////////////////
 
-CommandLineParsing::CommandLineParsing( std::ostream& logStream )
+CommandLineParsing::CommandLineParsing()
 	:
 	opts_query("Query"),
 	opts_target("Target"),
@@ -45,7 +41,6 @@ CommandLineParsing::CommandLineParsing( std::ostream& logStream )
 	opts_cmdline_all(),
 
 	parsingCode(NOT_PARSED_YET),
-	logStream(logStream),
 
 	queryArg(""),
 	query(),
@@ -66,10 +61,12 @@ CommandLineParsing::CommandLineParsing( std::ostream& logStream )
 	tIntLoopMax( 0, 100, 16),
 
 	noSeedRequired(false),
-	seedBP(3,20,7),
+	seedBP(2,20,7),
 	seedMaxUP(0,20,0),
 	seedMaxUPq(-1,20,-1),
 	seedMaxUPt(-1,20,-1),
+	seedMaxE(-999,+999,0),
+	seedConstraint(NULL),
 
 	temperature(0,100,37),
 
@@ -199,6 +196,14 @@ CommandLineParsing::CommandLineParsing( std::ostream& logStream )
 			, std::string("maximal number of unpaired bases within the target's seed region (arg in range ["+toString(seedMaxUPt.min)+","+toString(seedMaxUPt.max)+"]); if -1 the value of seedMaxUP is used.").c_str())
 		;
 
+	opts_seed.add_options()
+		("seedMaxE"
+			, value<E_type>(&(seedMaxE.val))
+				->default_value(seedMaxE.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_seedMaxE,this,_1))
+			, std::string("maximal energy a seed region may have (arg in range ["+toString(seedMaxE.min)+","+toString(seedMaxE.max)+"]).").c_str())
+		;
+
 	////  INTERACTION/ENERGY OPTIONS  ////////////////////////
 
 	opts_inter.add_options()
@@ -228,7 +233,9 @@ CommandLineParsing::CommandLineParsing( std::ostream& logStream )
 	////  GENERAL OPTIONS  ////////////////////////////////////
 
 	opts_general.add_options()
-	    ("version,v", "print version")
+	    ("version", "print version")
+	    ("verbose,v", "verbose output")
+	    ("default-log-file", "name of log file to be used for output")
 	    ("help,h", "show the help page with all available parameters")
 	    ;
 
@@ -242,6 +249,9 @@ CommandLineParsing::CommandLineParsing( std::ostream& logStream )
 ////////////////////////////////////////////////////////////////////////////
 
 CommandLineParsing::~CommandLineParsing() {
+
+	CLEANUP(seedConstraint);
+
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -250,6 +260,7 @@ CommandLineParsing::ReturnCode
 CommandLineParsing::
 parse(int argc, char** argv)
 {
+
 	// init: nothing parsed yet
 	parsingCode = ReturnCode::NOT_PARSED_YET;
 
@@ -261,14 +272,14 @@ parse(int argc, char** argv)
 		// parsing fine so far
 		parsingCode = ReturnCode::KEEP_GOING;
 	} catch (error& e) {
-		logStream <<"\nError : " <<e.what() << " : run with '--help' for allowed arguments\n\n";
-		parsingCode = ReturnCode::STOP_PARSING_ERROR;
+		LOG(ERROR) <<e.what() << " : run with '--help' for allowed arguments";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
 
 	// if parsing was successful, check for help request
 	if (parsingCode == ReturnCode::KEEP_GOING) {
 		if (vm.count("help")) {
-			logStream
+			std::cout
 				<<"\nIntaRNA predicts RNA-RNA interactions.\n"
 				<<"\nThe following program arguments are supported:\n"
 				<< opts_cmdline_all
@@ -277,7 +288,7 @@ parse(int argc, char** argv)
 			return parsingCode;
 		}
 		if (vm.count("version")) {
-			logStream <<PACKAGE_STRING << "\n";
+			std::cout <<PACKAGE_STRING << "\n";
 			parsingCode = ReturnCode::STOP_ALL_FINE;
 			return parsingCode;
 		}
@@ -289,10 +300,10 @@ parse(int argc, char** argv)
 			// run all notifier checks
 			notify(vm);
 		} catch (required_option& e) {
-			logStream <<"\n mandatory option '"<<e.get_option_name() << "' not provided\n";
+			LOG(ERROR) <<"mandatory option '"<<e.get_option_name() << "' not provided";
 			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 		} catch (error& e) {
-			logStream <<e.what() << "\n";
+			LOG(ERROR) <<e.what();
 			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 		}
 	}
@@ -358,12 +369,19 @@ parse(int argc, char** argv)
 
 			// check seed setup
 			noSeedRequired = vm.count("noSeed") > 0;
+			if (noSeedRequired) {
+				// input sanity check : maybe seed constraints defined -> warn
+				if (seedBP.val != seedBP.def) LOG(INFO) <<"no seed constraint wanted, but seedBP provided (will be ignored)";
+				if (seedMaxUP.val != seedMaxUP.def) LOG(INFO) <<"no seed constraint wanted, but seedMaxUP provided (will be ignored)";
+				if (seedMaxUPq.val != seedMaxUPq.def) LOG(INFO) <<"no seed constraint wanted, but seedMaxUPq provided (will be ignored)";
+				if (seedMaxUPt.val != seedMaxUPt.def) LOG(INFO) <<"no seed constraint wanted, but seedMaxUPt provided (will be ignored)";
+			}
 
 		} catch (error& e) {
-			logStream <<e.what() << "\n";
+			LOG(ERROR) <<e.what();
 			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 		} catch (std::exception& e) {
-			logStream <<e.what() << "\n";
+			LOG(ERROR) <<e.what();
 			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 		}
 	}
@@ -374,8 +392,6 @@ parse(int argc, char** argv)
 	}
 
 
-	// flush all content that was pushed to the log stream
-	logStream.flush();
 	// return validate_* dependent parsing code
 	return parsingCode;
 }
@@ -419,7 +435,7 @@ void CommandLineParsing::validate_qAccW(const int & value)
 	validate_numberArgument("qAccW", qAccW, value);
 	// check lower bound
 	if (qAccW.val > 0 && qAccW.val < 3) {
-		logStream <<"\n qAccW = " <<value <<" : has to be 0 or > 3\n";
+		LOG(ERROR) <<"\n qAccW = " <<value <<" : has to be 0 or > 3";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
 }
@@ -432,12 +448,12 @@ void CommandLineParsing::validate_qAccL(const int & value)
 	validate_numberArgument("qAccL", qAccL, value);
 	// check upper bound
 	if (qAccL.val > qAccW.val) {
-		logStream <<"\n qAccL = " <<value <<" : has to be <= qAccW (=" <<qAccW.val<<")\n";
+		LOG(ERROR) <<"qAccL = " <<value <<" : has to be <= qAccW (=" <<qAccW.val<<")";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
 	// check lower bound
 	if (qAccL.val > 0 && qAccL.val < 3) {
-		logStream <<"\n qAccL = " <<value <<" : has to be 0 or > 3\n";
+		LOG(ERROR) <<"qAccL = " <<value <<" : has to be 0 or > 3";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
 }
@@ -450,7 +466,7 @@ void CommandLineParsing::validate_qAccConstr(const std::string & value)
 	validate_structureConstraintArgument("qAccConstr", value);
 	// check if no sliding window computation requested
 	if (qAccW.val > 0 || qAccL.val > 0) {
-		logStream <<"\n query accessibility constraint not possible for sliding window computation (qAccL/W > 0)\n";
+		LOG(ERROR) <<"query accessibility constraint not possible for sliding window computation (qAccL/W > 0)";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
 }
@@ -495,7 +511,7 @@ void CommandLineParsing::validate_tAccW(const int & value)
 	validate_numberArgument("tAccW", tAccW, value);
 	// check lower bound
 	if (tAccW.val > 0 && tAccW.val < 3) {
-		logStream <<"\n tAccW = " <<value <<" : has to be 0 or > 3\n";
+		LOG(ERROR) <<"tAccW = " <<value <<" : has to be 0 or > 3";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
 }
@@ -508,12 +524,12 @@ void CommandLineParsing::validate_tAccL(const int & value)
 	validate_numberArgument("tAccL", tAccL, value);
 	// check upper bound
 	if (tAccL.val > tAccW.val) {
-		logStream <<"\n tAccL = " <<value <<" : has to be <= tAccW (=" <<tAccW.val<<")\n";
+		LOG(ERROR) <<"tAccL = " <<value <<" : has to be <= tAccW (=" <<tAccW.val<<")";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
 	// check lower bound
 	if (tAccL.val > 0 && tAccL.val < 3) {
-		logStream <<"\n tAccL = " <<value <<" : has to be 0 or > 3\n";
+		LOG(ERROR) <<"tAccL = " <<value <<" : has to be 0 or > 3";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
 }
@@ -526,7 +542,7 @@ void CommandLineParsing::validate_tAccConstr(const std::string & value)
 	validate_structureConstraintArgument("tAccConstr", value);
 	// check if no sliding window computation requested
 	if (tAccW.val > 0 || tAccL.val > 0) {
-		logStream <<"\n query accessibility constraint not possible for sliding window computation (tAccL/W > 0)\n";
+		LOG(ERROR) <<"query accessibility constraint not possible for sliding window computation (tAccL/W > 0)";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
 }
@@ -557,6 +573,13 @@ void CommandLineParsing::validate_seedMaxUPq(const int & value) {
 void CommandLineParsing::validate_seedMaxUPt(const int & value) {
 	// forward check to general method
 	validate_numberArgument("seedMaxUPt", seedMaxUPt, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void CommandLineParsing::validate_seedMaxE(const E_type & value) {
+	// forward check to general method
+	validate_numberArgument("seedMaxE", seedMaxE, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -593,7 +616,8 @@ validate_energyFile(const std::string & value)
 {
 	// check if file exists and is readable
 	if (!validateFile( value )) {
-		logStream <<"\n provided VRNA energy parameter file '" <<value <<"' could not be processed.\n";
+		LOG(ERROR) <<"provided VRNA energy parameter file '" <<value <<"' could not be processed.";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
 }
 
@@ -603,7 +627,7 @@ void CommandLineParsing::validate_charArgument(const std::string & name, const C
 {
 	// alphabet check
 	if ( ! param.isInAlphabet(value) ) {
-		logStream <<"\n "<<name<<" = " <<value <<" : has to be one of '" <<param.alphabet <<"'\n";
+		LOG(ERROR) <<""<<name<<" = " <<value <<" : has to be one of '" <<param.alphabet <<"'";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
 }
@@ -623,7 +647,7 @@ void CommandLineParsing::validate_sequenceArgument(const std::string & name, con
 
 			// check if a file of this name exists and is readable
 			if ( ! validateFile( value ) ) {
-				logStream <<"\n "<<name<<" '"<<value <<"' : is neither STDIN, a file name, or a sequence!\n";
+				LOG(ERROR) <<""<<name<<" '"<<value <<"' : is neither STDIN, a file name, or a sequence!";
 				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 			}
 		}
@@ -640,7 +664,7 @@ void CommandLineParsing::validate_structureConstraintArgument(const std::string 
 {
 	// check if valid alphabet
 	if (value.find_first_not_of(AccessibilityConstraint::dotBracketAlphabet) != std::string::npos) {
-		logStream <<"\n "<<name<<" '"<<value <<"' : contains invalid characters!\n";
+		LOG(ERROR) <<""<<name<<" '"<<value <<"' : contains invalid characters!";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	} else {
 		// check for base pair balance / nestedness
@@ -652,7 +676,7 @@ void CommandLineParsing::validate_structureConstraintArgument(const std::string 
 			default: break;
 			}
 			if (bpStackLvl<0) {
-				logStream <<"\n "<<name<<" '"<<value <<"' : unbalanced base pairs!\n";
+				LOG(ERROR) <<""<<name<<" '"<<value <<"' : unbalanced base pairs!";
 				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 			}
 		}
@@ -669,14 +693,14 @@ validateFile( const std::string & filename )
 	// check if file accessible
 	if ( !boost::filesystem::exists( filename ) )
 	{
-		logStream <<"\n Can't find the file '"<<filename<<"'!\n";
+		LOG(ERROR) <<"Can't find the file '"<<filename<<"'!";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 		return false;
 	}
 	// check if it is a file
 	if ( !boost::filesystem::is_regular_file( filename ) )
 	{
-		logStream <<"\n '"<<filename<<"' : Is no file!\n";
+		LOG(ERROR) <<"'"<<filename<<"' : Is no file!";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 		return false;
 	}
@@ -722,7 +746,7 @@ getQueryAccessibility( const size_t sequenceNumber ) const
 	case 'F' : {
 		// create temporary constraint object (will be copied)
 		AccessibilityConstraint accConstraint(qAccConstr);
-		return new AccessibilityVrna( seq, vrnaHandler, qIntLenMax.val, qAccW.val, qAccL.val, &accConstraint, &logStream );
+		return new AccessibilityVrna( seq, vrnaHandler, qIntLenMax.val, qAccW.val, qAccL.val, &accConstraint);
 	}
 	default :
 		NOTIMPLEMENTED("CommandLineParsing::getQueryAccessibility : qAcc = '"+toString(qAcc.val)+"' is not supported");
@@ -747,7 +771,7 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 	case 'F' : {
 			// create temporary constraint object (will be copied)
 			AccessibilityConstraint accConstraint(tAccConstr);
-			return new AccessibilityVrna( seq, vrnaHandler, tIntLenMax.val, tAccW.val, tAccL.val, &accConstraint, &logStream );
+			return new AccessibilityVrna( seq, vrnaHandler, tIntLenMax.val, tAccW.val, tAccL.val, &accConstraint);
 		}
 	default :
 		NOTIMPLEMENTED("CommandLineParsing::getTargetAccessibility : tAcc = '"+toString(tAcc.val)+"' is not supported");
@@ -796,13 +820,13 @@ parseSequences(const std::string & paramName,
 		std::ifstream infile(paramArg);
 		try {
 			if(!infile.good()){
-				logStream <<"\n FASTA parsing of "<<paramName<<" : could not open FASTA file  '"<<paramArg<<"'\n"<<std::endl;
+				LOG(ERROR) <<"FASTA parsing of "<<paramName<<" : could not open FASTA file  '"<<paramArg<<"'";
 				updateParsingCode( ReturnCode::STOP_PARSING_ERROR );
 			} else {
 				parseSequencesFasta(paramName, infile, sequences);
 			}
 		} catch (std::exception & ex) {
-			logStream <<"\n error while FASTA parsing of "<<paramName<<" : "<<ex.what()<<std::endl;
+			LOG(ERROR) <<"error while FASTA parsing of "<<paramName<<" : "<<ex.what();
 			updateParsingCode( ReturnCode::STOP_PARSING_ERROR );
 		}
 		// close stream
@@ -844,7 +868,7 @@ parseSequencesFasta( const std::string & paramName,
 				// store last sequence
 				// check if data complete
 				if (sequence.empty())  {
-					logStream <<"\n FASTA parsing of "<<paramName<<" : no sequence for ID '"<<name<<"'\n"<<std::endl;
+					LOG(ERROR) <<"FASTA parsing of "<<paramName<<" : no sequence for ID '"<<name<<"'";
 					updateParsingCode( ReturnCode::STOP_PARSING_ERROR );
 				} else {
 					// store sequence
@@ -870,7 +894,7 @@ parseSequencesFasta( const std::string & paramName,
 			line = line.substr( trimStart, std::max(0,(int)line.find_last_not_of(" \t\n\r")+1-trimStart) );
 			// check for enclosed whitespaces
 			if( line.find(' ') != std::string::npos ){ // Invalid sequence--no spaces allowed
-				logStream <<"\n FASTA parsing of "<<paramName<<" : sequence for ID '"<<name<<"' contains spaces\n"<<std::endl;
+				LOG(ERROR) <<"FASTA parsing of "<<paramName<<" : sequence for ID '"<<name<<"' contains spaces";
 				updateParsingCode( ReturnCode::STOP_PARSING_ERROR );
 				name.clear();
 				sequence.clear();
@@ -879,14 +903,14 @@ parseSequencesFasta( const std::string & paramName,
 				sequence += line;
 			}
 		} else {
-			logStream <<"\n FASTA parsing of "<<paramName<<" : found sequence data without leading ID\n"<<std::endl;
+			LOG(ERROR) <<"FASTA parsing of "<<paramName<<" : found sequence data without leading ID";
 			updateParsingCode( ReturnCode::STOP_PARSING_ERROR );
 		}
 	}
 	// store last sequence
 	// check if data complete
 	if (sequence.empty())  {
-		logStream <<"\n FASTA parsing of "<<paramName<<" : no sequence for ID '"<<name<<"'\n"<<std::endl;
+		LOG(ERROR) <<"FASTA parsing of "<<paramName<<" : no sequence for ID '"<<name<<"'";
 		updateParsingCode( ReturnCode::STOP_PARSING_ERROR );
 	} else {
 		// store sequence
@@ -905,12 +929,12 @@ validateSequenceNumber( const std::string& paramName,
 {
 	// check sequence number boundaries
 	if (sequences.size() < min) {
-		logStream <<"\n "<<paramName<<" requires at least "<<min <<" sequences!\n";
+		LOG(ERROR) <<""<<paramName<<" requires at least "<<min <<" sequences!";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 		return false;
 	} else
 	if (sequences.size() > max) {
-		logStream <<"\n "<<paramName<<" allows at most "<<max <<" sequences!\n";
+		LOG(ERROR) <<""<<paramName<<" allows at most "<<max <<" sequences!";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 		return false;
 	}
@@ -930,13 +954,9 @@ validateSequenceAlphabet( const std::string& paramName,
 	for (int i=0; i<sequences.size(); i++) {
 		// check if valid
 		if (! RnaSequence::isValidSequence(sequences.at(i).asString())) {
-			logStream <<"\n sequence " <<(i+1)<<" for parameter "<<paramName<<" is not valid!\n";
+			LOG(ERROR) <<"sequence " <<(i+1)<<" for parameter "<<paramName<<" is not valid!";
 			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 			allValid = false;
-		}
-		// warn about ambiguous positions
-		if (sequences.at(i).isAmbiguous()) {
-			logStream <<"\n sequence " <<i<<" for parameter "<<paramName<<" is ambiguous! 'N' positions are ignored for interaction prediction!\n";
 		}
 	}
 	return allValid;
@@ -998,16 +1018,21 @@ updateParsingCode( const ReturnCode currentParsingCode )
 
 ////////////////////////////////////////////////////////////////////////////
 
-SeedConstraint
+const SeedConstraint &
 CommandLineParsing::
 getSeedConstraint() const
 {
-	// setup according to user data
-	return SeedConstraint( seedBP.val
+	if (seedConstraint == NULL) {
+		// setup according to user data
+		seedConstraint = new SeedConstraint(
+							  seedBP.val
 							, seedMaxUP.val
 							, seedMaxUPq.val<0 ? seedMaxUP.val : seedMaxUPq.val
 							, seedMaxUPt.val<0 ? seedMaxUP.val : seedMaxUPt.val
+							, seedMaxE.val
 						);
+	}
+	return *seedConstraint;
 }
 
 ////////////////////////////////////////////////////////////////////////////

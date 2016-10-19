@@ -2,13 +2,10 @@
 #ifndef COMMANDLINEPARSING_H_
 #define COMMANDLINEPARSING_H_
 
-#include "config.h"
 #include "general.h"
 #include "RnaSequence.h"
 
-
 #include <boost/program_options.hpp>
-
 
 #include <iostream>
 #include <cstdarg>
@@ -45,7 +42,7 @@ public:
 	 *
 	 * @param logStream the stream to write validation log messages to
 	 */
-	CommandLineParsing( std::ostream& logStream );
+	CommandLineParsing();
 	virtual ~CommandLineParsing();
 
 	/**
@@ -129,7 +126,7 @@ public:
 	 * Provides the seed constraint according to the user settings
 	 * @return the user defined seed constraints
 	 */
-	SeedConstraint getSeedConstraint() const;
+	const SeedConstraint & getSeedConstraint() const;
 
 	/**
 	 * Access to the set folding temperature in Celsius.
@@ -232,9 +229,6 @@ protected:
 	//! central result code to be set by validate_* functions in error case
 	ReturnCode parsingCode;
 
-	//! stream to be used for log messages in validate_* functions
-	std::ostream & logStream;
-
 	//! the query command line argument
 	std::string queryArg;
 	//! the container holding all query sequences
@@ -277,8 +271,12 @@ protected:
 	NumberParameter<int> seedMaxUP;
 	//! max unpaired in query's seed
 	NumberParameter<int> seedMaxUPq;
-	//! max unpaired in query's seed
+	//! max unpaired in target's seed
 	NumberParameter<int> seedMaxUPt;
+	//! max energy of a seed to be considered
+	NumberParameter<E_type> seedMaxE;
+	//! the final seed constraint to be used
+	mutable SeedConstraint * seedConstraint;
 
 	//! the temperature to be used for energy computations
 	NumberParameter<T_type> temperature;
@@ -407,6 +405,12 @@ protected:
 	void validate_seedMaxUPt(const int & value);
 
 	/**
+	 * Validates the seedMaxE argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_seedMaxE(const E_type & value);
+
+	/**
 	 * Validates the temperature argument.
 	 * @param value the argument value to validate
 	 */
@@ -453,7 +457,7 @@ protected:
 	{
 		// alphabet check
 		if ( ! param.isInRange(value) ) {
-			logStream <<"\n "<<name<<" = " <<value <<" : has to be in the range [" <<param.min <<","<<param.max<<"]\n";
+			LOG(ERROR) <<name<<" = " <<value <<" : has to be in the range [" <<param.min <<","<<param.max<<"]";
 			parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
 		}
 	}

@@ -1,9 +1,3 @@
-/*
- * Accessibility.cpp
- *
- *  Created on: 25.06.2014
- *      Author: Mmann
- */
 
 
 #include "Accessibility.h"

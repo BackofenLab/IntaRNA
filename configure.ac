@@ -15,6 +15,7 @@ AC_CONFIG_SRCDIR([src/intaRNA.cpp])
 AC_CONFIG_HEADERS([src/config.h])
 
 m4_include([m4/m4_ax_boost_base.m4])
+m4_include([m4/m4_ax_cxx_compile_stdcxx.m4])
 
 # backwards compatibility for autoconf < 2.64
 # PACKAGE_URL should be the fifth argument of AC_INIT
@@ -48,62 +49,13 @@ AM_INIT_AUTOMAKE([1.11])
 # use the C++ compiler for the following checks
 AC_LANG([C++])
 
+# ensure we are using c11 C++ standard
+AX_CXX_COMPILE_STDCXX( [11], [], [mandatory])
+
 ###############################################################################
 ###############################################################################
 
 ############  PARAMETERS  ########################################
-
-###############################################################################
-# SETUP FOR COMPILATION WITH 2011 ISO C++ STANDARD 
-###############################################################################
-
-AC_MSG_CHECKING([whether to build with 2011 ISO C++ standard])
-cpp11=no
-AC_ARG_ENABLE([c11],
-	[AS_HELP_STRING([--enable-c11],
-	    [enable build with 2011 ISO C++ standard (Check if supported by your compiler! def=no)])],
-  	[cpp11="$enableval"])
-AC_MSG_RESULT([$cpp11])
-if test x"$cpp11" = x"yes"; then
-  AC_MSG_CHECKING([whether the C++ compiler allows unnamed unions of unnamed structs])
-  AC_LANG_PUSH([C++])
-  AC_RUN_IFELSE([AC_LANG_PROGRAM([[extern "C" {
-                                    #include <stdlib.h>
-                                    struct bla {
-                                      union {
-                                        struct { int a; char  b;};
-                                        struct { long c; double d;};
-                                      };
-                                    };
-                                  };]],
-                                  [[ bla x; ]])],
-                                  [cpp11=yes],
-                                  [cpp11=no],
-                                  [cpp11=no])
-
-  AC_LANG_POP([C++])
-  AC_MSG_RESULT([$cpp11])
-fi
-# final compiler flag setup	
-if test x"$cpp11" = x"yes"; then
-	AC_MSG_CHECKING([whether the C++ compiler understands '-std=c++11'])
-	OLD_CXXFLAGS=$CXXFLAGS
-	CXXFLAGS="$CXXFLAGS -std=c++11"
-	AC_COMPILE_IFELSE(
-	     [AC_LANG_PROGRAM([[#include <string>]],[[std::string s("lala");]])],
-	     [ 
-			AC_MSG_RESULT([yes])
-	     ],
-	     [
-	       AC_MSG_RESULT([no])
-	       cpp11=no;
-	     ]
-	)
-	CPPFLAGS=$OLD_CPPFLAGS
-	if test x"$cpp11" = x"yes"; then
-		AM_CXXFLAGS="$AM_CXXFLAGS -std=c++11"
-	fi
-fi
 
 ###############################################################################
 # DEBUG SUPPORT SETUP
@@ -117,11 +69,10 @@ AC_ARG_ENABLE([debug],
   	[debuger="$enableval"])
 AC_MSG_RESULT([$debuger])
 if test x"$debuger" = x"yes"; then
-	AC_DEFINE([DEBUG], [], [Run in DEBUG mode with additional assertions and debug output])
-	AM_CXXFLAGS="$AM_CXXFLAGS -g -O0 -Wno-uninitialized -Wno-deprecated"
-	#AM_CXXFLAGS="$AM_CXXFLAGS -g -O0 -Wall -Werror -Wno-uninitialized -Wno-deprecated"
+	AC_DEFINE([_DEBUG], [1], [Run in DEBUG mode with additional assertions and debug output])
+	AM_CXXFLAGS="$AM_CXXFLAGS -g -O0 -Wno-uninitialized -Wno-deprecated" # -Wall"
 else
-	AC_DEFINE([NDEBUG], [], [Run in normal mode with minimal assertions])
+	AC_DEFINE([NDEBUG], [1], [Run in normal mode with minimal assertions])
 	AM_CXXFLAGS="$AM_CXXFLAGS -O3 -fno-strict-aliasing -Wno-uninitialized -Wno-deprecated"
 fi
 
@@ -178,7 +129,6 @@ if test $want_boost = "no" || test $FOUND_BOOST != 1; then
 else
 	AM_CXXFLAGS="$BOOST_CPPFLAGS $AM_CXXFLAGS"
 	AM_LDFLAGS="$BOOST_LDFLAGS $AM_LDFLAGS"
-	#LIBS="$LIBS -lboost_program_options"
 	LIBS="$LIBS -lboost_program_options -lboost_filesystem -lboost_system"
 fi
 

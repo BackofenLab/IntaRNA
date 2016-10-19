@@ -35,9 +35,7 @@ AccessibilityConstraint( const std::string& dotBracket )
 	blocked(),
 	accessible()
 {
-#ifdef NDEBUG
-	// no check
-#else
+#if IN_DEBUG_MODE
 	if (dotBracket.find_first_not_of(dotBracketAlphabet)!=std::string::npos) {
 		throw std::runtime_error("AccessibilityConstraint("+dotBracket+") contains unsupported characters");
 	}
@@ -100,6 +98,11 @@ bool
 AccessibilityConstraint::
 isBlocked(const size_t i) const
 {
+	// quick check
+	if (blocked.empty()) {
+		return false;
+	}
+
 	// find first range that with begin > i
 	RangeList::const_iterator r = std::upper_bound( blocked.begin(), blocked.end(), IndexRange(i,RnaSequence::lastPos) );
 	if ( r == blocked.begin() ) {
@@ -116,6 +119,11 @@ bool
 AccessibilityConstraint::
 isAccessible(const size_t i) const
 {
+	// quick check
+	if (accessible.empty()) {
+		return false;
+	}
+
 	// find first range that with begin > i
 	RangeList::const_iterator r = std::upper_bound( accessible.begin(), accessible.end(), IndexRange(i,RnaSequence::lastPos) );
 	if ( r == accessible.begin() ) {
@@ -124,6 +132,17 @@ isAccessible(const size_t i) const
 		// go to preceding range and check if <= the end of the accessible range
 		return i <= (--r)->to;
 	}
+}
+
+////////////////////////////////////////////////////////////////////////
+
+bool
+AccessibilityConstraint::
+isUnconstrained( const size_t i ) const
+{
+	return isEmpty()
+	// TODO handle base pairing constraints etc..
+			|| !(isAccessible(i) || isBlocked(i));
 }
 
 ////////////////////////////////////////////////////////////////////////

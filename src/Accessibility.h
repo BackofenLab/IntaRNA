@@ -162,9 +162,7 @@ void
 Accessibility::
 checkIndices( const size_t from, const size_t to ) const
 {
-#ifdef NDEBUG           /* required by ANSI standard */
-	// no check
-#else
+#if IN_DEBUG_MODE
 	if (from > to || to >= getSequence().size()) {
 		throw std::runtime_error("Accessibility::checkIndices : region ["+toString(from)+","+toString(to)+"] do not fulfill 0 <= from <= to < seq.length");
 	}

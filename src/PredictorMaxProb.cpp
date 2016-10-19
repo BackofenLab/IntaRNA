@@ -1,8 +1,6 @@
 
 #include "PredictorMaxProb.h"
 
-#include <stdexcept>
-
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -36,9 +34,12 @@ PredictorMaxProb::
 predict( const IndexRange & r1
 		, const IndexRange & r2 )
 {
-#ifdef NDEBUG
-	// no check
-#else
+
+	VLOG(2) <<"predicting maximally probable interactions in O(n^4) space...";
+
+#if IN_DEBUG_MODE
+	// measure timing
+	TIMED_FUNC(timerObj);
 	// check indices (both regions ascending due to reversing of seq2)
 	if (!(r1.isAscending() && r2.isAscending()) )
 		throw std::runtime_error("PredictorMaxProb::predict("+toString(r1)+","+toString(r2)+") is not sane");
@@ -105,9 +106,9 @@ predict( const IndexRange & r1
 	}
 	}
 
-	std::cerr <<"#DEBUG: init 4d matrix : "<<debug_count_cells_nonNull <<" to be filled ("
+	LOG(DEBUG) <<"init 4d matrix : "<<debug_count_cells_nonNull <<" to be filled ("
 				<<((double)debug_count_cells_nonNull/(double)(debug_count_cells_nonNull+debug_count_cells_null))
-				<<"%) and "<<debug_count_cells_null <<" not allocated" <<std::endl;
+				<<"%) and "<<debug_count_cells_null <<" not allocated";
 
 	// fill matrix
 	fillHybridZ( );
@@ -200,7 +201,7 @@ fillHybridZ()
 			} else {
 			// or only internal loop energy (nothing between i and j)
 				if ( (w1+1) <= energy.getMaxInternalLoopSize1() && (w2+1) <= energy.getMaxInternalLoopSize2()) {
-					curZ += energy.getBoltzmannWeight(energy.getE_interLoop(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset))
+					curZ += energy.getBoltzmannWeight(energy.getE_interLeft(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset))
 						* (*hybridZ(j1,j2))(0,0);
 				}
 			}
@@ -211,7 +212,7 @@ fillHybridZ()
 				for (k2=std::min(j2-1,i2+energy.getMaxInternalLoopSize2()+1); k2>i2; k2--) {
 					// check if (k1,k2) are complementary
 					if (hybridZ(k1,k2) != NULL && hybridZ(k1,k2)->size1()>(j1-k1) && hybridZ(k1,k2)->size2()>(j2-k2)) {
-						curZ += energy.getBoltzmannWeight(energy.getE_interLoop(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset))
+						curZ += energy.getBoltzmannWeight(energy.getE_interLeft(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset))
 								* ((*hybridZ(k1,k2))(j1-k1,j2-k2));
 					}
 				}
@@ -252,10 +253,9 @@ updateMaxProbInteraction( const size_t i1, const size_t j1
 		, const size_t i2, const size_t j2
 		, const E_type hybridZ )
 {
-//				std::cerr <<"#DEBUG : Z( "<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" ) = "
+//				LOG(DEBUG) <<"Z( "<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" ) = "
 //						<<curZ
-//						<<" = " <<(eH + eE + eD)
-//						<<std::endl;
+//						<<" = " <<(eH + eE + eD);
 
 	// add Boltzmann weights of all penalties
 	E_type curZ = hybridZ * energy.getBoltzmannWeight( energy.getE(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset,0.0) );

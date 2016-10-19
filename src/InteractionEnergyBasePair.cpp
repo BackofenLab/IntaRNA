@@ -35,7 +35,7 @@ getE_init() const
 
 E_type
 InteractionEnergyBasePair::
-getE_interLoop( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const
+getE_interLeft( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const
 {
 	// if valid internal loop
 	if ( isValidInternalLoop(i1,j1,i2,j2) ) {

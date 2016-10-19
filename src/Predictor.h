@@ -2,6 +2,7 @@
 #ifndef PREDICTOR_H_
 #define PREDICTOR_H_
 
+#include "general.h"
 #include "InteractionEnergy.h"
 
 #include "OutputHandler.h"

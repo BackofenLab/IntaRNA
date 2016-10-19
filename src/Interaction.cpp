@@ -49,9 +49,7 @@ void
 Interaction::
 addInteraction( const size_t i1, const size_t i2 )
 {
-#ifdef NDEBUG           /* required by ANSI standard */
-	// no check
-#else
+#if IN_DEBUG_MODE
 	// check if sane indices
 	if (i1 >= s1->size()) {
 		throw std::runtime_error("Interaction::addInteraction: index i1="+toString(i1)+" exceed first sequence's length ("+toString(s1->size())+")");
@@ -129,9 +127,7 @@ Interaction &
 Interaction::
 operator= ( const InteractionRange & range )
 {
-#ifdef NDEBUG           /* required by ANSI standard */
-	// no check
-#else
+#if IN_DEBUG_MODE
 	if (!range.isSane())
 		throw std::runtime_error("Interaction::=("+toString(range)+") not sane!");
 #endif

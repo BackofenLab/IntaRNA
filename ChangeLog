@@ -1,4 +1,61 @@
 
+161019 Martin Mann :
+ + m4/m4_ax_cxx_compile_stdcxx.m4 : enables c11 compiler support check
+ * configure.ac : 
+   + ensures c11 compiler compliance via m4_ax_cxx_compile_stdcxx.m4
+   * defining "_DEBUG" instead of "DEBUG" in debug mode
+   - enable-c11 flag removed since obsolete (c11 now mandatory)
+ * .travis : adaption to configure changes
+ + easylogging++.h : v9.83 of header-only logging lib (MIT license)
+ * general.h :
+   + includes config.h for configure-based flags
+   + IN_DEBUG_MODE : compiler flag to mark debug mode
+   + includes easylogging++.h : global logging support
+   + easylogging++ log file setup (disabled)
+ * AccessibilityConstraint :
+   + isUnconstrained() : checks whether or not a position is unconstrained
+   * isBlocked() :
+   * isAccessible() :
+     + quick check for empty list
+ * AccessibilityVrna :
+   - log stream : obsolete
+   * construction :
+     + base pair span forwarded to fill* functions
+     * fillRNAup() also used if sliding window size == 0 (since fastest)
+   * fill*() :
+     + timing added (debug mode only)
+     + verbose log of computation mode
+   * fillByConstraints() :
+   * getPfScale() :
+   * fillByRNAup() :
+     + uses now base pair span
+ * CommandLineParsing :
+   - logStream : obsolete (global logging)
+   + seedMaxE argument : maximal overall energy of a seed interaction
+   + validate_seedMaxE()
+   + seedConstraint : central seed constraint object for all predictors
+   * getSeedConstraint() : returns constant reference to central object
+ * InteractionEnergy :
+   - getInterLoop() : replaced by getInterLeft()
+   + getInterLeft() : left side loop extension (former getInterLoop())
+   + getPr_danglingLeft() : probability of dangling ends on the left side
+   + getPr_danglingRight() : probability of dangling ends on the right side
+   * getE() :
+   * getE_contributions() :
+     * using getPr_dangling*() for dangling end energy computation
+ * Predictor* :
+   * predict() :
+     + verbose log for prediction mode
+     + performance logging in debug mode
+ * PredictorMfe2dSeed :
+   * fillSeed() :
+     + over energy computation for seed now includes getE_init()
+     * seed max energy boundary now via SeedConstraint.getMaxE()
+   * traceBackSeed() :
+     * bugfix : j2 initialization
+ * SeedConstraint :
+   + maxE + getter : maximal overall energy a seed is allowed to have
+
 161017 Martin Mann :
  * CommandLineParsing :
    - seedMinBP : renamed to seedBP

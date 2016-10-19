@@ -31,9 +31,12 @@ PredictorMfe2d::
 predict( const IndexRange & r1
 		, const IndexRange & r2 )
 {
-#ifdef NDEBUG
-	// no check
-#else
+
+	VLOG(2) <<"predicting mfe interactions in O(n^2) space...";
+
+#if IN_DEBUG_MODE
+	// measure timing
+	TIMED_FUNC(timerObj);
 	// check indices
 	if (!(r1.isAscending() && r2.isAscending()) )
 		throw std::runtime_error("PredictorMfe2d::predict("+toString(r1)+","+toString(r2)+") is not sane");
@@ -92,9 +95,7 @@ void
 PredictorMfe2d::
 initHybridE( const size_t j1, const size_t j2, const size_t i1init, const size_t i2init )
 {
-#ifdef NDEBUG
-	// nothing
-#else
+#if IN_DEBUG_MODE
 	if (i1init > j1)
 		throw std::runtime_error("PredictorMfe2d::initHybridE() : i1init > j1 : "+toString(i1init)+" > "+toString(j1));
 	if (i2init > j2)
@@ -208,7 +209,7 @@ fillHybridE( const size_t j1, const size_t j2, const size_t i1init, const size_t
 					curMinE = energy.getE_init();
 				} else {
 				// or only internal loop energy (nothing between i and j)
-					curMinE = energy.getE_interLoop(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset)
+					curMinE = energy.getE_interLeft(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset)
 							+ hybridE_pq(j1,j2);
 				}
 
@@ -219,7 +220,7 @@ fillHybridE( const size_t j1, const size_t j2, const size_t i1init, const size_t
 						// check if (k1,k2) are valid left boundary
 						if ( E_isNotINF( hybridE_pq(k1,k2) ) ) {
 							curMinE = std::min( curMinE,
-									(energy.getE_interLoop(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
+									(energy.getE_interLeft(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
 											+ hybridE_pq(k1,k2) )
 									);
 						}
@@ -248,9 +249,7 @@ traceBack( Interaction & interaction )
 		return;
 	}
 
-#ifdef NDEBUG           /* required by ANSI standard */
-	// no check
-#else
+#if IN_DEBUG_MODE
 	// sanity checks
 	if ( ! interaction.isValid() ) {
 		throw std::runtime_error("PredictorMfe2d::traceBack() : given interaction not valid");
@@ -286,7 +285,7 @@ traceBack( Interaction & interaction )
 	// trace back
 	while( i1 != j1 ) {
 		// check if just internal loop
-		if ( E_equal( curE, (energy.getE_interLoop(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset) )
+		if ( E_equal( curE, (energy.getE_interLeft(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset) )
 				+ hybridE_pq(j1,j2)) )
 		{
 			break;
@@ -302,7 +301,7 @@ traceBack( Interaction & interaction )
 				// check if (k1,k2) are valid left boundary
 				if ( E_isNotINF( hybridE_pq(k1,k2) ) ) {
 					if ( E_equal( curE,
-							(energy.getE_interLoop(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
+							(energy.getE_interLeft(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
 							+ hybridE_pq(k1,k2)) ) )
 					{
 						// stop searching
