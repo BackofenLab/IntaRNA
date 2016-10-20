@@ -121,3 +121,13 @@ getReversedIndex( const size_t i ) const
 }
 
 ////////////////////////////////////////////////////////////////////////////
+
+IndexRange
+ReverseAccessibility::
+getReversedIndexRange( const IndexRange & r ) const
+{
+	// reverse indices and their order to keep them ascending/descending
+	return IndexRange( getReversedIndex(r.to), getReversedIndex(r.from) );
+}
+
+////////////////////////////////////////////////////////////////////////////

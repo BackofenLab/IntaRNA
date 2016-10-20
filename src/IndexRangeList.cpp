@@ -53,8 +53,8 @@ IndexRangeList::
 push_back( const IndexRange& range )
 {
 #if IN_DEBUG_MODE
-	if (range.isDescending())  {
-		throw std::runtime_error("IndexRangeList::push_back("+toString(range)+") range is descending");
+	if (!range.isAscending())  {
+		throw std::runtime_error("IndexRangeList::push_back("+toString(range)+") range is not ascending");
 	}
 	if (!list.empty() && list.rbegin()->to > range.from) {
 		throw std::runtime_error("IndexRangeList::push_back("+toString(range)+") violates order given last range = "+toString(*(list.rbegin())));

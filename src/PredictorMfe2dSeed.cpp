@@ -12,13 +12,7 @@ PredictorMfe2dSeed(
 	PredictorMfe2d(energy,output)
 	, seedConstraint(seedConstraint)
 	, hybridE_pq_seed()
-	, seedE_rec( SeedIndex({{ // setup ring-list data for seed computation
-			  (SeedRecMatrix::index)(seedConstraint.getBasePairs()+seedConstraint.getMaxUnpaired1()+1)
-			, (SeedRecMatrix::index)(seedConstraint.getBasePairs()+seedConstraint.getMaxUnpaired2()+1)
-			, (SeedRecMatrix::index)(seedConstraint.getBasePairs()+1-2) // +1 for size and -2 to encode at least 2 bps or more
-			, (SeedRecMatrix::index)(seedConstraint.getMaxUnpaired1()+1) // +1 for size
-			, (SeedRecMatrix::index)(seedConstraint.getMaxUnpaired2()+1) // +1 for size
-		}}))
+	, seedE_rec( SeedIndex({{ 0,0,0,0,0 }}))
 	, seed()
 {
 	assert( seedConstraint.getBasePairs() > 1 );
@@ -60,6 +54,13 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 
 	// compute seeds
 	seed.resize( hybridE_pq.size1(), hybridE_pq.size2() );
+	seedE_rec.resize( SeedIndex({{ // setup ring-list data for seed computation
+					  (SeedRecMatrix::index)(seed.size1())
+					, (SeedRecMatrix::index)(seed.size2())
+					, (SeedRecMatrix::index)(seedConstraint.getBasePairs()+1-2) // +1 for size and -2 to encode at least 2 bps or more
+					, (SeedRecMatrix::index)(seedConstraint.getMaxUnpaired1()+1) // +1 for size
+					, (SeedRecMatrix::index)(seedConstraint.getMaxUnpaired2()+1) // +1 for size
+				}}));
 	fillSeed( 0, seed.size1()-1, 0, seed.size2()-1 );
 
 	// initialize mfe interaction for updates
@@ -126,8 +127,9 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 	if ( i2min > seed.size2() ) throw std::runtime_error("PredictorMfe2dSeed::fillSeed: i2min("+toString(i2min)+") > seed.size2("+toString(seed.size2())+")");
 #endif
 
+
 	// temporary variables
-	size_t i1, i2, bp, u1, u2, j1, j2, u1p, u2p, k1,k2, u1best, u2best;
+	size_t i1, i2, bpIn, u1, u2, j1, j2, u1p, u2p, k1,k2, u1best, u2best;
 	E_type curE, bestE;
 
 	// fill for all start indices
@@ -138,34 +140,35 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 		// init according to no seed interaction
 		seed(i1,i2) = SeedMatrix::value_type( E_INF, 0 );
 
+		bool debugRegion = i1+i1offset>14 && i2+i2offset>174;
 		// skip non-complementary left seed boundaries
-		if (!energy.areComplementary(i1,i2)) {
+		if (!energy.areComplementary(i1+i1offset,i2+i2offset)) {
 			continue; // go to next seedE index
 		}
 
 		// for feasible number of base pairs (bp+1) in increasing order
 		// bp=0 encodes 2 base pairs
-		for (bp=0; bp<seedE_rec.shape()[2] && (i1+bp+1)<seed.size1() && (i2+bp+1)<seed.size2(); bp++) {
+		for (bpIn=0; bpIn<seedE_rec.shape()[2] && (i1+bpIn+1)<seed.size1() && (i2+bpIn+1)<seed.size2(); bpIn++) {
 
 			// for feasible unpaired in seq1 in increasing order
-			for (u1=0; u1<seedE_rec.shape()[3] && (i1+bp+1+u1) < seed.size1(); u1++) {
+			for (u1=0; u1<seedE_rec.shape()[3] && (i1+bpIn+1+u1) < seed.size1(); u1++) {
 			// for feasible unpaired in seq2 in increasing order
-			for (u2=0; u2<seedE_rec.shape()[4] && (u1+u2)<=seedConstraint.getMaxUnpairedOverall() && (i2+bp+1+u2) < seed.size2(); u2++) {
+			for (u2=0; u2<seedE_rec.shape()[4] && (u1+u2)<=seedConstraint.getMaxUnpairedOverall() && (i2+bpIn+1+u2) < seed.size2(); u2++) {
 
 				// get right seed boundaries
-				j1 = i1+bp+1+u1;
-				j2 = i2+bp+1+u2;
+				j1 = i1+bpIn+1+u1;
+				j2 = i2+bpIn+1+u2;
 
 				// init current seed energy
 				curE = E_INF;
 
 				// check if right boundary is complementary
-				if (energy.areComplementary(j1,j2)) {
+				if (energy.areComplementary(j1+i1offset,j2+i2offset)) {
 
 					// base case: only left and right base pair present
-					if (bp==0) {
+					if (bpIn==0) {
 						// energy for stacking/bulge/interior depending on u1/u2
-						curE = energy.getE_interLeft(i1,j1,i2,j2);
+						curE = energy.getE_interLeft(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset);
 
 					} else {
 						// split seed recursively into all possible leading interior loops
@@ -178,14 +181,14 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 							k2 = i2+u2p+1;
 							// check if split pair is complementary
 							// and recursed entry is < E_INF
-							if (! (energy.areComplementary(k1,k2) && E_isNotINF( getSeedE( k1, k2, bp-1, u1-u1p, u2-u2p ) ) ) ) {
+							if (! (energy.areComplementary(k1+i1offset,k2+i2offset) && E_isNotINF( getSeedE( k1, k2, bpIn-1, u1-u1p, u2-u2p ) ) ) ) {
 								continue; // not complementary -> skip
 							}
 
 							// update mfe for split at k1,k2
 							curE = std::min( curE,
 									energy.getE_interLeft(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
-									+ getSeedE( k1, k2, bp-1, u1-u1p, u2-u2p )
+									+ getSeedE( k1, k2, bpIn-1, u1-u1p, u2-u2p )
 									);
 						} // u2p
 						} // u1p
@@ -194,13 +197,13 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 				} // (j1,j2) complementary
 
 				// store seed energy
-				setSeedE( i1, i2, bp, u1, u2, curE );
+				setSeedE( i1, i2, bpIn, u1, u2, curE );
 
 			} // u2
 			} // u1
 
 			// check if full base pair number reached
-			if (bp+1==seedE_rec.shape()[2]) {
+			if (bpIn+1==seedE_rec.shape()[2]) {
 
 				// find best unpaired combination in seed seed for i1,i2,bp
 				u1best = 0;
@@ -208,16 +211,16 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 				bestE = E_INF;
 
 				// for feasible unpaired in seq1 in increasing order
-				for (u1=0; u1<seedE_rec.shape()[3] && (i1+bp+1+u1) < seed.size1(); u1++) {
+				for (u1=0; u1<seedE_rec.shape()[3] && (i1+bpIn+1+u1) < seed.size1(); u1++) {
 				// for feasible unpaired in seq2 in increasing order
-				for (u2=0; u2<seedE_rec.shape()[4] && (u1+u2)<=seedConstraint.getMaxUnpairedOverall() && (i2+bp+1+u2) < seed.size2(); u2++) {
+				for (u2=0; u2<seedE_rec.shape()[4] && (u1+u2)<=seedConstraint.getMaxUnpairedOverall() && (i2+bpIn+1+u2) < seed.size2(); u2++) {
 
 					// get right seed boundaries
-					j1 = i1+bp+1+u1;
-					j2 = i2+bp+1+u2;
+					j1 = i1+bpIn+1+u1;
+					j2 = i2+bpIn+1+u2;
 
 					// get overall interaction energy
-					curE = energy.getE( i1, j1, i2, j2, getSeedE( i1, i2, bp, u1, u2 ) ) + energy.getE_init();
+					curE = energy.getE( i1+i1offset, j1+i1offset, i2+i2offset, j2+i2offset, getSeedE( i1, i2, bpIn, u1, u2 ) ) + energy.getE_init();
 
 					// check if better than what is known so far
 					if ( curE < bestE ) {
@@ -235,14 +238,14 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 						bestE = E_INF;
 					} else {
 						// get seed's hybridization loop energies only
-						bestE -= energy.getE( i1, i1+bp+1+u1best, i2, i2+bp+1+u2best, 0.0 );
+						bestE -= energy.getE( i1+i1offset, i1+bpIn+1+u1best+i1offset, i2+i2offset, i2+bpIn+1+u2best+i2offset, 0.0 );
 						bestE -= energy.getE_init();
 					}
 				}
 
 				// store best (mfe) seed for all u1/u2
 				seed(i1,i2) = SeedMatrix::value_type( bestE
-						, E_isINF(bestE)?0:encodeSeedLength(bp+2+u1best,bp+2+u2best) );
+						, E_isINF(bestE)?0:encodeSeedLength(bpIn+2+u1best,bpIn+2+u2best) );
 
 			} // store best seed
 
@@ -256,17 +259,16 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 
 void
 PredictorMfe2dSeed::
-fillHybridE_seed( const size_t j1, const size_t j2, const size_t i1init, const size_t i2init )
+fillHybridE_seed( const size_t j1, const size_t j2, const size_t i1min, const size_t i2min )
 {
 	assert(j1<=hybridErange.r1.to);
 	assert(j2<=hybridErange.r2.to);
-	assert(i1init <= j1);
-	assert(i2init <= j2);
+	assert(i1min <= j1);
+	assert(i2min <= j2);
 	assert(j1<hybridE_pq.size1());
 	assert(j2<hybridE_pq.size2());
 	assert(seed.size1() == hybridE_pq.size1());
 	assert(seed.size2() == hybridE_pq.size2());
-
 
 	// check if it is possible to have a seed ending on the right at (j1,j2)
 	if (j1+1 < seedConstraint.getBasePairs() || j2+1 < seedConstraint.getBasePairs()) {
@@ -278,8 +280,8 @@ fillHybridE_seed( const size_t j1, const size_t j2, const size_t i1init, const s
 	size_t i1,i2,k1,k2;
 
 	// get i1/i2 index boundaries for computation
-	const IndexRange i1range( std::max(hybridErange.r1.from,i1init), j1+1-seedConstraint.getBasePairs() );
-	const IndexRange i2range( std::max(hybridErange.r2.from,i2init), j2+1-seedConstraint.getBasePairs() );
+	const IndexRange i1range( std::max(hybridErange.r1.from,i1min), j1+1-seedConstraint.getBasePairs() );
+	const IndexRange i2range( std::max(hybridErange.r2.from,i2min), j2+1-seedConstraint.getBasePairs() );
 
 	//////////  FIRST ROUND : COMPUTE HYBRIDIZATION ENERGIES ONLY  ////////////
 
@@ -296,6 +298,7 @@ fillHybridE_seed( const size_t j1, const size_t j2, const size_t i1init, const s
 
 				// compute entry
 				curMinE = E_INF;
+
 
 				// base case = incorporate mfe seed starting at (i1,i2)
 				//             + interaction on right side up to (p,q)
@@ -316,10 +319,17 @@ fillHybridE_seed( const size_t j1, const size_t j2, const size_t i1init, const s
 				for (k2=std::min(i2range.to,i2+energy.getMaxInternalLoopSize2()+1); k2>i2; k2--) {
 					// check if (k1,k2) are valid left boundaries including a seed
 					if ( E_isNotINF( hybridE_pq_seed(k1,k2) ) ) {
-						curMinE = std::min( curMinE,
-								(energy.getE_interLeft(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
-										+ hybridE_pq_seed(k1,k2) )
+						if ( E_isNotINF(curMinE) ) {
+							curMinE = std::min( curMinE,
+									(energy.getE_interLeft(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
+											+ hybridE_pq_seed(k1,k2) )
 								);
+						} else {
+							curMinE =
+									(energy.getE_interLeft(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
+											+ hybridE_pq_seed(k1,k2) )
+									;
+						}
 					}
 				}
 				}
@@ -545,7 +555,7 @@ traceBackSeed( Interaction & interaction
 				if ( E_isNotINF( getSeedE( k1, k2, bpIn-1, u1max-u1, u2max-u2 ) ) ) {
 
 					// check if correct trace
-					if ( E_equal( curE, energy.getE_interLeft(i1,k1,i2,k2)
+					if ( E_equal( curE, energy.getE_interLeft(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
 										+ getSeedE( k1, k2, bpIn-1, u1max-u1, u2max-u2 )) )
 					{
 						// store left base pair if not left seed boundary
@@ -580,8 +590,9 @@ E_type
 PredictorMfe2dSeed::
 getSeedE( const size_t i1, const size_t i2, const size_t bpInbetween, const size_t u1, const size_t u2 )
 {
-	// access i1/i2 via modulo operation to get a ring-list like access behavior with mem-reusage
-	return seedE_rec[i1 % seedE_rec.shape()[0]][i2 % seedE_rec.shape()[1]][bpInbetween][u1][u2];
+	return seedE_rec[i1][i2][bpInbetween][u1][u2];
+//	// access i1/i2 via modulo operation to get a ring-list like access behavior with mem-reusage
+//	return seedE_rec[i1 % seedE_rec.shape()[0]][i2 % seedE_rec.shape()[1]][bpInbetween][u1][u2];
 //	return seedE_rec( SeedIndex({{ i1 % seedE_rec.shape()[0], i2 % seedE_rec.shape()[1], bpInbetween, u1, u2 }}) );
 }
 
@@ -591,8 +602,9 @@ void
 PredictorMfe2dSeed::
 setSeedE( const size_t i1, const size_t i2, const size_t bpInbetween, const size_t u1, const size_t u2, const E_type E )
 {
-	// access i1/i2 via modulo operation to get a ring-list like access behavior with mem-reusage
-	seedE_rec[i1 % seedE_rec.shape()[0]][i2 % seedE_rec.shape()[1]][bpInbetween][u1][u2] = E;
+	seedE_rec[i1][i2][bpInbetween][u1][u2] = E;
+//	// access i1/i2 via modulo operation to get a ring-list like access behavior with mem-reusage
+//	seedE_rec[i1 % seedE_rec.shape()[0]][i2 % seedE_rec.shape()[1]][bpInbetween][u1][u2] = E;
 //	seedE_rec( SeedIndex({{ i1 % seedE_rec.shape()[0], i2 % seedE_rec.shape()[1], bpInbetween, u1, u2 }}) ) = E;
 }
 

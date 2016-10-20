@@ -6,6 +6,14 @@
 
 #include <vector>
 
+/**
+ * Sorted list of non-overlapping ascending ranges.
+ *
+ * TODO add support for overlapping ranges
+ *
+ * @author Martin Mann
+ *
+ */
 class IndexRangeList
 {
 protected:

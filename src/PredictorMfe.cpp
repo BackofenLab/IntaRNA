@@ -64,7 +64,7 @@ updateMfe( const size_t i1, const size_t j1
 
 	// get final energy of current interaction
 	E_type curE = energy.getE( i1+i1offset,j1+i1offset, i2+i2offset,j2+i2offset, hybridE );
-//	LOG(DEBUG) <<"#DEBUG : energy( "<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" ) = "
+//	LOG(DEBUG) <<"energy( "<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" ) = "
 //			<<hybridE <<" : total = "<<curE;
 
 	if (curE < mfeInteraction.energy) {

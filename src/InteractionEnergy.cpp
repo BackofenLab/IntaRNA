@@ -59,11 +59,11 @@ InteractionEnergy::
 isValidInternalLoop( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const
 {
 	return
-		   areComplementary( i1, i2)
+		   (j1-i1>0 && j2-i2>0)
+		&& areComplementary( i1, i2)
 		&& areComplementary( j1, j2)
 		&& InteractionEnergy::isAllowedLoopRegion(accS1.getSequence(), i1, j1, maxInternalLoopSize1)
 		&& InteractionEnergy::isAllowedLoopRegion(accS2.getSequence(), i2, j2, maxInternalLoopSize2)
-		&& (j1-i1>0 && j2-i2>0)
 		;
 }
 

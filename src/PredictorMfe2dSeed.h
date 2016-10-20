@@ -167,12 +167,12 @@ protected:
 	 * @param energy the energy function to use
 	 * @param j1 end of the interaction within seq 1
 	 * @param j2 end of the interaction within seq 2
-	 * @param i1init smallest value for i1
-	 * @param i2init smallest value for i2
+	 * @param i1min smallest value for i1
+	 * @param i2min smallest value for i2
 	 *
 	 */
 	void
-	fillHybridE_seed( const size_t j1, const size_t j2, const size_t i1init=0, const size_t i2init=0  );
+	fillHybridE_seed( const size_t j1, const size_t j2, const size_t i1min=0, const size_t i2min=0  );
 
 	/**
 	 * Fills a given interaction (boundaries given) with the according

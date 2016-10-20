@@ -8,6 +8,9 @@
 
 #include <boost/bind.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/foreach.hpp>
+#include <boost/tokenizer.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "AccessibilityConstraint.h"
 
@@ -27,6 +30,10 @@
 
 
 
+
+////////////////////////////////////////////////////////////////////////////
+
+const boost::regex CommandLineParsing::regexRangeEncoding("^([123456789]\\d*-[123456789]\\d*,)*[123456789]\\d*-[123456789]\\d*$");
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -124,7 +131,7 @@ CommandLineParsing::CommandLineParsing()
 		("qRegion"
 			, value<std::string>(&(qRegionString))
 				->notifier(boost::bind(&CommandLineParsing::validate_qRegion,this,_1))
-			, std::string("interaction site : query regions to be considered for interaction prediction. Either given as BED file (for multi-sequence FASTA input) or in the format 'from1-to1,from2-to2,..'").c_str())
+			, std::string("interaction site : query regions to be considered for interaction prediction. Either given as BED file (for multi-sequence FASTA input) or in the format 'from1-to1,from2-to2,..' assuming indexing starts with 1").c_str())
 		;
 
 	opts_target.add_options()
@@ -165,7 +172,7 @@ CommandLineParsing::CommandLineParsing()
 		("tRegion"
 			, value<std::string>(&(tRegionString))
 				->notifier(boost::bind(&CommandLineParsing::validate_tRegion,this,_1))
-			, std::string("interaction site : target regions to be considered for interaction prediction. Either given as BED file (for multi-sequence FASTA input) or in the format 'from1-to1,from2-to2,..'").c_str())
+			, std::string("interaction site : target regions to be considered for interaction prediction. Either given as BED file (for multi-sequence FASTA input) or in the format 'from1-to1,from2-to2,..' assuming indexing starts with 1").c_str())
 		;
 
 	////  SEED OPTIONS  ////////////////////////////////////
@@ -340,6 +347,10 @@ parse(int argc, char** argv)
 				}
 			}
 
+			// parse regions to be used for interaction prediction
+			parseRegion( "qRegion", qRegionString, query, qRegion );
+			parseRegion( "tRegion", tRegionString, target, tRegion );
+
 			// check qAccConstr - query sequence compatibility
 			if (vm.count("qAccConstr") > 0) {
 				// only for single sequence input supported
@@ -485,7 +496,8 @@ void CommandLineParsing::validate_qAccConstr(const std::string & value)
 ////////////////////////////////////////////////////////////////////////////
 
 void CommandLineParsing::validate_qRegion(const std::string & value) {
-	NOTIMPLEMENTED("query regions not supported yet")
+	// check and store region information
+	validateRegion( "qRegion", value );
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -567,7 +579,8 @@ void CommandLineParsing::validate_tAccConstr(const std::string & value)
 ////////////////////////////////////////////////////////////////////////////
 
 void CommandLineParsing::validate_tRegion(const std::string & value) {
-	NOTIMPLEMENTED("target regions not supported yet")
+	// check and store region information
+	validateRegion( "tRegion", value );
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -646,7 +659,9 @@ validate_energyFile(const std::string & value)
 
 ////////////////////////////////////////////////////////////////////////////
 
-void CommandLineParsing::validate_charArgument(const std::string & name, const CommandLineParsing::CharParameter& param, const char & value)
+void
+CommandLineParsing::
+validate_charArgument(const std::string & name, const CommandLineParsing::CharParameter& param, const char & value)
 {
 	// alphabet check
 	if ( ! param.isInAlphabet(value) ) {
@@ -657,7 +672,9 @@ void CommandLineParsing::validate_charArgument(const std::string & name, const C
 
 ////////////////////////////////////////////////////////////////////////////
 
-void CommandLineParsing::validate_sequenceArgument(const std::string & name, const std::string & value)
+void
+CommandLineParsing::
+validate_sequenceArgument(const std::string & name, const std::string & value)
 {
 	if (value.compare("STDIN") != 0) {
 
@@ -683,7 +700,9 @@ void CommandLineParsing::validate_sequenceArgument(const std::string & name, con
 
 ////////////////////////////////////////////////////////////////////////////
 
-void CommandLineParsing::validate_structureConstraintArgument(const std::string & name, const std::string & value)
+void
+CommandLineParsing::
+validate_structureConstraintArgument(const std::string & name, const std::string & value)
 {
 	// check if valid alphabet
 	if (value.find_first_not_of(AccessibilityConstraint::dotBracketAlphabet) != std::string::npos) {
@@ -728,6 +747,105 @@ validateFile( const std::string & filename )
 		return false;
 	}
 	return true;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+bool
+CommandLineParsing::
+validateRegion( const std::string & argName, const std::string & value )
+{
+	// check if nothing given
+	if (value.empty()) {
+		return true;
+	} else
+	// check if direct range input
+	if (boost::regex_match( value, regexRangeEncoding, boost::match_perl )) {
+		return true;
+	} else
+	// might be BED file input
+	if ( validateFile( value ) ) {
+		return true;
+	} else
+	// no valid input
+	{
+		LOG(ERROR) <<"the argument for "<<argName<<" is neither a valid range string encoding nor a file that can be found";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+	}
+	return false;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void
+CommandLineParsing::
+parseRegion( const std::string & argName, const std::string & value, const RnaSequenceVec & sequences, IndexRangeListVec & rangeList )
+{
+	// check if nothing given
+	if (value.empty()) {
+		// ensure range list size sufficient
+		rangeList.resize( sequences.size() );
+		size_t s=0;
+		BOOST_FOREACH( IndexRangeList & r, rangeList ) {
+			// clear old data if any
+			r.clear();
+			assert(sequences.at(s).size()>0);
+			// push full range
+			r.push_back( IndexRange(0,sequences.at(s++).size()-1) );
+		}
+		return;
+	} else
+	// check direct range input
+	if (boost::regex_match( value, regexRangeEncoding, boost::match_perl )) {
+		// ensure single sequence input
+		if(sequences.size() != 1) {
+			LOG(ERROR) <<argName <<" : string range list encoding provided but more than one sequence present.";
+			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+			return;
+		}
+		// ensure range list size sufficient
+		rangeList.resize(1);
+		// clear first range list
+		rangeList[0].clear();
+		// decompose string into ranges
+		boost::char_separator<char> commaSeparator(",");
+		boost::tokenizer< boost::char_separator<char> > rangeStrings(value, commaSeparator);
+		IndexRange toAdd(0,0);
+		size_t dashPos = 0;
+		BOOST_FOREACH(const std::string & rangeEncoding, rangeStrings)
+		{
+			// decompose range, check and store
+			try {
+				dashPos = rangeEncoding.find('-');
+				// parse indices
+				toAdd.from = boost::lexical_cast<size_t>( rangeEncoding.substr(0, dashPos) ) -1;
+				toAdd.to = boost::lexical_cast<size_t>( rangeEncoding.substr( dashPos+1 ) ) -1;
+				if (toAdd.to>=sequences.at(0).size()) {
+					LOG(ERROR) <<argName <<" : upper boundary of range '"<<rangeEncoding<<"' exceeds the sequence's length "<<sequences.at(0).size();
+					updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+				}
+				// check sanity
+				if (toAdd.isAscending()) {
+					// insert range
+					rangeList[0].insert( toAdd );
+				} else {
+					LOG(ERROR) <<argName <<" : error while parsing '"<<rangeEncoding<<"' : range not ascending";
+					updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+				}
+			}
+			catch(const boost::bad_lexical_cast & e) {
+				LOG(ERROR) <<"CommandLineParsing::parseRegion() : error while parsing '"<<rangeEncoding<<"' for argument "<<argName<<" : "<<e.what();
+				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+			}
+		}
+		return;
+	}
+	// might be BED file input
+	if ( validateFile( value ) ) {
+		NOTIMPLEMENTED("BED file input for index range list not implemented");
+		return;
+	}
+	assert(false) /*should never happen*/;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1056,6 +1174,36 @@ getSeedConstraint() const
 						);
 	}
 	return *seedConstraint;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+const IndexRangeList&
+CommandLineParsing::
+getQueryRanges( const size_t sequenceNumber ) const
+{
+#if IN_DEBUG_MODE
+	if (sequenceNumber>=qRegion.size())
+		throw std::runtime_error("CommandLineParsing::getQueryRanges("+toString(sequenceNumber)+") out of bounds");
+	if (qRegion.at(sequenceNumber).empty())
+		throw std::runtime_error("CommandLineParsing::getQueryRanges("+toString(sequenceNumber)+") is empty");
+#endif
+	return qRegion.at(sequenceNumber);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+const IndexRangeList&
+CommandLineParsing::
+getTargetRanges( const size_t sequenceNumber ) const
+{
+#if IN_DEBUG_MODE
+	if (sequenceNumber>=tRegion.size())
+		throw std::runtime_error("CommandLineParsing::getTargetRanges("+toString(sequenceNumber)+") out of bounds");
+	if (tRegion.at(sequenceNumber).empty())
+		throw std::runtime_error("CommandLineParsing::getTargetRanges("+toString(sequenceNumber)+") is empty");
+#endif
+	return tRegion.at(sequenceNumber);
 }
 
 ////////////////////////////////////////////////////////////////////////////

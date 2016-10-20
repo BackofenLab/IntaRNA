@@ -4,6 +4,7 @@
 
 
 #include "general.h"
+#include "RnaSequence.h"
 
 #include <stdexcept>
 
@@ -30,7 +31,7 @@ public:
 	 * @param to the end index (default max())
 	 */
 	IndexRange(const size_t from = 0,
-			const size_t to = std::numeric_limits<size_t>::max())
+			const size_t to = RnaSequence::lastPos)
 		: from(from), to(to)
 	{
 	}

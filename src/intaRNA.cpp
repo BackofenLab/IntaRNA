@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+#include <boost/foreach.hpp>
+
 #include "CommandLineParsing.h"
 
 #include "RnaSequence.h"
@@ -24,10 +26,14 @@ INITIALIZE_EASYLOGGINGPP
  */
 int main(int argc, char **argv) {
 
+
 	try {
+
 
 		// setup logging with given parameters
 		START_EASYLOGGINGPP(argc, argv);
+
+
 		// set overall logging style
 		el::Loggers::reconfigureAllLoggers(el::ConfigurationType::Format, std::string("# %level : %msg"));
 		// TODO setup log file
@@ -55,7 +61,7 @@ int main(int argc, char **argv) {
 		{
 
 			// get accessibility handler
-			VLOG(1) <<"computing accessibility for query "<<parameters.getQuerySequences().at(queryNumber).getId()<<"...";
+			VLOG(1) <<"computing accessibility for query '"<<parameters.getQuerySequences().at(queryNumber).getId()<<"'...";
 			Accessibility * queryAcc = parameters.getQueryAccessibility(queryNumber);
 			CHECKNOTNULL(queryAcc,"query initialization failed");
 
@@ -70,7 +76,7 @@ int main(int argc, char **argv) {
 			{
 
 				// get target accessibility handler
-				VLOG(1) <<"computing accessibility for target "<<parameters.getTargetSequences().at(targetNumber).getId()<<"...";
+				VLOG(1) <<"computing accessibility for target '"<<parameters.getTargetSequences().at(targetNumber).getId()<<"'...";
 				Accessibility * targetAccOrig = parameters.getTargetAccessibility(targetNumber);
 				CHECKNOTNULL(targetAccOrig,"target initialization failed");
 				// reverse indexing of target sequence for the computation
@@ -94,10 +100,18 @@ int main(int argc, char **argv) {
 				Predictor * predictor = parameters.getPredictor( *energy, *output );
 				CHECKNOTNULL(predictor,"predictor initialization failed");
 
-				// run prediction
-				// TODO we can also limit the prediction range eg. for streamed predictions
-				VLOG(1) <<"predicting interactions...";
-				predictor->predict();
+				// run prediction for all range combinations
+				BOOST_FOREACH(const IndexRange & qRange, parameters.getQueryRanges(queryNumber)) {
+				BOOST_FOREACH(const IndexRange & tRange, parameters.getTargetRanges(targetNumber)) {
+
+					VLOG(1) <<"predicting interactions for query" <<qRange
+							<<" and target" <<tRange <<"...";
+
+					predictor->predict( qRange, targetAcc->getReversedIndexRange(tRange) );
+
+				} // target ranges
+				} // query ranges
+
 
 
 				// garbage collection

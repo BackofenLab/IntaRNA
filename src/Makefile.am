@@ -1,6 +1,6 @@
 
 # the program to build
-bin_PROGRAMS = intaRNA 
+bin_PROGRAMS = intaRNA
 
 # intaRNA sources
 intaRNA_SOURCES =	intaRNA.cpp \

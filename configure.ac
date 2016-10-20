@@ -129,7 +129,7 @@ if test $want_boost = "no" || test $FOUND_BOOST != 1; then
 else
 	AM_CXXFLAGS="$BOOST_CPPFLAGS $AM_CXXFLAGS"
 	AM_LDFLAGS="$BOOST_LDFLAGS $AM_LDFLAGS"
-	LIBS="$LIBS -lboost_program_options -lboost_filesystem -lboost_system"
+	LIBS="$LIBS -lboost_regex -lboost_program_options -lboost_filesystem -lboost_system"
 fi
 
 

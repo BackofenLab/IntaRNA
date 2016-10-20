@@ -5,6 +5,7 @@
 #include "general.h"
 #include "RnaSequence.h"
 
+#include <boost/regex.hpp>
 #include <boost/program_options.hpp>
 
 #include <iostream>
@@ -24,8 +25,10 @@
 class CommandLineParsing {
 public:
 
-	//! type for a set of sequences
+	//! type for a list of sequences
 	typedef std::vector< RnaSequence > RnaSequenceVec;
+	//! type for a list of ranges for the sequences
+	typedef std::vector<IndexRangeList> IndexRangeListVec;
 
 	//! different exit codes for parsing
 	enum ReturnCode {
@@ -34,6 +37,9 @@ public:
 		STOP_PARSING_ERROR = 1,
 		NOT_PARSED_YET = 999
 	};
+
+	//! regular expression used to parse range list string encodings
+	static const boost::regex regexRangeEncoding;
 
 public:
 
@@ -89,6 +95,24 @@ public:
 	 * @return a newly allocated Accessibility object or NULL in error case
 	 */
 	Accessibility* getTargetAccessibility( const size_t sequenceNumber ) const;
+
+	/**
+	 * Access to the ranges to screen for interactions for the query with the
+	 * according sequence number.
+	 * @param sequenceNumber the number of the sequence within the vector
+	 *         returned by getQuerySequences()
+	 * @return the range list for the according sequence.
+	 */
+	const IndexRangeList& getQueryRanges( const size_t sequenceNumber ) const;
+
+	/**
+	 * Access to the ranges to screen for interactions for the target with the
+	 * according sequence number.
+	 * @param sequenceNumber the number of the sequence within the vector
+	 *         returned by getTargetSequences()
+	 * @return the range list for the according sequence.
+	 */
+	const IndexRangeList& getTargetRanges( const size_t sequenceNumber ) const;
 
 	/**
 	 * Returns a newly allocated Energy object according to the user defined
@@ -248,7 +272,7 @@ protected:
 	//! the string encoding of the interaction intervals for the query(s)
 	std::string qRegionString;
 	//! the list of interaction intervals for each query sequence
-	std::vector<IndexRangeList> qRegion;
+	IndexRangeListVec qRegion;
 
 	//! the target command line argument
 	std::string targetArg;
@@ -269,7 +293,7 @@ protected:
 	//! the string encoding of the interaction intervals for the target(s)
 	std::string tRegionString;
 	//! the list of interaction intervals for each target sequence
-	std::vector<IndexRangeList> tRegion;
+	IndexRangeListVec tRegion;
 
 	//! whether or not a seed is to be required for an interaction or not
 	bool noSeedRequired;
@@ -556,6 +580,30 @@ protected:
 	 * @return true if the file can be accessed and is readable; false otherwise
 	 */
 	bool validateFile( const std::string & filename );
+
+	/**
+	 * Checks whether or not a range input is either a valid string encoding
+	 * or an accessible file name.
+	 * @param argName the name of the argument the @p value is for
+	 * @param value the argument's value to be parsed
+	 */
+	bool
+	validateRegion( const std::string & argName
+					, const std::string & value );
+
+	/**
+	 * Parses a given range input and pushes the parsed ranges to the given
+	 * container.
+	 * @param argName the name of the argument the @p value is for
+	 * @param value the argument's value to be parsed
+	 * @param sequences the parsed sequences the regions are for
+	 * @param rangeList the container to feed the parsed ranges to (individually for each file if read from BED input)
+	 */
+	void
+	parseRegion( const std::string & argName
+				, const std::string & value
+				, const RnaSequenceVec & sequences
+				, IndexRangeListVec & rangeList );
 
 	/**
 	 * Checks whether or not any command line argument were parsed. Throws a

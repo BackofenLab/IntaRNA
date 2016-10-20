@@ -79,6 +79,14 @@ public:
 	size_t
 	getReversedIndex( const size_t i ) const;
 
+	/**
+	 * Provides the reverse index range of a given sequence position.
+	 * @param i the index range of interest
+	 * @return the reversed index range, i.e. for index i : (seq.size()-i-1)
+	 */
+	IndexRange
+	getReversedIndexRange( const IndexRange & r ) const;
+
 
 protected:
 

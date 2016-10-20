@@ -1,4 +1,26 @@
 
+161020 Martin Mann :
+ * configure.ac :
+   + boost_regex lib registered
+ * CommandLineParsing :
+   + argument qRegion : query interaction regions (sorted, non-overlapping)
+   + argument tRegion : target interaction regions
+   + getter and validator
+   + regexRangeEncoding : regex to validate range string encodings
+   + parseRegion() : parses region argument
+ * IndexRange :
+   * constructor() :
+     * default to = RnaSequence::lastPos
+ * IndexRangeList :
+   * push_back() : ascending check corrected
+ * intaRNA :
+   + predicts only for all index range combinations
+ * ReverseAccessibility : 
+   + getReversedIndexRange() : reverses an index range
+ * PredictorMfe2dSeed :
+   * bugfix : rotating seedE_rec usage not possible; reset to full 5D array
+   * bugfix : index offset added 
+
 161019 Martin Mann :
  + m4/m4_ax_cxx_compile_stdcxx.m4 : enables c11 compiler support check
  * configure.ac : 
