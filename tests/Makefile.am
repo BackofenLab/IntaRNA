@@ -15,7 +15,7 @@ runTests_SOURCES =	catch.hpp \
 					runTests.cpp
 
 # add source objects for linking
-runTests_LDFLAGS = `ls ../src/*.o | tr " " "\n" | grep -v "intaRNA" | tr "\n" " "` @AM_LDFLAGS@ @LDFLAGS@
+runTests_LDFLAGS = `ls ../src/*.o | tr " " "\n" | grep -v "intaRNA" | grep -v "Command" | tr "\n" " "` @AM_LDFLAGS@ @LDFLAGS@
 
 # add source include for compilation
 runTests_CXXFLAGS =	-I$(top_srcdir)/src @AM_CXXFLAGS@ @CXXFLAGS@

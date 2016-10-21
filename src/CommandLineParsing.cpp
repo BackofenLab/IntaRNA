@@ -397,6 +397,7 @@ parse(int argc, char** argv)
 				if (seedMaxUP.val != seedMaxUP.def) LOG(INFO) <<"no seed constraint wanted, but seedMaxUP provided (will be ignored)";
 				if (seedMaxUPq.val != seedMaxUPq.def) LOG(INFO) <<"no seed constraint wanted, but seedMaxUPq provided (will be ignored)";
 				if (seedMaxUPt.val != seedMaxUPt.def) LOG(INFO) <<"no seed constraint wanted, but seedMaxUPt provided (will be ignored)";
+				if (seedMaxE.val != seedMaxE.def) LOG(INFO) <<"no seed constraint wanted, but seedMaxE provided (will be ignored)";
 			}
 
 		} catch (error& e) {
