@@ -42,15 +42,16 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 		throw std::runtime_error("PredictorMfe2d::predict("+toString(r1)+","+toString(r2)+") is not sane");
 #endif
 
-	// resize matrix
-	hybridE_pq.resize( std::min( energy.getAccessibility1().getSequence().size()
-						, (r1.to==RnaSequence::lastPos?energy.getAccessibility1().getSequence().size()-1:r1.to)-r1.from+1 )
-				, std::min( energy.getAccessibility2().getSequence().size()
-						, (r2.to==RnaSequence::lastPos?energy.getAccessibility2().getSequence().size()-1:r2.to)-r2.from+1 ) );
-	hybridE_pq_seed.resize( hybridE_pq.size1(), hybridE_pq.size2() );
+	// setup index offset
+	energy.setOffset1(r1.from);
+	energy.setOffset2(r2.from);
 
-	i1offset = r1.from;
-	i2offset = r2.from;
+	// resize matrix
+	hybridE_pq.resize( std::min( energy.size1()
+						, (r1.to==RnaSequence::lastPos?energy.size1()-1:r1.to)-r1.from+1 )
+					, std::min( energy.size2()
+						, (r2.to==RnaSequence::lastPos?energy.size2()-1:r2.to)-r2.from+1 ) );
+	hybridE_pq_seed.resize( hybridE_pq.size1(), hybridE_pq.size2() );
 
 	// compute seeds
 	seed.resize( hybridE_pq.size1(), hybridE_pq.size2() );
@@ -69,15 +70,15 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 	// for all right ends j1
 	for (size_t j1 = hybridE_pq.size1(); j1-- > 0; ) {
 		// check if j1 is accessible
-		if (energy.getAccessibility1().getAccConstraint().isBlocked(j1+i1offset))
+		if (!energy.isAccessible1(j1))
 			continue;
 		// iterate over all right ends j2
 		for (size_t j2 = hybridE_pq.size2(); j2-- > 0; ) {
 			// check if j2 is accessible
-			if (energy.getAccessibility2().getAccConstraint().isBlocked(j2+i2offset))
+			if (!energy.isAccessible2(j2))
 				continue;
 			// check if base pair (j1,j2) possible
-			if (!energy.areComplementary( j1+i1offset, j2+i2offset ))
+			if (!energy.areComplementary( j1, j2 ))
 				continue;
 
 			// compute hybridE_pq
@@ -140,9 +141,8 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 		// init according to no seed interaction
 		seed(i1,i2) = SeedMatrix::value_type( E_INF, 0 );
 
-		bool debugRegion = i1+i1offset>14 && i2+i2offset>174;
 		// skip non-complementary left seed boundaries
-		if (!energy.areComplementary(i1+i1offset,i2+i2offset)) {
+		if (!energy.areComplementary(i1,i2)) {
 			continue; // go to next seedE index
 		}
 
@@ -163,12 +163,12 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 				curE = E_INF;
 
 				// check if right boundary is complementary
-				if (energy.areComplementary(j1+i1offset,j2+i2offset)) {
+				if (energy.areComplementary(j1,j2)) {
 
 					// base case: only left and right base pair present
 					if (bpIn==0) {
 						// energy for stacking/bulge/interior depending on u1/u2
-						curE = energy.getE_interLeft(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset);
+						curE = energy.getE_interLeft(i1,j1,i2,j2);
 
 					} else {
 						// split seed recursively into all possible leading interior loops
@@ -181,13 +181,13 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 							k2 = i2+u2p+1;
 							// check if split pair is complementary
 							// and recursed entry is < E_INF
-							if (! (energy.areComplementary(k1+i1offset,k2+i2offset) && E_isNotINF( getSeedE( k1, k2, bpIn-1, u1-u1p, u2-u2p ) ) ) ) {
+							if (! (energy.areComplementary(k1,k2) && E_isNotINF( getSeedE( k1, k2, bpIn-1, u1-u1p, u2-u2p ) ) ) ) {
 								continue; // not complementary -> skip
 							}
 
 							// update mfe for split at k1,k2
 							curE = std::min( curE,
-									energy.getE_interLeft(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
+									energy.getE_interLeft(i1,k1,i2,k2)
 									+ getSeedE( k1, k2, bpIn-1, u1-u1p, u2-u2p )
 									);
 						} // u2p
@@ -220,7 +220,7 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 					j2 = i2+bpIn+1+u2;
 
 					// get overall interaction energy
-					curE = energy.getE( i1+i1offset, j1+i1offset, i2+i2offset, j2+i2offset, getSeedE( i1, i2, bpIn, u1, u2 ) ) + energy.getE_init();
+					curE = energy.getE( i1, j1, i2, j2, getSeedE( i1, i2, bpIn, u1, u2 ) ) + energy.getE_init();
 
 					// check if better than what is known so far
 					if ( curE < bestE ) {
@@ -238,7 +238,7 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 						bestE = E_INF;
 					} else {
 						// get seed's hybridization loop energies only
-						bestE -= energy.getE( i1+i1offset, i1+bpIn+1+u1best+i1offset, i2+i2offset, i2+bpIn+1+u2best+i2offset, 0.0 );
+						bestE -= energy.getE( i1, i1+bpIn+1+u1best, i2, i2+bpIn+1+u2best, 0.0 );
 						bestE -= energy.getE_init();
 					}
 				}
@@ -321,12 +321,12 @@ fillHybridE_seed( const size_t j1, const size_t j2, const size_t i1min, const si
 					if ( E_isNotINF( hybridE_pq_seed(k1,k2) ) ) {
 						if ( E_isNotINF(curMinE) ) {
 							curMinE = std::min( curMinE,
-									(energy.getE_interLeft(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
+									(energy.getE_interLeft(i1,k1,i2,k2)
 											+ hybridE_pq_seed(k1,k2) )
 								);
 						} else {
 							curMinE =
-									(energy.getE_interLeft(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
+									(energy.getE_interLeft(i1,k1,i2,k2)
 											+ hybridE_pq_seed(k1,k2) )
 									;
 						}
@@ -376,10 +376,10 @@ traceBack( Interaction & interaction )
 	// ensure sorting
 	interaction.sort();
 	// get indices in hybridE for boundary base pairs
-	size_t	i1 = interaction.basePairs.at(0).first - i1offset,
-			j1 = interaction.basePairs.at(1).first - i1offset,
-			i2 = energy.getAccessibility2().getReversedIndex(interaction.basePairs.at(0).second) - i2offset,
-			j2 = energy.getAccessibility2().getReversedIndex(interaction.basePairs.at(1).second) - i2offset
+	size_t	i1 = energy.getIndex1(interaction.basePairs.at(0)),
+			j1 = energy.getIndex1(interaction.basePairs.at(1)),
+			i2 = energy.getIndex2(interaction.basePairs.at(0)),
+			j2 = energy.getIndex2(interaction.basePairs.at(1))
 			;
 
 #if IN_DEBUG_MODE
@@ -438,7 +438,7 @@ traceBack( Interaction & interaction )
 					if ( E_isNotINF( hybridE_pq_seed(k1,k2) ) ) {
 						// check if correct split
 						if (E_equal ( curE,
-								(energy.getE_interLeft(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
+								(energy.getE_interLeft(i1,k1,i2,k2)
 										+ hybridE_pq_seed(k1,k2) )
 								) )
 						{
@@ -449,7 +449,7 @@ traceBack( Interaction & interaction )
 							// stop search splits
 							traceNotFound = false;
 							// store splitting base pair
-							interaction.addInteraction( k1+i1offset, energy.getAccessibility2().getReversedIndex(k2+i2offset) );
+							interaction.basePairs.push_back( energy.getBasePair(k1,k2) );
 						}
 					}
 				}
@@ -461,8 +461,8 @@ traceBack( Interaction & interaction )
 		else {
 			// create temporary data structure to be filed
 			Interaction rightSide( *interaction.s1, *interaction.s2 );
-			rightSide.addInteraction( i1+i1offset, energy.getAccessibility2().getReversedIndex(i2+i2offset) );
-			rightSide.addInteraction( j1+i1offset, energy.getAccessibility2().getReversedIndex(j2+i2offset) );
+			rightSide.basePairs.push_back( energy.getBasePair(i1,i2) );
+			rightSide.basePairs.push_back( energy.getBasePair(j1,j2) );
 			// call traceback of super class
 			PredictorMfe2d::traceBack( rightSide );
 			// copy base pairs (excluding last)
@@ -486,8 +486,7 @@ traceBack( Interaction & interaction )
 			bps.at(i-1).second = bps.at(i).second;
 		}
 		// set last to j1-j2
-		bps.rbegin()->first = j1+i1offset;
-		bps.rbegin()->second = energy.getAccessibility2().getReversedIndex(j2+i2offset);
+		(*bps.rbegin()) = energy.getBasePair( j1, j2 );
 	}
 }
 
@@ -529,7 +528,7 @@ traceBackSeed( Interaction & interaction
 		if (bpIn==0) {
 			// add left base pair if not left seed boundary
 			if (i1 != i1_) {
-				interaction.addInteraction( i1+i1offset, energy.getAccessibility2().getReversedIndex(i2+i2offset) );
+				interaction.basePairs.push_back( energy.getBasePair(i1,i2) );
 			}
 
 		} else {
@@ -555,12 +554,12 @@ traceBackSeed( Interaction & interaction
 				if ( E_isNotINF( getSeedE( k1, k2, bpIn-1, u1max-u1, u2max-u2 ) ) ) {
 
 					// check if correct trace
-					if ( E_equal( curE, energy.getE_interLeft(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
+					if ( E_equal( curE, energy.getE_interLeft(i1,k1,i2,k2)
 										+ getSeedE( k1, k2, bpIn-1, u1max-u1, u2max-u2 )) )
 					{
 						// store left base pair if not left seed boundary
 						if (i1 != i1_) {
-							interaction.addInteraction( i1+i1offset, energy.getAccessibility2().getReversedIndex(i2+i2offset) );
+							interaction.basePairs.push_back( energy.getBasePair(i1,i2) );
 						}
 						// store next energy value to trace
 						curE = getSeedE( k1, k2, bpIn-1, u1max-u1, u2max-u2 );

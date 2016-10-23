@@ -101,12 +101,6 @@ protected:
 	//! access to the mfe interaction of the super class
 	using PredictorMfe2d::mfeInteraction;
 
-	//! access to the index offset in seq1 of the super class
-	using PredictorMfe2d::i1offset;
-
-	//! access to the index offset in seq2 of the super class
-	using PredictorMfe2d::i2offset;
-
 	// TODO provide all data structures as arguments to make predict() call threadsafe
 
 	//! energy of all interaction hybrids that end in position p (seq1) and

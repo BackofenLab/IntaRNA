@@ -5,12 +5,11 @@ bin_PROGRAMS = runTests
 # test sources
 runTests_SOURCES =	catch.hpp \
 					AccessibilityConstraint_test.cpp \
+					IndexRange_test.cpp  \
 					Interaction_test.cpp  \
 					InteractionEnergyBasePair_test.cpp  \
 					InteractionRange_test.cpp  \
 					RnaSequence_test.cpp \
-					IndexRange_test.cpp  \
-					InteractionEnergy_test.cpp \
 					OutputRangeOnly_test.cpp \
 					runTests.cpp
 

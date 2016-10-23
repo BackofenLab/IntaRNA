@@ -74,11 +74,6 @@ protected:
 	//! interaction boundaries with maximal probability
 	InteractionRange maxProbInteraction;
 
-	//! offset for indices in sequence 1 for current computation
-	size_t i1offset;
-	//! offset for indices in sequence 2 for current computation
-	size_t i2offset;
-
 protected:
 
 	/**

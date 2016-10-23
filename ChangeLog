@@ -1,4 +1,33 @@
 
+161023 Martin Mann :
+ * AccessibilityConstraint :
+   - isBlocked() : renamed to isMarkedBlocked()
+   * isAccessible() : now : whether or not a position is available for 
+     interaction
+   + isMarkedAccessible() : former isAccessible()
+   + isMarkedBlocked() : former isBlocked()
+ * AccessibilityDisabled :
+   * getED() : checks now for constraint.isAccessible()
+ * InteractionEnergy :
+   + getBasePair() : generates an Interaction BasePair for given indices
+   + getIndex*() : generates the computation indices for a given base pair
+   + getED*() : fast access to ED of a sequence
+   + isAccessible*() : checks for accessibility and non-ambiguity
+   + size*() : sequence length
+   * isValidInteraction() : now protected
+   * isAllowedLoopRegion() : now protected
+ + InteractionEnergyIdxOffset : wrapper for an InteractionEnergy that handles 
+   index shifts due to a given offset. To this end, all according functions are
+   overwritten, which eases formulations of Predictors.
+ * Predictor :
+   * energy : now InteractionEnergyIdxOffset object
+ * PredictorXXX :
+   - i*offset : obsolete due to energy class change
+   * all offsets are now obsolete with extended InteractionEnergy interface and 
+     InteractionEnergyIdxOffset energy access : this simplifies the formulation
+     of the algorithms and makes debugging easier.
+ - test/InteractionEnergy_test.cpp : obsolete
+
 161020 Martin Mann :
  * configure.ac :
    + boost_regex lib registered

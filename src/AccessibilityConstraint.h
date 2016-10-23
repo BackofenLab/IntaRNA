@@ -58,24 +58,35 @@ public:
 
 	/**
 	 * Checks whether or not a sequence position is marked as blocked or not
+	 * @param i the position of interest
 	 * @return true if position i is marked blocked
 	 */
 	bool
-	isBlocked( const size_t i ) const;
+	isMarkedBlocked( const size_t i ) const;
 
 	/**
 	 * Checks whether or not a sequence position is marked as accessible or not
+	 * @param i the position of interest
 	 * @return true if position i is marked accessible
 	 */
 	bool
-	isAccessible( const size_t i ) const;
+	isMarkedAccessible( const size_t i ) const;
 
 	/**
 	 * Checks whether or not a sequence position is not constrained
+	 * @param i the position of interest
 	 * @return true if position i is not constrained
 	 */
 	bool
 	isUnconstrained( const size_t i ) const;
+
+	/**
+	 * Checks whether or not a position is available for interaction
+	 * @param i the position of interest
+	 * @return true if the position @p i is available interaction; false otherwise
+	 */
+	bool
+	isAccessible( const size_t i ) const;
 
 	/**
 	 * Checks whether or not any accessibility constraints (base pairs, blocked,

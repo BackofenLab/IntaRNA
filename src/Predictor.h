@@ -3,7 +3,7 @@
 #define PREDICTOR_H_
 
 #include "general.h"
-#include "InteractionEnergy.h"
+#include "InteractionEnergyIdxOffset.h"
 
 #include "OutputHandler.h"
 
@@ -62,7 +62,7 @@ public:
 protected:
 
 	//! energy computation handler
-	const InteractionEnergy & energy;
+	InteractionEnergyIdxOffset energy;
 
 	//! interaction output handler
 	OutputHandler & output;

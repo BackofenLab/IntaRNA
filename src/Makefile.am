@@ -24,6 +24,8 @@ intaRNA_SOURCES =	intaRNA.cpp \
 					InteractionEnergy.cpp \
 					InteractionEnergyBasePair.h \
 					InteractionEnergyBasePair.cpp \
+					InteractionEnergyIdxOffset.h \
+					InteractionEnergyIdxOffset.cpp \
 					InteractionEnergyVrna.h \
 					InteractionEnergyVrna.cpp \
 					InteractionRange.h \

@@ -101,11 +101,12 @@ public:
 	 *
 	 * @return the individual energy contributions
 	 */
+	virtual
 	EnergyContributions
 	getE_contributions( const Interaction & interaction ) const;
 
 	/**
-	 * Checks whether or not two positions can for a base pair
+	 * Checks whether or not two positions can form a base pair
 	 * @param i1 index in first sequence
 	 * @param i2 index in second sequence
 	 * @return true if seq1(i1) can form a base pair with seq2(i2)
@@ -113,6 +114,64 @@ public:
 	virtual
 	bool
 	areComplementary( const size_t i1, const size_t i2 ) const;
+
+	/**
+	 * Length of sequence 1
+	 * @return length of sequence 1
+	 */
+	virtual
+	size_t
+	size1() const;
+
+	/**
+	 * Length of sequence 2
+	 * @return length of sequence 2
+	 */
+	virtual
+	size_t
+	size2() const;
+
+	/**
+	 * Provides the ED penalty for making a region with sequence 1 accessible
+	 *
+	 * @param i1 the start of the accessible region
+	 * @param j1 the end of the accessible region
+	 * @return the ED value for [i1,j1]
+	 */
+	virtual
+	E_type
+	getED1( const size_t i1, const size_t j1 ) const;
+
+	/**
+	 * Provides the ED penalty for making a region with (the reversed)
+	 * sequence 2 accessible
+	 *
+	 * @param i2 the start of the accessible region
+	 * @param j2 the end of the accessible region
+	 * @return the ED value for [i2,j2]
+	 */
+	virtual
+	E_type
+	getED2( const size_t i2, const size_t j2 ) const;
+
+
+	/**
+	 * Whether or not position i is accessible for interaction in sequence 1
+	 * @param i the position of interest in sequence 1
+	 * @return true if the position can partake in an interaction; false otherwise
+	 */
+	virtual
+	bool
+	isAccessible1( const size_t i ) const;
+
+	/**
+	 * Whether or not position i is accessible for interaction in sequence 2
+	 * @param i the position of interest in sequence 2
+	 * @return true if the position can partake in an interaction; false otherwise
+	 */
+	virtual
+	bool
+	isAccessible2( const size_t i ) const;
 
 	/**
 	 * Provides the duplex initiation energy.
@@ -269,42 +328,6 @@ public:
 	}
 
 	/**
-	 * Checks whether or not the given indices are valid index region within the
-	 * sequence for an intermolecular loop and do not violate the maximal
-	 * internal loop size.
-	 * @param seq the sequence the indices correspond to
-	 * @param i begin index of the region in the sequence
-	 * @param j end index of the region in the sequence
-	 * @param maxInternalLoopSize the maximally allowed distance of i and j, ie.
-	 *        (j-i+1) <= maxInternalLoopSize
-	 *
-	 * @return true if the indices are fulfilling 0 <= i <= j < seq.length,
-	 *           both sequence positions denote non-ambiguous nucleotides (!= N)
-	 *           and (j-i+1) <= maxInternalLoopSize; false otherwise
-	 */
-	static
-	bool
-	isAllowedLoopRegion( const RnaSequence& seq, const size_t i, const size_t j, const size_t maxInternalLoopSize );
-
-	/**
-	 * Checks whether or not the given indices mark valid internal loop
-	 * boundaries, i.e.
-	 *  - (i1,i2) and (j1,j2) are complementary
-	 *  - i1..j1 and i2..j2 are allowed loop regions
-	 *  - no boundary overlap ( (j1-i1==0 && j2-i2==0) || (j1-i1>0 && j2-i2>0) )
-	 *
-	 * @param i1 the index of the first sequence interacting with i2
-	 * @param j1 the index of the first sequence interacting with j2 with i1<=j1
-	 * @param i2 the index of the second sequence interacting with i1
-	 * @param j2 the index of the second sequence interacting with j1 with i2<=j2
-	 *
-	 * @return true if the boundaries are sound for internal loop calculation;
-	 *         false otherwise
-	 */
-	bool
-	isValidInternalLoop( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const;
-
-	/**
 	 * Access to the normalized temperature for Boltzmann weight computation
 	 */
 	virtual
@@ -352,6 +375,35 @@ public:
 	getBoltzmannWeight( const E_type energy ) const ;
 
 
+	/**
+	 * Provides the base pair encoding for the given indices.
+	 * @param i1 the index in the first sequence
+	 * @param i2 the index in the (reversed) second sequence
+	 * @return the according base pair (i1,reverseIdx(i2))
+	 */
+	virtual
+	Interaction::BasePair
+	getBasePair( const size_t i1, const size_t i2 ) const;
+
+
+	/**
+	 * Provides the index within the first sequence of the given base pair.
+	 * @return the index of the first sequence within the base pair encoding
+	 */
+	virtual
+	size_t
+	getIndex1( const Interaction::BasePair & bp ) const;
+
+
+	/**
+	 * Provides the index within the second sequence of the given base pair.
+	 * @return the index of the second sequence within the base pair encoding
+	 */
+	virtual
+	size_t
+	getIndex2( const Interaction::BasePair & bp ) const;
+
+
 protected:
 
 	//! accessibility values for sequence S1
@@ -367,6 +419,42 @@ protected:
 	//! maximally allowed unpaired range between two base pairs in sequence S2
 	//! forming an intermolecular internal loop
 	const size_t maxInternalLoopSize2;
+
+	/**
+	 * Checks whether or not the given indices are valid index region within the
+	 * sequence for an intermolecular loop and do not violate the maximal
+	 * internal loop size.
+	 * @param seq the sequence the indices correspond to
+	 * @param i begin index of the region in the sequence
+	 * @param j end index of the region in the sequence
+	 * @param maxInternalLoopSize the maximally allowed distance of i and j, ie.
+	 *        (j-i+1) <= maxInternalLoopSize
+	 *
+	 * @return true if the indices are fulfilling 0 <= i <= j < seq.length,
+	 *           both sequence positions denote non-ambiguous nucleotides (!= N)
+	 *           and (j-i+1) <= maxInternalLoopSize; false otherwise
+	 */
+	static
+	bool
+	isAllowedLoopRegion( const RnaSequence& seq, const size_t i, const size_t j, const size_t maxInternalLoopSize );
+
+	/**
+	 * Checks whether or not the given indices mark valid internal loop
+	 * boundaries, i.e.
+	 *  - (i1,i2) and (j1,j2) are complementary
+	 *  - i1..j1 and i2..j2 are allowed loop regions
+	 *  - no boundary overlap ( (j1-i1==0 && j2-i2==0) || (j1-i1>0 && j2-i2>0) )
+	 *
+	 * @param i1 the index of the first sequence interacting with i2
+	 * @param j1 the index of the first sequence interacting with j2 with i1<=j1
+	 * @param i2 the index of the second sequence interacting with i1
+	 * @param j2 the index of the second sequence interacting with j1 with i2<=j2
+	 *
+	 * @return true if the boundaries are sound for internal loop calculation;
+	 *         false otherwise
+	 */
+	bool
+	isValidInternalLoop( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const;
 
 };
 

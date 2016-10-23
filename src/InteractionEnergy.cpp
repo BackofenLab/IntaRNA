@@ -54,6 +54,24 @@ areComplementary( const size_t i1, const size_t i2 ) const
 
 ////////////////////////////////////////////////////////////////////////////
 
+size_t
+InteractionEnergy::
+size1() const
+{
+	return getAccessibility1().getSequence().size();
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+size_t
+InteractionEnergy::
+size2() const
+{
+	return getAccessibility2().getSequence().size();
+}
+
+////////////////////////////////////////////////////////////////////////////
+
 bool
 InteractionEnergy::
 isValidInternalLoop( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const
@@ -100,9 +118,7 @@ getPr_danglingLeft( const size_t i1, const size_t j1, const size_t i2, const siz
 		probDangle1 =
 			std::max( (E_type)0.0
 					, std::min( (E_type)1.0
-							, getBoltzmannWeight(
-									getAccessibility1().getED( i1-1, j1 )
-									- getAccessibility1().getED( i1, j1 ) )
+							, getBoltzmannWeight( getED1(i1-1,j1)-getED1(i1,j1) )
 							)
 					)
 			;
@@ -113,9 +129,7 @@ getPr_danglingLeft( const size_t i1, const size_t j1, const size_t i2, const siz
 		probDangle2 =
 			std::max( (E_type)0.0
 					, std::min( (E_type)1.0
-							, getBoltzmannWeight(
-									getAccessibility2().getED( i2-1, j2 )
-									- getAccessibility2().getED( i2, j2 ) )
+							, getBoltzmannWeight( getED2(i2-1,j2)-getED2(i2,j2) )
 							)
 					)
 			;
@@ -135,27 +149,23 @@ getPr_danglingRight( const size_t i1, const size_t j1, const size_t i2, const si
 	E_type probDangle1 = 1.0, probDangle2 = 1.0;
 
 	// if dangle1 possible
-	if (j1+1<getAccessibility1().getSequence().size())  {
+	if (j1+1<size1())  {
 		// Pr( j1+1 is unpaired | i1..j1 unpaired )
 		probDangle1 =
 			std::max( (E_type)0.0
 					, std::min( (E_type)1.0
-							, getBoltzmannWeight(
-									getAccessibility1().getED( i1, j1+1 )
-									- getAccessibility1().getED( i1, j1 ) )
+							, getBoltzmannWeight( getED1(i1,j1+1)-getED1(i1,j1) )
 							)
 					)
 			;
 	}
 	// if dangle2 possible
-	if (j2+1<getAccessibility2().getSequence().size())  {
+	if (j2+1<size2())  {
 		// Pr( j2+1 is unpaired | i2..j2 unpaired )
 		probDangle2 =
 			std::max( (E_type)0.0
 					, std::min( (E_type)1.0
-							, getBoltzmannWeight(
-									getAccessibility2().getED( i2, j2+1 )
-									- getAccessibility2().getED( i2, j2 ) )
+							, getBoltzmannWeight( getED2(i2,j2+1)-getED2(i2,j2) )
 							)
 					)
 			;
@@ -178,8 +188,8 @@ getE( const size_t i1, const size_t j1
 		// compute overall interaction energy
 		return hybridE
 				// accessibility penalty
-				+ getAccessibility1().getED( i1, j1 )
-				+ getAccessibility2().getED( i2, j2 )
+				+ getED1( i1, j1 )
+				+ getED2( i2, j2 )
 				// dangling end penalty
 				// weighted by the probability that ends are unpaired
 				+ (getE_danglingLeft( i1, i2 )*getPr_danglingLeft(i1,j1,i2,j2))
@@ -211,8 +221,8 @@ getE_contributions( const Interaction & interaction ) const
 	// fill contribution data structure
 	EnergyContributions contr;
 	contr.init = getE_init();
-	contr.ED1 = getAccessibility1().getED( i1, j1 );
-	contr.ED2 = getAccessibility2().getED( i2, j2 );
+	contr.ED1 = getED1( i1, j1 );
+	contr.ED2 = getED2( i2, j2 );
 	contr.dangleLeft = (getE_danglingLeft( i1, i2 )*getPr_danglingLeft(i1,j1,i2,j2));
 	contr.dangleRight = (getE_danglingRight( j1, j2 )*getPr_danglingRight(i1,j1,i2,j2));
 	contr.endLeft = getE_endLeft( i1, i2 );
@@ -240,6 +250,74 @@ getBoltzmannWeight( const E_type e ) const
 {
 	// TODO can be optimized when using exp-energies from VRNA
 	return std::exp( - e / getRT() );
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+Interaction::BasePair
+InteractionEnergy::
+getBasePair( const size_t i1, const size_t i2 ) const
+{
+	return Interaction::BasePair( i1, getAccessibility2().getReversedIndex(i2) );
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+size_t
+InteractionEnergy::
+getIndex1( const Interaction::BasePair & bp ) const
+{
+	return bp.first;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+size_t
+InteractionEnergy::
+getIndex2( const Interaction::BasePair & bp ) const
+{
+	return getAccessibility2().getReversedIndex( bp.second );
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+E_type
+InteractionEnergy::
+getED1( const size_t i1, const size_t j1 ) const
+{
+	return getAccessibility1().getED( i1, j1 );
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+E_type
+InteractionEnergy::
+getED2( const size_t i2, const size_t j2 ) const
+{
+	return getAccessibility2().getED( i2, j2 );
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+bool
+InteractionEnergy::
+isAccessible1( const size_t i ) const
+{
+	return
+			(!getAccessibility1().getSequence().isAmbiguous(i))
+			&& getAccessibility1().getAccConstraint().isAccessible(i)
+			;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+bool
+InteractionEnergy::
+isAccessible2( const size_t i ) const
+{
+	return
+			(!getAccessibility2().getSequence().isAmbiguous(i))
+			&& getAccessibility2().getAccConstraint().isAccessible(i);
 }
 
 ////////////////////////////////////////////////////////////////////////////

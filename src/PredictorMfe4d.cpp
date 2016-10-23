@@ -44,14 +44,15 @@ predict( const IndexRange & r1
 	// clear data
 	clear();
 
-	// resize matrix
-	hybridE.resize( std::min( energy.getAccessibility1().getSequence().size()
-						, (r1.to==RnaSequence::lastPos?energy.getAccessibility1().getSequence().size()-1:r1.to)-r1.from+1 )
-				, std::min( energy.getAccessibility2().getSequence().size()
-						, (r2.to==RnaSequence::lastPos?energy.getAccessibility2().getSequence().size()-1:r2.to)-r2.from+1 ) );
+	// setup index offset
+	energy.setOffset1(r1.from);
+	energy.setOffset2(r2.from);
 
-	i1offset = r1.from;
-	i2offset = r2.from;
+	// resize matrix
+	hybridE.resize( std::min( energy.size1()
+						, (r1.to==RnaSequence::lastPos?energy.size1()-1:r1.to)-r1.from+1 )
+				, std::min( energy.size2()
+						, (r2.to==RnaSequence::lastPos?energy.size2()-1:r2.to)-r2.from+1 ) );
 
 	size_t debug_count_cells_null=0
 			, debug_count_cells_nonNull = 0
@@ -66,18 +67,10 @@ predict( const IndexRange & r1
 	// initialize 3rd and 4th dimension of the matrix
 	for (size_t i1=0; i1<hybridE.size1(); i1++) {
 		// check if i1 is blocked for interaction
-		i1blocked =
-				// - i1 shows ambiguous nucleotide encoding
-			energy.getAccessibility1().getSequence().isAmbiguous( i1+i1offset )
-				// - i1 is blocked by an accessibility constraint
-			|| energy.getAccessibility1().getAccConstraint().isBlocked(i1+i1offset);
+		i1blocked = !energy.isAccessible1(i1);
 		for (size_t i2=0; i2<hybridE.size2(); i2++) {
 			// check whether i1 or i2 is blocked for interaction
-			i1or2blocked = i1blocked
-					// - i2 shows ambiguous nucleotide encoding
-				|| energy.getAccessibility2().getSequence().isAmbiguous( i2+i2offset )
-					// - i2 is blocked by an accessibility constraint
-				|| energy.getAccessibility2().getAccConstraint().isBlocked(i2+i2offset);
+			i1or2blocked = i1blocked || !energy.isAccessible2(i2);
 
 			if (hybridE.size1()-i1 < hybridE.size2()-i2) {
 				maxWidthFori1i2 = getMaxInteractionWidth( hybridE.size1()-i1, energy.getMaxInternalLoopSize1() );
@@ -91,7 +84,7 @@ predict( const IndexRange & r1
 
 			// check if i1 and i2 are not blocked and can form a base pair
 			if ( ! i1or2blocked
-				&& energy.areComplementary( i1+i1offset, i2+i2offset ))
+				&& energy.areComplementary( i1, i2 ))
 			{
 				// create new 2d matrix for different interaction site widths
 				hybridE(i1,i2) = new E2dMatrix(
@@ -130,8 +123,8 @@ predict( const IndexRange & r1
 						skipw1w2 = skipw1w2
 								|| ( largerWindowsINF &&
 										( -1.0*(std::min(w1,w2)*minStackingEnergy + minInitEnergy + 2.0*minDangleEnergy + 2.0*minEndEnergy) <
-											(energy.getAccessibility1().getED(i1+i1offset,i1+w1+i1offset)
-													+ energy.getAccessibility2().getED(i2+i2offset,i2+w2+i2offset)))
+											(energy.getED1(i1,i1+w1)
+													+ energy.getED2(i2,i2+w2)))
 									)
 									;
 					}
@@ -259,7 +252,7 @@ fillHybridE( )
 				} else {
 				
 					// or only internal loop energy (nothing between i and j)
-					curMinE = energy.getE_interLeft(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset)
+					curMinE = energy.getE_interLeft(i1,j1,i2,j2)
 							+ (*hybridE(j1,j2))(0,0) ;
 
 					// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
@@ -269,7 +262,7 @@ fillHybridE( )
 							// check if (k1,k2) are complementary
 							if (hybridE(k1,k2) != NULL && hybridE(k1,k2)->size1() > (j1-k1) && hybridE(k1,k2)->size2() > (j2-k2)) {
 								curMinE = std::min( curMinE,
-										(energy.getE_interLeft(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
+										(energy.getE_interLeft(i1,k1,i2,k2)
 												+ (*hybridE(k1,k2))(j1-k1,j2-k2))
 										);
 							}
@@ -326,10 +319,10 @@ traceBack( Interaction & interaction ) const
 	// ensure sorting
 	interaction.sort();
 	// get indices in hybridE for boundary base pairs
-	size_t	i1 = interaction.basePairs.at(0).first - i1offset,
-			j1 = interaction.basePairs.at(1).first - i1offset,
-			i2 = energy.getAccessibility2().getReversedIndex(interaction.basePairs.at(0).second) - i2offset,
-			j2 = energy.getAccessibility2().getReversedIndex(interaction.basePairs.at(1).second) - i2offset;
+	size_t	i1 = energy.getIndex1(interaction.basePairs.at(0)),
+			j1 = energy.getIndex1(interaction.basePairs.at(1)),
+			i2 = energy.getIndex2(interaction.basePairs.at(0)),
+			j2 = energy.getIndex2(interaction.basePairs.at(1));
 
 	// the currently traced value for i1-j1, i2-j2
 	E_type curE = (*hybridE(i1,i2))(j1-i1,j2-i2);
@@ -340,7 +333,7 @@ traceBack( Interaction & interaction ) const
 		// check if
 		// check if just internal loop
 		if ( E_equal( curE,
-					(energy.getE_interLeft(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset)
+					(energy.getE_interLeft(i1,j1,i2,j2)
 					+ (*hybridE(j1,j2))(0,0) )) )
 		{
 			break;
@@ -356,13 +349,13 @@ traceBack( Interaction & interaction ) const
 				// check if (k1,k2) are complementary
 				if (hybridE(k1,k2) != NULL && hybridE(k1,k2)->size1() > (j1-k1) && hybridE(k1,k2)->size2() > (j2-k2)) {
 					if ( E_equal( curE,
-							(energy.getE_interLeft(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
+							(energy.getE_interLeft(i1,k1,i2,k2)
 							+ (*hybridE(k1,k2))(j1-k1,j2-k2)) ) )
 					{
 						// stop searching
 						traceNotFound = false;
 						// store splitting base pair
-						interaction.addInteraction( k1+i1offset, energy.getAccessibility2().getReversedIndex(k2+i2offset) );
+						interaction.basePairs.push_back( energy.getBasePair(k1,k2) );
 						// trace right part of split
 						i1=k1;
 						i2=k2;
@@ -383,8 +376,7 @@ traceBack( Interaction & interaction ) const
 			bps.at(i-1).second = bps.at(i).second;
 		}
 		// set last to j1-j2
-		bps.rbegin()->first = j1+i1offset;
-		bps.rbegin()->second = energy.getAccessibility2().getReversedIndex(j2+i2offset);
+		(*bps.rbegin()) = energy.getBasePair( j1, j2 );
 	}
 
 }

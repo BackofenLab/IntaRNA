@@ -87,7 +87,7 @@ getED( const size_t from, const size_t to ) const
 	if ((to-from+1) <= getMaxLength()) {
 		// check for constrained positions within region
 		for (size_t i=from; i<=to; ++i) {
-			if (getAccConstraint().isBlocked(i)) {
+			if (!getAccConstraint().isAccessible(i)) {
 				// position covers a blocked position --> omit accessibility
 				return ED_UPPER_BOUND;
 			}

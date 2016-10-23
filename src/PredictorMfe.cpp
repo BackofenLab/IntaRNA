@@ -9,8 +9,6 @@ PredictorMfe::PredictorMfe( const InteractionEnergy & energy, OutputHandler & ou
 	: Predictor(energy,output)
 	, mfeInteraction(energy.getAccessibility1().getSequence()
 			,energy.getAccessibility2().getAccessibilityOrigin().getSequence())
-	, i1offset(0)
-	, i2offset(0)
 	, minStackingEnergy( energy.getBestE_interLoop() )
 	, minInitEnergy( energy.getE_init() )
 	, minDangleEnergy( energy.getBestE_dangling() )
@@ -63,7 +61,7 @@ updateMfe( const size_t i1, const size_t j1
 	}
 
 	// get final energy of current interaction
-	E_type curE = energy.getE( i1+i1offset,j1+i1offset, i2+i2offset,j2+i2offset, hybridE );
+	E_type curE = energy.getE( i1,j1, i2,j2, hybridE );
 //	LOG(DEBUG) <<"energy( "<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" ) = "
 //			<<hybridE <<" : total = "<<curE;
 
@@ -74,11 +72,9 @@ updateMfe( const size_t i1, const size_t j1
 		mfeInteraction.energy = (curE);
 		// store interaction boundaries
 		// left
-		mfeInteraction.basePairs[0].first = i1+i1offset;
-		mfeInteraction.basePairs[0].second = energy.getAccessibility2().getReversedIndex(i2+i2offset);
+		mfeInteraction.basePairs[0] = energy.getBasePair(i1,i2);
 		// right
-		mfeInteraction.basePairs[1].first = j1+i1offset;
-		mfeInteraction.basePairs[1].second = energy.getAccessibility2().getReversedIndex(j2+i2offset);
+		mfeInteraction.basePairs[1] = energy.getBasePair(j1,j2);
 	}
 }
 

@@ -9,7 +9,8 @@ PredictorMfe2d::
 PredictorMfe2d( const InteractionEnergy & energy, OutputHandler & output )
  : PredictorMfe(energy,output)
 	, hybridE_pq( 0,0 )
-	, hybridErange( energy.getAccessibility1().getSequence(), energy.getAccessibility2().getSequence() )
+	, hybridErange( energy.getAccessibility1().getSequence()
+			, energy.getAccessibility2().getAccessibilityOrigin().getSequence() )
 {
 }
 
@@ -42,14 +43,15 @@ predict( const IndexRange & r1
 #endif
 
 
-	// resize matrix
-	hybridE_pq.resize( std::min( energy.getAccessibility1().getSequence().size()
-						, (r1.to==RnaSequence::lastPos?energy.getAccessibility1().getSequence().size()-1:r1.to)-r1.from+1 )
-				, std::min( energy.getAccessibility2().getSequence().size()
-						, (r2.to==RnaSequence::lastPos?energy.getAccessibility2().getSequence().size()-1:r2.to)-r2.from+1 ) );
+	// set index offset
+	energy.setOffset1(r1.from);
+	energy.setOffset2(r2.from);
 
-	i1offset = r1.from;
-	i2offset = r2.from;
+	// resize matrix
+	hybridE_pq.resize( std::min( energy.size1()
+						, (r1.to==RnaSequence::lastPos?energy.size1()-1:r1.to)-r1.from+1 )
+				, std::min( energy.size2()
+						, (r2.to==RnaSequence::lastPos?energy.size2()-1:r2.to)-r2.from+1 ) );
 
 	// initialize mfe interaction for updates
 	initMfe();
@@ -57,15 +59,15 @@ predict( const IndexRange & r1
 	// for all right ends j1
 	for (size_t j1 = hybridE_pq.size1(); j1-- > 0; ) {
 		// check if j1 is accessible
-		if (energy.getAccessibility1().getAccConstraint().isBlocked(j1+i1offset))
+		if (!energy.isAccessible1(j1))
 			continue;
 		// iterate over all right ends j2
 		for (size_t j2 = hybridE_pq.size2(); j2-- > 0; ) {
 			// check if j2 is accessible
-			if (energy.getAccessibility2().getAccConstraint().isBlocked(j2+i2offset))
+			if (!energy.isAccessible2(j2))
 				continue;
 			// check if base pair (j1,j2) possible
-			if (!energy.areComplementary( j1+i1offset, j2+i2offset ))
+			if (!energy.areComplementary( j1, j2 ))
 				continue;
 
 			// fill matrix and store best interaction
@@ -138,8 +140,8 @@ initHybridE( const size_t j1, const size_t j2, const size_t i1init, const size_t
 				// ie. the ED values exceed the max possible energy gain of an interaction
 				if( largerWindowsINF &&
 								( -1.0*(std::min(w1,w2)*minStackingEnergy + minInitEnergy + 2.0*minDangleEnergy + 2.0*minEndEnergy) <
-									(energy.getAccessibility1().getED(i1+i1offset,j1+i1offset)
-											+ energy.getAccessibility2().getED(i2+i2offset,j2+i2offset)))
+									(energy.getED1(i1,j1)
+											+ energy.getED2(i2,j2)))
 							)
 				{
 					// mark as NOT to be computed
@@ -192,7 +194,7 @@ fillHybridE( const size_t j1, const size_t j2, const size_t i1init, const size_t
 				continue;
 			}
 			// check if left boundary (i1,i2) is complementary
-			if (!energy.areComplementary(i1+i1offset,i2+i2offset)) {
+			if (!energy.areComplementary(i1,i2)) {
 				// interaction not possible
 				hybridE_pq(i1,i2) = E_INF;
 				continue;
@@ -208,7 +210,7 @@ fillHybridE( const size_t j1, const size_t j2, const size_t i1init, const size_t
 					curMinE = energy.getE_init();
 				} else {
 				// or only internal loop energy (nothing between i and j)
-					curMinE = energy.getE_interLeft(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset)
+					curMinE = energy.getE_interLeft(i1,j1,i2,j2)
 							+ hybridE_pq(j1,j2);
 				}
 
@@ -219,7 +221,7 @@ fillHybridE( const size_t j1, const size_t j2, const size_t i1init, const size_t
 						// check if (k1,k2) are valid left boundary
 						if ( E_isNotINF( hybridE_pq(k1,k2) ) ) {
 							curMinE = std::min( curMinE,
-									(energy.getE_interLeft(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
+									(energy.getE_interLeft(i1,k1,i2,k2)
 											+ hybridE_pq(k1,k2) )
 									);
 						}
@@ -269,10 +271,10 @@ traceBack( Interaction & interaction )
 	// ensure sorting
 	interaction.sort();
 	// get indices in hybridE for boundary base pairs
-	size_t	i1 = interaction.basePairs.at(0).first - i1offset,
-			j1 = interaction.basePairs.at(1).first - i1offset,
-			i2 = energy.getAccessibility2().getReversedIndex(interaction.basePairs.at(0).second) - i2offset,
-			j2 = energy.getAccessibility2().getReversedIndex(interaction.basePairs.at(1).second) - i2offset;
+	size_t	i1 = energy.getIndex1(interaction.basePairs.at(0)),
+			j1 = energy.getIndex1(interaction.basePairs.at(1)),
+			i2 = energy.getIndex2(interaction.basePairs.at(0)),
+			j2 = energy.getIndex2(interaction.basePairs.at(1));
 
 
 	// refill submatrix of mfe interaction
@@ -284,7 +286,7 @@ traceBack( Interaction & interaction )
 	// trace back
 	while( i1 != j1 ) {
 		// check if just internal loop
-		if ( E_equal( curE, (energy.getE_interLeft(i1+i1offset,j1+i1offset,i2+i2offset,j2+i2offset) )
+		if ( E_equal( curE, (energy.getE_interLeft(i1,j1,i2,j2) )
 				+ hybridE_pq(j1,j2)) )
 		{
 			break;
@@ -300,13 +302,13 @@ traceBack( Interaction & interaction )
 				// check if (k1,k2) are valid left boundary
 				if ( E_isNotINF( hybridE_pq(k1,k2) ) ) {
 					if ( E_equal( curE,
-							(energy.getE_interLeft(i1+i1offset,k1+i1offset,i2+i2offset,k2+i2offset)
+							(energy.getE_interLeft(i1,k1,i2,k2)
 							+ hybridE_pq(k1,k2)) ) )
 					{
 						// stop searching
 						traceNotFound = false;
 						// store splitting base pair
-						interaction.addInteraction( k1+i1offset, energy.getAccessibility2().getReversedIndex(k2+i2offset) );
+						interaction.basePairs.push_back( energy.getBasePair(k1,k2) );
 						// trace right part of split
 						i1=k1;
 						i2=k2;
@@ -328,8 +330,7 @@ traceBack( Interaction & interaction )
 			bps.at(i-1).second = bps.at(i).second;
 		}
 		// set last to j1-j2
-		bps.rbegin()->first = j1+i1offset;
-		bps.rbegin()->second = energy.getAccessibility2().getReversedIndex(j2+i2offset);
+		(*bps.rbegin()) = energy.getBasePair(j1,j2);
 	}
 
 }

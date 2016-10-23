@@ -96,7 +96,7 @@ AccessibilityConstraint::~AccessibilityConstraint()
 
 bool
 AccessibilityConstraint::
-isBlocked(const size_t i) const
+isMarkedBlocked(const size_t i) const
 {
 	return blocked.covers(i);
 }
@@ -105,7 +105,7 @@ isBlocked(const size_t i) const
 
 bool
 AccessibilityConstraint::
-isAccessible(const size_t i) const
+isMarkedAccessible(const size_t i) const
 {
 	return accessible.covers(i);
 }
@@ -118,7 +118,18 @@ isUnconstrained( const size_t i ) const
 {
 	return isEmpty()
 	// TODO handle base pairing constraints etc..
-			|| !(isAccessible(i) || isBlocked(i));
+			|| !(isMarkedAccessible(i) || isMarkedBlocked(i));
+}
+
+////////////////////////////////////////////////////////////////////////
+
+bool
+AccessibilityConstraint::
+isAccessible( const size_t i ) const
+{
+	// TODO handle base pairing constraints etc.
+	return isEmpty()
+			|| !isMarkedBlocked(i);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -139,7 +150,7 @@ AccessibilityConstraint::
 getVrnaDotBracket(const size_t i) const
 {
 	// check if to be accessible or blocked (==unstructured)
-	if (isAccessible(i) || isBlocked(i)) {
+	if (isMarkedAccessible(i) || isMarkedBlocked(i)) {
 		return 'x';
 	}
 
