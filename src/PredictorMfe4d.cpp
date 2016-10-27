@@ -32,10 +32,10 @@ predict( const IndexRange & r1
 {
 
 	VLOG(2) <<"predicting mfe interactions in O(n^4) space...";
+	// measure timing
+	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
 
 #if IN_DEBUG_MODE
-	// measure timing
-	TIMED_FUNC(timerObj);
 	// check indices
 	if (!(r1.isAscending() && r2.isAscending()) )
 		throw std::runtime_error("PredictorMfe4d::predict("+toString(r1)+","+toString(r2)+") is not sane");

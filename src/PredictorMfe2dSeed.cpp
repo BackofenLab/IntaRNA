@@ -33,10 +33,10 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 {
 
 	VLOG(2) <<"predicting mfe interactions in O(n^2) space using seed constraint...";
+	// measure timing
+	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
 
 #if IN_DEBUG_MODE
-	// measure timing
-	TIMED_FUNC(timerObj);
 	// check indices
 	if (!(r1.isAscending() && r2.isAscending()) )
 		throw std::runtime_error("PredictorMfe2d::predict("+toString(r1)+","+toString(r2)+") is not sane");

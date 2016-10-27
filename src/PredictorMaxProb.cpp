@@ -33,10 +33,10 @@ predict( const IndexRange & r1
 {
 
 	VLOG(2) <<"predicting maximally probable interactions in O(n^4) space...";
+	// measure timing
+	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
 
 #if IN_DEBUG_MODE
-	// measure timing
-	TIMED_FUNC(timerObj);
 	// check indices (both regions ascending due to reversing of seq2)
 	if (!(r1.isAscending() && r2.isAscending()) )
 		throw std::runtime_error("PredictorMaxProb::predict("+toString(r1)+","+toString(r2)+") is not sane");

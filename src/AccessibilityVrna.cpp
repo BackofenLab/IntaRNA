@@ -211,11 +211,8 @@ fillByConstraints( VrnaHandler &vrnaHandler
 		, const size_t plFoldL )
 {
 	VLOG(2) <<"computing accessibility via n^2 fold calls...";
-
-#if IN_DEBUG_MODE
 	// time logging
-	TIMED_FUNC(timerObj);
-#endif
+	TIMED_FUNC_IF(timerObj, VLOG_IS_ON(9));
 
 	// get scaling factor to avoid math problems in partition function computation
 	const double pfScale = getPfScale( seq, vrnaHandler, plFoldL );
@@ -268,10 +265,10 @@ fillByRNAplfold( VrnaHandler &vrnaHandler
 		, const size_t plFoldL )
 {
 	VLOG(2) <<"computing accessibility via plfold routines...";
+	// time logging
+	TIMED_FUNC_IF(timerObj, VLOG_IS_ON(9));
 
 #if IN_DEBUG_MODE
-	// time logging
-	TIMED_FUNC(timerObj);
 	// check if structure constraint given
 	if ( ! getAccConstraint().isEmpty() ) {
 		throw std::runtime_error("AccessibilityVrna::fillByRNAplfold() called but structure constraint present for sequence "+getSequence().getId());
@@ -349,11 +346,8 @@ fillByRNAup( VrnaHandler &vrnaHandler
 			, const size_t plFoldL )
 {
 	VLOG(2) <<"computing accessibility via RNAup routines...";
-
-#if IN_DEBUG_MODE
 	// time logging
-	TIMED_FUNC(timerObj);
-#endif
+	TIMED_FUNC_IF(timerObj, VLOG_IS_ON(9));
 
 	// add maximal BP span
 	vrna_md_t curModel = vrnaHandler.getModel( plFoldL, getSequence().size() );
