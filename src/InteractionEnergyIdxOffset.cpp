@@ -227,7 +227,9 @@ size_t
 InteractionEnergyIdxOffset::
 getIndex1( const Interaction::BasePair & bp ) const
 {
-	assert(energyOriginal.getIndex1(bp)>=offset1);
+#if IN_DEBUG_MODE
+	if (energyOriginal.getIndex1(bp)<offset1) throw std::runtime_error("InteractionEnergyIdxOffset::getIndex1("+toString(energyOriginal.getIndex1(bp))+") < offset1 = "+toString(offset1));
+#endif
 	return energyOriginal.getIndex1(bp)-offset1;
 }
 
@@ -237,7 +239,9 @@ size_t
 InteractionEnergyIdxOffset::
 getIndex2( const Interaction::BasePair & bp ) const
 {
-	assert(energyOriginal.getIndex2(bp)>=offset2);
+#if IN_DEBUG_MODE
+	if (energyOriginal.getIndex2(bp)<offset2) throw std::runtime_error("InteractionEnergyIdxOffset::getIndex2("+toString(energyOriginal.getIndex2(bp))+") < offset2 = "+toString(offset2));
+#endif
 	return energyOriginal.getIndex2(bp)-offset2;
 }
 
