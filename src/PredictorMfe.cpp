@@ -52,13 +52,8 @@ updateMfe( const size_t i1, const size_t j1
 		, const size_t i2, const size_t j2
 		, const E_type hybridE )
 {
-//	LOG(DEBUG) <<"#DEBUG : energy( "<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" ) = "
+//	LOG(DEBUG) <<"energy( "<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" ) = "
 //			<<hybridE;
-
-	// TODO check if reasonable to check only interactions with hybridE+dangleE < 0
-	if (hybridE + 2*energy.getBestE_dangling() > 0) {
-		return;
-	}
 
 	// get final energy of current interaction
 	E_type curE = energy.getE( i1,j1, i2,j2, hybridE );
@@ -66,8 +61,8 @@ updateMfe( const size_t i1, const size_t j1
 //			<<hybridE <<" : total = "<<curE;
 
 	if (curE < mfeInteraction.energy) {
-//	LOG(DEBUG) <<"#DEBUG : new mfe( "<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" ) = "
-//			<<hybridE;
+//		LOG(DEBUG) <<"PredictorMfe::updateMfe() : new mfe ( "
+//			<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" ) = " <<hybridE <<" : "<<curE;
 		// store new global min
 		mfeInteraction.energy = (curE);
 		// store interaction boundaries

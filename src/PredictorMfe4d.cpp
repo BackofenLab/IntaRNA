@@ -31,7 +31,7 @@ predict( const IndexRange & r1
 		, const IndexRange & r2 )
 {
 
-	VLOG(2) <<"predicting mfe interactions in O(n^4) space...";
+	VLOG(2) <<"predicting mfe interactions in O(n^4) space and time...";
 	// measure timing
 	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
 

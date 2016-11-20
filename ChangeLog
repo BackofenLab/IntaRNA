@@ -1,4 +1,38 @@
 
+161120 Martin Mann :
+ * autotools-init.sh :
+   * sh -> bash 
+   + pipefail : script fails on first failed command
+ * CommandLineParsing :
+   + new predictors registered
+   * default predictor : heuristic
+   + time/space infor for each predictor
+   * bugfix: accessibility length/window check now after individual checks
+ * Interaction :
+   + ostream operator for Interaction::BasePair
+   * ostream operator uses BasePair operator to reduce redundancy
+ + SeedHandler : central handler for seed interaction and access for a given
+     SeedConstraint
+   + fillSeed() : computes the seed information
+   + traceBackSeed() : traces a specific seed start
+   + getSeedE() : the seed energy for a seed start (or INF if no seed possible)
+   + getSeedLength*() : the seed length for a seed start (or 0 if not possible)
+ * PredictorMfe :
+   * updateMfe() : 
+     - dangling end based pre-check removed (not sure if valid)
+ * PredictorMfe2d :
+   * interface documentation corrected
+ * PredictorMfe2dSeed :
+   - seed calculation methods and data structure (move to SeedHandler)
+   + seedHandler (generated in constructor)
+   * fillHybridE_seed() : 
+     * bugfix : init of all cells was not ensured
+     * sanity checks now include lower i boundary
+ * PredictorMfe4d : prediction info adapted
+ + PredictorMfe2dHeuristic : heuristic mfe prediction in n^2 time and space
+ + PredictorMfe2dHeuristicSeed : heuristic mfe prediction in n^2 time and space
+     including seed constraint  
+
 161023 Martin Mann :
  * AccessibilityConstraint :
    - isBlocked() : renamed to isMarkedBlocked()

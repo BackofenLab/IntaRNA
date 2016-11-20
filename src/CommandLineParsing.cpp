@@ -20,10 +20,16 @@
 #include "InteractionEnergyBasePair.h"
 #include "InteractionEnergyVrna.h"
 
+#include "PredictorMfe2dHeuristic.h"
 #include "PredictorMfe2d.h"
 #include "PredictorMfe4d.h"
 #include "PredictorMaxProb.h"
+
+#include "PredictorMfe2dHeuristicSeed.h"
 #include "PredictorMfe2dSeed.h"
+
+// 4d seed
+// maxprob seed
 
 #include "OutputHandlerText.h"
 
@@ -80,7 +86,7 @@ CommandLineParsing::CommandLineParsing()
 
 	temperature(0,100,37),
 
-	predMode(1,3,1),
+	predMode(0,3,0),
 
 	energy("BF",'F'),
 	energyFile(""),
@@ -229,7 +235,7 @@ CommandLineParsing::CommandLineParsing()
 			, value<int>(&(predMode.val))
 				->default_value(predMode.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_predMode,this,_1))
-			, std::string("prediction mode : 1 (default) : MFE (2D), 2 : MFE (4D), 3 : MaxProb (4D)").c_str())
+			, std::string("prediction mode : 0= MFE-heuristic (n^2:S|T), 1= MFE (n^2:S,n^4:T), 2= MFE (n^4:S|T), 3= MaxProb (n^4:S|T)").c_str())
 		("energy,e"
 			, value<char>(&(energy.val))
 				->default_value(energy.def)
@@ -400,6 +406,19 @@ parse(int argc, char** argv)
 				if (seedMaxE.val != seedMaxE.def) LOG(INFO) <<"no seed constraint wanted, but seedMaxE provided (will be ignored)";
 			}
 
+			// check qAcc upper bound
+			if (qAccL.val > qAccW.val) {
+				LOG(ERROR) <<"qAccL = " <<qAccL.val <<" : has to be <= qAccW (=" <<qAccW.val<<")";
+				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+			}
+
+			// check qAcc upper bound
+			if (tAccL.val > tAccW.val) {
+				LOG(ERROR) <<"tAccL = " <<tAccL.val <<" : has to be <= tAccW (=" <<tAccW.val<<")";
+				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+			}
+
+
 		} catch (error& e) {
 			LOG(ERROR) <<e.what();
 			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
@@ -469,11 +488,6 @@ void CommandLineParsing::validate_qAccL(const int & value)
 {
 	// forward check to general method
 	validate_numberArgument("qAccL", qAccL, value);
-	// check upper bound
-	if (qAccL.val > qAccW.val) {
-		LOG(ERROR) <<"qAccL = " <<value <<" : has to be <= qAccW (=" <<qAccW.val<<")";
-		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
-	}
 	// check lower bound
 	if (qAccL.val > 0 && qAccL.val < 3) {
 		LOG(ERROR) <<"qAccL = " <<value <<" : has to be 0 or > 3";
@@ -552,11 +566,6 @@ void CommandLineParsing::validate_tAccL(const int & value)
 {
 	// forward check to general method
 	validate_numberArgument("tAccL", tAccL, value);
-	// check upper bound
-	if (tAccL.val > tAccW.val) {
-		LOG(ERROR) <<"tAccL = " <<value <<" : has to be <= tAccW (=" <<tAccW.val<<")";
-		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
-	}
 	// check lower bound
 	if (tAccL.val > 0 && tAccL.val < 3) {
 		LOG(ERROR) <<"tAccL = " <<value <<" : has to be 0 or > 3";
@@ -1124,6 +1133,7 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 {
 	if (noSeedRequired) {
 		switch ( predMode.val ) {
+		case 0 :  return new PredictorMfe2dHeuristic( energy, output );
 		case 1 :  return new PredictorMfe2d( energy, output );
 		case 2 :  return new PredictorMfe4d( energy, output );
 		case 3 :  return new PredictorMaxProb( energy, output );
@@ -1131,6 +1141,7 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 		}
 	} else {
 		switch ( predMode.val ) {
+		case 0 :  return new PredictorMfe2dHeuristicSeed( energy, output, getSeedConstraint() );
 		case 1 :  return new PredictorMfe2dSeed( energy, output, getSeedConstraint() );
 		case 2 :  NOTIMPLEMENTED("mode "+toString(predMode.val)+" not implemented for seed constraint (try --noSeed)"); return NULL;
 		case 3 :  NOTIMPLEMENTED("mode "+toString(predMode.val)+" not implemented for seed constraint (try --noSeed)"); return NULL;

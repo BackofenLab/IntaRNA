@@ -46,6 +46,10 @@ intaRNA_SOURCES =	intaRNA.cpp \
 					PredictorMfe2d.cpp \
 					PredictorMfe2dSeed.h \
 					PredictorMfe2dSeed.cpp \
+					PredictorMfe2dHeuristic.h \
+					PredictorMfe2dHeuristic.cpp \
+					PredictorMfe2dHeuristicSeed.h \
+					PredictorMfe2dHeuristicSeed.cpp \
 					PredictorMfe4d.h \
 					PredictorMfe4d.cpp \
 					ReverseAccessibility.h \
@@ -54,6 +58,8 @@ intaRNA_SOURCES =	intaRNA.cpp \
 					RnaSequence.cpp \
 					SeedConstraint.h \
 					SeedConstraint.cpp \
+					SeedHandler.h \
+					SeedHandler.cpp \
 					VrnaHandler.h \
 					VrnaHandler.cpp
 

@@ -121,6 +121,14 @@ public:
 	 */
 	friend std::ostream& operator<<(std::ostream& out, const Interaction& i);
 
+	/**
+	 * Prints the interacting base pair to stream
+	 * @param out the ostream to write to
+	 * @param bp the Interaction base pair object to add
+	 * @return the altered stream out
+	 */
+	friend std::ostream& operator<<(std::ostream& out, const Interaction::BasePair& bp);
+
 };
 
 #endif /* INTERACTION_H_ */

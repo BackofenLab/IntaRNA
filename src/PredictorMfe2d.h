@@ -73,7 +73,6 @@ protected:
 	 * Initializes the hybridE_pq table for the computation for interactions
 	 * ending in p=j1 and q=j2
 	 *
-	 * @param energy the energy function to use
 	 * @param j1 end of the interaction within seq 1
 	 * @param j2 end of the interaction within seq 2
 	 * @param i1init smallest value for i1
@@ -86,7 +85,6 @@ protected:
 	 * Computes all entries of the hybridE matrix for interactions ending in
 	 * p=j1 and q=j2 and report all valid interactions to updateMfe()
 	 *
-	 * @param energy the energy function to use
 	 * @param j1 end of the interaction within seq 1
 	 * @param j2 end of the interaction within seq 2
 	 * @param i1init smallest value for i1
