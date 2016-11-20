@@ -1,9 +1,10 @@
-#!/bin/sh
+#!/bin/bash
 # 
 # Run this before configure
 #
 
-set -e
+set -e -o pipefail
+
 #test -d config || mkdir config
 # Produce aclocal.m4, so autoconf gets the automake macros it needs
 echo "Creating aclocal.m4..."
