@@ -119,7 +119,7 @@ fillHybridE_seed( const size_t j1, const size_t j2, const size_t i1min, const si
 	assert(j2<hybridE_pq.size2());
 
 	// check if it is possible to have a seed ending on the right at (j1,j2)
-	if (std::min(j1-imin1,j2-i2min)+1 < seedHandler.getConstraint().getBasePairs()) {
+	if (std::min(j1-i1min,j2-i2min)+1 < seedHandler.getConstraint().getBasePairs()) {
 		// no seed possible, abort computation
 		return;
 	}
@@ -180,7 +180,7 @@ fillHybridE_seed( const size_t j1, const size_t j2, const size_t i1min, const si
 				}
 				}
 				// update mfe if needed (call super class)
-				if (E_isNotInf(curMinE)) {
+				if (E_isNotINF(curMinE)) {
 					PredictorMfe2d::updateMfe( i1,j1,i2,j2, curMinE );
 				}
 			}
