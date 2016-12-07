@@ -21,6 +21,7 @@ Interaction::Interaction( const RnaSequence & s1, const RnaSequence & s2 )
 	, s2(&s2)
 	, basePairs()
 	, energy( std::numeric_limits<E_type>::signaling_NaN() )
+	, seedRange( NULL )
 {
 }
 
@@ -32,6 +33,7 @@ Interaction::Interaction( const InteractionRange & range )
 	, s2(NULL)
 	, basePairs()
 	, energy( std::numeric_limits<E_type>::signaling_NaN() )
+	, seedRange( NULL )
 {
 	// init data
 	this->operator =( range );
@@ -41,29 +43,7 @@ Interaction::Interaction( const InteractionRange & range )
 
 Interaction::~Interaction()
 {
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-void
-Interaction::
-addInteraction( const size_t i1, const size_t i2 )
-{
-#if IN_DEBUG_MODE
-	// check if sane indices
-	if (i1 >= s1->size()) {
-		throw std::runtime_error("Interaction::addInteraction: index i1="+toString(i1)+" exceed first sequence's length ("+toString(s1->size())+")");
-	}
-	if (i2 >= s2->size()) {
-		throw std::runtime_error("Interaction::addInteraction: index i2="+toString(i2)+" exceed second sequence's length ("+toString(s2->size())+")");
-	}
-	if ( ! RnaSequence::areComplementary( *s1, *s2, i1, i2 ) ) {
-		throw std::runtime_error("Interaction::addInteraction: positions "+toString(i1)+" and "+toString(i2)+" are not complementary");
-	}
-#endif
-
-	// push to according interaction container
-	basePairs.push_back( BasePair(i1,i2) );
+	if (seedRange != NULL) delete seedRange;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -118,8 +98,43 @@ clear()
 {
 	// clear interaction base pairing information
 	basePairs.clear();
+	// clear energy
+	energy = std::numeric_limits<E_type>::signaling_NaN();
+	// undo seed information
+	if (seedRange != NULL) delete seedRange;
+
 }
 
+
+////////////////////////////////////////////////////////////////////////////
+
+void
+Interaction::
+setSeedRange( const BasePair ij1, const BasePair ij2, const E_type energy )
+{
+	// store seed information
+	if (seedRange == NULL) {
+		// create new seed information
+		seedRange = new InteractionRange(
+				// sequences
+				*(s1), *(s2),
+				// seed ranges
+				IndexRange(ij1.first,ij2.first), IndexRange(ij1.second,ij2.second),
+				// hybridization loop energies only
+				energy
+				);
+	} else {
+		// overwrite
+		assert(s1 == seedRange->s1);
+		assert(s2 == seedRange->s2);
+		// seed ranges
+		seedRange->r1 = IndexRange(ij1.first,ij2.first);
+		seedRange->r2 = IndexRange(ij1.second,ij2.second),
+		// hybridization loop energies only
+		seedRange->energy = energy;
+	}
+
+}
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -139,14 +154,17 @@ operator= ( const InteractionRange & range )
 	s2 = range.s2;
 
 	// add left boundary base pair
-	addInteraction( range.r1.from, range.r2.from );
+	basePairs.push_back( BasePair(range.r1.from, range.r2.from) );
 	// add right boundary base pair if both not singleton ranges
 	if ( range.r1.from != range.r1.to || range.r2.from != range.r2.to ) {
-		addInteraction( range.r1.to, range.r2.to );
+		basePairs.push_back( BasePair(range.r1.to, range.r2.to) );
 	}
 
 	// copy energy value
 	energy = range.energy;
+
+	// undo seed information
+	if (seedRange != NULL) delete seedRange;
 
 	return *this;
 }

@@ -1,4 +1,19 @@
 
+161207 Martin Mann :
+ * Interaction :
+   - addInteraction() : obsolete
+   + seedRange : optional seed information
+   + setSeedRange() : initializes or overwrites seedRange 
+ * PredictorMfe2dSeed :
+ * PredictorMfe2dHeuristicSeed :
+   * traceBack() : 
+     + storing seed interaction information
+ * OutputHandlerText : 
+   * add() : 
+     + seed information printed (if available)
+     + interaction position printed
+     + energy unit added
+
 161120 Martin Mann :
  * autotools-init.sh :
    * sh -> bash 

@@ -39,6 +39,8 @@ public:
 	//! energy of the interaction (can be NaN)
 	E_type energy;
 
+	//! optional: range of seed interaction and full seed energy
+	InteractionRange * seedRange;
 
 	/**
 	 * construction
@@ -61,14 +63,6 @@ public:
 	 * destruction
 	 */
 	virtual ~Interaction();
-
-	/**
-	 * Adds an interaction base pair to the container
-	 * @param i1 index in sequence 1
-	 * @param i2 index in sequence 2
-	 */
-	void
-	addInteraction( const size_t i1, const size_t i2 );
 
 	/**
 	 * checks whether or not the current interaction is non-empty, nested and
@@ -97,6 +91,15 @@ public:
 	 */
 	void
 	clear();
+
+	/**
+	 * Sets the seedRange member according to the given data
+	 * @param ij1 left most base pair in seed
+	 * @param ij2 right most base pair in seed
+	 * @param energy full energy of the seed interaction
+	 */
+	void
+	setSeedRange( const BasePair ij1, const BasePair ij2, const E_type energy );
 
 
 	/**

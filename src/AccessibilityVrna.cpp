@@ -52,7 +52,7 @@ AccessibilityVrna::AccessibilityVrna(
 	// check if constraint given
 	if ( (! getAccConstraint().isEmpty()) || (plFoldW==0) ) {
 		if (plFoldW != 0) {
-			throw std::runtime_error("sequence '"+seq.getId()+"': accurracy constraints provided but sliding window enabled (>0), which is currently not supported");
+			throw std::runtime_error("sequence '"+seq.getId()+"': accuracy constraints provided but sliding window enabled (>0), which is currently not supported");
 		}
 		fillByRNAup(vrnaHandler
 				, (plFoldL==0? getSequence().size() : std::min(plFoldL,getSequence().size()))

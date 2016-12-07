@@ -263,6 +263,11 @@ traceBack( Interaction & interaction )
 			k1 = i1+seedHandler.getSeedLength1(i1,i2)-1; assert(k1<hybridE.size1());
 			k2 = i2+seedHandler.getSeedLength2(i1,i2)-1; assert(k2<hybridE.size2());
 			curCell = &(hybridE(k1,k2)); assert( E_equal( curE, (seedHandler.getSeedE(i1,i2)+curCell->E) ));
+			// store seed information
+			interaction.setSeedRange(
+							energy.getBasePair(i1,i2),
+							energy.getBasePair(k1,k2),
+							energy.getE(i1,k1,i2,k2,seedHandler.getSeedE(i1,i2)));
 			// traceback seed base pairs (excludes right most = (k1,k2))
 			seedHandler.traceBackSeed( interaction, i1, i2 );
 			// traceback right interaction via hybridE

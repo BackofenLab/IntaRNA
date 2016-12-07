@@ -40,19 +40,16 @@ add( const Interaction & i )
 
 	// special handling if no base pairs present
 	if (i.basePairs.size() == 0) {
-		out <<"\nno favorable interaction for "<<i.s1->getId() <<" and "<<i.s2->getId()<<std::endl;
+		out <<"\n"
+			<<"no favorable interaction for "<<i.s1->getId() <<" and "<<i.s2->getId()<<std::endl;
 		return;
 	}
-
-	// TODO generate data structures and push to stream
 
 	// get interaction start/end per sequence
 	const size_t i1 = i.basePairs.begin()->first;
 	const size_t j1 = i.basePairs.rbegin()->first;
 	const size_t i2 = i.basePairs.begin()->second;
 	const size_t j2 = i.basePairs.rbegin()->second;
-
-	LOG(DEBUG) <<"OutputHandlerText.add() : "<<i1<<"-"<<j1 <<" : "<<i.s2->size()-i2-1<<"-"<<i.s2->size()-j2-1;
 
 	// decompose printing into several rows
 	std::ostringstream s1Unbound;
@@ -255,17 +252,34 @@ add( const Interaction & i )
 		<<pos2.str() <<'\n'
 		// get ID of s2
 		<<i.s2->getId() <<'\n'
+
+		// interaction range
+		<<"\n"
+		<<"interaction seq1   = "<<(i.basePairs.begin()->first +1)<<" -- "<<(i.basePairs.rbegin()->first +1) <<'\n'
+		<<"interaction seq2   = "<<(i.basePairs.rbegin()->second +1)<<" -- "<<(i.basePairs.begin()->second +1) <<'\n'
+
 		// print energy
-		<<"\ninteraction energy = "<<i.energy <<'\n'
+		<<"\n"
+		<<"interaction energy = "<<i.energy <<" kcal/mol\n"
 		<<"  = E(init)        = "<<contr.init<<'\n'
 		<<"  + E(loops)       = "<<contr.loops<<'\n'
 		<<"  + E(dangleLeft)  = "<<contr.dangleLeft<<'\n'
 		<<"  + E(dangleRight) = "<<contr.dangleRight<<'\n'
 		<<"  + E(endLeft)     = "<<contr.endLeft<<'\n'
 		<<"  + E(endRight)    = "<<contr.endRight<<'\n'
-		<<"  + ED(query)      = "<<contr.ED1<<'\n'
-		<<"  + ED(target)     = "<<contr.ED2<<'\n'
+		<<"  + ED(seq1)       = "<<contr.ED1<<'\n'
+		<<"  + ED(seq2)       = "<<contr.ED2<<'\n'
 		;
+
+	// print seed information if available
+	if (i.seedRange != NULL) {
+		out
+			<<"\n"
+			<<"seed seq1   = "<<(i.seedRange->r1.from +1)<<" -- "<<(i.seedRange->r1.to +1) <<'\n'
+			<<"seed seq2   = "<<(i.seedRange->r2.to +1)<<" -- "<<(i.seedRange->r2.from +1) <<'\n'
+			<<"seed energy = "<<(i.seedRange->energy)<<" kcal/mol\n"
+			;
+	}
 
 }
 
