@@ -35,8 +35,8 @@ TEST_CASE( "OutputHandlerRangeOnly", "[OutputHandlerRangeOnly]" ) {
 	OutputHandlerRangeOnly out(succOut);
 
 	Interaction i(r,r);
-	i.addInteraction(0,7);
-	i.addInteraction(1,6);
+	i.basePairs.push_back( Interaction::BasePair(0,7));
+	i.basePairs.push_back( Interaction::BasePair(1,6));
 	REQUIRE( i.isValid() );
 
 	InteractionRange ir(i);

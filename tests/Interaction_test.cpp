@@ -25,18 +25,18 @@ TEST_CASE( "Interaction", "[Interaction]" ) {
 
 		Interaction inter( r, r );
 
-		inter.addInteraction( 1, 6 );
+		inter.basePairs.push_back( Interaction::BasePair( 1, 6 ) );
 		REQUIRE_FALSE( inter.isEmpty() );
 		REQUIRE( inter.isValid() );
 
-		inter.addInteraction( 0, 7 );
+		inter.basePairs.push_back( Interaction::BasePair( 0, 7 ) );
 		REQUIRE_FALSE( inter.isEmpty() );
 		REQUIRE_FALSE( inter.isValid() );
 
 		inter.sort();
 		REQUIRE( inter.isValid() );
 
-		inter.addInteraction( 2, 5 );
+		inter.basePairs.push_back( Interaction::BasePair( 2, 5 ) );
 		REQUIRE( inter.isValid() );
 
 	}
