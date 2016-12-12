@@ -107,7 +107,11 @@ int main(int argc, char **argv) {
 					VLOG(1) <<"predicting interactions for query" <<qRange
 							<<" and target" <<tRange <<"...";
 
-					predictor->predict( qRange, targetAcc->getReversedIndexRange(tRange) );
+					predictor->predict(	  qRange
+										, targetAcc->getReversedIndexRange(tRange)
+										, parameters.getOutputNumber()
+										, parameters.isOutputNonOverlapping()
+										);
 
 				} // target ranges
 				} // query ranges

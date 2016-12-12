@@ -30,12 +30,19 @@ PredictorMfe2dHeuristicSeed::
 void
 PredictorMfe2dHeuristicSeed::
 predict( const IndexRange & r1
-		, const IndexRange & r2 )
+		, const IndexRange & r2
+		, const size_t reportMax
+		, const bool reportNonOverlapping )
 {
 
 	VLOG(2) <<"predicting mfe interactions with seed heuristically in O(n^2) space and time...";
 	// measure timing
 	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
+
+	// suboptimal setup check
+	if (reportMax>1 && reportNonOverlapping) {
+		NOTIMPLEMENTED("non-overlapping not implemented in this mode");
+	}
 
 #if IN_DEBUG_MODE
 	// check indices
@@ -87,7 +94,7 @@ predict( const IndexRange & r1
 	seedHandler.fillSeed( 0,hybridE.size1()-1, 0, hybridE.size2()-1 );
 
 	// init mfe for later updates
-	initMfe();
+	initMfe( reportMax, reportNonOverlapping );
 
 	// compute entries
 	// current minimal value
@@ -166,19 +173,9 @@ predict( const IndexRange & r1
 	} // i1
 
 
-	// check if interaction is better than no interaction (E==0)
-	if (mfeInteraction.energy < 0.0) {
-		VLOG(2) <<"identifying interaction base pairs";
-		// fill mfe interaction with according base pairs
-		traceBack( mfeInteraction );
-	} else {
-		// replace mfeInteraction with no interaction
-		mfeInteraction.clear();
-		mfeInteraction.energy = 0.0;
-	}
-
 	// report mfe interaction
-	output.add( mfeInteraction );
+	reportMfe();
+
 }
 
 

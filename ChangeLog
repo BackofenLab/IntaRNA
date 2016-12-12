@@ -5,6 +5,32 @@
      sequence interval under the assumption that the region is part of an
      intermolecular multiloop, i.e. contains at least one intramolecular bp
      NOTE: not implemented yet, only functions set up
+ * CommandLineParsing : 
+   + oNumber + validator : max number of subopts to report
+   + oNonOverlapping : whether or not overlapping interactions to report
+   + opts_output : new output param category
+   + getOutputNumber()
+   + isOutputNonOverlapping()
+ * intaRNA :
+   + predict() calls now with getOutputNumber() and isOutputNonOverlapping()
+ * Interaction :
+   + compareEnergy() : checks whether a given interaction has energy higher
+     than a given value
+   * operator << (BasePair) now externally defined
+ * Predictor* :
+   * predict( + reportMax, + reportNonOverlapping ) : for multi-interaction out
+ * PredictorMfe :
+   * initMfe( + reportMax, + reportNonOverlapping ) : for multiple 
+     overlapping interaction reporting
+   - mfeInteraction : replaced by list of interactions
+   + InteractionList : type of double-linked list of interactions
+   + mfeInteractions : list of (overlapping) lowest energy interactions
+   + traceBack() : now part of abstract interface to be used in reportMfe()
+   + reportMfe() : for all interactions from list with E<0: calls traceBack()
+     and adds to output handler
+   * updateMfe() : 
+     + lowest energy interaction list update
+     + exclusion of duplicated list insertions (e.g. due to matrix recomputation)
 
 161207 Martin Mann :
  * Interaction :

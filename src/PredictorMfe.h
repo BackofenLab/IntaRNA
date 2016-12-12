@@ -5,6 +5,8 @@
 
 #include "Predictor.h"
 
+#include <list>
+
 /**
  * Generic Predictor interface for MFE interaction computation to avoid
  * code redundancy
@@ -35,8 +37,11 @@ protected:
 
 	// TODO provide all data structures as arguments to make predict() call threadsafe
 
+	//! list of interactions
+	typedef std::list<Interaction> InteractionList;
+
 	//! mfe interaction boundaries
-	Interaction mfeInteraction;
+	InteractionList mfeInteractions;
 
 	//! minimal stacking energy
 	const E_type minStackingEnergy;
@@ -48,11 +53,17 @@ protected:
 	const E_type minEndEnergy;
 
 	/**
-	 * Initializes the global energy minimum
+	 * Initializes the global energy minimum storage
+	 *
+	 * @param reportMax the maximal number of (sub)optimal interactions to be
+	 *            reported to the output handler
+	 * @param reportNonOverlapping whether or not the reported interactions
+	 *            should be non-overlapping or not
 	 */
 	virtual
 	void
-	initMfe();
+	initMfe( const size_t reportMax
+			, const bool reportNonOverlapping );
 
 	/**
 	 * updates the global optimum to be the mfe interaction if needed
@@ -68,6 +79,27 @@ protected:
 	updateMfe( const size_t i1, const size_t j1
 			, const size_t i2, const size_t j2
 			, const E_type energy );
+
+
+	/**
+	 * Fills a given interaction (boundaries given) with the according
+	 * hybridizing base pairs.
+	 * @param interaction IN/OUT the interaction to fill
+	 */
+	virtual
+	void
+	traceBack( Interaction & interaction ) = 0;
+
+
+
+	/**
+	 * Calls for the stored mfe and suboptimal solutions traceBack(i)
+	 * and pushes the according interactions to the output handler.
+	 *
+	 */
+	virtual
+	void
+	reportMfe();
 
 };
 

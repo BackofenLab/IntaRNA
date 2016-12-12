@@ -158,6 +158,18 @@ public:
 	 */
 	T_type getTemperature() const;
 
+	/**
+	 * The maximal number of interactions to be reported.
+	 * @return the maximal number of interactions to be reported
+	 */
+	size_t getOutputNumber() const;
+
+	/**
+	 * Whether or not the reported interactions have to be non-overlapping or not
+	 * @return true if the reported interactions have to be non-overlapping
+	 */
+	bool isOutputNonOverlapping() const;
+
 protected:
 
 	/////////  PRIVATE STUFF  ////////////////////////////////////////////////
@@ -246,6 +258,8 @@ protected:
 	boost::program_options::options_description opts_inter;
 	//! general options
 	boost::program_options::options_description opts_general;
+	//! output options
+	boost::program_options::options_description opts_output;
 
 	//! overall option list
 	boost::program_options::options_description opts_cmdline_all;
@@ -320,6 +334,11 @@ protected:
 	CharParameter energy;
 	//! the provided energy parameter file of the VRNA package
 	std::string energyFile;
+
+	//! number of (sub)optimal interactions to report
+	NumberParameter<int> oNumber;
+	//! whether or not reported interactions have to be non-overlapping
+	bool oNonOverlapping;
 
 	//! the vienna energy parameter handler initialized by #parse()
 	mutable VrnaHandler vrnaHandler;
@@ -477,6 +496,12 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_energyFile(const std::string & value);
+
+	/**
+	 * Validates the oNumber argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_oNumber(const int & value);
 
 
 	////////////  GENERIC TESTS  /////////////////

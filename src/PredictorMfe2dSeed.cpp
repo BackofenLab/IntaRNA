@@ -27,12 +27,20 @@ PredictorMfe2dSeed::
 
 void
 PredictorMfe2dSeed::
-predict( const IndexRange & r1, const IndexRange & r2 )
+predict( const IndexRange & r1, const IndexRange & r2
+		, const size_t reportMax
+		, const bool reportNonOverlapping )
 {
 
 	VLOG(2) <<"predicting mfe interactions with seed in O(n^2) space and O(n^4) time...";
 	// measure timing
 	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
+
+	// suboptimal setup check
+	if (reportMax>1 && reportNonOverlapping) {
+		LOG(ERROR) <<"the enumeration of non-overlapping suboptimal interactions is not supported in this prediction mode";
+		return;
+	}
 
 #if IN_DEBUG_MODE
 	// check indices
@@ -55,7 +63,7 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 	seedHandler.fillSeed( 0, hybridE_pq.size1()-1, 0, hybridE_pq.size2()-1 );
 
 	// initialize mfe interaction for updates
-	initMfe();
+	initMfe( reportMax, reportNonOverlapping );
 
 	// for all right ends j1
 	for (size_t j1 = hybridE_pq.size1(); j1-- > 0; ) {
@@ -79,19 +87,9 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 		}
 	}
 
-	// check if interaction is better than no interaction (E==0)
-	if (mfeInteraction.energy < 0.0) {
-		VLOG(2) <<"identifying interaction base pairs";
-		// fill mfe interaction with according base pairs
-		traceBack( mfeInteraction );
-	} else {
-		// replace mfeInteraction with no interaction
-		mfeInteraction.clear();
-		mfeInteraction.energy = 0.0;
-	}
-
 	// report mfe interaction
-	output.add( mfeInteraction );
+	reportMfe();
+
 }
 
 //////////////////////////////////////////////////////////////////////////

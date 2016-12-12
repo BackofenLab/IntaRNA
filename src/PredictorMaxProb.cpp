@@ -29,12 +29,19 @@ PredictorMaxProb::
 void
 PredictorMaxProb::
 predict( const IndexRange & r1
-		, const IndexRange & r2 )
+		, const IndexRange & r2
+		, const size_t reportMax
+		, const bool reportNonOverlapping
+		)
 {
 
 	VLOG(2) <<"predicting maximally probable interactions in O(n^4) space...";
 	// measure timing
 	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
+
+	if (reportMax>1) {
+		NOTIMPLEMENTED("PredictorMaxProb::predict(reportMax > 1) : not implemented");
+	}
 
 #if IN_DEBUG_MODE
 	// check indices (both regions ascending due to reversing of seq2)
@@ -129,6 +136,7 @@ clear()
 	}
 	// clear matrix, free data
 	hybridZ.clear();
+
 }
 
 ////////////////////////////////////////////////////////////////////////////

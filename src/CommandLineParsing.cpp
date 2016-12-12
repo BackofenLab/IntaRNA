@@ -50,6 +50,7 @@ CommandLineParsing::CommandLineParsing()
 	opts_seed("Seed"),
 	opts_inter("Interaction"),
 	opts_general("General"),
+	opts_output("Output"),
 	opts_cmdline_all(),
 
 	parsingCode(NOT_PARSED_YET),
@@ -90,6 +91,9 @@ CommandLineParsing::CommandLineParsing()
 
 	energy("BF",'F'),
 	energyFile(""),
+
+	oNumber( 0, 1000, 1),
+	oNonOverlapping(true),
 
 	vrnaHandler()
 
@@ -186,41 +190,27 @@ CommandLineParsing::CommandLineParsing()
 
 	opts_seed.add_options()
 	    ("noSeed", "if present, no seed is enforced within the predicted interactions")
-	    ;
 
-	opts_seed.add_options()
 		("seedBP"
 			, value<int>(&(seedBP.val))
 				->default_value(seedBP.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_seedBP,this,_1))
 			, std::string("number of inter-molecular base pairs within the seed region (arg in range ["+toString(seedBP.min)+","+toString(seedBP.max)+"])").c_str())
-		;
-
-	opts_seed.add_options()
 		("seedMaxUP"
 			, value<int>(&(seedMaxUP.val))
 				->default_value(seedMaxUP.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_seedMaxUP,this,_1))
 			, std::string("maximal overall number (query+target) of unpaired bases within the seed region (arg in range ["+toString(seedMaxUP.min)+","+toString(seedMaxUP.max)+"])").c_str())
-		;
-
-	opts_seed.add_options()
 		("seedMaxUPq"
 			, value<int>(&(seedMaxUPq.val))
 				->default_value(seedMaxUPq.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_seedMaxUPq,this,_1))
 			, std::string("maximal number of unpaired bases within the query's seed region (arg in range ["+toString(seedMaxUPq.min)+","+toString(seedMaxUPq.max)+"]); if -1 the value of seedMaxUP is used.").c_str())
-		;
-
-	opts_seed.add_options()
 		("seedMaxUPt"
 			, value<int>(&(seedMaxUPt.val))
 				->default_value(seedMaxUPt.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_seedMaxUPt,this,_1))
 			, std::string("maximal number of unpaired bases within the target's seed region (arg in range ["+toString(seedMaxUPt.min)+","+toString(seedMaxUPt.max)+"]); if -1 the value of seedMaxUP is used.").c_str())
-		;
-
-	opts_seed.add_options()
 		("seedMaxE"
 			, value<E_type>(&(seedMaxE.val))
 				->default_value(seedMaxE.def)
@@ -254,18 +244,29 @@ CommandLineParsing::CommandLineParsing()
 
 	// TODO parse energy function selection
 
+	////  OUTPUT OPTIONS  ////////////////////////////////////
+
+	opts_output.add_options()
+	    ("outNumber,n"
+			, value<int>(&(oNumber.val))
+				->default_value(oNumber.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_oNumber,this,_1))
+			, std::string("maximal overall number (query+target) of unpaired bases within the seed region (arg in range ["+toString(oNumber.min)+","+toString(oNumber.max)+"])").c_str())
+	    ("outOverlapping", "if present, reported interactions are allowed to overlap")
+	    ("verbose,v", "verbose output")
+	    ("default-log-file", "name of log file to be used for output")
+	    ;
+
 	////  GENERAL OPTIONS  ////////////////////////////////////
 
 	opts_general.add_options()
 	    ("version", "print version")
-	    ("verbose,v", "verbose output")
-	    ("default-log-file", "name of log file to be used for output")
 	    ("help,h", "show the help page with all available parameters")
 	    ;
 
 	////  GENERAL OPTIONS  ////////////////////////////////////
 
-	opts_cmdline_all.add(opts_query).add(opts_target).add(opts_seed).add(opts_inter).add(opts_general);
+	opts_cmdline_all.add(opts_query).add(opts_target).add(opts_seed).add(opts_inter).add(opts_output).add(opts_general);
 
 
 }
@@ -417,6 +418,9 @@ parse(int argc, char** argv)
 				LOG(ERROR) <<"tAccL = " <<tAccL.val <<" : has to be <= tAccW (=" <<tAccW.val<<")";
 				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 			}
+
+			// store output information
+			oNonOverlapping = vm.count("outOverlapping") == 0;
 
 
 		} catch (error& e) {
@@ -665,6 +669,13 @@ validate_energyFile(const std::string & value)
 		LOG(ERROR) <<"provided VRNA energy parameter file '" <<value <<"' could not be processed.";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void CommandLineParsing::validate_oNumber(const int & value) {
+	// forward check to general method
+	validate_numberArgument("oNumber", oNumber, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -945,6 +956,26 @@ getEnergyHandler( const Accessibility& accQuery, const ReverseAccessibility& acc
 	}
 	return NULL;
 
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+size_t
+CommandLineParsing::
+getOutputNumber() const
+{
+	checkIfParsed();
+	return oNumber.val;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+bool
+CommandLineParsing::
+isOutputNonOverlapping() const
+{
+	checkIfParsed();
+	return oNonOverlapping;
 }
 
 ////////////////////////////////////////////////////////////////////////////

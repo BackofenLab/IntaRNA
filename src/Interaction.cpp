@@ -173,6 +173,15 @@ operator= ( const InteractionRange & range )
 
 ////////////////////////////////////////////////////////////////////////////
 
+bool
+Interaction::
+compareEnergy( const E_type & energy, const Interaction & hasLargerE )
+{
+	return energy < hasLargerE.energy && !(E_equal(energy,hasLargerE.energy));
+}
+
+////////////////////////////////////////////////////////////////////////////
+
 std::ostream&
 operator<<(std::ostream& out, const Interaction::BasePair& bp)
 {

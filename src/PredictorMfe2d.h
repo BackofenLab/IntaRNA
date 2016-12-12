@@ -40,12 +40,18 @@ public:
 	 *
 	 * @param r1 the index range of the first sequence interacting with r2
 	 * @param r2 the index range of the second sequence interacting with r1
+	 * @param reportMax the maximal number of (sub)optimal interactions to be
+	 *            reported to the output handler
+	 * @param reportNonOverlapping whether or not the reported interactions
+	 *            should be non-overlapping or not
 	 *
 	 */
 	virtual
 	void
 	predict( const IndexRange & r1 = IndexRange(0,RnaSequence::lastPos)
-			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos) );
+			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos)
+			, const size_t reportMax = 1
+			, const bool reportNonOverlapping = true );
 
 protected:
 
@@ -54,9 +60,6 @@ protected:
 
 	//! access to the output handler of the super class
 	using PredictorMfe::output;
-
-	//! access to the mfe interaction of the super class
-	using PredictorMfe::mfeInteraction;
 
 	// TODO provide all data structures as arguments to make predict() call threadsafe
 

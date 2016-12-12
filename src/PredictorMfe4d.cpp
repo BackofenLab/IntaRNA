@@ -2,6 +2,7 @@
 #include "PredictorMfe4d.h"
 
 #include <stdexcept>
+#include <algorithm>
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -28,12 +29,19 @@ PredictorMfe4d::
 void
 PredictorMfe4d::
 predict( const IndexRange & r1
-		, const IndexRange & r2 )
+		, const IndexRange & r2
+		, const size_t reportMax
+		, const bool reportNonOverlapping
+		)
 {
 
 	VLOG(2) <<"predicting mfe interactions in O(n^4) space and time...";
 	// measure timing
 	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
+
+	if (reportMax>1) {
+		NOTIMPLEMENTED("PredictorMfe4d::predict(reportMax > 1) : not implemented");
+	}
 
 #if IN_DEBUG_MODE
 	// check indices
@@ -152,21 +160,19 @@ predict( const IndexRange & r1
 				<<((double)(debug_count_cells_null)/(double)(debug_count_cells_nonNull+debug_count_cells_null))
 				<<"%)";
 
+	// initialize mfe interaction for updates
+	initMfe( (reportNonOverlapping ? std::min<const size_t>(1,reportMax) : reportMax)
+			, reportNonOverlapping );
+
 	// fill matrix
 	fillHybridE( );
 
-	// check if interaction is better than no interaction (E==0)
-	if (mfeInteraction.energy < 0.0) {
-		// fill mfe interaction with according base pairs
-		traceBack( mfeInteraction );
-	} else {
-		// replace mfeInteraction with no interaction
-		mfeInteraction.clear();
-		mfeInteraction.energy = 0.0;
-	}
-
 	// report mfe interaction
-	output.add( mfeInteraction );
+	if (reportMax > 1 && reportNonOverlapping) {
+		reportMfeNonOverlapping( reportMax );
+	} else {
+		reportMfe();
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -196,9 +202,6 @@ fillHybridE( )
 
 	// global vars to avoid reallocation
 	size_t i1,i2,j1,j2,w1,w2,k1,k2;
-
-	// initialize mfe interaction for updates
-	initMfe();
 
 	//////////  FIRST ROUND : COMPUTE HYBRIDIZATION ENERGIES ONLY  ////////////
 
@@ -291,7 +294,7 @@ fillHybridE( )
 
 void
 PredictorMfe4d::
-traceBack( Interaction & interaction ) const
+traceBack( Interaction & interaction )
 {
 	// check if something to trace
 	if (interaction.basePairs.size() < 2) {
@@ -379,6 +382,40 @@ traceBack( Interaction & interaction ) const
 		(*bps.rbegin()) = energy.getBasePair( j1, j2 );
 	}
 
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void
+PredictorMfe4d::
+reportMfeNonOverlapping( const size_t reportMax )
+{
+	assert(PredictorMfe::mfeInteractions.size()==1);
+
+	// number of reports
+	size_t reported = 0;
+
+	// identify and report remaining non-overlapping suboptimals
+	E_type lastMfe = PredictorMfe::mfeInteractions.begin()->energy;
+	while (lastMfe < 0.0 && reported < reportMax) {
+		// report current mfe via superclass
+		reportMfe();
+		// reset mfe
+		initMfe( 1, false );
+		// count and identify next if needed
+		if (++reported < reportMax) {
+			// identify next non-overlapping suboptimal with E <= lastMfe
+			NOTIMPLEMENTED("PredictorMfe4d::reportMfe() : suboptimal enumeration missing");
+		}
+		// update current mfe value
+		lastMfe = PredictorMfe::mfeInteractions.begin()->energy;
+	};
+
+	if (reported == 0 && reportMax > 0) {
+		// report empty interaction via superclass
+		assert(PredictorMfe::mfeInteractions.begin()->energy >= 0.0);
+		reportMfe();
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////

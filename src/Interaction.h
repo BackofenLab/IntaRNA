@@ -116,6 +116,18 @@ public:
 	Interaction &
 	operator= ( const InteractionRange & range );
 
+
+	/**
+	 * Compares if an interaction has larger energy that a given value
+	 *
+	 * @param energy the energy to compare to
+	 * @param hasLargerE the interaction that is supposed to have larger energy
+	 * @return (energy < (hasLargerE.energy-precisionDelta))
+	 */
+	static
+	bool
+	compareEnergy( const E_type& energy, const Interaction & hasLargerE );
+
 	/**
 	 * Prints the interacting base pairs to stream
 	 * @param out the ostream to write to
@@ -124,14 +136,14 @@ public:
 	 */
 	friend std::ostream& operator<<(std::ostream& out, const Interaction& i);
 
+};
+
 	/**
 	 * Prints the interacting base pair to stream
 	 * @param out the ostream to write to
 	 * @param bp the Interaction base pair object to add
 	 * @return the altered stream out
 	 */
-	friend std::ostream& operator<<(std::ostream& out, const Interaction::BasePair& bp);
-
-};
+	std::ostream& operator<<(std::ostream& out, const Interaction::BasePair& bp);
 
 #endif /* INTERACTION_H_ */
