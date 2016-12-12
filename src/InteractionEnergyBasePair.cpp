@@ -26,6 +26,26 @@ InteractionEnergyBasePair::~InteractionEnergyBasePair()
 
 E_type
 InteractionEnergyBasePair::
+getES1( const size_t i1, const size_t j1 ) const
+{
+	NOTIMPLEMENTED("ES1 not implemented for InteractionEnergyBasePair");
+	return E_INF;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+E_type
+InteractionEnergyBasePair::
+getES2( const size_t i2, const size_t j2 ) const
+{
+	NOTIMPLEMENTED("ES2 not implemented for InteractionEnergyBasePair");
+	return E_INF;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+E_type
+InteractionEnergyBasePair::
 getE_init() const
 {
 	return -1.0;

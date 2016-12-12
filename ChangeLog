@@ -1,4 +1,11 @@
 
+161212 Martin Mann :
+ * InteractionEnergy* :
+   + getES*() : ensemble energy of intramolecular substructures within a given
+     sequence interval under the assumption that the region is part of an
+     intermolecular multiloop, i.e. contains at least one intramolecular bp
+     NOTE: not implemented yet, only functions set up
+
 161207 Martin Mann :
  * Interaction :
    - addInteraction() : obsolete

@@ -140,6 +140,25 @@ size2() const
 	return energyOriginal.size2()-offset2;
 }
 
+//////////////////////////////////////////////////////////////////////////
+
+E_type
+InteractionEnergyIdxOffset::
+getES1( const size_t i1, const size_t j1 ) const
+{
+	return energyOriginal.getES1( i1+offset1, j1+offset1 );
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+E_type
+InteractionEnergyIdxOffset::
+getES2( const size_t i2, const size_t j2 ) const
+{
+	return energyOriginal.getES2( i2+offset2, j2+offset2 );
+}
+
+//////////////////////////////////////////////////////////////////////////
 
 E_type
 InteractionEnergyIdxOffset::

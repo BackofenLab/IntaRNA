@@ -50,6 +50,48 @@ InteractionEnergyVrna::~InteractionEnergyVrna()
 
 E_type
 InteractionEnergyVrna::
+getES1( const size_t i1, const size_t j1 ) const
+{
+#if IN_DEBUG_MODE
+	// sanity check
+	if (i1>j1) throw std::runtime_error("InteractionEnergyVrna::getES1(i1="+toString(i1)+" > j1="+toString(j1));
+	if (j1>=size1()) throw std::runtime_error("InteractionEnergyVrna::getES1() : j1="+toString(j1)+" >= size1()="+toString(size1()));
+#endif
+
+	// check for minimal loop size
+	if (j1-1-i1<foldParams->model_details.min_loop_size) {
+		return E_INF;
+	}
+	// check if values already computed
+	NOTIMPLEMENTED("ES1 computation not implemented");
+	return E_INF;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+E_type
+InteractionEnergyVrna::
+getES2( const size_t i2, const size_t j2 ) const
+{
+#if IN_DEBUG_MODE
+	// sanity check
+	if (i2>j2) throw std::runtime_error("InteractionEnergyVrna::getES2(i2="+toString(i2)+" > j2="+toString(j2));
+	if (j2>=size2()) throw std::runtime_error("InteractionEnergyVrna::getES2() : j2="+toString(j2)+" >= size2()="+toString(size2()));
+#endif
+
+	// check for minimal loop size
+	if (j2-1-i2<foldParams->model_details.min_loop_size) {
+		return E_INF;
+	}
+	// check if values already computed
+	NOTIMPLEMENTED("ES2 computation not implemented");
+	return E_INF;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+E_type
+InteractionEnergyVrna::
 getE_init() const
 {
 	// init term is sequence independent
