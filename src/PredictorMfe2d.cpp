@@ -106,46 +106,48 @@ initHybridE( const size_t j1, const size_t j2, const size_t i1init, const size_t
 
 	// to mark as to be computed
 	const E_type E_MAX = std::numeric_limits<E_type>::max();
+	// to test whether computation is reasonable
+	const E_type minInitDangleEndEnergy = minInitEnergy + 2.0*minDangleEnergy + 2.0*minEndEnergy;
 
 	hybridErange.r1.from = std::max(i1init,j1-std::min(j1,energy.getAccessibility1().getMaxLength()+1));
 	hybridErange.r1.to = j1;
 	hybridErange.r2.from = std::max(i2init,j2-std::min(j2,energy.getAccessibility2().getMaxLength()+1));
 	hybridErange.r2.to = j2;
 
+	// temporary variable to reduce lookups
+	E_type curED1 = 0.0;
+
 	// init used part with E_INF - 1 and E_INF if ED test fails
 	// iterating decreasing window size seq1 (only sane windows)
 	for (i1=hybridErange.r1.from; i1<=j1; i1++ ) {
 		w1 = j1-i1+1;
+		curED1 = energy.getED1(i1,j1);
 		// iterating decreasing window size seq2 (only sane windows)
 		for (i2=hybridErange.r2.from; i2<=j2; i2++) {
 			w2 = j2-i2+1;
-			// check if ED penalty exceeds maximal energy gain
-			{
-				// check if all larger windows needing this site are already set to INF
-				bool largerWindowsINF = i1==hybridErange.r1.from && i2==hybridErange.r2.from;
-				// check all larger windows w1 + i2p..j2 (that might need this window for computation)
-				for (size_t i2p=hybridErange.r2.from; largerWindowsINF && i2p>i2; i2p++) {
-					// check if larger window is E_INF
-					largerWindowsINF = E_isINF(hybridE_pq(i1,i2p));
-				}
-				// check all larger windows w2 + w1p (that might need this window for computation)
-				for (size_t i1p=hybridErange.r1.from; largerWindowsINF && i1p>i1; i1p++) {
-					// check if larger window is E_INF
-					largerWindowsINF = E_isINF(hybridE_pq(i1,i2));
-				}
+			// check if all larger windows needing this site are already set to INF
+			bool largerWindowsINF = i1==hybridErange.r1.from && i2==hybridErange.r2.from;
+			// check all larger windows w1 + i2p..j2 (that might need this window for computation)
+			for (size_t i2p=hybridErange.r2.from; largerWindowsINF && i2p>i2; i2p++) {
+				// check if larger window is E_INF
+				largerWindowsINF = E_isINF(hybridE_pq(i1,i2p));
+			}
+			// check all larger windows w2 + w1p (that might need this window for computation)
+			for (size_t i1p=hybridErange.r1.from; largerWindowsINF && i1p>i1; i1p++) {
+				// check if larger window is E_INF
+				largerWindowsINF = E_isINF(hybridE_pq(i1,i2));
+			}
 
-				// if it holds for all w'>=w: ED1(i1+w1')+ED2(i2+w2') > -1*(min(w1',w2')*EmaxStacking + Einit + 2*Edangle + 2*Eend)
-				// ie. the ED values exceed the max possible energy gain of an interaction
-				if( largerWindowsINF &&
-								( -1.0*(std::min(w1,w2)*minStackingEnergy + minInitEnergy + 2.0*minDangleEnergy + 2.0*minEndEnergy) <
-									(energy.getED1(i1,j1)
-											+ energy.getED2(i2,j2)))
-							)
-				{
-					// mark as NOT to be computed
-					hybridE_pq(i1,i2) = E_INF;
-					continue;
-				}
+			// if it holds for all w'>=w: ED1(i1+w1')+ED2(i2+w2') > -1*(min(w1',w2')*EmaxStacking + Einit + 2*Edangle + 2*Eend)
+			// ie. the ED values exceed the max possible energy gain of an interaction
+			if( largerWindowsINF
+				&& ( -1.0*(std::min(w1,w2)*minStackingEnergy + minInitDangleEndEnergy)
+					< (curED1 + energy.getED2(i2,j2)))
+				)
+			{
+				// mark as NOT to be computed
+				hybridE_pq(i1,i2) = E_INF;
+				continue;
 			}
 
 			// mark as to be computed (has to be < E_INF)
