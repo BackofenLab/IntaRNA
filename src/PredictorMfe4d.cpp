@@ -161,7 +161,7 @@ predict( const IndexRange & r1
 				<<"%)";
 
 	// initialize mfe interaction for updates
-	initMfe( (reportNonOverlapping ? std::min<const size_t>(1,reportMax) : reportMax)
+	initOptima( (reportNonOverlapping ? std::min<const size_t>(1,reportMax) : reportMax)
 			, reportNonOverlapping );
 
 	// fill matrix
@@ -171,7 +171,7 @@ predict( const IndexRange & r1
 	if (reportMax > 1 && reportNonOverlapping) {
 		reportMfeNonOverlapping( reportMax );
 	} else {
-		reportMfe();
+		reportOptima();
 	}
 }
 
@@ -278,7 +278,7 @@ fillHybridE( )
 				// store value
 				(*hybridE(i1,i2))(w1,w2) = curMinE;
 				// update mfe if needed
-				updateMfe( i1,j1,i2,j2 , (*hybridE(i1,i2))(w1,w2) );
+				updateOptima( i1,j1,i2,j2 , (*hybridE(i1,i2))(w1,w2) );
 
 				continue;
 			}
@@ -399,13 +399,13 @@ reportMfeNonOverlapping( const size_t reportMax )
 	E_type lastMfe = PredictorMfe::mfeInteractions.begin()->energy;
 	while (lastMfe < 0.0 && reported < reportMax) {
 		// report current mfe via superclass
-		reportMfe();
+		reportOptima();
 		// reset mfe
-		initMfe( 1, false );
+		initOptima( 1, false );
 		// count and identify next if needed
 		if (++reported < reportMax) {
 			// identify next non-overlapping suboptimal with E <= lastMfe
-			NOTIMPLEMENTED("PredictorMfe4d::reportMfe() : suboptimal enumeration missing");
+			NOTIMPLEMENTED("PredictorMfe4d::reportOptima() : suboptimal enumeration missing");
 		}
 		// update current mfe value
 		lastMfe = PredictorMfe::mfeInteractions.begin()->energy;
@@ -414,7 +414,7 @@ reportMfeNonOverlapping( const size_t reportMax )
 	if (reported == 0 && reportMax > 0) {
 		// report empty interaction via superclass
 		assert(PredictorMfe::mfeInteractions.begin()->energy >= 0.0);
-		reportMfe();
+		reportOptima();
 	}
 }
 

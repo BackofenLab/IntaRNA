@@ -29,7 +29,7 @@ PredictorMfe::~PredictorMfe()
 
 void
 PredictorMfe::
-initMfe( const size_t reportMax
+initOptima( const size_t reportMax
 		, const bool reportNonOverlapping)
 {
 	// resize to the given number of interactions if overlapping reports allowed
@@ -58,7 +58,7 @@ initMfe( const size_t reportMax
 
 void
 PredictorMfe::
-updateMfe( const size_t i1, const size_t j1
+updateOptima( const size_t i1, const size_t j1
 		, const size_t i2, const size_t j2
 		, const E_type hybridE )
 {
@@ -77,7 +77,7 @@ updateMfe( const size_t i1, const size_t j1
 
 	if (mfeInteractions.size() == 1) {
 		if (curE < mfeInteractions.begin()->energy) {
-	//		LOG(DEBUG) <<"PredictorMfe::updateMfe() : new mfe ( "
+	//		LOG(DEBUG) <<"PredictorMfe::updateOptima() : new mfe ( "
 	//			<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" ) = " <<hybridE <<" : "<<curE;
 			// store new global min
 			mfeInteractions.begin()->energy = (curE);
@@ -140,7 +140,7 @@ updateMfe( const size_t i1, const size_t j1
 
 void
 PredictorMfe::
-reportMfe()
+reportOptima()
 {
 	// number of reported interactions
 	size_t reported = 0;

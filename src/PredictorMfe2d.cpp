@@ -62,7 +62,7 @@ predict( const IndexRange & r1
 						, (r2.to==RnaSequence::lastPos?energy.size2()-1:r2.to)-r2.from+1 ) );
 
 	// initialize mfe interaction for updates
-	initMfe( reportMax, reportNonOverlapping );
+	initOptima( reportMax, reportNonOverlapping );
 
 	// for all right ends j1
 	for (size_t j1 = hybridE_pq.size1(); j1-- > 0; ) {
@@ -85,7 +85,7 @@ predict( const IndexRange & r1
 	}
 
 	// report mfe interaction
-	reportMfe();
+	reportOptima();
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -231,7 +231,7 @@ fillHybridE( const size_t j1, const size_t j2, const size_t i1init, const size_t
 				// store value
 				hybridE_pq(i1,i2) = curMinE;
 				// update mfe if needed
-				updateMfe( i1,j1,i2,j2, hybridE_pq(i1,i2) );
+				updateOptima( i1,j1,i2,j2, hybridE_pq(i1,i2) );
 				continue;
 			}
 		}

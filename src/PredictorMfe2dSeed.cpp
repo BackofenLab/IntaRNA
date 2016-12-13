@@ -63,7 +63,7 @@ predict( const IndexRange & r1, const IndexRange & r2
 	seedHandler.fillSeed( 0, hybridE_pq.size1()-1, 0, hybridE_pq.size2()-1 );
 
 	// initialize mfe interaction for updates
-	initMfe( reportMax, reportNonOverlapping );
+	initOptima( reportMax, reportNonOverlapping );
 
 	// for all right ends j1
 	for (size_t j1 = hybridE_pq.size1(); j1-- > 0; ) {
@@ -82,13 +82,13 @@ predict( const IndexRange & r1, const IndexRange & r2
 			// compute hybridE_pq
 			fillHybridE( j1, j2 );
 
-			// compute hybridE_pq_seed and update mfe via PredictorMfe2d::updateMfe()
+			// compute hybridE_pq_seed and update mfe via PredictorMfe2d::updateOptima()
 			fillHybridE_seed( j1, j2 );
 		}
 	}
 
 	// report mfe interaction
-	reportMfe();
+	reportOptima();
 
 }
 
@@ -96,7 +96,7 @@ predict( const IndexRange & r1, const IndexRange & r2
 
 void
 PredictorMfe2dSeed::
-updateMfe( const size_t i1, const size_t j1
+updateOptima( const size_t i1, const size_t j1
 		, const size_t i2, const size_t j2
 		, const E_type energy )
 {
@@ -179,7 +179,7 @@ fillHybridE_seed( const size_t j1, const size_t j2, const size_t i1min, const si
 				}
 				// update mfe if needed (call super class)
 				if (E_isNotINF(curMinE)) {
-					PredictorMfe2d::updateMfe( i1,j1,i2,j2, curMinE );
+					PredictorMfe2d::updateOptima( i1,j1,i2,j2, curMinE );
 				}
 			}
 

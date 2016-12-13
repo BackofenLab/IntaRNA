@@ -114,13 +114,13 @@ protected:
 	 */
 	virtual
 	void
-	updateMfe( const size_t i1, const size_t j1
+	updateOptima( const size_t i1, const size_t j1
 			, const size_t i2, const size_t j2
 			, const E_type energy );
 
 	/**
 	 * Computes all entries of the hybridE_seed matrix for interactions ending in
-	 * p=j1 and q=j2 and report all valid interactions to updateMfe()
+	 * p=j1 and q=j2 and report all valid interactions to updateOptima()
 	 *
 	 * @param energy the energy function to use
 	 * @param j1 end of the interaction within seq 1

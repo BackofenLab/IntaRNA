@@ -85,13 +85,13 @@ predict( const IndexRange & r1
 	} // i1
 
 	// init mfe for later updates
-	initMfe( reportMax, reportNonOverlapping );
+	initOptima( reportMax, reportNonOverlapping );
 
 	// compute table and update mfeInteraction
 	fillHybridE();
 
 	// trace back and output handler update
-	reportMfe();
+	reportOptima();
 
 }
 
@@ -145,7 +145,7 @@ fillHybridE()
 		} // w1
 
 		// update mfe if needed
-		updateMfe( i1,curCell->j1, i2,curCell->j2, curCell->E );
+		updateOptima( i1,curCell->j1, i2,curCell->j2, curCell->E );
 
 	} // i2
 	} // i1

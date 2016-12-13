@@ -39,8 +39,8 @@ predict( const IndexRange & r1
 	// measure timing
 	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
 
-	if (reportMax>1) {
-		NOTIMPLEMENTED("PredictorMaxProb::predict(reportMax > 1) : not implemented");
+	if (reportMax != 1) {
+		NOTIMPLEMENTED("PredictorMaxProb::predict(reportMax != 1) : not implemented");
 	}
 
 #if IN_DEBUG_MODE
@@ -107,17 +107,14 @@ predict( const IndexRange & r1
 				<<((double)debug_count_cells_nonNull/(double)(debug_count_cells_nonNull+debug_count_cells_null))
 				<<"%) and "<<debug_count_cells_null <<" not allocated";
 
+	// initialize max prob interaction for updates
+	initOptima( reportMax, reportNonOverlapping );
+
 	// fill matrix
 	fillHybridZ( );
 
-	// maximal probability is
-	// double maxProb = (double)maxProbInteraction.getEnergy() / Z;
-
-	// convert the partition function into an ensemble energy
-	maxProbInteraction.energy = ( - energy.getRT() * std::log( maxProbInteraction.energy ) );
-
 	// report interaction site with maximal probability
-	output.add( maxProbInteraction );
+	reportOptima();
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -151,8 +148,6 @@ fillHybridZ()
 
 	//////////  FIRST ROUND : COMPUTE HYBRIDIZATION ENERGIES ONLY  ////////////
 
-	// initialize max prob interaction for updates
-	initMaxProbInteraction();
 	// reset overall partition function
 	Z = 0.0;
 
@@ -219,7 +214,7 @@ fillHybridZ()
 			// store value
 			(*hybridZ(i1,i2))(w1,w2) = curZ;
 			// update max prob interaction
-			updateMaxProbInteraction( i1,j1,i2,j2, (*hybridZ(i1,i2))(w1,w2) );
+			updateOptima( i1,j1,i2,j2, (*hybridZ(i1,i2))(w1,w2) );
 		}
 		}
 	}
@@ -233,7 +228,8 @@ fillHybridZ()
 
 void
 PredictorMaxProb::
-initMaxProbInteraction()
+initOptima( const size_t reportMax
+				, const bool reportNonOVerlapping )
 {
 	// initialize max prob interaction (partition function value)
 	maxProbInteraction.energy = 0.0;
@@ -242,12 +238,16 @@ initMaxProbInteraction()
 	maxProbInteraction.r1.to = RnaSequence::lastPos;
 	maxProbInteraction.r2.from = RnaSequence::lastPos;
 	maxProbInteraction.r2.to = RnaSequence::lastPos;
+
+	if (reportMax > 0) {
+		NOTIMPLEMENTED("PredictorMaxProb::initOptima(reportMax > 1)");
+	}
 }
 ////////////////////////////////////////////////////////////////////////////
 
 void
 PredictorMaxProb::
-updateMaxProbInteraction( const size_t i1, const size_t j1
+updateOptima( const size_t i1, const size_t j1
 		, const size_t i2, const size_t j2
 		, const E_type hybridZ )
 {
@@ -274,6 +274,24 @@ updateMaxProbInteraction( const size_t i1, const size_t j1
 	}
 }
 
+
+////////////////////////////////////////////////////////////////////////////
+
+void
+PredictorMaxProb::
+reportOptima()
+{
+
+	// maximal probability is
+	// double maxProb = (double)maxProbInteraction.getEnergy() / Z;
+
+	// convert the partition function into an ensemble energy
+	maxProbInteraction.energy = ( - energy.getRT() * std::log( maxProbInteraction.energy ) );
+
+	// push to output handler
+	output.add( maxProbInteraction );
+
+}
 
 ////////////////////////////////////////////////////////////////////////////
 

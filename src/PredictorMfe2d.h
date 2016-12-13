@@ -86,7 +86,7 @@ protected:
 
 	/**
 	 * Computes all entries of the hybridE matrix for interactions ending in
-	 * p=j1 and q=j2 and report all valid interactions to updateMfe()
+	 * p=j1 and q=j2 and report all valid interactions to updateOptima()
 	 *
 	 * @param j1 end of the interaction within seq 1
 	 * @param j2 end of the interaction within seq 2

@@ -94,7 +94,7 @@ predict( const IndexRange & r1
 	seedHandler.fillSeed( 0,hybridE.size1()-1, 0, hybridE.size2()-1 );
 
 	// init mfe for later updates
-	initMfe( reportMax, reportNonOverlapping );
+	initOptima( reportMax, reportNonOverlapping );
 
 	// compute entries
 	// current minimal value
@@ -167,14 +167,14 @@ predict( const IndexRange & r1
 		}
 
 		// update mfe if needed
-		updateMfe( i1,curCell->j1, i2,curCell->j2, curCell->E );
+		updateOptima( i1,curCell->j1, i2,curCell->j2, curCell->E );
 
 	} // i2
 	} // i1
 
 
 	// report mfe interaction
-	reportMfe();
+	reportOptima();
 
 }
 

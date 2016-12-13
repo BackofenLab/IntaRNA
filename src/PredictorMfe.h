@@ -62,8 +62,8 @@ protected:
 	 */
 	virtual
 	void
-	initMfe( const size_t reportMax
-			, const bool reportNonOverlapping );
+	initOptima( const size_t reportMax
+				, const bool reportNonOverlapping );
 
 	/**
 	 * updates the global optimum to be the mfe interaction if needed
@@ -76,14 +76,15 @@ protected:
 	 */
 	virtual
 	void
-	updateMfe( const size_t i1, const size_t j1
-			, const size_t i2, const size_t j2
-			, const E_type energy );
+	updateOptima( const size_t i1, const size_t j1
+				, const size_t i2, const size_t j2
+				, const E_type energy );
 
 
 	/**
 	 * Fills a given interaction (boundaries given) with the according
 	 * hybridizing base pairs.
+	 * Note, the
 	 * @param interaction IN/OUT the interaction to fill
 	 */
 	virtual
@@ -99,7 +100,7 @@ protected:
 	 */
 	virtual
 	void
-	reportMfe();
+	reportOptima();
 
 };
 

@@ -96,10 +96,16 @@ protected:
 
 	/**
 	 * Initializes the interaction site with maximal probability
+	 *
+	 * @param reportMax the maximal number of (sub)optimal interactions to be
+	 *            reported to the output handler
+	 * @param reportNonOverlapping whether or not the reported interactions
+	 *            should be non-overlapping or not
 	 */
 	virtual
 	void
-	initMaxProbInteraction();
+	initOptima( const size_t reportMax
+				, const bool reportNonOVerlapping );
 
 	/**
 	 * updates the global optimum if needed
@@ -112,9 +118,20 @@ protected:
 	 */
 	virtual
 	void
-	updateMaxProbInteraction( const size_t i1, const size_t j1
+	updateOptima( const size_t i1, const size_t j1
 			, const size_t i2, const size_t j2
 			, const E_type hybridZ );
+
+
+
+	/**
+	 * Pushes the stored optimal and suboptimal solutions to the output handler.
+	 *
+	 */
+	virtual
+	void
+	reportOptima();
+
 
 };
 
