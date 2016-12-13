@@ -6,6 +6,7 @@ bin_PROGRAMS = runTests
 runTests_SOURCES =	catch.hpp \
 					AccessibilityConstraint_test.cpp \
 					IndexRange_test.cpp  \
+					IndexRangeList_test.cpp  \
 					Interaction_test.cpp  \
 					InteractionEnergyBasePair_test.cpp  \
 					InteractionRange_test.cpp  \
