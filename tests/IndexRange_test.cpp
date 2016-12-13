@@ -16,7 +16,6 @@ TEST_CASE( "IndexRange", "[IndexRange]" ) {
 		REQUIRE( range.isAscending() );
 		REQUIRE( range.from == 0 );
 		REQUIRE( range.to > range.from );
-		REQUIRE( range.isAscending() );
 		REQUIRE_FALSE( range.isDescending() );
 		REQUIRE( range.to > std::numeric_limits<size_t>::max()-1 );
 	}
@@ -32,6 +31,8 @@ TEST_CASE( "IndexRange", "[IndexRange]" ) {
 		r2.to = 10;
 		REQUIRE_FALSE( range < r2 );
 		REQUIRE( r2 < range );
+		REQUIRE( r2.isAscending() );
+		REQUIRE_FALSE( r2.isDescending() );
 
 		// from ordered
 		r2.from = 10;

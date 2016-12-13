@@ -36,7 +36,7 @@ covers( const size_t index ) const
 		return false;
 	}
 
-	// find first range that with begin > i
+	// find first range that with begin > index
 	const_iterator r = std::upper_bound( list.begin(), list.end(), IndexRange(index,std::numeric_limits<size_t>::max()) );
 	if ( r == list.begin() ) {
 		return false;
@@ -44,6 +44,46 @@ covers( const size_t index ) const
 		// go to preceding range and check if <= the end of the blocked range
 		return index <= (--r)->to;
 	}
+}
+
+//////////////////////////////////////////////////////////////////////
+
+bool
+IndexRangeList::
+overlaps( const IndexRange& range ) const
+{
+#if IN_DEBUG_MODE
+	if (!range.isAscending())  {
+		throw std::runtime_error("IndexRangeList::overlaps("+toString(range)+") range is not ascending");
+	}
+#endif
+
+	// quick check
+	if (list.empty()) {
+		return false;
+	}
+
+	// find first range that with begin > range.from
+	const_iterator r = std::upper_bound( list.begin(), list.end(), range );
+
+	bool isNotOverlapping = true;
+
+	// check if not overlapping with successor
+	if (isNotOverlapping && r != list.end()) {
+		// check for overlap
+		isNotOverlapping = range.to < r->from;
+	}
+
+	// check if not overlapping with predecessor
+	if (isNotOverlapping && r != list.begin()) {
+		// go to predecessor
+		--r;
+		// check for overlap
+		isNotOverlapping = range.from < r->to;
+	}
+
+	return !isNotOverlapping;
+
 }
 
 //////////////////////////////////////////////////////////////////////

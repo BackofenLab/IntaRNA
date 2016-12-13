@@ -1,4 +1,19 @@
 
+161213 Martin Mann :
+ * PredictorMfe2d :
+   * initHybridE : 
+     * code optimizations to reduce lookups
+ * Predictor* :
+   + initOptima()
+   + updateOptima()
+   + reportOptima()
+     = generic optima handling
+   - *Mfe() : replaced by *Optima()
+   - *MaxPro() : replaced by *Optima()
+ * IndexRangeList :
+   + overlaps( range r ) : whether or not one of the ranges overlaps with r
+   + tests
+
 161212 Martin Mann :
  * InteractionEnergy* :
    + getES*() : ensemble energy of intramolecular substructures within a given

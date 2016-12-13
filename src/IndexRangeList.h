@@ -58,6 +58,15 @@ public:
 	bool covers( const size_t index ) const;
 
 	/**
+	 * checks whether or not a given ascending index range is overlapping with at least
+	 * one of the stored index ranges
+	 * @param index the index to check
+	 * @return true if @p index is within one of the index ranges (including
+	 *         boundaries); false otherwise
+	 */
+	bool overlaps( const IndexRange& range ) const;
+
+	/**
 	 * adds an ascending range to the end of the list.
 	 * NOTE: if the insertion would violate range sorting, an exception is raised
 	 * @param range the ascending index range to add (from should be > rbegin()->to)
