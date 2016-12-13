@@ -109,10 +109,15 @@ protected:
 	/**
 	 * Pushes the optimal and suboptimal solutions to the output handler.
 	 *
+	 * @param reportMax the maximal number of (sub)optimal interactions to be
+	 *            reported to the output handler
+	 * @param reportNonOverlapping whether or not the reported interactions
+	 *            should be non-overlapping or not
 	 */
 	virtual
 	void
-	reportOptima() = 0;
+	reportOptima( const size_t reportMax
+				, const bool reportNonOverlapping) = 0;
 
 
 };

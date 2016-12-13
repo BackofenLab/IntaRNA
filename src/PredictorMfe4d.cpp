@@ -39,10 +39,6 @@ predict( const IndexRange & r1
 	// measure timing
 	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
 
-	if (reportMax>1) {
-		NOTIMPLEMENTED("PredictorMfe4d::predict(reportMax > 1) : not implemented");
-	}
-
 #if IN_DEBUG_MODE
 	// check indices
 	if (!(r1.isAscending() && r2.isAscending()) )
@@ -161,18 +157,14 @@ predict( const IndexRange & r1
 				<<"%)";
 
 	// initialize mfe interaction for updates
-	initOptima( (reportNonOverlapping ? std::min<const size_t>(1,reportMax) : reportMax)
-			, reportNonOverlapping );
+	initOptima( reportMax, reportNonOverlapping );
 
 	// fill matrix
 	fillHybridE( );
 
 	// report mfe interaction
-	if (reportMax > 1 && reportNonOverlapping) {
-		reportMfeNonOverlapping( reportMax );
-	} else {
-		reportOptima();
-	}
+	reportOptima( reportMax, reportNonOverlapping );
+
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -388,35 +380,84 @@ traceBack( Interaction & interaction )
 
 void
 PredictorMfe4d::
-reportMfeNonOverlapping( const size_t reportMax )
+getNextBest( Interaction & curBest )
 {
-	assert(PredictorMfe::mfeInteractions.size()==1);
 
-	// number of reports
-	size_t reported = 0;
+	// store current best energy.second
+	const E_type curBestE = curBest.energy;
 
-	// identify and report remaining non-overlapping suboptimals
-	E_type lastMfe = PredictorMfe::mfeInteractions.begin()->energy;
-	while (lastMfe < 0.0 && reported < reportMax) {
-		// report current mfe via superclass
-		reportOptima();
-		// reset mfe
-		initOptima( 1, false );
-		// count and identify next if needed
-		if (++reported < reportMax) {
-			// identify next non-overlapping suboptimal with E <= lastMfe
-			NOTIMPLEMENTED("PredictorMfe4d::reportOptima() : suboptimal enumeration missing");
+	// overwrite energy for update
+	curBest.energy = E_INF;
+	curBest.basePairs.resize(2);
+
+	// TODO replace index iteration with something based on ranges from reportedInteractions
+
+	// identify cell with next best non-overlapping interaction site
+	// iterate (decreasingly) over all left interaction starts
+	E2dMatrix * curTable = NULL;
+	IndexRange r1,r2;
+	E_type curE = E_INF;
+	for (r1.from=hybridE.size1(); r1.from-- > 0;) {
+
+		// ensure interaction site start is not covered
+		if (reportedInteractions.first.covers(r1.from)) {
+			continue;
 		}
-		// update current mfe value
-		lastMfe = PredictorMfe::mfeInteractions.begin()->energy;
-	};
 
-	if (reported == 0 && reportMax > 0) {
-		// report empty interaction via superclass
-		assert(PredictorMfe::mfeInteractions.begin()->energy >= 0.0);
-		reportOptima();
-	}
+		for (r2.from=hybridE.size2(); r2.from-- > 0;) {
+
+			// ensure interaction site start is not covered
+			if (reportedInteractions.first.covers(r2.from)) {
+				continue;
+			}
+			// check if left boundary is complementary
+			if (hybridE(r1.from,r2.from) == NULL) {
+				// interaction not possible: nothing to do, since no storage reserved
+				continue;
+			}
+
+			curTable = hybridE(r1.from,r2.from);
+
+			for (r1.to=r1.from; r1.to<curTable->size1(); r1.to++) {
+
+				// check of overlapping
+				if (reportedInteractions.first.overlaps(r1)) {
+					// stop since all larger sites will overlap as well
+					break;;
+				}
+
+				for (r2.to=r2.from; r2.to<curTable->size2(); r2.to++) {
+
+					// check of overlapping
+					if (reportedInteractions.second.overlaps(r2)) {
+						// stop since all larger sites will overlap as well
+						break;;
+					}
+
+					// get overall energy of entry
+					curE = energy.getE( r1.from, r2.from, r1.to, r2.to, (*curTable)(r1.to,r2.to));
+
+					// skip sites with energy too low
+					// or higher than current best found so far
+					if (  curE< curBestE || curE >= curBest.energy ) {
+						continue;
+					}
+
+					//// FOUND THE NEXT BETTER SOLUTION
+					// overwrite current best found so far
+					curBest.energy = curE;
+					curBest.basePairs[0] = energy.getBasePair( r1.from, r2.from );
+					curBest.basePairs[1] = energy.getBasePair( r1.to, r2.to );
+
+				} // j2
+			} // j1
+
+
+		} // i2
+	} // i1
+
 }
+
 
 ////////////////////////////////////////////////////////////////////////////
 

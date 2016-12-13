@@ -38,8 +38,7 @@ predict( const IndexRange & r1, const IndexRange & r2
 
 	// suboptimal setup check
 	if (reportMax>1 && reportNonOverlapping) {
-		LOG(ERROR) <<"the enumeration of non-overlapping suboptimal interactions is not supported in this prediction mode";
-		return;
+		throw new std::runtime_error("PredictorMfe2dSeed : the enumeration of non-overlapping suboptimal interactions is not supported in this prediction mode");
 	}
 
 #if IN_DEBUG_MODE
@@ -88,7 +87,7 @@ predict( const IndexRange & r1, const IndexRange & r2
 	}
 
 	// report mfe interaction
-	reportOptima();
+	reportOptima( reportMax, reportNonOverlapping );
 
 }
 
@@ -339,6 +338,15 @@ traceBack( Interaction & interaction )
 		// set last to j1-j2
 		(*bps.rbegin()) = energy.getBasePair( j1, j2 );
 	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void
+PredictorMfe2dSeed::
+getNextBest( Interaction & curBest )
+{
+	throw std::runtime_error("PredictorMfe2dSeed : This prediction mode does not support non-overlapping suboptimal interaction enumeration.");
 }
 
 //////////////////////////////////////////////////////////////////////////

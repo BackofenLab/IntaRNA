@@ -67,6 +67,9 @@ protected:
 	//! access to the output handler of the super class
 	using PredictorMfe::output;
 
+	//! access to the list of reported interaction ranges of the super class
+	using PredictorMfe::reportedInteractions;
+
 	// TODO provide all data structures as arguments to make predict() call threadsafe
 
 	//! energy of all interaction hybrids computed by the recursion with indices
@@ -97,15 +100,21 @@ protected:
 	void
 	traceBack( Interaction & interaction );
 
+
 	/**
-	 * reports mfe and non-overlapping suboptimal interactions to the output handler
+	 * Identifies the next best interaction with an energy equal to or higher
+	 * than the given interaction. The new interaction will not overlap any
+	 * index range stored in reportedInteractions.
 	 *
-	 * @param reportMax the maximal number of non-overlapping (sub)optimal interactions to be
-	 *            reported to the output handler
+	 * @param curBest IN/OUT the current best interaction to be replaced with one
+	 *        of equal or higher energy not overlapping with any reported
+	 *        interaction so far; an interaction with energy E_INF is set, if
+	 *        there is no better interaction left
 	 */
 	virtual
 	void
-	reportMfeNonOverlapping( const size_t reportMax );
+	getNextBest( Interaction & curBest );
+
 };
 
 #endif /* PREDICTORMFE4D_H_ */

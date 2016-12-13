@@ -5,7 +5,10 @@
 
 #include "Predictor.h"
 
+#include "IndexRangeList.h"
+
 #include <list>
+#include <utility>
 
 /**
  * Generic Predictor interface for MFE interaction computation to avoid
@@ -42,6 +45,10 @@ protected:
 
 	//! mfe interaction boundaries
 	InteractionList mfeInteractions;
+
+	//! index ranges of reported interactions to identify non-overlapping
+	//! interactions (first = seq1, second = seq2)
+	std::pair< IndexRangeList, IndexRangeList > reportedInteractions;
 
 	//! minimal stacking energy
 	const E_type minStackingEnergy;
@@ -92,15 +99,35 @@ protected:
 	traceBack( Interaction & interaction ) = 0;
 
 
+	/**
+	 * Identifies the next best interaction with an energy equal to or higher
+	 * than the given interaction. The new interaction will not overlap any
+	 * index range stored in reportedInteractions.
+	 *
+	 * @param curBest IN/OUT the current best interaction to be replaced with one
+	 *        of equal or higher energy not overlapping with any reported
+	 *        interaction so far; an interaction with energy E_INF is set, if
+	 *        there is no better interaction left
+	 */
+	virtual
+	void
+	getNextBest( Interaction & curBest ) = 0;
 
 	/**
 	 * Calls for the stored mfe and suboptimal solutions traceBack(i)
 	 * and pushes the according interactions to the output handler.
+	 * For non-overlapping interaction enumeration, getNextBest() is called
+	 * iteratively.
 	 *
+	 * @param reportMax the maximal number of (sub)optimal interactions to be
+	 *            reported to the output handler
+	 * @param reportNonOverlapping whether or not the reported interactions
+	 *            should be non-overlapping or not
 	 */
 	virtual
 	void
-	reportOptima();
+	reportOptima( const size_t reportMax
+				, const bool reportNonOverlapping);
 
 };
 

@@ -13,6 +13,17 @@
  * IndexRangeList :
    + overlaps( range r ) : whether or not one of the ranges overlaps with r
    + tests
+ * Predictor* :
+   * reportOptima( parameters )
+ * PredictorMfe :
+   + reportedInteractions : index range lists to enable non-overlapping 
+     interaction reporting
+   + getNextBest() : abstract interface to access the next best non-overlapping
+     interaction (based on reportedInteractions)
+     -> implemented by all subclasses
+   * reportOptima() : now screens for non-overlapping suboptimal interactions
+     using getNextBest()
+ 
 
 161212 Martin Mann :
  * InteractionEnergy* :

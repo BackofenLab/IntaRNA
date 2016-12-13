@@ -69,6 +69,9 @@ protected:
 	//! access to the output handler of the super class
 	using PredictorMfe2dHeuristic::output;
 
+	//! access to the list of reported interaction ranges of the super class
+	using PredictorMfe2dHeuristic::reportedInteractions;
+
 	// TODO provide all data structures as arguments to make predict() call threadsafe
 
 	//! energy of all interaction hybrids that end in position p (seq1) and
@@ -92,6 +95,21 @@ protected:
 	void
 	traceBack( Interaction & interaction );
 
+
+	/**
+	 * Identifies the next best interaction (containing a seed)
+	 * with an energy equal to or higher
+	 * than the given interaction. The new interaction will not overlap any
+	 * index range stored in reportedInteractions.
+	 *
+	 * @param curBest IN/OUT the current best interaction to be replaced with one
+	 *        of equal or higher energy not overlapping with any reported
+	 *        interaction so far; an interaction with energy E_INF is set, if
+	 *        there is no better interaction left
+	 */
+	virtual
+	void
+	getNextBest( Interaction & curBest );
 
 };
 

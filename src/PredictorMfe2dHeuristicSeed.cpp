@@ -39,11 +39,6 @@ predict( const IndexRange & r1
 	// measure timing
 	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
 
-	// suboptimal setup check
-	if (reportMax>1 && reportNonOverlapping) {
-		NOTIMPLEMENTED("non-overlapping not implemented in this mode");
-	}
-
 #if IN_DEBUG_MODE
 	// check indices
 	if (!(r1.isAscending() && r2.isAscending()) )
@@ -174,7 +169,7 @@ predict( const IndexRange & r1
 
 
 	// report mfe interaction
-	reportOptima();
+	reportOptima( reportMax, reportNonOverlapping );
 
 }
 
@@ -298,6 +293,82 @@ traceBack( Interaction & interaction )
 		}
 		// set last to j1-j2
 		(*bps.rbegin()) = energy.getBasePair( j1, j2 );
+	}
+
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void
+PredictorMfe2dHeuristicSeed::
+getNextBest( Interaction & curBest )
+{
+
+	const E_type curBestE = curBest.energy;
+
+	// TODO replace index iteration with something based on ranges from reportedInteractions
+
+	// identify cell with next best non-overlapping interaction site
+	// iterate (decreasingly) over all left interaction starts
+	size_t i1,i2;
+	BestInteraction * curBestCell = NULL;
+	E_type curBestCellE = E_INF;
+	Interaction::BasePair curBestCellStart;
+	BestInteraction * curCell = NULL;
+	E_type curCellE = E_INF;
+	IndexRange r1,r2;
+	for (i1=hybridE_seed.size1(); i1-- > 0;) {
+		// ensure interaction site start is not covered
+		if (reportedInteractions.first.covers(i1)) {
+			continue;
+		}
+		for (i2=hybridE_seed.size2(); i2-- > 0;) {
+			// ensure interaction site start is not covered
+			if (reportedInteractions.first.covers(i2)) {
+				continue;
+			}
+			// direct cell access
+			curCell = &(hybridE_seed(i1,i2));
+			// check if left side can pair
+			if (E_isINF(curCell->E))
+			{
+				continue;
+			}
+			// get overall energy of the interaction
+			curCellE = energy.getE(i1,curCell->j1,i2,curCell->j2,curCell->E);
+			// or energy is too low to be considered
+			// or energy is higher than current best found so far
+			if (curCellE < curBestE || curCellE >= curBestCellE )
+			{
+				continue;
+			}
+			// ensure site is not overlapping
+			r1.from = i1;
+			r2.to = curCell->j1;
+			if ( reportedInteractions.first.overlaps( r1 )) {
+				continue;
+			}
+			r2.from = i2;
+			r2.to = curCell->j2;
+			if ( reportedInteractions.second.overlaps( r2 )) {
+				continue;
+			}
+			//// FOUND THE NEXT BETTER SOLUTION
+			// overwrite current best found so far
+			curBestCell = curCell;
+			curBestCellE = curCellE;
+			curBestCellStart.first = i1;
+			curBestCellStart.second = i2;
+
+		} // i2
+	} // i1
+
+	// overwrite curBest
+	curBest.basePairs.resize(2);
+	curBest.energy = curBestCellE;
+	if (E_isNotINF(curBestCellE)) {
+		curBest.basePairs[0] = energy.getBasePair( curBestCellStart.first, curBestCellStart.second );
+		curBest.basePairs[1] = energy.getBasePair( curBestCell->j1, curBestCell->j2 );
 	}
 
 }

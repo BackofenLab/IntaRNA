@@ -9,11 +9,11 @@
 PredictorMfe::PredictorMfe( const InteractionEnergy & energy, OutputHandler & output )
 	: Predictor(energy,output)
 	, mfeInteractions()
+	, reportedInteractions()
 	, minStackingEnergy( energy.getBestE_interLoop() )
 	, minInitEnergy( energy.getE_init() )
 	, minDangleEnergy( energy.getBestE_dangling() )
 	, minEndEnergy( energy.getBestE_end() )
-
 {
 
 }
@@ -52,6 +52,11 @@ initOptima( const size_t reportMax
 		i->basePairs[1].first = RnaSequence::lastPos;
 		i->basePairs[1].second = RnaSequence::lastPos;
 	}
+
+	// clear reported interaction ranges
+	reportedInteractions.first.clear();
+	reportedInteractions.second.clear();
+
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -140,27 +145,60 @@ updateOptima( const size_t i1, const size_t j1
 
 void
 PredictorMfe::
-reportOptima()
+reportOptima( const size_t reportMax
+			, const bool reportNonOverlapping)
 {
 	// number of reported interactions
 	size_t reported = 0;
 
-	// report all interactions with energy below 0
-	for (InteractionList::iterator i = mfeInteractions.begin(); i!= mfeInteractions.end(); i++) {
+	// clear reported interaction ranges
+	reportedInteractions.first.clear();
+	reportedInteractions.second.clear();
 
-		// check if interaction is better than no interaction (E==0)
-		if (i->energy < 0.0) {
-			// fill mfe interaction with according base pairs
-			traceBack( *i );
+	if (reportNonOverlapping) {
+		// check if mfe is worth reporting
+		Interaction curBest = *mfeInteractions.begin();
+		while( curBest.energy < 0.0 && reported < reportMax ) {
+			// report current best
+			// fill interaction with according base pairs
+			traceBack( curBest );
 			// report mfe interaction
-			output.add( *i );
+			output.add( curBest );
 			// count
 			reported++;
+			// store ranges to ensure non-overlapping of next best solution
+			reportedInteractions.first.insert( IndexRange(energy.getIndex1(*curBest.basePairs.begin()),energy.getIndex1(*curBest.basePairs.rbegin())) );
+			reportedInteractions.second.insert( IndexRange(energy.getIndex2(*curBest.basePairs.begin()),energy.getIndex2(*curBest.basePairs.rbegin())) );
+
+			// get next best
+			getNextBest( curBest );
 		}
-	}
+
+	} // non-overlapping interactions
+
+	else // overlapping interactions are allowed
+	{
+		// report all (possibly overlapping) interactions with energy below 0
+		assert(reportMax <= mfeInteractions.size());
+		for (InteractionList::iterator i = mfeInteractions.begin();
+				reported < reportMax
+				&& i!= mfeInteractions.end(); i++)
+		{
+
+			// check if interaction is better than no interaction (E==0)
+			if (i->energy < 0.0) {
+				// fill mfe interaction with according base pairs
+				traceBack( *i );
+				// report mfe interaction
+				output.add( *i );
+				// count
+				reported++;
+			}
+		}
+	} // overlapping interactions
 
 	// check if nothing was worth reporting but report was expected
-	if (reported == 0 && mfeInteractions.size()>0 ) {
+	if (reported == 0 && reportMax > 0 ) {
 		// -> no preferable interactions found !!!
 		// replace mfeInteraction with no interaction
 		mfeInteractions.begin()->clear();

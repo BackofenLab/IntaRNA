@@ -39,8 +39,8 @@ predict( const IndexRange & r1
 	// measure timing
 	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
 
-	if (reportMax != 1) {
-		NOTIMPLEMENTED("PredictorMaxProb::predict(reportMax != 1) : not implemented");
+	if (reportMax > 1) {
+		NOTIMPLEMENTED("PredictorMaxProb::predict(reportMax > 1) : not implemented");
 	}
 
 #if IN_DEBUG_MODE
@@ -114,7 +114,7 @@ predict( const IndexRange & r1
 	fillHybridZ( );
 
 	// report interaction site with maximal probability
-	reportOptima();
+	reportOptima( reportMax, reportNonOverlapping );
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -279,8 +279,17 @@ updateOptima( const size_t i1, const size_t j1
 
 void
 PredictorMaxProb::
-reportOptima()
+reportOptima( const size_t reportMax
+			, const bool reportNonOverlapping)
 {
+
+	if (reportMax == 0) {
+		return;
+	}
+
+	if (reportMax > 1) {
+		NOTIMPLEMENTED("PredictorMaxProb::reportOptima(reportMax > 1)");
+	}
 
 	// maximal probability is
 	// double maxProb = (double)maxProbInteraction.getEnergy() / Z;
