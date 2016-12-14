@@ -103,5 +103,52 @@ TEST_CASE( "IndexRangeList", "[IndexRangeList]" ) {
 	}
 
 
+	SECTION("check string en-/decoding") {
+
+		// write to string
+		std::stringstream s;
+		// parse from string
+		IndexRangeList list2(s.str());
+		REQUIRE( rangeList == list2 );
+
+		rangeList.insert(IndexRange(4,8));
+		s.str(""); s <<rangeList;
+		list2=IndexRangeList(s.str());
+		REQUIRE( rangeList == list2 );
+
+		rangeList.insert(IndexRange(1,2));
+		s.str(""); s <<rangeList;
+		list2=IndexRangeList(s.str());
+		REQUIRE( rangeList == list2 );
+
+		rangeList.insert(IndexRange(10,10));
+		s.str(""); s <<rangeList;
+		list2=IndexRangeList(s.str());
+		REQUIRE( rangeList == list2 );
+
+	}
+
+	SECTION("check shift") {
+
+		// create list
+		rangeList.insert(IndexRange(1,2));
+		rangeList.insert(IndexRange(4,8));
+		rangeList.insert(IndexRange(10,10));
+
+		// shift to left
+		IndexRangeList l5 = rangeList.shift(-5,10);
+		IndexRangeList r1 = rangeList.shift(+1,10);
+
+		// write to string for comparison
+		std::stringstream s;
+		s.str(""); s <<rangeList;
+		REQUIRE( s.str() == "1-2,4-8,10-10" );
+		s.str(""); s <<l5;
+		REQUIRE( s.str() == "0-3,5-5" );
+		s.str(""); s<<r1;
+		REQUIRE( s.str() == "2-3,5-9" );
+
+	}
+
 }
 

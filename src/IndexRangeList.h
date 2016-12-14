@@ -6,6 +6,8 @@
 
 #include <vector>
 
+#include <boost/regex.hpp>
+
 /**
  * Sorted list of non-overlapping ascending ranges.
  *
@@ -23,6 +25,11 @@ protected:
 
 public:
 
+	//! regular expression that matches valid IndexRangeList string encodings
+	static const boost::regex regex;
+
+public:
+
 	typedef List::iterator iterator;
 	typedef List::const_iterator const_iterator;
 	typedef List::reverse_iterator reverse_iterator;
@@ -34,6 +41,15 @@ public:
 	 * empty construction
 	 */
 	IndexRangeList();
+
+	/**
+	 * String encoding based construction
+	 *
+	 * @param stringEncoding the string encoding to be parsed
+	 *
+	 * @throws std::runtime_error if stringEncoding does not match regex
+	 */
+	IndexRangeList( const std::string & stringEncoding );
 
 	/**
 	 * copy construction
@@ -75,7 +91,9 @@ public:
 
 	/**
 	 * adds an ascending range to the according position of the sorted list.
+	 * Insertion of duplicates is avoided.
 	 * @param range the ascending index range to add
+	 * @return iterator to the inserted (or already present) element
 	 */
 	iterator insert( const IndexRange& range );
 
@@ -149,6 +167,46 @@ public:
 	 * Removes all stored elements
 	 */
 	void clear();
+
+	/**
+	 * updates the range list data from a valid string encoding (matching regex)
+	 * @param stringEncoding the interval list string encoding
+	 * @throws std::runtime_error if stringEncoding does not match regex
+	 */
+	void
+	fromString( const std::string & stringEncoding );
+
+	/**
+	 * shifts all indices by the given value and returns all intervals within
+	 * the boundaries [0,indexMax] including indexMax
+	 * @param indexShift the shift to be applied to all index range boundaries
+	 * @param indexMax the maximal value any index in the returned list can have
+	 * @return a new range list with shifted ranges where all ranges shifted to
+	 *    indices below 0 are (I) removed if range'.to < 0 or (II) cut to
+	 *    range'.from = 0; the same holds respectively for upper bound
+	 *    violations exceeding indexMax.
+	 */
+	IndexRangeList
+	shift( const int indexShift, const size_t indexMax ) const;
+
+
+	/**
+	 * Checks whether or not two range lists are equivalent
+	 * @param r the range list to compare to
+	 * @return list == r.list
+	 */
+	const bool operator == ( const IndexRangeList &r ) const {
+		return this->list == r.list;
+	}
+
+	/**
+	 * Checks whether or not two range lists are inequivalent
+	 * @param r the range list to compare to
+	 * @return list != r.list
+	 */
+	const bool operator != ( const IndexRangeList &r ) const {
+		return this->list != r.list;
+	}
 
 protected:
 

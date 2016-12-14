@@ -39,9 +39,6 @@ public:
 	};
 
 
-	//! regular expression used to parse range list string encodings
-	static const boost::regex regexRangeEncoding;
-
 public:
 
 	/**
@@ -118,12 +115,12 @@ public:
 	/**
 	 * Returns a newly allocated Energy object according to the user defined
 	 * parameters.
-	 * @param accQuery the accessibility object of the query sequence
-	 * @param accTarget the (reversed) accessibility object of the target sequence
+	 * @param accTarget the accessibility object of the target sequence
+	 * @param accQuery the (reversed) accessibility object of the query sequence
 	 * @return the newly allocated Energy object to be deleted by the calling
 	 * function or NULL in error case
 	 */
-	InteractionEnergy* getEnergyHandler( const Accessibility& accQuery, const ReverseAccessibility& accTarget ) const;
+	InteractionEnergy* getEnergyHandler( const Accessibility& accTarget, const ReverseAccessibility& accQuery ) const;
 
 	/**
 	 * Provides a newly allocated output handler according to the user request.
@@ -317,6 +314,10 @@ protected:
 	NumberParameter<int> seedMaxUPt;
 	//! max energy of a seed to be considered
 	NumberParameter<E_type> seedMaxE;
+	//! intervals in query for seed search
+	std::string seedRangeq;
+	//! intervals in target for seed search
+	std::string seedRanget;
 	//! the final seed constraint to be used
 	mutable SeedConstraint * seedConstraint;
 
@@ -472,6 +473,18 @@ protected:
 	void validate_seedMaxE(const E_type & value);
 
 	/**
+	 * Validates the seedRangeq argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_seedRangeq(const std::string & value);
+
+	/**
+	 * Validates the seedRanget argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_seedRanget(const std::string & value);
+
+	/**
 	 * Validates the temperature argument.
 	 * @param value the argument value to validate
 	 */
@@ -541,6 +554,18 @@ protected:
 		}
 	}
 
+
+	/**
+	 * Validates the string encoding of an IndexRangeList encoding parameter
+	 * @param argName the name of the parameter (for exception handling)
+	 * @param value the value of the parameter to validate
+	 * @param indexMin the minimal value of an index allowed
+	 * @param indexMax the maximal value of an index allowed
+	 */
+	void validate_indexRangeList(const std::string & argName
+								, const std::string & value
+								, const size_t indexMin
+								, const size_t indexMax );
 
 	/**
 	 * Validates a sequence arguments.

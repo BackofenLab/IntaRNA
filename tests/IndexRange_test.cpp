@@ -7,6 +7,8 @@
 
 #include "IndexRange.h"
 
+#include <sstream>
+
 TEST_CASE( "IndexRange", "[IndexRange]" ) {
 
 
@@ -41,6 +43,20 @@ TEST_CASE( "IndexRange", "[IndexRange]" ) {
 		REQUIRE( r2.isAscending() );
 	}
 
+
+	SECTION("check string en-/decoding") {
+
+		// write to string
+		std::stringstream s;
+		range = (4,8);
+		s <<range;
+
+		// parse from string
+		IndexRange r2(s.str());
+
+		// check
+		REQUIRE( range == r2 );
+	}
 
 }
 

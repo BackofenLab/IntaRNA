@@ -13,6 +13,8 @@ SeedConstraint::SeedConstraint(
 		, const size_t maxUnpaired1_
 		, const size_t maxUnpaired2_
 		, const E_type maxE_
+		, const IndexRangeList & ranges1
+		, const IndexRangeList & ranges2
 		)
  :
 	  bp(bp_)
@@ -20,6 +22,8 @@ SeedConstraint::SeedConstraint(
 	, maxUnpaired1(std::min(maxUnpaired1_,maxUnpairedOverall_)) // exclude too large boundaries
 	, maxUnpaired2(std::min(maxUnpaired2_,maxUnpairedOverall_)) // exclude too large boundaries
 	, maxE(maxE_)
+	, ranges1(ranges1)
+	, ranges2(ranges2)
 {
 	if (bp < 2) throw std::runtime_error("SeedHandler() : base pair number < 2 ("+toString(bp)+")");
 }
@@ -83,6 +87,22 @@ size_t
 SeedConstraint::
 getMaxLength2() const {
 	return getBasePairs() + getMaxUnpaired2();
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+const IndexRangeList &
+SeedConstraint::
+getRanges1() const {
+	return ranges1;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+const IndexRangeList &
+SeedConstraint::
+getRanges2() const {
+	return ranges2;
 }
 
 /////////////////////////////////////////////////////////////////////////////

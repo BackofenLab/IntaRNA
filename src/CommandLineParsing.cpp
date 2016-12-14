@@ -39,10 +39,6 @@
 
 ////////////////////////////////////////////////////////////////////////////
 
-const boost::regex CommandLineParsing::regexRangeEncoding("^([123456789]\\d*-[123456789]\\d*,)*[123456789]\\d*-[123456789]\\d*$");
-
-////////////////////////////////////////////////////////////////////////////
-
 CommandLineParsing::CommandLineParsing()
 	:
 	opts_query("Query"),
@@ -83,6 +79,8 @@ CommandLineParsing::CommandLineParsing()
 	seedMaxUPq(-1,20,-1),
 	seedMaxUPt(-1,20,-1),
 	seedMaxE(-999,+999,0),
+	seedRangeq(""),
+	seedRanget(""),
 	seedConstraint(NULL),
 
 	temperature(0,100,37),
@@ -217,6 +215,14 @@ CommandLineParsing::CommandLineParsing()
 				->default_value(seedMaxE.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_seedMaxE,this,_1))
 			, std::string("maximal energy a seed region may have (arg in range ["+toString(seedMaxE.min)+","+toString(seedMaxE.max)+"]).").c_str())
+		("seedRangeq"
+			, value<std::string>(&(seedRangeq))
+				->notifier(boost::bind(&CommandLineParsing::validate_seedRangeq,this,_1))
+			, std::string("interval(s) in the query to search for seeds in format 'from1-to1,from2-to2,...' (Note, only for single query)").c_str())
+		("seedRanget"
+			, value<std::string>(&(seedRanget))
+				->notifier(boost::bind(&CommandLineParsing::validate_seedRanget,this,_1))
+			, std::string("interval(s) in the target to search for seeds in format 'from1-to1,from2-to2,...' (Note, only for single target)").c_str())
 		;
 
 	////  INTERACTION/ENERGY OPTIONS  ////////////////////////
@@ -415,6 +421,27 @@ parse(int argc, char** argv)
 				if (seedMaxUPq.val != seedMaxUPq.def) LOG(INFO) <<"no seed constraint wanted, but seedMaxUPq provided (will be ignored)";
 				if (seedMaxUPt.val != seedMaxUPt.def) LOG(INFO) <<"no seed constraint wanted, but seedMaxUPt provided (will be ignored)";
 				if (seedMaxE.val != seedMaxE.def) LOG(INFO) <<"no seed constraint wanted, but seedMaxE provided (will be ignored)";
+				if (!seedRangeq.empty()) LOG(INFO) <<"no seed constraint wanted, but seedRangeq provided (will be ignored)";
+				if (!seedRanget.empty()) LOG(INFO) <<"no seed constraint wanted, but seedRanget provided (will be ignored)";
+			} else {
+				// check query search ranges
+				if (!seedRangeq.empty()) {
+					if (query.size()!=1) {
+						LOG(ERROR) <<"seedRangeq given but not only one query sequence provided";
+						updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+					} else {
+						validate_indexRangeList("seedRangeq",seedRangeq, 1, query.begin()->size());
+					}
+				}
+				// check target search ranges
+				if (!seedRanget.empty()) {
+					if (target.size()!=1) {
+						LOG(ERROR) <<"seedRanget given but not only one target sequence provided";
+						updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+					} else {
+						validate_indexRangeList("seedRanget",seedRanget, 1, target.begin()->size());
+					}
+				}
 			}
 
 			// check qAcc upper bound
@@ -640,6 +667,30 @@ void CommandLineParsing::validate_seedMaxE(const E_type & value) {
 
 ////////////////////////////////////////////////////////////////////////////
 
+void CommandLineParsing::validate_seedRangeq(const std::string & value) {
+	if (!value.empty()) {
+		// check regex
+		if (!boost::regex_match(value, IndexRangeList::regex, boost::match_perl) ) {
+			LOG(ERROR) <<"seedRangeq"<<" = " <<value <<" : is not in the format 'from1-to1,from2-to2,..'";
+			parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
+		}
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void CommandLineParsing::validate_seedRanget(const std::string & value) {
+	if (!value.empty()) {
+		// check regex
+		if (!boost::regex_match(value, IndexRangeList::regex, boost::match_perl) ) {
+			LOG(ERROR) <<"seedRanget"<<" = " <<value <<" : is not in the format 'from1-to1,from2-to2,..'";
+			parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
+		}
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
 void CommandLineParsing::validate_temperature(const T_type & value) {
 	// forward check to general method
 	validate_numberArgument("temperature", temperature, value);
@@ -743,6 +794,43 @@ validate_sequenceArgument(const std::string & name, const std::string & value)
 
 void
 CommandLineParsing::
+validate_indexRangeList(const std::string & argName, const std::string & value
+		, const size_t indexMin , const size_t indexMax)
+{
+	assert(indexMin <= indexMax);
+
+	// check if empty
+	if (value.empty()) {
+		return;
+	}
+	// check if matched by regex
+	if ( ! boost::regex_match(value,IndexRangeList::regex, boost::match_perl) ) {
+		LOG(ERROR) <<argName<<" : '"<<value<<"' does not match the format 'from1-to1,from2-to2,..'";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+	} else {
+		// create range list for further checking
+		IndexRangeList r(value);
+		for (IndexRangeList::const_iterator i=r.begin(); i!=r.end(); i++) {
+			// ensure range is ascending
+			if (!i->isAscending()) {
+				LOG(ERROR)  <<argName<<" : subrange " <<*i <<" is not ascending";
+				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+				return;
+			}
+			// check if boundaries in range (given they are ascending)
+			if (i->to < indexMin || i->to > indexMax) {
+				LOG(ERROR)  <<argName<<" : subrange " <<*i <<" is out of bounds [1,"<<indexMax<<"]";
+				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+				return;
+			}
+		}
+	} // matches regex
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void
+CommandLineParsing::
 validate_structureConstraintArgument(const std::string & name, const std::string & value)
 {
 	// check if valid alphabet
@@ -801,7 +889,7 @@ validateRegion( const std::string & argName, const std::string & value )
 		return true;
 	} else
 	// check if direct range input
-	if (boost::regex_match( value, regexRangeEncoding, boost::match_perl )) {
+	if (boost::regex_match( value, IndexRangeList::regex, boost::match_perl )) {
 		return true;
 	} else
 	// might be BED file input
@@ -837,48 +925,19 @@ parseRegion( const std::string & argName, const std::string & value, const RnaSe
 		return;
 	} else
 	// check direct range input
-	if (boost::regex_match( value, regexRangeEncoding, boost::match_perl )) {
+	if (boost::regex_match( value, IndexRangeList::regex, boost::match_perl )) {
 		// ensure single sequence input
 		if(sequences.size() != 1) {
 			LOG(ERROR) <<argName <<" : string range list encoding provided but more than one sequence present.";
 			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 			return;
 		}
+		// validate range encodings
+		validate_indexRangeList(argName, value, 1, sequences.begin()->size());
 		// ensure range list size sufficient
 		rangeList.resize(1);
-		// clear first range list
-		rangeList[0].clear();
-		// decompose string into ranges
-		boost::char_separator<char> commaSeparator(",");
-		boost::tokenizer< boost::char_separator<char> > rangeStrings(value, commaSeparator);
-		IndexRange toAdd(0,0);
-		size_t dashPos = 0;
-		BOOST_FOREACH(const std::string & rangeEncoding, rangeStrings)
-		{
-			// decompose range, check and store
-			try {
-				dashPos = rangeEncoding.find('-');
-				// parse indices
-				toAdd.from = boost::lexical_cast<size_t>( rangeEncoding.substr(0, dashPos) ) -1;
-				toAdd.to = boost::lexical_cast<size_t>( rangeEncoding.substr( dashPos+1 ) ) -1;
-				if (toAdd.to>=sequences.at(0).size()) {
-					LOG(ERROR) <<argName <<" : upper boundary of range '"<<rangeEncoding<<"' exceeds the sequence's length "<<sequences.at(0).size();
-					updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
-				}
-				// check sanity
-				if (toAdd.isAscending()) {
-					// insert range
-					rangeList[0].insert( toAdd );
-				} else {
-					LOG(ERROR) <<argName <<" : error while parsing '"<<rangeEncoding<<"' : range not ascending";
-					updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
-				}
-			}
-			catch(const boost::bad_lexical_cast & e) {
-				LOG(ERROR) <<"CommandLineParsing::parseRegion() : error while parsing '"<<rangeEncoding<<"' for argument "<<argName<<" : "<<e.what();
-				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
-			}
-		}
+		// fill range list from string but shift by -1
+		rangeList[0] = IndexRangeList( value ).shift(-1, sequences.begin()->size()-1);
 		return;
 	}
 	// might be BED file input
@@ -965,12 +1024,12 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 
 InteractionEnergy*
 CommandLineParsing::
-getEnergyHandler( const Accessibility& accQuery, const ReverseAccessibility& accTarget ) const
+getEnergyHandler( const Accessibility& accTarget, const ReverseAccessibility& accQuery ) const
 {
 	checkIfParsed();
 	switch( energy.val ) {
-	case 'B' : return new InteractionEnergyBasePair( accQuery, accTarget, qIntLoopMax.val, tIntLoopMax.val );
-	case 'F' : return new InteractionEnergyVrna( accQuery, accTarget, vrnaHandler, qIntLoopMax.val, tIntLoopMax.val );
+	case 'B' : return new InteractionEnergyBasePair( accTarget, accQuery, tIntLoopMax.val, qIntLoopMax.val );
+	case 'F' : return new InteractionEnergyVrna( accTarget, accQuery, vrnaHandler, tIntLoopMax.val, qIntLoopMax.val );
 	default :
 		NOTIMPLEMENTED("CommandLineParsing::getEnergyHandler : energy = '"+toString(energy.val)+"' is not supported");
 	}
@@ -1225,9 +1284,12 @@ getSeedConstraint() const
 		seedConstraint = new SeedConstraint(
 							  seedBP.val
 							, seedMaxUP.val
-							, seedMaxUPq.val<0 ? seedMaxUP.val : seedMaxUPq.val
 							, seedMaxUPt.val<0 ? seedMaxUP.val : seedMaxUPt.val
+							, seedMaxUPq.val<0 ? seedMaxUP.val : seedMaxUPq.val
 							, seedMaxE.val
+							// shift ranges to start counting with 0
+							, IndexRangeList( seedRanget).shift(-1,std::numeric_limits<size_t>::max())
+							, IndexRangeList( seedRangeq).shift(-1,std::numeric_limits<size_t>::max())
 						);
 	}
 	return *seedConstraint;

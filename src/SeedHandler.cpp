@@ -19,6 +19,9 @@ SeedHandler::SeedHandler(
 		, seedE_rec( SeedIndex({{ 0,0,0,0,0 }}))
 		, seed()
 {
+	if (!seedConstraint.getRanges1().empty() || !seedConstraint.getRanges2().empty()) {
+		NOTIMPLEMENTED("SeedHandler : seed range restriction");
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////

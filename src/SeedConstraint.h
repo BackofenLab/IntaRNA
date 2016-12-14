@@ -4,6 +4,8 @@
 
 
 #include "general.h"
+#include "IndexRangeList.h"
+
 #include <cstddef>
 #include <iostream>
 
@@ -28,12 +30,16 @@ public:
 	 * @param maxUnpaired2 the maximal number of unpaired bases within seq2
 	 *        allowed within a seed
 	 * @param maxE maximal energy a seed is allowed to have
+	 * @param ranges1 the index ranges of seq1 to be searched for seeds
+	 * @param ranges1 the index ranges of seq2 to be searched for seeds
 	 */
 	SeedConstraint(  const size_t bp
 				, const size_t maxUnpairedOverall
 				, const size_t maxUnpaired1
 				, const size_t maxUnpaired2
 				, const E_type maxE
+				, const IndexRangeList & ranges1
+				, const IndexRangeList & ranges2
 				);
 
 	virtual ~SeedConstraint();
@@ -98,6 +104,21 @@ public:
 	size_t
 	getMaxLength2() const;
 
+	/**
+	 * Index ranges in seq1 to be searched for seeds or empty if all indices
+	 * are to be considered.
+	 * @return index ranges to be searched or empty list if all indices relevant
+	 */
+	const IndexRangeList &
+	getRanges1() const;
+
+	/**
+	 * Index ranges in seq2 to be searched for seeds or empty if all indices
+	 * are to be considered.
+	 * @return index ranges to be searched or empty list if all indices relevant
+	 */
+	const IndexRangeList &
+	getRanges2() const;
 
 	/**
 	 * Prints the seed constraint details to stream
@@ -123,6 +144,12 @@ protected:
 
 	//! the maximal energy allowed for a seed
 	const E_type maxE;
+
+	//! the index ranges of seq1 to be searched for seeds
+	const IndexRangeList ranges1;
+
+	//! the index ranges of seq2 to be searched for seeds
+	const IndexRangeList ranges2;
 
 };
 

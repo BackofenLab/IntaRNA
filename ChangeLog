@@ -14,20 +14,37 @@
      * initOptima()
      * reportOptima()
  * IndexRange :
+   + regex : regex to match valid string encoding 
+   + fromString() : parse string encoding
    + operator == ()
    + operator != ()
+   * operator << () : now regex conform
  * IndexRangeList :
-   + operator << ()
+   + regex : regex to match valid string encoding 
+   + fromString() : parse string encoding
+   * operator << () : regex conform
+   + operator == ()
+   + operator != ()
+   * insert() : 
+     + no duplicated insertions
+     + overlap checks
    * overlaps() : bugfix of predecessor check
+   + shift() : shifts all indices by a given term and creates a new valid list
  * CommandLineParsing : 
    - outNonOverlapping : replaced by outOverlap
    - isOutNonOverlapping() : obsolete
    - isOutputReportMax() : obsolete
    + outOverlap + validator : overlap encoding
-   + getOutputConstraint() : central data structure for output constraints
+   + getOutputConstraint() : central data structure for output constraints´
+   - regexRangeEncoding : obsolete due to IndexRangeList::regex
+   * parseRegion() : now uses IndexRangeList string constructor and shift() for
+     initialization
  * general :
    + E_precisionEpsilon : variable holding the precision epsilon value for 
      energy equivalence comparisons
+ * SeedConstraint :
+   + range1 + getter : ranges for seed search in seq1
+   + range2 + getter : ranges for seed search in seq2
 
 161213 Martin Mann :
  * PredictorMfe2d :
@@ -53,7 +70,6 @@
      -> implemented by all subclasses
    * reportOptima() : now screens for non-overlapping suboptimal interactions
      using getNextBest()
- 
 
 161212 Martin Mann :
  * InteractionEnergy* :

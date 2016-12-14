@@ -5,10 +5,23 @@
 
 //////////////////////////////////////////////////////////////////////
 
+const boost::regex IndexRangeList::regex("^(\\d|([123456789]\\d*)-(\\d|[123456789]\\d*),)*(\\d|[123456789]\\d*)-(\\d|[123456789]\\d*)$");
+
+//////////////////////////////////////////////////////////////////////
+
 IndexRangeList::IndexRangeList()
 :
 list()
 {
+}
+
+//////////////////////////////////////////////////////////////////////
+
+IndexRangeList::IndexRangeList( const std::string & stringEncoding )
+:
+list()
+{
+	fromString(stringEncoding);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -96,10 +109,13 @@ push_back( const IndexRange& range )
 	if (!range.isAscending())  {
 		throw std::runtime_error("IndexRangeList::push_back("+toString(range)+") range is not ascending");
 	}
-	if (!list.empty() && list.rbegin()->to > range.from) {
+	if (!list.empty() && list.rbegin()->from >= range.from) {
 		throw std::runtime_error("IndexRangeList::push_back("+toString(range)+") violates order given last range = "+toString(*(list.rbegin())));
 	}
 #endif
+	if (!list.empty() && list.rbegin()->to >= range.from) {
+		NOTIMPLEMENTED("IndexRangeList::push_back() : overlapping ranges are currently not supported")
+	}
 	// sorting should be OK (in debug mode.. ;) )
 	list.push_back( range );
 }
@@ -111,8 +127,8 @@ IndexRangeList::
 insert( const IndexRange& range )
 {
 #if IN_DEBUG_MODE
-	if (range.isDescending())  {
-		throw std::runtime_error("IndexRangeList::push_back("+toString(range)+") range is descending");
+	if (!range.isAscending())  {
+		throw std::runtime_error("IndexRangeList::insert("+toString(range)+") range is not ascending");
 	}
 #endif
 	// add first member to list
@@ -124,6 +140,26 @@ insert( const IndexRange& range )
 	{
 		// find first range that with begin > i
 		List::iterator r = std::upper_bound( list.begin(), list.end(), range );
+		if (r != list.end()) {
+			// check for overlap
+			if (range.to >= r->from) {
+				NOTIMPLEMENTED("IndexRangeList::insert() : overlapping ranges are currently not supported")
+			}
+		}
+		// check if already existing (predecessor)
+		if (r != list.begin()){
+			--r;
+			// check if already present
+			if (*r == range) {
+				// return iterator to already present element
+				return r;
+			}
+			// check for overlap
+			if (r->to >= range.from) {
+				NOTIMPLEMENTED("IndexRangeList::insert() : overlapping ranges are currently not supported")
+			}
+			++r;
+		}
 		// insert accordingly preserving sorting
 		return list.insert( r, range );
 	}
@@ -179,13 +215,62 @@ void IndexRangeList::clear() { return list.clear(); }
 
 //////////////////////////////////////////////////////////////////////
 
+IndexRangeList
+IndexRangeList::
+shift( const int indexShift, const size_t indexMax ) const
+{
+	IndexRangeList l;
+	IndexRange r2;
+	for (IndexRangeList::const_iterator r=begin(); r!=end(); r++) {
+		// skip ranges leaving the valid interval
+		if ( (indexShift+((int)r->to)) < 0 || (int)indexMax < (indexShift+((int)r->from))) {
+			continue;
+		}
+		// get shifted range boundaries
+		r2.from = (size_t)std::max(0,indexShift+((int)r->from));
+		r2.to = (size_t)std::min((int)indexMax,indexShift+((int)r->to));
+		// store shifted and cut range
+		l.insert(r2);
+	}
+
+	// final updated range list
+	return l;
+}
+
+//////////////////////////////////////////////////////////////////////
+
 std::ostream& operator<<(std::ostream& out, const IndexRangeList& l)
 {
-	out <<"(";
+	// output according to regex
 	for (IndexRangeList::const_iterator i=l.begin(); i!=l.end(); i++)
 		out <<(i==l.begin()?"":",") <<*i;
-	out <<")";
 	return out;
+}
+
+//////////////////////////////////////////////////////////////////////
+
+void
+IndexRangeList::
+fromString( const std::string & stringEncoding )
+{
+	// clear current data
+	this->clear();
+	// check if something to be parsed
+	if (!stringEncoding.empty()) {
+		// check if parsable
+		if( ! boost::regex_match(stringEncoding, IndexRangeList::regex, boost::match_perl) ) {
+			throw std::runtime_error("IndexRangeList::fromString("+stringEncoding+") uses no valid index range string encoding matching '"+regex.str()+"'");
+		}
+		// find split position
+		size_t startPos = 0, splitPos = std::string::npos;
+		while (startPos != splitPos) {
+			splitPos = stringEncoding.find(',',startPos);
+			// insert interval
+			this->insert( IndexRange(stringEncoding.substr(startPos,splitPos-(splitPos==std::string::npos?0:startPos))));
+			// update start of next interval encoding to parse
+			startPos = splitPos + (splitPos != std::string::npos ? 1 : 0);
+		}
+	}
 }
 
 //////////////////////////////////////////////////////////////////////
