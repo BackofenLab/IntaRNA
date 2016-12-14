@@ -74,8 +74,11 @@
 	//! type for temperature values
 	typedef E_type T_type;
 
+	//! the delta difference range to consider two energies equivalent
+#define E_precisionEpsilon 1000.0*std::numeric_limits<E_type>::epsilon()
+
 	//! check if two energies are equal according to some epsilon
-#define E_equal( e1, e2 ) ( std::abs((e1)-(e2)) < 1000.0*std::numeric_limits<E_type>::epsilon())
+#define E_equal( e1, e2 ) ( std::abs((e1)-(e2)) < E_precisionEpsilon)
 
 	//! check if a given energy is NOT set to E_INF
 #define E_isNotINF( e ) ( std::numeric_limits<E_type>::max() >= e )
