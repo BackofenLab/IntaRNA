@@ -79,7 +79,7 @@ overlaps( const IndexRange& range ) const
 		// go to predecessor
 		--r;
 		// check for overlap
-		isNotOverlapping = range.from < r->to;
+		isNotOverlapping = r->to < range.from;
 	}
 
 	return !isNotOverlapping;
