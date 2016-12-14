@@ -77,6 +77,15 @@ public:
 		return ( from == r.from && to == r.to );
 	}
 
+	/**
+	 * Checks whether or not two ranges are different
+	 * @param r the range to compare to
+	 * @return !( this == r)
+	 */
+	const bool operator != ( const IndexRange &r ) const{
+		return !( this->operator ==(r) );
+	}
+
 
 	/**
 	 * Prints the range's boundaries to stream
