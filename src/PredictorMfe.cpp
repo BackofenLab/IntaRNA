@@ -29,11 +29,10 @@ PredictorMfe::~PredictorMfe()
 
 void
 PredictorMfe::
-initOptima( const size_t reportMax
-		, const bool reportNonOverlapping)
+initOptima( const OutputConstraint & outConstraint )
 {
 	// resize to the given number of interactions if overlapping reports allowed
-	mfeInteractions.resize(reportNonOverlapping ? 1 : reportMax
+	mfeInteractions.resize(outConstraint.reportOverlap!=OutputConstraint::ReportOverlap::OVERLAP_BOTH ? 1 : outConstraint.reportMax
 			, Interaction(energy.getAccessibility1().getSequence()
 					,energy.getAccessibility2().getAccessibilityOrigin().getSequence())
 			);
@@ -145,8 +144,7 @@ updateOptima( const size_t i1, const size_t j1
 
 void
 PredictorMfe::
-reportOptima( const size_t reportMax
-			, const bool reportNonOverlapping)
+reportOptima( const OutputConstraint & outConstraint )
 {
 	// number of reported interactions
 	size_t reported = 0;
@@ -155,10 +153,11 @@ reportOptima( const size_t reportMax
 	reportedInteractions.first.clear();
 	reportedInteractions.second.clear();
 
-	if (reportNonOverlapping) {
+	// check if non-overlapping output is wanted
+	if (outConstraint.reportOverlap!=OutputConstraint::ReportOverlap::OVERLAP_BOTH) {
 		// check if mfe is worth reporting
 		Interaction curBest = *mfeInteractions.begin();
-		while( curBest.energy < 0.0 && reported < reportMax ) {
+		while( curBest.energy < 0.0 && reported < outConstraint.reportMax ) {
 			// report current best
 			// fill interaction with according base pairs
 			traceBack( curBest );
@@ -166,9 +165,22 @@ reportOptima( const size_t reportMax
 			output.add( curBest );
 			// count
 			reported++;
+
 			// store ranges to ensure non-overlapping of next best solution
-			reportedInteractions.first.insert( IndexRange(energy.getIndex1(*curBest.basePairs.begin()),energy.getIndex1(*curBest.basePairs.rbegin())) );
-			reportedInteractions.second.insert( IndexRange(energy.getIndex2(*curBest.basePairs.begin()),energy.getIndex2(*curBest.basePairs.rbegin())) );
+			switch( outConstraint.reportOverlap ) {
+			case OutputConstraint::ReportOverlap::OVERLAP_BOTH :
+				break;
+			case OutputConstraint::ReportOverlap::OVERLAP_SEQ1 :
+				reportedInteractions.second.insert( IndexRange(energy.getIndex2(*curBest.basePairs.begin()),energy.getIndex2(*curBest.basePairs.rbegin())) );
+				break;
+			case OutputConstraint::ReportOverlap::OVERLAP_SEQ2 :
+				reportedInteractions.first.insert( IndexRange(energy.getIndex1(*curBest.basePairs.begin()),energy.getIndex1(*curBest.basePairs.rbegin())) );
+				break;
+			case OutputConstraint::ReportOverlap::OVERLAP_NONE :
+				reportedInteractions.first.insert( IndexRange(energy.getIndex1(*curBest.basePairs.begin()),energy.getIndex1(*curBest.basePairs.rbegin())) );
+				reportedInteractions.second.insert( IndexRange(energy.getIndex2(*curBest.basePairs.begin()),energy.getIndex2(*curBest.basePairs.rbegin())) );
+				break;
+			}
 
 			// get next best
 			getNextBest( curBest );
@@ -179,9 +191,9 @@ reportOptima( const size_t reportMax
 	else // overlapping interactions are allowed
 	{
 		// report all (possibly overlapping) interactions with energy below 0
-		assert(reportMax <= mfeInteractions.size());
+		assert(outConstraint.reportMax <= mfeInteractions.size());
 		for (InteractionList::iterator i = mfeInteractions.begin();
-				reported < reportMax
+				reported < outConstraint.reportMax
 				&& i!= mfeInteractions.end(); i++)
 		{
 
@@ -198,7 +210,7 @@ reportOptima( const size_t reportMax
 	} // overlapping interactions
 
 	// check if nothing was worth reporting but report was expected
-	if (reported == 0 && reportMax > 0 ) {
+	if (reported == 0 && outConstraint.reportMax > 0 ) {
 		// -> no preferable interactions found !!!
 		// replace mfeInteraction with no interaction
 		mfeInteractions.begin()->clear();

@@ -31,8 +31,7 @@ void
 PredictorMfe2dHeuristicSeed::
 predict( const IndexRange & r1
 		, const IndexRange & r2
-		, const size_t reportMax
-		, const bool reportNonOverlapping )
+		, const OutputConstraint & outConstraint )
 {
 
 	VLOG(2) <<"predicting mfe interactions with seed heuristically in O(n^2) space and time...";
@@ -89,7 +88,7 @@ predict( const IndexRange & r1
 	seedHandler.fillSeed( 0,hybridE.size1()-1, 0, hybridE.size2()-1 );
 
 	// init mfe for later updates
-	initOptima( reportMax, reportNonOverlapping );
+	initOptima( outConstraint );
 
 	// compute entries
 	// current minimal value
@@ -169,7 +168,7 @@ predict( const IndexRange & r1
 
 
 	// report mfe interaction
-	reportOptima( reportMax, reportNonOverlapping );
+	reportOptima( outConstraint );
 
 }
 
@@ -324,7 +323,7 @@ getNextBest( Interaction & curBest )
 		}
 		for (i2=hybridE_seed.size2(); i2-- > 0;) {
 			// ensure interaction site start is not covered
-			if (reportedInteractions.first.covers(i2)) {
+			if (reportedInteractions.second.covers(i2)) {
 				continue;
 			}
 			// direct cell access

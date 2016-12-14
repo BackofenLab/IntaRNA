@@ -30,8 +30,7 @@ void
 PredictorMfe4d::
 predict( const IndexRange & r1
 		, const IndexRange & r2
-		, const size_t reportMax
-		, const bool reportNonOverlapping
+		, const OutputConstraint & outConstraint
 		)
 {
 
@@ -157,13 +156,13 @@ predict( const IndexRange & r1
 				<<"%)";
 
 	// initialize mfe interaction for updates
-	initOptima( reportMax, reportNonOverlapping );
+	initOptima( outConstraint );
 
 	// fill matrix
 	fillHybridE( );
 
 	// report mfe interaction
-	reportOptima( reportMax, reportNonOverlapping );
+	reportOptima( outConstraint );
 
 }
 
@@ -407,7 +406,7 @@ getNextBest( Interaction & curBest )
 		for (r2.from=hybridE.size2(); r2.from-- > 0;) {
 
 			// ensure interaction site start is not covered
-			if (reportedInteractions.first.covers(r2.from)) {
+			if (reportedInteractions.second.covers(r2.from)) {
 				continue;
 			}
 			// check if left boundary is complementary

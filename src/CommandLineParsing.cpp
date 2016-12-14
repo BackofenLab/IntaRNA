@@ -93,7 +93,7 @@ CommandLineParsing::CommandLineParsing()
 	energyFile(""),
 
 	oNumber( 0, 1000, 1),
-	oNonOverlapping(true),
+	oOverlap( OutputConstraint::ReportOverlap::OVERLAP_NONE, OutputConstraint::ReportOverlap::OVERLAP_BOTH, OutputConstraint::ReportOverlap::OVERLAP_SEQ2 ),
 
 	vrnaHandler()
 
@@ -108,7 +108,7 @@ CommandLineParsing::CommandLineParsing()
 			, value<std::string>(&queryArg)
 				->required()
 				->notifier(boost::bind(&CommandLineParsing::validate_query,this,_1))
-			, "either an RNA sequence or the stream/file name from where to read the query sequences; use 'STDIN' to read from standard input stream")
+			, "either an RNA sequence or the stream/file name from where to read the query sequences (should be the shorter sequences to increase efficiency); use 'STDIN' to read from standard input stream")
 		("qAcc"
 			, value<char>(&(qAcc.val))
 				->default_value(qAcc.def)
@@ -149,7 +149,7 @@ CommandLineParsing::CommandLineParsing()
 			, value<std::string>(&targetArg)
 				->required()
 				->notifier(boost::bind(&CommandLineParsing::validate_target,this,_1))
-				, "either an RNA sequence or the stream/file name from where to read the target sequences; use 'STDIN' to read from standard input stream")
+				, "either an RNA sequence or the stream/file name from where to read the target sequences (should be the longer sequences to increase efficiency); use 'STDIN' to read from standard input stream")
 		("tAcc"
 			, value<char>(&(tAcc.val))
 				->default_value(tAcc.def)
@@ -252,7 +252,11 @@ CommandLineParsing::CommandLineParsing()
 				->default_value(oNumber.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_oNumber,this,_1))
 			, std::string("maximal overall number (query+target) of unpaired bases within the seed region (arg in range ["+toString(oNumber.min)+","+toString(oNumber.max)+"])").c_str())
-	    ("outOverlapping", "if present, reported interactions are allowed to overlap")
+	    ("outOverlap"
+			, value<int>(&(oOverlap.val))
+				->default_value(oOverlap.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_oOverlap,this,_1))
+			, std::string("for suboptimal output : interactions can overlap (0) in none of the sequences (1) in the target (2) in the query (3) in both sequences").c_str())
 	    ("verbose,v", "verbose output")
 	    ("default-log-file", "name of log file to be used for output")
 	    ;
@@ -418,10 +422,6 @@ parse(int argc, char** argv)
 				LOG(ERROR) <<"tAccL = " <<tAccL.val <<" : has to be <= tAccW (=" <<tAccW.val<<")";
 				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 			}
-
-			// store output information
-			oNonOverlapping = vm.count("outOverlapping") == 0;
-
 
 		} catch (error& e) {
 			LOG(ERROR) <<e.what();
@@ -676,6 +676,13 @@ validate_energyFile(const std::string & value)
 void CommandLineParsing::validate_oNumber(const int & value) {
 	// forward check to general method
 	validate_numberArgument("oNumber", oNumber, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void CommandLineParsing::validate_oOverlap(const int & value) {
+	// forward check to general method
+	validate_numberArgument("oOverlap", oOverlap, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -960,22 +967,15 @@ getEnergyHandler( const Accessibility& accQuery, const ReverseAccessibility& acc
 
 ////////////////////////////////////////////////////////////////////////////
 
-size_t
+OutputConstraint
 CommandLineParsing::
-getOutputNumber() const
+getOutputConstraint()  const
 {
 	checkIfParsed();
-	return oNumber.val;
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-bool
-CommandLineParsing::
-isOutputNonOverlapping() const
-{
-	checkIfParsed();
-	return oNonOverlapping;
+	return OutputConstraint(
+			  oNumber.val
+			, static_cast<OutputConstraint::ReportOverlap>(oOverlap.val)
+			);
 }
 
 ////////////////////////////////////////////////////////////////////////////

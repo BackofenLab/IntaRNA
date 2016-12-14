@@ -179,4 +179,15 @@ void IndexRangeList::clear() { return list.clear(); }
 
 //////////////////////////////////////////////////////////////////////
 
+std::ostream& operator<<(std::ostream& out, const IndexRangeList& l)
+{
+	out <<"(";
+	for (IndexRangeList::const_iterator i=l.begin(); i!=l.end(); i++)
+		out <<(i==l.begin()?"":",") <<*i;
+	out <<")";
+	return out;
+}
+
+//////////////////////////////////////////////////////////////////////
+
 

@@ -30,8 +30,7 @@ void
 PredictorMaxProb::
 predict( const IndexRange & r1
 		, const IndexRange & r2
-		, const size_t reportMax
-		, const bool reportNonOverlapping
+		, const OutputConstraint & outConstraint
 		)
 {
 
@@ -39,7 +38,7 @@ predict( const IndexRange & r1
 	// measure timing
 	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
 
-	if (reportMax > 1) {
+	if (outConstraint.reportMax > 1) {
 		NOTIMPLEMENTED("PredictorMaxProb::predict(reportMax > 1) : not implemented");
 	}
 
@@ -108,13 +107,13 @@ predict( const IndexRange & r1
 				<<"%) and "<<debug_count_cells_null <<" not allocated";
 
 	// initialize max prob interaction for updates
-	initOptima( reportMax, reportNonOverlapping );
+	initOptima( outConstraint );
 
 	// fill matrix
 	fillHybridZ( );
 
 	// report interaction site with maximal probability
-	reportOptima( reportMax, reportNonOverlapping );
+	reportOptima( outConstraint );
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -228,8 +227,7 @@ fillHybridZ()
 
 void
 PredictorMaxProb::
-initOptima( const size_t reportMax
-				, const bool reportNonOVerlapping )
+initOptima( const OutputConstraint & outConstraint )
 {
 	// initialize max prob interaction (partition function value)
 	maxProbInteraction.energy = 0.0;
@@ -239,10 +237,11 @@ initOptima( const size_t reportMax
 	maxProbInteraction.r2.from = RnaSequence::lastPos;
 	maxProbInteraction.r2.to = RnaSequence::lastPos;
 
-	if (reportMax > 0) {
+	if (outConstraint.reportMax > 1) {
 		NOTIMPLEMENTED("PredictorMaxProb::initOptima(reportMax > 1)");
 	}
 }
+
 ////////////////////////////////////////////////////////////////////////////
 
 void
@@ -279,15 +278,14 @@ updateOptima( const size_t i1, const size_t j1
 
 void
 PredictorMaxProb::
-reportOptima( const size_t reportMax
-			, const bool reportNonOverlapping)
+reportOptima( const OutputConstraint & outConstraint )
 {
 
-	if (reportMax == 0) {
+	if (outConstraint.reportMax == 0) {
 		return;
 	}
 
-	if (reportMax > 1) {
+	if (outConstraint.reportMax > 1) {
 		NOTIMPLEMENTED("PredictorMaxProb::reportOptima(reportMax > 1)");
 	}
 

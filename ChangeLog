@@ -1,4 +1,28 @@
 
+161214 Martin Mann :
+ * intaRNA :
+   * query/target enumeration swapped, such that seq1 == target in prediction
+     and output
+ * OutputConstraint : data structure defining all output constraints
+   + enum ReportOverlap : 4 possibilities where overlapping is allowed
+   + reportMax : max number of (suboptimal) interactions to report
+   + reportOverlap : the overlap constraint for reported interactions
+ * Predictor :
+   * reportMax/reportNonOverlapping replaced by outConstraint
+     * predict()
+     * initOptima()
+     * reportOptima()
+ * IndexRange :
+   + operator == ()
+ * IndexRangeList :
+   + operator << ()
+ * CommandLineParsing : 
+   - outNonOverlapping : replaced by outOverlap
+   - isOutNonOverlapping() : obsolete
+   - isOutputReportMax() : obsolete
+   + outOverlap + validator : overlap encoding
+   + getOutputConstraint() : central data structure for output constraints
+
 161213 Martin Mann :
  * PredictorMfe2d :
    * initHybridE : 

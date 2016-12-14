@@ -5,6 +5,7 @@
 #include "general.h"
 #include "InteractionEnergyIdxOffset.h"
 
+#include "OutputConstraint.h"
 #include "OutputHandler.h"
 
 /**
@@ -39,18 +40,14 @@ public:
 	 *
 	 * @param r1 the index range of the first sequence interacting with r2
 	 * @param r2 the index range of the second sequence interacting with r1
-	 * @param reportMax the maximal number of (sub)optimal interactions to be
-	 *            reported to the output handler
-	 * @param reportNonOverlapping whether or not the reported interactions
-	 *            should be non-overlapping or not
+	 * @param outConstraint constrains the interactions reported to the output handler
 	 *
 	 */
 	virtual
 	void
 	predict( const IndexRange & r1 = IndexRange(0,RnaSequence::lastPos)
 			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos)
-			, const size_t reportMax = 1
-			, const bool reportNonOverlapping = true ) = 0;
+			, const OutputConstraint & outConstraint = OutputConstraint() ) = 0;
 
 	/**
 	 * Computes the maximal width of an interaction for a given site width and
@@ -78,15 +75,11 @@ protected:
 	/**
 	 * Initializes the list of best solutions to be filled by updateOptima()
 	 *
-	 * @param reportMax the maximal number of (sub)optimal interactions to be
-	 *            reported to the output handler
-	 * @param reportNonOverlapping whether or not the reported interactions
-	 *            should be non-overlapping or not
+	 * @param outConstraint constrains the interactions reported to the output handler
 	 */
 	virtual
 	void
-	initOptima( const size_t reportMax
-				, const bool reportNonOverlapping ) = 0;
+	initOptima( const OutputConstraint & outConstraint ) = 0;
 
 	/**
 	 * Updates the global the list of best solutions found so far
@@ -109,15 +102,11 @@ protected:
 	/**
 	 * Pushes the optimal and suboptimal solutions to the output handler.
 	 *
-	 * @param reportMax the maximal number of (sub)optimal interactions to be
-	 *            reported to the output handler
-	 * @param reportNonOverlapping whether or not the reported interactions
-	 *            should be non-overlapping or not
+	 * @param outConstraint constrains the interactions reported to the output handler
 	 */
 	virtual
 	void
-	reportOptima( const size_t reportMax
-				, const bool reportNonOverlapping) = 0;
+	reportOptima( const OutputConstraint & outConstraint ) = 0;
 
 
 };

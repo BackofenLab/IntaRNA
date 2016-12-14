@@ -325,7 +325,7 @@ public:
 
 
 	/**
-	 * Provides the index within the second sequence of the given base pair
+	 * Provides the (reversed) index within the second sequence of the given base pair
 	 * shifted by the offset.
 	 * @return the shifted index of the second sequence within the base pair encoding
 	 */

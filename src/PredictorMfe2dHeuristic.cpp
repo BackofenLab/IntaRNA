@@ -29,8 +29,7 @@ void
 PredictorMfe2dHeuristic::
 predict( const IndexRange & r1
 		, const IndexRange & r2
-		, const size_t reportMax
-		, const bool reportNonOverlapping
+		, const OutputConstraint & outConstraint
 		)
 {
 
@@ -80,13 +79,13 @@ predict( const IndexRange & r1
 	} // i1
 
 	// init mfe for later updates
-	initOptima( reportMax, reportNonOverlapping );
+	initOptima( outConstraint );
 
 	// compute table and update mfeInteraction
 	fillHybridE();
 
 	// trace back and output handler update
-	reportOptima( reportMax, reportNonOverlapping );
+	reportOptima( outConstraint );
 
 }
 
@@ -267,7 +266,7 @@ getNextBest( Interaction & curBest )
 		}
 		for (i2=hybridE.size2(); i2-- > 0;) {
 			// ensure interaction site start is not covered
-			if (reportedInteractions.first.covers(i2)) {
+			if (reportedInteractions.second.covers(i2)) {
 				continue;
 			}
 			// direct cell access

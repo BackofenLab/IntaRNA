@@ -30,6 +30,8 @@ intaRNA_SOURCES =	intaRNA.cpp \
 					InteractionEnergyVrna.cpp \
 					InteractionRange.h \
 					InteractionRange.cpp \
+					OutputConstraint.h \
+					OutputConstraint.cpp \
 					OutputHandler.h \
 					OutputHandler.cpp \
 					OutputHandlerRangeOnly.h \

@@ -60,6 +60,25 @@ public:
 	}
 
 	/**
+	 * Checks whether or not the start of this range preceeds the given range.
+	 * @param r the range to compare to
+	 * @return (from<r.from) || (from==r.from && to<r.to)
+	 */
+	const bool operator < ( const IndexRange &r ) const{
+		return ( from < r.from || (from==r.from && to<r.to) );
+	}
+
+	/**
+	 * Checks whether or not two ranges are equivalent
+	 * @param r the range to compare to
+	 * @return ( from == r.from && to == r.to )
+	 */
+	const bool operator == ( const IndexRange &r ) const{
+		return ( from == r.from && to == r.to );
+	}
+
+
+	/**
 	 * Prints the range's boundaries to stream
 	 * @param out the ostream to write to
 	 * @param range the IndexRange object to add
@@ -69,16 +88,6 @@ public:
 	{
 		return (out <<"["<<range.from<<","<<range.to<<"]");
 	}
-
-	/**
-	 * Checks whether or not the start of this range preceeds the given range.
-	 * @param r the range to compare to
-	 * @return (from<r.from) || (from==r.from && to<r.to)
-	 */
-	const bool operator < ( const IndexRange &r ) const{
-		return ( from < r.from || (from==r.from && to<r.to) );
-	}
-
 
 };
 

@@ -62,15 +62,11 @@ protected:
 	/**
 	 * Initializes the global energy minimum storage
 	 *
-	 * @param reportMax the maximal number of (sub)optimal interactions to be
-	 *            reported to the output handler
-	 * @param reportNonOverlapping whether or not the reported interactions
-	 *            should be non-overlapping or not
+	 * @param outConstraint constrains the interactions reported to the output handler
 	 */
 	virtual
 	void
-	initOptima( const size_t reportMax
-				, const bool reportNonOverlapping );
+	initOptima( const OutputConstraint & outConstraint );
 
 	/**
 	 * updates the global optimum to be the mfe interaction if needed
@@ -119,15 +115,11 @@ protected:
 	 * For non-overlapping interaction enumeration, getNextBest() is called
 	 * iteratively.
 	 *
-	 * @param reportMax the maximal number of (sub)optimal interactions to be
-	 *            reported to the output handler
-	 * @param reportNonOverlapping whether or not the reported interactions
-	 *            should be non-overlapping or not
+	 * @param outConstraint constrains the interactions reported to the output handler
 	 */
 	virtual
 	void
-	reportOptima( const size_t reportMax
-				, const bool reportNonOverlapping);
+	reportOptima( const OutputConstraint & outConstraint );
 
 };
 

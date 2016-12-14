@@ -54,42 +54,42 @@ int main(int argc, char **argv) {
 			}
 		}
 
-
-		// run prediction for all pairs of sequences
-		// first: iterate over all query sequences
-		for ( size_t queryNumber = 0; queryNumber < parameters.getQuerySequences().size(); ++queryNumber )
+		// second: iterate over all target sequences to get all pairs to predict for
+		for ( size_t targetNumber = 0; targetNumber < parameters.getTargetSequences().size(); ++targetNumber )
 		{
 
-			// get accessibility handler
-			VLOG(1) <<"computing accessibility for query '"<<parameters.getQuerySequences().at(queryNumber).getId()<<"'...";
-			Accessibility * queryAcc = parameters.getQueryAccessibility(queryNumber);
-			CHECKNOTNULL(queryAcc,"query initialization failed");
+			// get target accessibility handler
+			VLOG(1) <<"computing accessibility for target '"<<parameters.getTargetSequences().at(targetNumber).getId()<<"'...";
+			Accessibility * targetAcc = parameters.getTargetAccessibility(targetNumber);
+			CHECKNOTNULL(targetAcc,"target initialization failed");
 
 			// check if we have to warn about ambiguity
-			if (queryAcc->getSequence().isAmbiguous()) {
-				LOG(INFO) <<"Sequence '"<<queryAcc->getSequence().getId()
+			if (targetAcc->getSequence().isAmbiguous()) {
+				LOG(INFO) <<"Sequence '"<<targetAcc->getSequence().getId()
 						<<"' contains ambiguous nucleotide encodings. These positions are ignored for interaction computation.";
 			}
 
-			// second: iterate over all target sequences to get all pairs to predict for
-			for ( size_t targetNumber = 0; targetNumber < parameters.getTargetSequences().size(); ++targetNumber )
+			// run prediction for all pairs of sequences
+			// first: iterate over all query sequences
+			for ( size_t queryNumber = 0; queryNumber < parameters.getQuerySequences().size(); ++queryNumber )
 			{
 
-				// get target accessibility handler
-				VLOG(1) <<"computing accessibility for target '"<<parameters.getTargetSequences().at(targetNumber).getId()<<"'...";
-				Accessibility * targetAccOrig = parameters.getTargetAccessibility(targetNumber);
-				CHECKNOTNULL(targetAccOrig,"target initialization failed");
+				// get accessibility handler
+				VLOG(1) <<"computing accessibility for query '"<<parameters.getQuerySequences().at(queryNumber).getId()<<"'...";
+				Accessibility * queryAccOrig = parameters.getQueryAccessibility(queryNumber);
+				CHECKNOTNULL(queryAccOrig,"query initialization failed");
 				// reverse indexing of target sequence for the computation
-				ReverseAccessibility * targetAcc = new ReverseAccessibility(*targetAccOrig);
+				ReverseAccessibility * queryAcc = new ReverseAccessibility(*queryAccOrig);
 
 				// check if we have to warn about ambiguity
-				if (targetAcc->getSequence().isAmbiguous()) {
-					LOG(INFO) <<"Sequence '"<<targetAcc->getSequence().getId()
+				if (queryAcc->getSequence().isAmbiguous()) {
+					LOG(INFO) <<"Sequence '"<<queryAcc->getSequence().getId()
 							<<"' contains ambiguous nucleotide encodings. These positions are ignored for interaction computation.";
 				}
 
+
 				// get energy computation handler for both sequences
-				InteractionEnergy* energy = parameters.getEnergyHandler( *queryAcc, *targetAcc );
+				InteractionEnergy* energy = parameters.getEnergyHandler( *targetAcc, *queryAcc );
 				CHECKNOTNULL(energy,"energy initialization failed");
 
 				// get output/storage handler
@@ -101,16 +101,18 @@ int main(int argc, char **argv) {
 				CHECKNOTNULL(predictor,"predictor initialization failed");
 
 				// run prediction for all range combinations
-				BOOST_FOREACH(const IndexRange & qRange, parameters.getQueryRanges(queryNumber)) {
 				BOOST_FOREACH(const IndexRange & tRange, parameters.getTargetRanges(targetNumber)) {
+				BOOST_FOREACH(const IndexRange & qRange, parameters.getQueryRanges(queryNumber)) {
 
-					VLOG(1) <<"predicting interactions for query" <<qRange
-							<<" and target" <<tRange <<"...";
+					VLOG(1) <<"predicting interactions for"
+							<<" target" <<tRange
+							<<" and"
+							<<" query" <<qRange
+							<<"...";
 
-					predictor->predict(	  qRange
-										, targetAcc->getReversedIndexRange(tRange)
-										, parameters.getOutputNumber()
-										, parameters.isOutputNonOverlapping()
+					predictor->predict(	  tRange
+										, queryAcc->getReversedIndexRange(qRange)
+										, parameters.getOutputConstraint()
 										);
 
 				} // target ranges
@@ -122,11 +124,11 @@ int main(int argc, char **argv) {
 				CLEANUP(predictor)
 				CLEANUP(output)
 				CLEANUP(energy)
-				CLEANUP(targetAcc)
-				CLEANUP(targetAccOrig)
+				CLEANUP(queryAcc)
+				CLEANUP(queryAccOrig)
 			}
 			// garbage collection
-			CLEANUP(queryAcc)
+			CLEANUP(targetAcc)
 
 		}
 

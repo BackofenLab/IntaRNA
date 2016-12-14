@@ -30,8 +30,7 @@ void
 PredictorMfe2d::
 predict( const IndexRange & r1
 		, const IndexRange & r2
-		, const size_t reportMax
-		, const bool reportNonOverlapping )
+		, const OutputConstraint & outConstraint )
 {
 
 	VLOG(2) <<"predicting mfe interactions in O(n^2) space...";
@@ -39,7 +38,7 @@ predict( const IndexRange & r1
 	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
 
 	// suboptimal setup check
-	if (reportMax>1 && reportNonOverlapping) {
+	if (outConstraint.reportMax>1 && outConstraint.reportOverlap != OutputConstraint::ReportOverlap::OVERLAP_BOTH) {
 		throw new std::runtime_error("PredictorMfe2d : the enumeration of non-overlapping suboptimal interactions is not supported in this prediction mode");
 	}
 
@@ -61,7 +60,7 @@ predict( const IndexRange & r1
 						, (r2.to==RnaSequence::lastPos?energy.size2()-1:r2.to)-r2.from+1 ) );
 
 	// initialize mfe interaction for updates
-	initOptima( reportMax, reportNonOverlapping );
+	initOptima( outConstraint );
 
 	// for all right ends j1
 	for (size_t j1 = hybridE_pq.size1(); j1-- > 0; ) {
@@ -84,7 +83,7 @@ predict( const IndexRange & r1
 	}
 
 	// report mfe interaction
-	reportOptima( reportMax, reportNonOverlapping );
+	reportOptima( outConstraint );
 }
 
 ////////////////////////////////////////////////////////////////////////////

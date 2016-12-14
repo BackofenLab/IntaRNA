@@ -38,6 +38,7 @@ public:
 		NOT_PARSED_YET = 999
 	};
 
+
 	//! regular expression used to parse range list string encodings
 	static const boost::regex regexRangeEncoding;
 
@@ -159,16 +160,11 @@ public:
 	T_type getTemperature() const;
 
 	/**
-	 * The maximal number of interactions to be reported.
-	 * @return the maximal number of interactions to be reported
+	 * The constraints to be applied to the interaction output generation
+	 * @return the output constraints to be applied
 	 */
-	size_t getOutputNumber() const;
+	OutputConstraint getOutputConstraint() const;
 
-	/**
-	 * Whether or not the reported interactions have to be non-overlapping or not
-	 * @return true if the reported interactions have to be non-overlapping
-	 */
-	bool isOutputNonOverlapping() const;
 
 protected:
 
@@ -337,8 +333,8 @@ protected:
 
 	//! number of (sub)optimal interactions to report
 	NumberParameter<int> oNumber;
-	//! whether or not reported interactions have to be non-overlapping
-	bool oNonOverlapping;
+	//! whether or not reported interactions can to be overlapping
+	NumberParameter<int> oOverlap;
 
 	//! the vienna energy parameter handler initialized by #parse()
 	mutable VrnaHandler vrnaHandler;
@@ -502,6 +498,12 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_oNumber(const int & value);
+
+	/**
+	 * Validates the oOverlap argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_oOverlap(const int & value);
 
 
 	////////////  GENERIC TESTS  /////////////////

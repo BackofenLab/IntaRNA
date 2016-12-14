@@ -157,4 +157,13 @@ protected:
 
 };
 
+/**
+ * Prints the boundaries of the list's ranges to stream
+ * @param out the ostream to write to
+ * @param l the IndexRangeList object to add
+ * @return the altered stream out
+ */
+std::ostream& operator<<(std::ostream& out, const IndexRangeList& l);
+
+
 #endif /* INDEXRANGELIST_H_ */
