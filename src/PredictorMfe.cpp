@@ -148,6 +148,8 @@ reportOptima( const OutputConstraint & outConstraint )
 {
 	// number of reported interactions
 	size_t reported = 0;
+	// get maximal report energy = mfe + deltaE + precisionEpsilon
+	const E_type maxE = (E_type)std::min(0.0, (double)(mfeInteractions.begin()->energy + outConstraint.deltaE + E_precisionEpsilon));
 
 	// clear reported interaction ranges
 	reportedInteractions.first.clear();
@@ -157,7 +159,7 @@ reportOptima( const OutputConstraint & outConstraint )
 	if (outConstraint.reportOverlap!=OutputConstraint::ReportOverlap::OVERLAP_BOTH) {
 		// check if mfe is worth reporting
 		Interaction curBest = *mfeInteractions.begin();
-		while( curBest.energy < 0.0 && reported < outConstraint.reportMax ) {
+		while( curBest.energy < maxE && reported < outConstraint.reportMax ) {
 			// report current best
 			// fill interaction with according base pairs
 			traceBack( curBest );
@@ -190,15 +192,16 @@ reportOptima( const OutputConstraint & outConstraint )
 
 	else // overlapping interactions are allowed
 	{
+
 		// report all (possibly overlapping) interactions with energy below 0
 		assert(outConstraint.reportMax <= mfeInteractions.size());
 		for (InteractionList::iterator i = mfeInteractions.begin();
 				reported < outConstraint.reportMax
 				&& i!= mfeInteractions.end(); i++)
 		{
+			// check if interaction is within allowed energy range
+			if (i->energy < maxE) {
 
-			// check if interaction is better than no interaction (E==0)
-			if (i->energy < 0.0) {
 				// fill mfe interaction with according base pairs
 				traceBack( *i );
 				// report mfe interaction

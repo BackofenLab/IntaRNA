@@ -92,8 +92,9 @@ CommandLineParsing::CommandLineParsing()
 	energy("BF",'F'),
 	energyFile(""),
 
-	oNumber( 0, 1000, 1),
-	oOverlap( OutputConstraint::ReportOverlap::OVERLAP_NONE, OutputConstraint::ReportOverlap::OVERLAP_BOTH, OutputConstraint::ReportOverlap::OVERLAP_SEQ2 ),
+	outNumber( 0, 1000, 1),
+	outOverlap( OutputConstraint::ReportOverlap::OVERLAP_NONE, OutputConstraint::ReportOverlap::OVERLAP_BOTH, OutputConstraint::ReportOverlap::OVERLAP_SEQ2 ),
+	outDeltaE( 0.0, 100.0, 100.0),
 
 	vrnaHandler()
 
@@ -248,15 +249,20 @@ CommandLineParsing::CommandLineParsing()
 
 	opts_output.add_options()
 	    ("outNumber,n"
-			, value<int>(&(oNumber.val))
-				->default_value(oNumber.def)
-				->notifier(boost::bind(&CommandLineParsing::validate_oNumber,this,_1))
-			, std::string("maximal overall number (query+target) of unpaired bases within the seed region (arg in range ["+toString(oNumber.min)+","+toString(oNumber.max)+"])").c_str())
+			, value<int>(&(outNumber.val))
+				->default_value(outNumber.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_outNumber,this,_1))
+			, std::string("maximal overall number (query+target) of unpaired bases within the seed region (arg in range ["+toString(outNumber.min)+","+toString(outNumber.max)+"])").c_str())
 	    ("outOverlap"
-			, value<int>(&(oOverlap.val))
-				->default_value(oOverlap.def)
-				->notifier(boost::bind(&CommandLineParsing::validate_oOverlap,this,_1))
-			, std::string("for suboptimal output : interactions can overlap (0) in none of the sequences (1) in the target (2) in the query (3) in both sequences").c_str())
+			, value<int>(&(outOverlap.val))
+				->default_value(outOverlap.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_outOverlap,this,_1))
+			, std::string("suboptimal output : interactions can overlap (0) in none of the sequences (1) in the target (2) in the query (3) in both sequences").c_str())
+	    ("outDeltaE"
+			, value<double>(&(outDeltaE.val))
+				->default_value(outDeltaE.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_outDeltaE,this,_1))
+			, std::string("suboptimal output : only interactions with E <= (minE+deltaE) are reported").c_str())
 	    ("verbose,v", "verbose output")
 	    ("default-log-file", "name of log file to be used for output")
 	    ;
@@ -673,16 +679,23 @@ validate_energyFile(const std::string & value)
 
 ////////////////////////////////////////////////////////////////////////////
 
-void CommandLineParsing::validate_oNumber(const int & value) {
+void CommandLineParsing::validate_outNumber(const int & value) {
 	// forward check to general method
-	validate_numberArgument("oNumber", oNumber, value);
+	validate_numberArgument("oNumber", outNumber, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////
 
-void CommandLineParsing::validate_oOverlap(const int & value) {
+void CommandLineParsing::validate_outOverlap(const int & value) {
 	// forward check to general method
-	validate_numberArgument("oOverlap", oOverlap, value);
+	validate_numberArgument("outOverlap", outOverlap, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void CommandLineParsing::validate_outDeltaE(const double & value) {
+	// forward check to general method
+	validate_numberArgument("outDeltaE", outDeltaE, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -973,8 +986,9 @@ getOutputConstraint()  const
 {
 	checkIfParsed();
 	return OutputConstraint(
-			  oNumber.val
-			, static_cast<OutputConstraint::ReportOverlap>(oOverlap.val)
+			  outNumber.val
+			, static_cast<OutputConstraint::ReportOverlap>(outOverlap.val)
+			, static_cast<E_type>(outDeltaE.val)
 			);
 }
 

@@ -7,6 +7,7 @@
    + enum ReportOverlap : 4 possibilities where overlapping is allowed
    + reportMax : max number of (suboptimal) interactions to report
    + reportOverlap : the overlap constraint for reported interactions
+   + deltaE : maximal energy difference to mfe to be reported
  * Predictor :
    * reportMax/reportNonOverlapping replaced by outConstraint
      * predict()
@@ -14,14 +15,19 @@
      * reportOptima()
  * IndexRange :
    + operator == ()
+   + operator != ()
  * IndexRangeList :
    + operator << ()
+   * overlaps() : bugfix of predecessor check
  * CommandLineParsing : 
    - outNonOverlapping : replaced by outOverlap
    - isOutNonOverlapping() : obsolete
    - isOutputReportMax() : obsolete
    + outOverlap + validator : overlap encoding
    + getOutputConstraint() : central data structure for output constraints
+ * general :
+   + E_precisionEpsilon : variable holding the precision epsilon value for 
+     energy equivalence comparisons
 
 161213 Martin Mann :
  * PredictorMfe2d :

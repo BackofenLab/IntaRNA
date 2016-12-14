@@ -35,6 +35,9 @@ public:
 	//! defines whether and where overlapping interaction sites are allowed for reporting
 	const ReportOverlap reportOverlap;
 
+	//! the maximal energy difference to the mfe of a reported interaction
+	const E_type deltaE;
+
 public:
 
 	/**
@@ -46,7 +49,8 @@ public:
 	 *            sites are allowed for reporting
 	 */
 	OutputConstraint(	  const size_t reportMax = 1
-						, const ReportOverlap reportOverlap = OVERLAP_BOTH );
+						, const ReportOverlap reportOverlap = OVERLAP_BOTH
+						, const E_type deltaE = E_INF );
 
 	//! destruction
 	virtual ~OutputConstraint();

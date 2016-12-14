@@ -54,8 +54,11 @@ TEST_CASE( "IndexRangeList", "[IndexRangeList]" ) {
 		REQUIRE( rangeList.covers( 8 ) );
 		REQUIRE( rangeList.covers( 18 ) );
 		REQUIRE( rangeList.overlaps( IndexRange(2,8) ) );
+		REQUIRE( rangeList.overlaps( IndexRange(5,8) ) );
 		REQUIRE( rangeList.overlaps( IndexRange(6,8) ) );
+		REQUIRE( rangeList.overlaps( IndexRange(6,10) ) );
 		REQUIRE( rangeList.overlaps( IndexRange(6,12) ) );
+		REQUIRE( rangeList.overlaps( IndexRange(5,18) ) );
 		REQUIRE( rangeList.overlaps( IndexRange(6,18) ) );
 		REQUIRE( rangeList.overlaps( IndexRange(2,28) ) );
 		REQUIRE( rangeList.overlaps( IndexRange(2,28) ) );
@@ -95,7 +98,7 @@ TEST_CASE( "IndexRangeList", "[IndexRangeList]" ) {
 		REQUIRE( *rangeList.begin() == r1_2 );
 		REQUIRE( *(++rangeList.begin()) == r3_4 );
 		REQUIRE( *rangeList.rbegin() == r5_10 );
-		REQUIRE( rangeList.size() == 4 );
+		REQUIRE( rangeList.size() == 3 );
 
 	}
 

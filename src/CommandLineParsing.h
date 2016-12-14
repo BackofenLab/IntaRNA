@@ -332,9 +332,11 @@ protected:
 	std::string energyFile;
 
 	//! number of (sub)optimal interactions to report
-	NumberParameter<int> oNumber;
+	NumberParameter<int> outNumber;
 	//! whether or not reported interactions can to be overlapping
-	NumberParameter<int> oOverlap;
+	NumberParameter<int> outOverlap;
+	//! deltaE to mfe allowed to report an interaction
+	NumberParameter<double> outDeltaE;
 
 	//! the vienna energy parameter handler initialized by #parse()
 	mutable VrnaHandler vrnaHandler;
@@ -494,16 +496,22 @@ protected:
 	void validate_energyFile(const std::string & value);
 
 	/**
-	 * Validates the oNumber argument.
+	 * Validates the outNumber argument.
 	 * @param value the argument value to validate
 	 */
-	void validate_oNumber(const int & value);
+	void validate_outNumber(const int & value);
 
 	/**
-	 * Validates the oOverlap argument.
+	 * Validates the outOverlap argument.
 	 * @param value the argument value to validate
 	 */
-	void validate_oOverlap(const int & value);
+	void validate_outOverlap(const int & value);
+
+	/**
+	 * Validates the outDeltaE argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_outDeltaE(const double & value);
 
 
 	////////////  GENERIC TESTS  /////////////////
