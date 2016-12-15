@@ -10,9 +10,14 @@
    * List now std::list (before std::vector)
    + covers(range) + tests
    + reverse() + tests : reverses the indices and range order
+ * PredictorMfe2d :
+ * PredictorMfe2dSeed :
+   * predict() : bugfix : throw without "new"
  * Predictor*Seed :
    * bugfix : uses now SeedHandlerIdxOffset instead of SeedHandler
    + seed handler offset setup
+ * RnaSequence :
+   * areComplementary() : bugfix : throw without "new"
  * SeedConstraint :
    * members not const (otherwise getter not needed)
    + getRanges*() : write access for ranges

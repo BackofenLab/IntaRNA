@@ -269,8 +269,8 @@ CommandLineParsing::CommandLineParsing()
 				->default_value(outDeltaE.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_outDeltaE,this,_1))
 			, std::string("suboptimal output : only interactions with E <= (minE+deltaE) are reported").c_str())
-	    ("verbose,v", "verbose output")
-	    ("default-log-file", "name of log file to be used for output")
+	    ("verbose,v", "verbose output") // handled via easylogging++
+//	    (logFile_argument.c_str(), "name of log file to be used for output")
 	    ;
 
 	////  GENERAL OPTIONS  ////////////////////////////////////

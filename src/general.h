@@ -22,6 +22,10 @@
 #ifndef ELPP_DISABLE_LOG_FILE_FROM_ARG
 	#define ELPP_DISABLE_LOG_FILE_FROM_ARG 1
 #endif
+// enable debug error tracking
+#if IN_DEBUG_MODE
+	#define ELPP_DEBUG_ERRORS 1
+#endif
 
 #include "easylogging++.h"
 

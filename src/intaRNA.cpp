@@ -29,11 +29,6 @@ int main(int argc, char **argv) {
 
 	try {
 
-
-		// setup logging with given parameters
-		START_EASYLOGGINGPP(argc, argv);
-
-
 		// set overall logging style
 		el::Loggers::reconfigureAllLoggers(el::ConfigurationType::Format, std::string("# %level : %msg"));
 		// TODO setup log file
@@ -43,6 +38,9 @@ int main(int argc, char **argv) {
 		el::Loggers::addFlag(el::LoggingFlag::DisableApplicationAbortOnFatalLog);
 		el::Loggers::addFlag(el::LoggingFlag::LogDetailedCrashReason);
 		el::Loggers::addFlag(el::LoggingFlag::AllowVerboseIfModuleNotSpecified);
+
+		// setup logging with given parameters
+		START_EASYLOGGINGPP(argc, argv);
 
 		// parse command line parameters
 		CommandLineParsing parameters;
