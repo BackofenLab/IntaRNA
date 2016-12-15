@@ -37,7 +37,7 @@ predict( const IndexRange & r1, const IndexRange & r2
 
 	// suboptimal setup check
 	if (outConstraint.reportMax>1 && outConstraint.reportOverlap != OutputConstraint::ReportOverlap::OVERLAP_BOTH) {
-		throw new std::runtime_error("PredictorMfe2dSeed : the enumeration of non-overlapping suboptimal interactions is not supported in this prediction mode");
+		throw std::runtime_error("PredictorMfe2dSeed : the enumeration of non-overlapping suboptimal interactions is not supported in this prediction mode");
 	}
 
 #if IN_DEBUG_MODE

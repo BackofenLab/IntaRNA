@@ -204,7 +204,7 @@ areComplementary( const RnaSequence & s1, const RnaSequence & s2,
 		// check via VRNA util
 		return BP_pair[s1.seqCode.at(p1)][s2.seqCode.at(p2)] > 0;
 	} else {
-		throw new std::runtime_error("RnaSequence::areComplementary : index positions p1/p2 ("
+		throw std::runtime_error("RnaSequence::areComplementary : index positions p1/p2 ("
 				+ toString(p1)+"/"+toString(p2)
 				+ ") are out of bounds s1/s2 ("
 				+ toString(s1.size())+"/"+toString(s2.size())
