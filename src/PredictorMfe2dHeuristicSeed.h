@@ -3,7 +3,7 @@
 #define PREDICTORMFE2DHEURISTICSEED_H_
 
 #include "PredictorMfe2dHeuristic.h"
-#include "SeedHandler.h"
+#include "SeedHandlerIdxOffset.h"
 
 
 /**
@@ -77,8 +77,8 @@ protected:
 	//! the best hybridization energy including a seed for start i1,i2
 	E2dMatrix hybridE_seed;
 
-	//! handler to generate and access seed information
-	SeedHandler seedHandler;
+	//! handler to generate and access seed information with idx offset
+	SeedHandlerIdxOffset seedHandler;
 
 protected:
 

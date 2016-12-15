@@ -63,6 +63,43 @@ covers( const size_t index ) const
 
 bool
 IndexRangeList::
+covers( const size_t from, const size_t to ) const
+{
+	return covers( IndexRange(from, to) );
+}
+
+//////////////////////////////////////////////////////////////////////
+
+bool
+IndexRangeList::
+covers( const IndexRange & range ) const
+{
+	// quick check
+	if (list.empty()) {
+		return false;
+	}
+
+	// find first range that with begin > index
+	const_iterator r = std::upper_bound( list.begin(), list.end(), range );
+
+	bool isCovered = false;
+	if ( r != list.end() ) {
+		// check succeeding range and check
+		isCovered = r->from <= range.from && range.to <= r->to;
+	}
+	if ( !isCovered && r != list.begin() ) {
+		// go to preceding range and check
+		--r;
+		isCovered = r->from <= range.from && range.to <= r->to;
+	}
+
+	return isCovered;
+}
+
+//////////////////////////////////////////////////////////////////////
+
+bool
+IndexRangeList::
 overlaps( const IndexRange& range ) const
 {
 #if IN_DEBUG_MODE
@@ -235,6 +272,42 @@ shift( const int indexShift, const size_t indexMax ) const
 
 	// final updated range list
 	return l;
+}
+
+//////////////////////////////////////////////////////////////////////
+
+IndexRangeList &
+IndexRangeList::
+reverse( const size_t seqLength )
+{
+	// reverse each entry
+	size_t tmpFrom;
+	for (IndexRangeList::iterator r=begin(); r!=end(); r++) {
+#if IN_DEBUG_MODE
+		// check if reversal is possible
+		if (r->from >= seqLength || r->to >= seqLength) throw std::runtime_error("IndexRangeList::reverse("+toString(seqLength)+") = range "+toString(*r)+" exceeds seqLength");
+#endif
+		// reverse boundaries
+		tmpFrom = r->from;
+		r->from = seqLength -1 - r->to;
+		r->to = seqLength -1 - tmpFrom;
+	}
+	// reverse order of list entries
+	list.reverse();
+	// return access to altered element
+	return *this;
+}
+
+//////////////////////////////////////////////////////////////////////
+
+IndexRangeList
+IndexRangeList::
+reverse( const size_t seqLength ) const
+{
+	// create copy
+	IndexRangeList tmp(*this);
+	// reverse and return copy
+	return tmp.reverse( seqLength );
 }
 
 //////////////////////////////////////////////////////////////////////

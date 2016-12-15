@@ -31,7 +31,7 @@ public:
 	 *        allowed within a seed
 	 * @param maxE maximal energy a seed is allowed to have
 	 * @param ranges1 the index ranges of seq1 to be searched for seeds
-	 * @param ranges1 the index ranges of seq2 to be searched for seeds
+	 * @param ranges2reversed the index reversed ranges of seq2 to be searched for seeds
 	 */
 	SeedConstraint(  const size_t bp
 				, const size_t maxUnpairedOverall
@@ -39,7 +39,7 @@ public:
 				, const size_t maxUnpaired2
 				, const E_type maxE
 				, const IndexRangeList & ranges1
-				, const IndexRangeList & ranges2
+				, const IndexRangeList & ranges2reversed
 				);
 
 	virtual ~SeedConstraint();
@@ -121,6 +121,22 @@ public:
 	getRanges2() const;
 
 	/**
+	 * Index ranges in seq1 to be searched for seeds or empty if all indices
+	 * are to be considered.
+	 * @return index ranges to be searched or empty list if all indices relevant
+	 */
+	IndexRangeList &
+	getRanges1();
+
+	/**
+	 * Index ranges in seq2 to be searched for seeds or empty if all indices
+	 * are to be considered.
+	 * @return index ranges to be searched or empty list if all indices relevant
+	 */
+	IndexRangeList &
+	getRanges2();
+
+	/**
 	 * Prints the seed constraint details to stream
 	 * @param out the ostream to write to
 	 * @param c the object to add
@@ -131,25 +147,25 @@ public:
 protected:
 
 	//! the number of base pairs to be present in a seed
-	const size_t bp;
+	size_t bp;
 
 	//! the overall summed maximally allowed number of unpaired bases in a seed
-	const size_t maxUnpairedOverall;
+	size_t maxUnpairedOverall;
 
 	//! the maximally allowed number of unpaired bases in seed seq1
-	const size_t maxUnpaired1;
+	size_t maxUnpaired1;
 
 	//! the maximally allowed number of unpaired bases in seed seq2
-	const size_t maxUnpaired2;
+	size_t maxUnpaired2;
 
 	//! the maximal energy allowed for a seed
-	const E_type maxE;
+	E_type maxE;
 
 	//! the index ranges of seq1 to be searched for seeds
-	const IndexRangeList ranges1;
+	IndexRangeList ranges1;
 
 	//! the index ranges of seq2 to be searched for seeds
-	const IndexRangeList ranges2;
+	IndexRangeList ranges2;
 
 };
 

@@ -1,4 +1,31 @@
 
+161215 Martin Mann :
+ * AccessibilityConstraint :
+   * construction : bugfix reverse handling
+ * CommandLineParsing : 
+   * getSeedConstraint()
+     + now with energy argument arguments to access seed lengths
+     + reverses seed ranges for seq2
+ * IndexRangeList :
+   * List now std::list (before std::vector)
+   + covers(range) + tests
+   + reverse() + tests : reverses the indices and range order
+ * Predictor*Seed :
+   * bugfix : uses now SeedHandlerIdxOffset instead of SeedHandler
+   + seed handler offset setup
+ * SeedConstraint :
+   * members not const (otherwise getter not needed)
+   + getRanges*() : write access for ranges
+ * SeedHandler : 
+   * public functions virtual
+   + offset* : index offset (needed for restricted matrices)
+   * fillSeed() :
+     * bugfix : sanity checks corrected
+     * bugfix : index offset was missing
+   * traceBack() :
+     * bugfix : index offset was missing
+ + SeedHandlerIdxOffset : index shift wrapper for SeedHandler
+
 161214 Martin Mann :
  * intaRNA :
    * query/target enumeration swapped, such that seq1 == target in prediction

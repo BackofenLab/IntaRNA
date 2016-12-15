@@ -48,6 +48,8 @@ predict( const IndexRange & r1
 	// set index offset
 	energy.setOffset1(r1.from);
 	energy.setOffset2(r2.from);
+	seedHandler.setOffset1(r1.from);
+	seedHandler.setOffset2(r2.from);
 
 	// resize matrix
 	hybridE.resize( std::min( energy.size1()
@@ -85,7 +87,7 @@ predict( const IndexRange & r1
 	PredictorMfe2dHeuristic::fillHybridE();
 
 	// compute seed interactions for whole range
-	seedHandler.fillSeed( 0,hybridE.size1()-1, 0, hybridE.size2()-1 );
+	seedHandler.fillSeed( 0, hybridE.size1()-1, 0, hybridE.size2()-1 );
 
 	// init mfe for later updates
 	initOptima( outConstraint );

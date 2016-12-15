@@ -67,20 +67,10 @@ AccessibilityConstraint( const AccessibilityConstraint& toCopy
 	if (reverseIndices) {
 
 		// reverse blocked
-		for (IndexRangeList::iterator it=blocked.begin(); it!= blocked.end(); it++) {
-			it->from = length - (it->from +1);
-			it->to = length - (it->to +1);
-		}
-		// sort again
-		std::sort(accessible.begin(), accessible.end());
+		blocked.reverse(length);
 
 		// reverse accessible
-		for (IndexRangeList::iterator it=accessible.begin(); it!= accessible.end(); it++) {
-			it->from = length - (it->from +1);
-			it->to = length - (it->to +1);
-		}
-		// sort again
-		std::sort(accessible.begin(), accessible.end());
+		accessible.reverse(length);
 
 		// TODO reverse structure constraints
 	}

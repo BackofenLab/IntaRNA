@@ -63,6 +63,8 @@ intaRNA_SOURCES =	intaRNA.cpp \
 					SeedConstraint.cpp \
 					SeedHandler.h \
 					SeedHandler.cpp \
+					SeedHandlerIdxOffset.h \
+					SeedHandlerIdxOffset.cpp \
 					VrnaHandler.h \
 					VrnaHandler.cpp
 

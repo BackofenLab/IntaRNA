@@ -9,7 +9,7 @@
 #define PREDICTORMFE2DSEED_H_
 
 #include "PredictorMfe2d.h"
-#include "SeedHandler.h"
+#include "SeedHandlerIdxOffset.h"
 
 
 /**
@@ -89,8 +89,8 @@ protected:
 	//! the current range of computed entries within hybridE_pq set by initHybridE()
 	using PredictorMfe2d::hybridErange;
 
-	//! the seed handler
-	SeedHandler seedHandler;
+	//! the seed handler (with idx offset)
+	SeedHandlerIdxOffset seedHandler;
 
 	//! for fixed interaction end p=j1,q=j2: each cell (i1,i2) provides the mfe
 	//! for the interaction i1..j1 with i2..j2 given that the range contains

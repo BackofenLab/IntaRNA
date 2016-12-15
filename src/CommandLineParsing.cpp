@@ -1245,8 +1245,8 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 		}
 	} else {
 		switch ( predMode.val ) {
-		case 0 :  return new PredictorMfe2dHeuristicSeed( energy, output, getSeedConstraint() );
-		case 1 :  return new PredictorMfe2dSeed( energy, output, getSeedConstraint() );
+		case 0 :  return new PredictorMfe2dHeuristicSeed( energy, output, getSeedConstraint( energy ) );
+		case 1 :  return new PredictorMfe2dSeed( energy, output, getSeedConstraint( energy ) );
 		case 2 :  NOTIMPLEMENTED("mode "+toString(predMode.val)+" not implemented for seed constraint (try --noSeed)"); return NULL;
 		case 3 :  NOTIMPLEMENTED("mode "+toString(predMode.val)+" not implemented for seed constraint (try --noSeed)"); return NULL;
 		default: throw std::runtime_error("CommandLineParsing::getPredictor() : unknown predMode value "+toString(predMode.val));
@@ -1277,7 +1277,7 @@ updateParsingCode( const ReturnCode currentParsingCode )
 
 const SeedConstraint &
 CommandLineParsing::
-getSeedConstraint() const
+getSeedConstraint( const InteractionEnergy & energy ) const
 {
 	if (seedConstraint == NULL) {
 		// setup according to user data
@@ -1288,8 +1288,8 @@ getSeedConstraint() const
 							, seedMaxUPq.val<0 ? seedMaxUP.val : seedMaxUPq.val
 							, seedMaxE.val
 							// shift ranges to start counting with 0
-							, IndexRangeList( seedRanget).shift(-1,std::numeric_limits<size_t>::max())
-							, IndexRangeList( seedRangeq).shift(-1,std::numeric_limits<size_t>::max())
+							, IndexRangeList( seedRanget ).shift(-1,energy.size1()-1)
+							, IndexRangeList( seedRangeq ).shift(-1,energy.size2()-1).reverse(energy.size2())
 						);
 	}
 	return *seedConstraint;

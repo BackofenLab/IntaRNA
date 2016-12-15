@@ -35,6 +35,12 @@ TEST_CASE( "IndexRangeList", "[IndexRangeList]" ) {
 		REQUIRE_FALSE( rangeList.covers( 3 ) );
 		REQUIRE_FALSE( rangeList.overlaps( IndexRange(2,3) ) );
 		REQUIRE( rangeList.covers( 8 ) );
+		REQUIRE( rangeList.covers( 8, 10 ) );
+		REQUIRE( rangeList.covers( 5, 10 ) );
+		REQUIRE( rangeList.covers( 5, 6 ) );
+		REQUIRE_FALSE( rangeList.covers( 5, 12 ) );
+		REQUIRE_FALSE( rangeList.covers( 1, 12 ) );
+		REQUIRE_FALSE( rangeList.covers( 1, 8 ) );
 		REQUIRE( rangeList.overlaps( IndexRange(2,8) ) );
 		REQUIRE( rangeList.overlaps( IndexRange(6,8) ) );
 		REQUIRE( rangeList.overlaps( IndexRange(6,12) ) );
@@ -53,6 +59,14 @@ TEST_CASE( "IndexRangeList", "[IndexRangeList]" ) {
 		REQUIRE_FALSE( rangeList.overlaps( IndexRange(28,30) ) );
 		REQUIRE( rangeList.covers( 8 ) );
 		REQUIRE( rangeList.covers( 18 ) );
+		REQUIRE( rangeList.covers( 8 ) );
+		REQUIRE( rangeList.covers( 8, 10 ) );
+		REQUIRE( rangeList.covers( 5, 10 ) );
+		REQUIRE( rangeList.covers( 5, 6 ) );
+		REQUIRE( rangeList.covers( 16, 18 ) );
+		REQUIRE_FALSE( rangeList.covers( 12, 13 ) );
+		REQUIRE_FALSE( rangeList.covers( 12, 16 ) );
+		REQUIRE_FALSE( rangeList.covers( 10, 18 ) );
 		REQUIRE( rangeList.overlaps( IndexRange(2,8) ) );
 		REQUIRE( rangeList.overlaps( IndexRange(5,8) ) );
 		REQUIRE( rangeList.overlaps( IndexRange(6,8) ) );
@@ -147,6 +161,18 @@ TEST_CASE( "IndexRangeList", "[IndexRangeList]" ) {
 		REQUIRE( s.str() == "0-3,5-5" );
 		s.str(""); s<<r1;
 		REQUIRE( s.str() == "2-3,5-9" );
+
+	}
+
+	SECTION("check reverse") {
+
+		// create list
+		rangeList.insert(IndexRange(1,2));
+		rangeList.insert(IndexRange(4,8));
+		rangeList.insert(IndexRange(10,10));
+
+		rangeList.reverse(11);
+		REQUIRE( toString(rangeList) == "0-0,2-6,8-9" );
 
 	}
 

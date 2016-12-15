@@ -165,6 +165,9 @@ fillHybridE( const size_t j1, const size_t j2, const size_t i1init, const size_t
 
 	// init for right interaction end (j1,j2)
 	initHybridE( j1, j2, i1init, i2init );
+	// sanity check of initialization
+	assert(hybridErange.r1.to == j1);
+	assert(hybridErange.r2.to == j2);
 
 	// global vars to avoid reallocation
 	size_t i1,i2,w1,w2,k1,k2;
@@ -175,13 +178,13 @@ fillHybridE( const size_t j1, const size_t j2, const size_t i1init, const size_t
 	E_type curMinE = E_INF;
 	// iterate over all window starts i1 (seq1) and i2 (seq2)
 	// TODO PARALLELIZE THIS DOUBLE LOOP ?!
-	for (i1=j1+1; i1-->hybridErange.r1.from; ) {
+	for (i1=hybridErange.r1.to+1; i1-- > hybridErange.r1.from; ) {
 		w1 = j1-i1+1;
 		// w1 width check obsolete due to hybridErange setup
 		// get maximal w2 for this w1
 		const size_t maxW2 = getMaxInteractionWidth( w1, energy.getMaxInternalLoopSize1());
 		// screen for left boundaries in seq2
-		for (i2=j2+1; i2-->hybridErange.r2.from; ) {
+		for (i2=hybridErange.r2.to+1; i2-- > hybridErange.r2.from; ) {
 			w2 = j2-i2+1;
 			// w2 width check obsolete due to hybridErange setup
 			// check if widths' combination possible
@@ -339,7 +342,8 @@ void
 PredictorMfe2d::
 getNextBest( Interaction & curBest )
 {
-	throw std::runtime_error("PredictorMfe2d : This prediction mode does not support non-overlapping suboptimal interaction enumeration.");
+	curBest.energy = E_INF;
+	curBest.basePairs.clear();
 }
 
 ////////////////////////////////////////////////////////////////////////////

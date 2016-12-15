@@ -59,6 +59,7 @@ public:
 	 * Access to the underlying seed constraint
 	 * @return the used seed constraint
 	 */
+	virtual
 	const SeedConstraint&
 	getConstraint() const;
 
@@ -66,6 +67,7 @@ public:
 	 * Access to the underlying interaction energy function
 	 * @return the used energy function
 	 */
+	virtual
 	const InteractionEnergy&
 	getInteractionEnergy() const;
 
@@ -77,6 +79,7 @@ public:
 	 * @param i2 the first index of seq2 that might interact
 	 * @param j2 the last index of seq2 that might interact
 	 */
+	virtual
 	void
 	fillSeed(const size_t i1, const size_t j1, const size_t i2, const size_t j2);
 
@@ -90,6 +93,7 @@ public:
 	 * @param i1 the start of the seed in seq1
 	 * @param i2 the start of the seed in seq2
 	 */
+	virtual
 	void
 	traceBackSeed( Interaction & interaction, const size_t i1, const size_t i2);
 
@@ -100,6 +104,7 @@ public:
 	 * @param i2 the left most interacting base of seq2
 	 * @return the mfe of any seed starting at (i1,i2) or E_INF if none possible
 	 */
+	virtual
 	E_type
 	getSeedE( const size_t i1, const size_t i2 ) const;
 
@@ -109,6 +114,7 @@ public:
 	 * @param i2 the left most interacting base of seq2
 	 * @return the length in seq1 of the mfe seed starting at (i1,i2) or 0 if none possible
 	 */
+	virtual
 	size_t
 	getSeedLength1( const size_t i1, const size_t i2 ) const;
 
@@ -118,6 +124,7 @@ public:
 	 * @param i2 the left most interacting base of seq2
 	 * @return the length in seq2 of the mfe seed starting at (i1,i2) or 0 if none possible
 	 */
+	virtual
 	size_t
 	getSeedLength2( const size_t i1, const size_t i2 ) const;
 
@@ -140,17 +147,17 @@ protected:
 	//! TODO replace with sparse data structure
 	SeedMatrix seed;
 
+	//! offset for seq1 indices for the current (restricted) matrices
+	size_t offset1;
+
+	//! offset for seq2 indices for the current (restricted) matrices
+	size_t offset2;
 
 	/**
 	 * Provides the seed energy during recursion.
 	 *
-	 * NOTE: internally a ring-list data structure is used which reuses memory
-	 * instead of allocating mem for all possible parameter combinations. Thus,
-	 * you have to call the method in appropriate order depending on your seed
-	 * recursion.
-	 *
-	 * @param i1 the seed left end in seq 1
-	 * @param i2 the seed left end in seq 2
+	 * @param i1 the seed left end in seq 1 (index including offset)
+	 * @param i2 the seed left end in seq 2 (index including offset)
 	 * @param bpInbetween the number of seed base pairs enclosed by the left-
 	 *        and right-most base pair, ie. bpSeed-2
 	 * @param u1 the number of unpaired bases within seq 1
@@ -169,8 +176,8 @@ protected:
 	 * you have to call the method in appropriate order depending on your seed
 	 * recursion.
 	 *
-	 * @param i1 the seed left end in seq 1
-	 * @param i2 the seed left end in seq 2
+	 * @param i1 the seed left end in seq 1 (index including offset)
+	 * @param i2 the seed left end in seq 2 (index including offset)
 	 * @param bpInbetween the number of seed base pairs enclosed by the left-
 	 *        and right-most base pair, ie. bpSeed-2
 	 * @param u1 the number of unpaired bases within seq 1
@@ -213,8 +220,8 @@ protected:
 	 * the right-most seed base pair)
 	 *
 	 * @param interaction IN/OUT the interaction to fill
-	 * @param i1 the seed left end in seq 1
-	 * @param i2 the seed left end in seq 2
+	 * @param i1 the seed left end in seq 1 (index including offset)
+	 * @param i2 the seed left end in seq 2 (index including offset)
 	 * @param bp the number of base pairs (bp+2) within the seed so far
 	 * @param u1 the number of unpaired bases within seq 1
 	 * @param u2 the number of unpaired bases within seq 2

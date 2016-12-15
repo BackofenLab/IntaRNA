@@ -4,7 +4,7 @@
 
 #include "IndexRange.h"
 
-#include <vector>
+#include <list>
 
 #include <boost/regex.hpp>
 
@@ -21,7 +21,7 @@ class IndexRangeList
 protected:
 
 	//! List of ranges
-	typedef std::vector< IndexRange > List;
+	typedef std::list< IndexRange > List;
 
 public:
 
@@ -72,6 +72,25 @@ public:
 	 *         boundaries); false otherwise
 	 */
 	bool covers( const size_t index ) const;
+
+	/**
+	 * checks whether or not a given index range is completely covered by one
+	 * of the stored index ranges
+	 * @param from the start index of the range of interest
+	 * @param to the end index of the range of interest
+	 * @return true if [from,to] is within one of the index ranges (including
+	 *         boundaries); false otherwise
+	 */
+	bool covers( const size_t from, const size_t to ) const;
+
+	/**
+	 * checks whether or not a given index range is completely covered by one
+	 * of the stored index ranges
+	 * @param range the index range of interest
+	 * @return true if range is within one of the index ranges (including
+	 *         boundaries); false otherwise
+	 */
+	bool covers( const IndexRange & range ) const;
 
 	/**
 	 * checks whether or not a given ascending index range is overlapping with at least
@@ -189,6 +208,19 @@ public:
 	IndexRangeList
 	shift( const int indexShift, const size_t indexMax ) const;
 
+	/**
+	 * Reverses all indices for the given sequence length, i.e.
+	 * (newIdx = seqLength-1-oldIdx)
+	 */
+	IndexRangeList &
+	reverse( const size_t seqLength );
+
+	/**
+	 * Reverses all indices for the given sequence length, i.e.
+	 * (newIdx = seqLength-1-oldIdx)
+	 */
+	IndexRangeList
+	reverse( const size_t seqLength ) const;
 
 	/**
 	 * Checks whether or not two range lists are equivalent

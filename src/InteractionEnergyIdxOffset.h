@@ -6,7 +6,8 @@
 
 /**
  * Wrapper for a given InteractionEnergy object where indices are shifted by
- * a given offset. This is useful for local interaction computations.
+ * a given positive offset (shifted towards infinity).
+ * This is useful for local interaction computations.
  *
  * @author Martin Mann
  *

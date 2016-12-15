@@ -105,9 +105,9 @@ int main(int argc, char **argv) {
 				BOOST_FOREACH(const IndexRange & qRange, parameters.getQueryRanges(queryNumber)) {
 
 					VLOG(1) <<"predicting interactions for"
-							<<" target" <<tRange
+							<<" target range " <<tRange
 							<<" and"
-							<<" query" <<qRange
+							<<" query range " <<qRange
 							<<"...";
 
 					predictor->predict(	  tRange

@@ -49,6 +49,8 @@ predict( const IndexRange & r1, const IndexRange & r2
 	// setup index offset
 	energy.setOffset1(r1.from);
 	energy.setOffset2(r2.from);
+	seedHandler.setOffset1(r1.from);
+	seedHandler.setOffset2(r2.from);
 
 	// resize matrix
 	hybridE_pq.resize( std::min( energy.size1()
@@ -77,9 +79,6 @@ predict( const IndexRange & r1, const IndexRange & r2
 			if (!energy.areComplementary( j1, j2 ))
 				continue;
 
-			// compute hybridE_pq
-			fillHybridE( j1, j2 );
-
 			// compute hybridE_pq_seed and update mfe via PredictorMfe2d::updateOptima()
 			fillHybridE_seed( j1, j2 );
 		}
@@ -107,16 +106,22 @@ void
 PredictorMfe2dSeed::
 fillHybridE_seed( const size_t j1, const size_t j2, const size_t i1min, const size_t i2min )
 {
-	assert(j1<=hybridErange.r1.to);
-	assert(j2<=hybridErange.r2.to);
+
+	// compute hybridE_pq
+	fillHybridE( j1, j2, i1min, i2min );
+
 	assert(i1min <= j1);
 	assert(i2min <= j2);
+	assert(hybridErange.r1.from <= i1min);
+	assert(hybridErange.r2.from <= i2min);
+	assert(j1==hybridErange.r1.to);
+	assert(j2==hybridErange.r2.to);
 	assert(j1<hybridE_pq.size1());
 	assert(j2<hybridE_pq.size2());
 
 	// check if it is possible to have a seed ending on the right at (j1,j2)
 	if (std::min(j1-i1min,j2-i2min)+1 < seedHandler.getConstraint().getBasePairs()) {
-		// no seed possible, abort computation
+		// no seed possible, abort table computation
 		return;
 	}
 
@@ -127,7 +132,7 @@ fillHybridE_seed( const size_t j1, const size_t j2, const size_t i1min, const si
 	const IndexRange i1range( std::max(hybridErange.r1.from,i1min), j1+1-seedHandler.getConstraint().getBasePairs() );
 	const IndexRange i2range( std::max(hybridErange.r2.from,i2min), j2+1-seedHandler.getConstraint().getBasePairs() );
 
-	//////////  COMPUTE HYBRIDIZATION ENERGIES ONLY  ////////////
+	//////////  COMPUTE HYBRIDIZATION ENERGIES (WITH SEED)  ////////////
 
 	// current minimal value
 	E_type curMinE = E_INF;
@@ -239,7 +244,6 @@ traceBack( Interaction & interaction )
 
 
 	// refill submatrices of mfe interaction
-	fillHybridE( j1, j2, i1, i2 );
 	fillHybridE_seed( j1, j2, i1, i2 );
 
 	// the currently traced value for i1-j1, i2-j2

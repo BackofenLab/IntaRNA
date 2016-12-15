@@ -146,9 +146,10 @@ public:
 
 	/**
 	 * Provides the seed constraint according to the user settings
+	 * @param energy the interaction energy handler to be used
 	 * @return the user defined seed constraints
 	 */
-	const SeedConstraint & getSeedConstraint() const;
+	const SeedConstraint & getSeedConstraint( const InteractionEnergy & energy ) const;
 
 	/**
 	 * Access to the set folding temperature in Celsius.

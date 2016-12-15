@@ -1,9 +1,3 @@
-/*
- * SeedHandler.cpp
- *
- *  Created on: 09.11.2016
- *      Author: Mmann
- */
 
 #include "SeedHandler.h"
 
@@ -18,10 +12,9 @@ SeedHandler::SeedHandler(
 		, seedConstraint(seedConstraint)
 		, seedE_rec( SeedIndex({{ 0,0,0,0,0 }}))
 		, seed()
+		, offset1(0)
+		, offset2(0)
 {
-	if (!seedConstraint.getRanges1().empty() || !seedConstraint.getRanges2().empty()) {
-		NOTIMPLEMENTED("SeedHandler : seed range restriction");
-	}
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -41,6 +34,15 @@ getConstraint() const
 
 //////////////////////////////////////////////////////////////////////////
 
+const InteractionEnergy&
+SeedHandler::
+getInteractionEnergy() const
+{
+	return energy;
+}
+
+//////////////////////////////////////////////////////////////////////////
+
 void
 SeedHandler::
 fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size_t i2max)
@@ -49,8 +51,8 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 #if IN_DEBUG_MODE
 	if ( i1min > i1max ) throw std::runtime_error("SeedHandler::fillSeed: i1min("+toString(i1min)+") > i1max("+toString(i1max)+")");
 	if ( i2min > i2max ) throw std::runtime_error("SeedHandler::fillSeed: i2min("+toString(i2min)+") > i2max("+toString(i2max)+")");
-	if ( i1min > seed.size1() ) throw std::runtime_error("SeedHandler::fillSeed: i1min("+toString(i1min)+") > seed.size1("+toString(seed.size1())+")");
-	if ( i2min > seed.size2() ) throw std::runtime_error("SeedHandler::fillSeed: i2min("+toString(i2min)+") > seed.size2("+toString(seed.size2())+")");
+	if ( i1max > energy.size1() ) throw std::runtime_error("SeedHandler::fillSeed: i1max("+toString(i1max)+") > energy.size1("+toString(energy.size1())+")");
+	if ( i2max > energy.size2() ) throw std::runtime_error("SeedHandler::fillSeed: i2max("+toString(i2max)+") > energy.size2("+toString(energy.size2())+")");
 #endif
 
 	// TODO : if (umax==0) apply local alignment/exact match search based on sequence only
@@ -64,6 +66,10 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 					, (SeedRecMatrix::index)(seedConstraint.getMaxUnpaired1()+1) // +1 for size
 					, (SeedRecMatrix::index)(seedConstraint.getMaxUnpaired2()+1) // +1 for size
 				}}));
+
+	// store index offset due to restricted matrix size generation
+	offset1 = i1min;
+	offset2 = i2min;
 
 	// temporary variables
 	size_t i1, i2, bpIn, u1, u2, j1, j2, u1p, u2p, k1,k2, u1best, u2best;
@@ -80,31 +86,46 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 		seedCount++;
 
 		// init according to no seed interaction
-		seed(i1,i2) = SeedMatrix::value_type( E_INF, 0 );
+		seed(i1-offset1,i2-offset2) = SeedMatrix::value_type( E_INF, 0 );
 
 		// skip non-complementary left seed boundaries
 		if (!energy.areComplementary(i1,i2)) {
 			continue; // go to next seedE index
 		}
+		// skip left seed boundaries excluded from search
+		if (!(seedConstraint.getRanges1().empty() || seedConstraint.getRanges1().covers(i1))) {
+			continue; // go to next seedE index
+		}
+		if (!(seedConstraint.getRanges2().empty() || seedConstraint.getRanges2().covers(i2))) {
+			continue; // go to next seedE index
+		}
 
 		// for feasible number of base pairs (bp+1) in increasing order
 		// bp=0 encodes 2 base pairs
-		for (bpIn=0; bpIn<seedE_rec.shape()[2] && (i1+bpIn+1)<seed.size1() && (i2+bpIn+1)<seed.size2(); bpIn++) {
+		for (bpIn=0; bpIn<seedE_rec.shape()[2] && (i1+bpIn+1-offset1)<seed.size1() && (i2+bpIn+1-offset2)<seed.size2(); bpIn++) {
 
 			// for feasible unpaired in seq1 in increasing order
-			for (u1=0; u1<seedE_rec.shape()[3] && (i1+bpIn+1+u1) < seed.size1(); u1++) {
+			for (u1=0; u1<seedE_rec.shape()[3] && (i1+bpIn+1+u1-offset1) < seed.size1(); u1++) {
+
+				// get right seed boundaries
+				// check if this index range is to be considered for seed search
+
 			// for feasible unpaired in seq2 in increasing order
-			for (u2=0; u2<seedE_rec.shape()[4] && (u1+u2)<=seedConstraint.getMaxUnpairedOverall() && (i2+bpIn+1+u2) < seed.size2(); u2++) {
+			for (u2=0; u2<seedE_rec.shape()[4] && (u1+u2)<=seedConstraint.getMaxUnpairedOverall() && (i2+bpIn+1+u2-offset2) < seed.size2(); u2++) {
 
 				// get right seed boundaries
 				j1 = i1+bpIn+1+u1;
 				j2 = i2+bpIn+1+u2;
+				// check if this index range is to be considered for seed search
+				bool validSeedSite =
+						(seedConstraint.getRanges1().empty() || seedConstraint.getRanges1().covers(i1,j1))
+						&& (seedConstraint.getRanges2().empty() || seedConstraint.getRanges2().covers(i2,j2));
 
 				// init current seed energy
 				curE = E_INF;
 
 				// check if right boundary is complementary
-				if (energy.areComplementary(j1,j2)) {
+				if (validSeedSite && energy.areComplementary(j1,j2)) {
 
 					// base case: only left and right base pair present
 					if (bpIn==0) {
@@ -122,14 +143,14 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 							k2 = i2+u2p+1;
 							// check if split pair is complementary
 							// and recursed entry is < E_INF
-							if (! (energy.areComplementary(k1,k2) && E_isNotINF( getSeedE( k1, k2, bpIn-1, u1-u1p, u2-u2p ) ) ) ) {
+							if (! (energy.areComplementary(k1,k2) && E_isNotINF( getSeedE( k1-offset1, k2-offset2, bpIn-1, u1-u1p, u2-u2p ) ) ) ) {
 								continue; // not complementary -> skip
 							}
 
 							// update mfe for split at k1,k2
 							curE = std::min( curE,
 									energy.getE_interLeft(i1,k1,i2,k2)
-									+ getSeedE( k1, k2, bpIn-1, u1-u1p, u2-u2p )
+									+ getSeedE( k1-offset1, k2-offset2, bpIn-1, u1-u1p, u2-u2p )
 									);
 						} // u2p
 						} // u1p
@@ -138,7 +159,7 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 				} // (j1,j2) complementary
 
 				// store seed energy
-				setSeedE( i1, i2, bpIn, u1, u2, curE );
+				setSeedE( i1-offset1, i2-offset2, bpIn, u1, u2, curE );
 
 			} // u2
 			} // u1
@@ -152,16 +173,16 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 				bestE = E_INF;
 
 				// for feasible unpaired in seq1 in increasing order
-				for (u1=0; u1<seedE_rec.shape()[3] && (i1+bpIn+1+u1) < seed.size1(); u1++) {
+				for (u1=0; u1<seedE_rec.shape()[3] && (i1+bpIn+1+u1-offset1) < seed.size1(); u1++) {
 				// for feasible unpaired in seq2 in increasing order
-				for (u2=0; u2<seedE_rec.shape()[4] && (u1+u2)<=seedConstraint.getMaxUnpairedOverall() && (i2+bpIn+1+u2) < seed.size2(); u2++) {
+				for (u2=0; u2<seedE_rec.shape()[4] && (u1+u2)<=seedConstraint.getMaxUnpairedOverall() && (i2+bpIn+1+u2-offset2) < seed.size2(); u2++) {
 
 					// get right seed boundaries
 					j1 = i1+bpIn+1+u1;
 					j2 = i2+bpIn+1+u2;
 
 					// get overall interaction energy
-					curE = energy.getE( i1, j1, i2, j2, getSeedE( i1, i2, bpIn, u1, u2 ) ) + energy.getE_init();
+					curE = energy.getE( i1, j1, i2, j2, getSeedE( i1-offset1, i2-offset2, bpIn, u1, u2 ) ) + energy.getE_init();
 
 					// check if better than what is known so far
 					if ( curE < bestE ) {
@@ -187,7 +208,7 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 				}
 
 				// store best (mfe) seed for all u1/u2
-				seed(i1,i2) = SeedMatrix::value_type( bestE
+				seed(i1-offset1,i2-offset2) = SeedMatrix::value_type( bestE
 						, E_isINF(bestE)?0:encodeSeedLength(bpIn+2+u1best,bpIn+2+u2best) );
 
 			} // store best seed
@@ -209,17 +230,21 @@ traceBackSeed( Interaction & interaction
 		, const size_t i2
 		)
 {
-	assert( i1 < seed.size1() );
-	assert( i2 < seed.size2() );
-	assert( E_isNotINF( getSeedE(i1,i2) ) );
-	assert( i1+getSeedLength1(i1,i2)-1 < seed.size1() );
-	assert( i2+getSeedLength2(i1,i2)-1 < seed.size2() );
+#if IN_DEBUG_MODE
+	if ( i1 < offset1 ) throw std::runtime_error("SeedHandler::traceBackSeed(i1="+toString(i1)+") is out of range (>"+toString(offset1)+")");
+	if ( i1-offset1 >= seed.size1() ) throw std::runtime_error("SeedHandler::traceBackSeed(i1="+toString(i1)+") is out of range (<"+toString(seed.size1()+offset1)+")");
+	if ( i2 < offset2 ) throw std::runtime_error("SeedHandler::traceBackSeed(i2="+toString(i2)+") is out of range (>"+toString(offset2)+")");
+	if ( i2-offset2 >= seed.size2() ) throw std::runtime_error("SeedHandler::traceBackSeed(i2="+toString(i2)+") is out of range (<"+toString(seed.size2()+offset2)+")");
+	if ( E_isINF( getSeedE(i1,i2) ) ) throw std::runtime_error("SeedHandler::traceBackSeed(i1="+toString(i1)+",i2="+toString(i2)+") no seed known (E_INF)");
+	if ( i1+getSeedLength1(i1,i2)-1-offset1 >= seed.size1() ) throw std::runtime_error("SeedHandler::traceBackSeed(i1="+toString(i1)+") seed length ("+toString(getSeedLength1(i1,i2))+") exceeds of range (<"+toString(seed.size1()+offset1)+")");
+	if ( i2+getSeedLength2(i1,i2)-1-offset2 >= seed.size2() ) throw std::runtime_error("SeedHandler::traceBackSeed(i2="+toString(i2)+") seed length ("+toString(getSeedLength2(i1,i2))+") exceeds of range (<"+toString(seed.size2()+offset2)+")");
+#endif
 
 	// get number of base pairs within the seed
 	const size_t seedBps = getConstraint().getBasePairs();
 
 	// trace back the according seed
-	traceBackSeed( interaction, i1, i2
+	traceBackSeed( interaction, i1-offset1, i2-offset2
 			, seedBps-2
 			, getSeedLength1(i1,i2)-seedBps
 			, getSeedLength2(i1,i2)-seedBps );
@@ -321,7 +346,7 @@ E_type
 SeedHandler::
 getSeedE( const size_t i1, const size_t i2 ) const
 {
-	return seed(i1,i2).first;
+	return seed(i1-offset1,i2-offset2).first;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -330,7 +355,7 @@ size_t
 SeedHandler::
 getSeedLength1( const size_t i1, const size_t i2 ) const
 {
-	return decodeSeedLength1(seed(i1,i2).second);
+	return decodeSeedLength1(seed(i1-offset1,i2-offset2).second);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -339,7 +364,7 @@ size_t
 SeedHandler::
 getSeedLength2( const size_t i1, const size_t i2 ) const
 {
-	return decodeSeedLength2(seed(i1,i2).second);
+	return decodeSeedLength2(seed(i1-offset1,i2-offset2).second);
 }
 
 //////////////////////////////////////////////////////////////////////////
