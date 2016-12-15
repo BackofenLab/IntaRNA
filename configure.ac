@@ -90,9 +90,11 @@ AC_ARG_WITH([RNA],
 )
 if test  $RNAPATHSET = 1 ; then
 	# set compiler and linker flags if needed
-	AM_CXXFLAGS="-I$with_RNA/include $AM_CXXFLAGS -fopenmp"
+	AM_CXXFLAGS="-I$with_RNA/include $AM_CXXFLAGS"
 	AM_LDFLAGS="-L$with_RNA/lib $AM_LDFLAGS"
 fi
+# add compiler flags needed by VRNA
+AM_CXXFLAGS="$AM_CXXFLAGS -fopenmp"
 
 
 ###############################################################################
