@@ -1,4 +1,16 @@
 
+161216 Martin Mann :
+ * README.md
+   + feature comparison table started
+ + configure.ac :
+   * -fopenmp now always added to CXXFLAGS (also if VRNA path not specified)
+ + OutputHandlerIntaRNA1detailed : output similar to IntaRNA v1.2.*
+ * CommandLineParsing :
+   * getOutputHandler() :
+     + temporarily : init output of IntaRNA 1.* mode
+     * temporarily : IntaRNA 1 output
+   + getOutputStream() : stream to be passed to OutputHandler instances
+
 161215 Martin Mann :
  * AccessibilityConstraint :
    * construction : bugfix reverse handling

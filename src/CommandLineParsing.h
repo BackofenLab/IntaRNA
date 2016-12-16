@@ -38,6 +38,13 @@ public:
 		NOT_PARSED_YET = 999
 	};
 
+	enum PredictionMode {
+		HEURISTIC = 0,
+		SPACEEFFICIENT = 1,
+		FULL = 2,
+		MAXPROB = 3
+	};
+
 
 public:
 
@@ -162,6 +169,12 @@ public:
 	 * @return the output constraints to be applied
 	 */
 	OutputConstraint getOutputConstraint() const;
+
+	/**
+	 * The stream to write the interaction output to
+	 * @return the output stream to write interaction output to
+	 */
+	std::ostream & getOutputStream() const;
 
 
 protected:

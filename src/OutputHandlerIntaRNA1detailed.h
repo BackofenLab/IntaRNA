@@ -1,6 +1,6 @@
 
-#ifndef OUTPUTHANDLERTEXT_H_
-#define OUTPUTHANDLERTEXT_H_
+#ifndef OUTPUTHANDLERINTARNA1DETAILED_H_
+#define OUTPUTHANDLERINTARNA1DETAILED_H_
 
 #include "OutputHandler.h"
 #include "InteractionEnergy.h"
@@ -9,29 +9,27 @@
 
 /**
  * Interaction output handler that writes all interactions directly to stream
- * in a simple text format.
+ * as done by IntaRNA version 1.2.* in detailed output mode.
  *
- * @author Martin Mann 2014
+ * @author Martin Mann 2016
  */
-class OutputHandlerText: public OutputHandler {
+class OutputHandlerIntaRNA1detailed: public OutputHandler {
 public:
 
 	/**
-	 * Construct a simple text output handler for interaction reporting.
+	 * Construct a simple text output handler for interaction reporting
+	 * similar to the detailed output of IntaRNA version 1.2.*
 	 *
 	 * @param out the stream to write to
 	 * @param energy the interaction energy object used for computation
-	 * @param flankingLength maximal number of nucleotides flanking the
-	 *        interaction to be printed in the output
 	 */
-	OutputHandlerText( std::ostream & out
-				, const InteractionEnergy & energy
-				, const size_t flankingLength = 10 );
+	OutputHandlerIntaRNA1detailed( std::ostream & out
+				, const InteractionEnergy & energy );
 
 	/**
 	 * destruction, enforces a flush on the output stream.
 	 */
-	virtual ~OutputHandlerText();
+	virtual ~OutputHandlerIntaRNA1detailed();
 
 	/**
 	 * Write a given RNA-RNA interaction in simple text format to the output
@@ -62,9 +60,7 @@ protected:
 	//! the interaction energy handler used for the energy computations
 	const InteractionEnergy & energy;
 
-	//! number of flanking bases left/right of the interaction to print
-	const size_t flankingLength;
 
 };
 
-#endif /* OUTPUTHANDLERTEXT_H_ */
+#endif /* OUTPUTHANDLERINTARNA1DETAILED_H_ */

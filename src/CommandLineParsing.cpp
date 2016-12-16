@@ -32,6 +32,7 @@
 // maxprob seed
 
 #include "OutputHandlerText.h"
+#include "OutputHandlerIntaRNA1detailed.h"
 
 
 
@@ -1236,22 +1237,32 @@ CommandLineParsing::
 getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 {
 	if (noSeedRequired) {
-		switch ( predMode.val ) {
-		case 0 :  return new PredictorMfe2dHeuristic( energy, output );
-		case 1 :  return new PredictorMfe2d( energy, output );
-		case 2 :  return new PredictorMfe4d( energy, output );
-		case 3 :  return new PredictorMaxProb( energy, output );
+		switch ( (PredictionMode)predMode.val ) {
+		case HEURISTIC :  return new PredictorMfe2dHeuristic( energy, output );
+		case SPACEEFFICIENT :  return new PredictorMfe2d( energy, output );
+		case FULL :  return new PredictorMfe4d( energy, output );
+		case MAXPROB :  return new PredictorMaxProb( energy, output );
 		default: throw std::runtime_error("CommandLineParsing::getPredictor() : unknown predMode value "+toString(predMode.val));
 		}
 	} else {
 		switch ( predMode.val ) {
-		case 0 :  return new PredictorMfe2dHeuristicSeed( energy, output, getSeedConstraint( energy ) );
-		case 1 :  return new PredictorMfe2dSeed( energy, output, getSeedConstraint( energy ) );
-		case 2 :  NOTIMPLEMENTED("mode "+toString(predMode.val)+" not implemented for seed constraint (try --noSeed)"); return NULL;
-		case 3 :  NOTIMPLEMENTED("mode "+toString(predMode.val)+" not implemented for seed constraint (try --noSeed)"); return NULL;
+		case HEURISTIC :  return new PredictorMfe2dHeuristicSeed( energy, output, getSeedConstraint( energy ) );
+		case SPACEEFFICIENT :  return new PredictorMfe2dSeed( energy, output, getSeedConstraint( energy ) );
+		case FULL :  NOTIMPLEMENTED("mode "+toString(predMode.val)+" not implemented for seed constraint (try --noSeed)"); return NULL;
+		case MAXPROB :  NOTIMPLEMENTED("mode "+toString(predMode.val)+" not implemented for seed constraint (try --noSeed)"); return NULL;
 		default: throw std::runtime_error("CommandLineParsing::getPredictor() : unknown predMode value "+toString(predMode.val));
 		}
 	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+std::ostream &
+CommandLineParsing::
+getOutputStream() const
+{
+	// TODO replace with central stream (file stream to be closed in destructor)
+	return std::cout;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1260,8 +1271,40 @@ OutputHandler*
 CommandLineParsing::
 getOutputHandler( const InteractionEnergy & energy ) const
 {
+	// check if output mode == IntaRNA1-detailed
+	{
+		getOutputStream()
+		<<"-------------------------" <<"\n"
+		<<"INPUT" <<"\n"
+		<<"-------------------------" <<"\n"
+		<<"number of base pairs in seed  : "<<seedBP.val <<"\n"
+		<<"max. number of unpaired bases in the seed region of seq. 1    : "<<(seedMaxUPt.val<0 ? seedMaxUP.val : seedMaxUPt.val) <<"\n"
+		<<"max. number of unpaired bases in the seed region of seq. 2    : "<<(seedMaxUPq.val<0 ? seedMaxUP.val : seedMaxUPq.val) <<"\n"
+		<<"max. number of unpaired bases in the seed region of both seq's: "<<seedMaxUP.val <<"\n"
+		<<"RNAplfold used target                                         : "<<(!((! tAccConstr.empty()) || (tAccW.val ==0))?"true":"false") <<"\n"
+		<<"RNAup used query                                              : "<<(((! qAccConstr.empty()) || (qAccW.val ==0))?"true":"false") <<"\n"
+		<<"sliding window size target                                    : "<<(tAccW.val!=0?tAccW.val:energy.size1()) <<"\n"
+		<<"max. length of unpaired region target                         : "<<(tAccW.val!=0?tAccW.val:energy.size1()) <<"\n"
+		<<"max. distance of two paired bases target                      : "<<(tAccL.val!=0?tAccL.val:energy.size1()) <<"\n"
+		<<"sliding window size query                                     : "<<(qAccW.val!=0?qAccW.val:energy.size2()) <<"\n"
+		<<"max. length of unpaired region query                          : "<<(qAccW.val!=0?qAccW.val:energy.size2()) <<"\n"
+		<<"max. distance of two paired bases query                       : "<<(qAccL.val!=0?qAccL.val:energy.size2()) <<"\n"
+		<<"weight for ED values of target RNA in energy                  : 1" <<"\n"
+		<<"weight for ED values of binding RNA in energy                 : 1" <<"\n"
+		<<"temperature                                                   : "<<temperature.val <<" Celsius" <<"\n"
+		<<"max. number of subopt. results                                : "<<getOutputConstraint().reportMax <<"\n"
+		<<"Heuristic for hybridization end used                          : "<<((PredictionMode)predMode.val==HEURISTIC?"true":"false") <<"\n"
+		<<"\n"
+		<<"-------------------------" <<"\n"
+		<<"OUTPUT" <<"\n"
+		<<"-------------------------" <<"\n"
+		;
+
+	}
+
 	// TODO add according arguments and parsing
-	return new OutputHandlerText(std::cout, energy );
+	return new OutputHandlerIntaRNA1detailed( getOutputStream(), energy );
+//	return new OutputHandlerText( getOutputStream(), energy );
 }
 
 ////////////////////////////////////////////////////////////////////////////
