@@ -1,6 +1,6 @@
 
 # sub directories to check for Makefiles
-SUBDIRS = src .
+SUBDIRS = src perl .
 
 # global test directive # ensure all is compiled (need object files for tests)
 tests: all

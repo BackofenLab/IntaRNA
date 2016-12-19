@@ -209,6 +209,7 @@ AC_SUBST([LIBS])
 # files to generate via autotools (.am or .in source files)
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([src/Makefile])
+AC_CONFIG_FILES([perl/Makefile])
 AC_CONFIG_FILES([tests/Makefile])
 
 # generate the final Makefile etc.
