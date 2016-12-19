@@ -66,7 +66,7 @@ add( const Interaction & i )
 
 	// left flanking
 	// unbound region s1
-	s1Unbound.width(flankingLength+3);
+	s1Unbound.width(flankingLength);
 	s1Unbound <<std::right;
 	if (i1 < flankingLength) {
 		// full sequence prefix
@@ -80,10 +80,10 @@ add( const Interaction & i )
 					);
 	}
 	// bound region
-	s1Bound.width(flankingLength+3); s1Bound <<' ';
-	s2Bound.width(flankingLength+3); s2Bound <<' ';
+	s1Bound.width(flankingLength); s1Bound <<' ';
+	s2Bound.width(flankingLength); s2Bound <<' ';
 	// unbound region s2
-	s2Unbound.width(flankingLength+3);
+	s2Unbound.width(flankingLength);
 	s2Unbound <<std::right;
 	if (i2+flankingLength > i.s2->size()) {
 		// add remaining sequence
