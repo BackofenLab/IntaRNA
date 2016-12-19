@@ -4,6 +4,6 @@
 #################################################
 
 dist_bin_SCRIPTS = \
-		IntaRNA-1ui.pl 
+		IntaRNA_1ui.pl 
 
 					
