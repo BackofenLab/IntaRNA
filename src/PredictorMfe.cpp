@@ -40,7 +40,7 @@ initOptima( const OutputConstraint & outConstraint )
 	// init all interactions to be filled
 	for (InteractionList::iterator i = mfeInteractions.begin(); i!= mfeInteractions.end(); i++) {
 		// initialize global E minimum : should be below 0.0
-		i->energy = 0.0;
+		i->energy = outConstraint.maxE;
 		// ensure it holds only the boundary
 		if (i->basePairs.size()!=2) {
 			i->basePairs.resize(2);
@@ -149,7 +149,7 @@ reportOptima( const OutputConstraint & outConstraint )
 	// number of reported interactions
 	size_t reported = 0;
 	// get maximal report energy = mfe + deltaE + precisionEpsilon
-	const E_type maxE = (E_type)std::min(0.0, (double)(mfeInteractions.begin()->energy + outConstraint.deltaE + E_precisionEpsilon));
+	const E_type maxE = std::min(outConstraint.maxE, (E_type)(mfeInteractions.begin()->energy + outConstraint.deltaE + E_precisionEpsilon));
 
 	// clear reported interaction ranges
 	reportedInteractions.first.clear();
@@ -214,6 +214,7 @@ reportOptima( const OutputConstraint & outConstraint )
 
 	// check if nothing was worth reporting but report was expected
 	if (reported == 0 && outConstraint.reportMax > 0 ) {
+		// TODO replace with no report and "no-interaction-message" in output destructor
 		// -> no preferable interactions found !!!
 		// replace mfeInteraction with no interaction
 		mfeInteractions.begin()->clear();

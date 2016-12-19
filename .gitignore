@@ -32,6 +32,7 @@
 .settings
 .cproject
 .autotools
+.*
 
 # temporary autotools files
 config.*

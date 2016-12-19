@@ -94,6 +94,7 @@ CommandLineParsing::CommandLineParsing()
 	outNumber( 0, 1000, 1),
 	outOverlap( OutputConstraint::ReportOverlap::OVERLAP_NONE, OutputConstraint::ReportOverlap::OVERLAP_BOTH, OutputConstraint::ReportOverlap::OVERLAP_SEQ2 ),
 	outDeltaE( 0.0, 100.0, 100.0),
+	outMaxE( -999.0, 0.0, 0.0),
 
 	vrnaHandler()
 
@@ -255,6 +256,11 @@ CommandLineParsing::CommandLineParsing()
 	////  OUTPUT OPTIONS  ////////////////////////////////////
 
 	opts_output.add_options()
+	    ("outMaxE"
+			, value<double>(&(outMaxE.val))
+				->default_value(outMaxE.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_outMaxE,this,_1))
+			, std::string("only interactions with E <= maxE are reported").c_str())
 	    ("outNumber,n"
 			, value<int>(&(outNumber.val))
 				->default_value(outNumber.def)
@@ -752,6 +758,13 @@ void CommandLineParsing::validate_outDeltaE(const double & value) {
 
 ////////////////////////////////////////////////////////////////////////////
 
+void CommandLineParsing::validate_outMaxE(const double & value) {
+	// forward check to general method
+	validate_numberArgument("outMaxE", outMaxE, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
 void
 CommandLineParsing::
 validate_charArgument(const std::string & name, const CommandLineParsing::CharParameter& param, const char & value)
@@ -1048,6 +1061,7 @@ getOutputConstraint()  const
 	return OutputConstraint(
 			  outNumber.val
 			, static_cast<OutputConstraint::ReportOverlap>(outOverlap.val)
+			, static_cast<E_type>(outMaxE.val)
 			, static_cast<E_type>(outDeltaE.val)
 			);
 }

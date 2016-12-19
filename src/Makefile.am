@@ -1,9 +1,9 @@
 
 # the program to build
-bin_PROGRAMS = intaRNA
+bin_PROGRAMS = IntaRNA
 
 # intaRNA sources
-intaRNA_SOURCES =	intaRNA.cpp \
+IntaRNA_SOURCES =	intaRNA.cpp \
 					easylogging++.h \
 					general.h \
 					Accessibility.h \

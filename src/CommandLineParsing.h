@@ -352,6 +352,8 @@ protected:
 	NumberParameter<int> outOverlap;
 	//! deltaE to mfe allowed to report an interaction
 	NumberParameter<double> outDeltaE;
+	//! max E allowed to report an interaction
+	NumberParameter<double> outMaxE;
 
 	//! the vienna energy parameter handler initialized by #parse()
 	mutable VrnaHandler vrnaHandler;
@@ -539,6 +541,12 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_outDeltaE(const double & value);
+
+	/**
+	 * Validates the outMaxE argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_outMaxE(const double & value);
 
 
 	////////////  GENERIC TESTS  /////////////////

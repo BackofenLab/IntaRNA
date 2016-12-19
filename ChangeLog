@@ -1,4 +1,18 @@
 
+161219 Martin Mann :
+ * src/Makefile :
+   * bin file name changed to "IntaRNA"
+ + IntaRNA-1ui.pl : wrapper to enable IntaRNA v1 like parameter usage
+ * OutputConstraint :
+   + maxE : maximal energy to be reported
+ * CommandLineParsing :
+   + outMaxE + validator : argument for maximal energy of reported interactions
+ * PredictorMfe :
+   * initOptima() : initializes with OutputConstraint.maxE
+   * reportOptima() : ensures energy is below OutputConstraint.maxE
+ * .gitignore : 
+   + .* : all hidden files ignored
+
 161216 Martin Mann :
  * README.md
    + feature comparison table started
