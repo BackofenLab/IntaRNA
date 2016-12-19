@@ -3,7 +3,8 @@
 use strict;
 use Getopt::Std;
 
-my $intaRNAbinPath = "./src/";
+#my $intaRNAbinPath = "../src/";
+my $intaRNAbinPath = "";
 
 my %args;
 
