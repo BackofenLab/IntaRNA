@@ -128,12 +128,12 @@ CommandLineParsing::CommandLineParsing()
 			, value<std::string>(&(qAccConstr))
 				->notifier(boost::bind(&CommandLineParsing::validate_qAccConstr,this,_1))
 			, std::string("accessibility computation : structure constraint for each sequence position: '.' no constraint, '"+toString(AccessibilityConstraint::dotBracket_accessible)+"' unpaired, '"+toString(AccessibilityConstraint::dotBracket_blocked)+"' blocked. Note, blocked positions are excluded from interaction prediction and considered unpaired!").c_str())
-		("qIntW"
+		("qIntLenMax"
 			, value<int>(&(qIntLenMax.val))
 				->default_value(qIntLenMax.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_qIntLenMax,this,_1))
 			, std::string("interaction site : maximal window size to be considered for interaction (and thus accessible) within the query (arg in range ["+toString(qIntLenMax.min)+","+toString(qIntLenMax.max)+"]; 0 defaults to the full sequence length)").c_str())
-		("qIntL"
+		("qIntLoopMax"
 			, value<int>(&(qIntLoopMax.val))
 				->default_value(qIntLoopMax.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_qIntLoopMax,this,_1))
