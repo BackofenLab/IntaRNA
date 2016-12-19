@@ -53,7 +53,7 @@ Options     :\n
 
 ."\n
  === RNA folding parameters ===\n
-              -T temp          : temperature in Celsius (default: 37°C)\n"
+              -T temp          : temperature in Celsius (default: 37Â°C)\n"
 #              -U               : use RNAup to compute ED values of binding RNA\n
 #                                 (default)\n
 #              -P               : use RNAplfold to compute ED values of target RNA\n
