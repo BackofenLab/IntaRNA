@@ -2,9 +2,9 @@
 
 use strict;
 use Getopt::Std;
+use File::Basename qw( dirname );
 
-#my $intaRNAbinPath = "../src/";
-my $intaRNAbinPath = "";
+my $intaRNAbinPath = dirname(__FILE__)."/";
 
 my %args;
 
