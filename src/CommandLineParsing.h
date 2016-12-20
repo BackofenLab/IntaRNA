@@ -889,6 +889,7 @@ void CommandLineParsing::validate_tRegion(const std::string & value) {
 
 ////////////////////////////////////////////////////////////////////////////
 
+inline
 void CommandLineParsing::validate_seedBP(const int & value) {
 	// forward check to general method
 	validate_numberArgument("seedBP", seedBP, value);
