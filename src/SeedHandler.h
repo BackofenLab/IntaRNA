@@ -233,4 +233,178 @@ protected:
 
 };
 
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+
+inline
+SeedHandler::SeedHandler(
+		const InteractionEnergy & energy
+		, const SeedConstraint & seedConstraint
+		)
+	:
+		energy(energy)
+		, seedConstraint(seedConstraint)
+		, seedE_rec( SeedIndex({{ 0,0,0,0,0 }}))
+		, seed()
+		, offset1(0)
+		, offset2(0)
+{
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+SeedHandler::~SeedHandler()
+{
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+const SeedConstraint&
+SeedHandler::
+getConstraint() const
+{
+	return seedConstraint;
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+inline
+const InteractionEnergy&
+SeedHandler::
+getInteractionEnergy() const
+{
+	return energy;
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+inline
+void
+SeedHandler::
+traceBackSeed( Interaction & interaction
+		, const size_t i1
+		, const size_t i2
+		)
+{
+#if IN_DEBUG_MODE
+	if ( i1 < offset1 ) throw std::runtime_error("SeedHandler::traceBackSeed(i1="+toString(i1)+") is out of range (>"+toString(offset1)+")");
+	if ( i1-offset1 >= seed.size1() ) throw std::runtime_error("SeedHandler::traceBackSeed(i1="+toString(i1)+") is out of range (<"+toString(seed.size1()+offset1)+")");
+	if ( i2 < offset2 ) throw std::runtime_error("SeedHandler::traceBackSeed(i2="+toString(i2)+") is out of range (>"+toString(offset2)+")");
+	if ( i2-offset2 >= seed.size2() ) throw std::runtime_error("SeedHandler::traceBackSeed(i2="+toString(i2)+") is out of range (<"+toString(seed.size2()+offset2)+")");
+	if ( E_isINF( getSeedE(i1,i2) ) ) throw std::runtime_error("SeedHandler::traceBackSeed(i1="+toString(i1)+",i2="+toString(i2)+") no seed known (E_INF)");
+	if ( i1+getSeedLength1(i1,i2)-1-offset1 >= seed.size1() ) throw std::runtime_error("SeedHandler::traceBackSeed(i1="+toString(i1)+") seed length ("+toString(getSeedLength1(i1,i2))+") exceeds of range (<"+toString(seed.size1()+offset1)+")");
+	if ( i2+getSeedLength2(i1,i2)-1-offset2 >= seed.size2() ) throw std::runtime_error("SeedHandler::traceBackSeed(i2="+toString(i2)+") seed length ("+toString(getSeedLength2(i1,i2))+") exceeds of range (<"+toString(seed.size2()+offset2)+")");
+#endif
+
+	// get number of base pairs within the seed
+	const size_t seedBps = getConstraint().getBasePairs();
+
+	// trace back the according seed
+	traceBackSeed( interaction, i1-offset1, i2-offset2
+			, seedBps-2
+			, getSeedLength1(i1,i2)-seedBps
+			, getSeedLength2(i1,i2)-seedBps );
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+SeedHandler::
+getSeedE( const size_t i1, const size_t i2 ) const
+{
+	return seed(i1-offset1,i2-offset2).first;
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+inline
+size_t
+SeedHandler::
+getSeedLength1( const size_t i1, const size_t i2 ) const
+{
+	return decodeSeedLength1(seed(i1-offset1,i2-offset2).second);
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+inline
+size_t
+SeedHandler::
+getSeedLength2( const size_t i1, const size_t i2 ) const
+{
+	return decodeSeedLength2(seed(i1-offset1,i2-offset2).second);
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+SeedHandler::
+getSeedE( const size_t i1, const size_t i2, const size_t bpInbetween, const size_t u1, const size_t u2 )
+{
+//	return seedE_rec[i1][i2][bpInbetween][u1][u2];
+	return seedE_rec( SeedIndex({{
+		  (SeedRecMatrix::index) i1
+		, (SeedRecMatrix::index) i2
+		, (SeedRecMatrix::index) bpInbetween
+		, (SeedRecMatrix::index) u1
+		, (SeedRecMatrix::index) u2 }}) );
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+inline
+void
+SeedHandler::
+setSeedE( const size_t i1, const size_t i2, const size_t bpInbetween, const size_t u1, const size_t u2, const E_type E )
+{
+//	seedE_rec[i1][i2][bpInbetween][u1][u2] = E;
+	seedE_rec( SeedIndex({{
+		  (SeedRecMatrix::index) i1
+		, (SeedRecMatrix::index) i2
+		, (SeedRecMatrix::index) bpInbetween
+		, (SeedRecMatrix::index) u1
+		, (SeedRecMatrix::index) u2 }}) ) = E;
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+inline
+size_t
+SeedHandler::
+encodeSeedLength( const size_t l1, const size_t l2 ) const
+{
+	return l1 + l2*(seedConstraint.getMaxLength1()+1);
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+inline
+size_t
+SeedHandler::
+decodeSeedLength1( const size_t code ) const
+{
+	return code % (seedConstraint.getMaxLength1()+1);
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+inline
+size_t
+SeedHandler::
+decodeSeedLength2( const size_t code ) const
+{
+	return code / (seedConstraint.getMaxLength1()+1);
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+
+
 #endif /* SEEDHANDLER_H_ */

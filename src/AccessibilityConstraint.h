@@ -141,4 +141,171 @@ protected:
 
 };
 
+
+////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+
+inline
+AccessibilityConstraint::
+AccessibilityConstraint( const size_t length )
+	:
+	length(length),
+	blocked(),
+	accessible()
+{
+}
+
+////////////////////////////////////////////////////////////////////////
+
+inline
+AccessibilityConstraint::
+AccessibilityConstraint( const std::string& dotBracket )
+	:
+	length(dotBracket.size()),
+	blocked(),
+	accessible()
+{
+#if IN_DEBUG_MODE
+	if (dotBracket.find_first_not_of(dotBracketAlphabet)!=std::string::npos) {
+		throw std::runtime_error("AccessibilityConstraint("+dotBracket+") contains unsupported characters");
+	}
+#endif
+
+	// check for base pairs (not implemented yet)
+	if (dotBracket.find_first_of("()") != std::string::npos) {
+		NOTIMPLEMENTED("AccessibilityConstraint(dotBracket) contains base pairs... currently only '."+toString(dotBracket_accessible)+toString(dotBracket_blocked)+"' implemented");
+	}
+
+	// screen for blocked regions
+	screenDotBracket( dotBracket, dotBracket_blocked, blocked );
+	// screen for accessible regions
+	screenDotBracket( dotBracket, dotBracket_accessible, accessible );
+}
+
+////////////////////////////////////////////////////////////////////////
+
+inline
+AccessibilityConstraint::
+AccessibilityConstraint( const AccessibilityConstraint& toCopy
+			, const bool reverseIndices)
+	:
+	length(toCopy.length)
+	, blocked(toCopy.blocked)
+	, accessible(toCopy.accessible)
+{
+	// TODO copy structure constraints etc.
+
+	if (reverseIndices) {
+
+		// reverse blocked
+		blocked.reverse(length);
+
+		// reverse accessible
+		accessible.reverse(length);
+
+		// TODO reverse structure constraints
+	}
+}
+
+////////////////////////////////////////////////////////////////////////
+
+inline
+AccessibilityConstraint::~AccessibilityConstraint()
+{
+}
+
+////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+AccessibilityConstraint::
+isMarkedBlocked(const size_t i) const
+{
+	return blocked.covers(i);
+}
+
+////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+AccessibilityConstraint::
+isMarkedAccessible(const size_t i) const
+{
+	return accessible.covers(i);
+}
+
+////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+AccessibilityConstraint::
+isUnconstrained( const size_t i ) const
+{
+	return isEmpty()
+	// TODO handle base pairing constraints etc..
+			|| !(isMarkedAccessible(i) || isMarkedBlocked(i));
+}
+
+////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+AccessibilityConstraint::
+isAccessible( const size_t i ) const
+{
+	// TODO handle base pairing constraints etc.
+	return isEmpty()
+			|| !isMarkedBlocked(i);
+}
+
+////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+AccessibilityConstraint::
+isEmpty() const
+{
+	// TODO CHECK FOR BASE PAIRS ETC
+	// check if any constrained regions given
+	return (accessible.size() + blocked.size()) == 0;
+}
+
+////////////////////////////////////////////////////////////////////////
+
+inline
+char
+AccessibilityConstraint::
+getVrnaDotBracket(const size_t i) const
+{
+	// check if to be accessible or blocked (==unstructured)
+	if (isMarkedAccessible(i) || isMarkedBlocked(i)) {
+		return 'x';
+	}
+
+	// TODO add base pair handling etc.
+
+	return '.';
+}
+
+////////////////////////////////////////////////////////////////////////
+
+inline
+AccessibilityConstraint &
+AccessibilityConstraint::
+operator= ( const AccessibilityConstraint & c )
+{
+	// copy data
+	length = c.length;
+	blocked = c.blocked;
+	accessible = c.accessible;
+	// TODO copy structure constraints etc.
+
+	return *this;
+}
+
+////////////////////////////////////////////////////////////////////////
+
+
+
 #endif /* ACCESSIBILITYCONSTRAINT_H_ */

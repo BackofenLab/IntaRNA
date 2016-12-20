@@ -495,6 +495,206 @@ protected:
 
 
 
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+
+inline
+InteractionEnergy::InteractionEnergy( const Accessibility & accS1
+				, const ReverseAccessibility & accS2
+				, const size_t maxInternalLoopSize1
+				, const size_t maxInternalLoopSize2
+		)
+  :
+	accS1(accS1)
+	, accS2(accS2)
+	, maxInternalLoopSize1(maxInternalLoopSize1)
+	, maxInternalLoopSize2(maxInternalLoopSize2)
+
+{
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+InteractionEnergy::~InteractionEnergy()
+{
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+InteractionEnergy::
+isAllowedLoopRegion( const RnaSequence& seq, const size_t i, const size_t j, const size_t maxInternalLoopSize )
+{
+	// ensure index and loop size validity
+	return	   i < seq.size()
+			&& j < seq.size()
+			&& seq.asString().at(i) != 'N'
+			&& seq.asString().at(j) != 'N'
+			&& i <= j
+			&& (j-i) <= (1+maxInternalLoopSize);
+
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+InteractionEnergy::
+areComplementary( const size_t i1, const size_t i2 ) const
+{
+	return RnaSequence::areComplementary( accS1.getSequence(), accS2.getSequence(), i1, i2);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+size_t
+InteractionEnergy::
+size1() const
+{
+	return getAccessibility1().getSequence().size();
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+size_t
+InteractionEnergy::
+size2() const
+{
+	return getAccessibility2().getSequence().size();
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+InteractionEnergy::
+isValidInternalLoop( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const
+{
+	return
+		   (j1-i1>0 && j2-i2>0)
+		&& areComplementary( i1, i2)
+		&& areComplementary( j1, j2)
+		&& InteractionEnergy::isAllowedLoopRegion(accS1.getSequence(), i1, j1, maxInternalLoopSize1)
+		&& InteractionEnergy::isAllowedLoopRegion(accS2.getSequence(), i2, j2, maxInternalLoopSize2)
+		;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+const Accessibility &
+InteractionEnergy::
+getAccessibility1() const
+{
+	return accS1;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+const ReverseAccessibility &
+InteractionEnergy::
+getAccessibility2() const
+{
+	return accS2;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+InteractionEnergy::
+getBoltzmannWeight( const E_type e ) const
+{
+	// TODO can be optimized when using exp-energies from VRNA
+	return std::exp( - e / getRT() );
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+Interaction::BasePair
+InteractionEnergy::
+getBasePair( const size_t i1, const size_t i2 ) const
+{
+	return Interaction::BasePair( i1, getAccessibility2().getReversedIndex(i2) );
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+size_t
+InteractionEnergy::
+getIndex1( const Interaction::BasePair & bp ) const
+{
+	return bp.first;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+size_t
+InteractionEnergy::
+getIndex2( const Interaction::BasePair & bp ) const
+{
+	return getAccessibility2().getReversedIndex( bp.second );
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+InteractionEnergy::
+getED1( const size_t i1, const size_t j1 ) const
+{
+	return getAccessibility1().getED( i1, j1 );
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+InteractionEnergy::
+getED2( const size_t i2, const size_t j2 ) const
+{
+	return getAccessibility2().getED( i2, j2 );
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+InteractionEnergy::
+isAccessible1( const size_t i ) const
+{
+	return
+			(!getAccessibility1().getSequence().isAmbiguous(i))
+			&& getAccessibility1().getAccConstraint().isAccessible(i)
+			;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+InteractionEnergy::
+isAccessible2( const size_t i ) const
+{
+	return
+			(!getAccessibility2().getSequence().isAmbiguous(i))
+			&& getAccessibility2().getAccConstraint().isAccessible(i);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+
+
 
 
 #endif /* INTERACTIONENERGY_H_ */

@@ -701,6 +701,13 @@ protected:
 
 };
 
+
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+
 inline
 void
 CommandLineParsing::checkIfParsed() const {
@@ -708,6 +715,321 @@ CommandLineParsing::checkIfParsed() const {
 		throw std::runtime_error("CommandLineParsing::checkIfParsed() : parse() function was not called yet");
 	}
 }
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_query(const std::string & value)
+{
+	validate_sequenceArgument("query",value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_qIntLenMax(const int & value)
+{
+	// forward check to general method
+	validate_numberArgument("qIntW", qIntLenMax, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_qIntLoopMax(const int & value)
+{
+	// forward check to general method
+	validate_numberArgument("qIntL", qIntLoopMax, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_qAcc(const char & value)
+{
+	// forward check to general method
+	validate_charArgument("qAcc", qAcc, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_qAccW(const int & value)
+{
+	// forward check to general method
+	validate_numberArgument("qAccW", qAccW, value);
+	// check lower bound
+	if (qAccW.val > 0 && qAccW.val < 3) {
+		LOG(ERROR) <<"\n qAccW = " <<value <<" : has to be 0 or > 3";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_qAccL(const int & value)
+{
+	// forward check to general method
+	validate_numberArgument("qAccL", qAccL, value);
+	// check lower bound
+	if (qAccL.val > 0 && qAccL.val < 3) {
+		LOG(ERROR) <<"qAccL = " <<value <<" : has to be 0 or > 3";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_qAccConstr(const std::string & value)
+{
+	// forward check to general method
+	validate_structureConstraintArgument("qAccConstr", value);
+	// check if no sliding window computation requested
+	if (qAccW.val > 0 || qAccL.val > 0) {
+		LOG(ERROR) <<"query accessibility constraint not possible for sliding window computation (qAccL/W > 0)";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_qRegion(const std::string & value) {
+	// check and store region information
+	validateRegion( "qRegion", value );
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_target(const std::string & value)
+{
+	validate_sequenceArgument("target",value);
+}
+
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_tIntLenMax(const int & value)
+{
+	// forward check to general method
+	validate_numberArgument("tIntLenMax", tIntLenMax, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_tIntLoopMax(const int & value)
+{
+	// forward check to general method
+	validate_numberArgument("tIntLoopMax", tIntLoopMax, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_tAcc(const char & value)
+{
+	// forward check to general method
+	validate_charArgument("tAcc", tAcc, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_tAccW(const int & value)
+{
+	// forward check to general method
+	validate_numberArgument("tAccW", tAccW, value);
+	// check lower bound
+	if (tAccW.val > 0 && tAccW.val < 3) {
+		LOG(ERROR) <<"tAccW = " <<value <<" : has to be 0 or > 3";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_tAccL(const int & value)
+{
+	// forward check to general method
+	validate_numberArgument("tAccL", tAccL, value);
+	// check lower bound
+	if (tAccL.val > 0 && tAccL.val < 3) {
+		LOG(ERROR) <<"tAccL = " <<value <<" : has to be 0 or > 3";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_tAccConstr(const std::string & value)
+{
+	// forward check to general method
+	validate_structureConstraintArgument("tAccConstr", value);
+	// check if no sliding window computation requested
+	if (tAccW.val > 0 || tAccL.val > 0) {
+		LOG(ERROR) <<"query accessibility constraint not possible for sliding window computation (tAccL/W > 0)";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_tRegion(const std::string & value) {
+	// check and store region information
+	validateRegion( "tRegion", value );
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void CommandLineParsing::validate_seedBP(const int & value) {
+	// forward check to general method
+	validate_numberArgument("seedBP", seedBP, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_seedMaxUP(const int & value) {
+	// forward check to general method
+	validate_numberArgument("seedMaxUP", seedMaxUP, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_seedMaxUPq(const int & value) {
+	// forward check to general method
+	validate_numberArgument("seedMaxUPq", seedMaxUPq, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_seedMaxUPt(const int & value) {
+	// forward check to general method
+	validate_numberArgument("seedMaxUPt", seedMaxUPt, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_seedMaxE(const E_type & value) {
+	// forward check to general method
+	validate_numberArgument("seedMaxE", seedMaxE, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_seedRangeq(const std::string & value) {
+	if (!value.empty()) {
+		// check regex
+		if (!boost::regex_match(value, IndexRangeList::regex, boost::match_perl) ) {
+			LOG(ERROR) <<"seedRangeq"<<" = " <<value <<" : is not in the format 'from1-to1,from2-to2,..'";
+			parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
+		}
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_seedRanget(const std::string & value) {
+	if (!value.empty()) {
+		// check regex
+		if (!boost::regex_match(value, IndexRangeList::regex, boost::match_perl) ) {
+			LOG(ERROR) <<"seedRanget"<<" = " <<value <<" : is not in the format 'from1-to1,from2-to2,..'";
+			parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
+		}
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_temperature(const T_type & value) {
+	// forward check to general method
+	validate_numberArgument("temperature", temperature, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_predMode(const int & value)
+{
+	// forward check to general method
+	validate_numberArgument("mode", predMode, value);
+
+	// TODO check if mode with seed and "no-seed" requested
+
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_energy(const char & value)
+{
+	// forward check to general method
+	validate_charArgument("energy", energy, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void
+CommandLineParsing::
+validate_energyFile(const std::string & value)
+{
+	// check if file exists and is readable
+	if (!validateFile( value )) {
+		LOG(ERROR) <<"provided VRNA energy parameter file '" <<value <<"' could not be processed.";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_outNumber(const int & value) {
+	// forward check to general method
+	validate_numberArgument("oNumber", outNumber, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_outOverlap(const int & value) {
+	// forward check to general method
+	validate_numberArgument("outOverlap", outOverlap, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_outDeltaE(const double & value) {
+	// forward check to general method
+	validate_numberArgument("outDeltaE", outDeltaE, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_outMaxE(const double & value) {
+	// forward check to general method
+	validate_numberArgument("outMaxE", outMaxE, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+
 
 
 #endif /* COMMANDLINEPARSING_H_ */

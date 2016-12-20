@@ -2,7 +2,8 @@
 161219 Martin Mann :
  * src/Makefile :
    * bin file name changed to "IntaRNA"
- + IntaRNA-1ui.pl : wrapper to enable IntaRNA v1 like parameter usage
+ * .travis : bin file name changed
+ + perl/IntaRNA-1ui.pl : wrapper to enable IntaRNA v1 like parameter usage
  * OutputConstraint :
    + maxE : maximal energy to be reported
  * CommandLineParsing :
@@ -12,6 +13,10 @@
    * reportOptima() : ensures energy is below OutputConstraint.maxE
  * .gitignore : 
    + .* : all hidden files ignored
+ + perl/Makefile.am
+   + perl wrapper packaging and install
+ * configure.ac : 
+   + perl/Makefile
 
 161216 Martin Mann :
  * README.md

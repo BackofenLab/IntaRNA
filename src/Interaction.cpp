@@ -5,46 +5,12 @@
  *      Author: Mmann
  */
 
-#include "InteractionRange.h"
 #include "Interaction.h"
 #include "general.h"
 
 #include <algorithm>
 #include <stdexcept>
 
-
-////////////////////////////////////////////////////////////////////////////
-
-Interaction::Interaction( const RnaSequence & s1, const RnaSequence & s2 )
-:
-	s1(&s1)
-	, s2(&s2)
-	, basePairs()
-	, energy( std::numeric_limits<E_type>::signaling_NaN() )
-	, seedRange( NULL )
-{
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-Interaction::Interaction( const InteractionRange & range )
-:
-	s1(NULL)
-	, s2(NULL)
-	, basePairs()
-	, energy( std::numeric_limits<E_type>::signaling_NaN() )
-	, seedRange( NULL )
-{
-	// init data
-	this->operator =( range );
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-Interaction::~Interaction()
-{
-	if (seedRange != NULL) delete seedRange;
-}
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -70,41 +36,6 @@ isValid() const
 	return isValid;
 
 }
-
-////////////////////////////////////////////////////////////////////////////
-
-bool
-Interaction::
-isEmpty() const
-{
-	return basePairs.size()==0;
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-void
-Interaction::
-sort()
-{
-	// sort based on STL functionalities for vector and pair
-	std::sort(basePairs.begin(), basePairs.end());
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-void
-Interaction::
-clear()
-{
-	// clear interaction base pairing information
-	basePairs.clear();
-	// clear energy
-	energy = std::numeric_limits<E_type>::signaling_NaN();
-	// undo seed information
-	if (seedRange != NULL) delete seedRange;
-
-}
-
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -170,34 +101,5 @@ operator= ( const InteractionRange & range )
 }
 
 
-
-////////////////////////////////////////////////////////////////////////////
-
-bool
-Interaction::
-compareEnergy( const E_type & energy, const Interaction & hasLargerE )
-{
-	return energy < hasLargerE.energy && !(E_equal(energy,hasLargerE.energy));
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-std::ostream&
-operator<<(std::ostream& out, const Interaction::BasePair& bp)
-{
-	out <<"("<<bp.first<<"-"<<bp.second<<")";
-	return out;
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-std::ostream&
-operator<<(std::ostream& out, const Interaction& i)
-{
-	for (int p=0; p<i.basePairs.size(); p++) {
-		out <<(p==0?"":",") <<i.basePairs.at(p);
-	}
-	return out;
-}
 
 ////////////////////////////////////////////////////////////////////////////

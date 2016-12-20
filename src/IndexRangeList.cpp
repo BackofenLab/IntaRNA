@@ -9,37 +9,6 @@ const boost::regex IndexRangeList::regex("^(\\d|([123456789]\\d*)-(\\d|[12345678
 
 //////////////////////////////////////////////////////////////////////
 
-IndexRangeList::IndexRangeList()
-:
-list()
-{
-}
-
-//////////////////////////////////////////////////////////////////////
-
-IndexRangeList::IndexRangeList( const std::string & stringEncoding )
-:
-list()
-{
-	fromString(stringEncoding);
-}
-
-//////////////////////////////////////////////////////////////////////
-
-IndexRangeList::IndexRangeList( const IndexRangeList & toCopy )
-:
-list(toCopy.list)
-{
-}
-
-//////////////////////////////////////////////////////////////////////
-
-IndexRangeList::~IndexRangeList()
-{
-}
-
-//////////////////////////////////////////////////////////////////////
-
 bool
 IndexRangeList::
 covers( const size_t index ) const
@@ -57,15 +26,6 @@ covers( const size_t index ) const
 		// go to preceding range and check if <= the end of the blocked range
 		return index <= (--r)->to;
 	}
-}
-
-//////////////////////////////////////////////////////////////////////
-
-bool
-IndexRangeList::
-covers( const size_t from, const size_t to ) const
-{
-	return covers( IndexRange(from, to) );
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -204,54 +164,6 @@ insert( const IndexRange& range )
 
 //////////////////////////////////////////////////////////////////////
 
-IndexRangeList::iterator IndexRangeList::erase( IndexRangeList::iterator i ) { return list.erase( i ); }
-
-//////////////////////////////////////////////////////////////////////
-
-IndexRangeList::iterator IndexRangeList::begin() { return list.begin(); }
-
-//////////////////////////////////////////////////////////////////////
-
-IndexRangeList::iterator IndexRangeList::end() { return list.end(); }
-
-//////////////////////////////////////////////////////////////////////
-
-IndexRangeList::const_iterator IndexRangeList::begin() const { return list.begin(); }
-
-//////////////////////////////////////////////////////////////////////
-
-IndexRangeList::const_iterator IndexRangeList::end() const { return list.end(); }
-
-//////////////////////////////////////////////////////////////////////
-
-IndexRangeList::reverse_iterator IndexRangeList::rbegin() { return list.rbegin(); }
-
-//////////////////////////////////////////////////////////////////////
-
-IndexRangeList::reverse_iterator IndexRangeList::rend() { return list.rend(); }
-
-//////////////////////////////////////////////////////////////////////
-
-IndexRangeList::const_reverse_iterator IndexRangeList::rbegin() const { return list.rbegin(); }
-
-//////////////////////////////////////////////////////////////////////
-
-IndexRangeList::const_reverse_iterator IndexRangeList::rend() const { return list.rend(); }
-
-//////////////////////////////////////////////////////////////////////
-
-bool IndexRangeList::empty() const { return list.empty(); }
-
-//////////////////////////////////////////////////////////////////////
-
-size_t IndexRangeList::size() const { return list.size(); }
-
-//////////////////////////////////////////////////////////////////////
-
-void IndexRangeList::clear() { return list.clear(); }
-
-//////////////////////////////////////////////////////////////////////
-
 IndexRangeList
 IndexRangeList::
 shift( const int indexShift, const size_t indexMax ) const
@@ -296,28 +208,6 @@ reverse( const size_t seqLength )
 	list.reverse();
 	// return access to altered element
 	return *this;
-}
-
-//////////////////////////////////////////////////////////////////////
-
-IndexRangeList
-IndexRangeList::
-reverse( const size_t seqLength ) const
-{
-	// create copy
-	IndexRangeList tmp(*this);
-	// reverse and return copy
-	return tmp.reverse( seqLength );
-}
-
-//////////////////////////////////////////////////////////////////////
-
-std::ostream& operator<<(std::ostream& out, const IndexRangeList& l)
-{
-	// output according to regex
-	for (IndexRangeList::const_iterator i=l.begin(); i!=l.end(); i++)
-		out <<(i==l.begin()?"":",") <<*i;
-	return out;
 }
 
 //////////////////////////////////////////////////////////////////////

@@ -1,9 +1,3 @@
-/*
- * ReverseAccessibility.h
- *
- *  Created on: 30.06.2014
- *      Author: Mmann
- */
 
 #ifndef REVERSEACCESSIBILITY_H_
 #define REVERSEACCESSIBILITY_H_
@@ -121,5 +115,103 @@ protected:
 
 
 };
+
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+inline
+ReverseAccessibility::ReverseAccessibility( Accessibility & origAcc )
+ :
+	Accessibility( origAcc.getSequence(), origAcc.getMaxLength(), &origAcc.getAccConstraint() )
+	, origAcc(origAcc)
+	, seqReversed( seq.getId(), getReversedString(seq) )
+	, accConstrReversed( origAcc.getAccConstraint(), true )
+{
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+ReverseAccessibility::~ReverseAccessibility() {
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+const RnaSequence &
+ReverseAccessibility::
+getSequence() const
+{
+	// access reversed sequence
+	return seqReversed;
+}
+
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+const AccessibilityConstraint&
+ReverseAccessibility::
+getAccConstraint() const
+{
+	// access reversed accessibility constraint
+	return accConstrReversed;
+}
+
+
+////////////////////////////////////////////////////////////////////////////
+
+
+inline
+E_type
+ReverseAccessibility::
+getED( const size_t from, const size_t to ) const
+{
+	// check indices
+	checkIndices(from,to);
+	// reversed ED access
+	return origAcc.getED( seq.size()-to-1, seq.size()-from-1 );
+}
+
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+const Accessibility &
+ReverseAccessibility::
+getAccessibilityOrigin() const
+{
+	return origAcc;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+size_t
+ReverseAccessibility::
+getReversedIndex( const size_t i ) const
+{
+	// check indices
+	checkIndices(i,i);
+	// compute reverse index
+	return this->seq.size() -i -1;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+IndexRange
+ReverseAccessibility::
+getReversedIndexRange( const IndexRange & r ) const
+{
+	// reverse indices and their order to keep them ascending/descending
+	return IndexRange( getReversedIndex(r.to), getReversedIndex(r.from) );
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+
 
 #endif /* REVERSEACCESSIBILITY_H_ */

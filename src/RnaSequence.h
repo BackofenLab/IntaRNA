@@ -216,4 +216,169 @@ protected:
 
 };
 
+
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+
+inline
+RnaSequence::RnaSequence(
+		const std::string & id
+		, const std::string & seqString )
+ :
+	id(id)
+	, seqString(getUpperCase(seqString))
+	, seqCode(getCodeForString(this->seqString))
+	, ambiguous(seqString.find_first_of("nN")!=std::string::npos)
+{
+#if IN_DEBUG_MODE
+	if (id.size() == 0) {
+		throw std::runtime_error("RnaSequence::RnaSequence : id empty");
+	}
+	if (seqString.size() == 0) {
+		throw std::runtime_error("RnaSequence::RnaSequence : seqString empty");
+	}
+#endif
+
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+inline
+RnaSequence::~RnaSequence()
+{
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+inline
+const std::string&
+RnaSequence::
+getId() const
+{
+	return id;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+inline
+size_t
+RnaSequence::
+size() const
+{
+	return seqString.size();
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+inline
+const
+RnaSequence::
+String_type&
+RnaSequence::
+asString() const
+{
+	return seqString;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+inline
+const
+RnaSequence::
+CodeSeq_type&
+RnaSequence::
+asCodes() const
+{
+	return seqCode;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+RnaSequence::
+isAmbiguous() const
+{
+	return ambiguous;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+RnaSequence::
+isAmbiguous( const size_t i ) const
+{
+	// TODO ensure sequence is upper case and reduce the test accordingly
+	return this->seqString.at(i) == 'N' || this->seqString.at(i) == 'n';
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+inline
+RnaSequence::
+String_type
+RnaSequence::
+getUpperCase( const std::string & seqString )
+{
+	// create container to fill
+	String_type seqRet(seqString.size(),'_');
+
+	for (size_t i=0; i<seqString.size(); ++i)
+	{
+		// get upper case characters
+		seqRet[i] = std::toupper(seqString.at(i),codeLocale);
+	}
+
+	return seqRet;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+inline
+RnaSequence::
+CodeSeq_type
+RnaSequence::
+getCodeForString( const String_type& seqString )
+{
+	// create container to fill and init with 'X'
+	CodeSeq_type seqCode(seqString.size());
+
+	for (size_t i=0; i<seqString.size(); ++i)
+	{
+		seqCode[i] = getCodeForChar( seqString.at(i) );
+	}
+
+	return seqCode;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+RnaSequence::
+isValidSequence( const std::string & sequence )
+{
+	// check whether or not the string contains unsupported characters
+	return sequence.find_first_not_of(SequenceAlphabet) == std::string::npos;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+inline
+std::ostream&
+operator<<(std::ostream& out, const RnaSequence& rna)
+{
+	// add ID(SEQUENCE) to stream
+	out <<rna.id <<'(' <<rna.asString() <<')';
+	return out;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+
 #endif /* RNASEQUENCE_H_ */
