@@ -87,18 +87,18 @@ if (defined $args{p}) { $intaRNA2call .= " --seedBP=".($args{p}); }
 if (defined $args{T}) { $intaRNA2call .= " --temperature=".($args{T}); }
 if (defined $args{w}) { 
 	$intaRNA2call .= " --tAccW=".($args{w}); 
-	$intaRNA2call .= " --qAccW=".($args{w}); 
 } else {
 	$intaRNA2call .= " --tAccW=0"; 
-	$intaRNA2call .= " --qAccW=0"; 
 }
+# always full sequence length for query
+$intaRNA2call .= " --qAccW=0"; 
 if (defined $args{L}) { 
 	$intaRNA2call .= " --tAccL=".($args{w}); 
-	$intaRNA2call .= " --qAccL=".($args{w}); 
 } else {
 	$intaRNA2call .= " --tAccL=0"; 
-	$intaRNA2call .= " --qAccL=0"; 
 }
+# always full sequence length for query
+$intaRNA2call .= " --qAccL=0"; 
 if (defined $args{l}) { 
 	$intaRNA2call .= " --tIntLenMax=".($args{l}); 
 	$intaRNA2call .= " --qIntLenMax=".($args{l}); 
