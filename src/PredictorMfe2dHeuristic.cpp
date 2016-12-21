@@ -112,7 +112,7 @@ fillHybridE()
 			continue;
 		}
 		// current
-		curCellEtotal = E_INF;
+		curCellEtotal = energy.getE(i1,curCell->j1,i2,curCell->j2,curCell->E);
 
 		// TODO PARALLELIZE THIS DOUBLE LOOP ?!
 		// iterate over all loop sizes w1 (seq1) and w2 (seq2) (minus 1)

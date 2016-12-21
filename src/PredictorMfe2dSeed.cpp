@@ -93,18 +93,6 @@ predict( const IndexRange & r1, const IndexRange & r2
 
 void
 PredictorMfe2dSeed::
-updateOptima( const size_t i1, const size_t j1
-		, const size_t i2, const size_t j2
-		, const E_type energy
-		, const bool isHybridE )
-{
-	// do nothing and ignore calls from fillHybridE()
-}
-
-//////////////////////////////////////////////////////////////////////////
-
-void
-PredictorMfe2dSeed::
 fillHybridE_seed( const size_t j1, const size_t j2, const size_t i1min, const size_t i2min )
 {
 

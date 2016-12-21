@@ -84,6 +84,7 @@ predict( const IndexRange & r1
 
 	// compute hybridization energies WITHOUT seed condition
 	// sets also -energy -hybridE
+	// -> no hybrid update since updateOptima overwritten
 	PredictorMfe2dHeuristic::fillHybridE();
 
 	// compute seed interactions for whole range
@@ -109,7 +110,7 @@ predict( const IndexRange & r1
 		// direct cell access
 		curCell = &(hybridE_seed(i1,i2));
 
-		curCellEtotal = E_INF;
+		curCellEtotal = energy.getE(i1,curCell->j1,i2,curCell->j2,curCell->E);
 
 		///////////////////////////////////////////////////////////////////
 		// check all extensions of interactions CONTAINING a seed already
@@ -168,8 +169,8 @@ predict( const IndexRange & r1
 			}
 		}
 
-		// update mfe if needed
-		updateOptima( i1,curCell->j1, i2,curCell->j2, curCellEtotal, false );
+		// update mfe if needed (call superclass update routine)
+		PredictorMfe2dHeuristic::updateOptima( i1,curCell->j1, i2,curCell->j2, curCellEtotal, false );
 
 	} // i2
 	} // i1
