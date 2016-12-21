@@ -3,7 +3,7 @@
 
 //////////////////////////////////////////////////////////////////////////
 
-void
+size_t
 SeedHandler::
 fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size_t i2max)
 {
@@ -179,6 +179,7 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 
 	VLOG(2) <<"valid seeds = "<<seedCountNotInf <<" ("<<(seedCountNotInf/seedCount)<<"% of start index combinations)";
 
+	return seedCountNotInf;
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -83,9 +83,11 @@ public:
 	 * @param j1 the last index of seq1 that might interact
 	 * @param i2 the first index of seq2 that might interact
 	 * @param j2 the last index of seq2 that might interact
+	 *
+	 * @return number of possible seed interactions
 	 */
 	virtual
-	void
+	size_t
 	fillSeed(const size_t i1, const size_t j1, const size_t i2, const size_t j2);
 
 	/**
@@ -203,11 +205,11 @@ getConstraint() const
 //////////////////////////////////////////////////////////////////////////
 
 inline
-void
+size_t
 SeedHandlerIdxOffset::
 fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size_t i2max)
 {
-	seedHandlerOriginal.fillSeed( i1min+idxOffset1, i1max+idxOffset1, i2min+idxOffset2, i2max+idxOffset2 );
+	return seedHandlerOriginal.fillSeed( i1min+idxOffset1, i1max+idxOffset1, i2min+idxOffset2, i2max+idxOffset2 );
 }
 
 //////////////////////////////////////////////////////////////////////////
