@@ -94,7 +94,7 @@ predict( const IndexRange & r1
 
 	// compute entries
 	// current minimal value
-	E_type curE = E_INF;
+	E_type curE = E_INF, curEtotal = E_INF, curCellEtotal = E_INF;
 	BestInteraction * curCell = NULL;
 	const BestInteraction * rightExt = NULL;
 
@@ -108,6 +108,8 @@ predict( const IndexRange & r1
 		}
 		// direct cell access
 		curCell = &(hybridE_seed(i1,i2));
+
+		curCellEtotal = E_INF;
 
 		///////////////////////////////////////////////////////////////////
 		// check all extensions of interactions CONTAINING a seed already
@@ -126,14 +128,16 @@ predict( const IndexRange & r1
 			// compute energy for this loop sizes
 			curE = energy.getE_interLeft(i1,i1+w1,i2,i2+w2) + rightExt->E;
 			// check if this combination yields better energy
-			if (energy.getE(i1,rightExt->j1,i2,rightExt->j2,curE)
-					< energy.getE(i1,curCell->j1,i2,curCell->j2,curCell->E))
+			curEtotal = energy.getE(i1,rightExt->j1,i2,rightExt->j2,curE);
+			if ( curEtotal < curCellEtotal )
 			{
 				// update current best for this left boundary
 				// copy right boundary
 				*curCell = *rightExt;
 				// set new energy
 				curCell->E = curE;
+				// store overall energy
+				curCellEtotal = curEtotal;
 			}
 		} // w2
 		} // w1
@@ -151,19 +155,21 @@ predict( const IndexRange & r1
 			// get energy of seed interaction with best right extension
 			curE = seedHandler.getSeedE(i1,i2) + rightExt->E;
 			// check if this combination yields better energy
-			if (energy.getE(i1,rightExt->j1,i2,rightExt->j2,curE)
-					< energy.getE(i1,curCell->j1,i2,curCell->j2,curCell->E))
+			curEtotal = energy.getE(i1,rightExt->j1,i2,rightExt->j2,curE);
+			if ( curEtotal < curCellEtotal )
 			{
 				// update current best for this left boundary
 				// copy right boundary
 				*curCell = *rightExt;
 				// set new energy
 				curCell->E = curE;
+				// store total energy
+				curCellEtotal = curEtotal;
 			}
 		}
 
 		// update mfe if needed
-		updateOptima( i1,curCell->j1, i2,curCell->j2, curCell->E );
+		updateOptima( i1,curCell->j1, i2,curCell->j2, curCellEtotal, false );
 
 	} // i2
 	} // i1

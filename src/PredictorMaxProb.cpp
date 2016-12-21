@@ -213,7 +213,7 @@ fillHybridZ()
 			// store value
 			(*hybridZ(i1,i2))(w1,w2) = curZ;
 			// update max prob interaction
-			updateOptima( i1,j1,i2,j2, (*hybridZ(i1,i2))(w1,w2) );
+			updateOptima( i1,j1,i2,j2, (*hybridZ(i1,i2))(w1,w2), true );
 		}
 		}
 	}
@@ -248,14 +248,15 @@ void
 PredictorMaxProb::
 updateOptima( const size_t i1, const size_t j1
 		, const size_t i2, const size_t j2
-		, const E_type hybridZ )
+		, const E_type interZ
+		, const bool isHybridZ )
 {
 //				LOG(DEBUG) <<"Z( "<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" ) = "
 //						<<curZ
 //						<<" = " <<(eH + eE + eD);
 
 	// add Boltzmann weights of all penalties
-	E_type curZ = hybridZ * energy.getBoltzmannWeight( energy.getE(i1,j1,i2,j2,0.0) );
+	E_type curZ = isHybridZ ? interZ * energy.getBoltzmannWeight( energy.getE(i1,j1,i2,j2,0.0) ) : interZ;
 
 	// update overall partition function
 	Z += (double)curZ;

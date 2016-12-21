@@ -269,7 +269,7 @@ fillHybridE( )
 				// store value
 				(*hybridE(i1,i2))(w1,w2) = curMinE;
 				// update mfe if needed
-				updateOptima( i1,j1,i2,j2 , (*hybridE(i1,i2))(w1,w2) );
+				updateOptima( i1,j1,i2,j2 , (*hybridE(i1,i2))(w1,w2), true );
 
 				continue;
 			}

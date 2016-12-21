@@ -232,7 +232,7 @@ fillHybridE( const size_t j1, const size_t j2, const size_t i1init, const size_t
 				// store value
 				hybridE_pq(i1,i2) = curMinE;
 				// update mfe if needed
-				updateOptima( i1,j1,i2,j2, hybridE_pq(i1,i2) );
+				updateOptima( i1,j1,i2,j2, hybridE_pq(i1,i2), true );
 				continue;
 			}
 		}

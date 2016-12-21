@@ -75,13 +75,16 @@ protected:
 	 * @param j1 the index of the first sequence interacting with j2
 	 * @param i2 the index of the second sequence interacting with i1
 	 * @param j2 the index of the second sequence interacting with j1
-	 * @param hybridE the energy of the interaction only (init+loops)
+	 * @param energy the energy of the interaction
+	 * @param isHybridE whether or not the given energy is only the
+	 *        hybridization energy (init+loops) or the total interaction energy
 	 */
 	virtual
 	void
 	updateOptima( const size_t i1, const size_t j1
 				, const size_t i2, const size_t j2
-				, const E_type energy );
+				, const E_type energy
+				, const bool isHybridE );
 
 
 	/**

@@ -95,7 +95,8 @@ void
 PredictorMfe2dSeed::
 updateOptima( const size_t i1, const size_t j1
 		, const size_t i2, const size_t j2
-		, const E_type energy )
+		, const E_type energy
+		, const bool isHybridE )
 {
 	// do nothing and ignore calls from fillHybridE()
 }
@@ -182,7 +183,7 @@ fillHybridE_seed( const size_t j1, const size_t j2, const size_t i1min, const si
 				}
 				// update mfe if needed (call super class)
 				if (E_isNotINF(curMinE)) {
-					PredictorMfe2d::updateOptima( i1,j1,i2,j2, curMinE );
+					PredictorMfe2d::updateOptima( i1,j1,i2,j2, curMinE, true );
 				}
 			}
 

@@ -98,7 +98,7 @@ fillHybridE()
 {
 	// compute entries
 	// current minimal value
-	E_type curE = E_INF;
+	E_type curE = E_INF, curEtotal = E_INF, curCellEtotal = E_INF;
 	size_t i1,i2,w1,w2;
 	BestInteraction * curCell = NULL;
 	const BestInteraction * rightExt = NULL;
@@ -111,6 +111,8 @@ fillHybridE()
 		if (E_isINF(curCell->E)) {
 			continue;
 		}
+		// current
+		curCellEtotal = E_INF;
 
 		// TODO PARALLELIZE THIS DOUBLE LOOP ?!
 		// iterate over all loop sizes w1 (seq1) and w2 (seq2) (minus 1)
@@ -125,21 +127,23 @@ fillHybridE()
 			// compute energy for this loop sizes
 			curE = energy.getE_interLeft(i1,i1+w1,i2,i2+w2) + rightExt->E;
 			// check if this combination yields better energy
-			if (energy.getE(i1,rightExt->j1,i2,rightExt->j2,curE)
-					< energy.getE(i1,curCell->j1,i2,curCell->j2,curCell->E))
+			curEtotal = energy.getE(i1,rightExt->j1,i2,rightExt->j2,curE);
+			if ( curEtotal < curCellEtotal )
 			{
 				// update current best for this left boundary
 				// copy right boundary
 				*curCell = *rightExt;
 				// set new energy
 				curCell->E = curE;
+				// store total energy to avoid recomputation
+				curCellEtotal = curEtotal;
 			}
 
 		} // w2
 		} // w1
 
 		// update mfe if needed
-		updateOptima( i1,curCell->j1, i2,curCell->j2, curCell->E );
+		updateOptima( i1,curCell->j1, i2,curCell->j2, curCellEtotal, false );
 
 	} // i2
 	} // i1

@@ -4,6 +4,11 @@
    * SequenceAlphabet += tT
    * getUpperCase() : 
      * replacement of 'T' with 'G'
+ * Predictor :
+   * updateOptima() : additional flag to avoid recomputation of overall energy
+ * PredictorMfe2dHeuristic* :
+   * fillHybridE() :
+     + temporary vars to reduce full energy recomputation 
 
 161219 Martin Mann :
  * src/Makefile :
