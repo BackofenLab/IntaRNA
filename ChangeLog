@@ -8,7 +8,15 @@
    * updateOptima() : additional flag to avoid recomputation of overall energy
  * PredictorMfe2dHeuristic* :
    * fillHybridE() :
-     + temporary vars to reduce full energy recomputation 
+     + temporary vars to reduce full energy recomputation
+ * SeedHandler :
+   * fillSeed() :
+     + returns now the number of valid seeds found 
+ * PredictorMfe2dHeuristicSeed :
+   * predict() :
+     + stops computation if
+       + no seed interaction possible
+       + mfe without seed not < outConstraint.maxE 
 
 161219 Martin Mann :
  * src/Makefile :

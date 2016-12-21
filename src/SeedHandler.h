@@ -78,9 +78,10 @@ public:
 	 * @param j1 the last index of seq1 that might interact
 	 * @param i2 the first index of seq2 that might interact
 	 * @param j2 the last index of seq2 that might interact
+	 * @return the number of potential seed interactions
 	 */
 	virtual
-	void
+	size_t
 	fillSeed(const size_t i1, const size_t j1, const size_t i2, const size_t j2);
 
 	/**
