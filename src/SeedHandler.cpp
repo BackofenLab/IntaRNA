@@ -160,8 +160,7 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 						bestE = E_INF;
 					} else {
 						// get seed's hybridization loop energies only
-						bestE -= energy.getE_init();
-						bestE -= energy.getE( i1, i1+bpIn+1+u1best, i2, i2+bpIn+1+u2best, 0.0 );
+						bestE = getSeedE( i1-offset1, i2-offset2, bpIn, u1best, u2best );
 						// count true seed
 						seedCountNotInf++;
 					}
