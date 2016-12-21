@@ -95,8 +95,7 @@ predict( const IndexRange & r1
 	} // i1
 
 	// init mfe without seed condition
-	OutputConstraint tmpOutConstraint(outConstraint);
-	tmpOutConstraint.reportMax = 1;
+	OutputConstraint tmpOutConstraint(1, outConstraint.reportOverlap, outConstraint.maxE, outConstraint.deltaE);
 	initOptima( tmpOutConstraint );
 
 	// compute hybridization energies WITHOUT seed condition
