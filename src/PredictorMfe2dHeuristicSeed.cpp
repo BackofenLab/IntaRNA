@@ -51,12 +51,24 @@ predict( const IndexRange & r1
 	seedHandler.setOffset1(r1.from);
 	seedHandler.setOffset2(r2.from);
 
+	const size_t hybridEsize1 = std::min( energy.size1()
+			, (r1.to==RnaSequence::lastPos?energy.size1()-1:r1.to)-r1.from+1 );
+	const size_t hybridEsize2 = std::min( energy.size2()
+			, (r2.to==RnaSequence::lastPos?energy.size2()-1:r2.to)-r2.from+1 );
+
+
+	// compute seed interactions for whole range
+	// and check if any seed possible
+	if (seedHandler.fillSeed( 0, hybridEsize1-1, 0, hybridEsize2-1 ) == 0) {
+		// trigger empty interaction reporting
+		initOptima(outConstraint);
+		reportOptima(outConstraint);
+		// stop computation
+		return;
+	}
+
 	// resize matrix
-	hybridE.resize( std::min( energy.size1()
-						, (r1.to==RnaSequence::lastPos?energy.size1()-1:r1.to)-r1.from+1 )
-				, std::min( energy.size2()
-						, (r2.to==RnaSequence::lastPos?energy.size2()-1:r2.to)-r2.from+1 ) );
-	hybridE_seed.resize( hybridE.size1(), hybridE.size2() );
+	hybridE.resize( hybridEsize1, hybridEsize2 );
 
 	// temp vars
 	size_t i1,i2,w1,w2;
@@ -82,13 +94,23 @@ predict( const IndexRange & r1
 	} // i2
 	} // i1
 
+	// init mfe without seed condition
+	OutputConstraint tmpOutConstraint(outConstraint);
+	tmpOutConstraint.reportMax = 1;
+	initOptima( tmpOutConstraint );
+
 	// compute hybridization energies WITHOUT seed condition
 	// sets also -energy -hybridE
 	// -> no hybrid update since updateOptima overwritten
 	PredictorMfe2dHeuristic::fillHybridE();
 
-	// compute seed interactions for whole range
-	seedHandler.fillSeed( 0, hybridE.size1()-1, 0, hybridE.size2()-1 );
+	// check if any interaction possible
+	// if not no seed-containing interaction is possible neither
+	if (!(this->mfeInteractions.begin()->energy < tmpOutConstraint.maxE)) {
+		// stop computation since no favorable interaction found
+		reportOptima(tmpOutConstraint);
+		return;
+	}
 
 	// init mfe for later updates
 	initOptima( outConstraint );
@@ -100,6 +122,7 @@ predict( const IndexRange & r1
 	const BestInteraction * rightExt = NULL;
 
 	// iterate (decreasingly) over all left interaction starts
+	hybridE_seed.resize( hybridE.size1(), hybridE.size2() );
 	for (i1=hybridE_seed.size1(); i1-- > 0;) {
 	for (i2=hybridE_seed.size2(); i2-- > 0;) {
 

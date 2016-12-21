@@ -52,15 +52,25 @@ predict( const IndexRange & r1, const IndexRange & r2
 	seedHandler.setOffset1(r1.from);
 	seedHandler.setOffset2(r2.from);
 
-	// resize matrix
-	hybridE_pq.resize( std::min( energy.size1()
-						, (r1.to==RnaSequence::lastPos?energy.size1()-1:r1.to)-r1.from+1 )
-					, std::min( energy.size2()
-						, (r2.to==RnaSequence::lastPos?energy.size2()-1:r2.to)-r2.from+1 ) );
-	hybridE_pq_seed.resize( hybridE_pq.size1(), hybridE_pq.size2() );
+	const size_t hybridE_pqsize1 = std::min( energy.size1()
+			, (r1.to==RnaSequence::lastPos?energy.size1()-1:r1.to)-r1.from+1 );
+	const size_t hybridE_pqsize2 = std::min( energy.size2()
+			, (r2.to==RnaSequence::lastPos?energy.size2()-1:r2.to)-r2.from+1 );
 
-	// compute seeds (uses same energy function and thus offsets)
-	seedHandler.fillSeed( 0, hybridE_pq.size1()-1, 0, hybridE_pq.size2()-1 );
+
+	// compute seed interactions for whole range
+	// and check if any seed possible
+	if (seedHandler.fillSeed( 0, hybridE_pqsize1-1, 0, hybridE_pqsize2-1 ) == 0) {
+		// trigger empty interaction reporting
+		initOptima(outConstraint);
+		reportOptima(outConstraint);
+		// stop computation
+		return;
+	}
+
+	// resize matrix
+	hybridE_pq.resize( hybridE_pqsize1, hybridE_pqsize2 );
+	hybridE_pq_seed.resize( hybridE_pqsize1, hybridE_pqsize2 );
 
 	// initialize mfe interaction for updates
 	initOptima( outConstraint );
@@ -98,6 +108,8 @@ fillHybridE_seed( const size_t j1, const size_t j2, const size_t i1min, const si
 
 	// compute hybridE_pq
 	fillHybridE( j1, j2, i1min, i2min );
+
+	// TODO check if any interaction possible
 
 	assert(i1min <= j1);
 	assert(i2min <= j2);
