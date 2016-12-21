@@ -1,4 +1,10 @@
 
+161221 Martin Mann :
+ * RnaSequence : 
+   * SequenceAlphabet += tT
+   * getUpperCase() : 
+     * replacement of 'T' with 'G'
+
 161219 Martin Mann :
  * src/Makefile :
    * bin file name changed to "IntaRNA"

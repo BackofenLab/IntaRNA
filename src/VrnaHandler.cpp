@@ -23,6 +23,7 @@ VrnaHandler::
 VrnaHandler( double temperature, const std::string * const vrnaParamFile )
 	:
 	model()
+	, RT(getRT(temperature))
 {
 
 	// init parameters from file if needed
@@ -127,11 +128,10 @@ getModel( int max_bp_span, int window_size ) const
 
 double
 VrnaHandler::
-getRT( ) const
+getRT( const double temperature )
 {
-	return ((model.temperature+K0)*GASCONST/1000.0);
+	return ((temperature+K0)*GASCONST/1000.0);
 }
-
 
 ////////////////////////////////////////////////////////////////////////////
 

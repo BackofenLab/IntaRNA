@@ -6,10 +6,19 @@
 #include "VrnaHandler.h"
 
 extern "C" {
+	#include <ViennaRNA/utils.h>
 	#include <ViennaRNA/fold_vars.h>
 	#include <ViennaRNA/model.h>
 	#include <ViennaRNA/params.h>
+	#include <ViennaRNA/loop_energies.h>
 }
+#ifndef VIENNA_RNA_PAIR_MAT_H
+#define VIENNA_RNA_PAIR_MAT_H
+extern "C" {
+	#include "ViennaRNA/pair_mat.h"
+}
+#endif
+
 
 // TODO http://www.tbi.univie.ac.at/RNA/ViennaRNA/doc/RNAlib-2.2.10.pdf
 
@@ -293,6 +302,85 @@ InteractionEnergyVrna::
 getBestE_end() const
 {
 	return (E_type)std::min(0,foldParams->TerminalAU)/(E_type)100.0;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+InteractionEnergyVrna::
+getE_interLeft( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const
+{
+	// if valid internal loop
+	if ( isValidInternalLoop(i1,j1,i2,j2) ) {
+		assert( i1!=j1 && i2!=j2 );
+		// Vienna RNA : compute internal loop / stacking energy for base pair [i1,i2]
+		return (E_type)E_IntLoop(	(int)j1-i1-1	// unpaired region 1
+							, (int)j2-i2-1	// unpaired region 2
+							, BP_pair[accS1.getSequence().asCodes().at(i1)][accS2.getSequence().asCodes().at(i2)]	// type BP (i1,i2)
+							, BP_pair[accS2.getSequence().asCodes().at(j2)][accS1.getSequence().asCodes().at(j1)]	// type BP (j2,j1)
+							, accS1.getSequence().asCodes().at(i1+1)
+							, accS2.getSequence().asCodes().at(i2+1)
+							, accS1.getSequence().asCodes().at(j1-1)
+							, accS2.getSequence().asCodes().at(j2-1)
+							, foldParams)
+				// correct from dcal/mol to kcal/mol
+				/ (E_type)100.0
+				;
+	} else {
+		return E_INF;
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+InteractionEnergyVrna::
+getE_danglingLeft( const size_t i1, const size_t i2 ) const
+{
+	// Vienna RNA : dangling end contribution
+	return (E_type) E_Stem( BP_pair[accS1.getSequence().asCodes().at(i1)][accS2.getSequence().asCodes().at(i2)]
+							  , ( i1==0 ? -1 : accS1.getSequence().asCodes().at(i1-1) )
+							  , ( i2==0 ? -1 : accS2.getSequence().asCodes().at(i2-1) )
+							  , 1 // is an external loop
+							  , foldParams
+							  )
+					// correct from dcal/mol to kcal/mol
+							  /(E_type)100.0
+			// substract closing penalty
+			- getE_endLeft(i1,i2);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+InteractionEnergyVrna::
+getE_danglingRight( const size_t j1, const size_t j2 ) const
+{
+	// Vienna RNA : dangling end contribution (reverse base pair to be sequence end conform)
+	return (E_type) E_Stem( BP_pair[accS2.getSequence().asCodes().at(j2)][accS1.getSequence().asCodes().at(j1)]
+							  , ( j2+1>=accS2.getSequence().size() ? -1 : accS2.getSequence().asCodes().at(j2+1) )
+							  , ( j1+1>=accS1.getSequence().size() ? -1 : accS1.getSequence().asCodes().at(j1+1) )
+							  , 1 // is an external loop
+							  , foldParams
+							  )
+					// correct from dcal/mol to kcal/mol
+							  /(E_type)100.0
+			// substract closing penalty
+			- getE_endRight(j1,j2);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+InteractionEnergyVrna::
+isGC( const size_t i1, const size_t i2 ) const
+{
+	const int bpType = BP_pair[accS1.getSequence().asCodes().at(i1)][accS2.getSequence().asCodes().at(i2)];
+	return (bpType==bpCG || bpType==bpGC);
 }
 
 ////////////////////////////////////////////////////////////////////////////

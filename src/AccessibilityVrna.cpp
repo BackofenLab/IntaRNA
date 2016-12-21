@@ -75,24 +75,6 @@ AccessibilityVrna::~AccessibilityVrna()
 
 }
 
-/////////////////////////////////////////////////////////////////////////////
-
-E_type
-AccessibilityVrna::
-getED( const size_t from, const size_t to ) const
-{
-	// input range check
-	checkIndices(from,to);
-
-	if ((to-from+1) <= getMaxLength()) {
-		// return according ED value from the precomputed matrix
-		return edValues (from,to);
-	} else {
-		// region length exceeds maximally allowed length -> no value
-		return ED_UPPER_BOUND;
-	}
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
 

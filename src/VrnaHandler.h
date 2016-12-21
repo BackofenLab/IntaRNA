@@ -30,6 +30,9 @@ protected:
 	//! VRNA parameter model
 	vrna_md_t model;
 
+	//! the RT constant used for the current setup
+	E_type RT;
+
 public:
 
 	/**
@@ -70,9 +73,31 @@ public:
 	double
 	getRT() const;
 
+	/**
+	 * Provides RT for the given temperature
+	 * @return R*temperature
+	 */
+	static
+	double
+	getRT( const double temperature );
+
 
 
 };
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+inline
+double
+VrnaHandler::
+getRT() const
+{
+	return RT;
+}
+
+////////////////////////////////////////////////////////////////////////////
 
 
 #endif /* VIENNASETUP_H_ */
