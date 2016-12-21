@@ -289,7 +289,7 @@ traceBack( Interaction & interaction )
 			interaction.setSeedRange(
 							energy.getBasePair(i1,i2),
 							energy.getBasePair(k1,k2),
-							energy.getE(i1,k1,i2,k2,seedHandler.getSeedE(i1,i2)));
+							energy.getE(i1,k1,i2,k2,seedHandler.getSeedE(i1,i2))+energy.getE_init());
 			// traceback seed base pairs (excludes right most = (k1,k2))
 			seedHandler.traceBackSeed( interaction, i1, i2 );
 			// traceback right interaction via hybridE

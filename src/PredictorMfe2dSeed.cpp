@@ -270,7 +270,7 @@ traceBack( Interaction & interaction )
 					interaction.setSeedRange(
 									energy.getBasePair(i1,i2),
 									energy.getBasePair(k1,k2),
-									energy.getE(i1,k1,i2,k2,seedHandler.getSeedE(i1,i2)));
+									energy.getE(i1,k1,i2,k2,seedHandler.getSeedE(i1,i2))+energy.getE_init());
 					// trace back seed base pairs
 					seedHandler.traceBackSeed( interaction, i1, i2 );
 					// continue after seed
