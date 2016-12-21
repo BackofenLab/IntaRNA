@@ -181,7 +181,7 @@ add( const Interaction & i )
 		<<"ED ncRNA  need: "<<contr.ED2 <<" kcal/mol"<<'\n'
 		<<"hybrid energy : "<<(i.energy-contr.ED1-contr.ED2) <<" kcal/mol"<<'\n'
 		<<"\n"
-		<<"energy: "<<i.energy <<" kcal/mol"
+		<<"energy: "<<i.energy <<" kcal/mol\n"
 		;
 
 }
