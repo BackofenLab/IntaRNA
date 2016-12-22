@@ -83,7 +83,7 @@ protected:
 	// TODO provide all data structures as arguments to make predict() call threadsafe
 
 	//! energy of all interaction hybrids that end in position p (seq1) and
-	//! q (seq2)
+	//! q (seq2) and do not necessarily contain a seed interaction
 	using PredictorMfe2d::hybridE_pq;
 
 	//! the current range of computed entries within hybridE_pq set by initHybridE()

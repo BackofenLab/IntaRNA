@@ -57,6 +57,8 @@ IntaRNA_SOURCES =	intaRNA.cpp \
 					PredictorMfe2dHeuristicSeed.cpp \
 					PredictorMfe4d.h \
 					PredictorMfe4d.cpp \
+					PredictorMfe4dSeed.h \
+					PredictorMfe4dSeed.cpp \
 					ReverseAccessibility.h \
 					ReverseAccessibility.cpp \
 					RnaSequence.h \

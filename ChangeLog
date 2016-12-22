@@ -16,8 +16,13 @@
    * getOutputHandler() :
      - IntaRNA1_detailed input output
      + switch based on outMode.val
+   * getPredictor() :
+     + PredictorMfe4dSeed support
  * OutputHandlerIntaRNA1detailed :
    * output corrected
+ + perl/IntaRNA_up_1ui.pl : IntaRNA v1-styled interface wrapper for IntaRNA_up,
+   i.e. RNAup like computation (4d space&time) including seed constraints
+ + PredictorMfe4dSeed : seed-constraint incorporating full RNAup-like predictor
 
 161221 Martin Mann :
  * RnaSequence : 

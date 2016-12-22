@@ -27,6 +27,7 @@
 
 #include "PredictorMfe2dHeuristicSeed.h"
 #include "PredictorMfe2dSeed.h"
+#include "PredictorMfe4dSeed.h"
 
 // TODO 4d seed
 // TODO maxprob seed
@@ -1020,15 +1021,13 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 		case SPACEEFFICIENT :  return new PredictorMfe2d( energy, output );
 		case FULL :  return new PredictorMfe4d( energy, output );
 		case MAXPROB :  return new PredictorMaxProb( energy, output );
-		default: throw std::runtime_error("CommandLineParsing::getPredictor() : unknown predMode value "+toString(predMode.val));
 		}
 	} else {
 		switch ( predMode.val ) {
 		case HEURISTIC :  return new PredictorMfe2dHeuristicSeed( energy, output, getSeedConstraint( energy ) );
 		case SPACEEFFICIENT :  return new PredictorMfe2dSeed( energy, output, getSeedConstraint( energy ) );
-		case FULL :  NOTIMPLEMENTED("mode "+toString(predMode.val)+" not implemented for seed constraint (try --noSeed)"); return NULL;
+		case FULL :  return new PredictorMfe4dSeed( energy, output, getSeedConstraint( energy ) );
 		case MAXPROB :  NOTIMPLEMENTED("mode "+toString(predMode.val)+" not implemented for seed constraint (try --noSeed)"); return NULL;
-		default: throw std::runtime_error("CommandLineParsing::getPredictor() : unknown predMode value "+toString(predMode.val));
 		}
 	}
 }

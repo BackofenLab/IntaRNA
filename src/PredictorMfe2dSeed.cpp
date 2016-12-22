@@ -167,17 +167,10 @@ fillHybridE_seed( const size_t j1, const size_t j2, const size_t i1min, const si
 				for (k2=std::min(i2range.to,i2+energy.getMaxInternalLoopSize2()+1); k2>i2; k2--) {
 					// check if (k1,k2) are valid left boundaries including a seed
 					if ( E_isNotINF( hybridE_pq_seed(k1,k2) ) ) {
-						if ( E_isNotINF(curMinE) ) {
-							curMinE = std::min( curMinE,
-									(energy.getE_interLeft(i1,k1,i2,k2)
-											+ hybridE_pq_seed(k1,k2) )
-								);
-						} else {
-							curMinE =
-									(energy.getE_interLeft(i1,k1,i2,k2)
-											+ hybridE_pq_seed(k1,k2) )
-									;
-						}
+						curMinE = std::min( curMinE,
+								(energy.getE_interLeft(i1,k1,i2,k2)
+										+ hybridE_pq_seed(k1,k2) )
+							);
 					}
 				}
 				}
