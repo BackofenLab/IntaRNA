@@ -28,8 +28,8 @@
 #include "PredictorMfe2dHeuristicSeed.h"
 #include "PredictorMfe2dSeed.h"
 
-// 4d seed
-// maxprob seed
+// TODO 4d seed
+// TODO maxprob seed
 
 #include "OutputHandlerText.h"
 #include "OutputHandlerIntaRNA1detailed.h"
@@ -86,11 +86,12 @@ CommandLineParsing::CommandLineParsing()
 
 	temperature(0,100,37),
 
-	predMode(0,3,0),
+	predMode( PredictionMode_min, PredictionMode_max, PredictionMode_min),
 
 	energy("BF",'F'),
 	energyFile(""),
 
+	outMode( OutputMode_min, OutputMode_max, OutputMode_min ),
 	outNumber( 0, 1000, 1),
 	outOverlap( OutputConstraint::ReportOverlap::OVERLAP_NONE, OutputConstraint::ReportOverlap::OVERLAP_BOTH, OutputConstraint::ReportOverlap::OVERLAP_SEQ2 ),
 	outDeltaE( 0.0, 100.0, 100.0),
@@ -234,7 +235,11 @@ CommandLineParsing::CommandLineParsing()
 			, value<int>(&(predMode.val))
 				->default_value(predMode.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_predMode,this,_1))
-			, std::string("prediction mode : 0= MFE-heuristic (n^2:S|T), 1= MFE (n^2:S,n^4:T), 2= MFE (n^4:S|T), 3= MaxProb (n^4:S|T)").c_str())
+			, std::string("prediction mode : "
+					+toString(PredictionMode::HEURISTIC)+"= MFE-heuristic (n^2:S|T), "
+					+toString(PredictionMode::SPACEEFFICIENT)+"= MFE (n^2:S,n^4:T), "
+					+toString(PredictionMode::FULL)+"= MFE (n^4:S|T), "
+					+toString(PredictionMode::MAXPROB)+"= MaxProb (n^4:S|T)").c_str())
 		("energy,e"
 			, value<char>(&(energy.val))
 				->default_value(energy.def)
@@ -251,11 +256,17 @@ CommandLineParsing::CommandLineParsing()
 			, std::string("temperature in Celsius to setup the VRNA energy parameters (arg in range ["+toString(temperature.min)+","+toString(temperature.max)+"])").c_str())
 		;
 
-	// TODO parse energy function selection
 
 	////  OUTPUT OPTIONS  ////////////////////////////////////
 
 	opts_output.add_options()
+		("out,o"
+			, value<int>(&(outMode.val))
+				->default_value(outMode.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_outMode,this,_1))
+			, std::string("output mode : "
+					+toString(OutputMode::DETAILED)+"= detailed, "
+					+toString(OutputMode::V1_DETAILED)+"= v1-detailed").c_str())
 	    ("outMaxE"
 			, value<double>(&(outMaxE.val))
 				->default_value(outMaxE.def)
@@ -270,7 +281,11 @@ CommandLineParsing::CommandLineParsing()
 			, value<int>(&(outOverlap.val))
 				->default_value(outOverlap.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_outOverlap,this,_1))
-			, std::string("suboptimal output : interactions can overlap (0) in none of the sequences (1) in the target (2) in the query (3) in both sequences").c_str())
+			, std::string("suboptimal output : interactions can overlap ("
+					+toString(OutputConstraint::OVERLAP_NONE)+") in none of the sequences, ("
+					+toString(OutputConstraint::OVERLAP_SEQ1)+") in the target only, ("
+					+toString(OutputConstraint::OVERLAP_SEQ2)+") in the query only, ("
+					+toString(OutputConstraint::OVERLAP_BOTH)+") in both sequences").c_str())
 	    ("outDeltaE"
 			, value<double>(&(outDeltaE.val))
 				->default_value(outDeltaE.def)
@@ -461,6 +476,36 @@ parse(int argc, char** argv)
 			if (tAccL.val > tAccW.val) {
 				LOG(ERROR) <<"tAccL = " <<tAccL.val <<" : has to be <= tAccW (=" <<tAccW.val<<")";
 				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+			}
+
+			// check if output mode == IntaRNA1-detailed
+			if ((OutputMode)outMode.val == V1_DETAILED) {
+				getOutputStream()
+				<<"-------------------------" <<"\n"
+				<<"INPUT" <<"\n"
+				<<"-------------------------" <<"\n"
+				<<"number of base pairs in seed                                  : "<<seedBP.val <<"\n"
+				<<"max. number of unpaired bases in the seed region of seq. 1    : "<<(seedMaxUPt.val<0 ? seedMaxUP.val : seedMaxUPt.val) <<"\n"
+				<<"max. number of unpaired bases in the seed region of seq. 2    : "<<(seedMaxUPq.val<0 ? seedMaxUP.val : seedMaxUPq.val) <<"\n"
+				<<"max. number of unpaired bases in the seed region of both seq's: "<<seedMaxUP.val <<"\n"
+				<<"RNAplfold used target                                         : "<<(((! tAccConstr.empty()) || (tAccW.val !=0))?"true":"false") <<"\n"
+				<<"RNAup used query                                              : "<<((qAccConstr.empty() && (qAccW.val ==0))?"true":"false") <<"\n"
+				<<"sliding window size target                                    : "<<tAccW.val<<"\n" //(tAccW.val!=0?tAccW.val:energy.size1()) <<"\n"
+				<<"max. length of unpaired region target                         : "<<tAccW.val<<"\n" //(tAccW.val!=0?tAccW.val:energy.size1()) <<"\n"
+				<<"max. distance of two paired bases target                      : "<<tAccL.val<<"\n" //(tAccL.val!=0?tAccL.val:energy.size1()) <<"\n"
+				<<"sliding window size query                                     : "<<qAccW.val<<"\n" //(qAccW.val!=0?qAccW.val:energy.size2()) <<"\n"
+				<<"max. length of unpaired region query                          : "<<qAccW.val<<"\n" //(qAccW.val!=0?qAccW.val:energy.size2()) <<"\n"
+				<<"max. distance of two paired bases query                       : "<<qAccL.val<<"\n" //(qAccL.val!=0?qAccL.val:energy.size2()) <<"\n"
+				<<"weight for ED values of target RNA in energy                  : 1" <<"\n"
+				<<"weight for ED values of binding RNA in energy                 : 1" <<"\n"
+				<<"temperature                                                   : "<<temperature.val <<" Celsius" <<"\n"
+				<<"max. number of subopt. results                                : "<<getOutputConstraint().reportMax <<"\n"
+				<<"Heuristic for hybridization end used                          : "<<((PredictionMode)predMode.val==HEURISTIC?"true":"false") <<"\n"
+				<<"\n"
+				<<"-------------------------" <<"\n"
+				<<"OUTPUT" <<"\n"
+				<<"-------------------------" <<"\n"
+				;
 			}
 
 		} catch (error& e) {
@@ -1004,40 +1049,12 @@ OutputHandler*
 CommandLineParsing::
 getOutputHandler( const InteractionEnergy & energy ) const
 {
-	// check if output mode == IntaRNA1-detailed
-	{
-		getOutputStream()
-		<<"-------------------------" <<"\n"
-		<<"INPUT" <<"\n"
-		<<"-------------------------" <<"\n"
-		<<"number of base pairs in seed  : "<<seedBP.val <<"\n"
-		<<"max. number of unpaired bases in the seed region of seq. 1    : "<<(seedMaxUPt.val<0 ? seedMaxUP.val : seedMaxUPt.val) <<"\n"
-		<<"max. number of unpaired bases in the seed region of seq. 2    : "<<(seedMaxUPq.val<0 ? seedMaxUP.val : seedMaxUPq.val) <<"\n"
-		<<"max. number of unpaired bases in the seed region of both seq's: "<<seedMaxUP.val <<"\n"
-		<<"RNAplfold used target                                         : "<<(!((! tAccConstr.empty()) || (tAccW.val ==0))?"true":"false") <<"\n"
-		<<"RNAup used query                                              : "<<(((! qAccConstr.empty()) || (qAccW.val ==0))?"true":"false") <<"\n"
-		<<"sliding window size target                                    : "<<(tAccW.val!=0?tAccW.val:energy.size1()) <<"\n"
-		<<"max. length of unpaired region target                         : "<<(tAccW.val!=0?tAccW.val:energy.size1()) <<"\n"
-		<<"max. distance of two paired bases target                      : "<<(tAccL.val!=0?tAccL.val:energy.size1()) <<"\n"
-		<<"sliding window size query                                     : "<<(qAccW.val!=0?qAccW.val:energy.size2()) <<"\n"
-		<<"max. length of unpaired region query                          : "<<(qAccW.val!=0?qAccW.val:energy.size2()) <<"\n"
-		<<"max. distance of two paired bases query                       : "<<(qAccL.val!=0?qAccL.val:energy.size2()) <<"\n"
-		<<"weight for ED values of target RNA in energy                  : 1" <<"\n"
-		<<"weight for ED values of binding RNA in energy                 : 1" <<"\n"
-		<<"temperature                                                   : "<<temperature.val <<" Celsius" <<"\n"
-		<<"max. number of subopt. results                                : "<<getOutputConstraint().reportMax <<"\n"
-		<<"Heuristic for hybridization end used                          : "<<((PredictionMode)predMode.val==HEURISTIC?"true":"false") <<"\n"
-		<<"\n"
-		<<"-------------------------" <<"\n"
-		<<"OUTPUT" <<"\n"
-		<<"-------------------------" <<"\n"
-		;
-
+	switch ((OutputMode)outMode.val) {
+	case DETAILED :
+		return new OutputHandlerText( getOutputStream(), energy );
+	case V1_DETAILED :
+		return new OutputHandlerIntaRNA1detailed( getOutputStream(), energy );
 	}
-
-	// TODO add according arguments and parsing
-	return new OutputHandlerIntaRNA1detailed( getOutputStream(), energy );
-//	return new OutputHandlerText( getOutputStream(), energy );
 }
 
 ////////////////////////////////////////////////////////////////////////////

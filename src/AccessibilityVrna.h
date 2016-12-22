@@ -1,9 +1,3 @@
-/*
- * AccessibilityVienna.h
- *
- *  Created on: 25.06.2014
- *      Author: Mmann
- */
 
 #ifndef ACCESSIBILITYVIENNA_H_
 #define ACCESSIBILITYVIENNA_H_

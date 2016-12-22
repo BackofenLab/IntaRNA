@@ -1,4 +1,24 @@
 
+161222 Martin Mann :
+ * perl/IntaRNA_1ui.pl :
+   - seed energy restriction (only needed to mimic IntaRNA v1 behaviour)
+   + output mode setup
+ * CommandLineParsing :
+   + OutputMode : enum for different output modes
+   + PredictionMode_min/max 
+   + outMode + validator : output mode argument variable
+   * predMode : init via min/max enum entries
+   * constructor :
+     * argument values via toString() and enum entries to be consistent
+     + '--out,-o' : argument to setup output mode
+   * parse() :
+     + IntaRNA1_detailed input output
+   * getOutputHandler() :
+     - IntaRNA1_detailed input output
+     + switch based on outMode.val
+ * OutputHandlerIntaRNA1detailed :
+   * output corrected
+
 161221 Martin Mann :
  * RnaSequence : 
    * SequenceAlphabet += tT
@@ -17,6 +37,12 @@
      + stops computation if
        + no seed interaction possible
        + mfe without seed not < outConstraint.maxE 
+ * SeedHandler : 
+   * best hybrid energy now via table access (avoid recomputation)
+ * Predictor*Seed :
+   * bugfix : reported seed energy missed E_init term
+ * OutputHandlerIntaRNA1detailed :
+   * bugfix : newline missing at end of each interaction output
 
 161219 Martin Mann :
  * src/Makefile :

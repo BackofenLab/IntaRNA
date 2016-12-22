@@ -15,6 +15,7 @@ OutputHandlerIntaRNA1detailed::OutputHandlerIntaRNA1detailed( std::ostream & out
 {
 	// write sequences in FASTA to out
 	out
+	<<"\n"
 	<<">" <<energy.getAccessibility1().getSequence().getId() <<"\n"
 	<<energy.getAccessibility1().getSequence().asString()<<"\n"
 	<<">" <<energy.getAccessibility2().getSequence().getId() <<"\n"

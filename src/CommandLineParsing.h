@@ -38,11 +38,22 @@ public:
 		NOT_PARSED_YET = 999
 	};
 
+	//! encodings of different prediction modes
 	enum PredictionMode {
+		PredictionMode_min = 0,
 		HEURISTIC = 0,
 		SPACEEFFICIENT = 1,
 		FULL = 2,
-		MAXPROB = 3
+		MAXPROB = 3,
+		PredictionMode_max = 3
+	};
+
+	//! encoding of different output modes
+	enum OutputMode {
+		OutputMode_min = 0,
+		DETAILED = 0,
+		V1_DETAILED = 1,
+		OutputMode_max = 1
 	};
 
 
@@ -346,6 +357,8 @@ protected:
 	//! the provided energy parameter file of the VRNA package
 	std::string energyFile;
 
+	//! output mode
+	NumberParameter<int> outMode;
 	//! number of (sub)optimal interactions to report
 	NumberParameter<int> outNumber;
 	//! whether or not reported interactions can to be overlapping
@@ -523,6 +536,12 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_energyFile(const std::string & value);
+
+	/**
+	 * Validates the outMode argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_outMode(const int & value);
 
 	/**
 	 * Validates the outNumber argument.
@@ -994,6 +1013,14 @@ validate_energyFile(const std::string & value)
 		LOG(ERROR) <<"provided VRNA energy parameter file '" <<value <<"' could not be processed.";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_outMode(const int & value) {
+	// forward check to general method
+	validate_numberArgument("outMode", outMode, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////
