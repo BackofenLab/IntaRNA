@@ -1,4 +1,4 @@
-#/usr/bin/env/perl -w
+#!/usr/bin/env/perl -w
 
 use strict;
 use Getopt::Std;
