@@ -119,7 +119,7 @@ if (defined $args{u}) {
 } else {
 	$intaRNA2call .= " --seedMaxUP=0"
 }
-$intaRNA2call .=" --seedMaxE=100";
+#$intaRNA2call .=" --seedMaxE=999"; # enable for IntaRNA v1-like seed handling
 $intaRNA2call .=" --energy=F";
 
 # call intaRNA 2
