@@ -75,6 +75,7 @@ predict( const IndexRange & r1
 
 	// resize matrix
 	hybridE.resize( hybridEsize1, hybridEsize2 );
+	hybridE_seed.resize( hybridEsize1, hybridEsize2 );
 
 	size_t debug_count_cells_null=0
 			, debug_count_cells_nonNull = 0
@@ -112,9 +113,7 @@ predict( const IndexRange & r1
 				hybridE(i1,i2) = new E2dMatrix(
 					/*w1 = */ std::min(energy.getAccessibility1().getMaxLength(), std::min( hybridEsize1-i1, maxWidthFori1i2) ),
 					/*w2 = */ std::min(energy.getAccessibility2().getMaxLength(), std::min( hybridEsize2-i2, maxWidthFori1i2) ));
-				hybridE_seed(i1,i2) = new E2dMatrix(
-					/*w1 = */ std::min(energy.getAccessibility1().getMaxLength(), std::min( hybridEsize1-i1, maxWidthFori1i2) ),
-					/*w2 = */ std::min(energy.getAccessibility2().getMaxLength(), std::min( hybridEsize2-i2, maxWidthFori1i2) ));
+				hybridE_seed(i1,i2) = new E2dMatrix( hybridE(i1,i2)->size1(), hybridE(i1,i2)->size2() );
 
 				debug_count_cells_nonNull += debug_cellNumber;
 
@@ -240,6 +239,7 @@ fillHybridE_seed( )
 	// current minimal value
 	E_type curMinE = E_INF;
 	// iterate increasingly over all window sizes w1 (seq1) and w2 (seq2)
+	// minimal size == number of seed base pairs
 	for (w1=0; w1<energy.getAccessibility1().getMaxLength(); w1++) {
 	for (w2=0; w2<energy.getAccessibility2().getMaxLength(); w2++) {
 		// iterate over all window starts i1 (seq1) and i2 (seq2)
@@ -252,13 +252,18 @@ fillHybridE_seed( )
 				continue;
 			}
 
-			// and widths are possible (ie available within data structure)
-			if (hybridE_seed(i1,i2)->size1()<=w1 || hybridE_seed(i1,i2)->size2()<=w2) {
+			// check if widths are possible (ie available within data structure)
+			if ( w1 >= hybridE_seed(i1,i2)->size1() || w2 >= hybridE_seed(i1,i2)->size2() ) {
 				// interaction not possible: nothing to do, since no storage reserved
 				continue;
 			}
+			assert(hybridE(i1,i2)->size1() > w1);
+			assert(hybridE(i1,i2)->size2() > w2);
 			// check if no interaction without seed possible -> none with neither
-			if ( E_isINF((*hybridE(i1,i2))(w1,w2)))
+			if ( E_isINF((*hybridE(i1,i2))(w1,w2))
+					// check if seed base pairs fit not into interaction window
+					|| w1+1 < seedHandler.getConstraint().getBasePairs()
+					|| w2+1 < seedHandler.getConstraint().getBasePairs() )
 			{
 				// ignore this entry
 				(*hybridE_seed(i1,i2))(w1,w2) = E_INF;
@@ -282,6 +287,8 @@ fillHybridE_seed( )
 				// compute overall energy of seed+upToPQ
 				if ( k1 <= j1 && k2 <= j2
 						&& hybridE(k1,k2) != NULL
+						&& j1-k1 < hybridE(k1,k2)->size1()
+						&& j2-k2 < hybridE(k1,k2)->size2()
 						&& E_isNotINF((*hybridE(k1,k2))(j1-k1,j2-k2)))
 				{
 					curMinE = seedHandler.getSeedE(i1,i2) + (*hybridE(k1,k2))(j1-k1,j2-k2);
@@ -290,10 +297,12 @@ fillHybridE_seed( )
 
 			// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
 			// where k1..j1 contains a seed
-			for (k1=std::min(j1,i1+energy.getMaxInternalLoopSize1()+1); k1>i1; k1--) {
-			for (k2=std::min(j2,i2+energy.getMaxInternalLoopSize2()+1); k2>i2; k2--) {
+			for (k1=std::min(j1-seedHandler.getConstraint().getBasePairs()+1,i1+energy.getMaxInternalLoopSize1()+1); k1>i1; k1--) {
+			for (k2=std::min(j2-seedHandler.getConstraint().getBasePairs()+1,i2+energy.getMaxInternalLoopSize2()+1); k2>i2; k2--) {
 				// check if (k1,k2) are valid left boundaries including a seed
 				if ( hybridE_seed(k1,k2) != NULL
+						&& j1-k1 < hybridE_seed(k1,k2)->size1()
+						&& j2-k2 < hybridE_seed(k1,k2)->size2()
 						&& E_isNotINF( (*hybridE_seed(k1,k2))(j1-k1,j2-k2) ) )
 				{
 					curMinE = std::min( curMinE,
@@ -341,6 +350,7 @@ traceBack( Interaction & interaction )
 	}
 #endif
 
+
 	// check for single interaction (start==end)
 	if (interaction.basePairs.begin()->first == interaction.basePairs.rbegin()->first) {
 		// delete second boundary (identical to first)
@@ -378,7 +388,7 @@ traceBack( Interaction & interaction )
 
 				// check if correct trace
 				if ( hybridE_seed(k1,k2) != NULL
-						&& E_equal( curE, seedHandler.getSeedE(i1,i2) + (*hybridE_seed(k1,k2))(j1-k1,j2-k2) ) )
+						&& E_equal( curE, seedHandler.getSeedE(i1,i2) + (*hybridE(k1,k2))(j1-k1,j2-k2) ) )
 				{
 					// store seed information
 					interaction.setSeedRange(
@@ -395,15 +405,20 @@ traceBack( Interaction & interaction )
 					continue;
 				}
 			}
-			// check all interval splits
-			if ( (j1-i1) > 1 && (j2-i2) > 1) {
+			// check all interval splits if no trace already found
+			if ( seedNotTraced )
+			{
 				// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
 				// where k1..j1 contains a seed
 				bool traceNotFound = true;
 				for (k1=std::min(j1-seedHandler.getConstraint().getBasePairs()+1,i1+energy.getMaxInternalLoopSize1()+1); traceNotFound && k1>i1; k1--) {
 				for (k2=std::min(j2-seedHandler.getConstraint().getBasePairs()+1,i2+energy.getMaxInternalLoopSize2()+1); traceNotFound && k2>i2; k2--) {
 					// check if (k1,k2) are valid left boundaries including a seed
-					if ( E_isNotINF( (*hybridE_seed(k1,k2))(j1-k1,j2-k2) ) ) {
+					if ( 	hybridE_seed(k1,k2) != NULL
+							&& j1-k1 < hybridE_seed(k1,k2)->size1()
+							&& j2-k2 < hybridE_seed(k1,k2)->size2()
+							&& E_isNotINF( (*hybridE_seed(k1,k2))(j1-k1,j2-k2) ) )
+					{
 						// check if correct split
 						if (E_equal ( curE,
 								(energy.getE_interLeft(i1,k1,i2,k2)
@@ -517,7 +532,7 @@ getNextBest( Interaction & curBest )
 					}
 
 					// get overall energy of entry
-					curE = energy.getE( r1.from, r2.from, r1.to, r2.to, (*curTable)(r1.to,r2.to));
+					curE = energy.getE( r1.from, r1.to, r2.from, r2.to, (*curTable)(r1.to,r2.to));
 
 					// skip sites with energy too low
 					// or higher than current best found so far

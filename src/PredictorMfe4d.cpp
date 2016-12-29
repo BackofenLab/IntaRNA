@@ -434,7 +434,7 @@ getNextBest( Interaction & curBest )
 					}
 
 					// get overall energy of entry
-					curE = energy.getE( r1.from, r2.from, r1.to, r2.to, (*curTable)(r1.to,r2.to));
+					curE = energy.getE( r1.from, r1.to, r2.from, r2.to, (*curTable)(r1.to,r2.to));
 
 					// skip sites with energy too low
 					// or higher than current best found so far

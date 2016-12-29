@@ -5,10 +5,25 @@
  * PredictorMfe2dHeuristic* :
    * getNextBest() :
      * bugfix : seq1 range overlap check
+ * PredictorMfe4d :
+   * getNextBest() :
+     * bugfix : getE() using wrong index order
+ * PredictorMfe4dSeed :
+   * getNextBest() :
+     * bugfix : getE() using wrong index order
+   * predict() :
+     * bugfix : hybridE_seed resize missing
+   * fillHybridE_seed() :
+     + additional early check for too small interaction sites (no seed)
+   * traceBack() :
+     * bugfix : energy check right of seed corrected
+     * bugfix : check entry existence before access
+ * intaRNA :
+   + exception catch + handling only in non-debug mode (eases debug)
 
 161224 Martin Mann :
  * OutputHandler :
-   + repotedInteractions : count of reported interactions
+   + reportedInteractions : count of reported interactions
    + reported() : returns reportedInteractions
  * intaRNA :
    + setup of separator output for IntaRNA v1 output
