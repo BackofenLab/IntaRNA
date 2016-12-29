@@ -1,4 +1,27 @@
 
+161229 Martin Mann :
+ * CommandLineParsing :
+   * IntaRNA_v1_detailed init output now more like v1 output
+ * PredictorMfe2dHeuristic* :
+   * getNextBest() :
+     * bugfix : seq1 range overlap check
+
+161224 Martin Mann :
+ * OutputHandler :
+   + repotedInteractions : count of reported interactions
+   + reported() : returns reportedInteractions
+ * intaRNA :
+   + setup of separator output for IntaRNA v1 output
+ * OutputHandlerIntaRNA1detailed :
+   + intialOutputDone : tag to store whether or not something was already done
+   + prinSeparator : tag whether or not a separator is to be printed
+   * constructor()
+     - initial output (now part of add())
+   * add() 
+     + initial output for first reported interactions
+     + counting of non-empty interactions
+   + addSeparator() : sets printSeparator 
+
 161222 Martin Mann :
  * perl/IntaRNA_1ui.pl :
    - seed energy restriction (only needed to mimic IntaRNA v1 behaviour)

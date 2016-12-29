@@ -12,16 +12,9 @@ OutputHandlerIntaRNA1detailed::OutputHandlerIntaRNA1detailed( std::ostream & out
  :
 	out(out)
 	, energy(energy)
+	, initialOutputDone(false)
+	, printSeparator(false)
 {
-	// write sequences in FASTA to out
-	out
-	<<"\n"
-	<<">" <<energy.getAccessibility1().getSequence().getId() <<"\n"
-	<<energy.getAccessibility1().getSequence().asString()<<"\n"
-	<<">" <<energy.getAccessibility2().getSequence().getId() <<"\n"
-	<<energy.getAccessibility2().getAccessibilityOrigin().getSequence().asString()<<"\n"
-	<<"\n"
-	;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -45,9 +38,29 @@ add( const Interaction & i )
 
 	// special handling if no base pairs present
 	if (i.basePairs.size() == 0) {
-		out <<"\n"
-			<<"no favorable interaction for "<<i.s1->getId() <<" and "<<i.s2->getId()<<std::endl;
+		// no output for empty interactions
 		return;
+	}
+
+	// count report
+	reportedInteractions++;
+
+	if (!initialOutputDone) {
+		if (printSeparator) {
+			out <<"\n=========================\n";
+
+
+		}
+		// write sequences in FASTA to out
+		out
+		<<"\n"
+		<<">" <<energy.getAccessibility1().getSequence().getId() <<"\n"
+		<<energy.getAccessibility1().getSequence().asString()<<"\n"
+		<<">" <<energy.getAccessibility2().getSequence().getId() <<"\n"
+		<<energy.getAccessibility2().getAccessibilityOrigin().getSequence().asString()<<"\n"
+		<<"\n"
+		;
+		initialOutputDone = true;
 	}
 
 	// get interaction start/end per sequence
@@ -176,7 +189,7 @@ add( const Interaction & i )
 		<<"positions seed(target): "<<(i.seedRange!=NULL?toString(i.seedRange->r1.from +1):"?")<<" -- "<<(i.seedRange!=NULL?toString(i.seedRange->r1.to +1):"?") <<'\n'
 		<<"positions with dangle(target): "<<(i.basePairs.begin()->first +1)<<" -- "<<(i.basePairs.rbegin()->first +1) <<'\n'
 		<<"positions(ncRNA)      : "<<(i.basePairs.rbegin()->second +1)<<" -- "<<(i.basePairs.begin()->second +1) <<'\n'
-		<<"positions seed(ncRNA) : "<<(i.seedRange!=NULL?toString(i.seedRange->r2.from +1):"?")<<" -- "<<(i.seedRange!=NULL?toString(i.seedRange->r2.to +1):"?") <<'\n'
+		<<"positions seed(ncRNA) : "<<(i.seedRange!=NULL?toString(i.seedRange->r2.to +1):"?")<<" -- "<<(i.seedRange!=NULL?toString(i.seedRange->r2.from +1):"?") <<'\n'
 		<<"positions with dangle(ncRNA): "<<(i.basePairs.rbegin()->second +1)<<" -- "<<(i.basePairs.begin()->second +1) <<'\n'
 		<<"ED target need: "<<contr.ED1 <<" kcal/mol"<<'\n'
 		<<"ED ncRNA  need: "<<contr.ED2 <<" kcal/mol"<<'\n'
@@ -198,6 +211,16 @@ add( const InteractionRange & range )
 }
 
 ////////////////////////////////////////////////////////////////////////////
+
+void
+OutputHandlerIntaRNA1detailed::
+addSeparator (const bool yesNo )
+{
+	printSeparator = yesNo;
+	if (initialOutputDone) {
+		LOG(INFO) <<"OutputHandlerIntaRNA1detailed::addSeparator() called but initial output already done...";
+	}
+}
 
 ////////////////////////////////////////////////////////////////////////////
 

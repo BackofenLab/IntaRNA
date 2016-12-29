@@ -48,6 +48,7 @@ protected:
 
 	//! index ranges of reported interactions to identify non-overlapping
 	//! interactions (first = seq1, second = seq2)
+	//! NOTE: the indices for seq2 are reversed
 	std::pair< IndexRangeList, IndexRangeList > reportedInteractions;
 
 	//! minimal stacking energy

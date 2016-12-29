@@ -39,7 +39,7 @@ covers( const IndexRange & range ) const
 		return false;
 	}
 
-	// find first range that with begin > index
+	// find first range with begin > index
 	const_iterator r = std::upper_bound( list.begin(), list.end(), range );
 
 	bool isCovered = false;

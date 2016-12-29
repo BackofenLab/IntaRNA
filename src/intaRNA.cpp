@@ -12,6 +12,7 @@
 #include "InteractionEnergy.h"
 #include "Predictor.h"
 #include "OutputHandler.h"
+#include "OutputHandlerIntaRNA1detailed.h"
 
 // initialize logging for binary
 INITIALIZE_EASYLOGGINGPP
@@ -51,6 +52,8 @@ int main(int argc, char **argv) {
 				return retCode;
 			}
 		}
+
+		size_t reportedInteractions = 0;
 
 		// second: iterate over all target sequences to get all pairs to predict for
 		for ( size_t targetNumber = 0; targetNumber < parameters.getTargetSequences().size(); ++targetNumber )
@@ -94,6 +97,11 @@ int main(int argc, char **argv) {
 				OutputHandler * output = parameters.getOutputHandler( *energy );
 				CHECKNOTNULL(output,"output handler initialization failed");
 
+				// check if we have to add separator for IntaRNA v1 output
+				if (reportedInteractions > 0 && dynamic_cast<OutputHandlerIntaRNA1detailed*>(output) != NULL) {
+					dynamic_cast<OutputHandlerIntaRNA1detailed*>(output)->addSeparator( true );
+				}
+
 				// get interaction prediction handler
 				Predictor * predictor = parameters.getPredictor( *energy, *output );
 				CHECKNOTNULL(predictor,"predictor initialization failed");
@@ -116,7 +124,7 @@ int main(int argc, char **argv) {
 				} // target ranges
 				} // query ranges
 
-
+				reportedInteractions += output->reported();
 
 				// garbage collection
 				CLEANUP(predictor)

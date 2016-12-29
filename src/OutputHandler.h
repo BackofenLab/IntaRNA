@@ -56,6 +56,15 @@ public:
 	add( const InteractionRange & range ) = 0;
 
 	/**
+	 * Returns the number of reported interactions.
+	 * @return the number of reported interactions
+	 */
+	virtual
+	size_t
+	reported() const;
+
+
+	/**
 	 * returns the reversed string
 	 * @param str the string to reverse
 	 * @return the reversed string
@@ -63,6 +72,12 @@ public:
 	static
 	std::string
 	reverse( const std::string & str );
+
+
+protected:
+
+	//! number of reported interactions
+	size_t reportedInteractions;
 
 };
 
@@ -72,16 +87,15 @@ public:
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-OutputHandler::OutputHandler() {
-	// TODO Auto-generated constructor stub
-
+OutputHandler::OutputHandler()
+	: reportedInteractions(0)
+{
 }
 
 ////////////////////////////////////////////////////////////////////////////
 
 inline
 OutputHandler::~OutputHandler() {
-	// TODO Auto-generated destructor stub
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -92,6 +106,16 @@ OutputHandler::
 reverse( const std::string & str )
 {
 	return std::string(str.rbegin(), str.rend());
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+size_t
+OutputHandler::
+reported() const
+{
+	return reportedInteractions;
 }
 
 ////////////////////////////////////////////////////////////////////////////

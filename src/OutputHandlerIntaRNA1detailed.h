@@ -52,6 +52,15 @@ public:
 	void
 	add( const InteractionRange & range );
 
+	/**
+	 * Defines whether or not a leading separator is to be printed before any
+	 * output for this output handler.
+	 * @param yesNo whether or not a separator is to be printed
+	 */
+	virtual
+	void
+	addSeparator (const bool yesNo );
+
 protected:
 
 	//! the output stream to write the interaction text representation to
@@ -59,6 +68,12 @@ protected:
 
 	//! the interaction energy handler used for the energy computations
 	const InteractionEnergy & energy;
+
+	//! whether or not the initial output was done
+	bool initialOutputDone;
+
+	//! whether or not to print a leading separator with the initial output
+	bool printSeparator;
 
 
 };
