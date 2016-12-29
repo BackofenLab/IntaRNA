@@ -131,8 +131,9 @@ predict( const IndexRange & r1
 		}
 		// direct cell access
 		curCell = &(hybridE_seed(i1,i2));
-
-		curCellEtotal = energy.getE(i1,curCell->j1,i2,curCell->j2,curCell->E);
+		// reset temporary variables
+		curEtotal = E_INF;
+		curCellEtotal = E_INF;
 
 		///////////////////////////////////////////////////////////////////
 		// check all extensions of interactions CONTAINING a seed already
@@ -142,9 +143,9 @@ predict( const IndexRange & r1
 		// iterate over all loop sizes w1 (seq1) and w2 (seq2)
 		for (w1=1; w1-1 <= energy.getMaxInternalLoopSize1() && i1+w1<hybridE_seed.size1(); w1++) {
 		for (w2=1; w2-1 <= energy.getMaxInternalLoopSize2() && i2+w2<hybridE_seed.size2(); w2++) {
-			// direct cell access (const)
+			// direct cell access to right side end of loop (seed has to be to the right of it)
 			rightExt = &(hybridE_seed(i1+w1,i2+w2));
-			// check if right side can pair
+			// check if right side of loop can pair
 			if (E_isINF(rightExt->E)) {
 				continue;
 			}
@@ -374,7 +375,7 @@ getNextBest( Interaction & curBest )
 			}
 			// ensure site is not overlapping
 			r1.from = i1;
-			r2.to = curCell->j1;
+			r1.to = curCell->j1;
 			if ( reportedInteractions.first.overlaps( r1 )) {
 				continue;
 			}

@@ -290,7 +290,7 @@ getNextBest( Interaction & curBest )
 			}
 			// ensure site is not overlapping
 			r1.from = i1;
-			r2.to = curCell->j1;
+			r1.to = curCell->j1;
 			if ( reportedInteractions.first.overlaps( r1 )) {
 				continue;
 			}
