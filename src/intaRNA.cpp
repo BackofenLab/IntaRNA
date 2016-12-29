@@ -27,9 +27,9 @@ INITIALIZE_EASYLOGGINGPP
  */
 int main(int argc, char **argv) {
 
-
+#if ! IN_DEBUG_MODE
 	try {
-
+#endif
 		// set overall logging style
 		el::Loggers::reconfigureAllLoggers(el::ConfigurationType::Format, std::string("# %level : %msg"));
 		// TODO setup log file
@@ -141,10 +141,13 @@ int main(int argc, char **argv) {
 
 
 	////////////////////// exception handling ///////////////////////////
+#if ! IN_DEBUG_MODE
 	} catch (std::exception & e) {
-		LOG(ERROR) <<"Exception raised : " <<e.what() <<"\n";
+		LOG(ERROR) <<"Exception raised : " <<e.what() <<"\n\n"
+		<<"  ==> Please report to the IntaRNA development team! Thanks!\n";
 		return -1;
 	}
+#endif
 
 	  // all went fine
 	return 0;
