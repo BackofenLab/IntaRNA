@@ -889,7 +889,7 @@ parseSequencesFasta( const std::string & paramName,
 	int trimStart = 0;
 
 	// read linewise
-	while( ! std::getline( input, line ).eof() ) {
+	while( std::getline( input, line ) ) {
 		// ignore empty lines
 		if( line.empty() ) {
 			continue;
