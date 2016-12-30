@@ -47,18 +47,17 @@ add( const Interaction & i )
 
 	if (!initialOutputDone) {
 		if (printSeparator) {
-			out <<"\n=========================\n";
+			out <<"\n=========================\n"
+				<<'\n';
 
 
 		}
 		// write sequences in FASTA to out
 		out
-		<<"\n"
 		<<">" <<energy.getAccessibility1().getSequence().getId() <<"\n"
 		<<energy.getAccessibility1().getSequence().asString()<<"\n"
 		<<">" <<energy.getAccessibility2().getSequence().getId() <<"\n"
 		<<energy.getAccessibility2().getAccessibilityOrigin().getSequence().asString()<<"\n"
-		<<"\n"
 		;
 		initialOutputDone = true;
 	}
@@ -182,6 +181,7 @@ add( const Interaction & i )
 		<<s2Bound.str() <<'\n'
 		<<s2Unbound.str() <<'\n'
 		// print interaction details
+		<<'\n'
 		<<"positions(target)     : "<<(i.basePairs.begin()->first +1)<<" -- "<<(i.basePairs.rbegin()->first +1) <<'\n'
 		<<"positions seed(target): "<<(i.seedRange!=NULL?toString(i.seedRange->r1.from +1):"?")<<" -- "<<(i.seedRange!=NULL?toString(i.seedRange->r1.to +1):"?") <<'\n'
 		<<"positions with dangle(target): "<<(i.basePairs.begin()->first +1)<<" -- "<<(i.basePairs.rbegin()->first +1) <<'\n'

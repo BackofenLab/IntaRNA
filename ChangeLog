@@ -1,4 +1,11 @@
 
+161230 Martin Mann :
+ * CommandLineParsing :
+   * parseSequencesFasta() : 
+     + bugfix : was not reading final lines without newline at the end
+ * OutputHandlerIntaRNA1detailed :
+   * output corrected
+
 161229 Martin Mann :
  * CommandLineParsing :
    * IntaRNA_v1_detailed init output now more like v1 output
