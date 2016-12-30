@@ -176,15 +176,12 @@ add( const Interaction & i )
 
 	// print full interaction to output stream
 	out <<'\n'
-		// get ID of s1
 		// print collected interaction stuff
 		<<s1Unbound.str() <<'\n'
 		<<s1Bound.str() <<'\n'
 		<<s2Bound.str() <<'\n'
 		<<s2Unbound.str() <<'\n'
-		// get ID of s2
-		<<i.s2->getId() <<'\n'
-
+		// print interaction details
 		<<"positions(target)     : "<<(i.basePairs.begin()->first +1)<<" -- "<<(i.basePairs.rbegin()->first +1) <<'\n'
 		<<"positions seed(target): "<<(i.seedRange!=NULL?toString(i.seedRange->r1.from +1):"?")<<" -- "<<(i.seedRange!=NULL?toString(i.seedRange->r1.to +1):"?") <<'\n'
 		<<"positions with dangle(target): "<<(i.basePairs.begin()->first +1)<<" -- "<<(i.basePairs.rbegin()->first +1) <<'\n'
