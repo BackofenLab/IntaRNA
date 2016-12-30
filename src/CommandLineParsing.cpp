@@ -60,7 +60,7 @@ CommandLineParsing::CommandLineParsing()
 	qAccL( 0, 99999, 100),
 	qAccConstr(""),
 	qIntLenMax( 0, 99999, 0),
-	qIntLoopMax( 0, 100, 16),
+	qIntLoopMax( 0, 30, 16),
 	qRegionString(""),
 	qRegion(),
 
@@ -71,7 +71,7 @@ CommandLineParsing::CommandLineParsing()
 	tAccL( 0, 99999, 100),
 	tAccConstr(""),
 	tIntLenMax( 0, 99999, 0),
-	tIntLoopMax( 0, 100, 16),
+	tIntLoopMax( 0, 30, 16),
 	tRegionString(""),
 	tRegion(),
 
@@ -268,11 +268,6 @@ CommandLineParsing::CommandLineParsing()
 			, std::string("output mode : "
 					+toString(OutputMode::DETAILED)+"= detailed, "
 					+toString(OutputMode::V1_DETAILED)+"= v1-detailed").c_str())
-	    ("outMaxE"
-			, value<double>(&(outMaxE.val))
-				->default_value(outMaxE.def)
-				->notifier(boost::bind(&CommandLineParsing::validate_outMaxE,this,_1))
-			, std::string("only interactions with E <= maxE are reported").c_str())
 	    ("outNumber,n"
 			, value<int>(&(outNumber.val))
 				->default_value(outNumber.def)
@@ -287,6 +282,11 @@ CommandLineParsing::CommandLineParsing()
 					+toString(OutputConstraint::OVERLAP_SEQ1)+") in the target only, ("
 					+toString(OutputConstraint::OVERLAP_SEQ2)+") in the query only, ("
 					+toString(OutputConstraint::OVERLAP_BOTH)+") in both sequences").c_str())
+	    ("outMaxE"
+			, value<double>(&(outMaxE.val))
+				->default_value(outMaxE.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_outMaxE,this,_1))
+			, std::string("only interactions with E <= maxE are reported").c_str())
 	    ("outDeltaE"
 			, value<double>(&(outDeltaE.val))
 				->default_value(outDeltaE.def)
