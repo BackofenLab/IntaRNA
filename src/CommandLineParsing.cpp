@@ -497,7 +497,7 @@ parse(int argc, char** argv)
 				<<"weight for ED values of target RNA in energy                  : 1" <<"\n"
 				<<"weight for ED values of binding RNA in energy                 : 1" <<"\n"
 				<<"temperature                                                   : "<<temperature.val <<" Celsius" <<"\n"
-				<<"max. number of subopt. results                                : "<<getOutputConstraint().reportMax <<"\n"
+				<<"max. number of subopt. results                                : "<<(getOutputConstraint().reportMax-1) <<"\n"
 				<<"Heuristic for hybridization end used                          : "<<((PredictionMode)predMode.val==HEURISTIC?"true":"false") <<"\n"
 				<<"\n"
 				<<"-------------------------" <<"\n"
