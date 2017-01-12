@@ -1,4 +1,8 @@
 
+160111 Martin Mann :
+ * CommandLineParsing :
+   * IntaRNA v1 input details corrected
+
 161230 Martin Mann :
  * CommandLineParsing :
    * parseSequencesFasta() : 
