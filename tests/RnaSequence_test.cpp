@@ -9,12 +9,7 @@ TEST_CASE( "RnaSequence", "[RNAsequence]" ) {
 
 
 	SECTION( "sequence with non-ACGU" ) {
-		bool exceptionRaised = false;
-		try {
-			RnaSequence rna("test","ACUGACerror");
-		} catch (std::exception & ex) {
-			exceptionRaised = true;
-		}
+		bool exceptionRaised = ! RnaSequence::isValidSequenceIUPAC("ACUGAC_error");
 		REQUIRE( exceptionRaised );
 	}
 
