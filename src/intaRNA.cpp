@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
 			// check if we have to warn about ambiguity
 			if (targetAcc->getSequence().isAmbiguous()) {
 				LOG(INFO) <<"Sequence '"<<targetAcc->getSequence().getId()
-						<<"' contains ambiguous nucleotide encodings. These positions are ignored for interaction computation.";
+						<<"' contains ambiguous IUPAC nucleotide encodings. These positions are ignored for interaction computation and replaced by 'N'.";
 			}
 
 			// run prediction for all pairs of sequences

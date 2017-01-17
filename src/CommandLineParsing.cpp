@@ -111,7 +111,7 @@ CommandLineParsing::CommandLineParsing()
 			, value<std::string>(&queryArg)
 				->required()
 				->notifier(boost::bind(&CommandLineParsing::validate_query,this,_1))
-			, "either an RNA sequence or the stream/file name from where to read the query sequences (should be the shorter sequences to increase efficiency); use 'STDIN' to read from standard input stream")
+			, "either an RNA sequence or the stream/file name from where to read the query sequences (should be the shorter sequences to increase efficiency); use 'STDIN' to read from standard input stream; sequences have to use IUPAC nucleotide encoding")
 		("qAcc"
 			, value<char>(&(qAcc.val))
 				->default_value(qAcc.def)
@@ -152,7 +152,7 @@ CommandLineParsing::CommandLineParsing()
 			, value<std::string>(&targetArg)
 				->required()
 				->notifier(boost::bind(&CommandLineParsing::validate_target,this,_1))
-				, "either an RNA sequence or the stream/file name from where to read the target sequences (should be the longer sequences to increase efficiency); use 'STDIN' to read from standard input stream")
+				, "either an RNA sequence or the stream/file name from where to read the target sequences (should be the longer sequences to increase efficiency); use 'STDIN' to read from standard input stream; sequences have to use IUPAC nucleotide encoding")
 		("tAcc"
 			, value<char>(&(tAcc.val))
 				->default_value(tAcc.def)
@@ -562,7 +562,6 @@ validate_sequenceArgument(const std::string & name, const std::string & value)
 
 	}
 
-	// TODO : check for ambiguous nucleotides 'N' --> give warning that these are ignored for pairing in interactions
 }
 
 
@@ -985,7 +984,7 @@ validateSequenceAlphabet( const std::string& paramName,
 	// check each sequence
 	for (int i=0; i<sequences.size(); i++) {
 		// check if valid
-		if (! RnaSequence::isValidSequence(sequences.at(i).asString())) {
+		if (! RnaSequence::isValidSequenceIUPAC(sequences.at(i).asString())) {
 			LOG(ERROR) <<"sequence " <<(i+1)<<" for parameter "<<paramName<<" is not valid!";
 			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 			allValid = false;

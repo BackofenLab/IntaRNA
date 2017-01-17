@@ -15,7 +15,8 @@
 std::locale RnaSequence::codeLocale = std::locale();
 
 // setup allowed alphabet in lower and upper case
-const std::string RnaSequence::SequenceAlphabet	= "aAuUcCgGnNtT";
+const std::string RnaSequence::SequenceAlphabet	= "AUCG";
+const std::string RnaSequence::SequenceAlphabetIUPAC	= "aAuUcCgGtTrRyYsSwWkKmMbBdDhHvVnN";
 
 
 ////////////////////////////////////////////////////////////////////////////

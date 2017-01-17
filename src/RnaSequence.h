@@ -42,8 +42,13 @@ public:
 
 
 	/**
-	 * Allowed nucleotide single letter character alphabet and its lower case
-	 * variants.
+	 * Allowed nucleotide single letter character alphabet according to IUPAC
+	 * codes and their lower case variants.
+	 */
+	const static std::string SequenceAlphabetIUPAC;
+
+	/**
+	 * Allowed nucleotide single letter character alphabet (uppercase only)
 	 */
 	const static std::string SequenceAlphabet;
 
@@ -182,6 +187,15 @@ public:
 
 
 	/**
+	 * Utility function that tests whether or not a given sequence is a valid
+	 * RNA sequence according to IUPAC encoding
+	 */
+	static
+	bool
+	isValidSequenceIUPAC( const std::string& sequence );
+
+
+	/**
 	 * Whether or not two positions of two RNAs are complementary, ie. can
 	 * form a base pair
 	 * @param s1 first RNA
@@ -231,7 +245,7 @@ RnaSequence::RnaSequence(
 	id(id)
 	, seqString(getUpperCase(seqString))
 	, seqCode(getCodeForString(this->seqString))
-	, ambiguous(seqString.find_first_of("nN")!=std::string::npos)
+	, ambiguous(this->seqString.find('N')!=std::string::npos)
 {
 #if IN_DEBUG_MODE
 	if (id.size() == 0) {
@@ -312,8 +326,8 @@ bool
 RnaSequence::
 isAmbiguous( const size_t i ) const
 {
-	// TODO ensure sequence is upper case and reduce the test accordingly
-	return this->seqString.at(i) == 'N' || this->seqString.at(i) == 'n';
+	// check for ambiguous nucleotide encoding
+	return this->seqString.at(i) == 'N';
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -324,6 +338,10 @@ String_type
 RnaSequence::
 getUpperCase( const std::string & seqString )
 {
+#if IN_DEBUG_MODE
+	if (!isValidSequenceIUPAC(seqString)) throw std::runtime_error("RnaSequence::getUpperCase() : the given sequence contains non-IUPAC codes : '"+seqString+"'");
+#endif
+
 	// create container to fill
 	String_type seqRet(seqString.size(),'_');
 
@@ -335,6 +353,10 @@ getUpperCase( const std::string & seqString )
 		if (seqRet[i]=='T') {
 			seqRet[i] = 'U';
 //			wasDNA = true;
+		}
+		// overwrite non-ACGU characters with N = ambiguous (no distinction needed)
+		if (SequenceAlphabet.find(seqRet[i]) == -1) {
+			seqRet[i] = 'N';
 		}
 	}
 	// TODO report that it wasDNA if so...
@@ -375,6 +397,17 @@ isValidSequence( const std::string & sequence )
 /////////////////////////////////////////////////////////////////////////////
 
 inline
+bool
+RnaSequence::
+isValidSequenceIUPAC( const std::string & sequence )
+{
+	// check whether or not the string contains unsupported characters
+	return sequence.find_first_not_of(SequenceAlphabetIUPAC) == std::string::npos;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+inline
 std::ostream&
 operator<<(std::ostream& out, const RnaSequence& rna)
 {
@@ -391,12 +424,12 @@ Code_type
 RnaSequence::
 getCodeForChar( const char nucleotide )
 {
+#if IN_DEBUG_MODE
 	// check if nucleotide character is NOT supported
 	if (SequenceAlphabet.find(nucleotide) == std::string::npos)
-	{
-		// raise exception
 		throw std::runtime_error("RnaSequence::getCodeForChar() : unsupported nucleotide character '"+toString(nucleotide)+"' in sequence");
-	}
+#endif
+
 	// otherwise get encoding:
 	// use nucleotide character encoding from Vienna RNA package
 	return (Code_type)encode_char(nucleotide);
@@ -410,18 +443,19 @@ RnaSequence::
 areComplementary( const RnaSequence & s1, const RnaSequence & s2,
 					const size_t p1, const size_t p2 )
 {
+#if IN_DEBUG_MODE
 	// check if valid positions
-	if (p1<s1.size() && p2<s2.size()) {
-		// check via VRNA util
-		return BP_pair[s1.seqCode.at(p1)][s2.seqCode.at(p2)] > 0;
-	} else {
+	if (p1>=s1.size() || p2>=s2.size())
 		throw std::runtime_error("RnaSequence::areComplementary : index positions p1/p2 ("
 				+ toString(p1)+"/"+toString(p2)
 				+ ") are out of bounds s1/s2 ("
 				+ toString(s1.size())+"/"+toString(s2.size())
 				+")"
 				);
-	}
+#endif
+
+	// check via VRNA util
+	return BP_pair[s1.seqCode.at(p1)][s2.seqCode.at(p2)] > 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////
