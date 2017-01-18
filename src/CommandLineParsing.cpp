@@ -547,7 +547,7 @@ validate_sequenceArgument(const std::string & name, const std::string & value)
 	if (value.compare("STDIN") != 0) {
 
 		// check if it is a sequence
-		if ( RnaSequence::isValidSequence(value) ) {
+		if ( RnaSequence::isValidSequenceIUPAC(value) ) {
 
 			// do nothing, all fine
 
@@ -842,7 +842,7 @@ parseSequences(const std::string & paramName,
 	if (paramArg.compare("STDIN") == 0) {
 		parseSequencesFasta(paramName, std::cin, sequences);
 	} else
-	if (RnaSequence::isValidSequence(paramArg)) {
+	if (RnaSequence::isValidSequenceIUPAC(paramArg)) {
 		// direct sequence input
 		sequences.push_back(RnaSequence(paramName,paramArg));
 	} else

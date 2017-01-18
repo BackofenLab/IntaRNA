@@ -1,5 +1,11 @@
 
-170111 Martin Mann :
+170118 Martin Mann :
+ * CommandLineParsing :
+   * validate_sequenceArgument() :
+   * parseSequences() :
+     * uses now RnaSequence::isValidSequenceIUPAC()
+
+170117 Martin Mann :
  * RnaSequence :
    * SequenceAlphabet : now 'ACGU' only
    + SequenceAlphabetIUPAC : all IUPAC-conform nucleotide encodings
@@ -17,7 +23,7 @@
      * now checks with RnaSequence::isValidSequenceIUPAC()
    + information about IUPAC sequence encoding
 
-160111 Martin Mann :
+170111 Martin Mann :
  * CommandLineParsing :
    * IntaRNA v1 input details corrected
 
