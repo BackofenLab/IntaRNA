@@ -5,6 +5,7 @@
 
 #include <cmath>
 #include <stdexcept>
+#include <fstream>
 
 #include <boost/bind.hpp>
 #include <boost/filesystem.hpp>
@@ -92,6 +93,8 @@ CommandLineParsing::CommandLineParsing()
 	energy("BF",'F'),
 	energyFile(""),
 
+	out("STDOUT"),
+	outStream(&(std::cout)),
 	outMode( OutputMode_min, OutputMode_max, OutputMode_min ),
 	outNumber( 0, 1000, 1),
 	outOverlap( OutputConstraint::ReportOverlap::OVERLAP_NONE, OutputConstraint::ReportOverlap::OVERLAP_BOTH, OutputConstraint::ReportOverlap::OVERLAP_SEQ2 ),
@@ -262,6 +265,11 @@ CommandLineParsing::CommandLineParsing()
 
 	opts_output.add_options()
 		("out,o"
+			, value<std::string>(&(out))
+				->default_value(out)
+				->notifier(boost::bind(&CommandLineParsing::validate_out,this,_1))
+			, std::string("output : provide a file name for output or 'STDOUT/STDERR' to write to the according stream").c_str())
+		("outMode"
 			, value<int>(&(outMode.val))
 				->default_value(outMode.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_outMode,this,_1))
@@ -315,6 +323,18 @@ CommandLineParsing::CommandLineParsing()
 CommandLineParsing::~CommandLineParsing() {
 
 	CLEANUP(seedConstraint);
+
+	if (outStream != &std::cout && outStream != &std::cerr) {
+		std::fstream *outFileStream = dynamic_cast<std::fstream*>(outStream);
+		assert(outFileStream != NULL);
+		// flush and close file stream
+		outFileStream->flush();
+		outFileStream->close();
+		// delete file handler
+		delete outFileStream;
+	}
+	// reset output stream
+	outStream = & std::cout;
 
 }
 
@@ -375,6 +395,33 @@ parse(int argc, char** argv)
 	// if parsing was successful, continue with final parsing
 	if (parsingCode == ReturnCode::KEEP_GOING) {
 		try {
+
+			// open output stream
+			{
+				// get output selection upper case
+				std::string outUpperCase = boost::to_upper_copy<std::string>(out,std::locale());
+				// check if standard stream
+				if (out == "STDOUT") {
+					outStream = & std::cout;
+				} else
+				if (out == "STDERR") {
+					outStream = & std::cerr;
+				} else {
+					// open file stream
+					std::fstream * outFileStream = new std::fstream();
+					outFileStream->open( out.c_str(), std::ios_base::out );
+					if (!outFileStream->is_open()) {
+						delete outFileStream;
+						LOG(ERROR) <<"could not open output file --out='"<<out << "' for writing";
+						updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+					} else {
+						// set output stream
+						outStream = outFileStream;
+					}
+				}
+
+
+			}
 
 			// parse the sequences
 			parseSequences("query",queryArg,query);
@@ -1034,8 +1081,7 @@ std::ostream &
 CommandLineParsing::
 getOutputStream() const
 {
-	// TODO replace with central stream (file stream to be closed in destructor)
-	return std::cout;
+	return *outStream;
 }
 
 ////////////////////////////////////////////////////////////////////////////

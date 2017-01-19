@@ -1,4 +1,18 @@
 
+170119 Martin Mann :
+ * CommandLineParsing : 
+   + out : output stream selection
+   + outStream : output stream to write to
+   + argument 'outMode' : former 'out'
+   * argument 'out' now sets output stream
+   * getOutputStream() : returns now outStream
+   * destructor()
+     + deletion of outStream if file stream
+   * parse() :
+     + creation of file stream for output if out != STDOUT|STDERR
+ * perl/*.pl :
+   * adaptions to argument change
+
 170118 Martin Mann :
  * CommandLineParsing :
    * validate_sequenceArgument() :

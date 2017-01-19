@@ -57,3 +57,10 @@ tests/logs/*
 
 /1
 /RNAup
+/IntaRNA-1
+/IntaRNA-1.out2
+/q.fasta
+/q2.fasta
+/seq.fasta
+/t.fasta
+/t2.fasta

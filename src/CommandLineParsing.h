@@ -7,6 +7,7 @@
 
 #include <boost/regex.hpp>
 #include <boost/program_options.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include <iostream>
 #include <cstdarg>
@@ -357,6 +358,10 @@ protected:
 	//! the provided energy parameter file of the VRNA package
 	std::string energyFile;
 
+	//! where to write the output to
+	std::string out;
+	//! output stream
+	std::ostream * outStream;
 	//! output mode
 	NumberParameter<int> outMode;
 	//! number of (sub)optimal interactions to report
@@ -536,6 +541,12 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_energyFile(const std::string & value);
+
+	/**
+	 * Validates the out argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_out(const std::string & value);
 
 	/**
 	 * Validates the outMode argument.
@@ -1021,6 +1032,23 @@ inline
 void CommandLineParsing::validate_outMode(const int & value) {
 	// forward check to general method
 	validate_numberArgument("outMode", outMode, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_out(const std::string & value) {
+
+	std::string valueUpperCase = boost::to_upper_copy<std::string>(value,std::locale());
+	// check if standard stream
+	if (valueUpperCase == "STDOUT" || valueUpperCase == "STDERR") {
+		return;
+	}
+	// check if empty filename
+	if ( valueUpperCase.empty() ) {
+		LOG(ERROR) <<"no output defined";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////
