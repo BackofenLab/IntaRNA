@@ -1,4 +1,38 @@
 
+170120 Martin Mann :
+ * Accessibility :
+   + getES() : computes the ensemble energy of all local structures of a 
+     subsequence under the assumption that the subsequence is part of a 
+     multiloop
+ * AccessibilityDisabled :
+   + getES() : throws an exception since not computable
+ * AccessibilityVrna :
+   + EsMatrix type = triangular matrix
+   + esValues : stores ES values if non-NULL
+   + getES() : computed via McCaskill algorithm
+   * constructor() :
+     * vrnaHandler now const
+     + computeES argument to trigger ES computation
+     * RNAup-based ED computation also when plFoldW > seqLength
+   + computeES() : computes the ES values via VRNA 3 interface
+ * CommandLineParsing :
+   * get*Accessibility() :
+     + computeES flag = true in DEBUG mode (has to be replace by predictor
+       selection based setup)
+ * InteractionEnergy :
+   * getES*() : now implemented based on accS*.getES()
+   + getEU() abstract : energy for k unpaired bases within a multiloop
+ * InteractionEnergyBasePair :
+   - getES*() : implemented in superclass
+   + getEU() : returns 0
+ * InteractionEnergyIdxOffset :
+   + getEU() forward
+ * InteractionEnergyVrna :
+   - getES*() : implemented in superclass
+   + getEU() : returns k * VRNA.MLbase
+ * ReverseAccessibility :
+   + getES() forward
+
 170119 Martin Mann :
  * CommandLineParsing : 
    + out : output stream selection

@@ -809,7 +809,12 @@ getQueryAccessibility( const size_t sequenceNumber ) const
 	case 'F' : {
 		// create temporary constraint object (will be copied)
 		AccessibilityConstraint accConstraint(qAccConstr);
-		return new AccessibilityVrna( seq, vrnaHandler, qIntLenMax.val, qAccW.val, qAccL.val, &accConstraint);
+		bool computeES = false;
+#if IN_DEBUG_MODE
+		// TODO replace based on predictor selection
+		computeES = true;
+#endif
+		return new AccessibilityVrna( seq, vrnaHandler, qIntLenMax.val, qAccW.val, qAccL.val, &accConstraint, computeES);
 	}
 	default :
 		NOTIMPLEMENTED("CommandLineParsing::getQueryAccessibility : qAcc = '"+toString(qAcc.val)+"' is not supported");
@@ -834,7 +839,12 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 	case 'F' : {
 			// create temporary constraint object (will be copied)
 			AccessibilityConstraint accConstraint(tAccConstr);
-			return new AccessibilityVrna( seq, vrnaHandler, tIntLenMax.val, tAccW.val, tAccL.val, &accConstraint);
+			bool computeES = false;
+#if IN_DEBUG_MODE
+			// TODO replace based on predictor selection
+			computeES = true;
+#endif
+			return new AccessibilityVrna( seq, vrnaHandler, tIntLenMax.val, tAccW.val, tAccL.val, &accConstraint, computeES);
 		}
 	default :
 		NOTIMPLEMENTED("CommandLineParsing::getTargetAccessibility : tAcc = '"+toString(tAcc.val)+"' is not supported");

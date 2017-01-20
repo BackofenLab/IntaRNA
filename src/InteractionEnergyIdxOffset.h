@@ -170,6 +170,19 @@ public:
 	getES2( const size_t i2, const size_t j2 ) const;
 
 	/**
+	 * Provides the energy contribution for a given number of unpaired
+	 * nucleotides under the
+	 * assumption that the region is part of an (intermolecular) multiloop.
+	 *
+	 * @param numUnpaired the number of unpaired bases
+	 * @return the energy contribution of the given number of unpaired bases
+	 *         within an intramolecular multiloop
+	 */
+	virtual
+	E_type
+	getEU( const size_t numUnpaired ) const;
+
+	/**
 	 * Provides the duplex initiation energy.
 	 *
 	 * @return the energy for duplex initiation
@@ -558,6 +571,16 @@ InteractionEnergyIdxOffset::
 getES2( const size_t i2, const size_t j2 ) const
 {
 	return energyOriginal.getES2( i2+offset2, j2+offset2 );
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+InteractionEnergyIdxOffset::
+getEU( const size_t numUnpaired ) const
+{
+	return energyOriginal.getEU( numUnpaired );
 }
 
 //////////////////////////////////////////////////////////////////////////

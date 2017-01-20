@@ -6,6 +6,7 @@
 #include "VrnaHandler.h"
 
 #include <boost/numeric/ublas/banded.hpp>
+#include <boost/numeric/ublas/triangular.hpp>
 
 #include <iostream>
 
@@ -39,13 +40,15 @@ public:
 	 * @param plFoldL the maximal base pair span to be used for plFold computations
 	 * @param accConstraint if not NULL, accessibility constraint that enforces some regions
 	 *        to be unstructured both in sequence and interaction
+	 * @param computeES whether or not ES values are to be computed
 	 */
 	AccessibilityVrna( const RnaSequence& sequence
-			, VrnaHandler & vrnaHandler
+			, const VrnaHandler & vrnaHandler
 			, const size_t maxWindow = 0
 			, const size_t plFoldW = 0
 			, const size_t plFoldL = 0
 			, const AccessibilityConstraint * const accConstraint = NULL
+			, const bool computeES = false
 			);
 
 	/**
@@ -68,6 +71,28 @@ public:
 	E_type
 	getED( const size_t from, const size_t to ) const;
 
+	/**
+	 * Provides the ensemble energy (ES) of all intramolecular substructures
+	 * that can be formed within a given region of the sequence under the
+	 * assumption that the region is part of an (intermolecular) multiloop,
+	 * i.e. at least one base pair is formed by each substructure, given by
+	 *
+	 *   ES(i,j) = -RT * log( Qm[i,j] )
+	 *
+	 * where Qm denotes the according partition function computed by the
+	 * McCaskill algorithm.
+	 *
+	 * If no structure can be formed within the region (Qm==0), E_INF is returned.
+	 *
+	 * @param i the start of the structured region
+	 * @param j the end of the structured region
+	 * @return the ES value for [i,j] or E_INF if no intramolecular
+	 *         structure can be formed
+	 */
+	virtual
+	E_type
+	getES( const size_t i, const size_t j ) const;
+
 protected:
 
 	//! type for the ED value matrix (upper triangular matrix banded by maxLength)
@@ -75,6 +100,12 @@ protected:
 
 	//! the ED values for the given sequence
 	EdMatrix edValues;
+
+	//! matrix to store ES values (upper triangular matrix)
+	typedef boost::numeric::ublas::triangular_matrix<E_type, boost::numeric::ublas::upper> EsMatrix;
+
+	//! the ES values for the given sequence if computed (otherwise NULL)
+	EsMatrix * esValues;
 
 	/**
 	 * Computes the free energy of the structure ensemble that is unstructured
@@ -107,7 +138,7 @@ protected:
 	 */
 	double
 	getPfScale( const RnaSequence & seq
-				, VrnaHandler & vrnaHandler
+				, const VrnaHandler & vrnaHandler
 				, const size_t plFoldL );
 
 
@@ -118,7 +149,7 @@ protected:
 	 * @param plFoldL the maximal base pair span to be used or 0 for plFoldW
 	 */
 	void
-	fillByConstraints( VrnaHandler &vrnaHandler
+	fillByConstraints( const VrnaHandler &vrnaHandler
 						, const size_t plFoldL );
 
 	/**
@@ -128,7 +159,7 @@ protected:
 	 * @param plFoldL the maximal base pair span to be used or 0 for plFoldW
 	 */
 	void
-	fillByRNAup( VrnaHandler &vrnaHandler
+	fillByRNAup( const VrnaHandler &vrnaHandler
 					, const size_t plFoldL );
 
 	/**
@@ -139,9 +170,19 @@ protected:
 	 * @param plFoldL the maximal base pair span to be used or 0 for plFoldW
 	 */
 	void
-	fillByRNAplfold( VrnaHandler &vrnaHandler
+	fillByRNAplfold( const VrnaHandler &vrnaHandler
 						, const size_t plFoldW
 						, const size_t plFoldL );
+
+
+	/**
+	 * Computes the ES values and fills esValues container
+	 *
+	 * @param vrnaHandler the VrnaHandler to be used
+	 * @param maxBpSpan the maximal distance of pairing positions
+	 */
+	void
+	computeES( const VrnaHandler & vrnaHandler, const size_t maxBpSpan );
 
 };
 
@@ -165,6 +206,21 @@ getED( const size_t from, const size_t to ) const
 		// region length exceeds maximally allowed length -> no value
 		return ED_UPPER_BOUND;
 	}
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+AccessibilityVrna::
+getES( const size_t from, const size_t to ) const
+{
+	if (esValues == NULL) {
+		throw std::runtime_error("AccessibilityVrna::getES() : no ES values available (constructed without ES computation)");
+	}
+	// input range check
+	checkIndices(from,to);
+	return (*esValues)(from,to);
 }
 
 /////////////////////////////////////////////////////////////////////////////

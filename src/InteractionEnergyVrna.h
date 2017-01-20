@@ -60,38 +60,17 @@ public:
 
 
 	/**
-	 * Provides the ensemble energy (ES) of all intramolecular substructures
-	 * that can be formed within a given region of sequence 1 under the
-	 * assumption that the region is part of an (intermolecular) multiloop,
-	 * i.e. at least one base pair is formed by each substructure.
+	 * Provides the energy contribution for a given number of unpaired
+	 * nucleotides under the
+	 * assumption that the region is part of an (intermolecular) multiloop.
 	 *
-	 * If no structure can be formed within the region, E_INF is returned.
-	 *
-	 * @param i1 the start of the structured region of seq1
-	 * @param j1 the end of the structured region of seq1
-	 * @return the ES value for [i1,j1] or E_INF if no intramolecular
-	 *         structure can be formed
+	 * @param numUnpaired the number of unpaired bases
+	 * @return the energy contribution of the given number of unpaired bases
+	 *         within an intramolecular multiloop
 	 */
 	virtual
 	E_type
-	getES1( const size_t i1, const size_t j1 ) const;
-
-	/**
-	 * Provides the ensemble energy (ES) of all intramolecular substructures
-	 * that can be formed within a given region of sequence 2 under the
-	 * assumption that the region is part of an (intermolecular) multiloop,
-	 * i.e. at least one base pair is formed by each substructure.
-	 *
-	 * If no structure can be formed within the region, E_INF is returned.
-	 *
-	 * @param i2 the start of the structured region of seq2
-	 * @param j2 the end of the structured region of seq2
-	 * @return the ES value for [i2,j2] or E_INF if no intramolecular
-	 *         structure can be formed
-	 */
-	virtual
-	E_type
-	getES2( const size_t i2, const size_t j2 ) const;
+	getEU( const size_t numUnpaired ) const;
 
 	/**
 	 * Provides the duplex initiation energy.
@@ -381,6 +360,16 @@ isGC( const size_t i1, const size_t i2 ) const
 {
 	const int bpType = BP_pair[accS1.getSequence().asCodes().at(i1)][accS2.getSequence().asCodes().at(i2)];
 	return (bpType==bpCG || bpType==bpGC);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+InteractionEnergyVrna::
+getEU( const size_t numUnpaired ) const
+{
+	return numUnpaired * ((E_type)foldParams->MLbase) / (E_type)100.0;
 }
 
 ////////////////////////////////////////////////////////////////////////////
