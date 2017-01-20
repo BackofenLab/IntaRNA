@@ -812,7 +812,7 @@ getQueryAccessibility( const size_t sequenceNumber ) const
 		bool computeES = false;
 #if IN_DEBUG_MODE
 		// TODO replace based on predictor selection
-		computeES = true;
+		computeES = qAccW.val==0;
 #endif
 		return new AccessibilityVrna( seq, vrnaHandler, qIntLenMax.val, qAccW.val, qAccL.val, &accConstraint, computeES);
 	}
@@ -842,7 +842,7 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 			bool computeES = false;
 #if IN_DEBUG_MODE
 			// TODO replace based on predictor selection
-			computeES = true;
+			computeES = tAccW.val==0;
 #endif
 			return new AccessibilityVrna( seq, vrnaHandler, tIntLenMax.val, tAccW.val, tAccL.val, &accConstraint, computeES);
 		}
