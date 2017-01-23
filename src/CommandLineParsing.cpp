@@ -515,13 +515,13 @@ parse(int argc, char** argv)
 			}
 
 			// check qAcc upper bound
-			if (qAccL.val > qAccW.val) {
+			if (qAccL.val > qAccW.val && qAccW.val != 0) {
 				LOG(ERROR) <<"qAccL = " <<qAccL.val <<" : has to be <= qAccW (=" <<qAccW.val<<")";
 				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 			}
 
 			// check qAcc upper bound
-			if (tAccL.val > tAccW.val) {
+			if (tAccL.val > tAccW.val && tAccW.val != 0) {
 				LOG(ERROR) <<"tAccL = " <<tAccL.val <<" : has to be <= tAccW (=" <<tAccW.val<<")";
 				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 			}
