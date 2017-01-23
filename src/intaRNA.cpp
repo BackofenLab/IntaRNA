@@ -141,12 +141,12 @@ int main(int argc, char **argv) {
 
 	////////////////////// exception handling ///////////////////////////
 	} catch (std::exception & e) {
+		LOG(DEBUG) <<"Exception raised : " <<e.what() <<"\n\n"
 #if IN_DEBUG_MODE
-		LOG(DEBUG) <<"Exception raised : " <<e.what() <<"\n";
-		throw e; // to enable debugger use
+			<<"  ==> run debugger for details\n";
+		throw e;
 #else
-		LOG(ERROR) <<"Exception raised : " <<e.what() <<"\n\n"
-		<<"  ==> Please report to the IntaRNA development team! Thanks!\n";
+			<<"  ==> Please report to the IntaRNA development team! Thanks!\n";
 		return -1;
 #endif
 	}
