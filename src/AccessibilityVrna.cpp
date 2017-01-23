@@ -58,6 +58,7 @@ AccessibilityVrna::AccessibilityVrna(
 		if (plFoldW > 0 && plFoldW < getSequence().size() ) {
 			throw std::runtime_error("sequence '"+seq.getId()+"': accuracy constraints provided but sliding window enabled (>0), which is currently not supported");
 		}
+		// TODO NOTE, THIS FUNCTION IS NOT THREADSAFE ...
 		fillByRNAup(vrnaHandler
 				, (plFoldL==0? getSequence().size() : std::min(plFoldL,getSequence().size()))
 				);

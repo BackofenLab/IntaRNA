@@ -71,6 +71,7 @@ int main(int argc, char **argv) {
 
 			// run prediction for all pairs of sequences
 			// first: iterate over all query sequences
+			// TODO maybe parallelize for heuristic mode (low mem per job); BUT ENSURE accessibility computation via plfold only (rnaup not threadsafe)
 			for ( size_t queryNumber = 0; queryNumber < parameters.getQuerySequences().size(); ++queryNumber )
 			{
 
