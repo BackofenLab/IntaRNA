@@ -185,7 +185,7 @@ Interaction::Interaction( const InteractionRange & range )
 inline
 Interaction::~Interaction()
 {
-	if (seedRange != NULL) delete seedRange;
+	CLEANUP(seedRange);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -221,7 +221,7 @@ clear()
 	// clear energy
 	energy = std::numeric_limits<E_type>::signaling_NaN();
 	// undo seed information
-	if (seedRange != NULL) delete seedRange;
+	CLEANUP(seedRange);
 
 }
 

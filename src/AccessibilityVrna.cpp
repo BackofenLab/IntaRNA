@@ -284,14 +284,14 @@ fillByRNAplfold( const VrnaHandler &vrnaHandler
 	// add maximal BP span
 	vrna_md_t curModel = vrnaHandler.getModel( plFoldL, plFoldW );
 
+	const int length = getSequence().size();
+
 	// copy sequence into C data structure
-	char * sequence = (char *) vrna_alloc(sizeof(char) * (getSequence().size() + 1));
-	for (int i=0; i<getSequence().size(); i++) {
+	char * sequence = (char *) vrna_alloc(sizeof(char) * (length + 1));
+	for (int i=0; i<length; i++) {
 		sequence[i] = getSequence().asString().at(i);
 	}
-	sequence[getSequence().size()] = '\0';
-
-	int length = getSequence().size();
+	sequence[length] = '\0';
 
 	double ** pup = NULL;
     pup       =(double **)  vrna_alloc((length+1)*sizeof(double *));
@@ -327,10 +327,10 @@ fillByRNAplfold( const VrnaHandler &vrnaHandler
     	}
     }
 
-
     // garbage collection
-    if (dpp!=NULL) free(dpp);
     free(pf_parameters);
+    if (pl != NULL) free(pl);
+    if (dpp!=NULL) free(dpp);
     for (int i=1; i<=length; i++) {
     	free(pup[i]);
     }

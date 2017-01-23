@@ -95,7 +95,7 @@ operator= ( const InteractionRange & range )
 	energy = range.energy;
 
 	// undo seed information
-	if (seedRange != NULL) delete seedRange;
+	CLEANUP(seedRange);
 
 	return *this;
 }

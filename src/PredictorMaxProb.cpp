@@ -123,11 +123,10 @@ PredictorMaxProb::
 clear()
 {
 	// delete 3rd and 4th dimension of the matrix
-	for (E4dMatrix::iterator1 ijEntry = hybridZ.begin1(); ijEntry != hybridZ.end1(); ijEntry++) {
-		if (*ijEntry != NULL) {
+	for (E4dMatrix::iterator1 iRows = hybridZ.begin1(); iRows != hybridZ.end1(); iRows++) {
+		for (E4dMatrix::iterator2 ijEntry = iRows.begin(); ijEntry != iRows.end(); ijEntry++) {
 			// delete 2d matrix for current ij
-			delete (*ijEntry);
-			*ijEntry = NULL;
+			CLEANUP(*ijEntry);
 		}
 	}
 	// clear matrix, free data

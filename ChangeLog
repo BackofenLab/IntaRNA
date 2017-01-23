@@ -1,4 +1,17 @@
 
+170122 Martin Mann :
+ * AccessibilityVrna :
+   * fillByRNAplfold : bugfix memleak (pl return value not freed)
+ * consistent use of CLEANUP() to deallocate memory allocations done via 'new'
+ * intaRNA :
+   * global try-catch-block now always enabled but forwards exception in debug
+     mode (for debugger use)
+ * PredictorMaxProb* :
+ * PredictorMfe4d* :
+   * clear() : bugfix memleak (4th dimension not freed)
+ * RnaSequence :
+   * SequenceAlphabet now 'ACGUN' to simplify checks
+
 170120 Martin Mann :
  * Accessibility :
    + getES() : computes the ensemble energy of all local structures of a 

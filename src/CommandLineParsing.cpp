@@ -331,7 +331,7 @@ CommandLineParsing::~CommandLineParsing() {
 		outFileStream->flush();
 		outFileStream->close();
 		// delete file handler
-		delete outFileStream;
+		CLEANUP(outFileStream);
 	}
 	// reset output stream
 	outStream = & std::cout;
