@@ -201,7 +201,7 @@ traceBack( Interaction & interaction )
 	// temp variables
 	size_t k1,k2;
 	// do until only right boundary is left over
-	while( (j1-i1) > 1 && (j2-i2) > 1 ) {
+	while( (j1-i1) > 1 ) {
 		const BestInteraction * curCell = NULL;
 		bool traceNotFound = true;
 		// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
@@ -216,8 +216,10 @@ traceBack( Interaction & interaction )
 			{
 				// stop searching
 				traceNotFound = false;
-				// store splitting base pair
-				interaction.basePairs.push_back( energy.getBasePair(k1,k2) );
+				// store splitting base pair if not last one of interaction range
+				if ( k1 < j1 ) {
+					interaction.basePairs.push_back( energy.getBasePair(k1,k2) );
+				}
 				// trace right part of split
 				i1=k1;
 				i2=k2;
@@ -227,6 +229,11 @@ traceBack( Interaction & interaction )
 		}
 		assert( !traceNotFound );
 	}
+#if IN_DEBUG_MODE
+	if ( (j2-i2) > 1 ) {
+		throw std::runtime_error("PredictorMfe2dHeuristic::traceBack() : trace leaves ji<j2 : "+toString(i2)+"<"+toString(j2));
+	}
+#endif
 
 	// sort final interaction (to make valid) (faster than calling sort())
 	if (interaction.basePairs.size() > 2) {

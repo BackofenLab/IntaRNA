@@ -256,7 +256,7 @@ traceBack( Interaction & interaction )
 	// temp variables
 	size_t k1,k2;
 	// do until only right boundary is left over
-	while( (j1-i1) > 1 && (j2-i2) > 1 ) {
+	while( (j1-i1) > 1 ) {
 		const BestInteraction * curCell = NULL;
 		bool traceNotFound = true;
 		// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
@@ -272,7 +272,9 @@ traceBack( Interaction & interaction )
 				// stop searching
 				traceNotFound = false;
 				// store splitting base pair
-				interaction.basePairs.push_back( energy.getBasePair(k1,k2) );
+				if (k1 < j1) {
+					interaction.basePairs.push_back( energy.getBasePair(k1,k2) );
+				}
 				// trace right part of split
 				i1=k1;
 				i2=k2;
@@ -280,7 +282,7 @@ traceBack( Interaction & interaction )
 			}
 		}
 		}
-		// has to be interaction with seed on the left starting at (i1,i2)
+		// has to be interaction with seed on the left starting at (i1,i2)..seed..(k1,k2)..rest..(j1,j2)
 		if (traceNotFound) {
 			assert(E_isNotINF(seedHandler.getSeedE(i1,i2)));
 			k1 = i1+seedHandler.getSeedLength1(i1,i2)-1; assert(k1<hybridE.size1());
@@ -293,10 +295,13 @@ traceBack( Interaction & interaction )
 							energy.getE(i1,k1,i2,k2,seedHandler.getSeedE(i1,i2))+energy.getE_init());
 			// traceback seed base pairs (excludes right most = (k1,k2))
 			seedHandler.traceBackSeed( interaction, i1, i2 );
-			// traceback right interaction via hybridE
-			if (k1<j1) {
+			// update position to point after seed interaction
+			i1 = k1;
+			i2 = k2;
+			// traceback remaining right interaction via hybridE
+			if (i1<j1) {
 				Interaction bpsRight(*(interaction.s1), *(interaction.s2) );
-				bpsRight.basePairs.push_back( energy.getBasePair(k1,k2) );
+				bpsRight.basePairs.push_back( energy.getBasePair(i1,i2) );
 				bpsRight.basePairs.push_back( energy.getBasePair(j1,j2) );
 				PredictorMfe2dHeuristic::traceBack( bpsRight );
 				// copy remaining base pairs
@@ -308,11 +313,18 @@ traceBack( Interaction & interaction )
 			}
 			traceNotFound = false;
 			// stop search since all trace back done
+			i1 = j1;
+			i2 = j2;
 			break;
 		}
 
 		assert( !traceNotFound );
 	}
+#if IN_DEBUG_MODE
+	if ( (j2-i2) > 1 ) {
+		throw std::runtime_error("PredictorMfe2dHeuristicSeed::traceBack() : trace leaves ji<j2 : "+toString(i2)+"<"+toString(j2));
+	}
+#endif
 
 	// sort final interaction (to make valid) (faster than calling sort())
 	if (interaction.basePairs.size() > 2) {
