@@ -323,7 +323,7 @@ fillByRNAplfold( const VrnaHandler &vrnaHandler
 			// get unpaired probability
 			double prob_unpaired = pup[j][j-i+1];
 			// check if zero before computing its log-value
-			if (E_equal(prob_unpaired,0.0)) {
+			if (prob_unpaired == 0.0) {
 				// ED value = ED_UPPER_BOUND
 				edValues (i-1,j-1) = ED_UPPER_BOUND;
 			} else {
@@ -335,13 +335,12 @@ fillByRNAplfold( const VrnaHandler &vrnaHandler
 
     // garbage collection
     free(pf_parameters);
-    if (pl != NULL) free(pl);
-    if (dpp!=NULL) free(dpp);
-	for (int i=1; i<=length; i++) {
+    if (pl) free(pl);
+    if (dpp) free(dpp);
+	for (int i=0; i<=length; i++) {
 		// delete allocated rows
 		if (pup[i]) free(pup[i]);
 	}
-    free(pup[0]);
     free(pup);
     free(sequence);
 
@@ -427,7 +426,7 @@ fillByRNAup( const VrnaHandler &vrnaHandler
 						unstr_out->M[i][j-i]+
 						unstr_out->E[i][j-i];
 				// check if zero before computing its log-value
-				if (E_equal(prob_unpaired,0.0)) {
+				if ( prob_unpaired == 0.0 ) {
 					// ED value = ED_UPPER_BOUND
 					edValues (i-1,j-1) = ED_UPPER_BOUND;
 				} else {
@@ -508,7 +507,7 @@ computeES( const VrnaHandler & vrnaHandler, const size_t maxBpSpan )
 			qm_val = foldData->exp_matrices->qm[foldData->iindx[i+1]-j+1];
 			// ES energy = -RT*log( Qm )
 			// ensure Qm > 0 for computation; otherwise E_INF
-			(*esValues)(i,j) =  E_equal( qm_val, 0.0)
+			(*esValues)(i,j) =  ( qm_val == 0.0 )
 								? E_INF
 								: std::min<E_type>( E_INF,
 										(E_type)(-log(qm_val)
