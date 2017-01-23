@@ -243,8 +243,8 @@ fillByConstraints( const VrnaHandler &vrnaHandler
 			// check if unconstrained within region (i,j)
 			if (regionUnconstrained) {
 				// compute ED value = E(unstructured in [i,j]) - E_all
-			} else {
 				edValues (i,j) = (calc_ensemble_free_energy(i,j, partFoldParams) - E_all);
+			} else {
 				// region covers constrained elements --> set to upper bound
 				edValues (i,j) = ED_UPPER_BOUND;
 			}
@@ -319,11 +319,17 @@ fillByRNAplfold( const VrnaHandler &vrnaHandler
 
     // copy data
     for (int j=1; j<=length; j++) {
-    	for (int i=std::max(1,j-(int)pup[0][0]);i<=j; i++) {
-			// compute overall unpaired probability
+    	for (int i=std::max(1,j-(int)(pup[0][0]+0.49));i<=j; i++) {
+			// get unpaired probability
 			double prob_unpaired = pup[j][j-i+1];
-			// compute ED value = E(unstructured in [i,j]) - E_all
-			edValues (i-1,j-1) = -RT*std::log(prob_unpaired);
+			// check if zero before computing its log-value
+			if (E_equal(prob_unpaired,0.0)) {
+				// ED value = ED_UPPER_BOUND
+				edValues (i-1,j-1) = ED_UPPER_BOUND;
+			} else {
+				// compute ED value = E(unstructured in [i,j]) - E_all
+				edValues (i-1,j-1) = -RT*std::log(prob_unpaired);
+			}
     	}
     }
 
@@ -331,9 +337,10 @@ fillByRNAplfold( const VrnaHandler &vrnaHandler
     free(pf_parameters);
     if (pl != NULL) free(pl);
     if (dpp!=NULL) free(dpp);
-    for (int i=1; i<=length; i++) {
-    	free(pup[i]);
-    }
+	for (int i=1; i<=length; i++) {
+		// delete allocated rows
+		if (pup[i]) free(pup[i]);
+	}
     free(pup[0]);
     free(pup);
     free(sequence);
@@ -419,8 +426,14 @@ fillByRNAup( const VrnaHandler &vrnaHandler
 						unstr_out->I[i][j-i]+
 						unstr_out->M[i][j-i]+
 						unstr_out->E[i][j-i];
-				// compute ED value = E(unstructured in [i,j]) - E_all
-				edValues (i-1,j-1) = -RT*std::log(prob_unpaired);
+				// check if zero before computing its log-value
+				if (E_equal(prob_unpaired,0.0)) {
+					// ED value = ED_UPPER_BOUND
+					edValues (i-1,j-1) = ED_UPPER_BOUND;
+				} else {
+					// compute ED value = E(unstructured in [i,j]) - E_all
+					edValues (i-1,j-1) = -RT*std::log(prob_unpaired);
+				}
 
 			} else {
 				// region covers constrained elements --> set to upper bound
