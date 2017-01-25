@@ -91,7 +91,7 @@ if (defined $args{w}) {
 # always full sequence length for query
 $intaRNA2call .= " --qAccW=0"; 
 if (defined $args{L}) { 
-	$intaRNA2call .= " --tAccL=".($args{w}); 
+	$intaRNA2call .= " --tAccL=".($args{L}); 
 } else {
 	$intaRNA2call .= " --tAccL=0"; 
 }
