@@ -30,10 +30,27 @@ public:
 		subseq2, //!< interacting subsequence of second sequence
 		subseqDP, //!< hybrid subsequences compatible with hybridDP
 		subseqDB, //!< hybrid subsequences compatible with hybridDB
+		start1, //!< start index of hybrid in seq1
+		end1, //!< end index of hybrid in seq1
+		start2, //!< start index of hybrid in seq2
+		end2, //!< end index of hybrid in seq2
 		hybridDP, //!< hybrid in VRNA dot-bracket notation
 		hybridDB, //!< hybrid in dot-bar notation
 		E, //!< overall hybridization energy
-		E_seed, //!< overall hybridization energy of the seed only (excluding rest)
+		ED1, //!< ED value of seq1
+		ED2, //!< ED value of seq2
+		E_init, //!< initiation energy
+		E_dangleL, //!< dangling end contribution of base pair (start1,end2)
+		E_dangleR, //!< dangling end contribution of base pair (end1,start2)
+		E_endL, //!< penalty of closing base pair (start1,end2)
+		E_endR, //!< penalty of closing base pair (end1,start2)
+		seedStart1, //!< start index of the seed in seq1
+		seedEnd1, //!< end index of the seed in seq1
+		seedStart2, //!< start index of the seed in seq2
+		seedEnd2, //!< end index of the seed in seq2
+		seedE, //!< overall hybridization energy of the seed only (excluding rest)
+		seedED1, //!< ED value of seq1 of the seed only (excluding rest)
+		seedED2, //!< ED value of seq2 of the seed only (excluding rest)
 		ColTypeNumber //!< number of column types
 	};
 
@@ -64,6 +81,10 @@ protected:
 			colType2string[id2] = "id2";
 			colType2string[seq1] = "seq1";
 			colType2string[seq2] = "seq2";
+			colType2string[start1] = "start1";
+			colType2string[end1] = "end1";
+			colType2string[start2] = "start2";
+			colType2string[end2] = "end2";
 			colType2string[subseq1] = "subseq1";
 			colType2string[subseq2] = "subseq2";
 			colType2string[subseqDP] = "subseqDP";
@@ -71,7 +92,20 @@ protected:
 			colType2string[hybridDP] = "hybridDP";
 			colType2string[hybridDB] = "hybridDB";
 			colType2string[E] = "E";
-			colType2string[E_seed] = "E_seed";
+			colType2string[ED1] = "ED1";
+			colType2string[ED2] = "ED2";
+			colType2string[E_init] = "E_init";
+			colType2string[E_dangleL] = "E_dangleL";
+			colType2string[E_dangleR] = "E_dangleR";
+			colType2string[E_endL] = "E_endL";
+			colType2string[E_endR] = "E_endR";
+			colType2string[seedStart1] = "seedStart1";
+			colType2string[seedEnd1] = "seedEnd1";
+			colType2string[seedStart2] = "seedStart2";
+			colType2string[seedEnd2] = "seedEnd2";
+			colType2string[seedE] = "seedE";
+			colType2string[seedED1] = "seedED1";
+			colType2string[seedED2] = "seedED2";
 			// ensure filling is complete
 			for (size_t i=0; i<ColTypeNumber; i++) {
 				if ( colType2string.find( static_cast<ColType>(i) ) == colType2string.end() ) {

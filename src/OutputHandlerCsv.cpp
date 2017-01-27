@@ -1,6 +1,9 @@
 
 #include "OutputHandlerCsv.h"
 
+#include <boost/algorithm/string.hpp>
+
+
 ////////////////////////////////////////////////////////////////////////
 
 std::map<OutputHandlerCsv::ColType,std::string> OutputHandlerCsv::colType2string;
@@ -70,11 +73,13 @@ add( const Interaction & i )
 		switch ( *col ) {
 
 		case id1:
-			out <<energy.getAccessibility1().getSequence().getId();
+			// ensure no colSeps are contained
+			out <<boost::replace_all_copy(energy.getAccessibility1().getSequence().getId(), colSep, "_");
 			break;
 
 		case id2:
-			out <<energy.getAccessibility2().getSequence().getId();
+			// ensure no colSeps are contained
+			out <<boost::replace_all_copy(energy.getAccessibility2().getSequence().getId(), colSep, "_");
 			break;
 
 		case seq1:
@@ -107,6 +112,22 @@ add( const Interaction & i )
 				<<energy.getAccessibility2().getAccessibilityOrigin().getSequence().asString().substr(j2, i2-j2+1);
 			break;
 
+		case start1:
+			out <<(i1+1);
+			break;
+
+		case end1:
+			out <<(j1+1);
+			break;
+
+		case start2:
+			out <<(j2+1);
+			break;
+
+		case end2:
+			out <<(i2+1);
+			break;
+
 		case hybridDP:
 			out <<Interaction::dotBracket( i );
 			break;
@@ -119,11 +140,87 @@ add( const Interaction & i )
 			out <<i.energy;
 			break;
 
-		case E_seed:
+		case ED1:
+			out <<contr.ED1;
+			break;
+
+		case ED2:
+			out <<contr.ED2;
+			break;
+
+		case E_init:
+			out <<contr.init;
+			break;
+
+		case E_dangleL:
+			out <<contr.dangleLeft;
+			break;
+
+		case E_dangleR:
+			out <<contr.dangleRight;
+			break;
+
+		case E_endL:
+			out <<contr.endLeft;
+			break;
+
+		case E_endR:
+			out <<contr.endRight;
+			break;
+
+		case seedStart1:
+			if (i.seedRange == NULL) {
+				out <<std::numeric_limits<E_type>::signaling_NaN();
+			} else {
+				out <<(i.seedRange->r1.from+1);
+			}
+			break;
+
+		case seedEnd1:
+			if (i.seedRange == NULL) {
+				out <<std::numeric_limits<E_type>::signaling_NaN();
+			} else {
+				out <<(i.seedRange->r1.to+1);
+			}
+			break;
+
+		case seedStart2:
+			if (i.seedRange == NULL) {
+				out <<std::numeric_limits<E_type>::signaling_NaN();
+			} else {
+				out <<(i.seedRange->r2.to+1);
+			}
+			break;
+
+		case seedEnd2:
+			if (i.seedRange == NULL) {
+				out <<std::numeric_limits<E_type>::signaling_NaN();
+			} else {
+				out <<(i.seedRange->r2.from+1);
+			}
+			break;
+
+		case seedE:
 			if (i.seedRange == NULL) {
 				out <<std::numeric_limits<E_type>::signaling_NaN();
 			} else {
 				out <<i.seedRange->energy;
+			}
+			break;
+
+		case seedED1:
+			if (i.seedRange == NULL) {
+				out <<std::numeric_limits<E_type>::signaling_NaN();
+			} else {
+				out <<energy.getED1( i.seedRange->r1.from, i.seedRange->r1.to );
+			}
+			break;
+
+		case seedED2:
+			if (i.seedRange == NULL) {
+				out <<std::numeric_limits<E_type>::signaling_NaN();
+			} else {
+				out <<energy.getAccessibility2().getAccessibilityOrigin().getED( i.seedRange->r2.to, i.seedRange->r2.from );
 			}
 			break;
 
