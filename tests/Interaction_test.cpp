@@ -28,6 +28,8 @@ TEST_CASE( "Interaction", "[Interaction]" ) {
 		inter.basePairs.push_back( Interaction::BasePair( 1, 6 ) );
 		REQUIRE_FALSE( inter.isEmpty() );
 		REQUIRE( inter.isValid() );
+		REQUIRE( Interaction::dotBracket(inter) == "(&)");
+		REQUIRE( Interaction::dotBar(inter) == "2|&7|");
 
 		inter.basePairs.push_back( Interaction::BasePair( 0, 7 ) );
 		REQUIRE_FALSE( inter.isEmpty() );
@@ -35,9 +37,13 @@ TEST_CASE( "Interaction", "[Interaction]" ) {
 
 		inter.sort();
 		REQUIRE( inter.isValid() );
+		REQUIRE( Interaction::dotBracket(inter) == "((&))");
+		REQUIRE( Interaction::dotBar(inter) == "1||&7||");
 
-		inter.basePairs.push_back( Interaction::BasePair( 2, 5 ) );
+		inter.basePairs.push_back( Interaction::BasePair( 3, 4 ) );
 		REQUIRE( inter.isValid() );
+		REQUIRE( Interaction::dotBracket(inter) == "((.(&)))");
+		REQUIRE( Interaction::dotBar(inter) == "1||.|&5|.||");
 
 	}
 
