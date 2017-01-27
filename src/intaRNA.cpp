@@ -2,6 +2,7 @@
 #include "general.h"
 
 #include <iostream>
+#include <exception>
 
 #include <boost/foreach.hpp>
 
@@ -150,6 +151,19 @@ int main(int argc, char **argv) {
 			<<"  ==> Please report to the IntaRNA development team! Thanks!\n";
 		return -1;
 #endif
+	} catch (...) {
+		std::exception_ptr eptr = std::current_exception();
+		LOG(DEBUG) <<"Unknown exception raised \n\n"
+#if IN_DEBUG_MODE
+			<<"  ==> run debugger for details\n";
+		if (eptr) {
+			std::rethrow_exception(eptr);
+		}
+#else
+			<<"  ==> Please report to the IntaRNA development team! Thanks!\n";
+		return -1;
+#endif
+
 	}
 
 	  // all went fine
