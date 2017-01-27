@@ -150,6 +150,14 @@ add( const Interaction & i )
 			out <<contr.ED2;
 			break;
 
+		case Pu1:
+			out <<std::exp( - contr.ED1 / energy.getRT() );
+			break;
+
+		case Pu2:
+			out <<std::exp( - contr.ED2 / energy.getRT() );
+			break;
+
 		case E_init:
 			out <<contr.init;
 			break;
@@ -223,6 +231,22 @@ add( const Interaction & i )
 				out <<std::numeric_limits<E_type>::signaling_NaN();
 			} else {
 				out <<energy.getAccessibility2().getAccessibilityOrigin().getED( i.seedRange->r2.to, i.seedRange->r2.from );
+			}
+			break;
+
+		case seedPu1:
+			if (i.seedRange == NULL) {
+				out <<std::numeric_limits<E_type>::signaling_NaN();
+			} else {
+				out <<std::exp( - energy.getED1( i.seedRange->r1.from, i.seedRange->r1.to ) / energy.getRT() );
+			}
+			break;
+
+		case seedPu2:
+			if (i.seedRange == NULL) {
+				out <<std::numeric_limits<E_type>::signaling_NaN();
+			} else {
+				out <<std::exp( - energy.getAccessibility2().getAccessibilityOrigin().getED( i.seedRange->r2.to, i.seedRange->r2.from ) / energy.getRT() );
 			}
 			break;
 

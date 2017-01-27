@@ -39,6 +39,8 @@ public:
 		E, //!< overall hybridization energy
 		ED1, //!< ED value of seq1
 		ED2, //!< ED value of seq2
+		Pu1, //!< probability to be accessible for seq1
+		Pu2, //!< probability to be accessible for seq2
 		E_init, //!< initiation energy
 		E_dangleL, //!< dangling end contribution of base pair (start1,end2)
 		E_dangleR, //!< dangling end contribution of base pair (end1,start2)
@@ -51,6 +53,8 @@ public:
 		seedE, //!< overall hybridization energy of the seed only (excluding rest)
 		seedED1, //!< ED value of seq1 of the seed only (excluding rest)
 		seedED2, //!< ED value of seq2 of the seed only (excluding rest)
+		seedPu1, //!< probability of seed region to be accessible for seq1
+		seedPu2, //!< probability of seed region to be accessible for seq2
 		ColTypeNumber //!< number of column types
 	};
 
@@ -94,6 +98,8 @@ protected:
 			colType2string[E] = "E";
 			colType2string[ED1] = "ED1";
 			colType2string[ED2] = "ED2";
+			colType2string[Pu1] = "Pu1";
+			colType2string[Pu2] = "Pu2";
 			colType2string[E_init] = "E_init";
 			colType2string[E_dangleL] = "E_dangleL";
 			colType2string[E_dangleR] = "E_dangleR";
@@ -106,6 +112,8 @@ protected:
 			colType2string[seedE] = "seedE";
 			colType2string[seedED1] = "seedED1";
 			colType2string[seedED2] = "seedED2";
+			colType2string[seedPu1] = "seedPu1";
+			colType2string[seedPu2] = "seedPu2";
 			// ensure filling is complete
 			for (size_t i=0; i<ColTypeNumber; i++) {
 				if ( colType2string.find( static_cast<ColType>(i) ) == colType2string.end() ) {
