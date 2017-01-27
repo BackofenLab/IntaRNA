@@ -343,7 +343,7 @@ void
 PredictorMfe2dSeed::
 getNextBest( Interaction & curBest )
 {
-	throw std::runtime_error("PredictorMfe2dSeed : This prediction mode does not support non-overlapping suboptimal interaction enumeration.");
+	throw std::runtime_error("PredictorMfe2dSeed::getNextBest() : This prediction mode does not support non-overlapping suboptimal interaction enumeration.");
 }
 
 //////////////////////////////////////////////////////////////////////////
