@@ -6,7 +6,9 @@
 
 ////////////////////////////////////////////////////////////////////////////
 
-OutputHandlerText::OutputHandlerText( std::ostream & out,
+OutputHandlerText::
+OutputHandlerText(
+		std::ostream & out,
 		const InteractionEnergy & energy,
 		const size_t flankingLength_ )
  :
@@ -21,7 +23,9 @@ OutputHandlerText::OutputHandlerText( std::ostream & out,
 
 ////////////////////////////////////////////////////////////////////////////
 
-OutputHandlerText::~OutputHandlerText() {
+OutputHandlerText::
+~OutputHandlerText()
+{
 	out.flush();
 }
 

@@ -6,7 +6,9 @@
 
 ////////////////////////////////////////////////////////////////////////////
 
-OutputHandlerIntaRNA1detailed::OutputHandlerIntaRNA1detailed( std::ostream & out
+OutputHandlerIntaRNA1detailed::
+OutputHandlerIntaRNA1detailed(
+		std::ostream & out
 		, const InteractionEnergy & energy
 		)
  :
@@ -19,7 +21,9 @@ OutputHandlerIntaRNA1detailed::OutputHandlerIntaRNA1detailed( std::ostream & out
 
 ////////////////////////////////////////////////////////////////////////////
 
-OutputHandlerIntaRNA1detailed::~OutputHandlerIntaRNA1detailed() {
+OutputHandlerIntaRNA1detailed::
+~OutputHandlerIntaRNA1detailed()
+{
 	out.flush();
 }
 

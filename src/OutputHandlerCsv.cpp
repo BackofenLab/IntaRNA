@@ -35,6 +35,8 @@ OutputHandlerCsv::OutputHandlerCsv(
 
 OutputHandlerCsv::~OutputHandlerCsv()
 {
+	// force output
+	out.flush();
 }
 
 ////////////////////////////////////////////////////////////////////////
