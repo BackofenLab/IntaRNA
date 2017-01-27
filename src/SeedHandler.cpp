@@ -141,6 +141,13 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 					j1 = i1+bpIn+1+u1;
 					j2 = i2+bpIn+1+u2;
 
+					// skip if ED boundary exceeded
+					if (energy.getED1(i1,j1) > seedConstraint.getMaxED()
+							|| energy.getED2(i2,j2) > seedConstraint.getMaxED() )
+					{
+						continue;
+					}
+
 					// get overall interaction energy
 					curE = energy.getE( i1, j1, i2, j2, getSeedE( i1-offset1, i2-offset2, bpIn, u1, u2 ) ) + energy.getE_init();
 
