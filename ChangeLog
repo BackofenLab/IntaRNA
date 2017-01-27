@@ -21,6 +21,8 @@
      + seedMaxED argument
      * outCsvCol : + spaces to unlink ID list
    * outCsvCols_default = id1,start1,end1,id2,start2,end2,subseqDP,hybridDP,E
+ * intaRNA :
+   + storing of queryAcc object to avoid recomputation for different targets
 
 170126 Martin Mann :
  * Interaction :

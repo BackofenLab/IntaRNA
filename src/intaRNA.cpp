@@ -55,6 +55,9 @@ int main(int argc, char **argv) {
 
 		size_t reportedInteractions = 0;
 
+		// storage to avoid accessibility recomputation (init NULL)
+		std::vector< ReverseAccessibility * > queryAcc(parameters.getQuerySequences().size(), NULL);
+
 		// second: iterate over all target sequences to get all pairs to predict for
 		for ( size_t targetNumber = 0; targetNumber < parameters.getTargetSequences().size(); ++targetNumber )
 		{
@@ -72,26 +75,29 @@ int main(int argc, char **argv) {
 
 			// run prediction for all pairs of sequences
 			// first: iterate over all query sequences
-			// TODO maybe parallelize for heuristic mode (low mem per job); BUT ENSURE accessibility computation via plfold only (rnaup not threadsafe)
+			// TODO maybe parallelize for heuristic mode (low mem per job);
+			// BUT ENSURE accessibility computation via plfold only (rnaup not threadsafe)
+			// BUT ENSURE full queryAcc init (move init outside of loop)
 			for ( size_t queryNumber = 0; queryNumber < parameters.getQuerySequences().size(); ++queryNumber )
 			{
+				if (queryAcc.at(queryNumber) == NULL) {
+					// get accessibility handler
+					VLOG(1) <<"computing accessibility for query '"<<parameters.getQuerySequences().at(queryNumber).getId()<<"'...";
+					Accessibility * queryAccOrig = parameters.getQueryAccessibility(queryNumber);
+					CHECKNOTNULL(queryAccOrig,"query initialization failed");
+					// reverse indexing of target sequence for the computation
+					queryAcc[queryNumber] = new ReverseAccessibility(*queryAccOrig);
 
-				// get accessibility handler
-				VLOG(1) <<"computing accessibility for query '"<<parameters.getQuerySequences().at(queryNumber).getId()<<"'...";
-				Accessibility * queryAccOrig = parameters.getQueryAccessibility(queryNumber);
-				CHECKNOTNULL(queryAccOrig,"query initialization failed");
-				// reverse indexing of target sequence for the computation
-				ReverseAccessibility * queryAcc = new ReverseAccessibility(*queryAccOrig);
-
-				// check if we have to warn about ambiguity
-				if (queryAcc->getSequence().isAmbiguous()) {
-					LOG(INFO) <<"Sequence '"<<queryAcc->getSequence().getId()
-							<<"' contains ambiguous nucleotide encodings. These positions are ignored for interaction computation.";
+					// check if we have to warn about ambiguity
+					if (queryAccOrig->getSequence().isAmbiguous()) {
+						LOG(INFO) <<"Sequence '"<<queryAccOrig->getSequence().getId()
+								<<"' contains ambiguous nucleotide encodings. These positions are ignored for interaction computation.";
+					}
 				}
 
 
 				// get energy computation handler for both sequences
-				InteractionEnergy* energy = parameters.getEnergyHandler( *targetAcc, *queryAcc );
+				InteractionEnergy* energy = parameters.getEnergyHandler( *targetAcc, *(queryAcc.at(queryNumber)) );
 				CHECKNOTNULL(energy,"energy initialization failed");
 
 				// get output/storage handler
@@ -118,7 +124,7 @@ int main(int argc, char **argv) {
 							<<"...";
 
 					predictor->predict(	  tRange
-										, queryAcc->getReversedIndexRange(qRange)
+										, queryAcc.at(queryNumber)->getReversedIndexRange(qRange)
 										, parameters.getOutputConstraint()
 										);
 
@@ -128,15 +134,21 @@ int main(int argc, char **argv) {
 				reportedInteractions += output->reported();
 
 				// garbage collection
-				CLEANUP(predictor)
-				CLEANUP(output)
-				CLEANUP(energy)
-				CLEANUP(queryAcc)
-				CLEANUP(queryAccOrig)
+				CLEANUP(predictor);
+				CLEANUP(output);
+				CLEANUP(energy);
 			}
 			// garbage collection
-			CLEANUP(targetAcc)
+			CLEANUP(targetAcc);
 
+		}
+		// garbage collection
+		for (size_t queryNumber=0; queryNumber < queryAcc.size(); queryNumber++) {
+			// this is a hack to cleanup the original accessibility object
+			Accessibility* queryAccOrig = &(const_cast<Accessibility&>(queryAcc[queryNumber]->getAccessibilityOrigin()) );
+			CLEANUP( queryAccOrig );
+			// cleanup (now broken) reverse accessibility object
+			CLEANUP(queryAcc[queryNumber]);
 		}
 
 
