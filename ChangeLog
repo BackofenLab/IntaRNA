@@ -1,4 +1,57 @@
 
+170126 Martin Mann :
+ * Interaction :
+   + dotBracket() : converts to VRNA-like dot-bracket notation
+   + dotBar() : converts to position+interaction encoding using dot and bar
+   + dotSomething() : generic function to generate substrings for dotBracket()
+     and dotBar()
+ * test/Interaction :
+   + dotBracket()
+   + dotBar()
+ * PredictorMfe : 
+   * reportOptima() : 
+     * bugfix : nextBest() called too often
+ * OutputHandlerText :
+   * add(range) inlined
+ + OutputHandlerCsv : produces customizable CVS table output  
+ * CommandLineParsing :
+   * OutputMode : 
+     + CSV
+   + outCsvCols* + validator : argument variable + default value
+   + initOutputHandler() : prints initial output
+   * constructor :
+     * outMode argument : support for CSV
+     + outCsvCols argument
+     * out argument : short option removed
+   * parse() :
+     + parseStyle setup to guide parsing
+     - intial output moved to initOutputHandler()
+     + initOutputHandler() call
+     + CSV check
+   * getOutputHandler() :
+     + CSV
+ * intaRNA : 
+   + generic exception handling
+
+170125 Martin Mann :
+ * perl/*.pl : 
+   * bugfix : -L setup was using -w argument
+
+170123 Martin Mann :
+ * AccessibilityVrna :
+   * fillByConstraints() : bugfix of line shift for ED filling
+   * fillByRNAplfold() :
+   * fillByRNAup() :
+     + explicit handling of Pu == 0 to trigger ED = ED_UPPER_BOUND
+ * intaRNA :
+   * debug exception catch message extended (debugger hint)
+ * PredictorMfe2dHeuristic :
+ * PredictorMfe2dHeuristicSeed :
+   * traceBack() : bugfix : right boundary (j1,j2) could be inserted again
+   * loop check simplified
+ * CommandLineParsing :
+   * fix of plfold L <= W check (only enabled if W>0)
+
 170122 Martin Mann :
  * AccessibilityVrna :
    * fillByRNAplfold : bugfix memleak (pl return value not freed)

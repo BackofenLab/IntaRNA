@@ -35,10 +35,15 @@
 
 #include "OutputHandlerText.h"
 #include "OutputHandlerIntaRNA1detailed.h"
+#include "OutputHandlerCsv.h"
 
 
 
 
+
+////////////////////////////////////////////////////////////////////////////
+
+const std::string CommandLineParsing::outCsvCols_default = "";
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -88,18 +93,19 @@ CommandLineParsing::CommandLineParsing()
 
 	temperature(0,100,37),
 
-	predMode( PredictionMode_min, PredictionMode_max, PredictionMode_min),
+	predMode( PredictionMode_min, PredictionMode_max, HEURISTIC),
 
 	energy("BF",'F'),
 	energyFile(""),
 
 	out("STDOUT"),
 	outStream(&(std::cout)),
-	outMode( OutputMode_min, OutputMode_max, OutputMode_min ),
+	outMode( OutputMode_min, OutputMode_max, DETAILED ),
 	outNumber( 0, 1000, 1),
 	outOverlap( OutputConstraint::ReportOverlap::OVERLAP_NONE, OutputConstraint::ReportOverlap::OVERLAP_BOTH, OutputConstraint::ReportOverlap::OVERLAP_SEQ2 ),
 	outDeltaE( 0.0, 100.0, 100.0),
 	outMaxE( -999.0, 0.0, 0.0),
+	outCsvCols(outCsvCols_default),
 
 	vrnaHandler()
 
@@ -264,7 +270,7 @@ CommandLineParsing::CommandLineParsing()
 	////  OUTPUT OPTIONS  ////////////////////////////////////
 
 	opts_output.add_options()
-		("out,o"
+		("out"
 			, value<std::string>(&(out))
 				->default_value(out)
 				->notifier(boost::bind(&CommandLineParsing::validate_out,this,_1))
@@ -275,7 +281,9 @@ CommandLineParsing::CommandLineParsing()
 				->notifier(boost::bind(&CommandLineParsing::validate_outMode,this,_1))
 			, std::string("output mode : "
 					+toString(OutputMode::DETAILED)+"= detailed, "
-					+toString(OutputMode::V1_DETAILED)+"= v1-detailed").c_str())
+					+toString(OutputMode::V1_DETAILED)+"= v1-detailed"
+					+toString(OutputMode::CSV)+"= CSV"
+					).c_str())
 	    ("outNumber,n"
 			, value<int>(&(outNumber.val))
 				->default_value(outNumber.def)
@@ -300,6 +308,14 @@ CommandLineParsing::CommandLineParsing()
 				->default_value(outDeltaE.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_outDeltaE,this,_1))
 			, std::string("suboptimal output : only interactions with E <= (minE+deltaE) are reported").c_str())
+		("outCsvCols"
+			, value<std::string>(&(outCsvCols))
+				->default_value(outCsvCols)
+				->notifier(boost::bind(&CommandLineParsing::validate_outCsvCols,this,_1))
+			, std::string("output : comma separated list of CSV column IDs to print if outMode=CSV."
+					" An empty argument prints all possible columns from the following available ID list:"
+					+ OutputHandlerCsv::list2string(OutputHandlerCsv::string2list(""))
+					).c_str())
 	    ("verbose,v", "verbose output") // handled via easylogging++
 //	    (logFile_argument.c_str(), "name of log file to be used for output")
 	    ;
@@ -352,7 +368,16 @@ parse(int argc, char** argv)
 
 	variables_map vm;
 	try {
-		store( parse_command_line(argc, argv, opts_cmdline_all), vm);
+		int parseStyle =
+				  command_line_style::style_t::allow_long
+				| command_line_style::style_t::long_allow_adjacent
+				| command_line_style::style_t::long_allow_next
+				| command_line_style::style_t::allow_short
+				| command_line_style::style_t::allow_dash_for_short
+				| command_line_style::style_t::short_allow_next
+				| command_line_style::style_t::case_insensitive
+				;
+		store( parse_command_line(argc, argv, opts_cmdline_all, parseStyle), vm);
 		// parsing fine so far
 		parsingCode = ReturnCode::KEEP_GOING;
 	} catch (error& e) {
@@ -526,32 +551,14 @@ parse(int argc, char** argv)
 				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 			}
 
-			// check if output mode == IntaRNA1-detailed
-			if ((OutputMode)outMode.val == V1_DETAILED) {
-				getOutputStream()
-				<<"-------------------------" <<"\n"
-				<<"INPUT" <<"\n"
-				<<"-------------------------" <<"\n"
-				<<"number of base pairs in seed                                  : "<<seedBP.val <<"\n"
-				<<"max. number of unpaired bases in the seed region of seq. 1    : "<<(seedMaxUPt.val<0 ? seedMaxUP.val : seedMaxUPt.val) <<"\n"
-				<<"max. number of unpaired bases in the seed region of seq. 2    : "<<(seedMaxUPq.val<0 ? seedMaxUP.val : seedMaxUPq.val) <<"\n"
-				<<"max. number of unpaired bases in the seed region of both seq's: "<<seedMaxUP.val <<"\n"
-				<<"RNAup used                                                    : "<<((qAccConstr.empty() && (qAccW.val ==0))?"true":"false") <<"\n"
-				<<"RNAplfold used                                                : "<<(((! tAccConstr.empty()) || (tAccW.val !=0))?"true":"false") <<"\n"
-				<<"sliding window size                                           : "<<tAccW.val<<"\n" //(tAccW.val!=0?tAccW.val:energy.size1()) <<"\n"
-				<<"max. length of unpaired region                                : "<<tAccW.val<<"\n" //(tAccW.val!=0?tAccW.val:energy.size1()) <<"\n"
-				<<"max. distance of two paired bases                             : "<<tAccL.val<<"\n" //(tAccL.val!=0?tAccL.val:energy.size1()) <<"\n"
-				<<"weight for ED values of target RNA in energy                  : 1" <<"\n"
-				<<"weight for ED values of binding RNA in energy                 : 1" <<"\n"
-				<<"temperature                                                   : "<<temperature.val <<" Celsius" <<"\n"
-				<<"max. number of subopt. results                                : "<<(getOutputConstraint().reportMax-1) <<"\n"
-				<<"Heuristic for hybridization end used                          : "<<((PredictionMode)predMode.val==HEURISTIC?"true":"false") <<"\n"
-				<<"\n"
-				<<"-------------------------" <<"\n"
-				<<"OUTPUT" <<"\n"
-				<<"-------------------------" <<"\n"
-				;
+			// check CSV stuff
+			if (outCsvCols != outCsvCols_default && outMode.val != OutputMode::CSV) {
+				LOG(ERROR) <<"outCsvCols set but outMode != "<<OutputMode::CSV;
+				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 			}
+
+			// trigger initial output handler output
+			initOutputHandler();
 
 		} catch (error& e) {
 			LOG(ERROR) <<e.what();
@@ -674,6 +681,18 @@ validate_structureConstraintArgument(const std::string & name, const std::string
 			}
 		}
 
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void CommandLineParsing::validate_outCsvCols(const std::string & value) {
+	try {
+		// try to parse
+		OutputHandlerCsv::string2list( value );
+	} catch (const std::runtime_error & e ) {
+		LOG(ERROR) <<"--outCsvCols : " <<e.what();
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
 }
 
@@ -1096,6 +1115,46 @@ getOutputStream() const
 
 ////////////////////////////////////////////////////////////////////////////
 
+void
+CommandLineParsing::
+initOutputHandler()
+{
+	// check if output mode == IntaRNA1-detailed
+	switch ((OutputMode)outMode.val) {
+	case V1_DETAILED :
+		getOutputStream()
+		<<"-------------------------" <<"\n"
+		<<"INPUT" <<"\n"
+		<<"-------------------------" <<"\n"
+		<<"number of base pairs in seed                                  : "<<seedBP.val <<"\n"
+		<<"max. number of unpaired bases in the seed region of seq. 1    : "<<(seedMaxUPt.val<0 ? seedMaxUP.val : seedMaxUPt.val) <<"\n"
+		<<"max. number of unpaired bases in the seed region of seq. 2    : "<<(seedMaxUPq.val<0 ? seedMaxUP.val : seedMaxUPq.val) <<"\n"
+		<<"max. number of unpaired bases in the seed region of both seq's: "<<seedMaxUP.val <<"\n"
+		<<"RNAup used                                                    : "<<((qAccConstr.empty() && (qAccW.val ==0))?"true":"false") <<"\n"
+		<<"RNAplfold used                                                : "<<(((! tAccConstr.empty()) || (tAccW.val !=0))?"true":"false") <<"\n"
+		<<"sliding window size                                           : "<<tAccW.val<<"\n" //(tAccW.val!=0?tAccW.val:energy.size1()) <<"\n"
+		<<"max. length of unpaired region                                : "<<tAccW.val<<"\n" //(tAccW.val!=0?tAccW.val:energy.size1()) <<"\n"
+		<<"max. distance of two paired bases                             : "<<tAccL.val<<"\n" //(tAccL.val!=0?tAccL.val:energy.size1()) <<"\n"
+		<<"weight for ED values of target RNA in energy                  : 1" <<"\n"
+		<<"weight for ED values of binding RNA in energy                 : 1" <<"\n"
+		<<"temperature                                                   : "<<temperature.val <<" Celsius" <<"\n"
+		<<"max. number of subopt. results                                : "<<(getOutputConstraint().reportMax-1) <<"\n"
+		<<"Heuristic for hybridization end used                          : "<<((PredictionMode)predMode.val==HEURISTIC?"true":"false") <<"\n"
+		<<"\n"
+		<<"-------------------------" <<"\n"
+		<<"OUTPUT" <<"\n"
+		<<"-------------------------" <<"\n"
+		; break;
+	case CSV :
+		getOutputStream()
+		<<OutputHandlerCsv::getHeader( OutputHandlerCsv::string2list( outCsvCols ) )
+		; break;
+	}
+
+}
+
+////////////////////////////////////////////////////////////////////////////
+
 OutputHandler*
 CommandLineParsing::
 getOutputHandler( const InteractionEnergy & energy ) const
@@ -1105,6 +1164,8 @@ getOutputHandler( const InteractionEnergy & energy ) const
 		return new OutputHandlerText( getOutputStream(), energy );
 	case V1_DETAILED :
 		return new OutputHandlerIntaRNA1detailed( getOutputStream(), energy );
+	case CSV :
+		return new OutputHandlerCsv( getOutputStream(), energy, OutputHandlerCsv::string2list( outCsvCols ));
 	}
 }
 

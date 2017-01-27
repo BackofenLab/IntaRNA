@@ -54,7 +54,8 @@ public:
 		OutputMode_min = 0,
 		DETAILED = 0,
 		V1_DETAILED = 1,
-		OutputMode_max = 1
+		CSV = 2,
+		OutputMode_max = 2
 	};
 
 
@@ -372,6 +373,10 @@ protected:
 	NumberParameter<double> outDeltaE;
 	//! max E allowed to report an interaction
 	NumberParameter<double> outMaxE;
+	//! the CSV column selection
+	std::string outCsvCols;
+	//! the CSV column selection
+	static const std::string outCsvCols_default;
 
 	//! the vienna energy parameter handler initialized by #parse()
 	mutable VrnaHandler vrnaHandler;
@@ -578,6 +583,12 @@ protected:
 	 */
 	void validate_outMaxE(const double & value);
 
+	/**
+	 * Validates the outCsvCols argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_outCsvCols(const std::string & value);
+
 
 	////////////  GENERIC TESTS  /////////////////
 
@@ -728,6 +739,11 @@ protected:
 	 * @param currentParsingCode the current parsing code to be used for the update
 	 */
 	void updateParsingCode( const ReturnCode currentParsingCode );
+
+	/**
+	 * Triggers an initial output of the output handler if needed.
+	 */
+	void initOutputHandler();
 
 };
 
@@ -1046,7 +1062,7 @@ void CommandLineParsing::validate_out(const std::string & value) {
 	}
 	// check if empty filename
 	if ( valueUpperCase.empty() ) {
-		LOG(ERROR) <<"no output defined";
+		LOG(ERROR) <<"no output defined (empty)";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
 }

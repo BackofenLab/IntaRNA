@@ -35,6 +35,8 @@ IntaRNA_SOURCES =	intaRNA.cpp \
 					OutputConstraint.cpp \
 					OutputHandler.h \
 					OutputHandler.cpp \
+					OutputHandlerCsv.h \
+					OutputHandlerCsv.cpp \
 					OutputHandlerIntaRNA1detailed.h \
 					OutputHandlerIntaRNA1detailed.cpp \
 					OutputHandlerRangeOnly.h \
