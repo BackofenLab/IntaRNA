@@ -166,8 +166,6 @@ reportOptima( const OutputConstraint & outConstraint )
 			traceBack( curBest );
 			// report mfe interaction
 			output.add( curBest );
-			// count
-			reported++;
 
 			// store ranges to ensure non-overlapping of next best solution
 			switch( outConstraint.reportOverlap ) {
@@ -185,8 +183,13 @@ reportOptima( const OutputConstraint & outConstraint )
 				break;
 			}
 
-			// get next best
-			getNextBest( curBest );
+			// count
+			reported++;
+			// get next best if not already enough found
+			if (reported < outConstraint.reportMax) {
+				// get next best
+				getNextBest( curBest );
+			}
 		}
 
 	} // non-overlapping interactions
