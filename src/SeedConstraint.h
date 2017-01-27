@@ -30,6 +30,7 @@ public:
 	 * @param maxUnpaired2 the maximal number of unpaired bases within seq2
 	 *        allowed within a seed
 	 * @param maxE maximal energy a seed is allowed to have
+	 * @param maxED maximal ED value a seed is allowed to have for each subsequence
 	 * @param ranges1 the index ranges of seq1 to be searched for seeds
 	 * @param ranges2reversed the index reversed ranges of seq2 to be searched for seeds
 	 */
@@ -38,6 +39,7 @@ public:
 				, const size_t maxUnpaired1
 				, const size_t maxUnpaired2
 				, const E_type maxE
+				, const E_type maxED
 				, const IndexRangeList & ranges1
 				, const IndexRangeList & ranges2reversed
 				);
@@ -89,6 +91,15 @@ public:
 	 */
 	E_type
 	getMaxE() const;
+
+	/**
+	 * Provides the maximally allowed ED value for each seed subsequence to be
+	 * considered
+	 *
+	 * @return the maximally allowed ED value (per sequence) for a seed
+	 */
+	E_type
+	getMaxED() const;
 
 	/**
 	 * Provides the maximal length of the seed in seq1
@@ -161,6 +172,9 @@ protected:
 	//! the maximal energy allowed for a seed
 	E_type maxE;
 
+	//! the maximal ED value (per sequence) allowed for a seed
+	E_type maxED;
+
 	//! the index ranges of seq1 to be searched for seeds
 	IndexRangeList ranges1;
 
@@ -181,6 +195,7 @@ SeedConstraint::SeedConstraint(
 		, const size_t maxUnpaired1_
 		, const size_t maxUnpaired2_
 		, const E_type maxE_
+		, const E_type maxED_
 		, const IndexRangeList & ranges1
 		, const IndexRangeList & ranges2reversed
 		)
@@ -190,6 +205,7 @@ SeedConstraint::SeedConstraint(
 	, maxUnpaired1(std::min(maxUnpaired1_,maxUnpairedOverall_)) // exclude too large boundaries
 	, maxUnpaired2(std::min(maxUnpaired2_,maxUnpairedOverall_)) // exclude too large boundaries
 	, maxE(maxE_)
+	, maxED(maxED_)
 	, ranges1(ranges1)
 	, ranges2(ranges2reversed)
 {
@@ -218,6 +234,15 @@ E_type
 SeedConstraint::
 getMaxE() const {
 	return maxE;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+SeedConstraint::
+getMaxED() const {
+	return maxED;
 }
 
 /////////////////////////////////////////////////////////////////////////////
