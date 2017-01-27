@@ -103,3 +103,39 @@ operator= ( const InteractionRange & range )
 
 
 ////////////////////////////////////////////////////////////////////////////
+
+std::string
+Interaction::
+dotBar( const Interaction & i )
+{
+#if IN_DEBUG_MODE
+	if (!i.isValid())
+		throw std::runtime_error("Interaction::dotBar("+toString(i)+") not valid!");
+#endif
+	// compile overall dot-bracket representation
+	return	toString(i.basePairs.begin()->first +1)
+			+ dotSomething(i.basePairs.begin(), i.basePairs.end(), true, '|')
+			+"&"
+			+toString(i.basePairs.rbegin()->second +1)
+			+ dotSomething(i.basePairs.rbegin(), i.basePairs.rend(), false, '|')
+			;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+std::string
+Interaction::
+dotBracket( const Interaction & i, const char symOpen, const char symClose )
+{
+#if IN_DEBUG_MODE
+	if (!i.isValid())
+		throw std::runtime_error("Interaction::dotBracket("+toString(i)+") not valid!");
+#endif
+	// compile overall dot-bracket representation
+	return	dotSomething(i.basePairs.begin(), i.basePairs.end(), true, symOpen)
+			+"&"
+			+ dotSomething(i.basePairs.rbegin(), i.basePairs.rend(), false, symClose)
+			;
+}
+
+////////////////////////////////////////////////////////////////////////////

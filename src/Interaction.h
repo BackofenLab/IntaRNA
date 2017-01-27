@@ -137,6 +137,58 @@ public:
 	 */
 	friend std::ostream& operator<<(std::ostream& out, const Interaction& i);
 
+
+	/**
+	 * Produces a dot-bar encoding of the interaction in the form
+	 *
+	 *    startId1 dot-bar-1 & startId2 dot-bar-2
+	 *
+	 * where dot-bar-1/2 encodes all positions of the first/second sequence
+	 * enclosed by the first and last base pair of the interaction.
+	 * Here, a '|' bar encodes an intermolecular base pair and a '.' dot
+	 * encodes unpaired positions.
+	 *
+	 * Note, within this encoding, the '&' separated parts can be swapped if
+	 * needed yielding still a valid encoding (for the swapped sequences).
+	 *
+	 * @param i interaction to encode
+	 * @return the dot-bracket encoding
+	 */
+	static
+	std::string
+	dotBar( const Interaction & i );
+
+	/**
+	 * Produces a dot-bracket encoding of the interaction in VRNA style in the
+	 * form
+	 *
+	 *   dot-bracket-1 & dot-bracket-2
+	 *
+	 * where dot-bracket-1/2 encodes all positions of the first/second sequence
+	 * enclosed by the first and last base pair of the interaction.
+	 * In dot-bracket-1, a closing '(' parenthesis encodes an intermolecular
+	 * base pair and a '.' dot encodes unpaired positions. In dot-bracket-2,
+	 * closing ')' parentheses are used to mark base pairs.
+	 *
+	 * @param i interaction to encode
+	 * @param symOpen the symbol to be used for base pairs in dot-bracket-1
+	 * @param symClose the symbol to be used for base pairs in dot-bracket-2
+	 *
+	 * @return the VRNA-styled dot-bracket encoding
+	 */
+	static
+	std::string
+	dotBracket( const Interaction & i, const char symOpen = '(', const char symClose = ')');
+
+
+protected:
+
+	template < typename bpIterator >
+	static
+	std::string
+	dotSomething( bpIterator bpBegin, const bpIterator bpEnd, const bool handleSeq1, const char bpSymbol );
+
+
 };
 
 /**
@@ -255,6 +307,31 @@ operator<<(std::ostream& out, const Interaction& i)
 		out <<(p==0?"":",") <<i.basePairs.at(p);
 	}
 	return out;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+template < typename bpIterator >
+inline
+std::string
+Interaction::
+dotSomething( bpIterator bp, const bpIterator bpEnd, const bool handleSeq1, const char bpSymbol )
+{
+	// stream to compile output
+	std::stringstream dotBracket;
+	// compile dotBracket1
+	for (bpIterator bpLast = bp; bp!=bpEnd; bp++) {
+		// fill unpaired up to current bp in seq1
+		for ( size_t u = handleSeq1 ? (bp->first - bpLast->first) : (bp->second - bpLast->second); u>1; u-- ) {
+			dotBracket <<'.';
+		}
+		// add base pair
+		dotBracket <<bpSymbol;
+		// update last bp for next round
+		bpLast = bp;
+	}
+	// return compiled string
+	return dotBracket.str();
 }
 
 ////////////////////////////////////////////////////////////////////////////
