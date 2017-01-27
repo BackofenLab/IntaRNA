@@ -278,6 +278,8 @@ add( const Interaction & i )
 			<<"seed seq1   = "<<(i.seedRange->r1.from +1)<<" -- "<<(i.seedRange->r1.to +1) <<'\n'
 			<<"seed seq2   = "<<(i.seedRange->r2.to +1)<<" -- "<<(i.seedRange->r2.from +1) <<'\n'
 			<<"seed energy = "<<(i.seedRange->energy)<<" kcal/mol\n"
+			<<"seed ED1    = "<<energy.getED1( i.seedRange->r1.from, i.seedRange->r1.to )<<" kcal/mol\n"
+			<<"seed ED2    = "<<energy.getAccessibility2().getAccessibilityOrigin().getED( i.seedRange->r2.to, i.seedRange->r2.from )<<" kcal/mol\n"
 			;
 	}
 
