@@ -273,6 +273,8 @@ add( const Interaction & i )
 		<<"  + E(endRight)    = "<<contr.endRight<<'\n'
 		<<"  + ED(seq1)       = "<<contr.ED1<<'\n'
 		<<"  + ED(seq2)       = "<<contr.ED2<<'\n'
+		<<"  + Pu(seq1)       = "<<std::exp(-contr.ED1/energy.getRT())<<'\n'
+		<<"  + Pu(seq2)       = "<<std::exp(-contr.ED2/energy.getRT())<<'\n'
 		;
 
 	// print seed information if available
@@ -284,6 +286,8 @@ add( const Interaction & i )
 			<<"seed energy = "<<(i.seedRange->energy)<<" kcal/mol\n"
 			<<"seed ED1    = "<<energy.getED1( i.seedRange->r1.from, i.seedRange->r1.to )<<" kcal/mol\n"
 			<<"seed ED2    = "<<energy.getAccessibility2().getAccessibilityOrigin().getED( i.seedRange->r2.to, i.seedRange->r2.from )<<" kcal/mol\n"
+			<<"seed Pu1    = "<<std::exp(-(energy.getED1( i.seedRange->r1.from, i.seedRange->r1.to ))/energy.getRT())<<'\n'
+			<<"seed Pu2    = "<<std::exp(-(energy.getAccessibility2().getAccessibilityOrigin().getED( i.seedRange->r2.to, i.seedRange->r2.from ))/energy.getRT())<<'\n'
 			;
 	}
 
