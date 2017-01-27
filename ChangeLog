@@ -13,10 +13,10 @@
    * add() :
      + seed ED values added
  * OutputHandlerCsv :
-   + start/end, ED, E_*, seedStart/End, seedED
+   + Pu, seedPu, start/end, ED, E_*, seedStart/End, seedED
    * id : replacement of colSep occurrences
  * CommandLineParsing :
-   + seedMaxED + validator
+   + seedMinPu + validator
    * constructor() :
      + seedMaxED argument
      * outCsvCol : + spaces to unlink ID list
