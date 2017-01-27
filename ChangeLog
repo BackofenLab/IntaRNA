@@ -1,4 +1,27 @@
 
+170127 Martin Mann :
+ * SeedConstraint : 
+   + maxED + getter : maximal ED value per sequence for a seed region
+   * constructor ()
+     + maxED
+ * SeedHandler :
+   * fillSeed() :
+     + skip seed regions with ED > maxED
+ * RnaSequence :
+   * SequenceAlphabet order changed
+ * OutputHandlerText :
+   * add() :
+     + seed ED values added
+ * OutputHandlerCsv :
+   + start/end, ED, E_*, seedStart/End, seedED
+   * id : replacement of colSep occurrences
+ * CommandLineParsing :
+   + seedMaxED + validator
+   * constructor() :
+     + seedMaxED argument
+     * outCsvCol : + spaces to unlink ID list
+   * outCsvCols_default = id1,start1,end1,id2,start2,end2,subseqDP,hybridDP,E
+
 170126 Martin Mann :
  * Interaction :
    + dotBracket() : converts to VRNA-like dot-bracket notation

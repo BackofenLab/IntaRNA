@@ -43,7 +43,7 @@
 
 ////////////////////////////////////////////////////////////////////////////
 
-const std::string CommandLineParsing::outCsvCols_default = "";
+const std::string CommandLineParsing::outCsvCols_default = "id1,start1,end1,id2,start2,end2,subseqDP,hybridDP,E";
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -87,6 +87,7 @@ CommandLineParsing::CommandLineParsing()
 	seedMaxUPq(-1,20,-1),
 	seedMaxUPt(-1,20,-1),
 	seedMaxE(-999,+999,0),
+	seedMaxED(-999,+999,999),
 	seedRangeq(""),
 	seedRanget(""),
 	seedConstraint(NULL),
@@ -228,6 +229,11 @@ CommandLineParsing::CommandLineParsing()
 				->default_value(seedMaxE.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_seedMaxE,this,_1))
 			, std::string("maximal energy a seed region may have (arg in range ["+toString(seedMaxE.min)+","+toString(seedMaxE.max)+"]).").c_str())
+		("seedMaxED"
+			, value<E_type>(&(seedMaxED.val))
+				->default_value(seedMaxED.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_seedMaxED,this,_1))
+			, std::string("maximal ED value (per sequence) a seed region may have (arg in range ["+toString(seedMaxED.min)+","+toString(seedMaxED.max)+"]).").c_str())
 		("seedRangeq"
 			, value<std::string>(&(seedRangeq))
 				->notifier(boost::bind(&CommandLineParsing::validate_seedRangeq,this,_1))
@@ -313,8 +319,8 @@ CommandLineParsing::CommandLineParsing()
 				->default_value(outCsvCols)
 				->notifier(boost::bind(&CommandLineParsing::validate_outCsvCols,this,_1))
 			, std::string("output : comma separated list of CSV column IDs to print if outMode=CSV."
-					" An empty argument prints all possible columns from the following available ID list:"
-					+ OutputHandlerCsv::list2string(OutputHandlerCsv::string2list(""))
+					" An empty argument prints all possible columns from the following available ID list: "
+					+ boost::replace_all_copy(OutputHandlerCsv::list2string(OutputHandlerCsv::string2list("")), ",", ", ")
 					).c_str())
 	    ("verbose,v", "verbose output") // handled via easylogging++
 //	    (logFile_argument.c_str(), "name of log file to be used for output")
@@ -516,6 +522,7 @@ parse(int argc, char** argv)
 				if (seedMaxUPq.val != seedMaxUPq.def) LOG(INFO) <<"no seed constraint wanted, but seedMaxUPq provided (will be ignored)";
 				if (seedMaxUPt.val != seedMaxUPt.def) LOG(INFO) <<"no seed constraint wanted, but seedMaxUPt provided (will be ignored)";
 				if (seedMaxE.val != seedMaxE.def) LOG(INFO) <<"no seed constraint wanted, but seedMaxE provided (will be ignored)";
+				if (seedMaxED.val != seedMaxED.def) LOG(INFO) <<"no seed constraint wanted, but seedMaxED provided (will be ignored)";
 				if (!seedRangeq.empty()) LOG(INFO) <<"no seed constraint wanted, but seedRangeq provided (will be ignored)";
 				if (!seedRanget.empty()) LOG(INFO) <<"no seed constraint wanted, but seedRanget provided (will be ignored)";
 			} else {
@@ -1192,6 +1199,7 @@ getSeedConstraint( const InteractionEnergy & energy ) const
 							, seedMaxUPt.val<0 ? seedMaxUP.val : seedMaxUPt.val
 							, seedMaxUPq.val<0 ? seedMaxUP.val : seedMaxUPq.val
 							, seedMaxE.val
+							, seedMaxED.val
 							// shift ranges to start counting with 0
 							, IndexRangeList( seedRanget ).shift(-1,energy.size1()-1)
 							, IndexRangeList( seedRangeq ).shift(-1,energy.size2()-1).reverse(energy.size2())

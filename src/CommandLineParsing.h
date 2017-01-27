@@ -341,6 +341,8 @@ protected:
 	NumberParameter<int> seedMaxUPt;
 	//! max energy of a seed to be considered
 	NumberParameter<E_type> seedMaxE;
+	//! max ED (per sequence) of a seed to be considered
+	NumberParameter<E_type> seedMaxED;
 	//! intervals in query for seed search
 	std::string seedRangeq;
 	//! intervals in target for seed search
@@ -510,6 +512,12 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_seedMaxE(const E_type & value);
+
+	/**
+	 * Validates the seedMaxED argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_seedMaxED(const E_type & value);
 
 	/**
 	 * Validates the seedRangeq argument.
@@ -971,6 +979,14 @@ inline
 void CommandLineParsing::validate_seedMaxE(const E_type & value) {
 	// forward check to general method
 	validate_numberArgument("seedMaxE", seedMaxE, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_seedMaxED(const E_type & value) {
+	// forward check to general method
+	validate_numberArgument("seedMaxED", seedMaxED, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////
