@@ -42,7 +42,7 @@ TEST_CASE( "Interaction", "[Interaction]" ) {
 
 		inter.basePairs.push_back( Interaction::BasePair( 3, 4 ) );
 		REQUIRE( inter.isValid() );
-		REQUIRE( Interaction::dotBracket(inter) == "((.(&)))");
+		REQUIRE( Interaction::dotBracket(inter) == "((.(&).))");
 		REQUIRE( Interaction::dotBar(inter) == "1||.|&5|.||");
 
 	}
