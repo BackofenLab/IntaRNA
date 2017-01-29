@@ -149,6 +149,12 @@ predict( const IndexRange & r1
 			if (E_isINF(rightExt->E)) {
 				continue;
 			}
+			// check if interaction length is within boundary
+			if ( (rightExt->j1 +1 -i1) > energy.getAccessibility1().getMaxLength()
+				|| (rightExt->j2 +1 -i2) > energy.getAccessibility2().getMaxLength() )
+			{
+				continue;
+			}
 			// compute energy for this loop sizes
 			curE = energy.getE_interLeft(i1,i1+w1,i2,i2+w2) + rightExt->E;
 			// check if this combination yields better energy
