@@ -10,7 +10,9 @@ IntaRNA_SOURCES =	intaRNA.cpp \
 					Accessibility.cpp \
 					AccessibilityConstraint.h \
 					AccessibilityConstraint.cpp \
-					AccessibilityNone.h \
+					AccessibilityDisabled.h \
+					AccessibilityFromStream.h \
+					AccessibilityFromStream.cpp \
 					AccessibilityVrna.h \
 					AccessibilityVrna.cpp \
 					CommandLineParsing.h \

@@ -1,4 +1,44 @@
 
+170130 Martin Mann :
+ * CommandLineParsing :
+   + stdinUsed : flag to ensure STDIN is used for input only once
+   + setStdinUsed() : sets stdinUsed = true if not already or throws log 
+     otherwise
+   + validate_q/tAccFile() 
+   * get*Accessibility() :
+     + AccessibilityFromStream support
+ * AccessibilityVrna :
+   * getED() :
+     + accessibility constraint check
+ * AccessibilityConstraint :
+   + isAccessible( range )
+   + isMarkedAccessible( range ) 
+   + isMarkedBlocked( range )
+   + isUnconstrained( range ) 
+
+170129 Martin Mann :
+ * PredictorMfe2dHeuristic* :
+   * fillHybrid*() : 
+     + interaction length check before energy evaluation
+     
+170128 Martin Mann :
+ * Makefile :
+   + info for testing directive
+ * AccessibilityDisabled :
+   * constructor :
+     - defaults removed
+ * AccessibilityVrna :
+   * constructor :
+     * argument order changed
+ + AccessibilityFromStream : populates ED values from stream
+   + InStreamType::Pu_RNAplfold_Text
+   + parsePu_RNAplfold_Text() : parse RNAplfold unpaired probability text output
+ * CommandLineParsing :
+   + q/tAccFile : file/stream to read accessibilities from
+   + q/tAcc : 
+     + 'P' : read unpaired probability from file : RNAplfold text output
+   + stream name checks now case insensitive
+
 170127 Martin Mann :
  * SeedConstraint : 
    + maxED + getter : maximal ED value per sequence for a seed region

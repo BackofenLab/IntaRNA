@@ -65,12 +65,30 @@ public:
 	isMarkedBlocked( const size_t i ) const;
 
 	/**
+	 * Checks whether or not a range is marked as blocked or not
+	 * @param from the start of the range of interest
+	 * @param to the end of the range of interest
+	 * @return true if position i is marked blocked
+	 */
+	bool
+	isMarkedBlocked( const size_t from, const size_t to ) const;
+
+	/**
 	 * Checks whether or not a sequence position is marked as accessible or not
 	 * @param i the position of interest
 	 * @return true if position i is marked accessible
 	 */
 	bool
 	isMarkedAccessible( const size_t i ) const;
+
+	/**
+	 * Checks whether or not a range is marked as accessible or not
+	 * @param from the start of the range of interest
+	 * @param to the end of the range of interest
+	 * @return true if position i is marked accessible
+	 */
+	bool
+	isMarkedAccessible( const size_t from, const size_t to ) const;
 
 	/**
 	 * Checks whether or not a sequence position is not constrained
@@ -81,12 +99,30 @@ public:
 	isUnconstrained( const size_t i ) const;
 
 	/**
+	 * Checks whether or not a sequence range is not constrained
+	 * @param from the start of the range of interest
+	 * @param to the end of the range of interest
+	 * @return true if position i is not constrained
+	 */
+	bool
+	isUnconstrained( const size_t from, const size_t to ) const;
+
+	/**
 	 * Checks whether or not a position is available for interaction
 	 * @param i the position of interest
 	 * @return true if the position @p i is available interaction; false otherwise
 	 */
 	bool
 	isAccessible( const size_t i ) const;
+
+	/**
+	 * Checks whether or not a range is available for interaction
+	 * @param from the start of the range of interest
+	 * @param to the end of the range of interest
+	 * @return true if the position @p i is available interaction; false otherwise
+	 */
+	bool
+	isAccessible( const size_t from, const size_t to ) const;
 
 	/**
 	 * Checks whether or not any accessibility constraints (base pairs, blocked,
@@ -230,9 +266,29 @@ isMarkedBlocked(const size_t i) const
 inline
 bool
 AccessibilityConstraint::
+isMarkedBlocked(const size_t from, const size_t to) const
+{
+	return blocked.covers(from,to);
+}
+
+////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+AccessibilityConstraint::
 isMarkedAccessible(const size_t i) const
 {
 	return accessible.covers(i);
+}
+
+////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+AccessibilityConstraint::
+isMarkedAccessible(const size_t from, const size_t to) const
+{
+	return accessible.covers(from,to);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -252,11 +308,35 @@ isUnconstrained( const size_t i ) const
 inline
 bool
 AccessibilityConstraint::
+isUnconstrained( const size_t from, const size_t to ) const
+{
+	return isEmpty()
+	// TODO handle base pairing constraints etc..
+			|| !(isMarkedAccessible(from,to) || isMarkedBlocked(from,to));
+}
+
+////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+AccessibilityConstraint::
 isAccessible( const size_t i ) const
 {
 	// TODO handle base pairing constraints etc.
 	return isEmpty()
 			|| !isMarkedBlocked(i);
+}
+
+////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+AccessibilityConstraint::
+isAccessible( const size_t from, const size_t to ) const
+{
+	// TODO handle base pairing constraints etc.
+	return isEmpty()
+			|| !isMarkedBlocked( from, to );
 }
 
 ////////////////////////////////////////////////////////////////////////

@@ -33,21 +33,21 @@ public:
 	/**
 	 * Construction
 	 * @param sequence the sequence the accessibility data belongs to
-	 * @param vrnaHandler the VRNA parameter handler to be used
-	 * @param maxWindow the maximal window size of accessible regions to be
+	 * @param maxLength the maximal window size of accessible regions to be
 	 *           considered. 0 defaults to the sequence's length.
-	 * @param plFoldW the sliding window size to be used for plFold computations
-	 * @param plFoldL the maximal base pair span to be used for plFold computations
 	 * @param accConstraint if not NULL, accessibility constraint that enforces some regions
 	 *        to be unstructured both in sequence and interaction
+	 * @param vrnaHandler the VRNA parameter handler to be used
+	 * @param plFoldW the sliding window size to be used for plFold computations
+	 * @param plFoldL the maximal base pair span to be used for plFold computations
 	 * @param computeES whether or not ES values are to be computed
 	 */
 	AccessibilityVrna( const RnaSequence& sequence
+			, const size_t maxLength
+			, const AccessibilityConstraint * const accConstraint
 			, const VrnaHandler & vrnaHandler
-			, const size_t maxWindow = 0
 			, const size_t plFoldW = 0
 			, const size_t plFoldL = 0
-			, const AccessibilityConstraint * const accConstraint = NULL
 			, const bool computeES = false
 			);
 
@@ -200,6 +200,11 @@ getED( const size_t from, const size_t to ) const
 	checkIndices(from,to);
 
 	if ((to-from+1) <= getMaxLength()) {
+		// check for constrained positions within region
+		if (!getAccConstraint().isAccessible(from,to)) {
+			// position covers a blocked position --> omit accessibility
+			return ED_UPPER_BOUND;
+		}
 		// return according ED value from the precomputed matrix
 		return edValues (from,to);
 	} else {

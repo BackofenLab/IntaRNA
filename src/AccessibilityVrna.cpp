@@ -38,11 +38,11 @@ extern "C" {
 
 AccessibilityVrna::AccessibilityVrna(
 			const RnaSequence& seq
-			, const VrnaHandler & vrnaHandler
 			, const size_t maxLength
+			, const AccessibilityConstraint * const accConstraint
+			, const VrnaHandler & vrnaHandler
 			, const size_t plFoldW
 			, const size_t plFoldL
-			, const AccessibilityConstraint * const accConstraint
 			, const bool computeES_
 		)
  :

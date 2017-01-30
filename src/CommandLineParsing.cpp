@@ -16,6 +16,7 @@
 #include "AccessibilityConstraint.h"
 
 #include "AccessibilityDisabled.h"
+#include "AccessibilityFromStream.h"
 #include "AccessibilityVrna.h"
 
 #include "InteractionEnergyBasePair.h"
@@ -49,6 +50,7 @@ const std::string CommandLineParsing::outCsvCols_default = "id1,start1,end1,id2,
 
 CommandLineParsing::CommandLineParsing()
 	:
+	stdinUsed(false),
 	opts_query("Query"),
 	opts_target("Target"),
 	opts_seed("Seed"),
@@ -61,10 +63,11 @@ CommandLineParsing::CommandLineParsing()
 
 	queryArg(""),
 	query(),
-	qAcc("NF",'F'),
+	qAcc("NFP",'F'),
 	qAccW( 0, 99999, 150),
 	qAccL( 0, 99999, 100),
 	qAccConstr(""),
+	qAccFile(""),
 	qIntLenMax( 0, 99999, 0),
 	qIntLoopMax( 0, 30, 16),
 	qRegionString(""),
@@ -76,6 +79,7 @@ CommandLineParsing::CommandLineParsing()
 	tAccW( 0, 99999, 150),
 	tAccL( 0, 99999, 100),
 	tAccConstr(""),
+	tAccFile(""),
 	tIntLenMax( 0, 99999, 0),
 	tIntLoopMax( 0, 30, 16),
 	tRegionString(""),
@@ -126,7 +130,9 @@ CommandLineParsing::CommandLineParsing()
 			, value<char>(&(qAcc.val))
 				->default_value(qAcc.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_qAcc,this,_1))
-			, std::string("accessibility computation : 'N'o accessibility contributions, or 'F'ull accessibility computation").c_str())
+			, std::string("accessibility computation : 'N'o accessibility contributions, "
+					"'F'ull accessibility computation, "
+					"'P' RNAplfold unpaired probability output from --qAccFile").c_str())
 		("qAccW"
 			, value<int>(&(qAccW.val))
 				->default_value(qAccW.def)
@@ -141,6 +147,10 @@ CommandLineParsing::CommandLineParsing()
 			, value<std::string>(&(qAccConstr))
 				->notifier(boost::bind(&CommandLineParsing::validate_qAccConstr,this,_1))
 			, std::string("accessibility computation : structure constraint for each sequence position: '.' no constraint, '"+toString(AccessibilityConstraint::dotBracket_accessible)+"' unpaired, '"+toString(AccessibilityConstraint::dotBracket_blocked)+"' blocked. Note, blocked positions are excluded from interaction prediction and considered unpaired!").c_str())
+		("qAccFile"
+			, value<std::string>(&(qAccFile))
+				->notifier(boost::bind(&CommandLineParsing::validate_qAccFile,this,_1))
+			, std::string("accessibility computation : if --qAcc is to be read from file, the file/stream to be parsed. Used 'STDIN' if to read from standard input stream.").c_str())
 		("qIntLenMax"
 			, value<int>(&(qIntLenMax.val))
 				->default_value(qIntLenMax.def)
@@ -167,7 +177,9 @@ CommandLineParsing::CommandLineParsing()
 			, value<char>(&(tAcc.val))
 				->default_value(tAcc.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_tAcc,this,_1))
-			, std::string("accessibility computation : 'N'o accessibility contributions, or 'F'ull accessibility computation").c_str())
+			, std::string("accessibility computation : 'N'o accessibility contributions, "
+					"'F'ull accessibility computation, "
+					"'P' RNAplfold unpaired probability output from --qAccFile").c_str())
 		("tAccW"
 			, value<int>(&(tAccW.val))
 				->default_value(tAccW.def)
@@ -182,6 +194,10 @@ CommandLineParsing::CommandLineParsing()
 			, value<std::string>(&(tAccConstr))
 				->notifier(boost::bind(&CommandLineParsing::validate_tAccConstr,this,_1))
 			, std::string("accessibility computation : structure constraint for each sequence position: '.' no constraint, '"+toString(AccessibilityConstraint::dotBracket_accessible)+"' unpaired, '"+toString(AccessibilityConstraint::dotBracket_blocked)+"' blocked. Note, blocked positions are excluded from interaction prediction and considered unpaired!").c_str())
+		("tAccFile"
+			, value<std::string>(&(tAccFile))
+				->notifier(boost::bind(&CommandLineParsing::validate_tAccFile,this,_1))
+			, std::string("accessibility computation : if --tAcc is to be read from file, the file/stream to be parsed. Used 'STDIN' if to read from standard input stream.").c_str())
 		("tIntLenMax"
 			, value<int>(&(tIntLenMax.val))
 				->default_value(tIntLenMax.def)
@@ -432,10 +448,10 @@ parse(int argc, char** argv)
 				// get output selection upper case
 				std::string outUpperCase = boost::to_upper_copy<std::string>(out,std::locale());
 				// check if standard stream
-				if (out == "STDOUT") {
+				if (boost::iequals(out,"STDOUT")) {
 					outStream = & std::cout;
 				} else
-				if (out == "STDERR") {
+				if (boost::iequals(out,"STDERR")) {
 					outStream = & std::cerr;
 				} else {
 					// open file stream
@@ -485,7 +501,7 @@ parse(int argc, char** argv)
 					}
 				} else {
 					// TODO report error
-					NOTIMPLEMENTED("check not implemented");
+					NOTIMPLEMENTED("--qAccConstr only supported for single sequence input");
 				}
 			} else {
 				// generate empty constraint
@@ -501,12 +517,46 @@ parse(int argc, char** argv)
 					}
 				} else {
 					// TODO report error
-					NOTIMPLEMENTED("check not implemented");
+					NOTIMPLEMENTED("--tAccConstr only supported for single sequence input");
 				}
 			} else {
 				// generate empty constraint
 				tAccConstr = std::string(target.at(0).size(),'.');
 			}
+
+			// check sanity of accessibility setup
+			switch(qAcc.val) {
+			case 'F' : {
+				if (!qAccFile.empty()) LOG(INFO) <<"qAcc = "<<qAcc.val<<" : ignoring --qAccFile";
+				break;
+			}
+			case 'P' : {
+				if (qAccFile.empty()) LOG(INFO) <<"qAcc = "<<qAcc.val<<" but no --qAccFile given";
+				if (!qAccConstr.empty()) LOG(INFO) <<"qAcc = "<<qAcc.val<<" : accessibility constraints (--qAccConstr) possibly not used in computation of loaded ED values";
+			}	// drop to next handling
+			case 'N' : {
+				if (qAccL.val != qAccL.def) LOG(INFO) <<"qAcc = "<<qAcc.val<<" : ignoring --qAccL";
+				if (qAccW.val != qAccW.def) LOG(INFO) <<"qAcc = "<<qAcc.val<<" : ignoring --qAccW";
+				if (qAcc.val != 'N' && !qAccFile.empty()) LOG(INFO) <<"qAcc = "<<qAcc.val<<" : ignoring --qAccFile";
+				break;
+			}
+			} // switch
+			switch(tAcc.val) {
+			case 'F' : {
+				if (!tAccFile.empty()) LOG(INFO) <<"tAcc = "<<tAcc.val<<" : ignoring --tAccFile";
+				break;
+			}
+			case 'P' : {
+				if (tAccFile.empty()) LOG(INFO) <<"tAcc = "<<tAcc.val<<" but no --tAccFile given";
+				if (!tAccConstr.empty()) LOG(INFO) <<"tAcc = "<<tAcc.val<<" : accessibility constraints (--tAccConstr) possibly not used in computation of loaded ED values";
+			}	// drop to next handling
+			case 'N' : {
+				if (tAccL.val != tAccL.def) LOG(INFO) <<"tAcc = "<<tAcc.val<<" : ignoring --tAccL";
+				if (tAccW.val != tAccW.def) LOG(INFO) <<"tAcc = "<<tAcc.val<<" : ignoring --tAccW";
+				if (tAcc.val=='N' && !tAccFile.empty()) LOG(INFO) <<"tAcc = "<<tAcc.val<<" : ignoring --tAccFile";
+				break;
+			}
+			} // switch
 
 			// check energy setup
 			if (vm.count("energyVRNA") > 0 && energy.val != 'F') {
@@ -605,8 +655,9 @@ void
 CommandLineParsing::
 validate_sequenceArgument(const std::string & name, const std::string & value)
 {
-	if (value.compare("STDIN") != 0) {
-
+	if ( boost::iequals(value,"STDIN") ) {
+		setStdinUsed();
+	} else {
 		// check if it is a sequence
 		if ( RnaSequence::isValidSequenceIUPAC(value) ) {
 
@@ -829,19 +880,63 @@ getQueryAccessibility( const size_t sequenceNumber ) const
 	}
 	const RnaSequence& seq = getQuerySequences().at(sequenceNumber);
 
+	// create temporary constraint object (will be copied)
+	AccessibilityConstraint accConstraint(qAccConstr);
+	bool computeES = false;
+#if IN_DEBUG_MODE
+	// TODO replace based on predictor selection
+	computeES = qAccW.val==0;
+#endif
 	// construct selected accessibility object
 	switch(qAcc.val) {
-	case 'N' : return new AccessibilityDisabled( seq, qIntLenMax.val );
-	case 'F' : {
-		// create temporary constraint object (will be copied)
-		AccessibilityConstraint accConstraint(qAccConstr);
-		bool computeES = false;
-#if IN_DEBUG_MODE
-		// TODO replace based on predictor selection
-		computeES = qAccW.val==0;
-#endif
-		return new AccessibilityVrna( seq, vrnaHandler, qIntLenMax.val, qAccW.val, qAccL.val, &accConstraint, computeES);
+
+	case 'N' : // no accessibility
+		return new AccessibilityDisabled( seq
+										, qIntLenMax.val
+										, &accConstraint );
+
+	case 'P' : { // VRNA RNAplfold unpaired probability file output
+		std::istream * accStream = NULL;
+		std::ifstream * accFileStream = NULL;
+		if ( boost::iequals(qAccFile,"STDIN") ) {
+			accStream = &(std::cin);
+		} else {
+			// file support
+			accFileStream = new std::ifstream(qAccFile);
+			try {
+				if(!accFileStream->good()){
+					accFileStream->close();
+					CLEANUP(accFileStream);
+					throw std::runtime_error("accessibility parsing of --qAccFile : could not open file '"+qAccFile+"'");
+				}
+			} catch (std::exception & ex) {
+				accFileStream->close();
+				CLEANUP(accFileStream);
+				throw std::runtime_error("accessibility parsing of --qAccFile : error while opening '"+qAccFile+"' : "+ex.what());
+			}
+		}
+		Accessibility * acc = new AccessibilityFromStream( seq
+										, qIntLenMax.val
+										, &accConstraint
+										, *accStream
+										, AccessibilityFromStream::Pu_RNAplfold_Text
+										, vrnaHandler.getRT() );
+		// cleanup
+		if ( accFileStream != NULL ) {
+			accFileStream->close();
+			CLEANUP( accFileStream );
+		}
+		return acc;
 	}
+
+	case 'F' : // compute VRNA-based accessibilities
+		return new AccessibilityVrna( seq
+									, qIntLenMax.val
+									, &accConstraint
+									, vrnaHandler
+									, qAccW.val
+									, qAccL.val
+									, computeES);
 	default :
 		NOTIMPLEMENTED("CommandLineParsing::getQueryAccessibility : qAcc = '"+toString(qAcc.val)+"' is not supported");
 	}
@@ -859,19 +954,64 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 	if (sequenceNumber >= getTargetSequences().size()) {
 		throw std::runtime_error("CommandLineParsing::getTargetAccessibility : sequence number "+toString(sequenceNumber)+" is out of range (<"+toString(getTargetSequences().size())+")");
 	}
+	// create temporary constraint object (will be copied)
+	AccessibilityConstraint accConstraint(tAccConstr);
+	bool computeES = false;
+#if IN_DEBUG_MODE
+	// TODO replace based on predictor selection
+	computeES = tAccW.val==0;
+#endif
 	const RnaSequence& seq = getTargetSequences().at(sequenceNumber);
 	switch(tAcc.val) {
-	case 'N' : return new AccessibilityDisabled( seq, tIntLenMax.val );
-	case 'F' : {
-			// create temporary constraint object (will be copied)
-			AccessibilityConstraint accConstraint(tAccConstr);
-			bool computeES = false;
-#if IN_DEBUG_MODE
-			// TODO replace based on predictor selection
-			computeES = tAccW.val==0;
-#endif
-			return new AccessibilityVrna( seq, vrnaHandler, tIntLenMax.val, tAccW.val, tAccL.val, &accConstraint, computeES);
+
+	case 'N' : // no accessibility
+		return new AccessibilityDisabled( seq
+										, tIntLenMax.val
+										, &accConstraint );
+
+	case 'P' : { // VRNA RNAplfold unpaired probability file output
+		std::istream * accStream = NULL;
+		std::ifstream * accFileStream = NULL;
+		// select stream to read from
+		if ( boost::iequals(tAccFile,"STDIN") ) {
+			accStream = &(std::cin);
+		} else {
+			// file support
+			accFileStream = new std::ifstream(tAccFile);
+			try {
+				if(!accFileStream->good()){
+					accFileStream->close();
+					CLEANUP(accFileStream);
+					throw std::runtime_error("accessibility parsing of --tAccFile : could not open file '"+tAccFile+"'");
+				}
+			} catch (std::exception & ex) {
+				accFileStream->close();
+				CLEANUP(accFileStream);
+				throw std::runtime_error("accessibility parsing of --tAccFile : error while opening '"+tAccFile+"' : "+ex.what());
+			}
 		}
+		// read data
+		Accessibility * acc = new AccessibilityFromStream( seq
+										, tIntLenMax.val
+										, &accConstraint
+										, *accStream
+										, AccessibilityFromStream::Pu_RNAplfold_Text
+										, vrnaHandler.getRT() );
+		// cleanup
+		if ( accFileStream != NULL ) {
+			accFileStream->close();
+			CLEANUP( accFileStream );
+		}
+		return acc;
+	}
+	case 'F' : // compute VRNA-based accessibilities
+		return new AccessibilityVrna( seq
+									, tIntLenMax.val
+									, &accConstraint
+									, vrnaHandler
+									, tAccW.val
+									, tAccL.val
+									, computeES);
 	default :
 		NOTIMPLEMENTED("CommandLineParsing::getTargetAccessibility : tAcc = '"+toString(tAcc.val)+"' is not supported");
 	}
@@ -922,7 +1062,7 @@ parseSequences(const std::string & paramName,
 	sequences.clear();
 
 	// read FASTA from STDIN stream
-	if (paramArg.compare("STDIN") == 0) {
+	if (boost::iequals(paramArg,"STDIN")) {
 		parseSequencesFasta(paramName, std::cin, sequences);
 	} else
 	if (RnaSequence::isValidSequenceIUPAC(paramArg)) {

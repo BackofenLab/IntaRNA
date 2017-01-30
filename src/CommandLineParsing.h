@@ -267,6 +267,9 @@ protected:
 
 	};
 
+	//! whether or not STDIN was already requested by one of the following
+	//! arguments
+	bool stdinUsed;
 
 	//! query specific options
 	boost::program_options::options_description opts_query;
@@ -299,6 +302,8 @@ protected:
 	NumberParameter<int> qAccL;
 	//! constraint for accessibility computation for query sequences
 	std::string qAccConstr;
+	//! the file/stream to read the query's accessibility data from
+	std::string qAccFile;
 	//! window length to be considered accessible/interacting within query
 	NumberParameter<int> qIntLenMax;
 	//! maximal internal loop length to be considered accessible/interacting within query
@@ -320,6 +325,8 @@ protected:
 	NumberParameter<int> tAccL;
 	//! constraint for accessibility computation for target sequences
 	std::string tAccConstr;
+	//! the file/stream to read the query's accessibility data from
+	std::string tAccFile;
 	//! window length to be considered accessible/interacting within target
 	NumberParameter<int> tIntLenMax;
 	//! maximal internal loop length to be considered accessible/interacting within target
@@ -385,6 +392,13 @@ protected:
 
 protected:
 
+	/**
+	 * sets the stdinUsed member to true if so far false or raises an exception
+	 * if it is already true.
+	 * @return true if stdinUsed was false so far; false otherwise (error logged)
+	 */
+	bool setStdinUsed();
+
 	////////////  INDIVIDUAL TESTS  //////////////////
 
 	/**
@@ -416,6 +430,12 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_qAccConstr(const std::string & value);
+
+	/**
+	 * Validates the qAccFile argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_qAccFile(const std::string & value);
 
 	/**
 	 * Validates the query's maximal accessibility argument.
@@ -464,6 +484,12 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_tAccConstr(const std::string & value);
+
+	/**
+	 * Validates the tAccFile argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_tAccFile(const std::string & value);
 
 	/**
 	 * Validates the target's maximal accessibility argument.
@@ -759,8 +785,22 @@ protected:
 
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////
 
+
+inline
+bool
+CommandLineParsing::
+setStdinUsed() {
+	if (stdinUsed) {
+		LOG(ERROR) <<"STDIN named more than once as input source, which is not supported";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+		return false;
+	}
+	stdinUsed = true;
+	return true;
+}
+
+////////////////////////////////////////////////////////////////////////////
 
 inline
 void
@@ -850,6 +890,26 @@ void CommandLineParsing::validate_qAccConstr(const std::string & value)
 ////////////////////////////////////////////////////////////////////////////
 
 inline
+void CommandLineParsing::validate_qAccFile(const std::string & value)
+{
+	// if not empty
+	if (!value.empty()) {
+		// if not STDIN
+		if ( boost::iequals(value,"STDIN") ) {
+			setStdinUsed();
+		} else {
+			// should be file
+			if ( ! validateFile( value ) ) {
+				LOG(ERROR) <<"query accessibility file '"<<value<<"' could not be found";
+				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+			}
+		}
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
 void CommandLineParsing::validate_qRegion(const std::string & value) {
 	// check and store region information
 	validateRegion( "qRegion", value );
@@ -930,6 +990,26 @@ void CommandLineParsing::validate_tAccConstr(const std::string & value)
 	if (tAccW.val > 0 || tAccL.val > 0) {
 		LOG(ERROR) <<"query accessibility constraint not possible for sliding window computation (tAccL/W > 0)";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_tAccFile(const std::string & value)
+{
+	// if not empty
+	if (!value.empty()) {
+		// if not STDIN
+		if ( boost::iequals(value,"STDIN") ) {
+			setStdinUsed();
+		} else {
+			// should be file
+			if ( ! validateFile( value ) ) {
+				LOG(ERROR) <<"target accessibility file '"<<value<<"' could not be found";
+				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+			}
+		}
 	}
 }
 

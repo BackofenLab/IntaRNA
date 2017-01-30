@@ -28,8 +28,8 @@ public:
 	 * @param accConstr optional accessibility constraint
 	 */
 	AccessibilityDisabled( const RnaSequence& sequence
-							, const size_t maxLength = 0
-							, const AccessibilityConstraint * const accConstr = NULL
+							, const size_t maxLength
+							, const AccessibilityConstraint * const accConstr
 						);
 
 	/**
@@ -106,11 +106,9 @@ getED( const size_t from, const size_t to ) const
 
 	if ((to-from+1) <= getMaxLength()) {
 		// check for constrained positions within region
-		for (size_t i=from; i<=to; ++i) {
-			if (!getAccConstraint().isAccessible(i)) {
-				// position covers a blocked position --> omit accessibility
-				return ED_UPPER_BOUND;
-			}
+		if (!getAccConstraint().isAccessible(from,to)) {
+			// position covers a blocked position --> omit accessibility
+			return ED_UPPER_BOUND;
 		}
 		// else: no accessibility computation done --> always zero
 		return (E_type)0;
