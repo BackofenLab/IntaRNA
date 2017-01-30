@@ -32,11 +32,17 @@ If you use IntaRNA, please cite our
 doi: 10.1093/bioinformatics/btn544
 ```
 
+# Documentation
+
+## Overview
+
+- [Features of prediction modes and emulated tools](#predModes)
+- [Read/write accessibility from/to file or stream](#accFromFile)
 
 
 
-
-## Features of prediction modes
+<a name="predModes" />
+## Features of prediction modes and emulated tools
 
 For the prediction of *minimum free energy interactions*, the following modes
 and according features are supported and can be set via the `--mode` parameter.
@@ -53,12 +59,36 @@ of equal length *n*.
 | Overlapping suboptimal interactions | x | x | x |
 | Non-overlapping suboptimal interactions | x | - | x |
 
+Given these features, we can emulate and extend a couple of RNA-RNA interaction
+tools using IntaRNA.
+
+**TargetScan** and **RNAhybrid** are approaches that predict the interaction hybrid with 
+minimal interaction energy without consideratio whether or not the interacting 
+subsequences are probably involved involved in intramolecular base pairings. Furthermore,
+no seed constraint is taken into account.
+This prediction result can be emulated (depending on the used prediction mode) 
+by running IntaRNA when disabling both the seed constraint
+as well as the accessibility integration using
+```bash
+# prediction results similar to TargetScan/RNAhybrid
+IntaRNA [..] --noSeed --qAcc=N --tAcc=N
+```
+
+**RNAup** was one of the first RNA-RNA interaction prediction approaches that took the 
+accessibility of the interacting subsequences into account while not considering the seed feature. 
+IntaRNA's exact prediction mode is eventually an alternative implementation when disabling
+seed constraint incorporation. Furthermore, the unpaired probabilities used by RNAup to score
+the accessibility of subregions are covering the respective overall structural ensemble for each
+interacting RNA, such that we have to disable accessibility computation based on local folding (RNAplfold)
+using
+```bash
+# prediction results similar to RNAup
+IntaRNA --mode=1 --noSeed --qAccW=0 --qAccL=0 --tAccW=0 --tAccL=0
+```
 
 
-
-
-
-## Read/write accessibilities/probabilities from file
+<a name="accFromFile"/>
+## Read/write accessibilities/probabilities from/to file or stream
 
 It is possible to read precomputed accessibility values from file or stream to
 avoid their runtime demanding computation. To this end, we support the following
@@ -93,7 +123,7 @@ example for a sequence of length 5 with a maximal window length of 3.
 ### Examples
 If you have precomputed data, e.g. the file `plfold_lunp` with unpaired probabilities
 computed by `RNAplfold`, you can run
-```
+```bash
 # fill accessibilities from RNAplfold unpaired probabilities
 IntaRNA [..] --qAcc=P --qAccFile=plfold_lunp
 
@@ -102,11 +132,11 @@ cat plfold_lunp | IntaRNA [..] --qAcc=P --qAccFile=STDIN
 ```
 Another option is to store the accessibility data computed by IntaRNA for 
 successive calls using 
-```
+```bash
 # storing and reusing (target) accessibility data for successive IntaRNA calls
-IntaRNA [..] --outAccFilet=intarna.target.ed
-IntaRNA [..] --tAcc=E --tAccFile=intarna.target.ed
+IntaRNA [..] --outPuFilet=intarna.target.pu
+IntaRNA [..] --tAcc=P --tAccFile=intarna.target.pu
 
 # piping (target) accessibilities between IntaRNA calls
-IntaRNA [..] --outAccFilet=STDOUT | IntaRNA [..] --tAcc=E --tAccFile=STDIN
+IntaRNA [..] --outPuFilet=STDOUT | IntaRNA [..] --tAcc=P --tAccFile=STDIN
 ```
