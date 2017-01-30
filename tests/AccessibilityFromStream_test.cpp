@@ -69,6 +69,62 @@ TEST_CASE( "AccessibilityFromStream", "[AccessibilityFromStream]" ) {
 		REQUIRE( std::exp( - acc.getED(20, 29) ) < 0.0007 );
 	}
 
+	SECTION("Pu_RNAplfold output reparsed") {
+
+		// prepare stream to read from
+		std::istringstream  accStream(accString);
+
+		// trigger parsing
+		AccessibilityFromStream acc( rna, 10, NULL, accStream, AccessibilityFromStream::Pu_RNAplfold_Text, 1.0 );
+
+		// check elements
+		REQUIRE( std::exp( - acc.getED(29, 29) ) > 0.998 );
+		REQUIRE( std::exp( - acc.getED(29, 29) ) < 0.999 );
+		REQUIRE( std::exp( - acc.getED(20, 29) ) > 0.0006 );
+		REQUIRE( std::exp( - acc.getED(20, 29) ) < 0.0007 );
+
+		std::stringstream accStream2;
+		acc.writeRNAplfold_Pu_text( accStream2, 1.0 );
+
+		// trigger parsing
+		AccessibilityFromStream acc2( rna, 10, NULL, accStream2, AccessibilityFromStream::Pu_RNAplfold_Text, 1.0 );
+
+		// check elements
+		REQUIRE( std::exp( - acc2.getED(29, 29) ) > 0.998 );
+		REQUIRE( std::exp( - acc2.getED(29, 29) ) < 0.999 );
+		REQUIRE( std::exp( - acc2.getED(20, 29) ) > 0.0006 );
+		REQUIRE( std::exp( - acc2.getED(20, 29) ) < 0.0007 );
+
+	}
+
+	SECTION("ED_RNAplfold output reparsed") {
+
+		// prepare stream to read from
+		std::istringstream  accStream(accString);
+
+		// trigger parsing
+		AccessibilityFromStream acc( rna, 10, NULL, accStream, AccessibilityFromStream::Pu_RNAplfold_Text, 1.0 );
+
+		// check elements
+		REQUIRE( std::exp( - acc.getED(29, 29) ) > 0.998 );
+		REQUIRE( std::exp( - acc.getED(29, 29) ) < 0.999 );
+		REQUIRE( std::exp( - acc.getED(20, 29) ) > 0.0006 );
+		REQUIRE( std::exp( - acc.getED(20, 29) ) < 0.0007 );
+
+		std::stringstream accStream2;
+		acc.writeRNAplfold_ED_text( accStream2 );
+
+		// trigger parsing
+		AccessibilityFromStream acc2( rna, 10, NULL, accStream2, AccessibilityFromStream::ED_RNAplfold_Text, 1.0 );
+
+		// check elements
+		REQUIRE( std::exp( - acc2.getED(29, 29) ) > 0.998 );
+		REQUIRE( std::exp( - acc2.getED(29, 29) ) < 0.999 );
+		REQUIRE( std::exp( - acc2.getED(20, 29) ) > 0.0006 );
+		REQUIRE( std::exp( - acc2.getED(20, 29) ) < 0.0007 );
+
+	}
+
 	SECTION("maxLength too high") {
 		// prepare stream to read from
 		std::istringstream  accStream(accString);

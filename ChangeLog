@@ -4,9 +4,38 @@
    + stdinUsed : flag to ensure STDIN is used for input only once
    + setStdinUsed() : sets stdinUsed = true if not already or throws log 
      otherwise
+   * q/tAcc : 
+     + 'P' : unpaired probabilities in RNAplfold style from --q/tAccFile
+     + 'E' : ED values in RNAplfold-Pu-like style from --q/tAccFile
    + validate_q/tAccFile() 
    * get*Accessibility() :
      + AccessibilityFromStream support
+     * bugfix : maxLength setup has to be = min(maxLength,accW)
+   + outAccFile* + validate : output ED values to file/stream
+   + outPuFile* + validate : output Pu values to file/stream
+   + validate_outputTarget() : generic text function for stream names
+   * validate_out() : calls validate_outputTarget()
+   + write*Accessibility() : write the given accessibility to file/stream if
+     requested by the user
+   + writeAccessibility() : writes accessibility data to file/stream in the 
+     requested format
+   * q/tIntLenMax argument info :
+     + information that --q/tAccW might overwrite
+ * Accessibility :
+   * getMaxLength() : return value non-const size_t
+   + writeRNAplfold_ED_text() : Pu output in RNAplfold style
+   + writeRNAplfold_Pu_text() : ED output in RNAplfold style
+   + writeRNAplfold_text() : generic RNAplfold Pu-styled text output
+ * AccessibilityFromStream :
+   + InStreamType::ED_RNAplfold_Text : ED input in RNAplfold style
+   + parseED_RNAplfold_text() : read ED input in RNAplfold style
+   * parsePu_RNAplfold_text() : using parseRNAplfold_text()
+   + parseRNAplfold_text() : generic RNAplfold Pu-styled text input
+     + reduces availMaxLength if not enough data in input and outputs a user
+       information
+   + availMaxLength : stores the maximal window length parsed from the input,
+     init = Accessibility::getMaxLength()
+   + getMaxLength() : provides availMaxLength
  * AccessibilityVrna :
    * getED() :
      + accessibility constraint check
@@ -15,6 +44,8 @@
    + isMarkedAccessible( range ) 
    + isMarkedBlocked( range )
    + isUnconstrained( range ) 
+ * README.md :
+   + docu for read/write of ED and Pu values for accessibility initialization
 
 170129 Martin Mann :
  * PredictorMfe2dHeuristic* :

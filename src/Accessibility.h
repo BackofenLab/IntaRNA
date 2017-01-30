@@ -100,7 +100,7 @@ public:
 	 * @return the maximal length of accessible regions considered
 	 */
 	virtual
-	const size_t
+	size_t
 	getMaxLength() const;
 
 	/**
@@ -114,6 +114,24 @@ public:
 	const AccessibilityConstraint&
 	getAccConstraint() const;
 
+	/**
+	 * Writes the ED values as unpaired probabilities in RNAplfold style to
+	 * stream.
+	 *
+	 * @param out the output stream to write to
+	 * @param RT the scaled temperature value to be used for conversion of
+	 *        ED to Pu :  Pu = exp( -ED/RT )
+	 */
+	void
+	writeRNAplfold_Pu_text( std::ostream& out, const E_type RT ) const;
+
+	/**
+	 * Writes the ED values in RNAplfold style to stream.
+	 *
+	 * @param out the output stream to write to
+	 */
+	void
+	writeRNAplfold_ED_text( std::ostream& out ) const;
 
 	/**
 	 * Prints the accessibility values to stream as upper triangular matrix
@@ -146,6 +164,18 @@ protected:
 	virtual
 	void
 	checkIndices( const size_t from, const size_t to ) const;
+
+	/**
+	 * Writes the ED values as unpaired probabilities in RNAplfold style to
+	 * stream.
+	 *
+	 * @param out the output stream to write to
+	 * @param RT the scaled temperature value to be used for conversion of
+	 *        ED to Pu :  Pu = exp( -ED/RT )
+	 * @param writeProbs (true) write unpaired probabilities; (false) write ED
+	 */
+	void
+	writeRNAplfold_text( std::ostream& out, const E_type RT, const bool writeProbs ) const;
 
 };
 
@@ -203,7 +233,7 @@ getSequence() const
 /////////////////////////////////////////////////////////////////////////////
 
 inline
-const size_t
+size_t
 Accessibility::
 getMaxLength() const
 {
@@ -218,6 +248,26 @@ Accessibility::
 getAccConstraint() const
 {
 	return accConstraint;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+inline
+void
+Accessibility::
+writeRNAplfold_ED_text( std::ostream& out ) const
+{
+	writeRNAplfold_text( out, 1.0, false );
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+inline
+void
+Accessibility::
+writeRNAplfold_Pu_text( std::ostream& out, const E_type RT ) const
+{
+	writeRNAplfold_text( out, RT, true );
 }
 
 /////////////////////////////////////////////////////////////////////////////

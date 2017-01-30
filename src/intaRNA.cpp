@@ -138,6 +138,10 @@ int main(int argc, char **argv) {
 				CLEANUP(output);
 				CLEANUP(energy);
 			}
+
+			// write accessibility to file if needed
+			parameters.writeTargetAccessibility( *targetAcc );
+
 			// garbage collection
 			CLEANUP(targetAcc);
 
@@ -146,6 +150,8 @@ int main(int argc, char **argv) {
 		for (size_t queryNumber=0; queryNumber < queryAcc.size(); queryNumber++) {
 			// this is a hack to cleanup the original accessibility object
 			Accessibility* queryAccOrig = &(const_cast<Accessibility&>(queryAcc[queryNumber]->getAccessibilityOrigin()) );
+			// write accessibility to file if needed
+			parameters.writeQueryAccessibility( *queryAccOrig );
 			CLEANUP( queryAccOrig );
 			// cleanup (now broken) reverse accessibility object
 			CLEANUP(queryAcc[queryNumber]);

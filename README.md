@@ -32,16 +32,81 @@ If you use IntaRNA, please cite our
 doi: 10.1093/bioinformatics/btn544
 ```
 
-## Features of prediction modes (version >= 2.*)
 
-| Features | Heuristic | Exact-SE | Exact |
+
+
+
+## Features of prediction modes
+
+For the prediction of *minimum free energy interactions*, the following modes
+and according features are supported and can be set via the `--mode` parameter.
+The tiem and space complexities are given for the prediction of two sequences
+of equal length *n*.
+
+| Features | Heuristic `--mode=0` | Exact-SE `--mode=1` | Exact `--mode=2` |
 | -------- | :-------: | :------: | :---: |
-| Time complexity | O(n^2) | O(n^4) | O(n^4) |
-| Space complexity | O(n^2) | O(n^2) | O(n^4) |
-| Seed constraint | x | x | `TODO` |
+| Time complexity | O(*n*^2) | O(*n*^4) | O(*n*^4) |
+| Space complexity | O(*n*^2) | O(*n*^2) | O(*n*^4) |
+| Seed constraint | x | x | x |
 | No seed constraint | x | x | x |
 | Minimum free energy interaction | not guaranteed | x | x |
 | Overlapping suboptimal interactions | x | x | x |
 | Non-overlapping suboptimal interactions | x | - | x |
 
 
+
+
+
+
+## Read/write accessibilities/probabilities from file
+
+It is possible to read precomputed accessibility values from file or stream to
+avoid their runtime demanding computation. To this end, we support the following
+formats
+
+| Input format | produced by |
+| ---- | --- |
+| RNAplfold unpaired probabilities | `RNAplfold -u`, `IntaRNA --outPuFile*` |
+| RNAplfold-styled ED values | `IntaRNA --outAccFile*` |
+
+The `RNAplfold` format is a table encoding of a banded upper triangular matrix 
+with band width l. First row contains a header comment on the data starting with
+`#`. Second line encodes the column headers, i.e. the window width per column.
+Every successive line starts with the index (starting from 1) of the window end
+followed by a tabulator separated list for each windows value in increasing
+window length order. That is, column 2 holds values for window length 1, column 
+3 for length 2, ... . The following provides a short output/input 
+example for a sequence of length 5 with a maximal window length of 3.
+
+```
+#unpaired probabilities
+ #i$	l=1	2	3	
+1	0.9949492	NA	NA	
+2	0.9949079	0.9941056	NA	
+3	0.9554214	0.9518663	0.9511048		
+4	0.9165814	0.9122866	0.9090283		
+5	0.998999	0.915609	0.9117766		
+6	0.8549929	0.8541667	0.8448852		
+
+```
+
+### Examples
+If you have precomputed data, e.g. the file `plfold_lunp` with unpaired probabilities
+computed by `RNAplfold`, you can run
+```
+# fill accessibilities from RNAplfold unpaired probabilities
+IntaRNA [..] --qAcc=P --qAccFile=plfold_lunp
+
+# fill accessibilities from RNAplfold unpaired probabilities via pipe
+cat plfold_lunp | IntaRNA [..] --qAcc=P --qAccFile=STDIN
+```
+Another option is to store the accessibility data computed by IntaRNA for 
+successive calls using 
+```
+# storing and reusing (target) accessibility data for successive IntaRNA calls
+IntaRNA [..] --outAccFilet=intarna.target.ed
+IntaRNA [..] --tAcc=E --tAccFile=intarna.target.ed
+
+# piping (target) accessibilities between IntaRNA calls
+IntaRNA [..] --outAccFilet=STDOUT | IntaRNA [..] --tAcc=E --tAccFile=STDIN
+```

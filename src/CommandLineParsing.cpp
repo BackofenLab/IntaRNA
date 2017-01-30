@@ -31,7 +31,6 @@
 #include "PredictorMfe2dSeed.h"
 #include "PredictorMfe4dSeed.h"
 
-// TODO 4d seed
 // TODO maxprob seed
 
 #include "OutputHandlerText.h"
@@ -63,7 +62,7 @@ CommandLineParsing::CommandLineParsing()
 
 	queryArg(""),
 	query(),
-	qAcc("NFP",'F'),
+	qAcc("NFPE",'F'),
 	qAccW( 0, 99999, 150),
 	qAccL( 0, 99999, 100),
 	qAccConstr(""),
@@ -75,7 +74,7 @@ CommandLineParsing::CommandLineParsing()
 
 	targetArg(""),
 	target(),
-	tAcc("NF",'F'),
+	tAcc("NFPE",'F'),
 	tAccW( 0, 99999, 150),
 	tAccL( 0, 99999, 100),
 	tAccConstr(""),
@@ -111,6 +110,10 @@ CommandLineParsing::CommandLineParsing()
 	outDeltaE( 0.0, 100.0, 100.0),
 	outMaxE( -999.0, 0.0, 0.0),
 	outCsvCols(outCsvCols_default),
+	outAccFileq(""),
+	outAccFilet(""),
+	outPuFileq(""),
+	outPuFilet(""),
 
 	vrnaHandler()
 
@@ -130,9 +133,11 @@ CommandLineParsing::CommandLineParsing()
 			, value<char>(&(qAcc.val))
 				->default_value(qAcc.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_qAcc,this,_1))
-			, std::string("accessibility computation : 'N'o accessibility contributions, "
-					"'F'ull accessibility computation, "
-					"'P' RNAplfold unpaired probability output from --qAccFile").c_str())
+			, std::string("accessibility computation : 'N'o accessibility contributions"
+					", 'F'ull accessibility computation"
+					", 'P' RNAplfold unpaired probability output from --qAccFile"
+					", 'E' ED values in RNAplfold Pu-like format from --qAccFile"
+					).c_str())
 		("qAccW"
 			, value<int>(&(qAccW.val))
 				->default_value(qAccW.def)
@@ -155,7 +160,12 @@ CommandLineParsing::CommandLineParsing()
 			, value<int>(&(qIntLenMax.val))
 				->default_value(qIntLenMax.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_qIntLenMax,this,_1))
-			, std::string("interaction site : maximal window size to be considered for interaction (and thus accessible) within the query (arg in range ["+toString(qIntLenMax.min)+","+toString(qIntLenMax.max)+"]; 0 defaults to the full sequence length)").c_str())
+			, std::string("interaction site : maximal window size to be considered"
+					" for interaction (and thus accessible) within the query"
+					" (arg in range ["+toString(qIntLenMax.min)+","+toString(qIntLenMax.max)+"];"
+					" 0 defaults to the full sequence length)"
+					" If --qAccW is provided, the smaller window size of both is used."
+					).c_str())
 		("qIntLoopMax"
 			, value<int>(&(qIntLoopMax.val))
 				->default_value(qIntLoopMax.def)
@@ -177,9 +187,11 @@ CommandLineParsing::CommandLineParsing()
 			, value<char>(&(tAcc.val))
 				->default_value(tAcc.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_tAcc,this,_1))
-			, std::string("accessibility computation : 'N'o accessibility contributions, "
-					"'F'ull accessibility computation, "
-					"'P' RNAplfold unpaired probability output from --qAccFile").c_str())
+			, std::string("accessibility computation : 'N'o accessibility contributions"
+					", 'F'ull accessibility computation"
+					", 'P' RNAplfold unpaired probability output from --qAccFile"
+					", 'E' ED values in RNAplfold Pu-like format from --qAccFile"
+					).c_str())
 		("tAccW"
 			, value<int>(&(tAccW.val))
 				->default_value(tAccW.def)
@@ -202,7 +214,12 @@ CommandLineParsing::CommandLineParsing()
 			, value<int>(&(tIntLenMax.val))
 				->default_value(tIntLenMax.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_tIntLenMax,this,_1))
-			, std::string("interaction site : maximal window size to be considered for interaction (and thus accessible) within the target (arg in range ["+toString(tIntLenMax.min)+","+toString(tIntLenMax.max)+"]; 0 defaults to the full sequence length)").c_str())
+			, std::string("interaction site : maximal window size to be considered for"
+					" interaction (and thus accessible) within the target"
+					" (arg in range ["+toString(tIntLenMax.min)+","+toString(tIntLenMax.max)+"];"
+					" 0 defaults to the full sequence length)."
+					" If --tAccW is provided, the smaller window size of both is used."
+					).c_str())
 		("tIntLoopMax"
 			, value<int>(&(tIntLoopMax.val))
 				->default_value(tIntLoopMax.def)
@@ -337,6 +354,34 @@ CommandLineParsing::CommandLineParsing()
 			, std::string("output : comma separated list of CSV column IDs to print if outMode=CSV."
 					" An empty argument prints all possible columns from the following available ID list: "
 					+ boost::replace_all_copy(OutputHandlerCsv::list2string(OutputHandlerCsv::string2list("")), ",", ", ")
+					).c_str())
+		("outAccFileq"
+			, value<std::string>(&(outAccFileq))
+				->notifier(boost::bind(&CommandLineParsing::validate_outAccFileq,this,_1))
+			, std::string("output : writes the query's ED values to the given file/stream"
+					" in a format similar to RNAplfold unpaired probability output."
+					" Use STDOUT/STDERR to write to the respective output stream."
+					).c_str())
+		("outAccFilet"
+			, value<std::string>(&(outAccFilet))
+				->notifier(boost::bind(&CommandLineParsing::validate_outAccFilet,this,_1))
+			, std::string("output : writes the target's ED values to the given file/stream"
+					" in a format similar to RNAplfold unpaired probability output."
+					" Use STDOUT/STDERR to write to the respective output stream."
+					).c_str())
+		("outPuFileq"
+			, value<std::string>(&(outPuFileq))
+				->notifier(boost::bind(&CommandLineParsing::validate_outPuFileq,this,_1))
+			, std::string("output : writes the query's unpaired probabilities used for ED values to the given file/stream"
+					" in RNAplfold unpaired probability output format."
+					" Use STDOUT/STDERR to write to the respective output stream."
+					).c_str())
+		("outPuFilet"
+			, value<std::string>(&(outPuFilet))
+				->notifier(boost::bind(&CommandLineParsing::validate_outPuFilet,this,_1))
+			, std::string("output : writes the target's unpaired probabilities used for ED values to the given file/stream"
+					" in RNAplfold unpaired probability output format."
+					" Use STDOUT/STDERR to write to the respective output stream."
 					).c_str())
 	    ("verbose,v", "verbose output") // handled via easylogging++
 //	    (logFile_argument.c_str(), "name of log file to be used for output")
@@ -530,9 +575,11 @@ parse(int argc, char** argv)
 				if (!qAccFile.empty()) LOG(INFO) <<"qAcc = "<<qAcc.val<<" : ignoring --qAccFile";
 				break;
 			}
+			case 'E' : // drop to next handling
 			case 'P' : {
 				if (qAccFile.empty()) LOG(INFO) <<"qAcc = "<<qAcc.val<<" but no --qAccFile given";
 				if (!qAccConstr.empty()) LOG(INFO) <<"qAcc = "<<qAcc.val<<" : accessibility constraints (--qAccConstr) possibly not used in computation of loaded ED values";
+				if (getQuerySequences().size()>1) throw std::runtime_error("qAcc = "+toString(qAcc.val)+" only supported for single query sequence input");
 			}	// drop to next handling
 			case 'N' : {
 				if (qAccL.val != qAccL.def) LOG(INFO) <<"qAcc = "<<qAcc.val<<" : ignoring --qAccL";
@@ -546,9 +593,11 @@ parse(int argc, char** argv)
 				if (!tAccFile.empty()) LOG(INFO) <<"tAcc = "<<tAcc.val<<" : ignoring --tAccFile";
 				break;
 			}
+			case 'E' : // drop to next handling
 			case 'P' : {
 				if (tAccFile.empty()) LOG(INFO) <<"tAcc = "<<tAcc.val<<" but no --tAccFile given";
 				if (!tAccConstr.empty()) LOG(INFO) <<"tAcc = "<<tAcc.val<<" : accessibility constraints (--tAccConstr) possibly not used in computation of loaded ED values";
+				if (getTargetSequences().size()>1) throw std::runtime_error("tAcc = "+toString(tAcc.val)+" only supported for single target sequence input");
 			}	// drop to next handling
 			case 'N' : {
 				if (tAccL.val != tAccL.def) LOG(INFO) <<"tAcc = "<<tAcc.val<<" : ignoring --tAccL";
@@ -560,7 +609,7 @@ parse(int argc, char** argv)
 
 			// check energy setup
 			if (vm.count("energyVRNA") > 0 && energy.val != 'F') {
-				throw error("energyVRNA provided but no (F)ull energy computation requested");
+				throw error("--energyVRNA provided but no (F)ull energy computation requested (--energy = "+toString(energy.val)+")");
 			}
 
 			// check seed setup
@@ -613,6 +662,13 @@ parse(int argc, char** argv)
 				LOG(ERROR) <<"outCsvCols set but outMode != "<<OutputMode::CSV;
 				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 			}
+
+			// check ED/Pu output sanity
+			if (!outAccFileq.empty() && getQuerySequences().size()>1) throw std::runtime_error("--outAccFileq only supported for single query sequence input");
+			if (!outAccFilet.empty() && getTargetSequences().size()>1) throw std::runtime_error("--outAccFilet only supported for single target sequence input");
+			if (!outPuFileq.empty() && getQuerySequences().size()>1) throw std::runtime_error("--outPuFileq only supported for single query sequence input");
+			if (!outPuFilet.empty() && getTargetSequences().size()>1) throw std::runtime_error("--outPuFilet only supported for single target sequence input");
+
 
 			// trigger initial output handler output
 			initOutputHandler();
@@ -895,6 +951,7 @@ getQueryAccessibility( const size_t sequenceNumber ) const
 										, qIntLenMax.val
 										, &accConstraint );
 
+	case 'E' : // drop to next handling
 	case 'P' : { // VRNA RNAplfold unpaired probability file output
 		std::istream * accStream = NULL;
 		std::ifstream * accFileStream = NULL;
@@ -914,12 +971,14 @@ getQueryAccessibility( const size_t sequenceNumber ) const
 				CLEANUP(accFileStream);
 				throw std::runtime_error("accessibility parsing of --qAccFile : error while opening '"+qAccFile+"' : "+ex.what());
 			}
+			// set file stream as input stream
+			accStream = accFileStream;
 		}
 		Accessibility * acc = new AccessibilityFromStream( seq
 										, qIntLenMax.val
 										, &accConstraint
 										, *accStream
-										, AccessibilityFromStream::Pu_RNAplfold_Text
+										, (qAcc.val == 'P' ? AccessibilityFromStream::Pu_RNAplfold_Text : AccessibilityFromStream::ED_RNAplfold_Text)
 										, vrnaHandler.getRT() );
 		// cleanup
 		if ( accFileStream != NULL ) {
@@ -931,7 +990,8 @@ getQueryAccessibility( const size_t sequenceNumber ) const
 
 	case 'F' : // compute VRNA-based accessibilities
 		return new AccessibilityVrna( seq
-									, qIntLenMax.val
+									, std::min( qIntLenMax.val == 0 ? seq.size() : qIntLenMax.val
+												, qAccW.val == 0 ? seq.size() : qAccW.val )
 									, &accConstraint
 									, vrnaHandler
 									, qAccW.val
@@ -969,6 +1029,7 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 										, tIntLenMax.val
 										, &accConstraint );
 
+	case 'E' : // drop to next handling
 	case 'P' : { // VRNA RNAplfold unpaired probability file output
 		std::istream * accStream = NULL;
 		std::ifstream * accFileStream = NULL;
@@ -989,13 +1050,15 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 				CLEANUP(accFileStream);
 				throw std::runtime_error("accessibility parsing of --tAccFile : error while opening '"+tAccFile+"' : "+ex.what());
 			}
+			// set file stream as input stream
+			accStream = accFileStream;
 		}
 		// read data
 		Accessibility * acc = new AccessibilityFromStream( seq
 										, tIntLenMax.val
 										, &accConstraint
 										, *accStream
-										, AccessibilityFromStream::Pu_RNAplfold_Text
+										, ( tAcc.val == 'P' ? AccessibilityFromStream::Pu_RNAplfold_Text : AccessibilityFromStream::ED_RNAplfold_Text )
 										, vrnaHandler.getRT() );
 		// cleanup
 		if ( accFileStream != NULL ) {
@@ -1006,7 +1069,8 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 	}
 	case 'F' : // compute VRNA-based accessibilities
 		return new AccessibilityVrna( seq
-									, tIntLenMax.val
+									, std::min( tIntLenMax.val == 0 ? seq.size() : tIntLenMax.val
+											, tAccW.val == 0 ? seq.size() : tAccW.val )
 									, &accConstraint
 									, vrnaHandler
 									, tAccW.val
@@ -1376,6 +1440,47 @@ getTargetRanges( const size_t sequenceNumber ) const
 		throw std::runtime_error("CommandLineParsing::getTargetRanges("+toString(sequenceNumber)+") is empty");
 #endif
 	return tRegion.at(sequenceNumber);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void
+CommandLineParsing::
+writeAccessibility( const Accessibility& acc, const std::string fileOrStream, const bool writeED ) const
+{
+	if (fileOrStream.empty())
+		return;
+
+	// setup output stream
+	std::ostream * out = NULL;
+	std::fstream * outFile = NULL;
+	if ( boost::iequals(fileOrStream,"STDOUT")) {
+		out = &std::cout;
+	} else
+	if ( boost::iequals(fileOrStream,"STDERR")) {
+		out = &std::cerr;
+	} else {
+		// open file
+		outFile = new std::fstream();
+		outFile->open( fileOrStream.c_str(), std::ios_base::out );
+		if (!outFile->is_open()) {
+			CLEANUP(outFile);
+			throw std::runtime_error("could not open output file '"+fileOrStream +"' for "+(writeED?"accessibility":"unpaired probability")+" output");
+		} else {
+			out = outFile;
+		}
+	}
+
+	// write data to stream
+	if (writeED) {
+		acc.writeRNAplfold_ED_text( *out );
+	} else {
+		acc.writeRNAplfold_Pu_text( *out, vrnaHandler.getRT() );
+	}
+
+	// clean up
+	if (outFile != NULL) { outFile->close(); }
+	CLEANUP(outFile);
 }
 
 ////////////////////////////////////////////////////////////////////////////

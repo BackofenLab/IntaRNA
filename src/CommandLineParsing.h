@@ -173,7 +173,7 @@ public:
 
 	/**
 	 * Access to the set folding temperature in Celsius.
-	 * @return the chosen temperature in Celsisus
+	 * @return the chosen temperature in Celsius
 	 */
 	T_type getTemperature() const;
 
@@ -189,6 +189,17 @@ public:
 	 */
 	std::ostream & getOutputStream() const;
 
+	/**
+	 * Writes the query accessibility to file/stream if requested
+	 */
+	void
+	writeQueryAccessibility( const Accessibility & acc ) const;
+
+	/**
+	 * Writes the query accessibility to file/stream if requested
+	 */
+	void
+	writeTargetAccessibility( const Accessibility & acc ) const;
 
 protected:
 
@@ -386,6 +397,14 @@ protected:
 	std::string outCsvCols;
 	//! the CSV column selection
 	static const std::string outCsvCols_default;
+	//! the stream/file to write the query's ED values to
+	std::string outAccFileq;
+	//! the stream/file to write the target's ED values to
+	std::string outAccFilet;
+	//! the stream/file to write the query's unpaired probabilities to
+	std::string outPuFileq;
+	//! the stream/file to write the target's unpaired probabilities to
+	std::string outPuFilet;
 
 	//! the vienna energy parameter handler initialized by #parse()
 	mutable VrnaHandler vrnaHandler;
@@ -623,6 +642,29 @@ protected:
 	 */
 	void validate_outCsvCols(const std::string & value);
 
+	/**
+	 * Validates the outAccFileq argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_outAccFileq( const std::string & value);
+
+	/**
+	 * Validates the outAccFilet argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_outAccFilet( const std::string & value);
+
+	/**
+	 * Validates the outPuFileq argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_outPuFileq( const std::string & value);
+
+	/**
+	 * Validates the outPuFilet argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_outPuFilet( const std::string & value);
 
 	////////////  GENERIC TESTS  /////////////////
 
@@ -749,6 +791,13 @@ protected:
 					, const std::string & value );
 
 	/**
+	 * Validates whether or not a given output target value is either STDOUT,
+	 * STDERR, or non-empty (= file name)
+	 */
+	void
+	validate_outputTarget( const std::string &argName , const std::string & value);
+
+	/**
 	 * Parses a given range input and pushes the parsed ranges to the given
 	 * container.
 	 * @param argName the name of the argument the @p value is for
@@ -779,6 +828,13 @@ protected:
 	 */
 	void initOutputHandler();
 
+	/**
+	 * Writes the accessibility to file or stream if requested by the user
+	 * @param acc the accessibility data assigned
+	 * @param fileOrStream the name of file/stream to write to
+	 * @param (true) writes ED values, (false) writes Pu values
+	 */
+	void writeAccessibility( const Accessibility& acc, const std::string fileOrStream, const bool writeED ) const;
 };
 
 
@@ -1149,18 +1205,27 @@ void CommandLineParsing::validate_outMode(const int & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_out(const std::string & value) {
-
-	std::string valueUpperCase = boost::to_upper_copy<std::string>(value,std::locale());
+void CommandLineParsing::validate_outputTarget(
+		const std::string &argName
+		, const std::string & value)
+{
 	// check if standard stream
-	if (valueUpperCase == "STDOUT" || valueUpperCase == "STDERR") {
+	if (boost::iequals(value,"STDOUT") || boost::iequals(value,"STDERR")) {
 		return;
 	}
 	// check if empty filename
-	if ( valueUpperCase.empty() ) {
-		LOG(ERROR) <<"no output defined (empty)";
+	if ( value.empty() ) {
+		LOG(ERROR) <<argName<<" : no output defined (empty)";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_out(const std::string & value) {
+	// forward check to general method
+	validate_outputTarget( "--out", value );
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1193,6 +1258,74 @@ inline
 void CommandLineParsing::validate_outMaxE(const double & value) {
 	// forward check to general method
 	validate_numberArgument("outMaxE", outMaxE, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_outAccFileq(const std::string & value) {
+	// forward check to general method
+	validate_outputTarget( "--outAccFileq", value );
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_outAccFilet(const std::string & value) {
+	// forward check to general method
+	validate_outputTarget( "--outAccFilet", value );
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_outPuFileq(const std::string & value) {
+	// forward check to general method
+	validate_outputTarget( "--outPuFileq", value );
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_outPuFilet(const std::string & value) {
+	// forward check to general method
+	validate_outputTarget( "--outPuFilet", value );
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void
+CommandLineParsing::
+writeQueryAccessibility( const Accessibility & acc ) const
+{
+	// forward to generic function
+	if (!outAccFileq.empty()) {
+		VLOG(2) <<"writing ED values for query '"<<acc.getSequence().getId()<<"' to "<<outAccFileq;
+		writeAccessibility( acc, outAccFileq, true );
+	}
+	if (!outPuFileq.empty()) {
+		VLOG(2) <<"writing unpaired probabilities for query '"<<acc.getSequence().getId()<<"' to "<<outPuFileq;
+		writeAccessibility( acc, outPuFileq, false );
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void
+CommandLineParsing::
+writeTargetAccessibility( const Accessibility & acc ) const
+{
+	// forward to generic function
+	if (!outAccFilet.empty()) {
+		VLOG(2) <<"writing ED values for target '"<<acc.getSequence().getId()<<"' to "<<outAccFilet;
+		writeAccessibility( acc, outAccFilet, true );
+	}
+	if (!outPuFilet.empty()) {
+		VLOG(2) <<"writing unpaired probabilities for target '"<<acc.getSequence().getId()<<"' to "<<outPuFilet;
+		writeAccessibility( acc, outPuFilet, false );
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////
