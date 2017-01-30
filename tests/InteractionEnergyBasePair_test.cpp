@@ -10,7 +10,7 @@ TEST_CASE( "InteractionEnergyBasePair", "[InteractionEnergyBasePair]" ) {
 
 	RnaSequence rna("test","ACGU");
 
-	AccessibilityDisabled acc(rna);
+	AccessibilityDisabled acc(rna,rna.size(),NULL);
 	ReverseAccessibility rAcc(acc);
 
 	size_t maxLoop1 = 1, maxLoop2 = 2;
