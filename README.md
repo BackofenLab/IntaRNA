@@ -36,13 +36,22 @@ doi: 10.1093/bioinformatics/btn544
 
 ## Overview
 
-- [Features of prediction modes and emulated tools](#predModes)
+- [Dependencies](#dependencies)
+- [Prediction modes, their features and emulated tools](#predModes)
 - [Read/write accessibility from/to file or stream](#accFromFile)
 
 
+<a name="dependencies" />
+## Dependencies
+
+- compiler supporting C++11 standard and openmp
+- GNU autotools (automake, autoconf, ..)
+- [boost C++ library](http://www.boost.org/) version >= 1.50.0
+- [Vienna RNA package](http://www.tbi.univie.ac.at/RNA/) version >= 2.3.0
+
 
 <a name="predModes" />
-## Features of prediction modes and emulated tools
+## Prediction modes, their features and emulated tools
 
 For the prediction of *minimum free energy interactions*, the following modes
 and according features are supported and can be set via the `--mode` parameter.
@@ -96,10 +105,10 @@ formats
 
 | Input format | produced by |
 | ---- | --- |
-| RNAplfold unpaired probabilities | `RNAplfold -u`, `IntaRNA --outPuFile*` |
+| RNAplfold unpaired probabilities | `RNAplfold -u` or `IntaRNA --outPuFile*` |
 | RNAplfold-styled ED values | `IntaRNA --outAccFile*` |
 
-The `RNAplfold` format is a table encoding of a banded upper triangular matrix 
+The **RNAplfold** format is a table encoding of a banded upper triangular matrix 
 with band width l. First row contains a header comment on the data starting with
 `#`. Second line encodes the column headers, i.e. the window width per column.
 Every successive line starts with the index (starting from 1) of the window end
@@ -122,7 +131,7 @@ example for a sequence of length 5 with a maximal window length of 3.
 
 ### Examples
 If you have precomputed data, e.g. the file `plfold_lunp` with unpaired probabilities
-computed by `RNAplfold`, you can run
+computed by **RNAplfold**, you can run
 ```bash
 # fill accessibilities from RNAplfold unpaired probabilities
 IntaRNA [..] --qAcc=P --qAccFile=plfold_lunp
