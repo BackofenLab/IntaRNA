@@ -57,7 +57,7 @@ TEST_CASE( "AccessibilityFromStream", "[AccessibilityFromStream]" ) {
 		std::istringstream  accStream(accString);
 
 		// trigger parsing
-		AccessibilityFromStream acc( rna, 10, accStream, AccessibilityFromStream::Pu_RNAplfold_Text, 1.0 );
+		AccessibilityFromStream acc( rna, 10, NULL, accStream, AccessibilityFromStream::Pu_RNAplfold_Text, 1.0 );
 
 //		std::cerr <<"orig data:\n" <<accString;
 //		std::cerr <<"ED data:\n" <<acc;
@@ -73,15 +73,15 @@ TEST_CASE( "AccessibilityFromStream", "[AccessibilityFromStream]" ) {
 		// prepare stream to read from
 		std::istringstream  accStream(accString);
 		// trigger parsing exception
-		REQUIRE_THROWS( AccessibilityFromStream( rna, 20, accStream, AccessibilityFromStream::Pu_RNAplfold_Text, 1.0 ) );
+		REQUIRE_THROWS( AccessibilityFromStream( rna, 20, NULL, accStream, AccessibilityFromStream::Pu_RNAplfold_Text, 1.0 ) );
 	}
 
-	SECTION("seq too long") {
+	SECTION("sequence too long") {
 		// prepare stream to read from
 		std::istringstream  accStream(accString);
 		RnaSequence rnaDouble("tooLong",seq+seq);
 		// trigger parsing exception
-		REQUIRE_THROWS( AccessibilityFromStream( rnaDouble, 10, accStream, AccessibilityFromStream::Pu_RNAplfold_Text, 1.0 ) );
+		REQUIRE_THROWS( AccessibilityFromStream( rnaDouble, 10, NULL, accStream, AccessibilityFromStream::Pu_RNAplfold_Text, 1.0 ) );
 	}
 
 }
