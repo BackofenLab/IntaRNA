@@ -125,13 +125,6 @@ TEST_CASE( "AccessibilityFromStream", "[AccessibilityFromStream]" ) {
 
 	}
 
-	SECTION("maxLength too high") {
-		// prepare stream to read from
-		std::istringstream  accStream(accString);
-		// trigger parsing exception
-		REQUIRE_THROWS( AccessibilityFromStream( rna, 20, NULL, accStream, AccessibilityFromStream::Pu_RNAplfold_Text, 1.0 ) );
-	}
-
 	SECTION("sequence too long") {
 		// prepare stream to read from
 		std::istringstream  accStream(accString);
