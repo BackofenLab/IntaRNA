@@ -129,7 +129,7 @@ example for a sequence of length 5 with a maximal window length of 3.
 
 ```
 
-### Examples
+### Use case examples for read/write accessibilities and unpaired probabilities
 If you have precomputed data, e.g. the file `plfold_lunp` with unpaired probabilities
 computed by **RNAplfold**, you can run
 ```bash

@@ -1,4 +1,12 @@
 
+170131 Martin Mann :
+ * CommandLineParsing :
+   + opts_cmdline_short : short option list for abbreviated help output
+   * constructor() :
+     + setup of opts_cmdline_short
+   * parse() 
+     + handling of short and full help output
+
 170130 Martin Mann :
  * CommandLineParsing :
    + stdinUsed : flag to ensure STDIN is used for input only once

@@ -298,6 +298,9 @@ protected:
 	//! overall option list
 	boost::program_options::options_description opts_cmdline_all;
 
+	//! short option list
+	boost::program_options::options_description opts_cmdline_short;
+
 	//! central result code to be set by validate_* functions in error case
 	ReturnCode parsingCode;
 

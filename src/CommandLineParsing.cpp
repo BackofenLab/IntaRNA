@@ -57,6 +57,7 @@ CommandLineParsing::CommandLineParsing()
 	opts_general("General"),
 	opts_output("Output"),
 	opts_cmdline_all(),
+	opts_cmdline_short(),
 
 	parsingCode(NOT_PARSED_YET),
 
@@ -148,6 +149,9 @@ CommandLineParsing::CommandLineParsing()
 				->default_value(qAccL.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_qAccL,this,_1))
 			, std::string("accessibility computation : sliding window size for query accessibility computation (arg in range ["+toString(qAccL.min)+","+toString(qAccL.max)+"]; 0 defaults to sliding window size 'qAccW')").c_str())
+		;
+	opts_cmdline_short.add(opts_query);
+	opts_query.add_options()
 		("qAccConstr"
 			, value<std::string>(&(qAccConstr))
 				->notifier(boost::bind(&CommandLineParsing::validate_qAccConstr,this,_1))
@@ -202,6 +206,9 @@ CommandLineParsing::CommandLineParsing()
 				->default_value(tAccL.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_tAccL,this,_1))
 			, std::string("accessibility computation : sliding window size for query accessibility computation (arg in range ["+toString(tAccL.min)+","+toString(tAccL.max)+"]; 0 defaults to sliding window size 'tAccW')").c_str())
+		;
+	opts_cmdline_short.add(opts_target);
+	opts_target.add_options()
 		("tAccConstr"
 			, value<std::string>(&(tAccConstr))
 				->notifier(boost::bind(&CommandLineParsing::validate_tAccConstr,this,_1))
@@ -247,6 +254,9 @@ CommandLineParsing::CommandLineParsing()
 				->default_value(seedMaxUP.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_seedMaxUP,this,_1))
 			, std::string("maximal overall number (query+target) of unpaired bases within the seed region (arg in range ["+toString(seedMaxUP.min)+","+toString(seedMaxUP.max)+"])").c_str())
+		;
+	opts_cmdline_short.add(opts_seed);
+	opts_seed.add_options()
 		("seedMaxUPq"
 			, value<int>(&(seedMaxUPq.val))
 				->default_value(seedMaxUPq.def)
@@ -289,6 +299,9 @@ CommandLineParsing::CommandLineParsing()
 					+toString(PredictionMode::SPACEEFFICIENT)+"= MFE (n^2:S,n^4:T), "
 					+toString(PredictionMode::FULL)+"= MFE (n^4:S|T), "
 					+toString(PredictionMode::MAXPROB)+"= MaxProb (n^4:S|T)").c_str())
+		;
+	opts_cmdline_short.add(opts_inter);
+	opts_inter.add_options()
 		("energy,e"
 			, value<char>(&(energy.val))
 				->default_value(energy.def)
@@ -337,6 +350,9 @@ CommandLineParsing::CommandLineParsing()
 					+toString(OutputConstraint::OVERLAP_SEQ1)+") in the target only, ("
 					+toString(OutputConstraint::OVERLAP_SEQ2)+") in the query only, ("
 					+toString(OutputConstraint::OVERLAP_BOTH)+") in both sequences").c_str())
+		;
+	opts_cmdline_short.add(opts_output);
+	opts_output.add_options()
 	    ("outMaxE"
 			, value<double>(&(outMaxE.val))
 				->default_value(outMaxE.def)
@@ -391,8 +407,10 @@ CommandLineParsing::CommandLineParsing()
 
 	opts_general.add_options()
 	    ("version", "print version")
-	    ("help,h", "show the help page with all available parameters")
+	    ("help,h", "show the help page for basic parameters")
+	    ("fullhelp", "show the extended help page for all available parameters")
 	    ;
+	opts_cmdline_short.add(opts_general);
 
 	////  GENERAL OPTIONS  ////////////////////////////////////
 
@@ -455,6 +473,17 @@ parse(int argc, char** argv)
 	// if parsing was successful, check for help request
 	if (parsingCode == ReturnCode::KEEP_GOING) {
 		if (vm.count("help")) {
+			std::cout
+				<<"\nIntaRNA predicts RNA-RNA interactions.\n"
+				<<"\nThe following basic program arguments are supported:\n"
+				<< opts_cmdline_short
+				<< "\n"
+				<< "Run --fullhelp for the extended list of parameters\n"
+				<< "\n";
+			parsingCode = ReturnCode::STOP_ALL_FINE;
+			return parsingCode;
+		}
+		if (vm.count("fullhelp")) {
 			std::cout
 				<<"\nIntaRNA predicts RNA-RNA interactions.\n"
 				<<"\nThe following program arguments are supported:\n"
