@@ -28,7 +28,10 @@ INITIALIZE_EASYLOGGINGPP
  * @param argc number of program arguments
  * @param argv array of program arguments of length argc
  */
-int main(int argc, char **argv) {
+int main(int argc, char **argv){
+
+	// global return value that can be set to abort (parallelized) loops
+	int intarnaReturnValue = 0;
 
 	try {
 	
@@ -85,7 +88,7 @@ int main(int argc, char **argv) {
 		// run prediction for all pairs of sequences
 		// first: iterate over all target sequences
 		// parallelize this loop if possible; if not -> parallelize the query-loop
-		# pragma omp parallel for schedule(dynamic) num_threads( parameters.getThreads() ) shared(queryAcc,reportedInteractions) if(parallelizeTargetLoop)
+		# pragma omp parallel for schedule(dynamic) num_threads( parameters.getThreads() ) shared(intarnaReturnValue,queryAcc,reportedInteractions) if(parallelizeTargetLoop)
 		for ( size_t targetNumber = 0; targetNumber < parameters.getTargetSequences().size(); ++targetNumber )
 		{
 			// explicit try-catch-block due to missing OMP exception forwarding
@@ -105,7 +108,7 @@ int main(int argc, char **argv) {
 
 				// second: iterate over all query sequences
 				// this parallelization should only be enabled if the outer target-loop is not parallelized
-				# pragma omp parallel for schedule(dynamic) num_threads( parameters.getThreads() ) shared(queryAcc,reportedInteractions,targetAcc,targetNumber) if(parallelizeQueryLoop)
+				# pragma omp parallel for schedule(dynamic) num_threads( parameters.getThreads() ) shared(intarnaReturnValue,queryAcc,reportedInteractions,targetAcc,targetNumber) if(parallelizeQueryLoop)
 				for ( size_t queryNumber = 0; queryNumber < parameters.getQuerySequences().size(); ++queryNumber )
 				{
 					// explicit try-catch-block due to missing OMP exception forwarding
@@ -168,7 +171,9 @@ int main(int argc, char **argv) {
 						throw e;
 				#else
 							<<"  ==> Please report to the IntaRNA development team! Thanks!\n";
-						return -1;
+						#pragma omp atomic write
+						intarnaReturnValue = -1;
+						break;
 				#endif
 					} catch (...) {
 						std::exception_ptr eptr = std::current_exception();
@@ -184,7 +189,9 @@ int main(int argc, char **argv) {
 						}
 				#else
 							<<"  ==> Please report to the IntaRNA development team! Thanks!\n";
-						return -1;
+						#pragma omp atomic write
+						intarnaReturnValue = -1;
+						break;
 				#endif
 
 					}
@@ -206,7 +213,9 @@ int main(int argc, char **argv) {
 				throw e;
 		#else
 					<<"  ==> Please report to the IntaRNA development team! Thanks!\n";
-				return -1;
+				#pragma omp atomic write
+				intarnaReturnValue = -1;
+				break;
 		#endif
 			} catch (...) {
 				std::exception_ptr eptr = std::current_exception();
@@ -220,7 +229,9 @@ int main(int argc, char **argv) {
 				}
 		#else
 					<<"  ==> Please report to the IntaRNA development team! Thanks!\n";
-				return -1;
+				#pragma omp atomic write
+				intarnaReturnValue = -1;
+				break;
 		#endif
 
 			}
@@ -246,7 +257,7 @@ int main(int argc, char **argv) {
 		throw e;
 #else
 			<<"  ==> Please report to the IntaRNA development team! Thanks!\n";
-		return -1;
+		intarnaReturnValue = -1;
 #endif
 	} catch (...) {
 		std::exception_ptr eptr = std::current_exception();
@@ -258,12 +269,12 @@ int main(int argc, char **argv) {
 		}
 #else
 			<<"  ==> Please report to the IntaRNA development team! Thanks!\n";
-		return -1;
+		intarnaReturnValue = -1;
 #endif
 
 	}
 
 	  // all went fine
-	return 0;
+	return intarnaReturnValue;
 }
 
