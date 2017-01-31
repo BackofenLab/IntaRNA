@@ -247,7 +247,7 @@ IntaRNA [..] --outPuFilet=STDOUT | IntaRNA [..] --tAcc=P --tAccFile=STDIN
 
 IntaRNA supports the parallelization of the target-query-combination processing. 
 The maximal number of threads to be used can be specified using the `--threads` parameter.
-If `--threads=*k* > 0`, than *k* predictions are processed in parallel.
+If `--threads=k > 0`, than *k* predictions are processed in parallel.
 
 When using parallelization, you should have the following things in mind:
 
@@ -255,7 +255,7 @@ When using parallelization, you should have the following things in mind:
   (if not [loaded from file](#accFromFile)). 
   So far, the
   routines from the Vienna RNA package used are *not threadsafe* 
-  (so far checked up to v2.3.2), i.e. the 
+  (checked up to v2.3.2), i.e. the 
   accessibility computation is done serially. This significantly reduces the
   multi-threading effect when running IntaRNA in heuristic mode (`--mode=0`).
   If you run a non-heuristic prediction mode, multi-threading will show a more
