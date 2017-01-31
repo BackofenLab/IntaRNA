@@ -1,5 +1,5 @@
 
-#include "OutputHandlerIntaRNA1detailed.h"
+#include "OutputHandlerIntaRNA1.h"
 
 #include <sstream>
 #include <iomanip>
