@@ -7,6 +7,8 @@
 #include <stdexcept>
 #include <fstream>
 
+#include <omp.h>
+
 #include <boost/bind.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
@@ -99,6 +101,7 @@ CommandLineParsing::CommandLineParsing()
 	temperature(0,100,37),
 
 	predMode( PredictionMode_min, PredictionMode_max, HEURISTIC),
+	threads( 1, omp_get_max_threads(), 1),
 
 	energy("BF",'F'),
 	energyFile(""),
@@ -406,6 +409,13 @@ CommandLineParsing::CommandLineParsing()
 	////  GENERAL OPTIONS  ////////////////////////////////////
 
 	opts_general.add_options()
+	    ("threads"
+			, value<int>(&(threads.val))
+				->default_value(threads.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_threads,this,_1))
+			, std::string("maximal number of threads to be used for parallel computation of query-target-combinations."
+					" Note, the number of threads multiplies the required memory needed for computation!"
+					" (arg in range ["+toString(threads.min)+","+toString(threads.max)+"])").c_str())
 	    ("version", "print version")
 	    ("help,h", "show the help page for basic parameters")
 	    ("fullhelp", "show the extended help page for all available parameters")
@@ -698,6 +708,16 @@ parse(int argc, char** argv)
 			if (!outPuFileq.empty() && getQuerySequences().size()>1) throw std::runtime_error("--outPuFileq only supported for single query sequence input");
 			if (!outPuFilet.empty() && getTargetSequences().size()>1) throw std::runtime_error("--outPuFilet only supported for single target sequence input");
 
+			// check if multi-threading
+			if (threads.val > 1 && getTargetSequences().size() > 1) {
+				// warn if 4D space prediction enabled
+				if (predMode.val > PredictionMode::SPACEEFFICIENT) {
+					LOG(WARNING) <<"Multi-threading enabled in high-mem-prediction mode : ensure you have enough memory available!";
+				}
+				if (outMode.val == OutputMode::V1_NORMAL || outMode.val == OutputMode::V1_DETAILED) {
+					throw std::runtime_error("Multi-threading not supported for IntaRNA v1 output");
+				}
+			}
 
 			// trigger initial output handler output
 			initOutputHandler();

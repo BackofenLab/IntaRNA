@@ -2,7 +2,7 @@
 
 AC_PREREQ([2.65])
 # 5 argument version only available with aclocal >= 2.64
-AC_INIT( [IntaRNA], [2.0], [], [intaRNA], [http://www.bioinf.uni-freiburg.de] )
+AC_INIT( [IntaRNA], [2.0.0], [], [intaRNA], [http://www.bioinf.uni-freiburg.de] )
 
 
 # minimal required version of the boost library 
@@ -16,13 +16,7 @@ AC_CONFIG_HEADERS([src/config.h])
 
 m4_include([m4/m4_ax_boost_base.m4])
 m4_include([m4/m4_ax_cxx_compile_stdcxx.m4])
-
-# backwards compatibility for autoconf < 2.64
-# PACKAGE_URL should be the fifth argument of AC_INIT
-m4_ifndef([AC_PACKAGE_URL],
-	[m4_define([AC_PACKAGE_URL], [http://www.bioinf.uni-freiburg.de/~mmann/])
-	AC_DEFINE(PACKAGE_URL, "AC_PACKAGE_URL", [Package URL])
-	AC_SUBST(PACKAGE_URL, AC_PACKAGE_URL)])
+m4_include([m4/m4_ax_openmp.m4])
 
 lt_enable_auto_import=""
 case "$host_os" in 
@@ -51,6 +45,10 @@ AC_LANG([C++])
 
 # ensure we are using c11 C++ standard
 AX_CXX_COMPILE_STDCXX( [11], [noext], [mandatory])
+
+# ensure OPENMP can be used
+AX_OPENMP([],[AC_MSG_ERROR([OPENMP support is mandatory for compilation])]])
+AM_CXXFLAGS="$AM_CXXFLAGS $OPENMP_CXXFLAGS"
 
 ###############################################################################
 ###############################################################################
@@ -93,9 +91,6 @@ if test  $RNAPATHSET = 1 ; then
 	AM_CXXFLAGS="-I$with_RNA/include $AM_CXXFLAGS"
 	AM_LDFLAGS="-L$with_RNA/lib $AM_LDFLAGS"
 fi
-# add compiler flags needed by VRNA
-AM_CXXFLAGS="$AM_CXXFLAGS -fopenmp"
-
 
 ###############################################################################
 ###############################################################################

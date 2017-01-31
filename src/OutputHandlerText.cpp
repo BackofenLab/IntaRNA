@@ -4,6 +4,8 @@
 #include <sstream>
 #include <iomanip>
 
+#include <omp.h>
+
 ////////////////////////////////////////////////////////////////////////////
 
 OutputHandlerText::
@@ -44,8 +46,12 @@ add( const Interaction & i )
 
 	// special handling if no base pairs present
 	if (i.basePairs.size() == 0) {
-		out <<"\n"
-			<<"no favorable interaction for "<<i.s1->getId() <<" and "<<i.s2->getId()<<std::endl;
+		// ensure outputs do not intervene
+		#pragma omp critical(intarna_outputStreamUpdate)
+		{
+			out <<"\n"
+				<<"no favorable interaction for "<<i.s1->getId() <<" and "<<i.s2->getId()<<std::endl;
+		} // omp critical(intarna_outputStreamUpdate)
 		return;
 	}
 
@@ -238,58 +244,62 @@ add( const Interaction & i )
 	// get individual energy contributions
 	InteractionEnergy::EnergyContributions contr = energy.getE_contributions(i);
 
-	// print full interaction to output stream
-	out <<'\n'
-		// get ID of s1
-		<<i.s1->getId() <<'\n'
-		// get position in s1
-		<<pos1.str() <<'\n'
-		<<pos1tag.str() <<'\n'
-		// print collected interaction stuff
-		<<s1Unbound.str() <<'\n'
-		<<s1Bound.str() <<'\n'
-		<<pairing.str() <<'\n'
-		<<s2Bound.str() <<'\n'
-		<<s2Unbound.str() <<'\n'
-		// get position in reversed index order for s2
-		<<pos2tag.str() <<'\n'
-		<<pos2.str() <<'\n'
-		// get ID of s2
-		<<i.s2->getId() <<'\n'
+	// ensure outputs do not intervene
+	#pragma omp critical(intarna_outputStreamUpdate)
+	{
+		// print full interaction to output stream
+		out <<'\n'
+			// get ID of s1
+			<<i.s1->getId() <<'\n'
+			// get position in s1
+			<<pos1.str() <<'\n'
+			<<pos1tag.str() <<'\n'
+			// print collected interaction stuff
+			<<s1Unbound.str() <<'\n'
+			<<s1Bound.str() <<'\n'
+			<<pairing.str() <<'\n'
+			<<s2Bound.str() <<'\n'
+			<<s2Unbound.str() <<'\n'
+			// get position in reversed index order for s2
+			<<pos2tag.str() <<'\n'
+			<<pos2.str() <<'\n'
+			// get ID of s2
+			<<i.s2->getId() <<'\n'
 
-		// interaction range
-		<<"\n"
-		<<"interaction seq1   = "<<(i.basePairs.begin()->first +1)<<" -- "<<(i.basePairs.rbegin()->first +1) <<'\n'
-		<<"interaction seq2   = "<<(i.basePairs.rbegin()->second +1)<<" -- "<<(i.basePairs.begin()->second +1) <<'\n'
-
-		// print energy
-		<<"\n"
-		<<"interaction energy = "<<i.energy <<" kcal/mol\n"
-		<<"  = E(init)        = "<<contr.init<<'\n'
-		<<"  + E(loops)       = "<<contr.loops<<'\n'
-		<<"  + E(dangleLeft)  = "<<contr.dangleLeft<<'\n'
-		<<"  + E(dangleRight) = "<<contr.dangleRight<<'\n'
-		<<"  + E(endLeft)     = "<<contr.endLeft<<'\n'
-		<<"  + E(endRight)    = "<<contr.endRight<<'\n'
-		<<"  + ED(seq1)       = "<<contr.ED1<<'\n'
-		<<"  + ED(seq2)       = "<<contr.ED2<<'\n'
-		<<"  + Pu(seq1)       = "<<std::exp(-contr.ED1/energy.getRT())<<'\n'
-		<<"  + Pu(seq2)       = "<<std::exp(-contr.ED2/energy.getRT())<<'\n'
-		;
-
-	// print seed information if available
-	if (i.seedRange != NULL) {
-		out
+			// interaction range
 			<<"\n"
-			<<"seed seq1   = "<<(i.seedRange->r1.from +1)<<" -- "<<(i.seedRange->r1.to +1) <<'\n'
-			<<"seed seq2   = "<<(i.seedRange->r2.to +1)<<" -- "<<(i.seedRange->r2.from +1) <<'\n'
-			<<"seed energy = "<<(i.seedRange->energy)<<" kcal/mol\n"
-			<<"seed ED1    = "<<energy.getED1( i.seedRange->r1.from, i.seedRange->r1.to )<<" kcal/mol\n"
-			<<"seed ED2    = "<<energy.getAccessibility2().getAccessibilityOrigin().getED( i.seedRange->r2.to, i.seedRange->r2.from )<<" kcal/mol\n"
-			<<"seed Pu1    = "<<std::exp(-(energy.getED1( i.seedRange->r1.from, i.seedRange->r1.to ))/energy.getRT())<<'\n'
-			<<"seed Pu2    = "<<std::exp(-(energy.getAccessibility2().getAccessibilityOrigin().getED( i.seedRange->r2.to, i.seedRange->r2.from ))/energy.getRT())<<'\n'
+			<<"interaction seq1   = "<<(i.basePairs.begin()->first +1)<<" -- "<<(i.basePairs.rbegin()->first +1) <<'\n'
+			<<"interaction seq2   = "<<(i.basePairs.rbegin()->second +1)<<" -- "<<(i.basePairs.begin()->second +1) <<'\n'
+
+			// print energy
+			<<"\n"
+			<<"interaction energy = "<<i.energy <<" kcal/mol\n"
+			<<"  = E(init)        = "<<contr.init<<'\n'
+			<<"  + E(loops)       = "<<contr.loops<<'\n'
+			<<"  + E(dangleLeft)  = "<<contr.dangleLeft<<'\n'
+			<<"  + E(dangleRight) = "<<contr.dangleRight<<'\n'
+			<<"  + E(endLeft)     = "<<contr.endLeft<<'\n'
+			<<"  + E(endRight)    = "<<contr.endRight<<'\n'
+			<<"  + ED(seq1)       = "<<contr.ED1<<'\n'
+			<<"  + ED(seq2)       = "<<contr.ED2<<'\n'
+			<<"  + Pu(seq1)       = "<<std::exp(-contr.ED1/energy.getRT())<<'\n'
+			<<"  + Pu(seq2)       = "<<std::exp(-contr.ED2/energy.getRT())<<'\n'
 			;
-	}
+
+		// print seed information if available
+		if (i.seedRange != NULL) {
+			out
+				<<"\n"
+				<<"seed seq1   = "<<(i.seedRange->r1.from +1)<<" -- "<<(i.seedRange->r1.to +1) <<'\n'
+				<<"seed seq2   = "<<(i.seedRange->r2.to +1)<<" -- "<<(i.seedRange->r2.from +1) <<'\n'
+				<<"seed energy = "<<(i.seedRange->energy)<<" kcal/mol\n"
+				<<"seed ED1    = "<<energy.getED1( i.seedRange->r1.from, i.seedRange->r1.to )<<" kcal/mol\n"
+				<<"seed ED2    = "<<energy.getAccessibility2().getAccessibilityOrigin().getED( i.seedRange->r2.to, i.seedRange->r2.from )<<" kcal/mol\n"
+				<<"seed Pu1    = "<<std::exp(-(energy.getED1( i.seedRange->r1.from, i.seedRange->r1.to ))/energy.getRT())<<'\n'
+				<<"seed Pu2    = "<<std::exp(-(energy.getAccessibility2().getAccessibilityOrigin().getED( i.seedRange->r2.to, i.seedRange->r2.from ))/energy.getRT())<<'\n'
+				;
+		}
+	} // omp critical(intarna_outputStreamUpdate)
 
 }
 

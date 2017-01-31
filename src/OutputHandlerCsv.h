@@ -42,6 +42,7 @@ public:
 		Pu1, //!< probability to be accessible for seq1
 		Pu2, //!< probability to be accessible for seq2
 		E_init, //!< initiation energy
+		E_loops, //!< sum of loop energies (excluding E_init)
 		E_dangleL, //!< dangling end contribution of base pair (start1,end2)
 		E_dangleR, //!< dangling end contribution of base pair (end1,start2)
 		E_endL, //!< penalty of closing base pair (start1,end2)
@@ -101,6 +102,7 @@ protected:
 			colType2string[Pu1] = "Pu1";
 			colType2string[Pu2] = "Pu2";
 			colType2string[E_init] = "E_init";
+			colType2string[E_loops] = "E_loops";
 			colType2string[E_dangleL] = "E_dangleL";
 			colType2string[E_dangleR] = "E_dangleR";
 			colType2string[E_endL] = "E_endL";

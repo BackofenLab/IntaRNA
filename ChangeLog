@@ -6,16 +6,33 @@
      + setup of opts_cmdline_short
    * parse() 
      + handling of short and full help output
+     + disallow multi-threading for IntaRNA v1 output (due to separators)
    * q|tAcc : renamed 'F' option to 'C' for 'computation of accessibilities'
    * adaption to OutputHandlerIntaRNA1* rename
    + OutputMode::V1_NORMAL : normal version 1.* output
+   + threads + validate + getter : OMP max thread number
  - OutputHandlerIntaRNA1detailed : renamed to OutputHandlerIntaRNA1
  + OutputHandlerIntaRNA1 : former OutputHandlerIntaRNA1detailed
    + detailedOutput : flag to switch between detailed and normal v1 output
+   + OMP : ensure no parallel write to output stream
  * perl/IntaRNA*_1ui.pl :
    + normal output enabled (-o flag now with effect)
  * intaRNA :
    * adaption to OutputHandlerIntaRNA1* rename
+   + OMP : parallelization of target/query processing
+   + OMP : exception handling within parallelized loops due to missing OMP 
+     exception forwarding
+ * OutputHandlerCsv : 
+   + E_loops output
+   + OMP : ensure no parallel write to output stream
+ * OutputHandlerText : 
+   + OMP : ensure no parallel write to output stream
+ * AccessibilityVrna :
+   + OMP : ensure no parallel VRNA-calls since not threadsafe
+ + m4/m4_ax_openmp.mp4 : OMP checks
+ * configure.ac :
+   - backward compatibility stuff for autoconf < 2.65 
+   + OMP check and AM_CXXFLAGS setup
 
 170130 Martin Mann :
  * CommandLineParsing :

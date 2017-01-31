@@ -4,6 +4,8 @@
 #include <sstream>
 #include <iomanip>
 
+#include <omp.h>
+
 ////////////////////////////////////////////////////////////////////////////
 
 OutputHandlerIntaRNA1::
@@ -51,22 +53,26 @@ add( const Interaction & i )
 	// count report
 	reportedInteractions++;
 
-	if (!initialOutputDone) {
-		if (printSeparator) {
-			out <<"\n=========================\n"
-				<<'\n';
+	// ensure outputs do not intervene
+	#pragma omp critical(intarna_outputStreamUpdate)
+	{
+		if (!initialOutputDone) {
+			if (printSeparator) {
+				out <<"\n=========================\n"
+					<<'\n';
 
 
+			}
+			// write sequences in FASTA to out
+			out
+			<<">" <<energy.getAccessibility1().getSequence().getId() <<"\n"
+			<<(detailedOutput ? energy.getAccessibility1().getSequence().asString()+"\n" : "")
+			<<">" <<energy.getAccessibility2().getSequence().getId() <<"\n"
+			<<(detailedOutput ? energy.getAccessibility2().getAccessibilityOrigin().getSequence().asString()+"\n" : "")
+			;
+			initialOutputDone = true;
 		}
-		// write sequences in FASTA to out
-		out
-		<<">" <<energy.getAccessibility1().getSequence().getId() <<"\n"
-		<<(detailedOutput ? energy.getAccessibility1().getSequence().asString()+"\n" : "")
-		<<">" <<energy.getAccessibility2().getSequence().getId() <<"\n"
-		<<(detailedOutput ? energy.getAccessibility2().getAccessibilityOrigin().getSequence().asString()+"\n" : "")
-		;
-		initialOutputDone = true;
-	}
+	} // omp critical(intarna_outputStreamUpdate)
 
 	// get interaction start/end per sequence
 	const size_t i1 = i.basePairs.begin()->first;
@@ -176,38 +182,44 @@ add( const Interaction & i )
 	s2Unbound <<reverse(i.s2->asString().substr( 0, j2))
 			<<"-5'";
 
-	// print full interaction to output stream
-	out <<'\n'
-		// print collected interaction stuff
-		<<s1Unbound.str() <<'\n'
-		<<s1Bound.str() <<'\n'
-		<<s2Bound.str() <<'\n'
-		<<s2Unbound.str() <<'\n'
-		;
+	// ensure outputs do not intervene
+	#pragma omp critical(intarna_outputStreamUpdate)
+	{
 
-	if (detailedOutput) {
-		// get individual energy contributions
-		InteractionEnergy::EnergyContributions contr = energy.getE_contributions(i);
-			// print interaction details
-		out	<<'\n'
-			<<"positions(target)     : "<<(i.basePairs.begin()->first +1)<<" -- "<<(i.basePairs.rbegin()->first +1) <<'\n'
-			<<"positions seed(target): "<<(i.seedRange!=NULL?toString(i.seedRange->r1.from +1):"?")<<" -- "<<(i.seedRange!=NULL?toString(i.seedRange->r1.to +1):"?") <<'\n'
-			<<"positions with dangle(target): "<<(i.basePairs.begin()->first +1)<<" -- "<<(i.basePairs.rbegin()->first +1) <<'\n'
-			<<"positions(ncRNA)      : "<<(i.basePairs.rbegin()->second +1)<<" -- "<<(i.basePairs.begin()->second +1) <<'\n'
-			<<"positions seed(ncRNA) : "<<(i.seedRange!=NULL?toString(i.seedRange->r2.to +1):"?")<<" -- "<<(i.seedRange!=NULL?toString(i.seedRange->r2.from +1):"?") <<'\n'
-			<<"positions with dangle(ncRNA): "<<(i.basePairs.rbegin()->second +1)<<" -- "<<(i.basePairs.begin()->second +1) <<'\n'
-			<<"ED target need: "<<contr.ED1 <<" kcal/mol"<<'\n'
-			<<"ED ncRNA  need: "<<contr.ED2 <<" kcal/mol"<<'\n'
-			<<"hybrid energy : "<<(i.energy-contr.ED1-contr.ED2) <<" kcal/mol"<<'\n'
-			<<"\n"
-			<<"energy: "<<i.energy <<" kcal/mol\n"
+		// print full interaction to output stream
+		out <<'\n'
+			// print collected interaction stuff
+			<<s1Unbound.str() <<'\n'
+			<<s1Bound.str() <<'\n'
+			<<s2Bound.str() <<'\n'
+			<<s2Unbound.str() <<'\n'
 			;
-	} else {
-		// normal minimal information output
-		out	<<'\n'
-			<<"energy: "<<i.energy <<" kcal/mol\n"
-			;
-	}
+
+		if (detailedOutput) {
+			// get individual energy contributions
+			InteractionEnergy::EnergyContributions contr = energy.getE_contributions(i);
+				// print interaction details
+			out	<<'\n'
+				<<"positions(target)     : "<<(i.basePairs.begin()->first +1)<<" -- "<<(i.basePairs.rbegin()->first +1) <<'\n'
+				<<"positions seed(target): "<<(i.seedRange!=NULL?toString(i.seedRange->r1.from +1):"?")<<" -- "<<(i.seedRange!=NULL?toString(i.seedRange->r1.to +1):"?") <<'\n'
+				<<"positions with dangle(target): "<<(i.basePairs.begin()->first +1)<<" -- "<<(i.basePairs.rbegin()->first +1) <<'\n'
+				<<"positions(ncRNA)      : "<<(i.basePairs.rbegin()->second +1)<<" -- "<<(i.basePairs.begin()->second +1) <<'\n'
+				<<"positions seed(ncRNA) : "<<(i.seedRange!=NULL?toString(i.seedRange->r2.to +1):"?")<<" -- "<<(i.seedRange!=NULL?toString(i.seedRange->r2.from +1):"?") <<'\n'
+				<<"positions with dangle(ncRNA): "<<(i.basePairs.rbegin()->second +1)<<" -- "<<(i.basePairs.begin()->second +1) <<'\n'
+				<<"ED target need: "<<contr.ED1 <<" kcal/mol"<<'\n'
+				<<"ED ncRNA  need: "<<contr.ED2 <<" kcal/mol"<<'\n'
+				<<"hybrid energy : "<<(i.energy-contr.ED1-contr.ED2) <<" kcal/mol"<<'\n'
+				<<"\n"
+				<<"energy: "<<i.energy <<" kcal/mol\n"
+				;
+		} else {
+			// normal minimal information output
+			out	<<'\n'
+				<<"energy: "<<i.energy <<" kcal/mol\n"
+				;
+		}
+
+	} // omp critical(intarna_outputStreamUpdate)
 
 }
 

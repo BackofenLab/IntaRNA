@@ -51,32 +51,38 @@ AccessibilityVrna::AccessibilityVrna(
 	esValues( NULL )
 {
 
-	// check if constraint given
-	// or sliding window empty
-	// or larger than sequence length
-	if ( (! getAccConstraint().isEmpty()) || (plFoldW==0) || (plFoldW >= getSequence().size()) ) {
-		if (plFoldW > 0 && plFoldW < getSequence().size() ) {
-			throw std::runtime_error("sequence '"+seq.getId()+"': accuracy constraints provided but sliding window enabled (>0), which is currently not supported");
+	// VRNA computation not completely threadsafe
+	#pragma omp critical(intarna_computeAccessibilityVrna)
+	{
+
+		// check if constraint given
+		// or sliding window empty
+		// or larger than sequence length
+		if ( (! getAccConstraint().isEmpty()) || (plFoldW==0) || (plFoldW >= getSequence().size()) ) {
+			if (plFoldW > 0 && plFoldW < getSequence().size() ) {
+				throw std::runtime_error("sequence '"+seq.getId()+"': accuracy constraints provided but sliding window enabled (>0), which is currently not supported");
+			}
+			// TODO NOTE, THIS FUNCTION IS NOT THREADSAFE ...
+			fillByRNAup(vrnaHandler
+					, (plFoldL==0? getSequence().size() : std::min(plFoldL,getSequence().size()))
+					);
+			// compute ES values
+			if (computeES_) {
+				computeES( vrnaHandler, plFoldL );
+			}
+			// inefficient ED value computation O(n^2)*O(n^5) for debugging
+	//		fillByConstraints(vrnaHandler, (plFoldW==0? getSequence().size() : std::min(plFoldW,getSequence().size())), plFoldL);
+		} else {
+			if (computeES_) {
+				throw std::runtime_error("can not compute local structure energies (ES) for sliding window accessibility computation");
+			}
+			fillByRNAplfold(vrnaHandler
+					, (plFoldW==0? getSequence().size() : std::min(plFoldW,getSequence().size()))
+					, (plFoldL==0? getSequence().size() : std::min(plFoldL,getSequence().size()))
+					);
 		}
-		// TODO NOTE, THIS FUNCTION IS NOT THREADSAFE ...
-		fillByRNAup(vrnaHandler
-				, (plFoldL==0? getSequence().size() : std::min(plFoldL,getSequence().size()))
-				);
-		// compute ES values
-		if (computeES_) {
-			computeES( vrnaHandler, plFoldL );
-		}
-		// inefficient ED value computation O(n^2)*O(n^5) for debugging
-//		fillByConstraints(vrnaHandler, (plFoldW==0? getSequence().size() : std::min(plFoldW,getSequence().size())), plFoldL);
-	} else {
-		if (computeES_) {
-			throw std::runtime_error("can not compute local structure energies (ES) for sliding window accessibility computation");
-		}
-		fillByRNAplfold(vrnaHandler
-				, (plFoldW==0? getSequence().size() : std::min(plFoldW,getSequence().size()))
-				, (plFoldL==0? getSequence().size() : std::min(plFoldL,getSequence().size()))
-				);
-	}
+
+	} // omp critical(intarna_computeAccessibilityVrna)
 
 }
 

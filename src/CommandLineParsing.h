@@ -202,6 +202,14 @@ public:
 	void
 	writeTargetAccessibility( const Accessibility & acc ) const;
 
+	/**
+	 * Number of threads to be used for parallel processing of
+	 * query-target-combinations.
+	 * @return number of threads to be used (>0)
+	 */
+	size_t
+	getThreads() const;
+
 protected:
 
 	/////////  PRIVATE STUFF  ////////////////////////////////////////////////
@@ -377,6 +385,8 @@ protected:
 
 	//! the prediction mode
 	NumberParameter<int> predMode;
+	//! number of threads = number of parallel predictors running
+	NumberParameter<int> threads;
 
 	//! the selected energy model
 	CharParameter energy;
@@ -669,6 +679,12 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_outPuFilet( const std::string & value);
+
+	/**
+	 * Validates the threads argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_threads( const int & value);
 
 	////////////  GENERIC TESTS  /////////////////
 
@@ -1299,6 +1315,15 @@ void CommandLineParsing::validate_outPuFilet(const std::string & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
+void CommandLineParsing::validate_threads(const int & value)
+{
+	// forward check to general method
+	validate_numberArgument("threads", threads, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
 void
 CommandLineParsing::
 writeQueryAccessibility( const Accessibility & acc ) const
@@ -1330,6 +1355,16 @@ writeTargetAccessibility( const Accessibility & acc ) const
 		VLOG(2) <<"writing unpaired probabilities for target '"<<acc.getSequence().getId()<<"' to "<<outPuFilet;
 		writeAccessibility( acc, outPuFilet, false );
 	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+size_t
+CommandLineParsing::
+getThreads() const
+{
+	return threads.val;
 }
 
 ////////////////////////////////////////////////////////////////////////////
