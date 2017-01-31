@@ -6,13 +6,15 @@
 
 ////////////////////////////////////////////////////////////////////////////
 
-OutputHandlerIntaRNA1detailed::
-OutputHandlerIntaRNA1detailed(
+OutputHandlerIntaRNA1::
+OutputHandlerIntaRNA1(
 		std::ostream & out
 		, const InteractionEnergy & energy
+		, const bool detailedOutput
 		)
  :
-	out(out)
+	detailedOutput(detailedOutput)
+	, out(out)
 	, energy(energy)
 	, initialOutputDone(false)
 	, printSeparator(false)
@@ -21,8 +23,8 @@ OutputHandlerIntaRNA1detailed(
 
 ////////////////////////////////////////////////////////////////////////////
 
-OutputHandlerIntaRNA1detailed::
-~OutputHandlerIntaRNA1detailed()
+OutputHandlerIntaRNA1::
+~OutputHandlerIntaRNA1()
 {
 	out.flush();
 }
@@ -30,13 +32,13 @@ OutputHandlerIntaRNA1detailed::
 ////////////////////////////////////////////////////////////////////////////
 
 void
-OutputHandlerIntaRNA1detailed::
+OutputHandlerIntaRNA1::
 add( const Interaction & i )
 {
 #if IN_DEBUG_MODE
 	// debug checks
 	if ( i.basePairs.size() > 0 && ! i.isValid() ) {
-		throw std::runtime_error("OutputHandlerIntaRNA1detailed::add() : given interaction is not valid : "+toString(i));
+		throw std::runtime_error("OutputHandlerIntaRNA1::add() : given interaction is not valid : "+toString(i));
 	}
 #endif
 
@@ -59,9 +61,9 @@ add( const Interaction & i )
 		// write sequences in FASTA to out
 		out
 		<<">" <<energy.getAccessibility1().getSequence().getId() <<"\n"
-		<<energy.getAccessibility1().getSequence().asString()<<"\n"
+		<<(detailedOutput ? energy.getAccessibility1().getSequence().asString()+"\n" : "")
 		<<">" <<energy.getAccessibility2().getSequence().getId() <<"\n"
-		<<energy.getAccessibility2().getAccessibilityOrigin().getSequence().asString()<<"\n"
+		<<(detailedOutput ? energy.getAccessibility2().getAccessibilityOrigin().getSequence().asString()+"\n" : "")
 		;
 		initialOutputDone = true;
 	}
@@ -174,9 +176,6 @@ add( const Interaction & i )
 	s2Unbound <<reverse(i.s2->asString().substr( 0, j2))
 			<<"-5'";
 
-	// get individual energy contributions
-	InteractionEnergy::EnergyContributions contr = energy.getE_contributions(i);
-
 	// print full interaction to output stream
 	out <<'\n'
 		// print collected interaction stuff
@@ -184,20 +183,31 @@ add( const Interaction & i )
 		<<s1Bound.str() <<'\n'
 		<<s2Bound.str() <<'\n'
 		<<s2Unbound.str() <<'\n'
-		// print interaction details
-		<<'\n'
-		<<"positions(target)     : "<<(i.basePairs.begin()->first +1)<<" -- "<<(i.basePairs.rbegin()->first +1) <<'\n'
-		<<"positions seed(target): "<<(i.seedRange!=NULL?toString(i.seedRange->r1.from +1):"?")<<" -- "<<(i.seedRange!=NULL?toString(i.seedRange->r1.to +1):"?") <<'\n'
-		<<"positions with dangle(target): "<<(i.basePairs.begin()->first +1)<<" -- "<<(i.basePairs.rbegin()->first +1) <<'\n'
-		<<"positions(ncRNA)      : "<<(i.basePairs.rbegin()->second +1)<<" -- "<<(i.basePairs.begin()->second +1) <<'\n'
-		<<"positions seed(ncRNA) : "<<(i.seedRange!=NULL?toString(i.seedRange->r2.to +1):"?")<<" -- "<<(i.seedRange!=NULL?toString(i.seedRange->r2.from +1):"?") <<'\n'
-		<<"positions with dangle(ncRNA): "<<(i.basePairs.rbegin()->second +1)<<" -- "<<(i.basePairs.begin()->second +1) <<'\n'
-		<<"ED target need: "<<contr.ED1 <<" kcal/mol"<<'\n'
-		<<"ED ncRNA  need: "<<contr.ED2 <<" kcal/mol"<<'\n'
-		<<"hybrid energy : "<<(i.energy-contr.ED1-contr.ED2) <<" kcal/mol"<<'\n'
-		<<"\n"
-		<<"energy: "<<i.energy <<" kcal/mol\n"
 		;
+
+	if (detailedOutput) {
+		// get individual energy contributions
+		InteractionEnergy::EnergyContributions contr = energy.getE_contributions(i);
+			// print interaction details
+		out	<<'\n'
+			<<"positions(target)     : "<<(i.basePairs.begin()->first +1)<<" -- "<<(i.basePairs.rbegin()->first +1) <<'\n'
+			<<"positions seed(target): "<<(i.seedRange!=NULL?toString(i.seedRange->r1.from +1):"?")<<" -- "<<(i.seedRange!=NULL?toString(i.seedRange->r1.to +1):"?") <<'\n'
+			<<"positions with dangle(target): "<<(i.basePairs.begin()->first +1)<<" -- "<<(i.basePairs.rbegin()->first +1) <<'\n'
+			<<"positions(ncRNA)      : "<<(i.basePairs.rbegin()->second +1)<<" -- "<<(i.basePairs.begin()->second +1) <<'\n'
+			<<"positions seed(ncRNA) : "<<(i.seedRange!=NULL?toString(i.seedRange->r2.to +1):"?")<<" -- "<<(i.seedRange!=NULL?toString(i.seedRange->r2.from +1):"?") <<'\n'
+			<<"positions with dangle(ncRNA): "<<(i.basePairs.rbegin()->second +1)<<" -- "<<(i.basePairs.begin()->second +1) <<'\n'
+			<<"ED target need: "<<contr.ED1 <<" kcal/mol"<<'\n'
+			<<"ED ncRNA  need: "<<contr.ED2 <<" kcal/mol"<<'\n'
+			<<"hybrid energy : "<<(i.energy-contr.ED1-contr.ED2) <<" kcal/mol"<<'\n'
+			<<"\n"
+			<<"energy: "<<i.energy <<" kcal/mol\n"
+			;
+	} else {
+		// normal minimal information output
+		out	<<'\n'
+			<<"energy: "<<i.energy <<" kcal/mol\n"
+			;
+	}
 
 }
 
@@ -205,7 +215,7 @@ add( const Interaction & i )
 ////////////////////////////////////////////////////////////////////////////
 
 void
-OutputHandlerIntaRNA1detailed::
+OutputHandlerIntaRNA1::
 add( const InteractionRange & range )
 {
 	add( Interaction(range) );
@@ -214,12 +224,12 @@ add( const InteractionRange & range )
 ////////////////////////////////////////////////////////////////////////////
 
 void
-OutputHandlerIntaRNA1detailed::
+OutputHandlerIntaRNA1::
 addSeparator (const bool yesNo )
 {
 	printSeparator = yesNo;
 	if (initialOutputDone) {
-		LOG(INFO) <<"OutputHandlerIntaRNA1detailed::addSeparator() called but initial output already done...";
+		LOG(INFO) <<"OutputHandlerIntaRNA1::addSeparator() called but initial output already done...";
 	}
 }
 

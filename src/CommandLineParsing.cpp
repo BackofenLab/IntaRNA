@@ -34,8 +34,8 @@
 // TODO maxprob seed
 
 #include "OutputHandlerText.h"
-#include "OutputHandlerIntaRNA1detailed.h"
 #include "OutputHandlerCsv.h"
+#include "OutputHandlerIntaRNA1detailed.h"
 
 
 
@@ -63,7 +63,7 @@ CommandLineParsing::CommandLineParsing()
 
 	queryArg(""),
 	query(),
-	qAcc("NFPE",'F'),
+	qAcc("NCPE",'C'),
 	qAccW( 0, 99999, 150),
 	qAccL( 0, 99999, 100),
 	qAccConstr(""),
@@ -75,7 +75,7 @@ CommandLineParsing::CommandLineParsing()
 
 	targetArg(""),
 	target(),
-	tAcc("NFPE",'F'),
+	tAcc("NCPE",'C'),
 	tAccW( 0, 99999, 150),
 	tAccL( 0, 99999, 100),
 	tAccConstr(""),
@@ -135,7 +135,7 @@ CommandLineParsing::CommandLineParsing()
 				->default_value(qAcc.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_qAcc,this,_1))
 			, std::string("accessibility computation : 'N'o accessibility contributions"
-					", 'F'ull accessibility computation"
+					", 'C' computation of accessibilities"
 					", 'P' RNAplfold unpaired probability output from --qAccFile"
 					", 'E' ED values in RNAplfold Pu-like format from --qAccFile"
 					).c_str())
@@ -192,7 +192,7 @@ CommandLineParsing::CommandLineParsing()
 				->default_value(tAcc.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_tAcc,this,_1))
 			, std::string("accessibility computation : 'N'o accessibility contributions"
-					", 'F'ull accessibility computation"
+					", 'C' computation of accessibilities"
 					", 'P' RNAplfold unpaired probability output from --qAccFile"
 					", 'E' ED values in RNAplfold Pu-like format from --qAccFile"
 					).c_str())
@@ -600,7 +600,7 @@ parse(int argc, char** argv)
 
 			// check sanity of accessibility setup
 			switch(qAcc.val) {
-			case 'F' : {
+			case 'C' : {
 				if (!qAccFile.empty()) LOG(INFO) <<"qAcc = "<<qAcc.val<<" : ignoring --qAccFile";
 				break;
 			}
@@ -618,7 +618,7 @@ parse(int argc, char** argv)
 			}
 			} // switch
 			switch(tAcc.val) {
-			case 'F' : {
+			case 'C' : {
 				if (!tAccFile.empty()) LOG(INFO) <<"tAcc = "<<tAcc.val<<" : ignoring --tAccFile";
 				break;
 			}
@@ -1017,7 +1017,7 @@ getQueryAccessibility( const size_t sequenceNumber ) const
 		return acc;
 	}
 
-	case 'F' : // compute VRNA-based accessibilities
+	case 'C' : // compute VRNA-based accessibilities
 		return new AccessibilityVrna( seq
 									, std::min( qIntLenMax.val == 0 ? seq.size() : qIntLenMax.val
 												, qAccW.val == 0 ? seq.size() : qAccW.val )
@@ -1096,7 +1096,7 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 		}
 		return acc;
 	}
-	case 'F' : // compute VRNA-based accessibilities
+	case 'C' : // compute VRNA-based accessibilities
 		return new AccessibilityVrna( seq
 									, std::min( tIntLenMax.val == 0 ? seq.size() : tIntLenMax.val
 											, tAccW.val == 0 ? seq.size() : tAccW.val )
@@ -1402,10 +1402,12 @@ getOutputHandler( const InteractionEnergy & energy ) const
 	switch ((OutputMode)outMode.val) {
 	case DETAILED :
 		return new OutputHandlerText( getOutputStream(), energy );
-	case V1_DETAILED :
-		return new OutputHandlerIntaRNA1detailed( getOutputStream(), energy );
 	case CSV :
 		return new OutputHandlerCsv( getOutputStream(), energy, OutputHandlerCsv::string2list( outCsvCols ));
+	case V1_NORMAL :
+		return new OutputHandlerIntaRNA1( getOutputStream(), energy, false );
+	case V1_DETAILED :
+		return new OutputHandlerIntaRNA1( getOutputStream(), energy, true );
 	}
 }
 

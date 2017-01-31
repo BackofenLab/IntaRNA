@@ -53,9 +53,10 @@ public:
 	enum OutputMode {
 		OutputMode_min = 0,
 		DETAILED = 0,
-		V1_DETAILED = 1,
-		CSV = 2,
-		OutputMode_max = 2
+		CSV = 1,
+		V1_NORMAL = 2,
+		V1_DETAILED = 3,
+		OutputMode_max = 3
 	};
 
 

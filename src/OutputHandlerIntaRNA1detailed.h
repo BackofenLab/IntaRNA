@@ -13,7 +13,7 @@
  *
  * @author Martin Mann 2016
  */
-class OutputHandlerIntaRNA1detailed: public OutputHandler {
+class OutputHandlerIntaRNA1: public OutputHandler {
 public:
 
 	/**
@@ -22,14 +22,17 @@ public:
 	 *
 	 * @param out the stream to write to
 	 * @param energy the interaction energy object used for computation
+	 * @param detailedOutput whether or not to produce detailed (true) or
+	 *        normal (false) IntaRNA v1* output
 	 */
-	OutputHandlerIntaRNA1detailed( std::ostream & out
-				, const InteractionEnergy & energy );
+	OutputHandlerIntaRNA1( std::ostream & out
+				, const InteractionEnergy & energy
+				, const bool detailedOutput );
 
 	/**
 	 * destruction, enforces a flush on the output stream.
 	 */
-	virtual ~OutputHandlerIntaRNA1detailed();
+	virtual ~OutputHandlerIntaRNA1();
 
 	/**
 	 * Write a given RNA-RNA interaction in simple text format to the output
@@ -62,6 +65,9 @@ public:
 	addSeparator (const bool yesNo );
 
 protected:
+
+	//! whether or not to produce detailed (true) or normal (false) output
+	const bool detailedOutput;
 
 	//! the output stream to write the interaction text representation to
 	std::ostream & out;

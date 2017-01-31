@@ -6,6 +6,16 @@
      + setup of opts_cmdline_short
    * parse() 
      + handling of short and full help output
+   * q|tAcc : renamed 'F' option to 'C' for 'computation of accessibilities'
+   * adaption to OutputHandlerIntaRNA1* rename
+   + OutputMode::V1_NORMAL : normal version 1.* output
+ - OutputHandlerIntaRNA1detailed : renamed to OutputHandlerIntaRNA1
+ + OutputHandlerIntaRNA1 : former OutputHandlerIntaRNA1detailed
+   + detailedOutput : flag to switch between detailed and normal v1 output
+ * perl/IntaRNA*_1ui.pl :
+   + normal output enabled (-o flag now with effect)
+ * intaRNA :
+   * adaption to OutputHandlerIntaRNA1* rename
 
 170130 Martin Mann :
  * CommandLineParsing :

@@ -107,7 +107,11 @@ if (defined $args{l}) {
 	$intaRNA2call .= " --qIntLenMax=0"; 
 }
 if (defined $args{o} && $args{o}==1) {
-	# TODO setup detailed output
+	# setup detailed v1 output
+	$intaRNA2call .=" --outMode=3";
+} else {
+	# setup normal v1 output
+	$intaRNA2call .=" --outMode=2";
 }
 if (defined $args{n} && $args{n}==1) {
 	$intaRNA2call .= " --mode=1"
@@ -121,7 +125,6 @@ if (defined $args{u}) {
 }
 #$intaRNA2call .=" --seedMaxE=999"; # enable for IntaRNA v1-like seed handling
 $intaRNA2call .=" --energy=F";
-$intaRNA2call .=" --outMode=1";
 
 # call intaRNA 2
 system($intaRNAbinPath."IntaRNA"." ".$intaRNA2call);

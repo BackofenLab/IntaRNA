@@ -105,8 +105,8 @@ int main(int argc, char **argv) {
 				CHECKNOTNULL(output,"output handler initialization failed");
 
 				// check if we have to add separator for IntaRNA v1 output
-				if (reportedInteractions > 0 && dynamic_cast<OutputHandlerIntaRNA1detailed*>(output) != NULL) {
-					dynamic_cast<OutputHandlerIntaRNA1detailed*>(output)->addSeparator( true );
+				if (reportedInteractions > 0 && dynamic_cast<OutputHandlerIntaRNA1*>(output) != NULL) {
+					dynamic_cast<OutputHandlerIntaRNA1*>(output)->addSeparator( true );
 				}
 
 				// get interaction prediction handler
