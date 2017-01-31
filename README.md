@@ -1,9 +1,13 @@
 [![Build Status](https://travis-ci.org/BackofenLab/IntaRNA.svg?branch=master)](https://travis-ci.org/BackofenLab/IntaRNA)
 
 # IntaRNA
-Efficient target prediction incorporating accessibility and seeding of interaction sites
 
-**Motivation**: During the last few years, several new small regulatory RNAs 
+<center style="font-weight:bold;font-size:110%;">
+	Efficient RNA-RNA interaction prediction incorporating accessibility and 
+	seeding of interaction sites
+</center>
+
+During the last few years, several new small regulatory RNAs 
 (sRNAs) have been discovered in bacteria. Most of them act as post-transcriptional 
 regulators by base pairing to a target mRNA, causing translational repression 
 or activation, or mRNA degradation. Numerous sRNAs have already been identified, 
@@ -13,11 +17,18 @@ target prediction programs neglect the accessibility of target sites and the
 existence of a seed, while other approaches are either specialized to certain 
 types of RNAs or too slow for genome-wide searches.
 
-**Results:** We introduce IntaRNA, a new general and fast approach to the 
-prediction of RNA-RNA interactions incorporating accessibility of target sites 
-as well as the existence of a user-definable seed. We successfully applied 
+Our tool IntaRNA is a general and fast approach to the 
+prediction of RNA-RNA interactions incorporating both the accessibility of 
+interacting sites 
+as well as the existence of a user-definable seed interaction. We successfully applied 
 IntaRNA to the prediction of bacterial sRNA targets and determined the exact 
 locations of the interactions with a higher accuracy than competing programs. 
+
+For testing or ad hoc use of IntaRNA, you can use its webinterface at the
+
+<center>
+	**[Freiburg RNA tools IntaRNA webserver](http://rna.informatik.uni-freiburg.de/IntaRNA/)**
+</center>
 
 ## Contribution
 
@@ -32,16 +43,21 @@ If you use IntaRNA, please cite our
 doi: 10.1093/bioinformatics/btn544
 ```
 
+<a name="doc" style="margin-top:50px;" />
 # Documentation
 
 ## Overview
 
-- [Dependencies](#dependencies)
+The following topics are covered by this documentation:
+
+- [Dependencies](#deps)
 - [Prediction modes, their features and emulated tools](#predModes)
 - [Read/write accessibility from/to file or stream](#accFromFile)
 
 
-<a name="dependencies" />
+
+
+<a name="deps" style="margin-top:50px;" />
 ## Dependencies
 
 - compiler supporting C++11 standard and openmp
@@ -50,7 +66,10 @@ doi: 10.1093/bioinformatics/btn544
 - [Vienna RNA package](http://www.tbi.univie.ac.at/RNA/) version >= 2.3.0
 
 
-<a name="predModes" />
+
+
+
+<a name="predModes" style="margin-top:50px;" />
 ## Prediction modes, their features and emulated tools
 
 For the prediction of *minimum free energy interactions*, the following modes
@@ -96,7 +115,7 @@ IntaRNA --mode=1 --noSeed --qAccW=0 --qAccL=0 --tAccW=0 --tAccL=0
 ```
 
 
-<a name="accFromFile"/>
+<a name="accFromFile" style="margin-top:50px;" />
 ## Read/write accessibilities/probabilities from/to file or stream
 
 It is possible to read precomputed accessibility values from file or stream to
