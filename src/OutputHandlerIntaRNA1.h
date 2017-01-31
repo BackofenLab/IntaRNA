@@ -1,6 +1,6 @@
 
-#ifndef OUTPUTHANDLERINTARNA1DETAILED_H_
-#define OUTPUTHANDLERINTARNA1DETAILED_H_
+#ifndef OUTPUTHANDLERINTARNA1_H_
+#define OUTPUTHANDLERINTARNA1_H_
 
 #include "OutputHandler.h"
 #include "InteractionEnergy.h"
@@ -84,4 +84,4 @@ protected:
 
 };
 
-#endif /* OUTPUTHANDLERINTARNA1DETAILED_H_ */
+#endif /* OUTPUTHANDLERINTARNA1_H_ */
