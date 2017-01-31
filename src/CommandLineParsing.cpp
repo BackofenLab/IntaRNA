@@ -35,7 +35,7 @@
 
 #include "OutputHandlerText.h"
 #include "OutputHandlerCsv.h"
-#include "OutputHandlerIntaRNA1detailed.h"
+#include "OutputHandlerIntaRNA1.h"
 
 
 
