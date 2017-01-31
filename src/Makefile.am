@@ -39,8 +39,8 @@ IntaRNA_SOURCES =	intaRNA.cpp \
 					OutputHandler.cpp \
 					OutputHandlerCsv.h \
 					OutputHandlerCsv.cpp \
-					OutputHandlerIntaRNA1detailed.h \
-					OutputHandlerIntaRNA1detailed.cpp \
+					OutputHandlerIntaRNA1.h \
+					OutputHandlerIntaRNA1.cpp \
 					OutputHandlerRangeOnly.h \
 					OutputHandlerRangeOnly.cpp \
 					OutputHandlerText.h \
