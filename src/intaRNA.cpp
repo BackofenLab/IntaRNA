@@ -30,8 +30,8 @@ INITIALIZE_EASYLOGGINGPP
  */
 int main(int argc, char **argv){
 
-	// global return value that can be set to abort (parallelized) loops
-	int intarnaReturnValue = 0;
+	// global value that can be set to abort (parallelized) loops
+	bool intarnaAborted = false;
 
 	try {
 	
@@ -88,154 +88,162 @@ int main(int argc, char **argv){
 		// run prediction for all pairs of sequences
 		// first: iterate over all target sequences
 		// parallelize this loop if possible; if not -> parallelize the query-loop
-		# pragma omp parallel for schedule(dynamic) num_threads( parameters.getThreads() ) shared(intarnaReturnValue,queryAcc,reportedInteractions) if(parallelizeTargetLoop)
+		# pragma omp parallel for schedule(dynamic) num_threads( parameters.getThreads() ) shared(intarnaAborted,queryAcc,reportedInteractions) if(parallelizeTargetLoop)
 		for ( size_t targetNumber = 0; targetNumber < parameters.getTargetSequences().size(); ++targetNumber )
 		{
+			#pragma omp flush (intarnaAborted)
 			// explicit try-catch-block due to missing OMP exception forwarding
-			try {
-				// get target accessibility handler
-				VLOG(1) <<"computing accessibility for target '"<<parameters.getTargetSequences().at(targetNumber).getId()<<"'...";
+			if (!intarnaAborted) {
+				try {
+					// get target accessibility handler
+					VLOG(1) <<"computing accessibility for target '"<<parameters.getTargetSequences().at(targetNumber).getId()<<"'...";
 
-				// VRNA not completely threadsafe ...
-				Accessibility * targetAcc = parameters.getTargetAccessibility(targetNumber);
-				CHECKNOTNULL(targetAcc,"target initialization failed");
+					// VRNA not completely threadsafe ...
+					Accessibility * targetAcc = parameters.getTargetAccessibility(targetNumber);
+					CHECKNOTNULL(targetAcc,"target initialization failed");
 
-				// check if we have to warn about ambiguity
-				if (targetAcc->getSequence().isAmbiguous()) {
-					LOG(INFO) <<"Sequence '"<<targetAcc->getSequence().getId()
-							<<"' contains ambiguous IUPAC nucleotide encodings. These positions are ignored for interaction computation and replaced by 'N'.";
-				}
-
-				// second: iterate over all query sequences
-				// this parallelization should only be enabled if the outer target-loop is not parallelized
-				# pragma omp parallel for schedule(dynamic) num_threads( parameters.getThreads() ) shared(intarnaReturnValue,queryAcc,reportedInteractions,targetAcc,targetNumber) if(parallelizeQueryLoop)
-				for ( size_t queryNumber = 0; queryNumber < parameters.getQuerySequences().size(); ++queryNumber )
-				{
-					// explicit try-catch-block due to missing OMP exception forwarding
-					try {
-						// sanity check
-						assert( queryAcc.at(queryNumber) != NULL );
-
-						// get energy computation handler for both sequences
-						InteractionEnergy* energy = parameters.getEnergyHandler( *targetAcc, *(queryAcc.at(queryNumber)) );
-						CHECKNOTNULL(energy,"energy initialization failed");
-
-						// get output/storage handler
-						OutputHandler * output = parameters.getOutputHandler( *energy );
-						CHECKNOTNULL(output,"output handler initialization failed");
-
-						// check if we have to add separator for IntaRNA v1 output
-						if (reportedInteractions > 0 && dynamic_cast<OutputHandlerIntaRNA1*>(output) != NULL) {
-							dynamic_cast<OutputHandlerIntaRNA1*>(output)->addSeparator( true );
-						}
-
-						// get interaction prediction handler
-						Predictor * predictor = parameters.getPredictor( *energy, *output );
-						CHECKNOTNULL(predictor,"predictor initialization failed");
-
-						// run prediction for all range combinations
-						BOOST_FOREACH(const IndexRange & tRange, parameters.getTargetRanges(targetNumber)) {
-						BOOST_FOREACH(const IndexRange & qRange, parameters.getQueryRanges(queryNumber)) {
-
-							VLOG(1) <<"predicting interactions for"
-									<<" target range " <<tRange
-									<<" and"
-									<<" query range " <<qRange
-									<<"...";
-
-							predictor->predict(	  tRange
-												, queryAcc.at(queryNumber)->getReversedIndexRange(qRange)
-												, parameters.getOutputConstraint()
-												);
-
-						} // target ranges
-						} // query ranges
-
-						#pragma omp atomic update
-						reportedInteractions += output->reported();
-
-						// garbage collection
-						CLEANUP(predictor);
-						CLEANUP(output);
-						CLEANUP(energy);
-
-					////////////////////// exception handling ///////////////////////////
-					} catch (std::exception & e) {
-						LOG(DEBUG) <<"Exception raised for  target "
-									<<parameters.getTargetSequences().at(targetNumber).getId()
-									<<" and query "
-									<<parameters.getQuerySequences().at(queryNumber).getId()
-									<<" : " <<e.what() <<"\n\n"
-				#if IN_DEBUG_MODE
-							<<"  ==> run debugger for details\n";
-						throw e;
-				#else
-							<<"  ==> Please report to the IntaRNA development team! Thanks!\n";
-						#pragma omp atomic write
-						intarnaReturnValue = -1;
-						break;
-				#endif
-					} catch (...) {
-						std::exception_ptr eptr = std::current_exception();
-						LOG(DEBUG) <<"Unknown exception raised for target "
-									<<parameters.getTargetSequences().at(targetNumber).getId()
-									<<" and query "
-									<<parameters.getQuerySequences().at(queryNumber).getId()
-									<<"\n\n"
-				#if IN_DEBUG_MODE
-							<<"  ==> run debugger for details\n";
-						if (eptr) {
-							std::rethrow_exception(eptr);
-						}
-				#else
-							<<"  ==> Please report to the IntaRNA development team! Thanks!\n";
-						#pragma omp atomic write
-						intarnaReturnValue = -1;
-						break;
-				#endif
-
+					// check if we have to warn about ambiguity
+					if (targetAcc->getSequence().isAmbiguous()) {
+						LOG(INFO) <<"Sequence '"<<targetAcc->getSequence().getId()
+								<<"' contains ambiguous IUPAC nucleotide encodings. These positions are ignored for interaction computation and replaced by 'N'.";
 					}
+
+					// second: iterate over all query sequences
+					// this parallelization should only be enabled if the outer target-loop is not parallelized
+					# pragma omp parallel for schedule(dynamic) num_threads( parameters.getThreads() ) shared(intarnaAborted,queryAcc,reportedInteractions,targetAcc,targetNumber) if(parallelizeQueryLoop)
+					for ( size_t queryNumber = 0; queryNumber < parameters.getQuerySequences().size(); ++queryNumber )
+					{
+						#pragma omp flush (intarnaAborted)
+						// explicit try-catch-block due to missing OMP exception forwarding
+						if (!intarnaAborted) {
+							try {
+								// sanity check
+								assert( queryAcc.at(queryNumber) != NULL );
+
+								// get energy computation handler for both sequences
+								InteractionEnergy* energy = parameters.getEnergyHandler( *targetAcc, *(queryAcc.at(queryNumber)) );
+								CHECKNOTNULL(energy,"energy initialization failed");
+
+								// get output/storage handler
+								OutputHandler * output = parameters.getOutputHandler( *energy );
+								CHECKNOTNULL(output,"output handler initialization failed");
+
+								// check if we have to add separator for IntaRNA v1 output
+								if (reportedInteractions > 0 && dynamic_cast<OutputHandlerIntaRNA1*>(output) != NULL) {
+									dynamic_cast<OutputHandlerIntaRNA1*>(output)->addSeparator( true );
+								}
+
+								// get interaction prediction handler
+								Predictor * predictor = parameters.getPredictor( *energy, *output );
+								CHECKNOTNULL(predictor,"predictor initialization failed");
+
+								// run prediction for all range combinations
+								BOOST_FOREACH(const IndexRange & tRange, parameters.getTargetRanges(targetNumber)) {
+								BOOST_FOREACH(const IndexRange & qRange, parameters.getQueryRanges(queryNumber)) {
+
+									VLOG(1) <<"predicting interactions for"
+											<<" target range " <<tRange
+											<<" and"
+											<<" query range " <<qRange
+											<<"...";
+
+									predictor->predict(	  tRange
+														, queryAcc.at(queryNumber)->getReversedIndexRange(qRange)
+														, parameters.getOutputConstraint()
+														);
+
+								} // target ranges
+								} // query ranges
+
+								#pragma omp atomic update
+								reportedInteractions += output->reported();
+
+								// garbage collection
+								CLEANUP(predictor);
+								CLEANUP(output);
+								CLEANUP(energy);
+
+							////////////////////// exception handling ///////////////////////////
+							} catch (std::exception & e) {
+								LOG(DEBUG) <<"Exception raised for  target "
+											<<parameters.getTargetSequences().at(targetNumber).getId()
+											<<" and query "
+											<<parameters.getQuerySequences().at(queryNumber).getId()
+											<<" : " <<e.what() <<"\n\n"
+						#if IN_DEBUG_MODE
+									<<"  ==> run debugger for details\n";
+								throw e;
+						#else
+									<<"  ==> Please report to the IntaRNA development team! Thanks!\n";
+								#pragma omp atomic write
+								intarnaAborted = true;
+								#pragma omp flush (intarnaAborted)
+						#endif
+							} catch (...) {
+								std::exception_ptr eptr = std::current_exception();
+								LOG(DEBUG) <<"Unknown exception raised for target "
+											<<parameters.getTargetSequences().at(targetNumber).getId()
+											<<" and query "
+											<<parameters.getQuerySequences().at(queryNumber).getId()
+											<<"\n\n"
+						#if IN_DEBUG_MODE
+									<<"  ==> run debugger for details\n";
+								if (eptr) {
+									std::rethrow_exception(eptr);
+								}
+						#else
+									<<"  ==> Please report to the IntaRNA development team! Thanks!\n";
+								#pragma omp atomic write
+								intarnaAborted = true;
+								#pragma omp flush (intarnaAborted)
+						#endif
+
+							}
+
+						} // if not intarnaAborted
+					} // for queries
+
+					// write accessibility to file if needed
+					parameters.writeTargetAccessibility( *targetAcc );
+
+					// garbage collection
+					CLEANUP(targetAcc);
+
+				////////////////////// exception handling ///////////////////////////
+				} catch (std::exception & e) {
+					LOG(DEBUG) <<"Exception raised for target "
+								<<parameters.getTargetSequences().at(targetNumber).getId()
+								<<" : " <<e.what() <<"\n\n"
+			#if IN_DEBUG_MODE
+						<<"  ==> run debugger for details\n";
+					throw e;
+			#else
+						<<"  ==> Please report to the IntaRNA development team! Thanks!\n";
+					#pragma omp atomic write
+					intarnaAborted = true;
+					#pragma omp flush (intarnaAborted)
+			#endif
+				} catch (...) {
+					std::exception_ptr eptr = std::current_exception();
+					LOG(DEBUG) <<"Unknown exception raised for target "
+								<<parameters.getTargetSequences().at(targetNumber).getId()
+								<<"\n\n"
+			#if IN_DEBUG_MODE
+						<<"  ==> run debugger for details\n";
+					if (eptr) {
+						std::rethrow_exception(eptr);
+					}
+			#else
+						<<"  ==> Please report to the IntaRNA development team! Thanks!\n";
+					#pragma omp atomic write
+					intarnaAborted = true;
+					#pragma omp flush (intarnaAborted)
+			#endif
+
 				}
+			} // if not intarnaAborted
+		} // for targets
 
-				// write accessibility to file if needed
-				parameters.writeTargetAccessibility( *targetAcc );
-
-				// garbage collection
-				CLEANUP(targetAcc);
-
-			////////////////////// exception handling ///////////////////////////
-			} catch (std::exception & e) {
-				LOG(DEBUG) <<"Exception raised for target "
-							<<parameters.getTargetSequences().at(targetNumber).getId()
-							<<" : " <<e.what() <<"\n\n"
-		#if IN_DEBUG_MODE
-					<<"  ==> run debugger for details\n";
-				throw e;
-		#else
-					<<"  ==> Please report to the IntaRNA development team! Thanks!\n";
-				#pragma omp atomic write
-				intarnaReturnValue = -1;
-				break;
-		#endif
-			} catch (...) {
-				std::exception_ptr eptr = std::current_exception();
-				LOG(DEBUG) <<"Unknown exception raised for target "
-							<<parameters.getTargetSequences().at(targetNumber).getId()
-							<<"\n\n"
-		#if IN_DEBUG_MODE
-					<<"  ==> run debugger for details\n";
-				if (eptr) {
-					std::rethrow_exception(eptr);
-				}
-		#else
-					<<"  ==> Please report to the IntaRNA development team! Thanks!\n";
-				#pragma omp atomic write
-				intarnaReturnValue = -1;
-				break;
-		#endif
-
-			}
-		}
 		// garbage collection
 		for (size_t queryNumber=0; queryNumber < queryAcc.size(); queryNumber++) {
 			// this is a hack to cleanup the original accessibility object
@@ -257,7 +265,7 @@ int main(int argc, char **argv){
 		throw e;
 #else
 			<<"  ==> Please report to the IntaRNA development team! Thanks!\n";
-		intarnaReturnValue = -1;
+		intarnaAborted = true;
 #endif
 	} catch (...) {
 		std::exception_ptr eptr = std::current_exception();
@@ -269,12 +277,12 @@ int main(int argc, char **argv){
 		}
 #else
 			<<"  ==> Please report to the IntaRNA development team! Thanks!\n";
-		intarnaReturnValue = -1;
+		intarnaAborted = true;
 #endif
 
 	}
 
 	  // all went fine
-	return intarnaReturnValue;
+	return intarnaAborted ? -1 : 0;
 }
 
