@@ -2,10 +2,8 @@
 
 # IntaRNA
 
-<center style="font-weight:bold;font-size:110%;">
-	Efficient RNA-RNA interaction prediction incorporating accessibility and 
-	seeding of interaction sites
-</center>
+**Efficient RNA-RNA interaction prediction incorporating accessibility and 
+seeding of interaction sites**
 
 During the last few years, several new small regulatory RNAs 
 (sRNAs) have been discovered in bacteria. Most of them act as post-transcriptional 
@@ -26,9 +24,8 @@ locations of the interactions with a higher accuracy than competing programs.
 
 For testing or ad hoc use of IntaRNA, you can use its webinterface at the
 
-<center>
-	**[Freiburg RNA tools IntaRNA webserver](http://rna.informatik.uni-freiburg.de/IntaRNA/)**
-</center>
+==> **[Freiburg RNA tools IntaRNA webserver](http://rna.informatik.uni-freiburg.de/IntaRNA/)** <==
+
 
 ## Contribution
 
@@ -43,7 +40,7 @@ If you use IntaRNA, please cite our
 doi: 10.1093/bioinformatics/btn544
 ```
 
-<a name="doc" style="margin-top:50px;" />
+<a name="doc" />
 # Documentation
 
 ## Overview
@@ -57,7 +54,7 @@ The following topics are covered by this documentation:
 
 
 
-<a name="deps" style="margin-top:50px;" />
+<a name="deps" />
 ## Dependencies
 
 - compiler supporting C++11 standard and openmp
@@ -69,7 +66,7 @@ The following topics are covered by this documentation:
 
 
 
-<a name="predModes" style="margin-top:50px;" />
+<a name="predModes" />
 ## Prediction modes, their features and emulated tools
 
 For the prediction of *minimum free energy interactions*, the following modes
@@ -115,7 +112,7 @@ IntaRNA --mode=1 --noSeed --qAccW=0 --qAccL=0 --tAccW=0 --tAccL=0
 ```
 
 
-<a name="accFromFile" style="margin-top:50px;" />
+<a name="accFromFile" />
 ## Read/write accessibilities/probabilities from/to file or stream
 
 It is possible to read precomputed accessibility values from file or stream to
