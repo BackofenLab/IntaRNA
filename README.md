@@ -40,6 +40,7 @@ If you use IntaRNA, please cite our
 doi: 10.1093/bioinformatics/btn544
 ```
 
+<br /><br /><br /><br />
 <a name="doc" />
 # Documentation
 
@@ -53,7 +54,7 @@ The following topics are covered by this documentation:
 
 
 
-
+<br /><br /><br /><br />
 <a name="deps" />
 ## Dependencies
 
@@ -65,7 +66,7 @@ The following topics are covered by this documentation:
 
 
 
-
+<br /><br /><br /><br />
 <a name="predModes" />
 ## Prediction modes, their features and emulated tools
 
@@ -112,6 +113,7 @@ IntaRNA --mode=1 --noSeed --qAccW=0 --qAccL=0 --tAccW=0 --tAccL=0
 ```
 
 
+<br /><br /><br /><br />
 <a name="accFromFile" />
 ## Read/write accessibilities/probabilities from/to file or stream
 
