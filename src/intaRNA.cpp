@@ -13,7 +13,7 @@
 #include "InteractionEnergy.h"
 #include "Predictor.h"
 #include "OutputHandler.h"
-#include "OutputHandlerIntaRNA1detailed.h"
+#include "OutputHandlerIntaRNA1.h"
 
 // initialize logging for binary
 INITIALIZE_EASYLOGGINGPP
