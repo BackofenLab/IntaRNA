@@ -15,7 +15,9 @@ target prediction programs neglect the accessibility of target sites and the
 existence of a seed, while other approaches are either specialized to certain 
 types of RNAs or too slow for genome-wide searches.
 
-Our tool IntaRNA is a general and fast approach to the 
+IntaRNA, developed by
+[Prof. Backofen's bioinformatics group at Freiburg University](http://www.bioinf.uni-freiburg.de),
+is a general and fast approach to the 
 prediction of RNA-RNA interactions incorporating both the accessibility of 
 interacting sites 
 as well as the existence of a user-definable seed interaction. We successfully applied 
@@ -48,13 +50,21 @@ doi: 10.1093/bioinformatics/btn544
 
 The following topics are covered by this documentation:
 
-- [Dependencies](#deps)
-- [Prediction modes, their features and emulated tools](#predModes)
-- [Read/write accessibility from/to file or stream](#accFromFile)
+- [Installation](#install)
+  - [Dependencies](#deps)
+- [Usage and Parameters](#usage)
+  - [Prediction modes, their features and emulated tools](#predModes)
+  - [Accessibility and unpaired probabilities](#accessibility)
+    - [Local versus global unpaired probabilities](#accLocalGlobal)
+    - [Read/write accessibility from/to file or stream](#accFromFile)
 
 
 
 <br /><br /><br /><br />
+<a name="install" />
+# Installation
+
+<br /><br />
 <a name="deps" />
 ## Dependencies
 
@@ -67,6 +77,11 @@ The following topics are covered by this documentation:
 
 
 <br /><br /><br /><br />
+<a name="usage" />
+# Usage and parameters
+
+
+<br /><br />
 <a name="predModes" />
 ## Prediction modes, their features and emulated tools
 
@@ -76,7 +91,7 @@ The tiem and space complexities are given for the prediction of two sequences
 of equal length *n*.
 
 | Features | Heuristic `--mode=0` | Exact-SE `--mode=1` | Exact `--mode=2` |
-| -------- | :-------: | :------: | :---: |
+| -------- | :------------------: | :-----------------: | :--------------: |
 | Time complexity | O(*n*^2) | O(*n*^4) | O(*n*^4) |
 | Space complexity | O(*n*^2) | O(*n*^2) | O(*n*^4) |
 | Seed constraint | x | x | x |
@@ -113,9 +128,64 @@ IntaRNA --mode=1 --noSeed --qAccW=0 --qAccL=0 --tAccW=0 --tAccL=0
 ```
 
 
-<br /><br /><br /><br />
+<br /><br />
+<a name="accessibility" />
+## Accessibility and unpaired probabilities
+
+Accessibility describes the availability of an RNA subsequence for intermolecular
+base pairing. It can be expressed in terms of the probability of the subsequence
+to be unpaired (its *unpaired probability* *Pu*).
+
+A limited accessibility, i.e. a low unpaired probability, can be incorporated into
+the RNA-RNA interaction prediction by adding according energy penalties. 
+These so called *ED* values are transformed unpaired probabilities, i.e. the
+penalty for a subsequence partaking in an interaction is given by *ED=-RT log(Pu)*, 
+where *Pu* denotes the unpaired probability of the subsequence. Within the 
+IntaRNA energy model, *ED* values for both interacting subsequences are considered.
+
+Accessibility incorporation can be disabled for query or target sequences using
+`--qAcc=N` or `--tAcc=N`, respectively.
+
+A setup of `--qAcc=C` or `--tAcc=C` (default) enables accessibility computation 
+using the Vienna RNA package routines for query or target sequences, respectively.
+
+
+<a name="accLocalGlobal" />
+### Local versus global unpaired probabilities
+
+Exact computation of unpaired probabilities (*Pu* terms) is considers all possible
+structures the sequence can adopt (the whole structure ensemble). This is referred
+to as *global unpaired probabilities* as computed e.g. by **RNAup**.
+
+Since global probability computation is (a) computationally demanding and (b) not
+reasonable for long sequences, local RNA folding was suggested, which also enables
+according *local unpaired probability* computation, as e.g. done by **RNAplfold**.
+Here, a folding window of a defined length 'screens' along the RNA and computes
+unpaired probabilities within the window (while only intramolecular base pairs 
+within the window are considered).
+
+IntaRNA enables both global as well as local unpaired probability computation.
+To this end, the sliding window length has to be specified in order to enable/disable
+local folding.
+
+#### Use case examples global/local unpaired probability computation
+The use of global or local accessibilities can be defined independently 
+for query and target sequences using `--qAccW|L` and `--tAccW|L`, respectively.
+Here, `--?AccW` defines the sliding window length (0 sets it to the whole sequence length)
+and `--?AccL` defines the maximal length of considered intramolecular base pairs,
+i.e. the maximal number of positions enclosed by a base pair
+(0 sets it to the whole sequence length). Both can be defined
+independently while respecting `AccL <= AccW`.
+```bash
+# using global accessibilities for query and target
+IntaRNA [..] --qAccW=0 --qAccL=0 --tAccW=0 --qAccL=0
+# using local accessibilities for target and global for query
+IntaRNA [..] --qAccW=0 --qAccL=0 --tAccW=150 --qAccL=100
+```
+
+
 <a name="accFromFile" />
-## Read/write accessibilities/probabilities from/to file or stream
+### Read/write accessibility from/to file or stream
 
 It is possible to read precomputed accessibility values from file or stream to
 avoid their runtime demanding computation. To this end, we support the following
@@ -147,7 +217,7 @@ example for a sequence of length 5 with a maximal window length of 3.
 
 ```
 
-### Use case examples for read/write accessibilities and unpaired probabilities
+#### Use case examples for read/write accessibilities and unpaired probabilities
 If you have precomputed data, e.g. the file `plfold_lunp` with unpaired probabilities
 computed by **RNAplfold**, you can run
 ```bash
