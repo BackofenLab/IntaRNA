@@ -46,7 +46,8 @@ void
 AccessibilityFromStream::
 parseRNAplfold_text( std::istream & inStream, const E_type RT, const bool parseProbs )
 {
-	VLOG(2) <<"parsing "<<(parseProbs?"unpaired probabilities":"accessibility values")<<" from RNAplfold"<<(parseProbs?"":"-like")<<" input ...";
+	#pragma omp critical(intarna_logOutput)
+	{ VLOG(2) <<"parsing "<<(parseProbs?"unpaired probabilities":"accessibility values")<<" from RNAplfold"<<(parseProbs?"":"-like")<<" input ..."; }
 	// time logging
 	TIMED_FUNC_IF(timerObj, VLOG_IS_ON(9));
 
@@ -76,9 +77,10 @@ parseRNAplfold_text( std::istream & inStream, const E_type RT, const bool parseP
 	size_t cutStart = line.find_last_not_of("1234567890", cutEnd );
 	size_t maxAvailLength = boost::lexical_cast<size_t>( line.substr(cutStart+1,cutEnd-cutStart));
 	if (maxAvailLength < getMaxLength()) {
-		LOG(INFO) <<"initializing ED data for sequence '"<<getSequence().getId()<<" : available maximal window length "
+		#pragma omp critical(intarna_logOutput)
+		{ LOG(INFO) <<"initializing ED data for sequence '"<<getSequence().getId()<<" : available maximal window length "
 				<<maxAvailLength<<" is smaller than maximal interaction length "<<getMaxLength()
-				<<" : reducing maximal interaction length to "<<maxAvailLength;
+				<<" : reducing maximal interaction length to "<<maxAvailLength;}
 		// reducing maximal interaction length
 		availMaxLength = maxAvailLength;
 		assert( getMaxLength() == maxAvailLength ); // ensure overwrite is working
@@ -101,7 +103,8 @@ parseRNAplfold_text( std::istream & inStream, const E_type RT, const bool parseP
 			}
 			// check if we line exceeds targeted length
 			if ( j > getSequence().size() ) {
-				LOG(INFO) <<"AccessibilityFromStream::parseRNAplfold_text() : more lines found than sequence is long.. sure this is the correct file for this sequence?";
+				#pragma omp critical(intarna_logOutput)
+				{ LOG(INFO) <<"AccessibilityFromStream::parseRNAplfold_text() : more lines found than sequence is long.. sure this is the correct file for this sequence?"; }
 				// stop parsing
 				break;
 			}

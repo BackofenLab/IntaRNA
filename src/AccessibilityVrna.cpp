@@ -212,7 +212,8 @@ AccessibilityVrna::
 fillByConstraints( const VrnaHandler &vrnaHandler
 		, const size_t plFoldL )
 {
-	VLOG(2) <<"computing accessibility via n^2 fold calls...";
+	#pragma omp critical(intarna_logOutput)
+	{ VLOG(2) <<"computing accessibility via n^2 fold calls..."; }
 	// time logging
 	TIMED_FUNC_IF(timerObj, VLOG_IS_ON(9));
 
@@ -270,7 +271,8 @@ fillByRNAplfold( const VrnaHandler &vrnaHandler
 		, const size_t plFoldW
 		, const size_t plFoldL )
 {
-	VLOG(2) <<"computing accessibility via plfold routines...";
+	#pragma omp critical(intarna_logOutput)
+	{ VLOG(2) <<"computing accessibility via plfold routines...";}
 	// time logging
 	TIMED_FUNC_IF(timerObj, VLOG_IS_ON(9));
 
@@ -361,7 +363,8 @@ AccessibilityVrna::
 fillByRNAup( const VrnaHandler &vrnaHandler
 			, const size_t plFoldL )
 {
-	VLOG(2) <<"computing accessibility via RNAup routines...";
+	#pragma omp critical(intarna_logOutput)
+	{ VLOG(2) <<"computing accessibility via RNAup routines..."; }
 	// time logging
 	TIMED_FUNC_IF(timerObj, VLOG_IS_ON(9));
 

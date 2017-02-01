@@ -37,7 +37,8 @@ predict( const IndexRange & r1
 		)
 {
 
-	VLOG(2) <<"predicting mfe interactions with seed in O(n^4) space and time...";
+	#pragma omp critical(intarna_logOutput)
+	{ VLOG(2) <<"predicting mfe interactions with seed in O(n^4) space and time..."; }
 	// measure timing
 	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
 
@@ -172,11 +173,12 @@ predict( const IndexRange & r1
 		}
 	}
 
-	LOG(DEBUG) <<"init 2x 4d matrix : "<<(debug_count_cells_nonNull-debug_count_cells_inf)<<" (-"<<debug_count_cells_inf <<") to be filled ("
+	#pragma omp critical(intarna_logOutput)
+	{ LOG(DEBUG) <<"init 2x 4d matrix : "<<(debug_count_cells_nonNull-debug_count_cells_inf)<<" (-"<<debug_count_cells_inf <<") to be filled ("
 				<<((double)(debug_count_cells_nonNull-debug_count_cells_inf)/(double)(debug_count_cells_nonNull+debug_count_cells_null))
 				<<"%) and "<<debug_count_cells_null <<" not allocated ("
 				<<((double)(debug_count_cells_null)/(double)(debug_count_cells_nonNull+debug_count_cells_null))
-				<<"%)";
+				<<"%)"; }
 
 	// init mfe without seed condition
 	OutputConstraint tmpOutConstraint(1, outConstraint.reportOverlap, outConstraint.maxE, outConstraint.deltaE);

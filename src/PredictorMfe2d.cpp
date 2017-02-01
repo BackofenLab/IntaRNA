@@ -33,7 +33,8 @@ predict( const IndexRange & r1
 		, const OutputConstraint & outConstraint )
 {
 
-	VLOG(2) <<"predicting mfe interactions in O(n^2) space...";
+	#pragma omp critical(intarna_logOutput)
+	{ VLOG(2) <<"predicting mfe interactions in O(n^2) space..."; }
 	// measure timing
 	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
 

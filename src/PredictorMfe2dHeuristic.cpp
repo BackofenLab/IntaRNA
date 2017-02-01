@@ -33,7 +33,8 @@ predict( const IndexRange & r1
 		)
 {
 
-	VLOG(2) <<"predicting mfe interactions heuristically in O(n^2) space and time...";
+	#pragma omp critical(intarna_logOutput)
+	{ VLOG(2) <<"predicting mfe interactions heuristically in O(n^2) space and time..."; }
 	// measure timing
 	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
 

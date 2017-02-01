@@ -30,9 +30,6 @@ INITIALIZE_EASYLOGGINGPP
  */
 int main(int argc, char **argv){
 
-	// global value that can be set to abort (parallelized) loops
-	bool intarnaAborted = false;
-
 	try {
 	
 		// set overall logging style
@@ -85,18 +82,25 @@ int main(int argc, char **argv){
 		const bool parallelizeTargetLoop = parameters.getTargetSequences().size() > 1;
 		const bool parallelizeQueryLoop = !parallelizeTargetLoop && parameters.getQuerySequences().size() > 1;
 
+
 		// run prediction for all pairs of sequences
 		// first: iterate over all target sequences
+		// OMP shared variables to enable exception forwarding from within OMP parallelized for loop
+		bool threadAborted = false;
+		std::exception_ptr exceptionPtrDuringOmp = NULL;
+		std::stringstream exceptionInfoDuringOmp;
 		// parallelize this loop if possible; if not -> parallelize the query-loop
-		# pragma omp parallel for schedule(dynamic) num_threads( parameters.getThreads() ) shared(intarnaAborted,queryAcc,reportedInteractions) if(parallelizeTargetLoop)
+		# pragma omp parallel for schedule(dynamic) num_threads( parameters.getThreads() ) shared(queryAcc,reportedInteractions,exceptionPtrDuringOmp,exceptionInfoDuringOmp) if(parallelizeTargetLoop)
 		for ( size_t targetNumber = 0; targetNumber < parameters.getTargetSequences().size(); ++targetNumber )
 		{
-			#pragma omp flush (intarnaAborted)
+
+			#pragma omp flush (threadAborted)
 			// explicit try-catch-block due to missing OMP exception forwarding
-			if (!intarnaAborted) {
+			if (!threadAborted) {
 				try {
 					// get target accessibility handler
-					VLOG(1) <<"computing accessibility for target '"<<parameters.getTargetSequences().at(targetNumber).getId()<<"'...";
+					#pragma omp critical(intarna_logOutput)
+					{ VLOG(1) <<"computing accessibility for target '"<<parameters.getTargetSequences().at(targetNumber).getId()<<"'..."; }
 
 					// VRNA not completely threadsafe ...
 					Accessibility * targetAcc = parameters.getTargetAccessibility(targetNumber);
@@ -104,18 +108,19 @@ int main(int argc, char **argv){
 
 					// check if we have to warn about ambiguity
 					if (targetAcc->getSequence().isAmbiguous()) {
-						LOG(INFO) <<"Sequence '"<<targetAcc->getSequence().getId()
-								<<"' contains ambiguous IUPAC nucleotide encodings. These positions are ignored for interaction computation and replaced by 'N'.";
+						#pragma omp critical(intarna_logOutput)
+						{ LOG(INFO) <<"Sequence '"<<targetAcc->getSequence().getId()
+								<<"' contains ambiguous IUPAC nucleotide encodings. These positions are ignored for interaction computation and replaced by 'N'.";}
 					}
 
 					// second: iterate over all query sequences
 					// this parallelization should only be enabled if the outer target-loop is not parallelized
-					# pragma omp parallel for schedule(dynamic) num_threads( parameters.getThreads() ) shared(intarnaAborted,queryAcc,reportedInteractions,targetAcc,targetNumber) if(parallelizeQueryLoop)
+					# pragma omp parallel for schedule(dynamic) num_threads( parameters.getThreads() ) shared(queryAcc,reportedInteractions,exceptionPtrDuringOmp,exceptionInfoDuringOmp,targetAcc,targetNumber) if(parallelizeQueryLoop)
 					for ( size_t queryNumber = 0; queryNumber < parameters.getQuerySequences().size(); ++queryNumber )
 					{
-						#pragma omp flush (intarnaAborted)
+						#pragma omp flush (threadAborted)
 						// explicit try-catch-block due to missing OMP exception forwarding
-						if (!intarnaAborted) {
+						if (!threadAborted) {
 							try {
 								// sanity check
 								assert( queryAcc.at(queryNumber) != NULL );
@@ -141,11 +146,14 @@ int main(int argc, char **argv){
 								BOOST_FOREACH(const IndexRange & tRange, parameters.getTargetRanges(targetNumber)) {
 								BOOST_FOREACH(const IndexRange & qRange, parameters.getQueryRanges(queryNumber)) {
 
-									VLOG(1) <<"predicting interactions for"
-											<<" target range " <<tRange
+									#pragma omp critical(intarna_logOutput)
+									{ VLOG(1) <<"predicting interactions for"
+											<<" target "<<targetAcc->getSequence().getId()
+											<<" (range " <<tRange<<")"
 											<<" and"
-											<<" query range " <<qRange
-											<<"...";
+											<<" query "<<queryAcc.at(queryNumber)->getSequence().getId()
+											<<" (range " <<qRange<<")"
+											<<"..."; }
 
 									predictor->predict(	  tRange
 														, queryAcc.at(queryNumber)->getReversedIndexRange(qRange)
@@ -165,42 +173,33 @@ int main(int argc, char **argv){
 
 							////////////////////// exception handling ///////////////////////////
 							} catch (std::exception & e) {
-								LOG(DEBUG) <<"Exception raised for  target "
-											<<parameters.getTargetSequences().at(targetNumber).getId()
-											<<" and query "
-											<<parameters.getQuerySequences().at(queryNumber).getId()
-											<<" : " <<e.what() <<"\n\n"
-						#if IN_DEBUG_MODE
-									<<"  ==> run debugger for details\n";
-								throw e;
-						#else
-									<<"  ==> Please report to the IntaRNA development team! Thanks!\n";
-								#pragma omp atomic write
-								intarnaAborted = true;
-								#pragma omp flush (intarnaAborted)
-						#endif
-							} catch (...) {
-								std::exception_ptr eptr = std::current_exception();
-								LOG(DEBUG) <<"Unknown exception raised for target "
-											<<parameters.getTargetSequences().at(targetNumber).getId()
-											<<" and query "
-											<<parameters.getQuerySequences().at(queryNumber).getId()
-											<<"\n\n"
-						#if IN_DEBUG_MODE
-									<<"  ==> run debugger for details\n";
-								if (eptr) {
-									std::rethrow_exception(eptr);
+								// ensure exception handling for first failed thread only
+								#pragma omp critical(intarna_exception)
+								{
+									if (!threadAborted) {
+										// store exception information
+										exceptionPtrDuringOmp = std::make_exception_ptr(e);
+										exceptionInfoDuringOmp <<" #thread "<<omp_get_thread_num() <<" #target "<<targetNumber <<" #query " <<queryNumber <<" : "<<e.what();
+										// trigger abortion of all threads
+										threadAborted = true;
+										#pragma omp flush (threadAborted)
+									}
 								}
-						#else
-									<<"  ==> Please report to the IntaRNA development team! Thanks!\n";
-								#pragma omp atomic write
-								intarnaAborted = true;
-								#pragma omp flush (intarnaAborted)
-						#endif
-
+							} catch (...) {
+								// ensure exception handling for first failed thread only
+								#pragma omp critical(intarna_exception)
+								{
+									if (!threadAborted) {
+										// store exception information
+										exceptionPtrDuringOmp = std::current_exception();
+										exceptionInfoDuringOmp <<" #thread "<<omp_get_thread_num() <<" #target "<<targetNumber <<" #query " <<queryNumber;
+										// trigger abortion of all threads
+										threadAborted = true;
+										#pragma omp flush (threadAborted)
+									}
+								}
 							}
-
-						} // if not intarnaAborted
+						} // if not threadAborted
 					} // for queries
 
 					// write accessibility to file if needed
@@ -211,37 +210,33 @@ int main(int argc, char **argv){
 
 				////////////////////// exception handling ///////////////////////////
 				} catch (std::exception & e) {
-					LOG(DEBUG) <<"Exception raised for target "
-								<<parameters.getTargetSequences().at(targetNumber).getId()
-								<<" : " <<e.what() <<"\n\n"
-			#if IN_DEBUG_MODE
-						<<"  ==> run debugger for details\n";
-					throw e;
-			#else
-						<<"  ==> Please report to the IntaRNA development team! Thanks!\n";
-					#pragma omp atomic write
-					intarnaAborted = true;
-					#pragma omp flush (intarnaAborted)
-			#endif
-				} catch (...) {
-					std::exception_ptr eptr = std::current_exception();
-					LOG(DEBUG) <<"Unknown exception raised for target "
-								<<parameters.getTargetSequences().at(targetNumber).getId()
-								<<"\n\n"
-			#if IN_DEBUG_MODE
-						<<"  ==> run debugger for details\n";
-					if (eptr) {
-						std::rethrow_exception(eptr);
+					// ensure exception handling for first failed thread only
+					#pragma omp critical(intarna_exception)
+					{
+						if (!threadAborted) {
+							// store exception information
+							exceptionPtrDuringOmp = std::make_exception_ptr(e);
+							exceptionInfoDuringOmp <<" #thread "<<omp_get_thread_num() <<" #target "<<targetNumber <<" : "<<e.what();
+							// trigger abortion of all threads
+							threadAborted = true;
+							#pragma omp flush (threadAborted)
+						}
 					}
-			#else
-						<<"  ==> Please report to the IntaRNA development team! Thanks!\n";
-					#pragma omp atomic write
-					intarnaAborted = true;
-					#pragma omp flush (intarnaAborted)
-			#endif
-
+				} catch (...) {
+					// ensure exception handling for first failed thread only
+					#pragma omp critical(intarna_exception)
+					{
+						if (!threadAborted) {
+							// store exception information
+							exceptionPtrDuringOmp = std::current_exception();
+							exceptionInfoDuringOmp <<" #thread "<<omp_get_thread_num() <<" #target "<<targetNumber;
+							// trigger abortion of all threads
+							threadAborted = true;
+							#pragma omp flush (threadAborted)
+						}
+					}
 				}
-			} // if not intarnaAborted
+			} // if not threadAborted
 		} // for targets
 
 		// garbage collection
@@ -255,34 +250,28 @@ int main(int argc, char **argv){
 			CLEANUP(queryAcc[queryNumber]);
 		}
 
-
+		if (threadAborted) {
+			if (!exceptionInfoDuringOmp.str().empty()) {
+				LOG(WARNING) <<"Exception raised for : "<<exceptionInfoDuringOmp.str();
+			}
+			if (exceptionPtrDuringOmp != NULL) {
+				std::rethrow_exception(exceptionPtrDuringOmp);
+			}
+		}
 
 	////////////////////// exception handling ///////////////////////////
 	} catch (std::exception & e) {
-		LOG(DEBUG) <<"Exception raised : " <<e.what() <<"\n\n"
-#if IN_DEBUG_MODE
-			<<"  ==> run debugger for details\n";
-		throw e;
-#else
+		LOG(WARNING) <<"Exception raised : " <<e.what() <<"\n\n"
 			<<"  ==> Please report to the IntaRNA development team! Thanks!\n";
-		intarnaAborted = true;
-#endif
+		return -1;
 	} catch (...) {
 		std::exception_ptr eptr = std::current_exception();
-		LOG(DEBUG) <<"Unknown exception raised \n\n"
-#if IN_DEBUG_MODE
-			<<"  ==> run debugger for details\n";
-		if (eptr) {
-			std::rethrow_exception(eptr);
-		}
-#else
+		LOG(WARNING) <<"Unknown exception raised \n\n"
 			<<"  ==> Please report to the IntaRNA development team! Thanks!\n";
-		intarnaAborted = true;
-#endif
-
+		return -1;
 	}
 
 	  // all went fine
-	return intarnaAborted ? -1 : 0;
+	return 0;
 }
 

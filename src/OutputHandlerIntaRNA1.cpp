@@ -241,7 +241,8 @@ addSeparator (const bool yesNo )
 {
 	printSeparator = yesNo;
 	if (initialOutputDone) {
-		LOG(INFO) <<"OutputHandlerIntaRNA1::addSeparator() called but initial output already done...";
+		#pragma omp critical(intarna_logOutput)
+		{ LOG(INFO) <<"OutputHandlerIntaRNA1::addSeparator() called but initial output already done..."; }
 	}
 }
 

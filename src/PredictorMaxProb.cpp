@@ -34,7 +34,8 @@ predict( const IndexRange & r1
 		)
 {
 
-	VLOG(2) <<"predicting maximally probable interactions in O(n^4) space...";
+	#pragma omp critical(intarna_logOutput)
+	{ VLOG(2) <<"predicting maximally probable interactions in O(n^4) space..."; }
 	// measure timing
 	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
 
@@ -102,9 +103,10 @@ predict( const IndexRange & r1
 	}
 	}
 
-	LOG(DEBUG) <<"init 4d matrix : "<<debug_count_cells_nonNull <<" to be filled ("
+	#pragma omp critical(intarna_logOutput)
+	{ LOG(DEBUG) <<"init 4d matrix : "<<debug_count_cells_nonNull <<" to be filled ("
 				<<((double)debug_count_cells_nonNull/(double)(debug_count_cells_nonNull+debug_count_cells_null))
-				<<"%) and "<<debug_count_cells_null <<" not allocated";
+				<<"%) and "<<debug_count_cells_null <<" not allocated"; }
 
 	// initialize max prob interaction for updates
 	initOptima( outConstraint );
@@ -250,9 +252,10 @@ updateOptima( const size_t i1, const size_t j1
 		, const E_type interZ
 		, const bool isHybridZ )
 {
-//				LOG(DEBUG) <<"Z( "<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" ) = "
+//		#pragma omp critical(intarna_logOutput)
+//		{ LOG(DEBUG) <<"Z( "<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" ) = "
 //						<<curZ
-//						<<" = " <<(eH + eE + eD);
+//						<<" = " <<(eH + eE + eD); }
 
 	// add Boltzmann weights of all penalties
 	E_type curZ = isHybridZ ? interZ * energy.getBoltzmannWeight( energy.getE(i1,j1,i2,j2,0.0) ) : interZ;
