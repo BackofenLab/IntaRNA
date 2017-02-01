@@ -103,7 +103,11 @@ CommandLineParsing::CommandLineParsing()
 	temperature(0,100,37),
 
 	predMode( PredictionMode_min, PredictionMode_max, HEURISTIC),
+#if INTARNA_MULITHREADING
 	threads( 1, omp_get_max_threads(), 1),
+#else
+	threads( 1, 1, 1),
+#endif
 
 	energy("BF",'F'),
 	energyFile(""),
