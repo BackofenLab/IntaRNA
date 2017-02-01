@@ -4,6 +4,7 @@ bin_PROGRAMS = IntaRNA
 
 # intaRNA sources
 IntaRNA_SOURCES =	intaRNA.cpp \
+					config.h \
 					easylogging++.h \
 					general.h \
 					Accessibility.h \
