@@ -33,7 +33,7 @@ predict( const IndexRange & r1
 		, const IndexRange & r2
 		, const OutputConstraint & outConstraint )
 {
-#if INTARNA_MULITHREADING
+#ifdef INTARNA_MULITHREADING
 	#pragma omp critical(intarna_logOutput)
 #endif
 	{ VLOG(2) <<"predicting mfe interactions with seed heuristically in O(n^2) space and time..."; }

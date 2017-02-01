@@ -47,7 +47,7 @@ add( const Interaction & i )
 	// special handling if no base pairs present
 	if (i.basePairs.size() == 0) {
 		// ensure outputs do not intervene
-#if INTARNA_MULITHREADING
+#ifdef INTARNA_MULITHREADING
 		#pragma omp critical(intarna_outputStreamUpdate)
 #endif
 		{
@@ -247,7 +247,7 @@ add( const Interaction & i )
 	InteractionEnergy::EnergyContributions contr = energy.getE_contributions(i);
 
 	// ensure outputs do not intervene
-#if INTARNA_MULITHREADING
+#ifdef INTARNA_MULITHREADING
 	#pragma omp critical(intarna_outputStreamUpdate)
 #endif
 	{

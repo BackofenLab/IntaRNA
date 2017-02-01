@@ -88,8 +88,6 @@ AC_ARG_ENABLE([multithreading],
   	[multithreadingDisabled=no])
 AC_MSG_RESULT([$debuger])
 if test x"$multithreadingDisabled" = x"yes"; then
-	AC_DEFINE([INTARNA_MULITHREADING], [0], [Disabling multi-threading support])
-else
 	AC_DEFINE([INTARNA_MULITHREADING], [1], [Enabling multi-threading support])
 fi
 

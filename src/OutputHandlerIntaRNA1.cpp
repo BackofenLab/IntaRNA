@@ -54,7 +54,7 @@ add( const Interaction & i )
 	reportedInteractions++;
 
 	// ensure outputs do not intervene
-#if INTARNA_MULITHREADING
+#ifdef INTARNA_MULITHREADING
 	#pragma omp critical(intarna_outputStreamUpdate)
 #endif
 	{
@@ -185,7 +185,7 @@ add( const Interaction & i )
 			<<"-5'";
 
 	// ensure outputs do not intervene
-#if INTARNA_MULITHREADING
+#ifdef INTARNA_MULITHREADING
 	#pragma omp critical(intarna_outputStreamUpdate)
 #endif
 	{
@@ -245,7 +245,7 @@ addSeparator (const bool yesNo )
 {
 	printSeparator = yesNo;
 	if (initialOutputDone) {
-#if INTARNA_MULITHREADING
+#ifdef INTARNA_MULITHREADING
 		#pragma omp critical(intarna_logOutput)
 #endif
 		{ LOG(INFO) <<"OutputHandlerIntaRNA1::addSeparator() called but initial output already done..."; }

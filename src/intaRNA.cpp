@@ -85,7 +85,7 @@ int main(int argc, char **argv){
 
 		// run prediction for all pairs of sequences
 		// first: iterate over all target sequences
-#if INTARNA_MULITHREADING
+#ifdef INTARNA_MULITHREADING
 		// OMP shared variables to enable exception forwarding from within OMP parallelized for loop
 		bool threadAborted = false;
 		std::exception_ptr exceptionPtrDuringOmp = NULL;
@@ -95,7 +95,7 @@ int main(int argc, char **argv){
 #endif
 		for ( size_t targetNumber = 0; targetNumber < parameters.getTargetSequences().size(); ++targetNumber )
 		{
-#if INTARNA_MULITHREADING
+#ifdef INTARNA_MULITHREADING
 			#pragma omp flush (threadAborted)
 			// explicit try-catch-block due to missing OMP exception forwarding
 			if (!threadAborted) {
@@ -111,7 +111,7 @@ int main(int argc, char **argv){
 
 					// check if we have to warn about ambiguity
 					if (targetAcc->getSequence().isAmbiguous()) {
-#if INTARNA_MULITHREADING
+#ifdef INTARNA_MULITHREADING
 						#pragma omp critical(intarna_logOutput)
 #endif
 						{ LOG(INFO) <<"Sequence '"<<targetAcc->getSequence().getId()
@@ -119,13 +119,13 @@ int main(int argc, char **argv){
 					}
 
 					// second: iterate over all query sequences
-#if INTARNA_MULITHREADING
+#ifdef INTARNA_MULITHREADING
 					// this parallelization should only be enabled if the outer target-loop is not parallelized
 					# pragma omp parallel for schedule(dynamic) num_threads( parameters.getThreads() ) shared(queryAcc,reportedInteractions,exceptionPtrDuringOmp,exceptionInfoDuringOmp,targetAcc,targetNumber) if(parallelizeQueryLoop)
 #endif
 					for ( size_t queryNumber = 0; queryNumber < parameters.getQuerySequences().size(); ++queryNumber )
 					{
-#if INTARNA_MULITHREADING
+#ifdef INTARNA_MULITHREADING
 						#pragma omp flush (threadAborted)
 						// explicit try-catch-block due to missing OMP exception forwarding
 						if (!threadAborted) {
@@ -155,7 +155,7 @@ int main(int argc, char **argv){
 								BOOST_FOREACH(const IndexRange & tRange, parameters.getTargetRanges(targetNumber)) {
 								BOOST_FOREACH(const IndexRange & qRange, parameters.getQueryRanges(queryNumber)) {
 
-#if INTARNA_MULITHREADING
+#ifdef INTARNA_MULITHREADING
 									#pragma omp critical(intarna_logOutput)
 #endif
 									{ VLOG(1) <<"predicting interactions for"
@@ -174,7 +174,7 @@ int main(int argc, char **argv){
 								} // target ranges
 								} // query ranges
 
-#if INTARNA_MULITHREADING
+#ifdef INTARNA_MULITHREADING
 								#pragma omp atomic update
 #endif
 								reportedInteractions += output->reported();
@@ -184,7 +184,7 @@ int main(int argc, char **argv){
 								CLEANUP(output);
 								CLEANUP(energy);
 
-#if INTARNA_MULITHREADING
+#ifdef INTARNA_MULITHREADING
 							////////////////////// exception handling ///////////////////////////
 							} catch (std::exception & e) {
 								// ensure exception handling for first failed thread only
@@ -223,7 +223,7 @@ int main(int argc, char **argv){
 					// garbage collection
 					CLEANUP(targetAcc);
 
-#if INTARNA_MULITHREADING
+#ifdef INTARNA_MULITHREADING
 				////////////////////// exception handling ///////////////////////////
 				} catch (std::exception & e) {
 					// ensure exception handling for first failed thread only
@@ -267,7 +267,7 @@ int main(int argc, char **argv){
 			CLEANUP(queryAcc[queryNumber]);
 		}
 
-#if INTARNA_MULITHREADING
+#ifdef INTARNA_MULITHREADING
 		if (threadAborted) {
 			if (!exceptionInfoDuringOmp.str().empty()) {
 				LOG(WARNING) <<"Exception raised for : "<<exceptionInfoDuringOmp.str();
