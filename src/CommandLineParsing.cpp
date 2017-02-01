@@ -559,15 +559,48 @@ parse(int argc, char** argv)
 			// parse the sequences
 			parseSequences("target",targetArg,target);
 
-			// check for minimal sequence length (>=seedBP)
-			for( size_t i=0; i<query.size(); i++) {
-				if (query.at(i).size() < seedBP.val) {
-					throw error("length of query sequence "+toString(i+1)+" is below minimal number of seed base pairs (seedBP="+toString(seedBP.val)+")");
+			// check seed setup
+			noSeedRequired = vm.count("noSeed") > 0;
+			if (noSeedRequired) {
+				// input sanity check : maybe seed constraints defined -> warn
+				if (seedBP.val != seedBP.def) LOG(INFO) <<"no seed constraint wanted, but seedBP provided (will be ignored)";
+				if (seedMaxUP.val != seedMaxUP.def) LOG(INFO) <<"no seed constraint wanted, but seedMaxUP provided (will be ignored)";
+				if (seedMaxUPq.val != seedMaxUPq.def) LOG(INFO) <<"no seed constraint wanted, but seedMaxUPq provided (will be ignored)";
+				if (seedMaxUPt.val != seedMaxUPt.def) LOG(INFO) <<"no seed constraint wanted, but seedMaxUPt provided (will be ignored)";
+				if (seedMaxE.val != seedMaxE.def) LOG(INFO) <<"no seed constraint wanted, but seedMaxE provided (will be ignored)";
+				if (seedMinPu.val != seedMinPu.def) LOG(INFO) <<"no seed constraint wanted, but seedMinPu provided (will be ignored)";
+				if (!seedRangeq.empty()) LOG(INFO) <<"no seed constraint wanted, but seedRangeq provided (will be ignored)";
+				if (!seedRanget.empty()) LOG(INFO) <<"no seed constraint wanted, but seedRanget provided (will be ignored)";
+			} else {
+				// check query search ranges
+				if (!seedRangeq.empty()) {
+					if (query.size()!=1) {
+						LOG(ERROR) <<"seedRangeq given but not only one query sequence provided";
+						updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+					} else {
+						validate_indexRangeList("seedRangeq",seedRangeq, 1, query.begin()->size());
+					}
 				}
-			}
-			for( size_t i=0; i<target.size(); i++) {
-				if (target.at(i).size() < seedBP.val) {
-					throw error("length of target sequence "+toString(i+1)+" is below minimal number of seed base pairs (seedBP="+toString(seedBP.val)+")");
+				// check target search ranges
+				if (!seedRanget.empty()) {
+					if (target.size()!=1) {
+						LOG(ERROR) <<"seedRanget given but not only one target sequence provided";
+						updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+					} else {
+						validate_indexRangeList("seedRanget",seedRanget, 1, target.begin()->size());
+					}
+				}
+
+				// check for minimal sequence length (>=seedBP)
+				for( size_t i=0; i<query.size(); i++) {
+					if (query.at(i).size() < seedBP.val) {
+						throw error("length of query sequence "+toString(i+1)+" is below minimal number of seed base pairs (seedBP="+toString(seedBP.val)+")");
+					}
+				}
+				for( size_t i=0; i<target.size(); i++) {
+					if (target.at(i).size() < seedBP.val) {
+						throw error("length of target sequence "+toString(i+1)+" is below minimal number of seed base pairs (seedBP="+toString(seedBP.val)+")");
+					}
 				}
 			}
 
@@ -649,39 +682,6 @@ parse(int argc, char** argv)
 			// check energy setup
 			if (vm.count("energyVRNA") > 0 && energy.val != 'F') {
 				throw error("--energyVRNA provided but no (F)ull energy computation requested (--energy = "+toString(energy.val)+")");
-			}
-
-			// check seed setup
-			noSeedRequired = vm.count("noSeed") > 0;
-			if (noSeedRequired) {
-				// input sanity check : maybe seed constraints defined -> warn
-				if (seedBP.val != seedBP.def) LOG(INFO) <<"no seed constraint wanted, but seedBP provided (will be ignored)";
-				if (seedMaxUP.val != seedMaxUP.def) LOG(INFO) <<"no seed constraint wanted, but seedMaxUP provided (will be ignored)";
-				if (seedMaxUPq.val != seedMaxUPq.def) LOG(INFO) <<"no seed constraint wanted, but seedMaxUPq provided (will be ignored)";
-				if (seedMaxUPt.val != seedMaxUPt.def) LOG(INFO) <<"no seed constraint wanted, but seedMaxUPt provided (will be ignored)";
-				if (seedMaxE.val != seedMaxE.def) LOG(INFO) <<"no seed constraint wanted, but seedMaxE provided (will be ignored)";
-				if (seedMinPu.val != seedMinPu.def) LOG(INFO) <<"no seed constraint wanted, but seedMinPu provided (will be ignored)";
-				if (!seedRangeq.empty()) LOG(INFO) <<"no seed constraint wanted, but seedRangeq provided (will be ignored)";
-				if (!seedRanget.empty()) LOG(INFO) <<"no seed constraint wanted, but seedRanget provided (will be ignored)";
-			} else {
-				// check query search ranges
-				if (!seedRangeq.empty()) {
-					if (query.size()!=1) {
-						LOG(ERROR) <<"seedRangeq given but not only one query sequence provided";
-						updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
-					} else {
-						validate_indexRangeList("seedRangeq",seedRangeq, 1, query.begin()->size());
-					}
-				}
-				// check target search ranges
-				if (!seedRanget.empty()) {
-					if (target.size()!=1) {
-						LOG(ERROR) <<"seedRanget given but not only one target sequence provided";
-						updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
-					} else {
-						validate_indexRangeList("seedRanget",seedRanget, 1, target.begin()->size());
-					}
-				}
 			}
 
 			// check qAcc upper bound
