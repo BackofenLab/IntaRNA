@@ -4,7 +4,9 @@
 #include <sstream>
 #include <iomanip>
 
-#include <omp.h>
+#if INTARNA_MULITHREADING
+	#include <omp.h>
+#endif
 
 ////////////////////////////////////////////////////////////////////////////
 

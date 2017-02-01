@@ -7,7 +7,9 @@
 #include <stdexcept>
 #include <fstream>
 
-#include <omp.h>
+#if INTARNA_MULITHREADING
+	#include <omp.h>
+#endif
 
 #include <boost/bind.hpp>
 #include <boost/filesystem.hpp>
@@ -990,7 +992,8 @@ getQueryAccessibility( const size_t sequenceNumber ) const
 	bool computeES = false;
 #if IN_DEBUG_MODE
 	// TODO replace based on predictor selection
-	computeES = qAccW.val==0;
+//	computeES = qAccW.val==0;
+	computeES = true;
 #endif
 	// construct selected accessibility object
 	switch(qAcc.val) {
@@ -1068,7 +1071,8 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 	bool computeES = false;
 #if IN_DEBUG_MODE
 	// TODO replace based on predictor selection
-	computeES = tAccW.val==0;
+	computeES = true;
+//	computeES = tAccW.val==0;
 #endif
 	const RnaSequence& seq = getTargetSequences().at(sequenceNumber);
 	switch(tAcc.val) {

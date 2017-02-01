@@ -1,7 +1,9 @@
 
 #include "OutputHandlerCsv.h"
 
-#include <omp.h>
+#if INTARNA_MULITHREADING
+	#include <omp.h>
+#endif
 
 #include <boost/algorithm/string.hpp>
 

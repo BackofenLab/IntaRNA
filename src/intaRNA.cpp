@@ -4,7 +4,9 @@
 #include <iostream>
 #include <exception>
 
-#include <omp.h>
+#if INTARNA_MULITHREADING
+	#include <omp.h>
+#endif
 
 #include <boost/foreach.hpp>
 
