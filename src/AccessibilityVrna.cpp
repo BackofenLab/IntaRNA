@@ -483,6 +483,7 @@ computeES( const VrnaHandler & vrnaHandler, const size_t maxBpSpan )
 	const E_type RT = vrnaHandler.getRT();
 	// folding parameters
 	vrna_md_t curModel = vrnaHandler.getModel( maxBpSpan, seqLength );
+
 	// VRNA compatible data structures
 	char * sequence = (char *) vrna_alloc(sizeof(char) * (seqLength + 1));
 	char * structureConstraint = (char *) vrna_alloc(sizeof(char) * (seqLength + 1));
@@ -516,24 +517,30 @@ computeES( const VrnaHandler & vrnaHandler, const size_t maxBpSpan )
 	if (foldData->exp_matrices == NULL) {
 		throw std::runtime_error("AccessibilityVrna::computeES() : partition functions after computation not available");
 	}
+	if (foldData->exp_matrices->qm == NULL) {
+		throw std::runtime_error("AccessibilityVrna::computeES() : partition functions Qm after computation not available");
+	}
 	// copy ensemble energies of multi loop parts = ES values
 	FLT_OR_DBL qm_val = 0.0;
-	// energy shift to be applied
-	const E_type energyShift = -(E_type)seqLength*std::log(foldData->exp_params->pf_scale);
-
+	const int minLoopSubseqLength = curModel.min_loop_size + 2;
 	for (int i=0; i<seqLength; i++) {
 		for (int j=i; j<seqLength; j++) {
-			// get Qm1 value
-			// indexing via iindx starts with 1 instead of 0
-			qm_val = foldData->exp_matrices->qm1[foldData->iindx[i+1]-j+1];
-			// ES energy = -RT*log( Qm1 )
-			// ensure Qm > 0 for computation; otherwise E_INF
-			(*esValues)(i,j) =  ( qm_val == 0.0 )
-								? E_INF
-								: std::min<E_type>( E_INF,
-										std::max<E_type>(0.0,
-										(E_type)(-std::log(qm_val) + energyShift)*foldData->exp_params->kT/1000.0));
-			LOG(DEBUG) <<" i,j "<<i<<","<<j <<" = "<<(*esValues)(i,i);
+			// check if too short to enable a base pair
+			if (j-i+1 < minLoopSubseqLength) {
+				// make unfavorable
+				(*esValues)(i,j) = E_INF;
+			} else {
+				// get Qm value
+				// indexing via iindx starts with 1 instead of 0
+				qm_val = foldData->exp_matrices->qm[foldData->iindx[i+1]-j+1];
+				if ( E_equal(qm_val, 0.) ) {
+					(*esValues)(i,j) = E_INF;
+				} else {
+					// ES energy = -RT*log( Qm )
+					(*esValues)(i,j) =  (E_type)( - RT*( std::log(qm_val)
+													+((FLT_OR_DBL)(j-i+1))*std::log(foldData->exp_params->pf_scale)));
+				}
+			}
 		}
 	}
 	// garbage collection

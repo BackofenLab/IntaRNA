@@ -6,6 +6,8 @@
  * configure.ac : 
    + --disabled-multithreading : sets INTARNA_MULITHREADING to 0, otherwise 1
  * enclose all OMP stuff with INTARNA_MULITHREADING preprocessor checks
+ * AccessibilityVrna :
+   * computeES() : bugfix
  
 170131 Martin Mann :
  * CommandLineParsing :
