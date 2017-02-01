@@ -105,8 +105,6 @@ CommandLineParsing::CommandLineParsing()
 	predMode( PredictionMode_min, PredictionMode_max, HEURISTIC),
 #if INTARNA_MULITHREADING
 	threads( 1, omp_get_max_threads(), 1),
-#else
-	threads( 1, 1, 1),
 #endif
 
 	energy("BF",'F'),
@@ -415,6 +413,7 @@ CommandLineParsing::CommandLineParsing()
 	////  GENERAL OPTIONS  ////////////////////////////////////
 
 	opts_general.add_options()
+#if INTARNA_MULITHREADING
 	    ("threads"
 			, value<int>(&(threads.val))
 				->default_value(threads.def)
@@ -422,6 +421,7 @@ CommandLineParsing::CommandLineParsing()
 			, std::string("maximal number of threads to be used for parallel computation of query-target-combinations."
 					" Note, the number of threads multiplies the required memory needed for computation!"
 					" (arg in range ["+toString(threads.min)+","+toString(threads.max)+"])").c_str())
+#endif
 	    ("version", "print version")
 	    ("help,h", "show the help page for basic parameters")
 	    ("fullhelp", "show the extended help page for all available parameters")
@@ -714,6 +714,7 @@ parse(int argc, char** argv)
 			if (!outPuFileq.empty() && getQuerySequences().size()>1) throw std::runtime_error("--outPuFileq only supported for single query sequence input");
 			if (!outPuFilet.empty() && getTargetSequences().size()>1) throw std::runtime_error("--outPuFilet only supported for single target sequence input");
 
+#if INTARNA_MULITHREADING
 			// check if multi-threading
 			if (threads.val > 1 && getTargetSequences().size() > 1) {
 				// warn if 4D space prediction enabled
@@ -724,6 +725,7 @@ parse(int argc, char** argv)
 					throw std::runtime_error("Multi-threading not supported for IntaRNA v1 output");
 				}
 			}
+#endif
 
 			// trigger initial output handler output
 			initOutputHandler();

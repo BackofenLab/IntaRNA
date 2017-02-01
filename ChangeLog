@@ -2,6 +2,7 @@
 170201 Martin Mann :
  * CommandLineParsing :
    * max sequence number now 99999
+   * setup of threads parameter only if INTARNA_MULITHREADING
  * configure.ac : 
    + --disabled-multithreading : sets INTARNA_MULITHREADING to 0, otherwise 1
  * enclose all OMP stuff with INTARNA_MULITHREADING preprocessor checks

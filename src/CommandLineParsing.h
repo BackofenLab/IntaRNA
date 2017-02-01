@@ -202,6 +202,7 @@ public:
 	void
 	writeTargetAccessibility( const Accessibility & acc ) const;
 
+#if INTARNA_MULITHREADING
 	/**
 	 * Number of threads to be used for parallel processing of
 	 * query-target-combinations.
@@ -209,6 +210,7 @@ public:
 	 */
 	size_t
 	getThreads() const;
+#endif
 
 protected:
 
@@ -385,8 +387,10 @@ protected:
 
 	//! the prediction mode
 	NumberParameter<int> predMode;
+#if INTARNA_MULITHREADING
 	//! number of threads = number of parallel predictors running
 	NumberParameter<int> threads;
+#endif
 
 	//! the selected energy model
 	CharParameter energy;
@@ -680,11 +684,13 @@ protected:
 	 */
 	void validate_outPuFilet( const std::string & value);
 
+#if INTARNA_MULITHREADING
 	/**
 	 * Validates the threads argument.
 	 * @param value the argument value to validate
 	 */
 	void validate_threads( const int & value);
+#endif
 
 	////////////  GENERIC TESTS  /////////////////
 
@@ -1314,12 +1320,14 @@ void CommandLineParsing::validate_outPuFilet(const std::string & value) {
 
 ////////////////////////////////////////////////////////////////////////////
 
+#if INTARNA_MULITHREADING
 inline
 void CommandLineParsing::validate_threads(const int & value)
 {
 	// forward check to general method
 	validate_numberArgument("threads", threads, value);
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -1359,6 +1367,7 @@ writeTargetAccessibility( const Accessibility & acc ) const
 
 ////////////////////////////////////////////////////////////////////////////
 
+#if INTARNA_MULITHREADING
 inline
 size_t
 CommandLineParsing::
@@ -1366,6 +1375,7 @@ getThreads() const
 {
 	return threads.val;
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////
 
