@@ -30,7 +30,7 @@ PredictorMfe2dSeed::
 predict( const IndexRange & r1, const IndexRange & r2
 		, const OutputConstraint & outConstraint )
 {
-#ifdef INTARNA_MULITHREADING
+#if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_logOutput)
 #endif
 	{ VLOG(2) <<"predicting mfe interactions with seed in O(n^2) space and O(n^4) time..."; }

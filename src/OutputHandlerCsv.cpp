@@ -30,7 +30,7 @@ OutputHandlerCsv::OutputHandlerCsv(
 	// print CSV header of column names
 	if (printHeader) {
 		// ensure outputs do not intervene
-#ifdef INTARNA_MULITHREADING
+#if INTARNA_MULITHREADING
 		#pragma omp critical(intarna_outputStreamUpdate)
 #endif
 		{
@@ -75,7 +75,7 @@ add( const Interaction & i )
 	InteractionEnergy::EnergyContributions contr = energy.getE_contributions(i);
 
 	// ensure outputs do not intervene
-#ifdef INTARNA_MULITHREADING
+#if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_outputStreamUpdate)
 #endif
 	{

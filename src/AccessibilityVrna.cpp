@@ -52,7 +52,7 @@ AccessibilityVrna::AccessibilityVrna(
 {
 
 	// VRNA computation not completely threadsafe
-#ifdef INTARNA_MULITHREADING
+#if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_computeAccessibilityVrna)
 #endif
 	{
@@ -214,7 +214,7 @@ AccessibilityVrna::
 fillByConstraints( const VrnaHandler &vrnaHandler
 		, const size_t plFoldL )
 {
-#ifdef INTARNA_MULITHREADING
+#if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_logOutput)
 #endif
 	{ VLOG(2) <<"computing accessibility via n^2 fold calls..."; }
@@ -275,7 +275,7 @@ fillByRNAplfold( const VrnaHandler &vrnaHandler
 		, const size_t plFoldW
 		, const size_t plFoldL )
 {
-#ifdef INTARNA_MULITHREADING
+#if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_logOutput)
 #endif
 	{ VLOG(2) <<"computing accessibility via plfold routines...";}
@@ -369,7 +369,7 @@ AccessibilityVrna::
 fillByRNAup( const VrnaHandler &vrnaHandler
 			, const size_t plFoldL )
 {
-#ifdef INTARNA_MULITHREADING
+#if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_logOutput)
 #endif
 	{ VLOG(2) <<"computing accessibility via RNAup routines..."; }

@@ -183,7 +183,7 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 	} // i2
 	} // i1
 
-#ifdef INTARNA_MULITHREADING
+#if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_logOutput)
 #endif
 	{ VLOG(2) <<"valid seeds = "<<seedCountNotInf <<" ("<<(seedCountNotInf/seedCount)<<"% of start index combinations)"; }
