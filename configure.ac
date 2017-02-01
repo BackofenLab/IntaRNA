@@ -76,6 +76,25 @@ fi
 
 
 ###############################################################################
+# DEBUG SUPPORT SETUP
+###############################################################################
+
+AC_MSG_CHECKING([whether to enable multi-threading support])
+multithreadingDisabled=no
+AC_ARG_ENABLE([multithreading],
+	[AS_HELP_STRING([--disable-multithreading],
+	    [disable multi-threading support (def=no)])],
+  	[multithreadingDisabled="$enableval"],
+  	[multithreadingDisabled=no])
+AC_MSG_RESULT([$debuger])
+if test x"$multithreadingDisabled" = x"yes"; then
+	AC_DEFINE([INTARNA_MULITHREADING], [0], [Disabling multi-threading support])
+else
+	AC_DEFINE([INTARNA_MULITHREADING], [1], [Enabling multi-threading support])
+fi
+
+
+###############################################################################
 # Vienna RNA package library path support, if not installed in usual directories
 ###############################################################################
 AC_ARG_WITH([RNA],

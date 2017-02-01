@@ -47,7 +47,9 @@ add( const Interaction & i )
 	// special handling if no base pairs present
 	if (i.basePairs.size() == 0) {
 		// ensure outputs do not intervene
+#if INTARNA_MULITHREADING
 		#pragma omp critical(intarna_outputStreamUpdate)
+#endif
 		{
 			out <<"\n"
 				<<"no favorable interaction for "<<i.s1->getId() <<" and "<<i.s2->getId()<<std::endl;
@@ -245,7 +247,9 @@ add( const Interaction & i )
 	InteractionEnergy::EnergyContributions contr = energy.getE_contributions(i);
 
 	// ensure outputs do not intervene
+#if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_outputStreamUpdate)
+#endif
 	{
 		// print full interaction to output stream
 		out <<'\n'

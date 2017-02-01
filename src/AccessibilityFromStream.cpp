@@ -46,7 +46,9 @@ void
 AccessibilityFromStream::
 parseRNAplfold_text( std::istream & inStream, const E_type RT, const bool parseProbs )
 {
+#if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_logOutput)
+#endif
 	{ VLOG(2) <<"parsing "<<(parseProbs?"unpaired probabilities":"accessibility values")<<" from RNAplfold"<<(parseProbs?"":"-like")<<" input ..."; }
 	// time logging
 	TIMED_FUNC_IF(timerObj, VLOG_IS_ON(9));
@@ -77,7 +79,9 @@ parseRNAplfold_text( std::istream & inStream, const E_type RT, const bool parseP
 	size_t cutStart = line.find_last_not_of("1234567890", cutEnd );
 	size_t maxAvailLength = boost::lexical_cast<size_t>( line.substr(cutStart+1,cutEnd-cutStart));
 	if (maxAvailLength < getMaxLength()) {
+#if INTARNA_MULITHREADING
 		#pragma omp critical(intarna_logOutput)
+#endif
 		{ LOG(INFO) <<"initializing ED data for sequence '"<<getSequence().getId()<<" : available maximal window length "
 				<<maxAvailLength<<" is smaller than maximal interaction length "<<getMaxLength()
 				<<" : reducing maximal interaction length to "<<maxAvailLength;}
@@ -103,7 +107,9 @@ parseRNAplfold_text( std::istream & inStream, const E_type RT, const bool parseP
 			}
 			// check if we line exceeds targeted length
 			if ( j > getSequence().size() ) {
+#if INTARNA_MULITHREADING
 				#pragma omp critical(intarna_logOutput)
+#endif
 				{ LOG(INFO) <<"AccessibilityFromStream::parseRNAplfold_text() : more lines found than sequence is long.. sure this is the correct file for this sequence?"; }
 				// stop parsing
 				break;

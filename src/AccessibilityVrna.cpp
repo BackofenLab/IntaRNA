@@ -52,7 +52,9 @@ AccessibilityVrna::AccessibilityVrna(
 {
 
 	// VRNA computation not completely threadsafe
+#if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_computeAccessibilityVrna)
+#endif
 	{
 
 		// check if constraint given
@@ -212,7 +214,9 @@ AccessibilityVrna::
 fillByConstraints( const VrnaHandler &vrnaHandler
 		, const size_t plFoldL )
 {
+#if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_logOutput)
+#endif
 	{ VLOG(2) <<"computing accessibility via n^2 fold calls..."; }
 	// time logging
 	TIMED_FUNC_IF(timerObj, VLOG_IS_ON(9));
@@ -271,7 +275,9 @@ fillByRNAplfold( const VrnaHandler &vrnaHandler
 		, const size_t plFoldW
 		, const size_t plFoldL )
 {
+#if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_logOutput)
+#endif
 	{ VLOG(2) <<"computing accessibility via plfold routines...";}
 	// time logging
 	TIMED_FUNC_IF(timerObj, VLOG_IS_ON(9));
@@ -363,7 +369,9 @@ AccessibilityVrna::
 fillByRNAup( const VrnaHandler &vrnaHandler
 			, const size_t plFoldL )
 {
+#if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_logOutput)
+#endif
 	{ VLOG(2) <<"computing accessibility via RNAup routines..."; }
 	// time logging
 	TIMED_FUNC_IF(timerObj, VLOG_IS_ON(9));
@@ -510,19 +518,22 @@ computeES( const VrnaHandler & vrnaHandler, const size_t maxBpSpan )
 	}
 	// copy ensemble energies of multi loop parts = ES values
 	FLT_OR_DBL qm_val = 0.0;
+	// energy shift to be applied
+	const E_type energyShift = -(E_type)seqLength*std::log(foldData->exp_params->pf_scale);
+
 	for (int i=0; i<seqLength; i++) {
 		for (int j=i; j<seqLength; j++) {
-			// get Qm value
+			// get Qm1 value
 			// indexing via iindx starts with 1 instead of 0
-			qm_val = foldData->exp_matrices->qm[foldData->iindx[i+1]-j+1];
-			// ES energy = -RT*log( Qm )
+			qm_val = foldData->exp_matrices->qm1[foldData->iindx[i+1]-j+1];
+			// ES energy = -RT*log( Qm1 )
 			// ensure Qm > 0 for computation; otherwise E_INF
 			(*esValues)(i,j) =  ( qm_val == 0.0 )
 								? E_INF
 								: std::min<E_type>( E_INF,
-										(E_type)(-log(qm_val)
-												-(E_type)seqLength*std::log(foldData->exp_params->pf_scale)
-													)*foldData->exp_params->kT/1000.0);
+										std::max<E_type>(0.0,
+										(E_type)(-std::log(qm_val) + energyShift)*foldData->exp_params->kT/1000.0));
+			LOG(DEBUG) <<" i,j "<<i<<","<<j <<" = "<<(*esValues)(i,i);
 		}
 	}
 	// garbage collection

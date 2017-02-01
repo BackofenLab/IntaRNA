@@ -1,4 +1,11 @@
 
+170201 Martin Mann :
+ * CommandLineParsing :
+   * max sequence number now 99999
+ * configure.ac : 
+   + --disabled-multithreading : sets INTARNA_MULITHREADING to 0, otherwise 1
+ * enclose all OMP stuff with INTARNA_MULITHREADING preprocessor checks
+ 
 170131 Martin Mann :
  * CommandLineParsing :
    + opts_cmdline_short : short option list for abbreviated help output
@@ -11,7 +18,6 @@
    * adaption to OutputHandlerIntaRNA1* rename
    + OutputMode::V1_NORMAL : normal version 1.* output
    + threads + validate + getter : OMP max thread number
-   * max sequence number now 99999
  - OutputHandlerIntaRNA1detailed : renamed to OutputHandlerIntaRNA1
  + OutputHandlerIntaRNA1 : former OutputHandlerIntaRNA1detailed
    + detailedOutput : flag to switch between detailed and normal v1 output

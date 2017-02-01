@@ -33,8 +33,9 @@ predict( const IndexRange & r1
 		, const OutputConstraint & outConstraint
 		)
 {
-
+#if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_logOutput)
+#endif
 	{ VLOG(2) <<"predicting maximally probable interactions in O(n^4) space..."; }
 	// measure timing
 	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
@@ -102,8 +103,9 @@ predict( const IndexRange & r1
 		}
 	}
 	}
-
+#if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_logOutput)
+#endif
 	{ LOG(DEBUG) <<"init 4d matrix : "<<debug_count_cells_nonNull <<" to be filled ("
 				<<((double)debug_count_cells_nonNull/(double)(debug_count_cells_nonNull+debug_count_cells_null))
 				<<"%) and "<<debug_count_cells_null <<" not allocated"; }
@@ -252,7 +254,6 @@ updateOptima( const size_t i1, const size_t j1
 		, const E_type interZ
 		, const bool isHybridZ )
 {
-//		#pragma omp critical(intarna_logOutput)
 //		{ LOG(DEBUG) <<"Z( "<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" ) = "
 //						<<curZ
 //						<<" = " <<(eH + eE + eD); }
