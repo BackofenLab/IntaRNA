@@ -116,7 +116,7 @@ CommandLineParsing::CommandLineParsing()
 	outNumber( 0, 1000, 1),
 	outOverlap( OutputConstraint::ReportOverlap::OVERLAP_NONE, OutputConstraint::ReportOverlap::OVERLAP_BOTH, OutputConstraint::ReportOverlap::OVERLAP_SEQ2 ),
 	outDeltaE( 0.0, 100.0, 100.0),
-	outMaxE( -999.0, 0.0, 0.0),
+	outMaxE( -999.0, +999.0, 0.0),
 	outCsvCols(outCsvCols_default),
 	outAccFileq(""),
 	outAccFilet(""),

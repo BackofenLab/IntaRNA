@@ -15,7 +15,6 @@ OutputConstraint::OutputConstraint(
 	, maxE(maxE)
 	, deltaE(deltaE)
 {
-	if(maxE > (E_type)0.0) throw std::runtime_error("OutputConstraint(maxE="+toString(maxE)+") not <= 0.0 = "+toString(maxE+E_precisionEpsilon));
 	if(deltaE < (E_type)0.0) throw std::runtime_error("OutputConstraint(deltaE="+toString(deltaE)+") not >= 0.0");
 }
 

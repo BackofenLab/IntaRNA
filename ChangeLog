@@ -1,4 +1,11 @@
 
+170202 Martin Mann :
+ * CommandLineParsing :
+   * outMaxE maximum now 999 (was 0)
+ * OutputConstraint :
+   * constructor() :
+     - (maxE < 0) check removed
+
 170201 Martin Mann :
  * CommandLineParsing :
    * max sequence number now 99999
