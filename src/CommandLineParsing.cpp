@@ -340,8 +340,9 @@ CommandLineParsing::CommandLineParsing()
 				->notifier(boost::bind(&CommandLineParsing::validate_outMode,this,_1))
 			, std::string("output mode : "
 					+toString(OutputMode::DETAILED)+"= detailed, "
+					+toString(OutputMode::CSV)+"= CSV, "
+					+toString(OutputMode::V1_NORMAL)+"= v1, "
 					+toString(OutputMode::V1_DETAILED)+"= v1-detailed"
-					+toString(OutputMode::CSV)+"= CSV"
 					).c_str())
 	    ("outNumber,n"
 			, value<int>(&(outNumber.val))
@@ -419,7 +420,7 @@ CommandLineParsing::CommandLineParsing()
 				->default_value(threads.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_threads,this,_1))
 			, std::string("maximal number of threads to be used for parallel computation of query-target-combinations."
-					" Note, the number of threads multiplies the required memory needed for computation!"
+					" Note, the number of threads multiplies the required memory used for computation!"
 					" (arg in range ["+toString(threads.min)+","+toString(threads.max)+"])").c_str())
 #endif
 	    ("version", "print version")
