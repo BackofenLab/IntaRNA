@@ -1,3 +1,11 @@
+#ifndef INTARNA_CONFIG_H
+#define INTARNA_CONFIG_H
+
+
+/*
+* The following pre-processor definitions specify whether
+* or not certain features were activated upon build-time
+*/
 
 /* Name of package */
 #ifndef INTARNA_PACKAGE
@@ -44,3 +52,5 @@
 #ifndef INTARNA_MULITHREADING
 #define INTARNA_MULITHREADING @INTARNA_MULITHREADING@
 #endif
+
+#endif // INTARNA_CONFIG_H
