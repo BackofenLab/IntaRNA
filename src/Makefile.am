@@ -2,9 +2,12 @@
 # the program to build
 bin_PROGRAMS = IntaRNA
 
+# generated intaRNA sources 
+nodist_IntaRNA_SOURCES = 	config.h \
+							intarna_config.h
+
 # intaRNA sources
 IntaRNA_SOURCES =	intaRNA.cpp \
-					config.h \
 					easylogging++.h \
 					general.h \
 					Accessibility.h \

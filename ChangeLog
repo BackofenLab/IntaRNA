@@ -5,6 +5,11 @@
  * OutputConstraint :
    * constructor() :
      - (maxE < 0) check removed
+ + intarna_config.h.in : header containing package version and configure 
+   information
+ * configure.ac : 
+   + generate intarna_config.h
+   + AC_SUBST(INTARNA_MULITHREADING)
 
 170201 Martin Mann :
  * CommandLineParsing :

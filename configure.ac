@@ -63,7 +63,7 @@ AC_MSG_CHECKING([whether to build with debug information])
 debuger=no
 AC_ARG_ENABLE([debug],
 	[AS_HELP_STRING([--enable-debug],
-	    [enable debug data generation (def=no)])],
+	    [enable debug data generation (def=disabled)])],
   	[debuger="$enableval"])
 AC_MSG_RESULT([$debuger])
 if test x"$debuger" = x"yes"; then
@@ -80,19 +80,20 @@ fi
 ###############################################################################
 
 AC_MSG_CHECKING([whether to enable multi-threading support])
-multithreadingDisabled=no
+multithreadingEnabled=yes
 AC_ARG_ENABLE([multithreading],
 	[AS_HELP_STRING([--disable-multithreading],
-	    [disable multi-threading support (def=no)])],
-  	[multithreadingDisabled="$enableval"],
-  	[multithreadingDisabled=no])
-AC_MSG_RESULT([$debuger])
-if test x"$multithreadingDisabled" = x"yes"; then
+	    [disable multi-threading support (def=enabled)])],
+  	[multithreadingEnabled="$enableval"],
+  	[multithreadingEnabled=yes])
+AC_MSG_RESULT([$multithreadingEnabled])
+if test x"$multithreadingEnabled" = x"yes"; then
 	AC_DEFINE([INTARNA_MULITHREADING], [1], [Enabling multi-threading support])
+	AC_SUBST([INTARNA_MULITHREADING],[1])
 else
 	AC_DEFINE([INTARNA_MULITHREADING], [0], [Disabling multi-threading support])
+	AC_SUBST([INTARNA_MULITHREADING],[0])
 fi
-
 
 ###############################################################################
 # Vienna RNA package library path support, if not installed in usual directories
@@ -223,6 +224,7 @@ AC_SUBST([LIBS])
 # files to generate via autotools (.am or .in source files)
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([src/Makefile])
+AC_CONFIG_FILES([src/intarna_config.h])
 AC_CONFIG_FILES([perl/Makefile])
 AC_CONFIG_FILES([tests/Makefile])
 

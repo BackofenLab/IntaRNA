@@ -9,6 +9,8 @@
 	#include <config.h>
 #endif
 
+#include "intarna_config.h"
+
 //! central compiler flag whether or not debug mode is enabled
 #define IN_DEBUG_MODE ((defined(_DEBUG)) || (!defined (NDEBUG)))
 

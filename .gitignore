@@ -43,7 +43,7 @@ missing
 install-sh
 depcomp
 aclocal.m4
-*.in
+Makefile.in
 compile
 */.deps
 */.deps/*
