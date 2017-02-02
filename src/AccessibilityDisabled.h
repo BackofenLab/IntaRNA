@@ -125,8 +125,7 @@ E_type
 AccessibilityDisabled::
 getES( const size_t from, const size_t to ) const
 {
-	throw std::runtime_error("accessibility computation was disabled, which also disables ES computation..");
-	return ED_UPPER_BOUND;
+	return E_INF;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
