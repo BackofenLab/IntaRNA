@@ -444,12 +444,22 @@ with the start position of the respective interaction site.
 
 In the following, an altered CSV output for the example from above is generated.
 ```bash
-# call: IntaRNA.exe -t AAACACCCCCGGUGGUUUGG -q AAACACCCCCGGUGGUUUGG --outMode=1 --noSeed --outOverlap=B -n 3 --outCsvCols=Pu1,Pu2,subseqDB,hybridDB
+# call: IntaRNA.exe --outCsvCols=Pu1,Pu2,subseqDB,hybridDB -t AAACACCCCCGGUGGUUUGG -q AAACACCCCCGGUGGUUUGG --outMode=1 --noSeed --outOverlap=B -n 3
 Pu1;Pu2;subseqDB;hybridDB
 0.00133893;0.00133893;4CACCCCCGGUG&4CACCCCCGGUG;4||||...||||&4||||...||||
 0.00134094;0.00134094;5ACCCCCGGUGGU&5ACCCCCGGUGGU;5|||||.||.|||&5|||||.||.|||
 0.00133686;0.0013368;1AAACACCCCCGGUG&4CACCCCCGGUGGUUU;1|||||||...||||&4||||...||||.|||
 ```
+
+
+<a name="outModeV1" />
+### Backward compatible IntaRNA v1.* output
+
+If your scripts/whatever is tuned to the old IntaRNA v1.* output, you can use
+- `--outMode=2` : IntaRNA v1.* normal output
+- `--outMode=3` : IntaRNA v1.* detailed output (former `-o` option)
+
+
 
 
 <br /><br />
