@@ -114,9 +114,9 @@ if (defined $args{o} && $args{o}==1) {
 	$intaRNA2call .=" --outMode=2";
 }
 if (defined $args{n} && $args{n}==1) {
-	$intaRNA2call .= " --mode=1"
+	$intaRNA2call .= " --mode=E"
 } else {
-	$intaRNA2call .= " --mode=0"
+	$intaRNA2call .= " --mode=H"
 }
 if (defined $args{u}) {
 	$intaRNA2call .= " --seedMaxUP=".$args{u}

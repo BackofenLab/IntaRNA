@@ -39,16 +39,6 @@ public:
 		NOT_PARSED_YET = 999
 	};
 
-	//! encodings of different prediction modes
-	enum PredictionMode {
-		PredictionMode_min = 0,
-		HEURISTIC = 0,
-		SPACEEFFICIENT = 1,
-		FULL = 2,
-		MAXPROB = 3,
-		PredictionMode_max = 3
-	};
-
 	//! encoding of different output modes
 	enum OutputMode {
 		OutputMode_min = 0,
@@ -368,25 +358,27 @@ protected:
 	//! max overall unpaired in seed
 	NumberParameter<int> seedMaxUP;
 	//! max unpaired in query's seed
-	NumberParameter<int> seedMaxUPq;
+	NumberParameter<int> seedQMaxUP;
 	//! max unpaired in target's seed
-	NumberParameter<int> seedMaxUPt;
+	NumberParameter<int> seedTMaxUP;
 	//! max energy of a seed to be considered
 	NumberParameter<E_type> seedMaxE;
 	//! minimal unpaired probability (per sequence) of a seed to be considered
 	NumberParameter<E_type> seedMinPu;
 	//! intervals in query for seed search
-	std::string seedRangeq;
+	std::string seedQRange;
 	//! intervals in target for seed search
-	std::string seedRanget;
+	std::string seedTRange;
 	//! the final seed constraint to be used
 	mutable SeedConstraint * seedConstraint;
 
 	//! the temperature to be used for energy computations
 	NumberParameter<T_type> temperature;
 
-	//! the prediction mode
-	NumberParameter<int> predMode;
+	//! the prediction target (mfe-single-site, max-prob-site, ..)
+	CharParameter pred;
+	//! the prediction mode (heuristic, space-efficient, exact)
+	CharParameter predMode;
 #if INTARNA_MULITHREADING
 	//! number of threads = number of parallel predictors running
 	NumberParameter<int> threads;
@@ -406,7 +398,7 @@ protected:
 	//! number of (sub)optimal interactions to report
 	NumberParameter<int> outNumber;
 	//! whether or not reported interactions can to be overlapping
-	NumberParameter<int> outOverlap;
+	CharParameter outOverlap;
 	//! deltaE to mfe allowed to report an interaction
 	NumberParameter<double> outDeltaE;
 	//! max E allowed to report an interaction
@@ -416,13 +408,13 @@ protected:
 	//! the CSV column selection
 	static const std::string outCsvCols_default;
 	//! the stream/file to write the query's ED values to
-	std::string outAccFileq;
+	std::string outQAccFile;
 	//! the stream/file to write the target's ED values to
-	std::string outAccFilet;
+	std::string outTAccFile;
 	//! the stream/file to write the query's unpaired probabilities to
-	std::string outPuFileq;
+	std::string outQPuFile;
 	//! the stream/file to write the target's unpaired probabilities to
-	std::string outPuFilet;
+	std::string outTPuFile;
 
 	//! the vienna energy parameter handler initialized by #parse()
 	mutable VrnaHandler vrnaHandler;
@@ -559,16 +551,16 @@ protected:
 	void validate_seedMaxUP(const int & value);
 
 	/**
-	 * Validates the seedMaxUPq argument.
+	 * Validates the seedQMaxUP argument.
 	 * @param value the argument value to validate
 	 */
-	void validate_seedMaxUPq(const int & value);
+	void validate_seedQMaxUP(const int & value);
 
 	/**
-	 * Validates the seedMaxUPt argument.
+	 * Validates the seedTMaxUP argument.
 	 * @param value the argument value to validate
 	 */
-	void validate_seedMaxUPt(const int & value);
+	void validate_seedTMaxUP(const int & value);
 
 	/**
 	 * Validates the seedMaxE argument.
@@ -583,16 +575,16 @@ protected:
 	void validate_seedMinPu(const E_type & value);
 
 	/**
-	 * Validates the seedRangeq argument.
+	 * Validates the seedQRange argument.
 	 * @param value the argument value to validate
 	 */
-	void validate_seedRangeq(const std::string & value);
+	void validate_seedQRange(const std::string & value);
 
 	/**
-	 * Validates the seedRanget argument.
+	 * Validates the seedTRange argument.
 	 * @param value the argument value to validate
 	 */
-	void validate_seedRanget(const std::string & value);
+	void validate_seedTRange(const std::string & value);
 
 	/**
 	 * Validates the temperature argument.
@@ -601,10 +593,16 @@ protected:
 	void validate_temperature(const T_type & value);
 
 	/**
+	 * Validates the prediction target argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_pred(const char & value);
+
+	/**
 	 * Validates the prediction mode argument.
 	 * @param value the argument value to validate
 	 */
-	void validate_predMode(const int & value);
+	void validate_predMode(const char & value);
 
 	/**
 	 * Validates the temperature argument.
@@ -640,7 +638,7 @@ protected:
 	 * Validates the outOverlap argument.
 	 * @param value the argument value to validate
 	 */
-	void validate_outOverlap(const int & value);
+	void validate_outOverlap(const char & value);
 
 	/**
 	 * Validates the outDeltaE argument.
@@ -661,28 +659,28 @@ protected:
 	void validate_outCsvCols(const std::string & value);
 
 	/**
-	 * Validates the outAccFileq argument.
+	 * Validates the outQAccFile argument.
 	 * @param value the argument value to validate
 	 */
-	void validate_outAccFileq( const std::string & value);
+	void validate_outQAccFile( const std::string & value);
 
 	/**
-	 * Validates the outAccFilet argument.
+	 * Validates the outTAccFile argument.
 	 * @param value the argument value to validate
 	 */
-	void validate_outAccFilet( const std::string & value);
+	void validate_outTAccFile( const std::string & value);
 
 	/**
-	 * Validates the outPuFileq argument.
+	 * Validates the outQPuFile argument.
 	 * @param value the argument value to validate
 	 */
-	void validate_outPuFileq( const std::string & value);
+	void validate_outQPuFile( const std::string & value);
 
 	/**
-	 * Validates the outPuFilet argument.
+	 * Validates the outTPuFile argument.
 	 * @param value the argument value to validate
 	 */
-	void validate_outPuFilet( const std::string & value);
+	void validate_outTPuFile( const std::string & value);
 
 #if INTARNA_MULITHREADING
 	/**
@@ -1122,17 +1120,17 @@ void CommandLineParsing::validate_seedMaxUP(const int & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_seedMaxUPq(const int & value) {
+void CommandLineParsing::validate_seedQMaxUP(const int & value) {
 	// forward check to general method
-	validate_numberArgument("seedMaxUPq", seedMaxUPq, value);
+	validate_numberArgument("seedQMaxUP", seedQMaxUP, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_seedMaxUPt(const int & value) {
+void CommandLineParsing::validate_seedTMaxUP(const int & value) {
 	// forward check to general method
-	validate_numberArgument("seedMaxUPt", seedMaxUPt, value);
+	validate_numberArgument("seedTMaxUP", seedTMaxUP, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1154,11 +1152,11 @@ void CommandLineParsing::validate_seedMinPu(const E_type & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_seedRangeq(const std::string & value) {
+void CommandLineParsing::validate_seedQRange(const std::string & value) {
 	if (!value.empty()) {
 		// check regex
 		if (!boost::regex_match(value, IndexRangeList::regex, boost::match_perl) ) {
-			LOG(ERROR) <<"seedRangeq"<<" = " <<value <<" : is not in the format 'from1-to1,from2-to2,..'";
+			LOG(ERROR) <<"seedQRange"<<" = " <<value <<" : is not in the format 'from1-to1,from2-to2,..'";
 			parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
 		}
 	}
@@ -1167,11 +1165,11 @@ void CommandLineParsing::validate_seedRangeq(const std::string & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_seedRanget(const std::string & value) {
+void CommandLineParsing::validate_seedTRange(const std::string & value) {
 	if (!value.empty()) {
 		// check regex
 		if (!boost::regex_match(value, IndexRangeList::regex, boost::match_perl) ) {
-			LOG(ERROR) <<"seedRanget"<<" = " <<value <<" : is not in the format 'from1-to1,from2-to2,..'";
+			LOG(ERROR) <<"seedTRange"<<" = " <<value <<" : is not in the format 'from1-to1,from2-to2,..'";
 			parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
 		}
 	}
@@ -1188,13 +1186,19 @@ void CommandLineParsing::validate_temperature(const T_type & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_predMode(const int & value)
+void CommandLineParsing::validate_pred(const char & value)
 {
 	// forward check to general method
-	validate_numberArgument("mode", predMode, value);
+	validate_charArgument("mode", pred, value);
+}
 
-	// TODO check if mode with seed and "no-seed" requested
+////////////////////////////////////////////////////////////////////////////
 
+inline
+void CommandLineParsing::validate_predMode(const char & value)
+{
+	// forward check to general method
+	validate_charArgument("mode", predMode, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1265,9 +1269,9 @@ void CommandLineParsing::validate_outNumber(const int & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_outOverlap(const int & value) {
+void CommandLineParsing::validate_outOverlap(const char & value) {
 	// forward check to general method
-	validate_numberArgument("outOverlap", outOverlap, value);
+	validate_charArgument("outOverlap", outOverlap, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1289,33 +1293,33 @@ void CommandLineParsing::validate_outMaxE(const double & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_outAccFileq(const std::string & value) {
+void CommandLineParsing::validate_outQAccFile(const std::string & value) {
 	// forward check to general method
-	validate_outputTarget( "--outAccFileq", value );
+	validate_outputTarget( "--outQAccFile", value );
 }
 
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_outAccFilet(const std::string & value) {
+void CommandLineParsing::validate_outTAccFile(const std::string & value) {
 	// forward check to general method
-	validate_outputTarget( "--outAccFilet", value );
+	validate_outputTarget( "--outTAccFile", value );
 }
 
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_outPuFileq(const std::string & value) {
+void CommandLineParsing::validate_outQPuFile(const std::string & value) {
 	// forward check to general method
-	validate_outputTarget( "--outPuFileq", value );
+	validate_outputTarget( "--outQPuFile", value );
 }
 
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_outPuFilet(const std::string & value) {
+void CommandLineParsing::validate_outTPuFile(const std::string & value) {
 	// forward check to general method
-	validate_outputTarget( "--outPuFilet", value );
+	validate_outputTarget( "--outTPuFile", value );
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1337,13 +1341,13 @@ CommandLineParsing::
 writeQueryAccessibility( const Accessibility & acc ) const
 {
 	// forward to generic function
-	if (!outAccFileq.empty()) {
-		VLOG(2) <<"writing ED values for query '"<<acc.getSequence().getId()<<"' to "<<outAccFileq;
-		writeAccessibility( acc, outAccFileq, true );
+	if (!outQAccFile.empty()) {
+		VLOG(2) <<"writing ED values for query '"<<acc.getSequence().getId()<<"' to "<<outQAccFile;
+		writeAccessibility( acc, outQAccFile, true );
 	}
-	if (!outPuFileq.empty()) {
-		VLOG(2) <<"writing unpaired probabilities for query '"<<acc.getSequence().getId()<<"' to "<<outPuFileq;
-		writeAccessibility( acc, outPuFileq, false );
+	if (!outQPuFile.empty()) {
+		VLOG(2) <<"writing unpaired probabilities for query '"<<acc.getSequence().getId()<<"' to "<<outQPuFile;
+		writeAccessibility( acc, outQPuFile, false );
 	}
 }
 
@@ -1355,13 +1359,13 @@ CommandLineParsing::
 writeTargetAccessibility( const Accessibility & acc ) const
 {
 	// forward to generic function
-	if (!outAccFilet.empty()) {
-		VLOG(2) <<"writing ED values for target '"<<acc.getSequence().getId()<<"' to "<<outAccFilet;
-		writeAccessibility( acc, outAccFilet, true );
+	if (!outTAccFile.empty()) {
+		VLOG(2) <<"writing ED values for target '"<<acc.getSequence().getId()<<"' to "<<outTAccFile;
+		writeAccessibility( acc, outTAccFile, true );
 	}
-	if (!outPuFilet.empty()) {
-		VLOG(2) <<"writing unpaired probabilities for target '"<<acc.getSequence().getId()<<"' to "<<outPuFilet;
-		writeAccessibility( acc, outPuFilet, false );
+	if (!outTPuFile.empty()) {
+		VLOG(2) <<"writing unpaired probabilities for target '"<<acc.getSequence().getId()<<"' to "<<outTPuFile;
+		writeAccessibility( acc, outTPuFile, false );
 	}
 }
 

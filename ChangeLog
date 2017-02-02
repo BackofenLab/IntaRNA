@@ -2,6 +2,24 @@
 170202 Martin Mann :
  * CommandLineParsing :
    * outMaxE maximum now 999 (was 0)
+   - PredictionMode : replaced by char-based setup
+   * seedMaxUPq -> seedQMaxUP
+   * seedMaxUPt -> seedTMaxUP
+   * seedRangeq -> seedQRange
+   * seedRanget -> seedTRange
+   + pred + validator : setup of prediction target (mfe-si, maxprob-si, ...)
+   * predMode : 
+     * char-based setup
+     - max-prob mode (now selected via --pred=P)
+   * outOverlap : char-based setup
+   * outAccFileq -> outQAccFile
+   * outAccFilet -> outTAccFile
+   * outPuFileq -> outQPuFile
+   * outPuFilet -> outTPuFile
+   * get*Accessibility() :
+     * computeES setup now via pred.val
+   * getPredictor() :
+     + support for different prediction targets via pred.val switch
  * OutputConstraint :
    * constructor() :
      - (maxE < 0) check removed
@@ -10,6 +28,10 @@
  * configure.ac : 
    + generate intarna_config.h
    + AC_SUBST(INTARNA_MULITHREADING)
+ * AccessibilityDisabled :
+   * getES() : 
+     - no error is thrown anymore
+ * perl/*.pl : adaptions to CLI changes
 
 170201 Martin Mann :
  * CommandLineParsing :

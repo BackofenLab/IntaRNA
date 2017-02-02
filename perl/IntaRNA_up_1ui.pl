@@ -114,7 +114,7 @@ if (defined $args{o} && $args{o}==1) {
 if (defined $args{n} && $args{n}==1) {
 	$intaRNA2call .= " --noSeed"
 }
-$intaRNA2call .= " --mode=2";
+$intaRNA2call .= " --mode=E";
 if (defined $args{u}) {
 	$intaRNA2call .= " --seedMaxUP=".$args{u}
 } else {

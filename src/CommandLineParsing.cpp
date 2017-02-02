@@ -92,17 +92,18 @@ CommandLineParsing::CommandLineParsing()
 	noSeedRequired(false),
 	seedBP(2,20,7),
 	seedMaxUP(0,20,0),
-	seedMaxUPq(-1,20,-1),
-	seedMaxUPt(-1,20,-1),
+	seedQMaxUP(-1,20,-1),
+	seedTMaxUP(-1,20,-1),
 	seedMaxE(-999,+999,0),
 	seedMinPu(0,1,0),
-	seedRangeq(""),
-	seedRanget(""),
+	seedQRange(""),
+	seedTRange(""),
 	seedConstraint(NULL),
 
 	temperature(0,100,37),
 
-	predMode( PredictionMode_min, PredictionMode_max, HEURISTIC),
+	pred( "SP", 'S'),
+	predMode( "HME", 'H'),
 #if INTARNA_MULITHREADING
 	threads( 1, omp_get_max_threads(), 1),
 #endif
@@ -114,14 +115,14 @@ CommandLineParsing::CommandLineParsing()
 	outStream(&(std::cout)),
 	outMode( OutputMode_min, OutputMode_max, DETAILED ),
 	outNumber( 0, 1000, 1),
-	outOverlap( OutputConstraint::ReportOverlap::OVERLAP_NONE, OutputConstraint::ReportOverlap::OVERLAP_BOTH, OutputConstraint::ReportOverlap::OVERLAP_SEQ2 ),
+	outOverlap( "NTQB", 'Q' ),
 	outDeltaE( 0.0, 100.0, 100.0),
 	outMaxE( -999.0, +999.0, 0.0),
 	outCsvCols(outCsvCols_default),
-	outAccFileq(""),
-	outAccFilet(""),
-	outPuFileq(""),
-	outPuFilet(""),
+	outQAccFile(""),
+	outTAccFile(""),
+	outQPuFile(""),
+	outTPuFile(""),
 
 	vrnaHandler()
 
@@ -129,7 +130,7 @@ CommandLineParsing::CommandLineParsing()
 	using namespace boost::program_options;
 
 
-	////  SEQUENCE OPTIONS  ////////////////////////////////////
+	////  QUERY SEQUENCE OPTIONS  ////////////////////////////////////
 
 	opts_query.add_options()
 		("query,q"
@@ -143,7 +144,7 @@ CommandLineParsing::CommandLineParsing()
 				->notifier(boost::bind(&CommandLineParsing::validate_qAcc,this,_1))
 			, std::string("accessibility computation : 'N'o accessibility contributions"
 					", 'C' computation of accessibilities"
-					", 'P' RNAplfold unpaired probability output from --qAccFile"
+					", 'P' unpaired probabilities in RNAplfold format from --qAccFile"
 					", 'E' ED values in RNAplfold Pu-like format from --qAccFile"
 					).c_str())
 		("qAccW"
@@ -188,6 +189,8 @@ CommandLineParsing::CommandLineParsing()
 			, std::string("interaction site : query regions to be considered for interaction prediction. Either given as BED file (for multi-sequence FASTA input) or in the format 'from1-to1,from2-to2,..' assuming indexing starts with 1").c_str())
 		;
 
+	////  TARGET SEQUENCE OPTIONS  ////////////////////////////////////
+
 	opts_target.add_options()
 		("target,t"
 			, value<std::string>(&targetArg)
@@ -200,8 +203,8 @@ CommandLineParsing::CommandLineParsing()
 				->notifier(boost::bind(&CommandLineParsing::validate_tAcc,this,_1))
 			, std::string("accessibility computation : 'N'o accessibility contributions"
 					", 'C' computation of accessibilities"
-					", 'P' RNAplfold unpaired probability output from --qAccFile"
-					", 'E' ED values in RNAplfold Pu-like format from --qAccFile"
+					", 'P' unpaired probabilities in RNAplfold format from --tAccFile"
+					", 'E' ED values in RNAplfold Pu-like format from --tAccFile"
 					).c_str())
 		("tAccW"
 			, value<int>(&(tAccW.val))
@@ -264,16 +267,16 @@ CommandLineParsing::CommandLineParsing()
 		;
 	opts_cmdline_short.add(opts_seed);
 	opts_seed.add_options()
-		("seedMaxUPq"
-			, value<int>(&(seedMaxUPq.val))
-				->default_value(seedMaxUPq.def)
-				->notifier(boost::bind(&CommandLineParsing::validate_seedMaxUPq,this,_1))
-			, std::string("maximal number of unpaired bases within the query's seed region (arg in range ["+toString(seedMaxUPq.min)+","+toString(seedMaxUPq.max)+"]); if -1 the value of seedMaxUP is used.").c_str())
-		("seedMaxUPt"
-			, value<int>(&(seedMaxUPt.val))
-				->default_value(seedMaxUPt.def)
-				->notifier(boost::bind(&CommandLineParsing::validate_seedMaxUPt,this,_1))
-			, std::string("maximal number of unpaired bases within the target's seed region (arg in range ["+toString(seedMaxUPt.min)+","+toString(seedMaxUPt.max)+"]); if -1 the value of seedMaxUP is used.").c_str())
+		("seedQMaxUP"
+			, value<int>(&(seedQMaxUP.val))
+				->default_value(seedQMaxUP.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_seedQMaxUP,this,_1))
+			, std::string("maximal number of unpaired bases within the query's seed region (arg in range ["+toString(seedQMaxUP.min)+","+toString(seedQMaxUP.max)+"]); if -1 the value of seedMaxUP is used.").c_str())
+		("seedTMaxUP"
+			, value<int>(&(seedTMaxUP.val))
+				->default_value(seedTMaxUP.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_seedTMaxUP,this,_1))
+			, std::string("maximal number of unpaired bases within the target's seed region (arg in range ["+toString(seedTMaxUP.min)+","+toString(seedTMaxUP.max)+"]); if -1 the value of seedMaxUP is used.").c_str())
 		("seedMaxE"
 			, value<E_type>(&(seedMaxE.val))
 				->default_value(seedMaxE.def)
@@ -284,13 +287,13 @@ CommandLineParsing::CommandLineParsing()
 				->default_value(seedMinPu.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_seedMinPu,this,_1))
 			, std::string("minimal unpaired probability (per sequence) a seed region may have (arg in range ["+toString(seedMinPu.min)+","+toString(seedMinPu.max)+"]).").c_str())
-		("seedRangeq"
-			, value<std::string>(&(seedRangeq))
-				->notifier(boost::bind(&CommandLineParsing::validate_seedRangeq,this,_1))
+		("seedQRange"
+			, value<std::string>(&(seedQRange))
+				->notifier(boost::bind(&CommandLineParsing::validate_seedQRange,this,_1))
 			, std::string("interval(s) in the query to search for seeds in format 'from1-to1,from2-to2,...' (Note, only for single query)").c_str())
-		("seedRanget"
-			, value<std::string>(&(seedRanget))
-				->notifier(boost::bind(&CommandLineParsing::validate_seedRanget,this,_1))
+		("seedTRange"
+			, value<std::string>(&(seedTRange))
+				->notifier(boost::bind(&CommandLineParsing::validate_seedTRange,this,_1))
 			, std::string("interval(s) in the target to search for seeds in format 'from1-to1,from2-to2,...' (Note, only for single target)").c_str())
 		;
 
@@ -298,17 +301,25 @@ CommandLineParsing::CommandLineParsing()
 
 	opts_inter.add_options()
 		("mode,m"
-			, value<int>(&(predMode.val))
+			, value<char>(&(predMode.val))
 				->default_value(predMode.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_predMode,this,_1))
 			, std::string("prediction mode : "
-					+toString(PredictionMode::HEURISTIC)+"= MFE-heuristic (n^2:S|T), "
-					+toString(PredictionMode::SPACEEFFICIENT)+"= MFE (n^2:S,n^4:T), "
-					+toString(PredictionMode::FULL)+"= MFE (n^4:S|T), "
-					+toString(PredictionMode::MAXPROB)+"= MaxProb (n^4:S|T)").c_str())
+					"'H' = heuristic (fast and low memory), "
+					"'M' = exact and low memory, "
+					"'E' = exact (high memory)"
+					).c_str())
 		;
 	opts_cmdline_short.add(opts_inter);
 	opts_inter.add_options()
+		("pred"
+			, value<char>(&(pred.val))
+				->default_value(pred.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_pred,this,_1))
+			, std::string("prediction target : "
+					"'S' = single-site minimum-free-energy interaction (interior loops only), "
+					"'P' = single-site maximum-probability interaction (interior loops only)"
+					).c_str())
 		("energy,e"
 			, value<char>(&(energy.val))
 				->default_value(energy.def)
@@ -350,14 +361,14 @@ CommandLineParsing::CommandLineParsing()
 				->notifier(boost::bind(&CommandLineParsing::validate_outNumber,this,_1))
 			, std::string("maximal overall number (query+target) of unpaired bases within the seed region (arg in range ["+toString(outNumber.min)+","+toString(outNumber.max)+"])").c_str())
 	    ("outOverlap"
-			, value<int>(&(outOverlap.val))
+			, value<char>(&(outOverlap.val))
 				->default_value(outOverlap.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_outOverlap,this,_1))
-			, std::string("suboptimal output : interactions can overlap ("
-					+toString(OutputConstraint::OVERLAP_NONE)+") in none of the sequences, ("
-					+toString(OutputConstraint::OVERLAP_SEQ1)+") in the target only, ("
-					+toString(OutputConstraint::OVERLAP_SEQ2)+") in the query only, ("
-					+toString(OutputConstraint::OVERLAP_BOTH)+") in both sequences").c_str())
+			, std::string("suboptimal output : interactions can overlap "
+					"(N) in none of the sequences, "
+					"(T) in the target only, "
+					"(Q) in the query only, "
+					"(B) in both sequences").c_str())
 		;
 	opts_cmdline_short.add(opts_output);
 	opts_output.add_options()
@@ -379,30 +390,30 @@ CommandLineParsing::CommandLineParsing()
 					" An empty argument prints all possible columns from the following available ID list: "
 					+ boost::replace_all_copy(OutputHandlerCsv::list2string(OutputHandlerCsv::string2list("")), ",", ", ")
 					).c_str())
-		("outAccFileq"
-			, value<std::string>(&(outAccFileq))
-				->notifier(boost::bind(&CommandLineParsing::validate_outAccFileq,this,_1))
+		("outQAccFile"
+			, value<std::string>(&(outQAccFile))
+				->notifier(boost::bind(&CommandLineParsing::validate_outQAccFile,this,_1))
 			, std::string("output : writes the query's ED values to the given file/stream"
 					" in a format similar to RNAplfold unpaired probability output."
 					" Use STDOUT/STDERR to write to the respective output stream."
 					).c_str())
-		("outAccFilet"
-			, value<std::string>(&(outAccFilet))
-				->notifier(boost::bind(&CommandLineParsing::validate_outAccFilet,this,_1))
+		("outTAccFile"
+			, value<std::string>(&(outTAccFile))
+				->notifier(boost::bind(&CommandLineParsing::validate_outTAccFile,this,_1))
 			, std::string("output : writes the target's ED values to the given file/stream"
 					" in a format similar to RNAplfold unpaired probability output."
 					" Use STDOUT/STDERR to write to the respective output stream."
 					).c_str())
-		("outPuFileq"
-			, value<std::string>(&(outPuFileq))
-				->notifier(boost::bind(&CommandLineParsing::validate_outPuFileq,this,_1))
+		("outQPuFile"
+			, value<std::string>(&(outQPuFile))
+				->notifier(boost::bind(&CommandLineParsing::validate_outQPuFile,this,_1))
 			, std::string("output : writes the query's unpaired probabilities used for ED values to the given file/stream"
 					" in RNAplfold unpaired probability output format."
 					" Use STDOUT/STDERR to write to the respective output stream."
 					).c_str())
-		("outPuFilet"
-			, value<std::string>(&(outPuFilet))
-				->notifier(boost::bind(&CommandLineParsing::validate_outPuFilet,this,_1))
+		("outTPuFile"
+			, value<std::string>(&(outTPuFile))
+				->notifier(boost::bind(&CommandLineParsing::validate_outTPuFile,this,_1))
 			, std::string("output : writes the target's unpaired probabilities used for ED values to the given file/stream"
 					" in RNAplfold unpaired probability output format."
 					" Use STDOUT/STDERR to write to the respective output stream."
@@ -572,29 +583,29 @@ parse(int argc, char** argv)
 				// input sanity check : maybe seed constraints defined -> warn
 				if (seedBP.val != seedBP.def) LOG(INFO) <<"no seed constraint wanted, but seedBP provided (will be ignored)";
 				if (seedMaxUP.val != seedMaxUP.def) LOG(INFO) <<"no seed constraint wanted, but seedMaxUP provided (will be ignored)";
-				if (seedMaxUPq.val != seedMaxUPq.def) LOG(INFO) <<"no seed constraint wanted, but seedMaxUPq provided (will be ignored)";
-				if (seedMaxUPt.val != seedMaxUPt.def) LOG(INFO) <<"no seed constraint wanted, but seedMaxUPt provided (will be ignored)";
+				if (seedQMaxUP.val != seedQMaxUP.def) LOG(INFO) <<"no seed constraint wanted, but seedQMaxUP provided (will be ignored)";
+				if (seedTMaxUP.val != seedTMaxUP.def) LOG(INFO) <<"no seed constraint wanted, but seedTMaxUP provided (will be ignored)";
 				if (seedMaxE.val != seedMaxE.def) LOG(INFO) <<"no seed constraint wanted, but seedMaxE provided (will be ignored)";
 				if (seedMinPu.val != seedMinPu.def) LOG(INFO) <<"no seed constraint wanted, but seedMinPu provided (will be ignored)";
-				if (!seedRangeq.empty()) LOG(INFO) <<"no seed constraint wanted, but seedRangeq provided (will be ignored)";
-				if (!seedRanget.empty()) LOG(INFO) <<"no seed constraint wanted, but seedRanget provided (will be ignored)";
+				if (!seedQRange.empty()) LOG(INFO) <<"no seed constraint wanted, but seedQRange provided (will be ignored)";
+				if (!seedTRange.empty()) LOG(INFO) <<"no seed constraint wanted, but seedTRange provided (will be ignored)";
 			} else {
 				// check query search ranges
-				if (!seedRangeq.empty()) {
+				if (!seedQRange.empty()) {
 					if (query.size()!=1) {
-						LOG(ERROR) <<"seedRangeq given but not only one query sequence provided";
+						LOG(ERROR) <<"seedQRange given but not only one query sequence provided";
 						updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 					} else {
-						validate_indexRangeList("seedRangeq",seedRangeq, 1, query.begin()->size());
+						validate_indexRangeList("seedQRange",seedQRange, 1, query.begin()->size());
 					}
 				}
 				// check target search ranges
-				if (!seedRanget.empty()) {
+				if (!seedTRange.empty()) {
 					if (target.size()!=1) {
-						LOG(ERROR) <<"seedRanget given but not only one target sequence provided";
+						LOG(ERROR) <<"seedTRange given but not only one target sequence provided";
 						updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 					} else {
-						validate_indexRangeList("seedRanget",seedRanget, 1, target.begin()->size());
+						validate_indexRangeList("seedTRange",seedTRange, 1, target.begin()->size());
 					}
 				}
 
@@ -710,16 +721,16 @@ parse(int argc, char** argv)
 			}
 
 			// check ED/Pu output sanity
-			if (!outAccFileq.empty() && getQuerySequences().size()>1) throw std::runtime_error("--outAccFileq only supported for single query sequence input");
-			if (!outAccFilet.empty() && getTargetSequences().size()>1) throw std::runtime_error("--outAccFilet only supported for single target sequence input");
-			if (!outPuFileq.empty() && getQuerySequences().size()>1) throw std::runtime_error("--outPuFileq only supported for single query sequence input");
-			if (!outPuFilet.empty() && getTargetSequences().size()>1) throw std::runtime_error("--outPuFilet only supported for single target sequence input");
+			if (!outQAccFile.empty() && getQuerySequences().size()>1) throw std::runtime_error("--outQAccFile only supported for single query sequence input");
+			if (!outTAccFile.empty() && getTargetSequences().size()>1) throw std::runtime_error("--outTAccFile only supported for single target sequence input");
+			if (!outQPuFile.empty() && getQuerySequences().size()>1) throw std::runtime_error("--outQPuFile only supported for single query sequence input");
+			if (!outTPuFile.empty() && getTargetSequences().size()>1) throw std::runtime_error("--outTPuFile only supported for single target sequence input");
 
 #if INTARNA_MULITHREADING
 			// check if multi-threading
 			if (threads.val > 1 && getTargetSequences().size() > 1) {
-				// warn if 4D space prediction enabled
-				if (predMode.val > PredictionMode::SPACEEFFICIENT) {
+				// warn if >= 4D space prediction enabled
+				if (pred.val != 'S' || predMode.val == 'E') {
 					LOG(WARNING) <<"Multi-threading enabled in high-mem-prediction mode : ensure you have enough memory available!";
 				}
 				if (outMode.val == OutputMode::V1_NORMAL || outMode.val == OutputMode::V1_DETAILED) {
@@ -996,12 +1007,8 @@ getQueryAccessibility( const size_t sequenceNumber ) const
 
 	// create temporary constraint object (will be copied)
 	AccessibilityConstraint accConstraint(qAccConstr);
-	bool computeES = false;
-#if IN_DEBUG_MODE
-	// TODO replace based on predictor selection
-//	computeES = qAccW.val==0;
-	computeES = true;
-#endif
+	// check whether to compute ES values (for multi-site predictions
+	const bool computeES = std::string("M").find(pred.val) != std::string::npos;
 	// construct selected accessibility object
 	switch(qAcc.val) {
 
@@ -1075,12 +1082,8 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 	}
 	// create temporary constraint object (will be copied)
 	AccessibilityConstraint accConstraint(tAccConstr);
-	bool computeES = false;
-#if IN_DEBUG_MODE
-	// TODO replace based on predictor selection
-	computeES = true;
-//	computeES = tAccW.val==0;
-#endif
+	// check whether to compute ES values (for multi-site predictions
+	const bool computeES = std::string("M").find(pred.val) != std::string::npos;
 	const RnaSequence& seq = getTargetSequences().at(sequenceNumber);
 	switch(tAcc.val) {
 
@@ -1166,9 +1169,17 @@ CommandLineParsing::
 getOutputConstraint()  const
 {
 	checkIfParsed();
+	OutputConstraint::ReportOverlap overlap = OutputConstraint::ReportOverlap::OVERLAP_BOTH;
+	switch(outOverlap.val) {
+	case 'N' : overlap = OutputConstraint::ReportOverlap::OVERLAP_NONE; break;
+	case 'T' : overlap = OutputConstraint::ReportOverlap::OVERLAP_SEQ1; break;
+	case 'Q' : overlap = OutputConstraint::ReportOverlap::OVERLAP_SEQ2; break;
+	case 'B' : overlap = OutputConstraint::ReportOverlap::OVERLAP_BOTH; break;
+	default : throw std::runtime_error("CommandLineParsing::getOutputConstraint() : unsupported outOverlap value "+toString(outOverlap.val));
+	}
 	return OutputConstraint(
 			  outNumber.val
-			, static_cast<OutputConstraint::ReportOverlap>(outOverlap.val)
+			, overlap
 			, static_cast<E_type>(outMaxE.val)
 			, static_cast<E_type>(outDeltaE.val)
 			);
@@ -1359,18 +1370,57 @@ CommandLineParsing::
 getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 {
 	if (noSeedRequired) {
-		switch ( (PredictionMode)predMode.val ) {
-		case HEURISTIC :  return new PredictorMfe2dHeuristic( energy, output );
-		case SPACEEFFICIENT :  return new PredictorMfe2d( energy, output );
-		case FULL :  return new PredictorMfe4d( energy, output );
-		case MAXPROB :  return new PredictorMaxProb( energy, output );
+		// predictors without seed constraint
+		switch( pred.val ) {
+		// single-site mfe interactions (contain only interior loops)
+		case 'S' : {
+			switch ( predMode.val ) {
+			case 'H' :  return new PredictorMfe2dHeuristic( energy, output );
+			case 'M' :  return new PredictorMfe2d( energy, output );
+			case 'E' :  return new PredictorMfe4d( energy, output );
+			default :  NOTIMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(pred.val));
+			}
+		} break;
+		// single-site max-prob interactions (contain only interior loops)
+		case 'P' : {
+			switch ( predMode.val ) {
+			case 'E' :  return new PredictorMaxProb( energy, output );
+			default :  NOTIMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(pred.val)+" : try --mode=E");
+			}
+		} break;
+		// multi-site mfe interactions (contain interior and multi-loops loops)
+		case 'M' : {
+			switch ( predMode.val ) {
+			default :  NOTIMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(pred.val));
+			}
+		} break;
+		default : NOTIMPLEMENTED("mode "+toString(predMode.val)+" not implemented");
 		}
 	} else {
-		switch ( predMode.val ) {
-		case HEURISTIC :  return new PredictorMfe2dHeuristicSeed( energy, output, getSeedConstraint( energy ) );
-		case SPACEEFFICIENT :  return new PredictorMfe2dSeed( energy, output, getSeedConstraint( energy ) );
-		case FULL :  return new PredictorMfe4dSeed( energy, output, getSeedConstraint( energy ) );
-		case MAXPROB :  NOTIMPLEMENTED("mode "+toString(predMode.val)+" not implemented for seed constraint (try --noSeed)"); return NULL;
+		// seed-constrained predictors
+		switch( pred.val ) {
+		// single-site mfe interactions (contain only interior loops)
+		case 'S' : {
+			switch ( predMode.val ) {
+			case 'H' :  return new PredictorMfe2dHeuristicSeed( energy, output, getSeedConstraint( energy ) );
+			case 'M' :  return new PredictorMfe2dSeed( energy, output, getSeedConstraint( energy ) );
+			case 'E' :  return new PredictorMfe4dSeed( energy, output, getSeedConstraint( energy ) );
+			}
+		} break;
+		// single-site max-prob interactions (contain only interior loops)
+		case 'P' : {
+			switch ( predMode.val ) {
+			case 'E' :  NOTIMPLEMENTED("mode "+toString(predMode.val)+" not implemented for seed constraint (try --noSeed)"); return NULL;
+			default :  NOTIMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(pred.val));
+			}
+		} break;
+		// multi-site mfe interactions (contain interior and multi-loops loops)
+		case 'M' : {
+			switch ( predMode.val ) {
+			default :  NOTIMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(pred.val));
+			}
+		} break;
+		default : NOTIMPLEMENTED("mode "+toString(predMode.val)+" not implemented");
 		}
 	}
 }
@@ -1398,8 +1448,8 @@ initOutputHandler()
 		<<"INPUT" <<"\n"
 		<<"-------------------------" <<"\n"
 		<<"number of base pairs in seed                                  : "<<seedBP.val <<"\n"
-		<<"max. number of unpaired bases in the seed region of seq. 1    : "<<(seedMaxUPt.val<0 ? seedMaxUP.val : seedMaxUPt.val) <<"\n"
-		<<"max. number of unpaired bases in the seed region of seq. 2    : "<<(seedMaxUPq.val<0 ? seedMaxUP.val : seedMaxUPq.val) <<"\n"
+		<<"max. number of unpaired bases in the seed region of seq. 1    : "<<(seedTMaxUP.val<0 ? seedMaxUP.val : seedTMaxUP.val) <<"\n"
+		<<"max. number of unpaired bases in the seed region of seq. 2    : "<<(seedQMaxUP.val<0 ? seedMaxUP.val : seedQMaxUP.val) <<"\n"
 		<<"max. number of unpaired bases in the seed region of both seq's: "<<seedMaxUP.val <<"\n"
 		<<"RNAup used                                                    : "<<((qAccConstr.empty() && (qAccW.val ==0))?"true":"false") <<"\n"
 		<<"RNAplfold used                                                : "<<(((! tAccConstr.empty()) || (tAccW.val !=0))?"true":"false") <<"\n"
@@ -1410,7 +1460,7 @@ initOutputHandler()
 		<<"weight for ED values of binding RNA in energy                 : 1" <<"\n"
 		<<"temperature                                                   : "<<temperature.val <<" Celsius" <<"\n"
 		<<"max. number of subopt. results                                : "<<(getOutputConstraint().reportMax-1) <<"\n"
-		<<"Heuristic for hybridization end used                          : "<<((PredictionMode)predMode.val==HEURISTIC?"true":"false") <<"\n"
+		<<"Heuristic for hybridization end used                          : "<<(predMode.val=='H'?"true":"false") <<"\n"
 		<<"\n"
 		<<"-------------------------" <<"\n"
 		<<"OUTPUT" <<"\n"
@@ -1462,13 +1512,13 @@ getSeedConstraint( const InteractionEnergy & energy ) const
 		seedConstraint = new SeedConstraint(
 							  seedBP.val
 							, seedMaxUP.val
-							, seedMaxUPt.val<0 ? seedMaxUP.val : seedMaxUPt.val
-							, seedMaxUPq.val<0 ? seedMaxUP.val : seedMaxUPq.val
+							, seedTMaxUP.val<0 ? seedMaxUP.val : seedTMaxUP.val
+							, seedQMaxUP.val<0 ? seedMaxUP.val : seedQMaxUP.val
 							, seedMaxE.val
 							, (seedMinPu.val>0 ? std::min<E_type>(Accessibility::ED_UPPER_BOUND, - energy.getRT() * std::log( seedMinPu.val )) : Accessibility::ED_UPPER_BOUND) // transform unpaired prob to ED value
 							// shift ranges to start counting with 0
-							, IndexRangeList( seedRanget ).shift(-1,energy.size1()-1)
-							, IndexRangeList( seedRangeq ).shift(-1,energy.size2()-1).reverse(energy.size2())
+							, IndexRangeList( seedTRange ).shift(-1,energy.size1()-1)
+							, IndexRangeList( seedQRange ).shift(-1,energy.size2()-1).reverse(energy.size2())
 						);
 	}
 	return *seedConstraint;
