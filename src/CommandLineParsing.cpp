@@ -344,7 +344,7 @@ CommandLineParsing::CommandLineParsing()
 			, value<std::string>(&(out))
 				->default_value(out)
 				->notifier(boost::bind(&CommandLineParsing::validate_out,this,_1))
-			, std::string("output : provide a file name for output or 'STDOUT/STDERR' to write to the according stream").c_str())
+			, std::string("output : provide a file name for output (will be overwritten) or 'STDOUT/STDERR' to write to the according stream").c_str())
 		("outMode"
 			, value<int>(&(outMode.val))
 				->default_value(outMode.def)
