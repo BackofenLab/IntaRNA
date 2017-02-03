@@ -59,9 +59,13 @@ The following topics are covered by this documentation:
   - [Cloning from github](#instgithub)
   - [Source code distribution](#instsource)
 - [Usage and Parameters](#usage)
+  - [Just run ...](#defaultRun)
   - [Prediction modes, their features and emulated tools](#predModes)
+  - [Interaction restrictions](#interConstr)
+  - [Seed constraints](#seed)
   - [Output modes](#outmodes)
   - [Suboptimal RNA-RNA interaction prediction and output restrictions](#subopts)
+  - [Energy parameters and temperature](#energy)
   - [Accessibility and unpaired probabilities](#accessibility)
     - [Local versus global unpaired probabilities](#accLocalGlobal)
     - [Read/write accessibility from/to file or stream](#accFromFile)
@@ -129,7 +133,63 @@ make install prefix=XYZ
 
 IntaRNA comes with a vast variety of ways to tune or enhance *YOUR* RNA-RNA prediction.
 To this end, different [prediction modes](#predModes) are implemented that allow
-to balance 
+to balance predication quality and runtime requirement. Furthermore, it is 
+possible to define 
+[interaction restrictions](#interConstr),
+[seed constraints](#seed), 
+[output modes](#outmodes),
+[suboptimal enumeration](#subopts), 
+[energy parameters, temperature](#energy),
+and the [accessibility](#accessibility) handling. If you are doing high-throughput
+computations, you might also want to consider [multi-threading support](#multithreading).
+
+
+
+<br /><br />
+<a name="defaultRun" />
+# Just run ...
+
+If you just want to start and are fine with the default parameters set, 
+you only have to provide two RNA sequences, 
+a (long) target RNA and a (short) query RNA, in 
+[IUPAC RNA encoding](#https://en.wikipedia.org/wiki/Nucleic_acid_notation).
+You can either directly input the sequences
+```bash
+# running IntaRNA with direct sequence input
+IntaRNA -t CCCCCCCCGGGGGGGGGGGGGG -q CCCCCCC
+
+target
+             9     15
+             |     |
+  5'-CCCCCCCC       GGGGGGG-3'
+             GGGGGGG
+             |||||||
+             CCCCCCC
+          3'-       -5'
+             |     |
+             7     1
+query
+```
+
+or provide (multiple) sequence(s) in [FASTA-format](#https://en.wikipedia.org/wiki/FASTA_format).
+It is possible to provide either file input or to read the FASTA input from the
+STDIN stream.
+ 
+```bash
+# running IntaRNA with FASTA files
+IntaRNA -t myTargets.fasta -q myQueries.fasta
+# reading query FASTA input from stream via pipe
+cat myQueries.fasta | IntaRNA -q STDIN -t myTargets.fasta
+```
+
+Nucleotide encodings different from `ACGU` are rewritten as `N` and the respective
+positions are not considered to form base pairs (and this ignored).
+
+For a list of general program argument run `-h` or `--help`. For a complete
+list covering also more sophisticated options, run `--fullhelp`.
+
+
+
 
 
 <br /><br />
@@ -145,11 +205,11 @@ of equal length *n*.
 | -------- | :------------------: | :-----------------: | :--------------: |
 | Time complexity (prediction only) | O(*n*^2) | O(*n*^4) | O(*n*^4) |
 | Space complexity | O(*n*^2) | O(*n*^2) | O(*n*^4) |
-| Seed constraint | x | x | x |
-| No seed constraint | x | x | x |
+| [Seed constraint](#seed) | x | x | x |
+| No [seed constraint](#seed) | x | x | x |
 | Minimum free energy interaction | not guaranteed | x | x |
-| Overlapping suboptimal interactions | x | x | x |
-| Non-overlapping suboptimal interactions | x | - | x |
+| Overlapping [suboptimal interactions](#subopts) | x | x | x |
+| Non-overlapping [suboptimal interactions](#subopts) | x | - | x |
 
 Note, due to the low run-time requirement of the heuristic prediction mode
 (`--mode=H`), heuristic IntaRNA interaction predictions are widely used to screen
@@ -188,6 +248,75 @@ IntaRNA --mode=S --noSeed --qAccW=0 --qAccL=0 --tAccW=0 --tAccL=0
 ```
 We *add seed-constraint support to RNAup-like computations* by removing the 
 `--noSeed` flag from the above call.
+
+
+
+
+
+
+<br /><br />
+<a name="interConstr" />
+## Interaction restrictions
+
+The predicted RNA-RNA interactions can be enhanced if additional
+knowledge is available. To this end, IntaRNA provides different options to 
+restrict predicted interactions.
+
+A general most general restriction is the maximal energy (inversely related to 
+stability) an RNA-RNA interaction is allowed to have. Per default, a reported
+interaction should have a negative energy (<0) to be energetically favorable.
+This report barrier can be altered using `--outMaxE`. For suboptimal interaction
+restriction, please refer to [suboptimal interaction prediction](#subopts) section.
+
+Furthermore, the region where interactions are supposed to occur can be restricted
+for target and query independently. To this end, a list of according index pairs
+can be provided using `--qRegion` and `--tRegion`, respectively. The indexing 
+starts with 1 and should be in the format `from1-end1,from2-end2,..` using
+integers.
+
+Finally, it is possible to restrict the overall length an interaction is allowed
+to have. This can be done independently for the query and target sequence using
+`--qIntLenMax` and `--tIntLenMax`, respectively. Both default to the full sequence
+length (by setting both to 0).
+
+
+
+
+
+
+
+<br /><br />
+<a name="seed" />
+## Seed constraints
+
+For different types of RNA-RNA interactions it was found that experimentally
+verified interactions were showing a short and compact subinteraction of high
+stability (= low energy). It was hypothesized that these regions are among the
+first formed parts of the full RNA-RNA interaction, and thus considered as the
+*seed* of the overall interaction.
+
+Based on this observation, RNA-RNA interaction predictors were enhanced by
+incorporating such seed constraints into their prediction pipeline, i.e. a
+reported interaction has to feature at least one seed. Typically, 
+a seed is defined as a short subinteraction of 5-8 consecutive base pairs that 
+are not enclosing any unpaired nucleotides (or if so only very few).
+
+IntaRNA supports the definition of such seed constraints and adds further
+options to even more constrain the seed selection. The list of options is given 
+by 
+- `--seedBP` : the number of base pairs the seed has to show
+- `--seedMaxUP` : the maximal overall number of unpaired bases within the seed
+- `--seedQMaxUP` : the maximal number of unpaired bases within the query's seed region
+- `--seedTMaxUP` : the maximal number of unpaired bases within the target's seed region
+- `--seedMaxE` : the maximal overall energy of the seed (to exclude weak seed interactions)
+- `--seedMinPu` : the minimal unpaired probability of each seed region in query and target
+- `--seedQRange` : a list of index intervals where a seed in the query is allowed
+- `--seedTRange` : a list of index intervals where a seed in the target is allowed
+
+Seed constraint usage can be globally disabled using the `--noSeed` flag.
+
+
+
 
 
 
@@ -353,6 +482,56 @@ Furthermore, it is possible to *restrict (sub)optimal enumeration* using
   - 'B' : overlap allowed for interacting subsequences for both target and query
   - 'T' : overlap allowed for interacting subsequences in target only 
   - 'Q' : overlap allowed for interacting subsequences in query only 
+
+
+
+
+
+<br /><br />
+<a name="energy" />
+## Energy parameters and temperatures
+
+The selection of the correct temperature and energy parameters is cruicial for
+a correct RNA-RNA interaction prediction. To this end, various settings are 
+supported by IntaRNA.
+
+The temperature can be set via `--temperature=C`to set a temperature `C` in 
+degree Celsius. Note, this is important especially for predictions within plants
+etc., since the default temperature is 37°C.
+
+The energy model used can be specified using the `--energy` parameters using
+- 'B' for base pair maximization similar to the Nussinov intramolecular structure prediction.
+  Here, each base pair contributes an energy term of `-1` independently of its
+  structural or sequence context. This mode is mainly useful for study or teaching 
+  purpose.
+- 'V' enables *Nearest Neighbor Model* energy computation similar to the Zuker
+  intramolecular structure prediction using the Vienna RNA package routines. 
+  Within this model, the energy contribution of a base
+  pair depends on its directly enclosed (neighbored) basepair and the subsequence(s)
+  involved. Different energy parameter sets have been experimentally derived
+  in the last decades. Since IntaRNA makes use of the energy evaluation routines
+  of the Vienna RNA package, all parameter sets from the Vienna RNA package are
+  available for RNA-RNA interaction prediction. Per default, the default parameter
+  set of the linked Vienna RNA package version is used. You can change the parameter
+  set using the `--energyVRNA` parameter as explained below.
+
+If Vienna RNA package is used for energy computation (`--energy=V`), per default
+the default parameter set of the linked Vienna RNA package is used (e.g. the
+set `Turner04` for VRNA 2.3.0). If you want to use a different parameter set, you
+can provide an according parameter file via `--energVRNA=MyParamFile`. The 
+following example exemplifies the use of the old `Turner99` parameter set as
+used by IntaRNA v1.*.
+```bash
+# IntaRNA v1.* like energy parameter setup
+IntaRNA --energyVRNA=/usr/local/share/Vienna/rna_turner1999.par --seedMaxE=999
+```
+
+To increase prediction quality and to reduce the computational complexity, the
+number of unpaired bases between intermolecular base pairs is restricted
+(similar to internal loop length restrictions in the Zuker algorithm). The
+upper bound can be set independent for the query and target sequence via
+`--qIntLoopMax` and `--tIntLoopMax`, respectively, and default to 16.
+
 
 
 <br /><br />
