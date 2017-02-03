@@ -242,10 +242,10 @@ fillByConstraints( const VrnaHandler &vrnaHandler
 			// check if unconstrained within region (i,j)
 			if (regionUnconstrained) {
 				// compute ED value = E(unstructured in [i,j]) - E_all
-				edValues (i,j) = (calc_ensemble_free_energy(i,j, partFoldParams) - E_all);
+				edValues(i,j) = std::max<E_type>(0.,(calc_ensemble_free_energy(i,j, partFoldParams) - E_all));
 			} else {
 				// region covers constrained elements --> set to upper bound
-				edValues (i,j) = ED_UPPER_BOUND;
+				edValues(i,j) = ED_UPPER_BOUND;
 			}
 
 		}
@@ -323,10 +323,10 @@ fillByRNAplfold( const VrnaHandler &vrnaHandler
 			// check if zero before computing its log-value
 			if (prob_unpaired == 0.0) {
 				// ED value = ED_UPPER_BOUND
-				edValues (i-1,j-1) = ED_UPPER_BOUND;
+				edValues(i-1,j-1) = ED_UPPER_BOUND;
 			} else {
 				// compute ED value = E(unstructured in [i,j]) - E_all
-				edValues (i-1,j-1) = -RT*std::log(prob_unpaired);
+				edValues(i-1,j-1) = std::max<E_type>( 0., -RT*std::log(prob_unpaired));
 			}
     	}
     }
@@ -429,15 +429,15 @@ fillByRNAup( const VrnaHandler &vrnaHandler
 				// check if zero before computing its log-value
 				if ( prob_unpaired == 0.0 ) {
 					// ED value = ED_UPPER_BOUND
-					edValues (i-1,j-1) = ED_UPPER_BOUND;
+					edValues(i-1,j-1) = ED_UPPER_BOUND;
 				} else {
 					// compute ED value = E(unstructured in [i,j]) - E_all
-					edValues (i-1,j-1) = -RT*std::log(prob_unpaired);
+					edValues(i-1,j-1) = std::max<E_type>( 0., -RT*std::log(prob_unpaired));
 				}
 
 			} else {
 				// region covers constrained elements --> set to upper bound
-				edValues (i-1,j-1) = ED_UPPER_BOUND;
+				edValues(i-1,j-1) = ED_UPPER_BOUND;
 			}
 		}
 	}
