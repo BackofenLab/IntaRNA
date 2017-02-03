@@ -113,7 +113,7 @@ CommandLineParsing::CommandLineParsing()
 
 	out("STDOUT"),
 	outStream(&(std::cout)),
-	outMode( OutputMode_min, OutputMode_max, DETAILED ),
+	outMode( "NDC1O", 'N' ),
 	outNumber( 0, 1000, 1),
 	outOverlap( "NTQB", 'Q' ),
 	outDeltaE( 0.0, 100.0, 100.0),
@@ -346,14 +346,15 @@ CommandLineParsing::CommandLineParsing()
 				->notifier(boost::bind(&CommandLineParsing::validate_out,this,_1))
 			, std::string("output : provide a file name for output (will be overwritten) or 'STDOUT/STDERR' to write to the according stream").c_str())
 		("outMode"
-			, value<int>(&(outMode.val))
+			, value<char>(&(outMode.val))
 				->default_value(outMode.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_outMode,this,_1))
-			, std::string("output mode : "
-					+toString(OutputMode::DETAILED)+"= detailed, "
-					+toString(OutputMode::CSV)+"= CSV, "
-					+toString(OutputMode::V1_NORMAL)+"= v1, "
-					+toString(OutputMode::V1_DETAILED)+"= v1-detailed"
+			, std::string("output mode :"
+					" 'N' normal output (ASCII char + energy),"
+					" 'D' detailed output (ASCII char + energy/position details),"
+					" 'C' CSV output (see --outCsvCols),"
+					" '1' backward compatible IntaRNA v1.* normal output,"
+					" 'O' backward compatible IntaRNA v1.* detailed output (former -o)"
 					).c_str())
 	    ("outNumber,n"
 			, value<int>(&(outNumber.val))
@@ -715,8 +716,8 @@ parse(int argc, char** argv)
 			}
 
 			// check CSV stuff
-			if (outCsvCols != outCsvCols_default && outMode.val != OutputMode::CSV) {
-				LOG(ERROR) <<"outCsvCols set but outMode != "<<OutputMode::CSV;
+			if (outCsvCols != outCsvCols_default && outMode.val != 'C') {
+				LOG(ERROR) <<"outCsvCols set but outMode != C ("<<outMode.val<<")";
 				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 			}
 
@@ -733,7 +734,7 @@ parse(int argc, char** argv)
 				if (pred.val != 'S' || predMode.val == 'E') {
 					LOG(WARNING) <<"Multi-threading enabled in high-mem-prediction mode : ensure you have enough memory available!";
 				}
-				if (outMode.val == OutputMode::V1_NORMAL || outMode.val == OutputMode::V1_DETAILED) {
+				if (outMode.val == '1' || outMode.val == 'O') {
 					throw std::runtime_error("Multi-threading not supported for IntaRNA v1 output");
 				}
 			}
@@ -1451,8 +1452,8 @@ CommandLineParsing::
 initOutputHandler()
 {
 	// check if output mode == IntaRNA1-detailed
-	switch ((OutputMode)outMode.val) {
-	case V1_DETAILED :
+	switch (outMode.val) {
+	case 'O' :
 		getOutputStream()
 		<<"-------------------------" <<"\n"
 		<<"INPUT" <<"\n"
@@ -1476,7 +1477,7 @@ initOutputHandler()
 		<<"OUTPUT" <<"\n"
 		<<"-------------------------" <<"\n"
 		; break;
-	case CSV :
+	case 'C' :
 		getOutputStream()
 		<<OutputHandlerCsv::getHeader( OutputHandlerCsv::string2list( outCsvCols ) )
 		; break;
@@ -1490,15 +1491,19 @@ OutputHandler*
 CommandLineParsing::
 getOutputHandler( const InteractionEnergy & energy ) const
 {
-	switch ((OutputMode)outMode.val) {
-	case DETAILED :
-		return new OutputHandlerText( getOutputStream(), energy );
-	case CSV :
+	switch (outMode.val) {
+	case 'N' :
+		return new OutputHandlerText( getOutputStream(), energy, 10, false );
+	case 'D' :
+		return new OutputHandlerText( getOutputStream(), energy, 10, true );
+	case 'C' :
 		return new OutputHandlerCsv( getOutputStream(), energy, OutputHandlerCsv::string2list( outCsvCols ));
-	case V1_NORMAL :
+	case '1' :
 		return new OutputHandlerIntaRNA1( getOutputStream(), energy, false );
-	case V1_DETAILED :
+	case 'O' :
 		return new OutputHandlerIntaRNA1( getOutputStream(), energy, true );
+	default :
+		NOTIMPLEMENTED("Output mode "+toString(outMode.val)+" not implemented yet");
 	}
 }
 

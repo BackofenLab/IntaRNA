@@ -108,10 +108,10 @@ if (defined $args{l}) {
 }
 if (defined $args{o} && $args{o}==1) {
 	# setup detailed v1 output
-	$intaRNA2call .=" --outMode=3";
+	$intaRNA2call .=" --outMode=O";
 } else {
 	# setup normal v1 output
-	$intaRNA2call .=" --outMode=2";
+	$intaRNA2call .=" --outMode=1";
 }
 if (defined $args{n} && $args{n}==1) {
 	$intaRNA2call .= " --mode=E"

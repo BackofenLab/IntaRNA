@@ -14,14 +14,17 @@ OutputHandlerText::
 OutputHandlerText(
 		std::ostream & out,
 		const InteractionEnergy & energy,
-		const size_t flankingLength_ )
+		const size_t flankingLength_,
+		const bool detailedOutput
+		)
  :
 	out(out)
 	, energy(energy)
 	, flankingLength(flankingLength_)
+	, detailedOutput(detailedOutput)
 {
 	if (flankingLength < 10) {
-		throw std::runtime_error("OutputHandlerText::OutputHandlerText : flankingLength has to be at least 9");
+		throw std::runtime_error("OutputHandlerText::OutputHandlerText : flankingLength ("+toString(flankingLength_)+") has to be at least 9");
 	}
 }
 
@@ -271,40 +274,50 @@ add( const Interaction & i )
 			<<pos2.str() <<'\n'
 			// get ID of s2
 			<<i.s2->getId() <<'\n'
-
-			// interaction range
-			<<"\n"
-			<<"interaction seq1   = "<<(i.basePairs.begin()->first +1)<<" -- "<<(i.basePairs.rbegin()->first +1) <<'\n'
-			<<"interaction seq2   = "<<(i.basePairs.rbegin()->second +1)<<" -- "<<(i.basePairs.begin()->second +1) <<'\n'
-
-			// print energy
-			<<"\n"
-			<<"interaction energy = "<<i.energy <<" kcal/mol\n"
-			<<"  = E(init)        = "<<contr.init<<'\n'
-			<<"  + E(loops)       = "<<contr.loops<<'\n'
-			<<"  + E(dangleLeft)  = "<<contr.dangleLeft<<'\n'
-			<<"  + E(dangleRight) = "<<contr.dangleRight<<'\n'
-			<<"  + E(endLeft)     = "<<contr.endLeft<<'\n'
-			<<"  + E(endRight)    = "<<contr.endRight<<'\n'
-			<<"  + ED(seq1)       = "<<contr.ED1<<'\n'
-			<<"  + ED(seq2)       = "<<contr.ED2<<'\n'
-			<<"  + Pu(seq1)       = "<<std::exp(-contr.ED1/energy.getRT())<<'\n'
-			<<"  + Pu(seq2)       = "<<std::exp(-contr.ED2/energy.getRT())<<'\n'
 			;
 
-		// print seed information if available
-		if (i.seedRange != NULL) {
+		if (detailedOutput) {
 			out
+				// interaction range
 				<<"\n"
-				<<"seed seq1   = "<<(i.seedRange->r1.from +1)<<" -- "<<(i.seedRange->r1.to +1) <<'\n'
-				<<"seed seq2   = "<<(i.seedRange->r2.to +1)<<" -- "<<(i.seedRange->r2.from +1) <<'\n'
-				<<"seed energy = "<<(i.seedRange->energy)<<" kcal/mol\n"
-				<<"seed ED1    = "<<energy.getED1( i.seedRange->r1.from, i.seedRange->r1.to )<<" kcal/mol\n"
-				<<"seed ED2    = "<<energy.getAccessibility2().getAccessibilityOrigin().getED( i.seedRange->r2.to, i.seedRange->r2.from )<<" kcal/mol\n"
-				<<"seed Pu1    = "<<std::exp(-(energy.getED1( i.seedRange->r1.from, i.seedRange->r1.to ))/energy.getRT())<<'\n'
-				<<"seed Pu2    = "<<std::exp(-(energy.getAccessibility2().getAccessibilityOrigin().getED( i.seedRange->r2.to, i.seedRange->r2.from ))/energy.getRT())<<'\n'
+				<<"interaction seq1   = "<<(i.basePairs.begin()->first +1)<<" -- "<<(i.basePairs.rbegin()->first +1) <<'\n'
+				<<"interaction seq2   = "<<(i.basePairs.rbegin()->second +1)<<" -- "<<(i.basePairs.begin()->second +1) <<'\n'
 				;
-		}
+		} // detailed
+			// print energy
+		out
+			<<"\n"
+			<<"interaction energy = "<<i.energy <<" kcal/mol\n"
+			;
+
+		if (detailedOutput) {
+			out
+				<<"  = E(init)        = "<<contr.init<<'\n'
+				<<"  + E(loops)       = "<<contr.loops<<'\n'
+				<<"  + E(dangleLeft)  = "<<contr.dangleLeft<<'\n'
+				<<"  + E(dangleRight) = "<<contr.dangleRight<<'\n'
+				<<"  + E(endLeft)     = "<<contr.endLeft<<'\n'
+				<<"  + E(endRight)    = "<<contr.endRight<<'\n'
+				<<"  + ED(seq1)       = "<<contr.ED1<<'\n'
+				<<"  + ED(seq2)       = "<<contr.ED2<<'\n'
+				<<"  + Pu(seq1)       = "<<std::exp(-contr.ED1/energy.getRT())<<'\n'
+				<<"  + Pu(seq2)       = "<<std::exp(-contr.ED2/energy.getRT())<<'\n'
+				;
+
+			// print seed information if available
+			if (i.seedRange != NULL) {
+				out
+					<<"\n"
+					<<"seed seq1   = "<<(i.seedRange->r1.from +1)<<" -- "<<(i.seedRange->r1.to +1) <<'\n'
+					<<"seed seq2   = "<<(i.seedRange->r2.to +1)<<" -- "<<(i.seedRange->r2.from +1) <<'\n'
+					<<"seed energy = "<<(i.seedRange->energy)<<" kcal/mol\n"
+					<<"seed ED1    = "<<energy.getED1( i.seedRange->r1.from, i.seedRange->r1.to )<<" kcal/mol\n"
+					<<"seed ED2    = "<<energy.getAccessibility2().getAccessibilityOrigin().getED( i.seedRange->r2.to, i.seedRange->r2.from )<<" kcal/mol\n"
+					<<"seed Pu1    = "<<std::exp(-(energy.getED1( i.seedRange->r1.from, i.seedRange->r1.to ))/energy.getRT())<<'\n'
+					<<"seed Pu2    = "<<std::exp(-(energy.getAccessibility2().getAccessibilityOrigin().getED( i.seedRange->r2.to, i.seedRange->r2.from ))/energy.getRT())<<'\n'
+					;
+			} // seed
+		} // detailed
 	} // omp critical(intarna_outputStreamUpdate)
 
 }

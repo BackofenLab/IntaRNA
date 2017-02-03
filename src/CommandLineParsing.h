@@ -39,16 +39,6 @@ public:
 		NOT_PARSED_YET = 999
 	};
 
-	//! encoding of different output modes
-	enum OutputMode {
-		OutputMode_min = 0,
-		DETAILED = 0,
-		CSV = 1,
-		V1_NORMAL = 2,
-		V1_DETAILED = 3,
-		OutputMode_max = 3
-	};
-
 
 public:
 
@@ -394,7 +384,7 @@ protected:
 	//! output stream
 	std::ostream * outStream;
 	//! output mode
-	NumberParameter<int> outMode;
+	CharParameter outMode;
 	//! number of (sub)optimal interactions to report
 	NumberParameter<int> outNumber;
 	//! whether or not reported interactions can to be overlapping
@@ -626,7 +616,7 @@ protected:
 	 * Validates the outMode argument.
 	 * @param value the argument value to validate
 	 */
-	void validate_outMode(const int & value);
+	void validate_outMode(const char & value);
 
 	/**
 	 * Validates the outNumber argument.
@@ -1227,9 +1217,9 @@ validate_energyFile(const std::string & value)
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_outMode(const int & value) {
+void CommandLineParsing::validate_outMode(const char & value) {
 	// forward check to general method
-	validate_numberArgument("outMode", outMode, value);
+	validate_charArgument("outMode", outMode, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////

@@ -23,10 +23,13 @@ public:
 	 * @param energy the interaction energy object used for computation
 	 * @param flankingLength maximal number of nucleotides flanking the
 	 *        interaction to be printed in the output
+	 * @param detailedOutput if (true) detailed output is provided; normal
+	 *        reduced output otherwise
 	 */
 	OutputHandlerText( std::ostream & out
 				, const InteractionEnergy & energy
-				, const size_t flankingLength = 10 );
+				, const size_t flankingLength = 10
+				, const bool detailedOutput = false );
 
 	/**
 	 * destruction, enforces a flush on the output stream.
@@ -64,6 +67,9 @@ protected:
 
 	//! number of flanking bases left/right of the interaction to print
 	const size_t flankingLength;
+
+	//! whether or not detailed output has to be provided
+	const bool detailedOutput;
 
 };
 

@@ -104,7 +104,7 @@ Afterwards, you can continue as if you would have downloaded a
 
 <br /><br />
 <a name="instsource" />
-## Cloning from github (or downloading ZIP-file)
+## Source code distribution
 
 When downloading an IntaRNA source code distribution, e.g. from the 
 [IntaRNA release page](https://github.com/BackofenLab/IntaRNA/releases), you should 
@@ -147,7 +147,7 @@ computations, you might also want to consider [multi-threading support](#multith
 
 <br /><br />
 <a name="defaultRun" />
-# Just run ...
+## Just run ...
 
 If you just want to start and are fine with the default parameters set, 
 you only have to provide two RNA sequences, 
@@ -156,7 +156,7 @@ a (long) target RNA and a (short) query RNA, in
 You can either directly input the sequences
 ```bash
 # running IntaRNA with direct sequence input
-IntaRNA -t CCCCCCCCGGGGGGGGGGGGGG -q CCCCCCC
+# call : IntaRNA -t CCCCCCCCGGGGGGGGGGGGGG -q CCCCCCC
 
 target
              9     15
@@ -169,6 +169,9 @@ target
              |     |
              7     1
 query
+
+interaction energy = -10.7116 kcal/mol
+
 ```
 
 or provide (multiple) sequence(s) in [FASTA-format](#https://en.wikipedia.org/wiki/FASTA_format).
@@ -333,14 +336,22 @@ you can either name a file or one of the stream names `STDOUT`|`STDERR`. Note,
 any string not matching one of the two stream names is considered a file name.
 The file will be overwritten by IntaRNA!
 
+<a name="outModeNormal" />
+### Standard RNA-RNA interaction output with ASCII chart
+
+The standard output mode `--outMode=D` provides a detailed ASCII chart of the 
+interaction together with its overall interaction energy. 
+For an example see the [Just run ...](#defaultRun) section.
+
+
 <a name="outModeDetailed" />
 ### Detailed RNA-RNA interaction output with ASCII chart
 
-Using `--outMode=0`, a detailed ASCII chart of the interaction together with
+Using `--outMode=D`, a detailed ASCII chart of the interaction together with
 various interaction details will be provided. An example is given below.
 
 ```bash
-# call: IntaRNA.exe -t AAACACCCCCGGUGGUUUGG -q AAACACCCCCGGUGGUUUGG --outMode=0 --noSeed
+# call: IntaRNA -t AAACACCCCCGGUGGUUUGG -q AAACACCCCCGGUGGUUUGG --outMode=D --noSeed
 
 target
              4         14
@@ -374,11 +385,11 @@ Position annotations start indexing with 1.
 <a name="outModeCsv" />
 ### Customizable CSV RNA-RNA interaction output
 
-IntaRNA provides via `--outMode=1` a flexible interface to generate RNA-RNA 
+IntaRNA provides via `--outMode=C` a flexible interface to generate RNA-RNA 
 interaction output in CSV format (using `;` as separator).
 
 ```bash
-# call: IntaRNA.exe -t AAACACCCCCGGUGGUUUGG -q AAACACCCCCGGUGGUUUGG --outMode=1 --noSeed --outOverlap=B -n 3
+# call: IntaRNA -t AAACACCCCCGGUGGUUUGG -q AAACACCCCCGGUGGUUUGG --outMode=C --noSeed --outOverlap=B -n 3
 id1;start1;end1;id2;start2;end2;subseqDP;hybridDP;E
 target;4;14;query;4;14;CACCCCCGGUG&CACCCCCGGUG;((((...((((&))))...))));-4.14154
 target;5;16;query;5;16;ACCCCCGGUGGU&ACCCCCGGUGGU;(((((.((.(((&))))).)).)));-4.04334
@@ -444,7 +455,7 @@ with the start position of the respective interaction site.
 
 In the following, an altered CSV output for the example from above is generated.
 ```bash
-# call: IntaRNA.exe --outCsvCols=Pu1,Pu2,subseqDB,hybridDB -t AAACACCCCCGGUGGUUUGG -q AAACACCCCCGGUGGUUUGG --outMode=1 --noSeed --outOverlap=B -n 3
+# call: IntaRNA --outCsvCols=Pu1,Pu2,subseqDB,hybridDB -t AAACACCCCCGGUGGUUUGG -q AAACACCCCCGGUGGUUUGG --outMode=C --noSeed --outOverlap=B -n 3
 Pu1;Pu2;subseqDB;hybridDB
 0.00133893;0.00133893;4CACCCCCGGUG&4CACCCCCGGUG;4||||...||||&4||||...||||
 0.00134094;0.00134094;5ACCCCCGGUGGU&5ACCCCCGGUGGU;5|||||.||.|||&5|||||.||.|||
@@ -456,8 +467,8 @@ Pu1;Pu2;subseqDB;hybridDB
 ### Backward compatible IntaRNA v1.* output
 
 If your scripts/whatever is tuned to the old IntaRNA v1.* output, you can use
-- `--outMode=2` : IntaRNA v1.* normal output
-- `--outMode=3` : IntaRNA v1.* detailed output (former `-o` option)
+- `--outMode=1` : IntaRNA v1.* normal output
+- `--outMode=O` : IntaRNA v1.* detailed output (former `-o` option)
 
 
 

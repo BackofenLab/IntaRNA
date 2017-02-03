@@ -36,6 +36,14 @@
    * energy : 
      - 'F' : replaced by 'V'
      + 'V' : VRNA based computation
+   - OutputMode : replaced by char encoding
+   * outMode : now char encoding
+ * OutputHandlerText :
+   + detailedOutput : flag to switch between detailed and reduced output
+   * add() : 
+     + heads detailedOutput flag
+   * construction() :
+     + detailedOutput flag handling
 
 170202 Martin Mann :
  * CommandLineParsing :
