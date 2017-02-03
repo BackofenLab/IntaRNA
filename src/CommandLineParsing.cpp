@@ -108,7 +108,7 @@ CommandLineParsing::CommandLineParsing()
 	threads( 1, omp_get_max_threads(), 1),
 #endif
 
-	energy("BF",'F'),
+	energy("BV",'V'),
 	energyFile(""),
 
 	out("STDOUT"),
@@ -324,11 +324,11 @@ CommandLineParsing::CommandLineParsing()
 			, value<char>(&(energy.val))
 				->default_value(energy.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_energy,this,_1))
-			, std::string("energy computation : 'B'ase pair == -1, or 'F'ull VRNA-based computation").c_str())
+			, std::string("energy computation : 'B'ase pair == -1, or 'V' VRNA-based computation (see --energVRNA)").c_str())
 		("energyVRNA"
 			, value<std::string>(&energyFile)
 				->notifier(boost::bind(&CommandLineParsing::validate_energyFile,this,_1))
-			, std::string("energy parameter file of VRNA package to be used").c_str())
+			, std::string("energy parameter file of VRNA package to be used. If not provided, the default parameter set of the linked Vienna RNA package is used.").c_str())
 		("temperature"
 			, value<T_type>(&(temperature.val))
 				->default_value(temperature.def)
@@ -698,8 +698,8 @@ parse(int argc, char** argv)
 			} // switch
 
 			// check energy setup
-			if (vm.count("energyVRNA") > 0 && energy.val != 'F') {
-				throw error("--energyVRNA provided but no (F)ull energy computation requested (--energy = "+toString(energy.val)+")");
+			if (vm.count("energyVRNA") > 0 && energy.val != 'V') {
+				throw error("--energyVRNA provided but no VRNA energy computation (V) requested (--energy = "+toString(energy.val)+")");
 			}
 
 			// check qAcc upper bound
@@ -752,7 +752,7 @@ parse(int argc, char** argv)
 	}
 
 	// setup new VRNA handler with the given arguments
-	if ( energy.val == 'F') {
+	if ( energy.val == 'V') {
 		vrnaHandler = VrnaHandler( temperature.val, (energyFile.size() > 0 ? & energyFile : NULL) );
 	}
 
@@ -1055,7 +1055,7 @@ getQueryAccessibility( const size_t sequenceNumber ) const
 	case 'C' : // compute VRNA-based accessibilities
 		switch( energy.val ) {
 		// TODO 'B'
-		case 'F' : // VRNA-based accessibilities
+		case 'V' : // VRNA-based accessibilities
 			return new AccessibilityVrna( seq
 										, std::min( qIntLenMax.val == 0 ? seq.size() : qIntLenMax.val
 													, qAccW.val == 0 ? seq.size() : qAccW.val )
@@ -1134,7 +1134,7 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 	case 'C' : // compute accessibilities
 		switch( energy.val ) {
 		// TODO 'B'
-		case 'F' : // VRNA-based accessibilities
+		case 'V' : // VRNA-based accessibilities
 			return new AccessibilityVrna( seq
 										, std::min( tIntLenMax.val == 0 ? seq.size() : tIntLenMax.val
 												, tAccW.val == 0 ? seq.size() : tAccW.val )
@@ -1164,7 +1164,7 @@ getEnergyHandler( const Accessibility& accTarget, const ReverseAccessibility& ac
 
 	switch( energy.val ) {
 	case 'B' : return new InteractionEnergyBasePair( accTarget, accQuery, tIntLoopMax.val, qIntLoopMax.val, initES );
-	case 'F' : return new InteractionEnergyVrna( accTarget, accQuery, vrnaHandler, tIntLoopMax.val, qIntLoopMax.val, initES );
+	case 'V' : return new InteractionEnergyVrna( accTarget, accQuery, vrnaHandler, tIntLoopMax.val, qIntLoopMax.val, initES );
 	default :
 		NOTIMPLEMENTED("CommandLineParsing::getEnergyHandler : energy = '"+toString(energy.val)+"' is not supported");
 	}

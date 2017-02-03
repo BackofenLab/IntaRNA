@@ -14,6 +14,7 @@
    * constructor() :
      - plFoldL : now via AccessibilityConstraint.getMaxBpSpan()
      - computeES
+   * ED >= 0 ensured
  * InteractionEnergy :
    * getES*() now abstract and to be implemented in subclass
    - getES*() implementation based on Accessibility interface
@@ -31,6 +32,10 @@
  * VrnaHandler :
    * getModel() :
      * uses now vrna_md_copy() (VRNA >= 2.3.0) for model copying
+ * CommandLineParsing :
+   * energy : 
+     - 'F' : replaced by 'V'
+     + 'V' : VRNA based computation
 
 170202 Martin Mann :
  * CommandLineParsing :
