@@ -36,8 +36,11 @@ public:
 
 	/**
 	 * Empty constraint construction
+	 * @param length length of the constrained sequence
+	 * @param maxBpSpan the maximal base pair span to be used for accessibility
+	 *        computation; set to 0 for full sequence length
 	 */
-	AccessibilityConstraint( const size_t length );
+	AccessibilityConstraint( const size_t length, const size_t maxBpSpan = 0 );
 
 	/**
 	 * Copy construction
@@ -51,8 +54,10 @@ public:
 	/**
 	 * Constraint construction based on VRNA-like dot-bracket encoding
 	 * @param dotBracket the constraint encoding in VRNA-like dot-bracket encoding
+	 * @param maxBpSpan the maximal base pair span to be used for accessibility
+	 *        computation; set to 0 for full sequence length
 	 */
-	AccessibilityConstraint( const std::string& dotBracket );
+	AccessibilityConstraint( const std::string& dotBracket, const size_t maxBpSpan = 0 );
 
 	virtual ~AccessibilityConstraint();
 
@@ -142,6 +147,14 @@ public:
 	getVrnaDotBracket( const size_t i ) const;
 
 	/**
+	 * Provides the maximal base pair span to be considered for accessibility
+	 * computation.
+	 * @return the maximal base pair span for accessibility computation
+	 */
+	size_t
+	getMaxBpSpan() const;
+
+	/**
 	 * Assignment of constraints for the same rna sequence.
 	 *
 	 * @param c the interaction to make this a copy of
@@ -153,6 +166,9 @@ protected:
 
 	//! the overall sequence length this constraint is about
 	size_t length;
+
+	//! the maximal base pair span to be used for accessibility computation
+	size_t maxBpSpan;
 
 	//! sorted list of ranges that are marked as blocked
 	IndexRangeList blocked;
@@ -184,9 +200,10 @@ protected:
 
 inline
 AccessibilityConstraint::
-AccessibilityConstraint( const size_t length )
+AccessibilityConstraint( const size_t length_, const size_t maxBpSpan_ )
 	:
-	length(length),
+	length(length_),
+	maxBpSpan( maxBpSpan_==0 ? length : std::min(maxBpSpan_,length) ),
 	blocked(),
 	accessible()
 {
@@ -196,9 +213,10 @@ AccessibilityConstraint( const size_t length )
 
 inline
 AccessibilityConstraint::
-AccessibilityConstraint( const std::string& dotBracket )
+AccessibilityConstraint( const std::string& dotBracket, const size_t maxBpSpan_ )
 	:
 	length(dotBracket.size()),
+	maxBpSpan( maxBpSpan_==0 ? length : std::min(maxBpSpan_,length) ),
 	blocked(),
 	accessible()
 {
@@ -227,6 +245,7 @@ AccessibilityConstraint( const AccessibilityConstraint& toCopy
 			, const bool reverseIndices)
 	:
 	length(toCopy.length)
+	, maxBpSpan(toCopy.maxBpSpan)
 	, blocked(toCopy.blocked)
 	, accessible(toCopy.accessible)
 {
@@ -371,12 +390,23 @@ getVrnaDotBracket(const size_t i) const
 ////////////////////////////////////////////////////////////////////////
 
 inline
+size_t
+AccessibilityConstraint::
+getMaxBpSpan() const
+{
+	return maxBpSpan;
+}
+
+////////////////////////////////////////////////////////////////////////
+
+inline
 AccessibilityConstraint &
 AccessibilityConstraint::
 operator= ( const AccessibilityConstraint & c )
 {
 	// copy data
 	length = c.length;
+	maxBpSpan = c.maxBpSpan;
 	blocked = c.blocked;
 	accessible = c.accessible;
 	// TODO copy structure constraints etc.

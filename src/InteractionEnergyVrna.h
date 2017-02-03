@@ -19,8 +19,10 @@ extern "C" {
 }
 #endif
 
+#include <boost/numeric/ublas/triangular.hpp>
 
-// TODO http://www.tbi.univie.ac.at/RNA/ViennaRNA/doc/RNAlib-2.2.10.pdf
+
+// TODO http://www.tbi.univie.ac.at/RNA/ViennaRNA/doc/RNAlib-2.3.0.pdf
 
 /**
  * Implements an energy interface based on free energy estimates computed
@@ -47,6 +49,7 @@ public:
 	 *          between two intermolecular base pairs in sequence 2, ie it holds
 	 *          for an intermolecular loop closed by base pairs (i1,i2) and
 	 *          (j1,j2) : (j2-i2+1) <= maxInternalLoopSize
+	 * @param initES whether or not ES values are to be computed
 	 *
 	 */
 	InteractionEnergyVrna( const Accessibility & accS1
@@ -54,10 +57,45 @@ public:
 					, VrnaHandler &vrnaHandler
 					, const size_t maxInternalLoopSize1 = 16
 					, const size_t maxInternalLoopSize2 = 16
+					, const bool initES = false
 				);
 
 	virtual ~InteractionEnergyVrna();
 
+
+	/**
+	 * Provides the ensemble energy (ES) of all intramolecular substructures
+	 * that can be formed within a given region of sequence 1 under the
+	 * assumption that the region is part of an (intermolecular) multiloop,
+	 * i.e. at least one base pair is formed by each substructure.
+	 *
+	 * If no structure can be formed within the region, E_INF is returned.
+	 *
+	 * @param i1 the start of the structured region of seq1
+	 * @param j1 the end of the structured region of seq1
+	 * @return the ES value for [i1,j1] or E_INF if no intramolecular
+	 *         structure can be formed
+	 */
+	virtual
+	E_type
+	getES1( const size_t i1, const size_t j1 ) const;
+
+	/**
+	 * Provides the ensemble energy (ES) of all intramolecular substructures
+	 * that can be formed within a given region of sequence 2 under the
+	 * assumption that the region is part of an (intermolecular) multiloop,
+	 * i.e. at least one base pair is formed by each substructure.
+	 *
+	 * If no structure can be formed within the region, E_INF is returned.
+	 *
+	 * @param i2 the start of the structured region of seq2
+	 * @param j2 the end of the structured region of seq2
+	 * @return the ES value for [i2,j2] or E_INF if no intramolecular
+	 *         structure can be formed
+	 */
+	virtual
+	E_type
+	getES2( const size_t i2, const size_t j2 ) const;
 
 	/**
 	 * Provides the energy contribution for a given number of unpaired
@@ -216,6 +254,15 @@ protected:
 	//! base pair code for (G,C)
 	const int bpGC;
 
+	//! matrix to store ES values (upper triangular matrix)
+	typedef boost::numeric::ublas::triangular_matrix<E_type, boost::numeric::ublas::upper> EsMatrix;
+
+	//! the ES values for seq1 if computed (otherwise NULL)
+	EsMatrix * esValues1;
+
+	//! the ES values for seq2 if computed (otherwise NULL)
+	EsMatrix * esValues2;
+
 	/**
 	 * Checks whether or not a given base pair is a GC base pair
 	 * @param i1 the index in the first sequence
@@ -224,6 +271,14 @@ protected:
 	 */
 	bool
 	isGC( const size_t i1, const size_t i2 ) const;
+
+	/**
+	 * Computes the ES values and fills esValues container
+	 * @param acc the accessibility object for the sequence to compute the ES values for
+	 * @param esToFill the container to write the ES values to
+	 */
+	void
+	computeES( const Accessibility & acc, EsMatrix & esToFill );
 
 };
 
@@ -349,6 +404,42 @@ getE_danglingRight( const size_t j1, const size_t j2 ) const
 							  /(E_type)100.0
 			// substract closing penalty
 			- getE_endRight(j1,j2);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+InteractionEnergyVrna::
+getES1( const size_t i1, const size_t j1 ) const
+{
+#if IN_DEBUG_MODE
+	// sanity check
+	if (i1>j1) throw std::runtime_error("InteractionEnergy::getES1(i1="+toString(i1)+" > j1="+toString(j1));
+	if (j1>=size1()) throw std::runtime_error("InteractionEnergy::getES1() : j1="+toString(j1)+" >= size1()="+toString(size1()));
+	if (esValues1 == NULL) throw std::runtime_error("InteractionEnergy::getES1() : ES values not initialized");
+#endif
+
+	// return computed value
+	return (*esValues1)(i1,j1);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+InteractionEnergyVrna::
+getES2( const size_t i2, const size_t j2 ) const
+{
+#if IN_DEBUG_MODE
+	// sanity check
+	if (i2>j2) throw std::runtime_error("InteractionEnergy::getES2(i2="+toString(i2)+" > j2="+toString(j2));
+	if (j2>=size2()) throw std::runtime_error("InteractionEnergy::getES2() : j2="+toString(j2)+" >= size2()="+toString(size2()));
+	if (esValues2 == NULL) throw std::runtime_error("InteractionEnergy::getES2() : ES values not initialized");
+#endif
+
+	// return computed value
+	return (*esValues2)(i2,j2);
 }
 
 ////////////////////////////////////////////////////////////////////////////

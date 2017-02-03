@@ -60,6 +60,7 @@ The following topics are covered by this documentation:
   - [Source code distribution](#instsource)
 - [Usage and Parameters](#usage)
   - [Prediction modes, their features and emulated tools](#predModes)
+  - [Output modes](#outmodes)
   - [Suboptimal RNA-RNA interaction prediction and output restrictions](#subopts)
   - [Accessibility and unpaired probabilities](#accessibility)
     - [Local versus global unpaired probabilities](#accLocalGlobal)
@@ -188,136 +189,6 @@ IntaRNA --mode=S --noSeed --qAccW=0 --qAccL=0 --tAccW=0 --tAccL=0
 We *add seed-constraint support to RNAup-like computations* by removing the 
 `--noSeed` flag from the above call.
 
-
-<br /><br />
-<a name="subopts" />
-## Suboptimal RNA-RNA interaction prediction and output restrictions
-
-Besides the identification of the optimal (e.g. minimum-free-energy) RNA-RNA 
-interaction, IntaRNA enables the enumeration of suboptimal interactions. To this
-end, the argument `-n N` or `--outNumber=N` can be used to generate up to `N`
-interactions for each query-target pair (including the optimal one). Note, the
-suboptimal enumeration is increasingly sorted by energy.
-
-Furthermore, it is possible to *restrict (sub)optimal enumeration* using
-- `--outMaxE` : maximal energy for any interaction reported
-- `--outDeltaE` : maximal energy difference of suboptimal interactions' energy
-  to the minimum free energy interaction
-- `--outOverlap` : defines if an where overlapping of reported interaction sites
-  is allowed (Note, IntaRNA v1.* used implicitly the 'T' mode):
-  - 'N' : no overlap neither in target nor query allowed for reported interactions
-  - 'B' : overlap allowed for interacting subsequences for both target and query
-  - 'T' : overlap allowed for interacting subsequences in target only 
-  - 'Q' : overlap allowed for interacting subsequences in query only 
-
-
-<br /><br />
-<a name="accessibility" />
-## Accessibility and unpaired probabilities
-
-Accessibility describes the availability of an RNA subsequence for intermolecular
-base pairing. It can be expressed in terms of the probability of the subsequence
-to be unpaired (its *unpaired probability* *Pu*).
-
-A limited accessibility, i.e. a low unpaired probability, can be incorporated into
-the RNA-RNA interaction prediction by adding according energy penalties. 
-These so called *ED* values are transformed unpaired probabilities, i.e. the
-penalty for a subsequence partaking in an interaction is given by *ED=-RT log(Pu)*, 
-where *Pu* denotes the unpaired probability of the subsequence. Within the 
-IntaRNA energy model, *ED* values for both interacting subsequences are considered.
-
-Accessibility incorporation can be disabled for query or target sequences using
-`--qAcc=N` or `--tAcc=N`, respectively.
-
-A setup of `--qAcc=C` or `--tAcc=C` (default) enables accessibility computation 
-using the Vienna RNA package routines for query or target sequences, respectively.
-
-
-<a name="accLocalGlobal" />
-### Local versus global unpaired probabilities
-
-Exact computation of unpaired probabilities (*Pu* terms) is considers all possible
-structures the sequence can adopt (the whole structure ensemble). This is referred
-to as *global unpaired probabilities* as computed e.g. by **RNAup**.
-
-Since global probability computation is (a) computationally demanding and (b) not
-reasonable for long sequences, local RNA folding was suggested, which also enables
-according *local unpaired probability* computation, as e.g. done by **RNAplfold**.
-Here, a folding window of a defined length 'screens' along the RNA and computes
-unpaired probabilities within the window (while only intramolecular base pairs 
-within the window are considered).
-
-IntaRNA enables both global as well as local unpaired probability computation.
-To this end, the sliding window length has to be specified in order to enable/disable
-local folding.
-
-#### Use case examples global/local unpaired probability computation
-The use of global or local accessibilities can be defined independently 
-for query and target sequences using `--qAccW|L` and `--tAccW|L`, respectively.
-Here, `--?AccW` defines the sliding window length (0 sets it to the whole sequence length)
-and `--?AccL` defines the maximal length of considered intramolecular base pairs,
-i.e. the maximal number of positions enclosed by a base pair
-(0 sets it to the whole sequence length). Both can be defined
-independently while respecting `AccL <= AccW`.
-```bash
-# using global accessibilities for query and target
-IntaRNA [..] --qAccW=0 --qAccL=0 --tAccW=0 --qAccL=0
-# using local accessibilities for target and global for query
-IntaRNA [..] --qAccW=0 --qAccL=0 --tAccW=150 --qAccL=100
-```
-
-
-<a name="accFromFile" />
-### Read/write accessibility from/to file or stream
-
-It is possible to read precomputed accessibility values from file or stream to
-avoid their runtime demanding computation. To this end, we support the following
-formats
-
-| Input format | produced by |
-| ---- | --- |
-| RNAplfold unpaired probabilities | `RNAplfold -u` or `IntaRNA --out*PuFile` |
-| RNAplfold-styled ED values | `IntaRNA --out*AccFile` |
-
-The **RNAplfold** format is a table encoding of a banded upper triangular matrix 
-with band width l. First row contains a header comment on the data starting with
-`#`. Second line encodes the column headers, i.e. the window width per column.
-Every successive line starts with the index (starting from 1) of the window end
-followed by a tabulator separated list for each windows value in increasing
-window length order. That is, column 2 holds values for window length 1, column 
-3 for length 2, ... . The following provides a short output/input 
-example for a sequence of length 5 with a maximal window length of 3.
-
-```
-#unpaired probabilities
- #i$	l=1	2	3	
-1	0.9949492	NA	NA	
-2	0.9949079	0.9941056	NA	
-3	0.9554214	0.9518663	0.9511048		
-4	0.9165814	0.9122866	0.9090283		
-5	0.998999	0.915609	0.9117766		
-6	0.8549929	0.8541667	0.8448852		
-
-```
-
-#### Use case examples for read/write accessibilities and unpaired probabilities
-If you have precomputed data, e.g. the file `plfold_lunp` with unpaired probabilities
-computed by **RNAplfold**, you can run
-```bash
-# fill accessibilities from RNAplfold unpaired probabilities
-IntaRNA [..] --qAcc=P --qAccFile=plfold_lunp
-# fill accessibilities from RNAplfold unpaired probabilities via pipe
-cat plfold_lunp | IntaRNA [..] --qAcc=P --qAccFile=STDIN
-```
-Another option is to store the accessibility data computed by IntaRNA for 
-successive calls using 
-```bash
-# storing and reusing (target) accessibility data for successive IntaRNA calls
-IntaRNA [..] --outPuFilet=intarna.target.pu
-IntaRNA [..] --tAcc=P --tAccFile=intarna.target.pu
-# piping (target) accessibilities between IntaRNA calls
-IntaRNA [..] --outPuFilet=STDOUT | IntaRNA [..] --tAcc=P --tAccFile=STDIN
-```
 
 
 <br /><br />
@@ -460,6 +331,137 @@ If your scripts/whatever is tuned to the old IntaRNA v1.* output, you can use
 - `--outMode=3` : IntaRNA v1.* detailed output (former `-o` option)
 
 
+
+
+<br /><br />
+<a name="subopts" />
+## Suboptimal RNA-RNA interaction prediction and output restrictions
+
+Besides the identification of the optimal (e.g. minimum-free-energy) RNA-RNA 
+interaction, IntaRNA enables the enumeration of suboptimal interactions. To this
+end, the argument `-n N` or `--outNumber=N` can be used to generate up to `N`
+interactions for each query-target pair (including the optimal one). Note, the
+suboptimal enumeration is increasingly sorted by energy.
+
+Furthermore, it is possible to *restrict (sub)optimal enumeration* using
+- `--outMaxE` : maximal energy for any interaction reported
+- `--outDeltaE` : maximal energy difference of suboptimal interactions' energy
+  to the minimum free energy interaction
+- `--outOverlap` : defines if an where overlapping of reported interaction sites
+  is allowed (Note, IntaRNA v1.* used implicitly the 'T' mode):
+  - 'N' : no overlap neither in target nor query allowed for reported interactions
+  - 'B' : overlap allowed for interacting subsequences for both target and query
+  - 'T' : overlap allowed for interacting subsequences in target only 
+  - 'Q' : overlap allowed for interacting subsequences in query only 
+
+
+<br /><br />
+<a name="accessibility" />
+## Accessibility and unpaired probabilities
+
+Accessibility describes the availability of an RNA subsequence for intermolecular
+base pairing. It can be expressed in terms of the probability of the subsequence
+to be unpaired (its *unpaired probability* *Pu*).
+
+A limited accessibility, i.e. a low unpaired probability, can be incorporated into
+the RNA-RNA interaction prediction by adding according energy penalties. 
+These so called *ED* values are transformed unpaired probabilities, i.e. the
+penalty for a subsequence partaking in an interaction is given by *ED=-RT log(Pu)*, 
+where *Pu* denotes the unpaired probability of the subsequence. Within the 
+IntaRNA energy model, *ED* values for both interacting subsequences are considered.
+
+Accessibility incorporation can be disabled for query or target sequences using
+`--qAcc=N` or `--tAcc=N`, respectively.
+
+A setup of `--qAcc=C` or `--tAcc=C` (default) enables accessibility computation 
+using the Vienna RNA package routines for query or target sequences, respectively.
+
+
+<a name="accLocalGlobal" />
+### Local versus global unpaired probabilities
+
+Exact computation of unpaired probabilities (*Pu* terms) is considers all possible
+structures the sequence can adopt (the whole structure ensemble). This is referred
+to as *global unpaired probabilities* as computed e.g. by **RNAup**.
+
+Since global probability computation is (a) computationally demanding and (b) not
+reasonable for long sequences, local RNA folding was suggested, which also enables
+according *local unpaired probability* computation, as e.g. done by **RNAplfold**.
+Here, a folding window of a defined length 'screens' along the RNA and computes
+unpaired probabilities within the window (while only intramolecular base pairs 
+within the window are considered).
+
+IntaRNA enables both global as well as local unpaired probability computation.
+To this end, the sliding window length has to be specified in order to enable/disable
+local folding.
+
+#### Use case examples global/local unpaired probability computation
+The use of global or local accessibilities can be defined independently 
+for query and target sequences using `--qAccW|L` and `--tAccW|L`, respectively.
+Here, `--?AccW` defines the sliding window length (0 sets it to the whole sequence length)
+and `--?AccL` defines the maximal length of considered intramolecular base pairs,
+i.e. the maximal number of positions enclosed by a base pair
+(0 sets it to the whole sequence length). Both can be defined
+independently while respecting `AccL <= AccW`.
+```bash
+# using global accessibilities for query and target
+IntaRNA [..] --qAccW=0 --qAccL=0 --tAccW=0 --qAccL=0
+# using local accessibilities for target and global for query
+IntaRNA [..] --qAccW=0 --qAccL=0 --tAccW=150 --qAccL=100
+```
+
+
+<a name="accFromFile" />
+### Read/write accessibility from/to file or stream
+
+It is possible to read precomputed accessibility values from file or stream to
+avoid their runtime demanding computation. To this end, we support the following
+formats
+
+| Input format | produced by |
+| ---- | --- |
+| RNAplfold unpaired probabilities | `RNAplfold -u` or `IntaRNA --out*PuFile` |
+| RNAplfold-styled ED values | `IntaRNA --out*AccFile` |
+
+The **RNAplfold** format is a table encoding of a banded upper triangular matrix 
+with band width l. First row contains a header comment on the data starting with
+`#`. Second line encodes the column headers, i.e. the window width per column.
+Every successive line starts with the index (starting from 1) of the window end
+followed by a tabulator separated list for each windows value in increasing
+window length order. That is, column 2 holds values for window length 1, column 
+3 for length 2, ... . The following provides a short output/input 
+example for a sequence of length 5 with a maximal window length of 3.
+
+```
+#unpaired probabilities
+ #i$	l=1	2	3	
+1	0.9949492	NA	NA	
+2	0.9949079	0.9941056	NA	
+3	0.9554214	0.9518663	0.9511048		
+4	0.9165814	0.9122866	0.9090283		
+5	0.998999	0.915609	0.9117766		
+6	0.8549929	0.8541667	0.8448852		
+
+```
+
+#### Use case examples for read/write accessibilities and unpaired probabilities
+If you have precomputed data, e.g. the file `plfold_lunp` with unpaired probabilities
+computed by **RNAplfold**, you can run
+```bash
+# fill accessibilities from RNAplfold unpaired probabilities
+IntaRNA [..] --qAcc=P --qAccFile=plfold_lunp
+# fill accessibilities from RNAplfold unpaired probabilities via pipe
+cat plfold_lunp | IntaRNA [..] --qAcc=P --qAccFile=STDIN
+```
+Another option is to store the accessibility data computed by IntaRNA for 
+successive calls using 
+```bash
+# storing and reusing (target) accessibility (Pu) data for successive IntaRNA calls
+IntaRNA [..] --outTPuFile=intarna.target.pu
+IntaRNA [..] --tAcc=P --tAccFile=intarna.target.pu
+# piping (target) accessibilities (ED values) between IntaRNA calls
+IntaRNA [..] --outTAccFile=STDOUT | IntaRNA [..] --tAcc=E --tAccFile=STDIN
+```
 
 
 <br /><br />

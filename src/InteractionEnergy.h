@@ -188,7 +188,7 @@ public:
 	 */
 	virtual
 	E_type
-	getES1( const size_t i1, const size_t j1 ) const;
+	getES1( const size_t i1, const size_t j1 ) const = 0;
 
 	/**
 	 * Provides the ensemble energy (ES) of all intramolecular substructures
@@ -205,7 +205,7 @@ public:
 	 */
 	virtual
 	E_type
-	getES2( const size_t i2, const size_t j2 ) const;
+	getES2( const size_t i2, const size_t j2 ) const = 0;
 
 	/**
 	 * Provides the energy contribution for a given number of unpaired
@@ -677,41 +677,6 @@ InteractionEnergy::
 getED2( const size_t i2, const size_t j2 ) const
 {
 	return getAccessibility2().getED( i2, j2 );
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-E_type
-InteractionEnergy::
-getES1( const size_t i1, const size_t j1 ) const
-{
-#if IN_DEBUG_MODE
-	// sanity check
-	if (i1>j1) throw std::runtime_error("InteractionEnergy::getES1(i1="+toString(i1)+" > j1="+toString(j1));
-	if (j1>=size1()) throw std::runtime_error("InteractionEnergy::getES1() : j1="+toString(j1)+" >= size1()="+toString(size1()));
-#endif
-
-	// return computed value
-	return accS1.getES(i1,j1);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-E_type
-InteractionEnergy::
-getES2( const size_t i2, const size_t j2 ) const
-{
-#if IN_DEBUG_MODE
-	// sanity check
-	if (i2>j2) throw std::runtime_error("InteractionEnergy::getES2(i2="+toString(i2)+" > j2="+toString(j2));
-	if (j2>=size2()) throw std::runtime_error("InteractionEnergy::getES2() : j2="+toString(j2)+" >= size2()="+toString(size2()));
-#endif
-
-	// return computed value
-	return accS2.getES(i2,j2);
-
 }
 
 ////////////////////////////////////////////////////////////////////////////

@@ -68,19 +68,6 @@ public:
 	getED( const size_t from, const size_t to ) const;
 
 	/**
-	 * Not available for this subclass implementation.
-	 *
-	 * @param i the start of the structured region
-	 * @param j the end of the structured region
-	 * @return E_INF since not implemented
-	 *
-	 * @throws std::runtime_error not implemented
-	 */
-	virtual
-	E_type
-	getES( const size_t i, const size_t j ) const;
-
-	/**
 	 * Access to the maximal length of accessible regions (>0) to be considered.
 	 *
 	 * Here, it returns the minimum of the originally targeted interaction range
@@ -139,18 +126,6 @@ protected:
 
 
 };
-
-
-/////////////////////////////////////////////////////////////////////////
-
-inline
-E_type
-AccessibilityFromStream::
-getES( const size_t i, const size_t j ) const
-{
-	NOTIMPLEMENTED("AccessibilityFromStream::getES() not supported");
-	return E_INF;
-}
 
 /////////////////////////////////////////////////////////////////////////
 

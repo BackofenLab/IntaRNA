@@ -1,4 +1,37 @@
 
+170203 Martin Mann :
+ * configure.ac : 
+   + check for VRNA >= 2.3.0 via function 'vrna_md_copy' exists
+ * AccessibilityConstraint
+   + maxBpSpan + getter : maximal base pair span to be considered for 
+     accessibility computation
+ * Accessibility* :
+   - getES() : now part of InteractionEnergy interface
+ * AccessibilityVrna :
+   - EsMatrix : moved to InteractionEnergyVrna
+   - esValues : moved to InteractionEnergyVrna
+   - computeES() : moved to InteractionEnergyVrna
+   * constructor() :
+     - plFoldL : now via AccessibilityConstraint.getMaxBpSpan()
+     - computeES
+ * InteractionEnergy :
+   * getES*() now abstract and to be implemented in subclass
+   - getES*() implementation based on Accessibility interface
+ * InteractionEnergyBasePair :
+   + getES*() : throws exception since not implemented yet
+   * constructor() :
+     + initES : whether or not to compute precompute ES values
+ * InteractionEnergyVrna :
+   * constructor() :
+     + initES : whether or not to compute precompute ES values
+   + EsMatrix data type
+   + esValues1/2 : optional ES value data
+   + getES*() : returns esValues* entry if available; throws exception otherwise
+   + computeES() : inits ES values based on VRNA routines
+ * VrnaHandler :
+   * getModel() :
+     * uses now vrna_md_copy() (VRNA >= 2.3.0) for model copying
+
 170202 Martin Mann :
  * CommandLineParsing :
    * outMaxE maximum now 999 (was 0)

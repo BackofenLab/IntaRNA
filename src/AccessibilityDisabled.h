@@ -49,29 +49,6 @@ public:
 	E_type
 	getED( const size_t from, const size_t to ) const;
 
-
-	/**
-	 * Provides the ensemble energy (ES) of all intramolecular substructures
-	 * that can be formed within a given region of the sequence under the
-	 * assumption that the region is part of an (intermolecular) multiloop,
-	 * i.e. at least one base pair is formed by each substructure, given by
-	 *
-	 *   ES(i,j) = -RT * log( Qm[i,j] )
-	 *
-	 * where Qm denotes the according partition function.
-	 *
-	 * If no structure can be formed within the region (Qm==0), E_INF is returned.
-	 *
-	 * @param i the start of the structured region
-	 * @param j the end of the structured region
-	 * @return E_INF
-	 */
-	virtual
-	E_type
-	getES( const size_t i, const size_t j ) const;
-
-
-
 };
 
 
@@ -116,16 +93,6 @@ getED( const size_t from, const size_t to ) const
 		// region length exceeds maximally allowed length -> no value
 		return ED_UPPER_BOUND;
 	}
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-inline
-E_type
-AccessibilityDisabled::
-getES( const size_t from, const size_t to ) const
-{
-	return E_INF;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

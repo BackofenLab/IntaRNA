@@ -1006,9 +1006,7 @@ getQueryAccessibility( const size_t sequenceNumber ) const
 	const RnaSequence& seq = getQuerySequences().at(sequenceNumber);
 
 	// create temporary constraint object (will be copied)
-	AccessibilityConstraint accConstraint(qAccConstr);
-	// check whether to compute ES values (for multi-site predictions
-	const bool computeES = std::string("M").find(pred.val) != std::string::npos;
+	AccessibilityConstraint accConstraint(qAccConstr,qAccL.val);
 	// construct selected accessibility object
 	switch(qAcc.val) {
 
@@ -1055,14 +1053,19 @@ getQueryAccessibility( const size_t sequenceNumber ) const
 	}
 
 	case 'C' : // compute VRNA-based accessibilities
-		return new AccessibilityVrna( seq
-									, std::min( qIntLenMax.val == 0 ? seq.size() : qIntLenMax.val
-												, qAccW.val == 0 ? seq.size() : qAccW.val )
-									, &accConstraint
-									, vrnaHandler
-									, qAccW.val
-									, qAccL.val
-									, computeES);
+		switch( energy.val ) {
+		// TODO 'B'
+		case 'F' : // VRNA-based accessibilities
+			return new AccessibilityVrna( seq
+										, std::min( qIntLenMax.val == 0 ? seq.size() : qIntLenMax.val
+													, qAccW.val == 0 ? seq.size() : qAccW.val )
+										, &accConstraint
+										, vrnaHandler
+										, qAccW.val
+										);
+		default :
+			NOTIMPLEMENTED("query accessibility computation not implemented for energy = '"+toString(energy.val)+"'. Disable via --qAcc=N.");
+		} break;
 	default :
 		NOTIMPLEMENTED("CommandLineParsing::getQueryAccessibility : qAcc = '"+toString(qAcc.val)+"' is not supported");
 	}
@@ -1081,9 +1084,7 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 		throw std::runtime_error("CommandLineParsing::getTargetAccessibility : sequence number "+toString(sequenceNumber)+" is out of range (<"+toString(getTargetSequences().size())+")");
 	}
 	// create temporary constraint object (will be copied)
-	AccessibilityConstraint accConstraint(tAccConstr);
-	// check whether to compute ES values (for multi-site predictions
-	const bool computeES = std::string("M").find(pred.val) != std::string::npos;
+	AccessibilityConstraint accConstraint(tAccConstr,tAccL.val);
 	const RnaSequence& seq = getTargetSequences().at(sequenceNumber);
 	switch(tAcc.val) {
 
@@ -1130,15 +1131,20 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 		}
 		return acc;
 	}
-	case 'C' : // compute VRNA-based accessibilities
-		return new AccessibilityVrna( seq
-									, std::min( tIntLenMax.val == 0 ? seq.size() : tIntLenMax.val
-											, tAccW.val == 0 ? seq.size() : tAccW.val )
-									, &accConstraint
-									, vrnaHandler
-									, tAccW.val
-									, tAccL.val
-									, computeES);
+	case 'C' : // compute accessibilities
+		switch( energy.val ) {
+		// TODO 'B'
+		case 'F' : // VRNA-based accessibilities
+			return new AccessibilityVrna( seq
+										, std::min( tIntLenMax.val == 0 ? seq.size() : tIntLenMax.val
+												, tAccW.val == 0 ? seq.size() : tAccW.val )
+										, &accConstraint
+										, vrnaHandler
+										, tAccW.val
+										);
+		default :
+			NOTIMPLEMENTED("target accessibility computation not implemented for energy = '"+toString(energy.val)+"'. Disable via --tAcc=N.");
+		} break;
 	default :
 		NOTIMPLEMENTED("CommandLineParsing::getTargetAccessibility : tAcc = '"+toString(tAcc.val)+"' is not supported");
 	}
@@ -1152,9 +1158,13 @@ CommandLineParsing::
 getEnergyHandler( const Accessibility& accTarget, const ReverseAccessibility& accQuery ) const
 {
 	checkIfParsed();
+
+	// check whether to compute ES values (for multi-site predictions
+	const bool initES = std::string("M").find(pred.val) != std::string::npos;
+
 	switch( energy.val ) {
-	case 'B' : return new InteractionEnergyBasePair( accTarget, accQuery, tIntLoopMax.val, qIntLoopMax.val );
-	case 'F' : return new InteractionEnergyVrna( accTarget, accQuery, vrnaHandler, tIntLoopMax.val, qIntLoopMax.val );
+	case 'B' : return new InteractionEnergyBasePair( accTarget, accQuery, tIntLoopMax.val, qIntLoopMax.val, initES );
+	case 'F' : return new InteractionEnergyVrna( accTarget, accQuery, vrnaHandler, tIntLoopMax.val, qIntLoopMax.val, initES );
 	default :
 		NOTIMPLEMENTED("CommandLineParsing::getEnergyHandler : energy = '"+toString(energy.val)+"' is not supported");
 	}

@@ -37,19 +37,6 @@ public:
 
 
 	/**
-	 * Provides the ensemble energy (ES) (according to reversed indices).
-	 *
-	 * @param i the start of the structured region
-	 * @param j the end of the structured region
-	 * @return the ES value for [i,j] or E_INF if no intramolecular
-	 *         structure can be formed
-	 */
-	virtual
-	E_type
-	getES( const size_t i, const size_t j ) const;
-
-
-	/**
 	 * Access to the RnaSequence this accessibility values are accounting for.
 	 * @return the underlying sequence for this accessibility object.
 	 */
@@ -187,22 +174,6 @@ getED( const size_t from, const size_t to ) const
 	// reversed ED access
 	return origAcc.getED( seq.size()-to-1, seq.size()-from-1 );
 }
-
-
-////////////////////////////////////////////////////////////////////////////
-
-
-inline
-E_type
-ReverseAccessibility::
-getES( const size_t from, const size_t to ) const
-{
-	// check indices
-	checkIndices(from,to);
-	// reversed ES access
-	return origAcc.getES( seq.size()-to-1, seq.size()-from-1 );
-}
-
 
 ////////////////////////////////////////////////////////////////////////////
 

@@ -101,21 +101,9 @@ getModel( int max_bp_span, int window_size ) const
 	// the sub model to be returned
 	vrna_md_t subModel;
 
-	// TODO replace by vrna_model_copy() as soon as available (v2.3.0)
 	// copy default model
-	// vrna_model_copy(&subModel, &model);
+	vrna_md_copy(&subModel, &model);
 	
-    // copy over general model
-    memcpy(&subModel, &model, sizeof(vrna_md_t));
-    memcpy(subModel.rtype, &(model.rtype[0]), 8 * sizeof(int));
-    memcpy(subModel.alias, &(model.alias[0]), (MAXALPHA + 1) * sizeof(short));
-//    memset(subModel.alias, 0, (MAXALPHA + 1) * sizeof(short));
-    for(int i = 0;i <= MAXALPHA; i++) {
-      memcpy(subModel.pair[i], &(subModel.pair[i]), (MAXALPHA + 1) * sizeof(int));
-//      memset(subModel.pair[i], 0, (MAXALPHA + 1) * sizeof(int));
-    }
-//    vrna_md_update( &subModel );
-
     // set specific parameters
     subModel.max_bp_span = max_bp_span;
     subModel.window_size = window_size;

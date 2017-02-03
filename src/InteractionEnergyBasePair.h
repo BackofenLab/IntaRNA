@@ -28,16 +28,52 @@ public:
 	 *          between two intermolecular base pairs in sequence 2, ie it holds
 	 *          for an intermolecular loop closed by base pairs (i1,i2) and
 	 *          (j1,j2) : (j2-i2+1) <= maxInternalLoopSize
+	 * @param initES whether or not to compute and initialize ES values
 	 *
 	 */
 	InteractionEnergyBasePair( const Accessibility & accS1
 					, const ReverseAccessibility & accS2
 					, const size_t maxInternalLoopSize1 = 16
 					, const size_t maxInternalLoopSize2 = 16
+					, const bool initES = false
 				);
 
 	virtual ~InteractionEnergyBasePair();
 
+
+	/**
+	 * Provides the ensemble energy (ES) of all intramolecular substructures
+	 * that can be formed within a given region of sequence 1 under the
+	 * assumption that the region is part of an (intermolecular) multiloop,
+	 * i.e. at least one base pair is formed by each substructure.
+	 *
+	 * If no structure can be formed within the region, E_INF is returned.
+	 *
+	 * @param i1 the start of the structured region of seq1
+	 * @param j1 the end of the structured region of seq1
+	 * @return the ES value for [i1,j1] or E_INF if no intramolecular
+	 *         structure can be formed
+	 */
+	virtual
+	E_type
+	getES1( const size_t i1, const size_t j1 ) const;
+
+	/**
+	 * Provides the ensemble energy (ES) of all intramolecular substructures
+	 * that can be formed within a given region of sequence 2 under the
+	 * assumption that the region is part of an (intermolecular) multiloop,
+	 * i.e. at least one base pair is formed by each substructure.
+	 *
+	 * If no structure can be formed within the region, E_INF is returned.
+	 *
+	 * @param i2 the start of the structured region of seq2
+	 * @param j2 the end of the structured region of seq2
+	 * @return the ES value for [i2,j2] or E_INF if no intramolecular
+	 *         structure can be formed
+	 */
+	virtual
+	E_type
+	getES2( const size_t i2, const size_t j2 ) const;
 
 	/**
 	 * Provides the energy contribution for a given number of unpaired
@@ -197,10 +233,14 @@ InteractionEnergyBasePair::InteractionEnergyBasePair(
 		, const ReverseAccessibility & accS2
 		, const size_t maxInternalLoopSize1
 		, const size_t maxInternalLoopSize2
+		, const bool initES
 	)
  :
 	InteractionEnergy(accS1, accS2, maxInternalLoopSize1, maxInternalLoopSize2)
 {
+	if (initES) {
+		NOTIMPLEMENTED("InteractionEnergyVrna() : ES computation missing");
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -208,6 +248,42 @@ InteractionEnergyBasePair::InteractionEnergyBasePair(
 inline
 InteractionEnergyBasePair::~InteractionEnergyBasePair()
 {
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+InteractionEnergyBasePair::
+getES1( const size_t i1, const size_t j1 ) const
+{
+#if IN_DEBUG_MODE
+	// sanity check
+	if (i1>j1) throw std::runtime_error("InteractionEnergy::getES1(i1="+toString(i1)+" > j1="+toString(j1));
+	if (j1>=size1()) throw std::runtime_error("InteractionEnergy::getES1() : j1="+toString(j1)+" >= size1()="+toString(size1()));
+#endif
+
+	NOTIMPLEMENTED("InteractionEnergyVrna::getES2() : ES computation missing");
+	// return computed value
+	return E_INF;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+InteractionEnergyBasePair::
+getES2( const size_t i2, const size_t j2 ) const
+{
+#if IN_DEBUG_MODE
+	// sanity check
+	if (i2>j2) throw std::runtime_error("InteractionEnergy::getES2(i2="+toString(i2)+" > j2="+toString(j2));
+	if (j2>=size2()) throw std::runtime_error("InteractionEnergy::getES2() : j2="+toString(j2)+" >= size2()="+toString(size2()));
+#endif
+
+	NOTIMPLEMENTED("InteractionEnergyVrna::getES2() : ES computation missing");
+	// return computed value
+	return E_INF;
 }
 
 ////////////////////////////////////////////////////////////////////////////

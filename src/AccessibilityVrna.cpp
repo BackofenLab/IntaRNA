@@ -42,13 +42,10 @@ AccessibilityVrna::AccessibilityVrna(
 			, const AccessibilityConstraint * const accConstraint
 			, const VrnaHandler & vrnaHandler
 			, const size_t plFoldW
-			, const size_t plFoldL
-			, const bool computeES_
 		)
  :
 	Accessibility( seq, maxLength, accConstraint ),
-	edValues( getSequence().size(), getSequence().size(), 0, getMaxLength() ),
-	esValues( NULL )
+	edValues( getSequence().size(), getSequence().size(), 0, getMaxLength() )
 {
 
 	// VRNA computation not completely threadsafe
@@ -56,7 +53,6 @@ AccessibilityVrna::AccessibilityVrna(
 	#pragma omp critical(intarna_computeAccessibilityVrna)
 #endif
 	{
-
 		// check if constraint given
 		// or sliding window empty
 		// or larger than sequence length
@@ -64,23 +60,21 @@ AccessibilityVrna::AccessibilityVrna(
 			if (plFoldW > 0 && plFoldW < getSequence().size() ) {
 				throw std::runtime_error("sequence '"+seq.getId()+"': accuracy constraints provided but sliding window enabled (>0), which is currently not supported");
 			}
-			// TODO NOTE, THIS FUNCTION IS NOT THREADSAFE ...
-			fillByRNAup(vrnaHandler
-					, (plFoldL==0? getSequence().size() : std::min(plFoldL,getSequence().size()))
+#if INTARNA_MULITHREADING
+			#pragma omp critical(intarna_computeRNAupVrna)
+#endif
+			{
+				// NOTE, THIS FUNCTION IS NOT THREADSAFE ...
+				fillByRNAup(vrnaHandler
+					, getAccConstraint().getMaxBpSpan()
 					);
-			// compute ES values
-			if (computeES_) {
-				computeES( vrnaHandler, plFoldL );
 			}
 			// inefficient ED value computation O(n^2)*O(n^5) for debugging
 	//		fillByConstraints(vrnaHandler, (plFoldW==0? getSequence().size() : std::min(plFoldW,getSequence().size())), plFoldL);
 		} else {
-			if (computeES_) {
-				throw std::runtime_error("can not compute local structure energies (ES) for sliding window accessibility computation");
-			}
 			fillByRNAplfold(vrnaHandler
 					, (plFoldW==0? getSequence().size() : std::min(plFoldW,getSequence().size()))
-					, (plFoldL==0? getSequence().size() : std::min(plFoldL,getSequence().size()))
+					, getAccConstraint().getMaxBpSpan()
 					);
 		}
 
@@ -92,9 +86,6 @@ AccessibilityVrna::AccessibilityVrna(
 
 AccessibilityVrna::~AccessibilityVrna()
 {
-	if (esValues != NULL) {
-		delete esValues;
-	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -221,10 +212,6 @@ fillByConstraints( const VrnaHandler &vrnaHandler
 	// time logging
 	TIMED_FUNC_IF(timerObj, VLOG_IS_ON(9));
 
-	if (esValues != NULL) {
-		NOTIMPLEMENTED("computation of local structure energies (ES) via AccessibilityVrna::fillByConstraints() to done");
-	}
-
 	// get scaling factor to avoid math problems in partition function computation
 	const double pfScale = getPfScale( seq, vrnaHandler, plFoldL );
 
@@ -291,10 +278,6 @@ fillByRNAplfold( const VrnaHandler &vrnaHandler
 		throw std::runtime_error("AccessibilityVrna::fillByRNAplfold() : plFoldW < 3");
 	}
 #endif
-
-	if (esValues != NULL) {
-		throw std::runtime_error("can not compute local structure energies (ES) for sliding window accessibility computation");
-	}
 
 	// add maximal BP span
 	vrna_md_t curModel = vrnaHandler.getModel( plFoldL, plFoldW );
@@ -461,92 +444,6 @@ fillByRNAup( const VrnaHandler &vrnaHandler
 
 	// free data
 	free_pu_contrib( unstr_out );
-
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-void
-AccessibilityVrna::
-computeES( const VrnaHandler & vrnaHandler, const size_t maxBpSpan )
-{
-
-	// prepare container
-	if (esValues==NULL) {
-		esValues = new EsMatrix(getSequence().size(), getSequence().size());
-	} else {
-		esValues->resize( getSequence().size(), getSequence().size() );
-	}
-
-	// sequence length
-	const int seqLength = (int)getSequence().size();
-	const E_type RT = vrnaHandler.getRT();
-	// folding parameters
-	vrna_md_t curModel = vrnaHandler.getModel( maxBpSpan, seqLength );
-
-	// VRNA compatible data structures
-	char * sequence = (char *) vrna_alloc(sizeof(char) * (seqLength + 1));
-	char * structureConstraint = (char *) vrna_alloc(sizeof(char) * (seqLength + 1));
-	for (int i=0; i<seqLength; i++) {
-		// copy sequence
-		sequence[i] = getSequence().asString().at(i);
-		// copy accessibility constraint if present
-		structureConstraint[i] = getAccConstraint().getVrnaDotBracket(i);
-	}
-	sequence[seqLength] = structureConstraint[seqLength] = '\0';
-	// prepare folding data
-	vrna_fold_compound_t * foldData = vrna_fold_compound( sequence, &curModel, VRNA_OPTION_PF);
-
-	// set accessibility constraint
-    unsigned int constraint_options = 0;
-    constraint_options    |= VRNA_CONSTRAINT_DB
-                          |  VRNA_CONSTRAINT_DB_PIPE
-                          |  VRNA_CONSTRAINT_DB_DOT
-                          |  VRNA_CONSTRAINT_DB_X
-                          |  VRNA_CONSTRAINT_DB_ANG_BRACK
-                          |  VRNA_CONSTRAINT_DB_RND_BRACK;
-    vrna_constraints_add( foldData, (const char *)structureConstraint, constraint_options);
-
-    // compute correct partition function scaling via mfe
-    FLT_OR_DBL min_free_energy = vrna_mfe( foldData, NULL );
-    vrna_exp_params_rescale( foldData, &min_free_energy);
-
-	// compute partition functions
-	const float ensembleE = vrna_pf( foldData, NULL );
-
-	if (foldData->exp_matrices == NULL) {
-		throw std::runtime_error("AccessibilityVrna::computeES() : partition functions after computation not available");
-	}
-	if (foldData->exp_matrices->qm == NULL) {
-		throw std::runtime_error("AccessibilityVrna::computeES() : partition functions Qm after computation not available");
-	}
-	// copy ensemble energies of multi loop parts = ES values
-	FLT_OR_DBL qm_val = 0.0;
-	const int minLoopSubseqLength = curModel.min_loop_size + 2;
-	for (int i=0; i<seqLength; i++) {
-		for (int j=i; j<seqLength; j++) {
-			// check if too short to enable a base pair
-			if (j-i+1 < minLoopSubseqLength) {
-				// make unfavorable
-				(*esValues)(i,j) = E_INF;
-			} else {
-				// get Qm value
-				// indexing via iindx starts with 1 instead of 0
-				qm_val = foldData->exp_matrices->qm[foldData->iindx[i+1]-j+1];
-				if ( E_equal(qm_val, 0.) ) {
-					(*esValues)(i,j) = E_INF;
-				} else {
-					// ES energy = -RT*log( Qm )
-					(*esValues)(i,j) =  (E_type)( - RT*( std::log(qm_val)
-													+((FLT_OR_DBL)(j-i+1))*std::log(foldData->exp_params->pf_scale)));
-				}
-			}
-		}
-	}
-	// garbage collection
-	vrna_fold_compound_free(foldData);
-	free(structureConstraint);
-	free(sequence);
 
 }
 
