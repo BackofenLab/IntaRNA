@@ -144,13 +144,12 @@ predict( const IndexRange & r1
 							largerWindowsINF = (std::numeric_limits<E_type>::max() < (*hybridE(i1,i2))(w1p,w2+1));
 						}
 
-						// if it holds for all w'>=w: ED1(i1+w1')+ED2(i2+w2') > -1*(min(w1',w2')*EmaxStacking + Einit + 2*Edangle + 2*Eend)
+						// if it holds for all w'>=w: ED1(i1+w1')+ED2(i2+w2')-outConstraint.maxE > -1*(min(w1',w2')*EmaxStacking + Einit + 2*Edangle + 2*Eend)
 						// ie. the ED values exceed the max possible energy gain of an interaction
 						skipw1w2 = skipw1w2
 								|| ( largerWindowsINF &&
 										( -1.0*(std::min(w1,w2)*minStackingEnergy + minInitEnergy + 2.0*minDangleEnergy + 2.0*minEndEnergy) <
-											(energy.getED1(i1,i1+w1)
-													+ energy.getED2(i2,i2+w2)))
+											(energy.getED1(i1,i1+w1) + energy.getED2(i2,i2+w2) - outConstraint.maxE))
 									)
 									;
 					}

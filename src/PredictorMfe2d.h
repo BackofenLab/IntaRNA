@@ -47,7 +47,8 @@ public:
 	void
 	predict( const IndexRange & r1 = IndexRange(0,RnaSequence::lastPos)
 			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos)
-			, const OutputConstraint & outConstraint = OutputConstraint() );
+			, const OutputConstraint & outConstraint = OutputConstraint()
+			);
 
 protected:
 
@@ -74,11 +75,15 @@ protected:
 	 *
 	 * @param j1 end of the interaction within seq 1
 	 * @param j2 end of the interaction within seq 2
+	 * @param outConstraint constrains the interactions reported to the output handler
 	 * @param i1init smallest value for i1
 	 * @param i2init smallest value for i2
 	 */
 	void
-	initHybridE( const size_t j1, const size_t j2, const size_t i1init=0, const size_t i2init=0 );
+	initHybridE( const size_t j1, const size_t j2
+				, const OutputConstraint & outConstraint
+				, const size_t i1init=0, const size_t i2init=0
+				);
 
 	/**
 	 * Computes all entries of the hybridE matrix for interactions ending in
@@ -86,12 +91,16 @@ protected:
 	 *
 	 * @param j1 end of the interaction within seq 1
 	 * @param j2 end of the interaction within seq 2
+	 * @param outConstraint constrains the interactions reported to the output handler
 	 * @param i1init smallest value for i1
 	 * @param i2init smallest value for i2
 	 *
 	 */
 	void
-	fillHybridE( const size_t j1, const size_t j2, const size_t i1init=0, const size_t i2init=0  );
+	fillHybridE( const size_t j1, const size_t j2
+				, const OutputConstraint & outConstraint
+				, const size_t i1init=0, const size_t i2init=0
+				);
 
 	/**
 	 * Fills a given interaction (boundaries given) with the according

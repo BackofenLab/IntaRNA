@@ -44,6 +44,15 @@
      + heads detailedOutput flag
    * construction() :
      + detailedOutput flag handling
+ * PredictorMfe2d :
+   * initHybridE() :
+     + outConstraint argument
+     * bugfix : maxE check was not considering outConstraint.maxE
+   * fillHybridE() :
+     + outConstraint argument
+ * PredictorMfe4d* :
+   * predict :
+     * bugfix : maxE check was not considering outConstraint.maxE
 
 170202 Martin Mann :
  * CommandLineParsing :

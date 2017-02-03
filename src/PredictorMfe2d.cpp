@@ -79,7 +79,7 @@ predict( const IndexRange & r1
 				continue;
 
 			// fill matrix and store best interaction
-			fillHybridE( j1, j2 );
+			fillHybridE( j1, j2, outConstraint );
 
 		}
 	}
@@ -92,7 +92,10 @@ predict( const IndexRange & r1
 
 void
 PredictorMfe2d::
-initHybridE( const size_t j1, const size_t j2, const size_t i1init, const size_t i2init )
+initHybridE( const size_t j1, const size_t j2
+			, const OutputConstraint & outConstraint
+			, const size_t i1init, const size_t i2init
+			)
 {
 #if IN_DEBUG_MODE
 	if (i1init > j1)
@@ -138,11 +141,11 @@ initHybridE( const size_t j1, const size_t j2, const size_t i1init, const size_t
 				largerWindowsINF = E_isINF(hybridE_pq(i1,i2));
 			}
 
-			// if it holds for all w'>=w: ED1(i1+w1')+ED2(i2+w2') > -1*(min(w1',w2')*EmaxStacking + Einit + 2*Edangle + 2*Eend)
+			// if it holds for all w'>=w: ED1(i1+w1')+ED2(i2+w2')-outConstraint.maxE > -1*(min(w1',w2')*EmaxStacking + Einit + 2*Edangle + 2*Eend)
 			// ie. the ED values exceed the max possible energy gain of an interaction
 			if( largerWindowsINF
 				&& ( -1.0*(std::min(w1,w2)*minStackingEnergy + minInitDangleEndEnergy)
-					< (curED1 + energy.getED2(i2,j2)))
+					< (curED1 + energy.getED2(i2,j2) - outConstraint.maxE))
 				)
 			{
 				// mark as NOT to be computed
@@ -162,11 +165,13 @@ initHybridE( const size_t j1, const size_t j2, const size_t i1init, const size_t
 
 void
 PredictorMfe2d::
-fillHybridE( const size_t j1, const size_t j2, const size_t i1init, const size_t i2init )
+fillHybridE( const size_t j1, const size_t j2
+			, const OutputConstraint & outConstraint
+			, const size_t i1init, const size_t i2init )
 {
 
 	// init for right interaction end (j1,j2)
-	initHybridE( j1, j2, i1init, i2init );
+	initHybridE( j1, j2, outConstraint, i1init, i2init );
 	// sanity check of initialization
 	assert(hybridErange.r1.to == j1);
 	assert(hybridErange.r2.to == j2);
