@@ -117,9 +117,9 @@ simply run the following (assuming `bash` shell).
 make
 # run tests to ensure all went fine
 make tests
-# install (use 'configure --prefix=XXX' to change install directory)
+# install (use 'configure --prefix=XXX' to change default install directory)
 make install
-# install to directory XYZ
+# (alternatively) install to directory XYZ
 make install prefix=XYZ
 ```
 
@@ -351,36 +351,46 @@ Using `--outMode=D`, a detailed ASCII chart of the interaction together with
 various interaction details will be provided. An example is given below.
 
 ```bash
-# call: IntaRNA -t AAACACCCCCGGUGGUUUGG -q AAACACCCCCGGUGGUUUGG --outMode=D --noSeed
+# call: IntaRNA -t AAACACCCCCGGUGGUUUGG -q AAACACCCCCGGUGGUUUGG --outMode=D --seedBP=4
 
 target
-             4         14
-             |         |
-       5'-AAA    CCC    GUUUGG-3'
-             CACC   GGUG
-             ||||   ||||
-             GUGG   CCAC
-    3'-GGUUUG    CCC    AAA-5'
-             |         |
-            14         4
+             5      12
+             |      |
+      5'-AAAC   C    UGGUUUGG-3'
+             ACC CCGG
+             ||| ||||
+             UGG GGCC
+      3'-GGUU   U    CCCACAAA-5'
+             |      |
+            16      9
 query
 
-interaction seq1   = 4 -- 14
-interaction seq2   = 4 -- 14
+interaction seq1   = 5 -- 12
+interaction seq2   = 9 -- 16
 
-interaction energy = -4.14154 kcal/mol
+interaction energy = -2.78924 kcal/mol
   = E(init)        = 4.1
-  + E(loops)       = -13.2
-  + E(dangleLeft)  = -1.59828
-  + E(dangleRight) = -1.59828
-  + E(endLeft)     = 0
+  + E(loops)       = -13.9
+  + E(dangleLeft)  = -0.458042
+  + E(dangleRight) = -0.967473
+  + E(endLeft)     = 0.5
   + E(endRight)    = 0
-  + ED(seq1)       = 4.07751
-  + ED(seq2)       = 4.07751
-  + Pu(seq1)       = 0.00133893
-  + Pu(seq2)       = 0.00133893
+  + ED(seq1)       = 3.91068
+  + ED(seq2)       = 4.0256
+  + Pu(seq1)       = 0.00175516
+  + Pu(seq2)       = 0.00145659
+
+seed seq1   = 9 -- 12
+seed seq2   = 9 -- 12
+seed energy = -1.4098 kcal/mol
+seed ED1    = 2.66437 kcal/mol
+seed ED2    = 2.66437 kcal/mol
+seed Pu1    = 0.0132596
+seed Pu2    = 0.0132596
 ```
-Position annotations start indexing with 1.
+Position annotations start indexing with 1 at the 5'-end of each RNA. 
+`ED` values are the energy penalties for reduced [accessibility](#accessibility)
+and `Pu` denote unpaired probabilities of the respective interacting subsequences.
 
 <a name="outModeCsv" />
 ### Customizable CSV RNA-RNA interaction output
@@ -667,7 +677,7 @@ When using parallelization, you should have the following things in mind:
 - Most of the IntaRNA runtime (in heuristic prediction mode) 
   is consumed by [accessibility computation](#accessibility) 
   (if not [loaded from file](#accFromFile)). 
-  So far, due to some thread-safety issues with the 
+  Currently, due to some thread-safety issues with the 
   routines from the Vienna RNA package, the IntaRNA
   accessibility computation is done serially. This significantly reduces the
   multi-threading effect when running IntaRNA in the fast heuristic mode (`--mode=H`).
