@@ -1,0 +1,10 @@
+# autotools' temporary files
+.deps
+config.h
+config.h.in
+Makefile
+Makefile.in
+stamp-*
+
+# generated header
+intarna_config.h

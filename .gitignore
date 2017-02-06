@@ -26,3 +26,41 @@
 *.exe
 *.out
 *.app
+
+# eclipse files
+.project
+.settings
+.cproject
+.autotools
+.*
+
+# temporary autotools files
+config.*
+Makefile
+autom4te.cache
+configure
+missing
+install-sh
+depcomp
+aclocal.m4
+Makefile.in
+compile
+*/.deps
+*/.deps/*
+
+
+# temp dir
+tmp
+tmp/*
+tests/logs
+tests/logs/*
+
+/1
+/RNAup
+/IntaRNA-1
+/IntaRNA-1.out2
+/q.fasta
+/q2.fasta
+/seq.fasta
+/t.fasta
+/t2.fasta
