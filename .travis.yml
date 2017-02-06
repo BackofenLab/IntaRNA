@@ -1,44 +1,15 @@
+sudo: false
 language: cpp
 
-cache:
-  apt: true
-
-addons:
-  apt:
-    sources:
-    - ubuntu-toolchain-r-test
-    packages:
-    - gcc-4.9
-    - g++-4.9
-
 os:
-    - linux
-
+  - linux
 compiler:
-    - gcc
-
-before_install:
-    - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
-    - chmod +x miniconda.sh
-    - "./miniconda.sh -b"
-    - export PATH=/home/travis/miniconda2/bin:$PATH
-    - conda update --yes conda
-    - conda install --yes viennarna automake boost -c conda-forge -c bioconda
-    - export CONDA_PATH=/home/travis/miniconda2/
-    - export CONDA_LIB_PATH=/home/travis/miniconda2/lib
-    - ls $CONDA_LIB_PATH
-    - ls $CONDA_PATH/include
-    - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_LIB_PATH
-
+  - gcc
+  
 script:
-    - RNAalifold --version
-    ##### start IntaRNA build #####
-    - cd $TRAVIS_BUILD_DIR 
-    # generate autotools's files 
-    - bash autotools-init.sh 
-    - CC=gcc-4.9 CXX=g++-4.9 ./configure --with-boost=$CONDA_PATH --with-RNA=$CONDA_PATH --prefix=$HOME/IntaRNA
-    # compile, test and install IntaRNA
-    - make && make tests && make install
-    ##### check IntaRNA build #####
-    # run IntaRNA with help output
-    - $HOME/IntaRNA/bin/IntaRNA -h
+ # download and compile ViennaRNA dependency
+ - wget https://depot.galaxyproject.org/software/vienna_rna/vienna_rna_1.8_src_all.tar.gz
+ - tar xvfz vienna_rna_1.8_src_all.tar.gz
+ - cd ViennaRNA-1.8.5 && ./configure --prefix=$HOME/vienna --without-perl && make && make install
+ - cd $TRAVIS_BUILD_DIR && ./configure --with-RNA=$HOME/vienna --prefix=$HOME/IntaRNA && make && make install
+ - $HOME/IntaRNA/bin/IntaRNA -h

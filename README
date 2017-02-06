@@ -1,12 +1,22 @@
 
-#########  IntaRNA  ################################################
+IntaRNA uses the libRNA.a from the Vienna RNA Package. Thus before compiling
+IntaRNA, you have to configure and install the Vienna RNA Package. You can
+download it at: 
+
+http://www.tbi.univie.ac.at/~ivo/RNA/
+
+If the Vienna RNA Package is not installed to a default directory you can 
+add this information to the 'configure' script using the
+'--with-RNA=$VIENNA-PATH' flag.
+
+Run './configure --help' for more configuration details.
+
+Call './IntaRNA -h' for a help page with all options offered by IntaRNA.
+
+For bug reports or questions please write to 
+
+  intarna(a)informatik.uni-freiburg.de
+ 
+ or visit
   
-To configure, compile and install do the following steps:
-  - run ./configure [--help for additional configuration options]
-  - run make
-  - run make install
-
-In case you run into problems, please contact us!
-
-Also refer to README.md file for further information.
-
+  http://www.bioinf.uni-freiburg.de/Software/
