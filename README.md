@@ -123,7 +123,10 @@ make install
 make install prefix=XYZ
 ```
 
-
+If you installed one of the dependencies in a non-standard directory, you have 
+to use the according `configure` options:
+- `--with-RNA` : the prefix where the Vienna RNA package is installed
+- `--with-boost` : the prefix where the boost library is installed
 
 
 
