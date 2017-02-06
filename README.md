@@ -88,25 +88,28 @@ The following topics are covered by this documentation:
 
 <br /><br />
 <a name="instgithub" />
-## Cloning from github (or downloading ZIP-file)
+## Cloning *Source code* from github (or downloading ZIP-file)
 
-The data provided within the github repository is no complete distribution and
-lacks all system specific generated files. Thus, in order to get started with 
-a fresh clone of the IntaRNA repository you have to run the GNU autotools 
+The data provided within the github repository
+(or within the `Source code` archives provided at the  
+[IntaRNA release page](https://github.com/BackofenLab/IntaRNA/releases))
+is no complete distribution and
+lacks all system specifically generated files. Thus, in order to get started with 
+a fresh clone of the IntaRNA source code repository you have to run the GNU autotools 
 to generate all needed files for a proper `configure` and `make`. To this end,
-we provide a helper script that as shown in the following.
+we provide the helper script `autotools-init.sh` that can be run as shown in the following.
 ```bash
 # call aclocal, automake, autoconf
 bash ./autotools-init.sh
 ```
-Afterwards, you can continue as if you would have downloaded a 
-[IntaRNA source code distribution](#instsource).
+Afterwards, you can continue as if you would have downloaded an 
+[IntaRNA package distribution](#instsource).
 
 <br /><br />
 <a name="instsource" />
-## Source code distribution
+## IntaRNA package distribution (e.g. `intaRNA-2.0.0.tar.gz`)
 
-When downloading an IntaRNA source code distribution, e.g. from the 
+When downloading an IntaRNA package distribution (e.g. `intaRNA-2.0.0.tar.gz`) from the 
 [IntaRNA release page](https://github.com/BackofenLab/IntaRNA/releases), you should 
 first ensure, that you have all [dependencies](#deps) installed. If so, you can
 simply run the following (assuming `bash` shell).
