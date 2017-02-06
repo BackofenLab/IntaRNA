@@ -151,7 +151,8 @@ computations, you might also want to consider [multi-threading support](#multith
 
 If you just want to start and are fine with the default parameters set, 
 you only have to provide two RNA sequences, 
-a (long) target RNA and a (short) query RNA, in 
+a (long) target RNA (using `-t` or `--target`) and a (short) query RNA
+(via `-q` or `--query`), in 
 [IUPAC RNA encoding](#https://en.wikipedia.org/wiki/Nucleic_acid_notation).
 You can either directly input the sequences
 ```bash
@@ -185,8 +186,10 @@ IntaRNA -t myTargets.fasta -q myQueries.fasta
 cat myQueries.fasta | IntaRNA -q STDIN -t myTargets.fasta
 ```
 
-Nucleotide encodings different from `ACGU` are rewritten as `N` and the respective
+Nucleotide encodings different from `ACGUT` are rewritten as `N` and the respective
 positions are not considered to form base pairs (and this ignored).
+Thymine `T` encodings are replaced by uracil `U`, since a `ACGU`-only 
+energy model is used.
 
 For a list of general program argument run `-h` or `--help`. For a complete
 list covering also more sophisticated options, run `--fullhelp`.
