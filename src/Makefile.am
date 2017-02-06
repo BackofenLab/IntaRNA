@@ -1,4 +1,8 @@
 
+# check that installed programs support the --help and --version options
+# basic check that the program's run-time dependencies are satisfied
+AUTOMAKE_OPTIONS = std-options
+
 # the program to build
 bin_PROGRAMS = IntaRNA
 

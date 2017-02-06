@@ -1,6 +1,13 @@
 
+# ensure serial test build and run
+AUTOMAKE_OPTIONS = serial-tests
+
+# list of tests to run
+TESTS = runTests
+
+
 # the program to build
-bin_PROGRAMS = runTests 
+check_PROGRAMS = runTests 
 
 # test sources
 runTests_SOURCES =	catch.hpp \
@@ -20,10 +27,3 @@ runTests_LDFLAGS = `ls ../src/*.o | tr " " "\n" | grep -v "intaRNA" | grep -v "C
 
 # add source include for compilation
 runTests_CXXFLAGS =	-I$(top_srcdir)/src @AM_CXXFLAGS@ @CXXFLAGS@
-
-# disable general build
-all:
-
-# global test directive
-tests: clean-binPROGRAMS all-am
-	@./runTests

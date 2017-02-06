@@ -47,6 +47,7 @@ Makefile.in
 compile
 */.deps
 */.deps/*
+/intaRNA-*.tar.gz
 
 
 # temp dir

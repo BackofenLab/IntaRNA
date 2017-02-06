@@ -1,4 +1,12 @@
 
+170206 Martin Mann :
+ * src/Makefile.am :
+   + AUTOMAKE_OPTIONS = std-options : checks for std options of binary
+ * tests/Makefile.am :
+   * tests now build via 'check' make target (autotools-based setup)
+ * Makefile.am :
+   * adaptions to test Makefile changes
+
 170203 Martin Mann :
  * configure.ac : 
    + check for VRNA >= 2.3.0 via function 'vrna_md_copy' exists
