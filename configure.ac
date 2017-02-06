@@ -46,9 +46,6 @@ AC_LANG([C++])
 # ensure we are using c11 C++ standard
 AX_CXX_COMPILE_STDCXX( [11], [noext], [mandatory])
 
-# ensure OPENMP can be used
-AX_OPENMP([],[AC_MSG_ERROR([OPENMP support is mandatory for compilation])]])
-AM_CXXFLAGS="$AM_CXXFLAGS $OPENMP_CXXFLAGS"
 
 ###############################################################################
 ###############################################################################
@@ -90,6 +87,9 @@ AC_MSG_RESULT([$multithreadingEnabled])
 if test x"$multithreadingEnabled" = x"yes"; then
 	AC_DEFINE([INTARNA_MULITHREADING], [1], [Enabling multi-threading support])
 	AC_SUBST([INTARNA_MULITHREADING],[1])
+	# ensure OPENMP can be used
+	AX_OPENMP([],[AC_MSG_ERROR([OPENMP support is mandatory for compilation])]])
+	AM_CXXFLAGS="$AM_CXXFLAGS $OPENMP_CXXFLAGS"
 else
 	AC_DEFINE([INTARNA_MULITHREADING], [0], [Disabling multi-threading support])
 	AC_SUBST([INTARNA_MULITHREADING],[0])
