@@ -22,7 +22,7 @@ extern "C" {
 #include <boost/numeric/ublas/triangular.hpp>
 
 
-// TODO http://www.tbi.univie.ac.at/RNA/ViennaRNA/doc/RNAlib-2.3.0.pdf
+// http://www.tbi.univie.ac.at/RNA/ViennaRNA/doc/RNAlib-2.3.0.pdf
 
 /**
  * Implements an energy interface based on free energy estimates computed

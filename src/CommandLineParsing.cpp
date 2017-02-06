@@ -35,8 +35,6 @@
 #include "PredictorMfe2dSeed.h"
 #include "PredictorMfe4dSeed.h"
 
-// TODO maxprob seed
-
 #include "OutputHandlerText.h"
 #include "OutputHandlerCsv.h"
 #include "OutputHandlerIntaRNA1.h"

@@ -31,7 +31,7 @@ predict( const IndexRange & r1, const IndexRange & r2
 		, const OutputConstraint & outConstraint )
 {
 #if INTARNA_MULITHREADING
-	#pragma omp critical(intarna_logOutput)
+	#pragma omp critical(intarna_omp_logOutput)
 #endif
 	{ VLOG(2) <<"predicting mfe interactions with seed in O(n^2) space and O(n^4) time..."; }
 	// measure timing
@@ -110,8 +110,6 @@ fillHybridE_seed( const size_t j1, const size_t j2, const size_t i1min, const si
 
 	// compute hybridE_pq
 	fillHybridE( j1, j2, i1min, i2min );
-
-	// TODO check if any interaction possible
 
 	assert(i1min <= j1);
 	assert(i2min <= j2);

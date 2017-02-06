@@ -48,37 +48,37 @@ AccessibilityVrna::AccessibilityVrna(
 	edValues( getSequence().size(), getSequence().size(), 0, getMaxLength() )
 {
 
-	// VRNA computation not completely threadsafe
+	// check if constraint given
+	// or sliding window empty
+	// or larger than sequence length
+	if ( (! getAccConstraint().isEmpty()) || (plFoldW==0) || (plFoldW >= getSequence().size()) ) {
+		if (plFoldW > 0 && plFoldW < getSequence().size() ) {
+			throw std::runtime_error("sequence '"+seq.getId()+"': accuracy constraints provided but sliding window enabled (>0), which is currently not supported");
+		}
 #if INTARNA_MULITHREADING
-	#pragma omp critical(intarna_computeAccessibilityVrna)
+		#pragma omp critical(intarna_omp_callingVRNA)
 #endif
-	{
-		// check if constraint given
-		// or sliding window empty
-		// or larger than sequence length
-		if ( (! getAccConstraint().isEmpty()) || (plFoldW==0) || (plFoldW >= getSequence().size()) ) {
-			if (plFoldW > 0 && plFoldW < getSequence().size() ) {
-				throw std::runtime_error("sequence '"+seq.getId()+"': accuracy constraints provided but sliding window enabled (>0), which is currently not supported");
-			}
-#if INTARNA_MULITHREADING
-			#pragma omp critical(intarna_computeRNAupVrna)
-#endif
-			{
-				// NOTE, THIS FUNCTION IS NOT THREADSAFE ...
-				fillByRNAup(vrnaHandler
-					, getAccConstraint().getMaxBpSpan()
-					);
-			}
+		{
+			// NOTE, THIS FUNCTION IS NOT THREADSAFE ...
+			fillByRNAup(vrnaHandler
+				, getAccConstraint().getMaxBpSpan()
+				);
 			// inefficient ED value computation O(n^2)*O(n^5) for debugging
-	//		fillByConstraints(vrnaHandler, (plFoldW==0? getSequence().size() : std::min(plFoldW,getSequence().size())), plFoldL);
-		} else {
+//			fillByConstraints(vrnaHandler, (plFoldW==0? getSequence().size() : std::min(plFoldW,getSequence().size())), plFoldL);
+		} // omp critical(intarna_omp_callingVRNA)
+	} else {
+		// VRNA computation not completely threadsafe
+#if INTARNA_MULITHREADING
+		#pragma omp critical(intarna_omp_callingVRNA)
+#endif
+		{
 			fillByRNAplfold(vrnaHandler
 					, (plFoldW==0? getSequence().size() : std::min(plFoldW,getSequence().size()))
 					, getAccConstraint().getMaxBpSpan()
 					);
-		}
+		} // omp critical(intarna_omp_callingVRNA)
+	}
 
-	} // omp critical(intarna_computeAccessibilityVrna)
 
 }
 
@@ -206,7 +206,7 @@ fillByConstraints( const VrnaHandler &vrnaHandler
 		, const size_t plFoldL )
 {
 #if INTARNA_MULITHREADING
-	#pragma omp critical(intarna_logOutput)
+	#pragma omp critical(intarna_omp_logOutput)
 #endif
 	{ VLOG(2) <<"computing accessibility via n^2 fold calls..."; }
 	// time logging
@@ -263,7 +263,7 @@ fillByRNAplfold( const VrnaHandler &vrnaHandler
 		, const size_t plFoldL )
 {
 #if INTARNA_MULITHREADING
-	#pragma omp critical(intarna_logOutput)
+	#pragma omp critical(intarna_omp_logOutput)
 #endif
 	{ VLOG(2) <<"computing accessibility via plfold routines...";}
 	// time logging
@@ -353,7 +353,7 @@ fillByRNAup( const VrnaHandler &vrnaHandler
 			, const size_t plFoldL )
 {
 #if INTARNA_MULITHREADING
-	#pragma omp critical(intarna_logOutput)
+	#pragma omp critical(intarna_omp_logOutput)
 #endif
 	{ VLOG(2) <<"computing accessibility via RNAup routines..."; }
 	// time logging

@@ -33,7 +33,7 @@ OutputHandlerCsv::OutputHandlerCsv(
 	if (printHeader) {
 		// ensure outputs do not intervene
 #if INTARNA_MULITHREADING
-		#pragma omp critical(intarna_outputStreamUpdate)
+		#pragma omp critical(intarna_omp_outputStreamUpdate)
 #endif
 		{
 			out <<getHeader(colOrder,colSep);
@@ -78,7 +78,7 @@ add( const Interaction & i )
 
 	// ensure outputs do not intervene
 #if INTARNA_MULITHREADING
-	#pragma omp critical(intarna_outputStreamUpdate)
+	#pragma omp critical(intarna_omp_outputStreamUpdate)
 #endif
 	{
 
@@ -274,7 +274,7 @@ add( const Interaction & i )
 			}
 		}
 		out <<'\n';
-	} // omp critical(intarna_outputStreamUpdate)
+	} // omp critical(intarna_omp_outputStreamUpdate)
 
 }
 

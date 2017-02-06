@@ -103,7 +103,7 @@ int main(int argc, char **argv){
 			if (!threadAborted) {
 				try {
 					// get target accessibility handler
-					#pragma omp critical(intarna_logOutput)
+					#pragma omp critical(intarna_omp_logOutput)
 #endif
 					{ VLOG(1) <<"computing accessibility for target '"<<parameters.getTargetSequences().at(targetNumber).getId()<<"'..."; }
 
@@ -114,7 +114,7 @@ int main(int argc, char **argv){
 					// check if we have to warn about ambiguity
 					if (targetAcc->getSequence().isAmbiguous()) {
 #if INTARNA_MULITHREADING
-						#pragma omp critical(intarna_logOutput)
+						#pragma omp critical(intarna_omp_logOutput)
 #endif
 						{ LOG(INFO) <<"Sequence '"<<targetAcc->getSequence().getId()
 								<<"' contains ambiguous IUPAC nucleotide encodings. These positions are ignored for interaction computation and replaced by 'N'.";}
@@ -158,7 +158,7 @@ int main(int argc, char **argv){
 								BOOST_FOREACH(const IndexRange & qRange, parameters.getQueryRanges(queryNumber)) {
 
 #if INTARNA_MULITHREADING
-									#pragma omp critical(intarna_logOutput)
+									#pragma omp critical(intarna_omp_logOutput)
 #endif
 									{ VLOG(1) <<"predicting interactions for"
 											<<" target "<<targetAcc->getSequence().getId()
@@ -190,7 +190,7 @@ int main(int argc, char **argv){
 							////////////////////// exception handling ///////////////////////////
 							} catch (std::exception & e) {
 								// ensure exception handling for first failed thread only
-								#pragma omp critical(intarna_exception)
+								#pragma omp critical(intarna_omp_exception)
 								{
 									if (!threadAborted) {
 										// store exception information
@@ -200,10 +200,10 @@ int main(int argc, char **argv){
 										threadAborted = true;
 										#pragma omp flush (threadAborted)
 									}
-								}
+								} // omp critical(intarna_omp_exception)
 							} catch (...) {
 								// ensure exception handling for first failed thread only
-								#pragma omp critical(intarna_exception)
+								#pragma omp critical(intarna_omp_exception)
 								{
 									if (!threadAborted) {
 										// store exception information
@@ -213,7 +213,7 @@ int main(int argc, char **argv){
 										threadAborted = true;
 										#pragma omp flush (threadAborted)
 									}
-								}
+								} // omp critical(intarna_omp_exception)
 							}
 						} // if not threadAborted
 #endif
@@ -229,7 +229,7 @@ int main(int argc, char **argv){
 				////////////////////// exception handling ///////////////////////////
 				} catch (std::exception & e) {
 					// ensure exception handling for first failed thread only
-					#pragma omp critical(intarna_exception)
+					#pragma omp critical(intarna_omp_exception)
 					{
 						if (!threadAborted) {
 							// store exception information
@@ -239,10 +239,10 @@ int main(int argc, char **argv){
 							threadAborted = true;
 							#pragma omp flush (threadAborted)
 						}
-					}
+					} // omp critical(intarna_omp_exception)
 				} catch (...) {
 					// ensure exception handling for first failed thread only
-					#pragma omp critical(intarna_exception)
+					#pragma omp critical(intarna_omp_exception)
 					{
 						if (!threadAborted) {
 							// store exception information
@@ -252,7 +252,7 @@ int main(int argc, char **argv){
 							threadAborted = true;
 							#pragma omp flush (threadAborted)
 						}
-					}
+					} // omp critical(intarna_omp_exception)
 				}
 			} // if not threadAborted
 #endif

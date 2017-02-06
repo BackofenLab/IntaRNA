@@ -37,7 +37,7 @@ predict( const IndexRange & r1
 		)
 {
 #if INTARNA_MULITHREADING
-	#pragma omp critical(intarna_logOutput)
+	#pragma omp critical(intarna_omp_logOutput)
 #endif
 	{ VLOG(2) <<"predicting mfe interactions with seed in O(n^4) space and time..."; }
 	// measure timing
@@ -174,7 +174,7 @@ predict( const IndexRange & r1
 	}
 
 #if INTARNA_MULITHREADING
-	#pragma omp critical(intarna_logOutput)
+	#pragma omp critical(intarna_omp_logOutput)
 #endif
 	{ LOG(DEBUG) <<"init 2x 4d matrix : "<<(debug_count_cells_nonNull-debug_count_cells_inf)<<" (-"<<debug_count_cells_inf <<") to be filled ("
 				<<((double)(debug_count_cells_nonNull-debug_count_cells_inf)/(double)(debug_count_cells_nonNull+debug_count_cells_null))

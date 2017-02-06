@@ -57,7 +57,7 @@ add( const Interaction & i )
 
 	// ensure outputs do not intervene
 #if INTARNA_MULITHREADING
-	#pragma omp critical(intarna_outputStreamUpdate)
+	#pragma omp critical(intarna_omp_outputStreamUpdate)
 #endif
 	{
 		if (!initialOutputDone) {
@@ -76,7 +76,7 @@ add( const Interaction & i )
 			;
 			initialOutputDone = true;
 		}
-	} // omp critical(intarna_outputStreamUpdate)
+	} // omp critical(intarna_omp_outputStreamUpdate)
 
 	// get interaction start/end per sequence
 	const size_t i1 = i.basePairs.begin()->first;
@@ -188,7 +188,7 @@ add( const Interaction & i )
 
 	// ensure outputs do not intervene
 #if INTARNA_MULITHREADING
-	#pragma omp critical(intarna_outputStreamUpdate)
+	#pragma omp critical(intarna_omp_outputStreamUpdate)
 #endif
 	{
 
@@ -225,7 +225,7 @@ add( const Interaction & i )
 				;
 		}
 
-	} // omp critical(intarna_outputStreamUpdate)
+	} // omp critical(intarna_omp_outputStreamUpdate)
 
 }
 
@@ -248,7 +248,7 @@ addSeparator (const bool yesNo )
 	printSeparator = yesNo;
 	if (initialOutputDone) {
 #if INTARNA_MULITHREADING
-		#pragma omp critical(intarna_logOutput)
+		#pragma omp critical(intarna_omp_logOutput)
 #endif
 		{ LOG(INFO) <<"OutputHandlerIntaRNA1::addSeparator() called but initial output already done..."; }
 	}

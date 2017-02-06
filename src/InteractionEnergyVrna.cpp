@@ -41,7 +41,7 @@ InteractionEnergyVrna::InteractionEnergyVrna(
 	if (initES) {
 		// VRNA computation not completely threadsafe
 #if INTARNA_MULITHREADING
-		#pragma omp critical(intarna_computeAccessibilityVrna)
+		#pragma omp critical(intarna_omp_callingVRNA)
 #endif
 		{
 			// create ES container to be filled
@@ -50,7 +50,7 @@ InteractionEnergyVrna::InteractionEnergyVrna(
 			// fill ES container
 			computeES( accS1, *esValues1 );
 			computeES( accS2, *esValues2 );
-		} // omp critical(intarna_computeAccessibilityVrna)
+		} // omp critical(intarna_omp_callingVRNA)
 	}
 }
 

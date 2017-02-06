@@ -53,12 +53,12 @@ add( const Interaction & i )
 	if (i.basePairs.size() == 0) {
 		// ensure outputs do not intervene
 #if INTARNA_MULITHREADING
-		#pragma omp critical(intarna_outputStreamUpdate)
+		#pragma omp critical(intarna_omp_outputStreamUpdate)
 #endif
 		{
 			out <<"\n"
 				<<"no favorable interaction for "<<i.s1->getId() <<" and "<<i.s2->getId()<<std::endl;
-		} // omp critical(intarna_outputStreamUpdate)
+		} // omp critical(intarna_omp_outputStreamUpdate)
 		return;
 	}
 
@@ -253,7 +253,7 @@ add( const Interaction & i )
 
 	// ensure outputs do not intervene
 #if INTARNA_MULITHREADING
-	#pragma omp critical(intarna_outputStreamUpdate)
+	#pragma omp critical(intarna_omp_outputStreamUpdate)
 #endif
 	{
 		// print full interaction to output stream
@@ -318,7 +318,7 @@ add( const Interaction & i )
 					;
 			} // seed
 		} // detailed
-	} // omp critical(intarna_outputStreamUpdate)
+	} // omp critical(intarna_omp_outputStreamUpdate)
 
 }
 

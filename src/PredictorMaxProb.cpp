@@ -34,7 +34,7 @@ predict( const IndexRange & r1
 		)
 {
 #if INTARNA_MULITHREADING
-	#pragma omp critical(intarna_logOutput)
+	#pragma omp critical(intarna_omp_logOutput)
 #endif
 	{ VLOG(2) <<"predicting maximally probable interactions in O(n^4) space..."; }
 	// measure timing
@@ -104,7 +104,7 @@ predict( const IndexRange & r1
 	}
 	}
 #if INTARNA_MULITHREADING
-	#pragma omp critical(intarna_logOutput)
+	#pragma omp critical(intarna_omp_logOutput)
 #endif
 	{ LOG(DEBUG) <<"init 4d matrix : "<<debug_count_cells_nonNull <<" to be filled ("
 				<<((double)debug_count_cells_nonNull/(double)(debug_count_cells_nonNull+debug_count_cells_null))

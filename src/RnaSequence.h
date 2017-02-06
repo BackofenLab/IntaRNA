@@ -345,21 +345,18 @@ getUpperCase( const std::string & seqString )
 	// create container to fill
 	String_type seqRet(seqString.size(),'_');
 
-//	bool wasDNA = false;
 	for (size_t i=0; i<seqString.size(); ++i)
 	{
 		// get upper case characters
 		seqRet[i] = std::toupper(seqString.at(i),codeLocale);
 		if (seqRet[i]=='T') {
 			seqRet[i] = 'U';
-//			wasDNA = true;
 		}
 		// overwrite non-ACGU characters with N = ambiguous (no distinction needed)
 		if (SequenceAlphabet.find(seqRet[i]) == -1) {
 			seqRet[i] = 'N';
 		}
 	}
-	// TODO report that it wasDNA if so...
 
 	return seqRet;
 }
