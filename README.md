@@ -55,9 +55,11 @@ If you use IntaRNA, please cite our articles
 The following topics are covered by this documentation:
 
 - [Installation](#install)
+  - [IntaRNA via conda](#instconda)
   - [Dependencies](#deps)
   - [Cloning from github](#instgithub)
   - [Source code distribution](#instsource)
+  - [IntaRNA docker container](#instdocker)
 - [Usage and Parameters](#usage)
   - [Just run ...](#defaultRun)
   - [Prediction modes, their features and emulated tools](#predModes)
@@ -78,13 +80,42 @@ The following topics are covered by this documentation:
 # Installation
 
 <br /><br />
+<a name="instconda" />
+## IntaRNA via conda (bioconda channel)
+
+The most easy way to locally install IntaRNA is via conda using the 
+[bioconda](https://bioconda.github.io/) 
+channel (linux only). This way, you will install a pre-built IntaRNA binary along
+with all dependencies.
+Follow
+[![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat-square)](http://bioconda.github.io/recipes/intarna/README.html)
+to get detailed information or run
+```bash
+conda install intarna
+```
+if you are using bioconda already.
+
+<br /><br />
+<a name="instdocker" />
+## IntaRNA docker container (via QUAY)
+
+An [IntaRNA docker container](https://quay.io/repository/biocontainers/intarna) 
+([?](https://www.docker.com/)) is  
+provided from the bioconda package via [Quay.io](https://quay.io/). This provides
+you with an encapsulated IntaRNA installation.
+
+
+<br /><br />
 <a name="deps" />
 ## Dependencies
 
+If you are going to compile IntaRNA from source, ensure you meet the following
+dependencies:
+
 - compiler supporting C++11 standard and OpenMP
-- GNU autotools (automake, autoconf, ..)
 - [boost C++ library](http://www.boost.org/) version >= 1.50.0
 - [Vienna RNA package](http://www.tbi.univie.ac.at/RNA/) version >= 2.3.0
+- if [cloning from github](#instgithub): GNU autotools (automake, autoconf, ..)
 
 <br /><br />
 <a name="instgithub" />
@@ -130,6 +161,8 @@ If you installed one of the dependencies in a non-standard directory, you have
 to use the according `configure` options:
 - `--with-RNA` : the prefix where the Vienna RNA package is installed
 - `--with-boost` : the prefix where the boost library is installed
+
+
 
 
 
