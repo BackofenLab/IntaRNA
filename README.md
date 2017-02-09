@@ -167,38 +167,41 @@ to use the according `configure` options:
 <a name="instwin" />
 ## Microsoft Windows installation
 
-### from source ...
+### ... from source
 IntaRNA can be compiled, installed, and used on a Microsoft Windows system when
 e.g. using [Cygwin](https://www.cygwin.com/) as 'linux emulator'. Just install
-cygwin with the following packages
-- Devel:
+Cygwin with the following packages:
+
+- *Devel*:
  - make
  - gcc-g++
  - autoconf
  - automake
  - pkg-config
-- Libs:
+- *Libs*:
  - libboost-devel
-- Perl:
+- *Perl*:
  - perl
+
 and follow either [install from github](#instgithub) or 
 [install from package](#instsource).
 
-### pre-compiled binaries ...
+### ... using pre-compiled binaries
 
 For some releases, we also provide precompiled binary packages for Microsoft Windows at the
 [IntaRNA release page](https://github.com/BackofenLab/IntaRNA/releases) 
 that enable 'out-of-the-box' usage. If you
 want to use them:
-- download the according ZIP archive and extract
+- [download](https://github.com/BackofenLab/IntaRNA/releases) the according ZIP archive and extract
 - open a [Windows command prompt](https://www.lifewire.com/how-to-open-command-prompt-2618089)
 - [run IntaRNA](#usage) 
+
 *Note*, these binaries come without any waranties, support or what-so-ever!
 They are just an offer due to according user requests.
 
 If you do not want to work within the IntaRNA directory or don't want to provide
 the full installation path with every IntaRNA call, you should add the installation
-directory to your [`Path` Sytem variable](http://www.computerhope.com/issues/ch000549.htm)
+directory to your [`Path` System variable](http://www.computerhope.com/issues/ch000549.htm)
 (using a semicolon `;` separator).
 
 
@@ -219,6 +222,10 @@ possible to define
 [energy parameters, temperature](#energy),
 and the [accessibility](#accessibility) handling. If you are doing high-throughput
 computations, you might also want to consider [multi-threading support](#multithreading).
+
+For ad hoc usage you can use the 
+[Freiburg RNA tools IntaRNA webserver](http://rna.informatik.uni-freiburg.de/IntaRNA/)
+(with limited parameterization).
 
 
 
@@ -387,6 +394,7 @@ are not enclosing any unpaired nucleotides (or if so only very few).
 IntaRNA supports the definition of such seed constraints and adds further
 options to even more constrain the seed selection. The list of options is given 
 by 
+
 - `--seedBP` : the number of base pairs the seed has to show
 - `--seedMaxUP` : the maximal overall number of unpaired bases within the seed
 - `--seedQMaxUP` : the maximal number of unpaired bases within the query's seed region
@@ -490,6 +498,7 @@ For each prediction, a row in the CSV is generated.
 Using the argument `--outCsvCols`, the user can specify what columns are 
 printed to the output using a comma-separated list of colIds. Available colIds 
 are
+
 - `id1` : id of first sequence
 - `id2` : id of second sequence
 - `seq1` : full first sequence
@@ -557,6 +566,7 @@ Pu1;Pu2;subseqDB;hybridDB
 ### Backward compatible IntaRNA v1.* output
 
 If your scripts/whatever is tuned to the old IntaRNA v1.* output, you can use
+
 - `--outMode=1` : IntaRNA v1.* normal output
 - `--outMode=O` : IntaRNA v1.* detailed output (former `-o` option)
 
@@ -574,6 +584,7 @@ interactions for each query-target pair (including the optimal one). Note, the
 suboptimal enumeration is increasingly sorted by energy.
 
 Furthermore, it is possible to *restrict (sub)optimal enumeration* using
+
 - `--outMaxE` : maximal energy for any interaction reported
 - `--outDeltaE` : maximal energy difference of suboptimal interactions' energy
   to the minimum free energy interaction
@@ -601,6 +612,7 @@ degree Celsius. Note, this is important especially for predictions within plants
 etc., since the default temperature is 37°C.
 
 The energy model used can be specified using the `--energy` parameters using
+
 - 'B' for base pair maximization similar to the Nussinov intramolecular structure prediction.
   Here, each base pair contributes an energy term of `-1` independently of its
   structural or sequence context. This mode is mainly useful for study or teaching 
