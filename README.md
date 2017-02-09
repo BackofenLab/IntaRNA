@@ -100,8 +100,8 @@ if you are using bioconda already.
 ## IntaRNA docker container (via QUAY)
 
 An [IntaRNA docker container](https://quay.io/repository/biocontainers/intarna) 
-([?](https://www.docker.com/)) is  
-provided from the bioconda package via [Quay.io](https://quay.io/). This provides
+([?](https://www.docker.com/)) is provided from the bioconda package via 
+[Quay.io](https://quay.io/). This provides
 you with an encapsulated IntaRNA installation.
 
 
@@ -162,6 +162,44 @@ to use the according `configure` options:
 - `--with-RNA` : the prefix where the Vienna RNA package is installed
 - `--with-boost` : the prefix where the boost library is installed
 
+
+<br /><br />
+<a name="instwin" />
+## Microsoft Windows installation
+
+### from source ...
+IntaRNA can be compiled, installed, and used on a Microsoft Windows system when
+e.g. using [Cygwin](https://www.cygwin.com/) as 'linux emulator'. Just install
+cygwin with the following packages
+- Devel:
+ - make
+ - gcc-g++
+ - autoconf
+ - automake
+ - pkg-config
+- Libs:
+ - libboost-devel
+- Perl:
+ - perl
+and follow either [install from github](#instgithub) or 
+[install from package](#instsource).
+
+### pre-compiled binaries ...
+
+For some releases, we also provide precompiled binary packages for Microsoft Windows at the
+[IntaRNA release page](https://github.com/BackofenLab/IntaRNA/releases) 
+that enable 'out-of-the-box' usage. If you
+want to use them:
+- download the according ZIP archive and extract
+- open a [Windows command prompt](https://www.lifewire.com/how-to-open-command-prompt-2618089)
+- [run IntaRNA](#usage) 
+*Note*, these binaries come without any waranties, support or what-so-ever!
+They are just an offer due to according user requests.
+
+If you do not want to work within the IntaRNA directory or don't want to provide
+the full installation path with every IntaRNA call, you should add the installation
+directory to your [`Path` Sytem variable](http://www.computerhope.com/issues/ch000549.htm)
+(using a semicolon `;` separator).
 
 
 
