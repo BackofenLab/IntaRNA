@@ -113,7 +113,12 @@ If you are going to compile IntaRNA from source, ensure you meet the following
 dependencies:
 
 - compiler supporting C++11 standard and OpenMP
-- [boost C++ library](http://www.boost.org/) version >= 1.50.0
+- [boost C++ library](http://www.boost.org/) version >= 1.50.0 
+  (ensure the following libraries are installed; or install all e.g. in Ubuntu via package `libboost-all-dev`)
+  - libboost_regex
+  - libboost_program_options
+  - libboost_filesystem
+  - libboost_system
 - [Vienna RNA package](http://www.tbi.univie.ac.at/RNA/) version >= 2.3.0
 - if [cloning from github](#instgithub): GNU autotools (automake, autoconf, ..)
 

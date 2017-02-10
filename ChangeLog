@@ -1,4 +1,6 @@
 
+##### version 2.0.0 
+
 170206 Martin Mann :
  * src/Makefile.am :
    + AUTOMAKE_OPTIONS = std-options : checks for std options of binary
