@@ -35,9 +35,12 @@
 #include "PredictorMfe2dSeed.h"
 #include "PredictorMfe4dSeed.h"
 
-#include "OutputHandlerText.h"
+#include "PredictionTracker.h"
+#include "PredictionTrackerProfileMinE.h"
+
 #include "OutputHandlerCsv.h"
 #include "OutputHandlerIntaRNA1.h"
+#include "OutputHandlerText.h"
 
 
 
@@ -121,6 +124,8 @@ CommandLineParsing::CommandLineParsing()
 	outTAccFile(""),
 	outQPuFile(""),
 	outTPuFile(""),
+	outQminEFile(""),
+	outTminEFile(""),
 
 	vrnaHandler()
 
@@ -358,7 +363,7 @@ CommandLineParsing::CommandLineParsing()
 			, value<int>(&(outNumber.val))
 				->default_value(outNumber.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_outNumber,this,_1))
-			, std::string("maximal overall number (query+target) of unpaired bases within the seed region (arg in range ["+toString(outNumber.min)+","+toString(outNumber.max)+"])").c_str())
+			, std::string("number of (sub)optimal interactions to report (arg in range ["+toString(outNumber.min)+","+toString(outNumber.max)+"])").c_str())
 	    ("outOverlap"
 			, value<char>(&(outOverlap.val))
 				->default_value(outOverlap.def)
@@ -417,6 +422,20 @@ CommandLineParsing::CommandLineParsing()
 					" in RNAplfold unpaired probability output format."
 					" Use STDOUT/STDERR to write to the respective output stream."
 					).c_str())
+		("outQminEFile"
+			, value<std::string>(&(outQminEFile))
+				->notifier(boost::bind(&CommandLineParsing::validate_outQminEFile,this,_1))
+			, std::string("output : writes the query's minimal energy profile to the given file/stream,"
+					" i.e. for each position the minimal energy of any interaction covering this position."
+					" Use STDOUT/STDERR to write to the respective output stream."
+					).c_str())
+		("outTminEFile"
+			, value<std::string>(&(outTminEFile))
+				->notifier(boost::bind(&CommandLineParsing::validate_outTminEFile,this,_1))
+			, std::string("output : writes the target's minimal energy profile to the given file/stream,"
+					" i.e. for each position the minimal energy of any interaction covering this position."
+					" Use STDOUT/STDERR to write to the respective output stream."
+					).c_str())
 	    ("verbose,v", "verbose output") // handled via easylogging++
 //	    (logFile_argument.c_str(), "name of log file to be used for output")
 	    ;
@@ -452,16 +471,8 @@ CommandLineParsing::~CommandLineParsing() {
 
 	CLEANUP(seedConstraint);
 
-	if (outStream != &std::cout && outStream != &std::cerr) {
-		std::fstream *outFileStream = dynamic_cast<std::fstream*>(outStream);
-		assert(outFileStream != NULL);
-		// flush and close file stream
-		outFileStream->flush();
-		outFileStream->close();
-		// delete file handler
-		CLEANUP(outFileStream);
-	}
 	// reset output stream
+	deleteOutputStream( outStream );
 	outStream = & std::cout;
 
 }
@@ -545,30 +556,11 @@ parse(int argc, char** argv)
 		try {
 
 			// open output stream
-			{
-				// get output selection upper case
-				std::string outUpperCase = boost::to_upper_copy<std::string>(out,std::locale());
-				// check if standard stream
-				if (boost::iequals(out,"STDOUT")) {
-					outStream = & std::cout;
-				} else
-				if (boost::iequals(out,"STDERR")) {
-					outStream = & std::cerr;
-				} else {
-					// open file stream
-					std::fstream * outFileStream = new std::fstream();
-					outFileStream->open( out.c_str(), std::ios_base::out );
-					if (!outFileStream->is_open()) {
-						delete outFileStream;
-						LOG(ERROR) <<"could not open output file --out='"<<out << "' for writing";
-						updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
-					} else {
-						// set output stream
-						outStream = outFileStream;
-					}
-				}
-
-
+			outStream = newOutputStream( out );
+			// check success
+			if (outStream == NULL) {
+				LOG(ERROR) <<"could not open output file --out='"<<out << "' for writing";
+				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 			}
 
 			// parse the sequences
@@ -724,6 +716,8 @@ parse(int argc, char** argv)
 			if (!outTAccFile.empty() && getTargetSequences().size()>1) throw std::runtime_error("--outTAccFile only supported for single target sequence input");
 			if (!outQPuFile.empty() && getQuerySequences().size()>1) throw std::runtime_error("--outQPuFile only supported for single query sequence input");
 			if (!outTPuFile.empty() && getTargetSequences().size()>1) throw std::runtime_error("--outTPuFile only supported for single target sequence input");
+			if (!outQminEFile.empty() && getQuerySequences().size()>1) throw std::runtime_error("--outQminEFile only supported for single query sequence input");
+			if (!outTminEFile.empty() && getTargetSequences().size()>1) throw std::runtime_error("--outTminEFile only supported for single target sequence input");
 
 #if INTARNA_MULITHREADING
 			// check if multi-threading
@@ -1378,22 +1372,29 @@ Predictor*
 CommandLineParsing::
 getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 {
+
+	PredictionTracker * predTracker = NULL;
+	// check if minE-profile is to be generated
+	if (!outQminEFile.empty() || !outTminEFile.empty()) {
+		predTracker = new PredictionTrackerProfileMinE( energy, outTminEFile, outQminEFile, "NA");
+	}
+
 	if (noSeedRequired) {
 		// predictors without seed constraint
 		switch( pred.val ) {
 		// single-site mfe interactions (contain only interior loops)
 		case 'S' : {
 			switch ( predMode.val ) {
-			case 'H' :  return new PredictorMfe2dHeuristic( energy, output );
-			case 'M' :  return new PredictorMfe2d( energy, output );
-			case 'E' :  return new PredictorMfe4d( energy, output );
+			case 'H' :  return new PredictorMfe2dHeuristic( energy, output, predTracker );
+			case 'M' :  return new PredictorMfe2d( energy, output, predTracker );
+			case 'E' :  return new PredictorMfe4d( energy, output, predTracker );
 			default :  NOTIMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(pred.val));
 			}
 		} break;
 		// single-site max-prob interactions (contain only interior loops)
 		case 'P' : {
 			switch ( predMode.val ) {
-			case 'E' :  return new PredictorMaxProb( energy, output );
+			case 'E' :  return new PredictorMaxProb( energy, output, predTracker );
 			default :  NOTIMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(pred.val)+" : try --mode=E");
 			}
 		} break;
@@ -1411,9 +1412,9 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 		// single-site mfe interactions (contain only interior loops)
 		case 'S' : {
 			switch ( predMode.val ) {
-			case 'H' :  return new PredictorMfe2dHeuristicSeed( energy, output, getSeedConstraint( energy ) );
-			case 'M' :  return new PredictorMfe2dSeed( energy, output, getSeedConstraint( energy ) );
-			case 'E' :  return new PredictorMfe4dSeed( energy, output, getSeedConstraint( energy ) );
+			case 'H' :  return new PredictorMfe2dHeuristicSeed( energy, output, predTracker, getSeedConstraint( energy ) );
+			case 'M' :  return new PredictorMfe2dSeed( energy, output, predTracker, getSeedConstraint( energy ) );
+			case 'E' :  return new PredictorMfe4dSeed( energy, output, predTracker, getSeedConstraint( energy ) );
 			}
 		} break;
 		// single-site max-prob interactions (contain only interior loops)
@@ -1528,7 +1529,7 @@ getSeedConstraint( const InteractionEnergy & energy ) const
 							, seedTMaxUP.val<0 ? seedMaxUP.val : seedTMaxUP.val
 							, seedQMaxUP.val<0 ? seedMaxUP.val : seedQMaxUP.val
 							, seedMaxE.val
-							, (seedMinPu.val>0 ? std::min<E_type>(Accessibility::ED_UPPER_BOUND, - energy.getRT() * std::log( seedMinPu.val )) : Accessibility::ED_UPPER_BOUND) // transform unpaired prob to ED value
+							, (seedMinPu.val>0 ? std::min<E_type>(Accessibility::ED_UPPER_BOUND, energy.getE( seedMinPu.val )) : Accessibility::ED_UPPER_BOUND) // transform unpaired prob to ED value
 							// shift ranges to start counting with 0
 							, IndexRangeList( seedTRange ).shift(-1,energy.size1()-1)
 							, IndexRangeList( seedQRange ).shift(-1,energy.size2()-1).reverse(energy.size2())
@@ -1577,23 +1578,9 @@ writeAccessibility( const Accessibility& acc, const std::string fileOrStream, co
 		return;
 
 	// setup output stream
-	std::ostream * out = NULL;
-	std::fstream * outFile = NULL;
-	if ( boost::iequals(fileOrStream,"STDOUT")) {
-		out = &std::cout;
-	} else
-	if ( boost::iequals(fileOrStream,"STDERR")) {
-		out = &std::cerr;
-	} else {
-		// open file
-		outFile = new std::fstream();
-		outFile->open( fileOrStream.c_str(), std::ios_base::out );
-		if (!outFile->is_open()) {
-			CLEANUP(outFile);
-			throw std::runtime_error("could not open output file '"+fileOrStream +"' for "+(writeED?"accessibility":"unpaired probability")+" output");
-		} else {
-			out = outFile;
-		}
+	std::ostream * out = newOutputStream( fileOrStream );
+	if (out == NULL) {
+		throw std::runtime_error("could not open output file '"+fileOrStream +"' for "+(writeED?"accessibility":"unpaired probability")+" output");
 	}
 
 	// write data to stream
@@ -1604,8 +1591,7 @@ writeAccessibility( const Accessibility& acc, const std::string fileOrStream, co
 	}
 
 	// clean up
-	if (outFile != NULL) { outFile->close(); }
-	CLEANUP(outFile);
+	deleteOutputStream( out );
 }
 
 ////////////////////////////////////////////////////////////////////////////

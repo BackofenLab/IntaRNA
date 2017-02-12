@@ -6,8 +6,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 PredictorMfe2d::
-PredictorMfe2d( const InteractionEnergy & energy, OutputHandler & output )
- : PredictorMfe(energy,output)
+PredictorMfe2d(
+		const InteractionEnergy & energy
+		, OutputHandler & output
+		, PredictionTracker * predTracker )
+ : PredictorMfe(energy,output,predTracker)
 	, hybridE_pq( 0,0 )
 	, hybridErange( energy.getAccessibility1().getSequence()
 			, energy.getAccessibility2().getAccessibilityOrigin().getSequence() )

@@ -4,8 +4,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 PredictorMaxProb::
-PredictorMaxProb( const InteractionEnergy & energy, OutputHandler & output )
- : Predictor(energy,output)
+PredictorMaxProb(
+		const InteractionEnergy & energy
+		, OutputHandler & output
+		, PredictionTracker * predTracker )
+ : Predictor(energy,output,predTracker)
 	, hybridZ( 0,0 )
 	, Z(0.0)
 	, maxProbInteraction(energy.getAccessibility1().getSequence()
@@ -261,6 +264,12 @@ updateOptima( const size_t i1, const size_t j1
 	// add Boltzmann weights of all penalties
 	E_type curZ = isHybridZ ? interZ * energy.getBoltzmannWeight( energy.getE(i1,j1,i2,j2,0.0) ) : interZ;
 
+	// report call if needed
+	if (predTracker != NULL) {
+		// inform about prediction
+		predTracker->updateOptimumCalled( i1,j1, i2,j2, energy.getE(curZ) );
+	}
+
 	// update overall partition function
 	Z += (double)curZ;
 
@@ -297,7 +306,7 @@ reportOptima( const OutputConstraint & outConstraint )
 	// double maxProb = (double)maxProbInteraction.getEnergy() / Z;
 
 	// convert the partition function into an ensemble energy
-	maxProbInteraction.energy = ( - energy.getRT() * std::log( maxProbInteraction.energy ) );
+	maxProbInteraction.energy = energy.getE( maxProbInteraction.energy );
 
 	// push to output handler
 	output.add( maxProbInteraction );

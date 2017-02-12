@@ -55,8 +55,13 @@ public:
 	 *
 	 * @param energy the interaction energy handler
 	 * @param output the output handler to report mfe interactions to
+	 * @param predTracker the prediction tracker to be used or NULL if no
+	 *         tracking is to be done; if non-NULL, the tracker gets deleted
+	 *         on this->destruction.
 	 */
-	PredictorMfe2dHeuristic( const InteractionEnergy & energy, OutputHandler & output );
+	PredictorMfe2dHeuristic( const InteractionEnergy & energy
+							, OutputHandler & output
+							, PredictionTracker * predTracker );
 
 	virtual ~PredictorMfe2dHeuristic();
 

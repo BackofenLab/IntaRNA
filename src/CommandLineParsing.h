@@ -405,6 +405,10 @@ protected:
 	std::string outQPuFile;
 	//! the stream/file to write the target's unpaired probabilities to
 	std::string outTPuFile;
+	//! the stream/file to write the query's minE profile to
+	std::string outQminEFile;
+	//! the stream/file to write the target's minE profile to
+	std::string outTminEFile;
 
 	//! the vienna energy parameter handler initialized by #parse()
 	mutable VrnaHandler vrnaHandler;
@@ -671,6 +675,18 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_outTPuFile( const std::string & value);
+
+	/**
+	 * Validates the outQminEFile argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_outQminEFile( const std::string & value);
+
+	/**
+	 * Validates the outTminEFile argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_outTminEFile( const std::string & value);
 
 #if INTARNA_MULITHREADING
 	/**
@@ -1310,6 +1326,22 @@ inline
 void CommandLineParsing::validate_outTPuFile(const std::string & value) {
 	// forward check to general method
 	validate_outputTarget( "--outTPuFile", value );
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_outQminEFile(const std::string & value) {
+	// forward check to general method
+	validate_outputTarget( "--outQminEFile", value );
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_outTminEFile(const std::string & value) {
+	// forward check to general method
+	validate_outputTarget( "--outTminEFile", value );
 }
 
 ////////////////////////////////////////////////////////////////////////////

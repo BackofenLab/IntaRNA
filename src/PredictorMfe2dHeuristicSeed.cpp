@@ -8,9 +8,10 @@
 PredictorMfe2dHeuristicSeed::
 PredictorMfe2dHeuristicSeed( const InteractionEnergy & energy
 		, OutputHandler & output
+		, PredictionTracker * predTracker
 		, const SeedConstraint & seedConstraint
 		)
- : PredictorMfe2dHeuristic(energy,output)
+ : PredictorMfe2dHeuristic(energy,output,predTracker)
 	, seedHandler( energy, seedConstraint )
 {
 }

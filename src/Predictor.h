@@ -8,6 +8,8 @@
 #include "OutputConstraint.h"
 #include "OutputHandler.h"
 
+#include "PredictionTracker.h"
+
 /**
  * RNA-RNA interaction prediction handler interface.
  *
@@ -24,9 +26,15 @@ public:
 	 *
 	 * @param energy the handler for interaction energy computation
 	 * @param output the output handler for identified interactions
+	 * @param predTracker the prediction tracker to be used or NULL if no
+	 *         tracking is to be done; if non-NULL, the tracker gets deleted
+	 *         on this->destruction.
 	 *
 	 */
-	Predictor( const InteractionEnergy & energy, OutputHandler & output );
+	Predictor( const InteractionEnergy & energy
+				, OutputHandler & output
+				, PredictionTracker * predTracker
+				);
 
 	/**
 	 * destruction
@@ -70,6 +78,8 @@ protected:
 	//! interaction output handler
 	OutputHandler & output;
 
+	//! prediction tracker to be used
+	PredictionTracker * predTracker;
 
 
 	/**
@@ -120,10 +130,13 @@ protected:
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-Predictor::Predictor( const InteractionEnergy & energy, OutputHandler & output )
+Predictor::Predictor( const InteractionEnergy & energy
+					, OutputHandler & output
+					, PredictionTracker * predTracker )
 :
 	energy(energy)
 	, output(output)
+	, predTracker(predTracker)
 {
 }
 
@@ -132,6 +145,7 @@ Predictor::Predictor( const InteractionEnergy & energy, OutputHandler & output )
 inline
 Predictor::~Predictor()
 {
+	CLEANUP(predTracker);
 }
 
 ////////////////////////////////////////////////////////////////////////////

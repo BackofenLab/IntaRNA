@@ -18,8 +18,9 @@ runTests_SOURCES =	catch.hpp \
 					Interaction_test.cpp  \
 					InteractionEnergyBasePair_test.cpp  \
 					InteractionRange_test.cpp  \
+					PredictionTrackerProfileMinE_test.cpp \
 					RnaSequence_test.cpp \
-					OutputRangeOnly_test.cpp \
+					OutputHandlerRangeOnly_test.cpp \
 					runTests.cpp
 
 # add source objects for linking

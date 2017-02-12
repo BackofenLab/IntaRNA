@@ -7,8 +7,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 PredictorMfe2dHeuristic::
-PredictorMfe2dHeuristic( const InteractionEnergy & energy, OutputHandler & output )
- : PredictorMfe(energy,output)
+PredictorMfe2dHeuristic(
+		const InteractionEnergy & energy
+		, OutputHandler & output
+		, PredictionTracker * predTracker )
+ : PredictorMfe(energy,output,predTracker)
 	, hybridE( 0,0 )
 {
 }

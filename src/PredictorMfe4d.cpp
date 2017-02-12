@@ -7,8 +7,10 @@
 ////////////////////////////////////////////////////////////////////////////
 
 PredictorMfe4d::
-PredictorMfe4d( const InteractionEnergy & energy, OutputHandler & output )
- : PredictorMfe(energy,output)
+PredictorMfe4d( const InteractionEnergy & energy
+				, OutputHandler & output
+				, PredictionTracker * predTracker )
+ : PredictorMfe(energy,output,predTracker)
 	, hybridE( 0,0 )
 {
 }

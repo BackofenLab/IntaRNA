@@ -1,4 +1,55 @@
 
+170212 Martin Mann :
+ * general :
+   + newOutputStream() : returns a pointer to a (newly allocated) output 
+     stream depending on the provided string
+   + deleteOutputStream() : deletes (if necessary) the pointer returned by
+     newOutputStream
+ * CommandLineParsing :
+   * bugfix : -n argument description wrong [thanks to Michael Uhl]
+   + out*minEFile + validator : stream name of minE profile output
+   * destruction :
+     + using deleteOutputStream()
+   * parse() :
+     + using newOutputStream()
+     + checks for out*minEfile
+   * getPredictor() :
+     + PredictionTracker setup
+   * writeAccessibility() :
+     + using newOutputStream()
+     + using deleteOutputStream()
+ * InteractionEnergy :
+   + getE( Z ) : ensemble energy from partition function
+ + OutputHandlerHub : hub for a list of OutputHandler objects to that the output
+   requests are forwarded
+ + PredictionTracker : general interface to track all step results produced by
+   a Predictor instance
+   + updateOptimumCalled() : triggered when a Predictor calls updateOptimum()
+ + PredictionTrackerProfileMinE : produces a profile of the minimum interaction
+   energy for each position of the interacting RNAs (covered by any interaction)
+   + stream-based construction
+   + filename/streamname-based construction
+ * Predictor :
+   + predTracker : optional PredictionTracker pointer
+   * constructor :
+     + predTracker
+   * destruction :
+     + delete predTracker
+ * PredictorMfe :
+   * updateOptimum() :
+     + calling predTracker->updateOptimumCalled() if non-NULL predTracker
+ * PredictorMfe* :
+   * constructor :
+     + predTracker
+ * PredictorMaxProb* :
+   * constructor :
+     + predTracker
+   * updateOptimum() :
+     + calling predTracker->updateOptimumCalled() if non-NULL predTracker
+   * using energy.getE( Z ) 
+ + tests : PredictionTrackerProfileMinE
+ * tests : rename OutputRangeOnly -> OutputHandlerRangeOnly
+
 ##### version 2.0.0 
 
 170206 Martin Mann :

@@ -34,8 +34,13 @@ public:
 	 *
 	 * @param energy the interaction energy handler
 	 * @param output the output handler to report optimal interactions to
+	 * @param predTracker the prediction tracker to be used or NULL if no
+	 *         tracking is to be done; if non-NULL, the tracker gets deleted
+	 *         on this->destruction.
 	 */
-	PredictorMaxProb( const InteractionEnergy & energy, OutputHandler & output );
+	PredictorMaxProb( const InteractionEnergy & energy
+					, OutputHandler & output
+					, PredictionTracker * predTracker );
 
 	virtual ~PredictorMaxProb();
 
