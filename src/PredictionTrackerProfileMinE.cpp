@@ -135,7 +135,7 @@ updateProfile(	  MinEProfile & profile
 		// update profile data
 		for (size_t k=i; k<=j; k++) {
 			// check if E is smaller than current minE
-			if ( E < profile.at(k) || E_isINF(profile.at(k)) ) {
+			if ( E < profile.at(k) ) {
 				// write new minimum
 				profile[k] = E;
 			}
