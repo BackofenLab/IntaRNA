@@ -11,7 +11,7 @@
 
 /**
  * Collects for each sequence position the minimal energy of any interaction
- * covering this position.
+ * enclosing this position.
  *
  * The profile(s) of this information is written to stream on destruction.
  */
@@ -21,8 +21,8 @@ class PredictionTrackerProfileMinE: public PredictionTracker
 public:
 
 	/**
-	 * Constructs an PredictionTracker that collected for each positions of a
-	 * sequence the minimal energy of any interaction covering this position.
+	 * Constructs a PredictionTracker that collects for each positions of a
+	 * sequence the minimal energy of any interaction enclosing this position.
 	 *
 	 * @param energy the energy function used for energy calculation
 	 * @param seq1streamName the stream naem where the profile data for seq1
