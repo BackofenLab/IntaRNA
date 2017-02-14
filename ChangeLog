@@ -1,4 +1,8 @@
 
+170214 Martin Mann :
+ + PredictionTrackerPairMinE : tracks for all intermolecular index pairs the
+   minimal energy of any interaction covering this pair
+
 170212 Martin Mann :
  * general :
    + newOutputStream() : returns a pointer to a (newly allocated) output 

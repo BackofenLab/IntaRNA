@@ -56,6 +56,8 @@ IntaRNA_SOURCES =	intaRNA.cpp \
 					OutputHandlerText.h \
 					OutputHandlerText.cpp \
 					PredictionTracker.h \
+					PredictionTrackerPairMinE.h \
+					PredictionTrackerPairMinE.cpp \
 					PredictionTrackerProfileMinE.h \
 					PredictionTrackerProfileMinE.cpp \
 					Predictor.h \
