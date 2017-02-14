@@ -154,12 +154,12 @@ CommandLineParsing::CommandLineParsing()
 			, value<int>(&(qAccW.val))
 				->default_value(qAccW.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_qAccW,this,_1))
-			, std::string("accessibility computation : sliding window size for query accessibility computation (arg in range ["+toString(qAccW.min)+","+toString(qAccW.max)+"]; 0 defaults to the full sequence length)").c_str())
+			, std::string("accessibility computation : sliding window size for query accessibility computation (arg in range ["+toString(qAccW.min)+","+toString(qAccW.max)+"]; 0 will use to the full sequence length)").c_str())
 		("qAccL"
 			, value<int>(&(qAccL.val))
 				->default_value(qAccL.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_qAccL,this,_1))
-			, std::string("accessibility computation : sliding window size for query accessibility computation (arg in range ["+toString(qAccL.min)+","+toString(qAccL.max)+"]; 0 defaults to sliding window size 'qAccW')").c_str())
+			, std::string("accessibility computation : maximal loop length (base pair span) for query accessibility computation (arg in range ["+toString(qAccL.min)+","+toString(qAccL.max)+"]; 0 will use to sliding window size 'qAccW')").c_str())
 		;
 	opts_cmdline_short.add(opts_query);
 	opts_query.add_options()
@@ -170,7 +170,7 @@ CommandLineParsing::CommandLineParsing()
 		("qAccFile"
 			, value<std::string>(&(qAccFile))
 				->notifier(boost::bind(&CommandLineParsing::validate_qAccFile,this,_1))
-			, std::string("accessibility computation : if --qAcc is to be read from file, the file/stream to be parsed. Used 'STDIN' if to read from standard input stream.").c_str())
+			, std::string("accessibility computation : the file/stream to be parsed, if --qAcc is to be read from file. Used 'STDIN' if to read from standard input stream.").c_str())
 		("qIntLenMax"
 			, value<int>(&(qIntLenMax.val))
 				->default_value(qIntLenMax.def)
@@ -213,12 +213,12 @@ CommandLineParsing::CommandLineParsing()
 			, value<int>(&(tAccW.val))
 				->default_value(tAccW.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_tAccW,this,_1))
-			, std::string("accessibility computation : sliding window size for query accessibility computation (arg in range ["+toString(tAccW.min)+","+toString(tAccW.max)+"]; 0 defaults to the full sequence length)").c_str())
+			, std::string("accessibility computation : sliding window size for query accessibility computation (arg in range ["+toString(tAccW.min)+","+toString(tAccW.max)+"]; 0 will use the full sequence length)").c_str())
 		("tAccL"
 			, value<int>(&(tAccL.val))
 				->default_value(tAccL.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_tAccL,this,_1))
-			, std::string("accessibility computation : sliding window size for query accessibility computation (arg in range ["+toString(tAccL.min)+","+toString(tAccL.max)+"]; 0 defaults to sliding window size 'tAccW')").c_str())
+			, std::string("accessibility computation : maximal loop size (base pair span) for query accessibility computation (arg in range ["+toString(tAccL.min)+","+toString(tAccL.max)+"]; 0 will use the sliding window size 'tAccW')").c_str())
 		;
 	opts_cmdline_short.add(opts_target);
 	opts_target.add_options()
@@ -229,7 +229,7 @@ CommandLineParsing::CommandLineParsing()
 		("tAccFile"
 			, value<std::string>(&(tAccFile))
 				->notifier(boost::bind(&CommandLineParsing::validate_tAccFile,this,_1))
-			, std::string("accessibility computation : if --tAcc is to be read from file, the file/stream to be parsed. Used 'STDIN' if to read from standard input stream.").c_str())
+			, std::string("accessibility computation : the file/stream to be parsed, if --tAcc is to be read from file. Used 'STDIN' if to read from standard input stream.").c_str())
 		("tIntLenMax"
 			, value<int>(&(tIntLenMax.val))
 				->default_value(tIntLenMax.def)
