@@ -4,6 +4,9 @@
    minimal energy of any interaction covering this pair
  + PredictionTrackerHub : forwards tracking information to all registered
    trackers
+ * CommandLineParsing : 
+   * getPredictor() :
+     + PredictionTrackerHub used for tracker setup
 
 170212 Martin Mann :
  * general :

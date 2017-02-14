@@ -36,6 +36,7 @@
 #include "PredictorMfe4dSeed.h"
 
 #include "PredictionTracker.h"
+#include "PredictionTrackerHub.h"
 #include "PredictionTrackerProfileMinE.h"
 
 #include "OutputHandlerCsv.h"
@@ -1373,10 +1374,17 @@ CommandLineParsing::
 getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 {
 
-	PredictionTracker * predTracker = NULL;
+	PredictionTrackerHub * predTracker = new PredictionTrackerHub();
 	// check if minE-profile is to be generated
 	if (!outQminEFile.empty() || !outTminEFile.empty()) {
-		predTracker = new PredictionTrackerProfileMinE( energy, outTminEFile, outQminEFile, "NA");
+		predTracker->addPredictionTracker( new PredictionTrackerProfileMinE( energy, outTminEFile, outQminEFile, "NA") );
+	}
+
+	// check if any tracker registered
+	if (predTracker->empty()) {
+		// cleanup to avoid overhead
+		CLEANUP(predTracker);
+		predTracker == NULL;
 	}
 
 	if (noSeedRequired) {

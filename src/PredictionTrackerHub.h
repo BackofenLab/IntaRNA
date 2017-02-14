@@ -101,6 +101,13 @@ public:
 	operator= ( const PredictionTrackerHub & toCopy);
 
 
+	/**
+	 * Whether or not a tracker is registered for forwarding.
+	 * @return true if any tracker is registered; false otherwise
+	 */
+	bool
+	empty() const;
+
 };
 
 
@@ -225,6 +232,17 @@ operator= ( const PredictionTrackerHub & toCopy)
 
 	// modified object access
 	return *this;
+}
+
+/////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+PredictionTrackerHub::
+empty() const
+{
+	// return whether or not the tracker list is empty
+	return trackList.empty();
 }
 
 /////////////////////////////////////////////////////////////////////////
