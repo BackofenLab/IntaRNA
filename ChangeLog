@@ -2,6 +2,8 @@
 170214 Martin Mann :
  + PredictionTrackerPairMinE : tracks for all intermolecular index pairs the
    minimal energy of any interaction covering this pair
+ + PredictionTrackerHub : forwards tracking information to all registered
+   trackers
 
 170212 Martin Mann :
  * general :
