@@ -25,13 +25,13 @@ public:
 	 * sequence the minimal energy of any interaction enclosing this position.
 	 *
 	 * @param energy the energy function used for energy calculation
-	 * @param seq1streamName the stream naem where the profile data for seq1
+	 * @param seq1streamName the stream name where the profile data for seq1
 	 *        is to be written to. use STDOUT/STDERR for the respective stream.
-	 *        Otherwise, an according file is created.;
+	 *        Otherwise, an according file is created;
 	 *        if empty, no data for seq1 is collected
-	 * @param seq2streamName the stream naem where the profile data for seq2
+	 * @param seq2streamName the stream name where the profile data for seq2
 	 *        is to be written to. use STDOUT/STDERR for the respective stream.
-	 *        Otherwise, an according file is created.;
+	 *        Otherwise, an according file is created;
 	 *        if empty, no data for seq2 is collected
 	 * @param E_INF_string the output string representation of E_INF values in
 	 *        the profile output
