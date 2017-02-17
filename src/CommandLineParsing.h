@@ -220,7 +220,7 @@ protected:
 	 */
 	static
 	OutPrefixCode
-	getCodeForPrefix( const std::string & outPrefix )
+	getCodeForOutPrefix( const std::string & outPrefix )
 	{
 		if (outPrefix.empty())
 			return OutPrefixCode::OP_EMPTY;
@@ -1265,7 +1265,7 @@ void CommandLineParsing::validate_out(const std::vector<std::string> & list) {
 		// get prefix
 		std::string curPref = (v->find(':')==std::string::npos ? "" : v->substr(0,v->find(':')));
 		// get code for prefix
-		OutPrefixCode curPrefCode = getCodeForPrefix( curPref );
+		OutPrefixCode curPrefCode = getCodeForOutPrefix( curPref );
 
 		switch (curPrefCode) {
 		// handle unknown prefix
