@@ -682,18 +682,53 @@ To get a more global view of possible interaction sites for a pair of interactin
 RNAs, one can generate the *minimal energy profile* for each sequence (independently).
 
 For instance, to generate the target's profile, add the following to your IntaRNA
-call: `--out=tMinE:MYPROFILEFILE.csv`
+call: `--out=tMinE:MYPROFILEFILE.csv`. For the query's profile, use `--out=qMinE:..` respectively.
 This will produce an according CSV-file (`;` separated) with the according minimal
 energy profile data that can be visualized with any program of your liking.
-In the following, such an output was visualized using R:
 
+In the following, such an output was visualized using R:
 ```R
-d <-  read.table("MYPROFLEFILE.csv",header=T,sep=";");
-plot( d[,1],d[,2], xlab="sequence index", ylab="minimal energy", type="l", col="blue", lwd=2)
+d <- read.table("MYPROFLEFILE.csv", header=T, sep=";");
+plot( d[,1], d[,2], xlab="sequence index", ylab="minimal energy", type="l", col="blue", lwd=2)
 abline(h=0, col="red", lty=2, lwd=2)
 ```
 
-![minimum energy profile](/doc/figures/profile-minE.png?raw=true "Minimum energy profile")
+![Minimal interaction energy profile of an RNA](/doc/figures/profile-minE.png?raw=true "Minimal interaction energy profile of an RNA")
+
+This plot reveals two less but still stable (*E* below 0) interaction sites beside the
+mfe interaction close to the 5'-end of the molecule.
+
+
+<br />
+<a name="pairMinE" />
+### Minimal energy for all intermolecular index pairs
+
+To investigate how stable RNA-RNA interactions are distributed for a given pair
+of RNAs, you can also generate the minimal energy for all intermolecular index
+pairs using `--out=pMinE:MYPAIRMINE.csv`. This generates a CSV file (`;`separated)
+holding for each index pair the minimal energy of any interaction covering this
+index combination or `NA` if no covers it at all.
+
+This information can be visualized with your preferred program. In the following,
+the provided R call is used to generate a heatmap visualization of the 
+RNA-RNA interaction possibilities.
+
+```R
+# read data, skip first column, and replace NA and E>0 values with 0
+d <- read.table("MYPAIRMINE.csv",header=T,sep=";");
+d <- d[,2:ncol(d)];
+d[is.na(d)] = 0;
+d[d>0] = 0;
+# plot
+image(1:nrow(d),1:ncol(t),t, col = heat.colors(100), xlab="sequence 1 index", ylab="sequence 2 index");
+box();
+```
+
+The following plot (for the [minimal energy profile](#profileMinE) example from
+above) reveals, that the alternative stable (*E*<0) interactions all involve the
+mfe-site in the second sequence and are thus less likely to occure. 
+
+![Minimal interaction energy index pair information](/doc/figures/pair-minE.png?raw=true "Minimal interaction energy index pair information")
 
 
 

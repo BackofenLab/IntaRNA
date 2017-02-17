@@ -20,6 +20,7 @@
      * argument help unified
    * parse() :
      + duplication check for --out arguments to avoid file write clashes
+   + PredictionTrackerPairMinE enabled
  * Interaction :
    + Seed : class to concentrate all seed-related information
    - seedRange : replaced by seed member

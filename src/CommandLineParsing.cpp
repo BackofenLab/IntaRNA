@@ -38,6 +38,7 @@
 
 #include "PredictionTracker.h"
 #include "PredictionTrackerHub.h"
+#include "PredictionTrackerPairMinE.h"
 #include "PredictionTrackerProfileMinE.h"
 
 #include "OutputHandlerCsv.h"
@@ -373,6 +374,7 @@ CommandLineParsing::CommandLineParsing()
 					"\n 'tMinE:' (target) for each position the minimal energy of any interaction covering the position (CSV format)"
 					"\n 'tAcc:' (target) ED accessibility values ('tPu'-like format)."
 					"\n 'tPu:' (target) unpaired probabilities values (RNAplfold format)."
+					"\n 'pMinE:' (query+target) for each index pair the minimal energy of any interaction covering the pair (CSV format)"
 					"\nFor each, provide a file name or STDOUT/STDERR to write to the respective output stream."
 					).c_str())
 		("outMode"
@@ -1382,6 +1384,11 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 	// check if minE-profile is to be generated
 	if (!outPrefix2streamName.at(OutPrefixCode::OP_tMinE).empty() || !outPrefix2streamName.at(OutPrefixCode::OP_qMinE).empty()) {
 		predTracker->addPredictionTracker( new PredictionTrackerProfileMinE( energy, outPrefix2streamName.at(OutPrefixCode::OP_tMinE), outPrefix2streamName.at(OutPrefixCode::OP_qMinE), "NA") );
+	}
+
+	// check if minE-pairs are to be generated
+	if (!outPrefix2streamName.at(OutPrefixCode::OP_pMinE).empty()) {
+		predTracker->addPredictionTracker( new PredictionTrackerPairMinE( energy, outPrefix2streamName.at(OutPrefixCode::OP_pMinE), "NA") );
 	}
 
 	// check if any tracker registered

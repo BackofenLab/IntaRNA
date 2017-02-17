@@ -203,6 +203,7 @@ protected:
 		OP_EMPTY,
 		OP_qMinE,
 		OP_tMinE,
+		OP_pMinE,
 		OP_qAcc,
 		OP_tAcc,
 		OP_qPu,
@@ -226,6 +227,7 @@ protected:
 		std::string prefLC = boost::to_lower_copy( outPrefix );
 		if (prefLC == "qmine")	{ return OutPrefixCode::OP_qMinE; } else
 		if (prefLC == "tmine")	{ return OutPrefixCode::OP_tMinE; } else
+		if (prefLC == "pmine")	{ return OutPrefixCode::OP_pMinE; } else
 		if (prefLC == "qacc")	{ return OutPrefixCode::OP_qAcc; } else
 		if (prefLC == "tacc")	{ return OutPrefixCode::OP_tAcc; } else
 		if (prefLC == "qpu")	{ return OutPrefixCode::OP_qPu; } else

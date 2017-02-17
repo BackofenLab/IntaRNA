@@ -117,14 +117,14 @@ writeData( std::ostream &out
 
 	// print header : minE;rSeq2[0],rSeq2[1],...
 	out <<"minE";
-	for (auto nt = rna1.begin(); nt!=rna1.end(); nt++) {
+	for (auto nt = rna2.begin(); nt!=rna2.end(); nt++) {
 		out <<';' <<(*nt);
 	}
 	out <<'\n';
 	// print minE data
 	for (size_t i=0; i<pairMinE.size1(); i++) {
 		// out nt in seq1
-		out <<rna2.at(i);
+		out <<rna1.at(i);
 		for (size_t j=0; j<pairMinE.size2(); j++) {
 			// out separator
 			out <<';';
