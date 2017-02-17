@@ -70,6 +70,7 @@ The following topics are covered by this documentation:
   - [Energy parameters and temperature](#energy)
   - [Additional output files](#outFiles)
     - [Minimal energy profiles](#profileMinE)
+    - [Minimal energy for all intermolecular index pairs](#pairMinE)
     - [Accessibility and unpaired probabilities](#accessibility)
       - [Local versus global unpaired probabilities](#accLocalGlobal)
       - [Read/write accessibility from/to file or stream](#accFromFile)
@@ -668,6 +669,7 @@ argument prefixes (case insensitive) that have to be colon-separated to the
 targeted file/stream name:
 
 - `qMinE:`|`tMinE:` the query/target's minimal interaction energy profile (CSV format), respectively
+- `pMinE:` the minimal interaction energy for all pairs of query-target index pairs (CSV format)
 - `qAcc:`|`tAcc:` the [query/target's ED accessibility values](#accessibility) (RNAplfold-like format), respectively
 - `qPu:`|`tPu:` the [query/target's unpaired probabilities](#accessibility) (RNAplfold format), respectively
 
