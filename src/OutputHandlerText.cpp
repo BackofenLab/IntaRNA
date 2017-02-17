@@ -305,16 +305,16 @@ add( const Interaction & i )
 				;
 
 			// print seed information if available
-			if (i.seedRange != NULL) {
+			if (i.seed != NULL) {
 				out
 					<<"\n"
-					<<"seed seq1   = "<<(i.seedRange->r1.from +1)<<" -- "<<(i.seedRange->r1.to +1) <<'\n'
-					<<"seed seq2   = "<<(i.seedRange->r2.to +1)<<" -- "<<(i.seedRange->r2.from +1) <<'\n'
-					<<"seed energy = "<<(i.seedRange->energy)<<" kcal/mol\n"
-					<<"seed ED1    = "<<energy.getED1( i.seedRange->r1.from, i.seedRange->r1.to )<<" kcal/mol\n"
-					<<"seed ED2    = "<<energy.getAccessibility2().getAccessibilityOrigin().getED( i.seedRange->r2.to, i.seedRange->r2.from )<<" kcal/mol\n"
-					<<"seed Pu1    = "<<std::exp(-(energy.getED1( i.seedRange->r1.from, i.seedRange->r1.to ))/energy.getRT())<<'\n'
-					<<"seed Pu2    = "<<std::exp(-(energy.getAccessibility2().getAccessibilityOrigin().getED( i.seedRange->r2.to, i.seedRange->r2.from ))/energy.getRT())<<'\n'
+					<<"seed seq1   = "<<(i.seed->bp_i.first +1)<<" -- "<<(i.seed->bp_j.first +1) <<'\n'
+					<<"seed seq2   = "<<(i.seed->bp_j.second +1)<<" -- "<<(i.seed->bp_i.second +1) <<'\n'
+					<<"seed energy = "<<(i.seed->energy)<<" kcal/mol\n"
+					<<"seed ED1    = "<<energy.getED1( i.seed->bp_i.first, i.seed->bp_j.first )<<" kcal/mol\n"
+					<<"seed ED2    = "<<energy.getAccessibility2().getAccessibilityOrigin().getED( i.seed->bp_j.second, i.seed->bp_i.second )<<" kcal/mol\n"
+					<<"seed Pu1    = "<<std::exp(-(energy.getED1( i.seed->bp_i.first, i.seed->bp_j.first ))/energy.getRT())<<'\n'
+					<<"seed Pu2    = "<<std::exp(-(energy.getAccessibility2().getAccessibilityOrigin().getED( i.seed->bp_j.second, i.seed->bp_i.second ))/energy.getRT())<<'\n'
 					;
 			} // seed
 		} // detailed

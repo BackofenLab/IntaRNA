@@ -197,6 +197,44 @@ protected:
 	/////////  PRIVATE STUFF  ////////////////////////////////////////////////
 
 	/**
+	 * Defines codes for all registered prefixes for the --out argument
+	 */
+	enum OutPrefixCode {
+		OP_EMPTY,
+		OP_qMinE,
+		OP_tMinE,
+		OP_qAcc,
+		OP_tAcc,
+		OP_qPu,
+		OP_tPu,
+		OP_UNKNOWN
+	};
+
+	/**
+	 * Provides the OutPrefixCode for a given prefix string or UNKNOWN if not
+	 * registered. The mapping is done case-insensitive.
+	 *
+	 * @param outPrefix the prefix to encode
+	 * @return the according OutPrefixCode or UNKNOWN if the prefix is not registered.
+	 */
+	static
+	OutPrefixCode
+	getCodeForPrefix( const std::string & outPrefix )
+	{
+		if (outPrefix.empty())
+			return OutPrefixCode::OP_EMPTY;
+		std::string prefLC = boost::to_lower_copy( outPrefix );
+		if (prefLC == "qmine")	{ return OutPrefixCode::OP_qMinE; } else
+		if (prefLC == "tmine")	{ return OutPrefixCode::OP_tMinE; } else
+		if (prefLC == "qacc")	{ return OutPrefixCode::OP_qAcc; } else
+		if (prefLC == "tacc")	{ return OutPrefixCode::OP_tAcc; } else
+		if (prefLC == "qpu")	{ return OutPrefixCode::OP_qPu; } else
+		if (prefLC == "tpu")	{ return OutPrefixCode::OP_tPu; } else
+		// not known
+		return OutPrefixCode::OP_UNKNOWN;
+	}
+
+	/**
 	 * Limits and values for a number parameter
 	 */
 	template <typename T>
@@ -379,8 +417,11 @@ protected:
 	//! the provided energy parameter file of the VRNA package
 	std::string energyFile;
 
-	//! where to write the output to
-	std::string out;
+	//! where to write the output to and for each in what format
+//	std::string out;
+	std::vector< std::string > out;
+	//! provides the parsed stream name for each out prefix
+	std::map<OutPrefixCode,std::string> outPrefix2streamName;
 	//! output stream
 	std::ostream * outStream;
 	//! output mode
@@ -397,18 +438,6 @@ protected:
 	std::string outCsvCols;
 	//! the CSV column selection
 	static const std::string outCsvCols_default;
-	//! the stream/file to write the query's ED values to
-	std::string outQAccFile;
-	//! the stream/file to write the target's ED values to
-	std::string outTAccFile;
-	//! the stream/file to write the query's unpaired probabilities to
-	std::string outQPuFile;
-	//! the stream/file to write the target's unpaired probabilities to
-	std::string outTPuFile;
-	//! the stream/file to write the query's minE profile to
-	std::string outQminEFile;
-	//! the stream/file to write the target's minE profile to
-	std::string outTminEFile;
 
 	//! the vienna energy parameter handler initialized by #parse()
 	mutable VrnaHandler vrnaHandler;
@@ -612,9 +641,12 @@ protected:
 
 	/**
 	 * Validates the out argument.
-	 * @param value the argument value to validate
+	 *
+	 * Furthermore, stores all valid out mappings in outprefix2streamName
+	 *
+	 * @param list the list of argument values to validate
 	 */
-	void validate_out(const std::string & value);
+	void validate_out(const std::vector<std::string> & list);
 
 	/**
 	 * Validates the outMode argument.
@@ -651,42 +683,6 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_outCsvCols(const std::string & value);
-
-	/**
-	 * Validates the outQAccFile argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_outQAccFile( const std::string & value);
-
-	/**
-	 * Validates the outTAccFile argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_outTAccFile( const std::string & value);
-
-	/**
-	 * Validates the outQPuFile argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_outQPuFile( const std::string & value);
-
-	/**
-	 * Validates the outTPuFile argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_outTPuFile( const std::string & value);
-
-	/**
-	 * Validates the outQminEFile argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_outQminEFile( const std::string & value);
-
-	/**
-	 * Validates the outTminEFile argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_outTminEFile( const std::string & value);
 
 #if INTARNA_MULITHREADING
 	/**
@@ -1259,9 +1255,60 @@ void CommandLineParsing::validate_outputTarget(
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_out(const std::string & value) {
-	// forward check to general method
-	validate_outputTarget( "--out", value );
+void CommandLineParsing::validate_out(const std::vector<std::string> & list) {
+
+	// check for uniqueness of argument prefixes
+	bool emptyPrefixSeen = false;
+	for (auto v=list.begin(); parsingCode != ReturnCode::STOP_PARSING_ERROR && v!=list.end(); v++) {
+		// get prefix
+		std::string curPref = (v->find(':')==std::string::npos ? "" : v->substr(0,v->find(':')));
+		// get code for prefix
+		OutPrefixCode curPrefCode = getCodeForPrefix( curPref );
+
+		switch (curPrefCode) {
+		// handle unknown prefix
+		case OutPrefixCode::OP_UNKNOWN : {
+			LOG(ERROR) <<"--out : prefix '"<<curPref<<"' is not supported.. maybe misspelled?";
+			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+			break;
+		}
+		// handle empty prefix
+		case OutPrefixCode::OP_EMPTY : {
+			// check if already seen
+			if (emptyPrefixSeen) {
+				LOG(ERROR) <<"--out : specified more than once without prefix";
+				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+				break;
+			}
+			// keep track that empty prefix was already seen
+			emptyPrefixSeen = true;
+			// cut of leading ':' if needed
+			std::string streamName = (v->find(':')==std::string::npos ? *v : v->substr(v->find(':')+1));
+			// forward check to general method
+			validate_outputTarget( "--out", streamName );
+			// store stream name
+			outPrefix2streamName[curPrefCode] = streamName;
+			// proceed to next argument
+			break;
+		}
+		// handle all other prefixes
+		default : {
+			// check if prefix was already seen
+			if ( !outPrefix2streamName.at(curPrefCode).empty()) {
+				LOG(ERROR) <<"--out : specified more than once with prefix '"<<curPref<<"'";
+				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+				break;
+			}
+			// store prefix to identify another existence
+			std::string streamName = v->substr(v->find(':')+1);
+			// forward check to general method
+			validate_outputTarget( "--out="+curPref+":", streamName );
+			// store stream name
+			outPrefix2streamName[curPrefCode] = streamName;
+			break;
+		}
+		} // switch curPrefCode
+	} // for all arguments
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1298,54 +1345,6 @@ void CommandLineParsing::validate_outMaxE(const double & value) {
 
 ////////////////////////////////////////////////////////////////////////////
 
-inline
-void CommandLineParsing::validate_outQAccFile(const std::string & value) {
-	// forward check to general method
-	validate_outputTarget( "--outQAccFile", value );
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_outTAccFile(const std::string & value) {
-	// forward check to general method
-	validate_outputTarget( "--outTAccFile", value );
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_outQPuFile(const std::string & value) {
-	// forward check to general method
-	validate_outputTarget( "--outQPuFile", value );
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_outTPuFile(const std::string & value) {
-	// forward check to general method
-	validate_outputTarget( "--outTPuFile", value );
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_outQminEFile(const std::string & value) {
-	// forward check to general method
-	validate_outputTarget( "--outQminEFile", value );
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_outTminEFile(const std::string & value) {
-	// forward check to general method
-	validate_outputTarget( "--outTminEFile", value );
-}
-
-////////////////////////////////////////////////////////////////////////////
-
 #if INTARNA_MULITHREADING
 inline
 void CommandLineParsing::validate_threads(const int & value)
@@ -1363,13 +1362,13 @@ CommandLineParsing::
 writeQueryAccessibility( const Accessibility & acc ) const
 {
 	// forward to generic function
-	if (!outQAccFile.empty()) {
-		VLOG(2) <<"writing ED values for query '"<<acc.getSequence().getId()<<"' to "<<outQAccFile;
-		writeAccessibility( acc, outQAccFile, true );
+	if (!outPrefix2streamName.at(OutPrefixCode::OP_qAcc).empty()) {
+		VLOG(2) <<"writing ED values for query '"<<acc.getSequence().getId()<<"' to "<<outPrefix2streamName.at(OutPrefixCode::OP_qAcc);
+		writeAccessibility( acc, outPrefix2streamName.at(OutPrefixCode::OP_qAcc), true );
 	}
-	if (!outQPuFile.empty()) {
-		VLOG(2) <<"writing unpaired probabilities for query '"<<acc.getSequence().getId()<<"' to "<<outQPuFile;
-		writeAccessibility( acc, outQPuFile, false );
+	if (!outPrefix2streamName.at(OutPrefixCode::OP_qPu).empty()) {
+		VLOG(2) <<"writing unpaired probabilities for query '"<<acc.getSequence().getId()<<"' to "<<outPrefix2streamName.at(OutPrefixCode::OP_qPu);
+		writeAccessibility( acc, outPrefix2streamName.at(OutPrefixCode::OP_qPu), false );
 	}
 }
 
@@ -1381,13 +1380,13 @@ CommandLineParsing::
 writeTargetAccessibility( const Accessibility & acc ) const
 {
 	// forward to generic function
-	if (!outTAccFile.empty()) {
-		VLOG(2) <<"writing ED values for target '"<<acc.getSequence().getId()<<"' to "<<outTAccFile;
-		writeAccessibility( acc, outTAccFile, true );
+	if (!outPrefix2streamName.at(OutPrefixCode::OP_tAcc).empty()) {
+		VLOG(2) <<"writing ED values for target '"<<acc.getSequence().getId()<<"' to "<<outPrefix2streamName.at(OutPrefixCode::OP_tAcc);
+		writeAccessibility( acc, outPrefix2streamName.at(OutPrefixCode::OP_tAcc), true );
 	}
-	if (!outTPuFile.empty()) {
-		VLOG(2) <<"writing unpaired probabilities for target '"<<acc.getSequence().getId()<<"' to "<<outTPuFile;
-		writeAccessibility( acc, outTPuFile, false );
+	if (!outPrefix2streamName.at(OutPrefixCode::OP_tPu).empty()) {
+		VLOG(2) <<"writing unpaired probabilities for target '"<<acc.getSequence().getId()<<"' to "<<outPrefix2streamName.at(OutPrefixCode::OP_tPu);
+		writeAccessibility( acc, outPrefix2streamName.at(OutPrefixCode::OP_tPu), false );
 	}
 }
 

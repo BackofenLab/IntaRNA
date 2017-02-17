@@ -41,30 +41,56 @@ isValid() const
 
 void
 Interaction::
-setSeedRange( const BasePair ij1, const BasePair ij2, const E_type energy )
+setSeedRange( const BasePair bp_left, const BasePair bp_right, const E_type energy )
 {
-	// store seed information
-	if (seedRange == NULL) {
+	// check if container available
+	if (seed == NULL) {
 		// create new seed information
-		seedRange = new InteractionRange(
-				// sequences
-				*(s1), *(s2),
-				// seed ranges
-				IndexRange(ij1.first,ij2.first), IndexRange(ij1.second,ij2.second),
-				// hybridization loop energies only
-				energy
-				);
+		seed = new Seed();
+	}
+	// set seed data
+	seed->bp_i = bp_left;
+	seed->bp_j = bp_right;
+	seed->energy = energy;
+
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+Interaction &
+Interaction::
+operator= ( const Interaction & toCopy )
+{
+#if IN_DEBUG_MODE
+	if (!toCopy.isValid())
+		throw std::runtime_error("Interaction::=("+toString(toCopy)+") not valid!");
+#endif
+	// clear current interactions
+	basePairs.clear();
+
+
+	// copy sequence handles
+	s1 = toCopy.s1;
+	s2 = toCopy.s2;
+
+	// copy base pair
+	basePairs = toCopy.basePairs;
+
+	// copy energy value
+	energy = toCopy.energy;
+
+	// copy seed data
+	if (toCopy.seed != NULL) {
+		// create seed info if not existing
+		if (seed == NULL) { seed = new Seed(); }
+		// copy data
+		*seed = *(toCopy.seed);
 	} else {
-		// overwrite
-		assert(s1 == seedRange->s1);
-		assert(s2 == seedRange->s2);
-		// seed ranges
-		seedRange->r1 = IndexRange(ij1.first,ij2.first);
-		seedRange->r2 = IndexRange(ij1.second,ij2.second),
-		// hybridization loop energies only
-		seedRange->energy = energy;
+		// remove seed information if present
+		CLEANUP(seed);
 	}
 
+	return *this;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -80,6 +106,9 @@ operator= ( const InteractionRange & range )
 	// clear current interactions
 	basePairs.clear();
 
+	// undo seed information
+	CLEANUP(seed);
+
 	// copy sequence handles
 	s1 = range.s1;
 	s2 = range.s2;
@@ -94,13 +123,8 @@ operator= ( const InteractionRange & range )
 	// copy energy value
 	energy = range.energy;
 
-	// undo seed information
-	CLEANUP(seedRange);
-
 	return *this;
 }
-
-
 
 ////////////////////////////////////////////////////////////////////////////
 

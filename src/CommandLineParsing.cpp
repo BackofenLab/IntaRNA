@@ -16,6 +16,7 @@
 #include <boost/foreach.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/assign/list_of.hpp>
 
 #include "AccessibilityConstraint.h"
 
@@ -113,7 +114,8 @@ CommandLineParsing::CommandLineParsing()
 	energy("BV",'V'),
 	energyFile(""),
 
-	out("STDOUT"),
+	out(),
+	outPrefix2streamName(),
 	outStream(&(std::cout)),
 	outMode( "NDC1O", 'N' ),
 	outNumber( 0, 1000, 1),
@@ -121,17 +123,19 @@ CommandLineParsing::CommandLineParsing()
 	outDeltaE( 0.0, 100.0, 100.0),
 	outMaxE( -999.0, +999.0, 0.0),
 	outCsvCols(outCsvCols_default),
-	outQAccFile(""),
-	outTAccFile(""),
-	outQPuFile(""),
-	outTPuFile(""),
-	outQminEFile(""),
-	outTminEFile(""),
 
 	vrnaHandler()
 
 {
 	using namespace boost::program_options;
+
+	////  REMAINING INITIALIZATIONS  /////////////////////////////////
+
+	// register all allowed prefix codes for the --out argument
+	outPrefix2streamName[OutPrefixCode::OP_EMPTY] = "STDOUT";
+	for (int c=1; c<OutPrefixCode::OP_UNKNOWN; c++) {
+		outPrefix2streamName[(OutPrefixCode)c] = "";
+	}
 
 
 	////  QUERY SEQUENCE OPTIONS  ////////////////////////////////////
@@ -146,16 +150,20 @@ CommandLineParsing::CommandLineParsing()
 			, value<char>(&(qAcc.val))
 				->default_value(qAcc.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_qAcc,this,_1))
-			, std::string("accessibility computation : 'N'o accessibility contributions"
-					", 'C' computation of accessibilities"
-					", 'P' unpaired probabilities in RNAplfold format from --qAccFile"
-					", 'E' ED values in RNAplfold Pu-like format from --qAccFile"
+			, std::string("accessibility computation :"
+					"\n 'N' no accessibility contributions"
+					"\n 'C' computation of accessibilities"
+					"\n 'P' unpaired probabilities in RNAplfold format from --qAccFile"
+					"\n 'E' ED values in RNAplfold Pu-like format from --qAccFile"
 					).c_str())
 		("qAccW"
 			, value<int>(&(qAccW.val))
 				->default_value(qAccW.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_qAccW,this,_1))
-			, std::string("accessibility computation : sliding window size for query accessibility computation (arg in range ["+toString(qAccW.min)+","+toString(qAccW.max)+"]; 0 will use to the full sequence length)").c_str())
+			, std::string("accessibility computation : sliding window size for query accessibility computation (arg in range ["+toString(qAccW.min)+","+toString(qAccW.max)+"];"
+					" 0 will use to the full sequence length)."
+					" Note, this also restricts the maximal interaction length (see --qIntLenMax)."
+					).c_str())
 		("qAccL"
 			, value<int>(&(qAccL.val))
 				->default_value(qAccL.def)
@@ -205,16 +213,20 @@ CommandLineParsing::CommandLineParsing()
 			, value<char>(&(tAcc.val))
 				->default_value(tAcc.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_tAcc,this,_1))
-			, std::string("accessibility computation : 'N'o accessibility contributions"
-					", 'C' computation of accessibilities"
-					", 'P' unpaired probabilities in RNAplfold format from --tAccFile"
-					", 'E' ED values in RNAplfold Pu-like format from --tAccFile"
+			, std::string("accessibility computation :"
+					"\n 'N' no accessibility contributions"
+					"\n 'C' computation of accessibilities"
+					"\n 'P' unpaired probabilities in RNAplfold format from --tAccFile"
+					"\n 'E' ED values in RNAplfold Pu-like format from --tAccFile"
 					).c_str())
 		("tAccW"
 			, value<int>(&(tAccW.val))
 				->default_value(tAccW.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_tAccW,this,_1))
-			, std::string("accessibility computation : sliding window size for query accessibility computation (arg in range ["+toString(tAccW.min)+","+toString(tAccW.max)+"]; 0 will use the full sequence length)").c_str())
+			, std::string("accessibility computation : sliding window size for query accessibility computation (arg in range ["+toString(tAccW.min)+","+toString(tAccW.max)+"];"
+					" 0 will use the full sequence length)"
+					" Note, this also restricts the maximal interaction length (see --tIntLenMax)."
+					).c_str())
 		("tAccL"
 			, value<int>(&(tAccL.val))
 				->default_value(tAccL.def)
@@ -309,9 +321,9 @@ CommandLineParsing::CommandLineParsing()
 				->default_value(predMode.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_predMode,this,_1))
 			, std::string("prediction mode : "
-					"'H' = heuristic (fast and low memory), "
-					"'M' = exact and low memory, "
-					"'E' = exact (high memory)"
+					"\n 'H' = heuristic (fast and low memory), "
+					"\n 'M' = exact and low memory, "
+					"\n 'E' = exact (high memory)"
 					).c_str())
 		;
 	opts_cmdline_short.add(opts_inter);
@@ -321,14 +333,16 @@ CommandLineParsing::CommandLineParsing()
 				->default_value(pred.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_pred,this,_1))
 			, std::string("prediction target : "
-					"'S' = single-site minimum-free-energy interaction (interior loops only), "
-					"'P' = single-site maximum-probability interaction (interior loops only)"
+					"\n 'S' = single-site minimum-free-energy interaction (interior loops only), "
+					"\n 'P' = single-site maximum-probability interaction (interior loops only)"
 					).c_str())
 		("energy,e"
 			, value<char>(&(energy.val))
 				->default_value(energy.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_energy,this,_1))
-			, std::string("energy computation : 'B'ase pair == -1, or 'V' VRNA-based computation (see --energVRNA)").c_str())
+			, std::string("energy computation :"
+					"\n 'B' base pair energy -1 (Nussinov-like, i.e. independently of context), or"
+					"\n 'V' VRNA-based computation (Nearest-Neighbor model, see also --energVRNA)").c_str())
 		("energyVRNA"
 			, value<std::string>(&energyFile)
 				->notifier(boost::bind(&CommandLineParsing::validate_energyFile,this,_1))
@@ -345,20 +359,32 @@ CommandLineParsing::CommandLineParsing()
 
 	opts_output.add_options()
 		("out"
-			, value<std::string>(&(out))
-				->default_value(out)
+			, value< std::vector<std::string> >(&(out))
+				->composing()
+				->default_value(boost::assign::list_of(outPrefix2streamName.at(OutPrefixCode::OP_EMPTY)), outPrefix2streamName.at(OutPrefixCode::OP_EMPTY).c_str())
 				->notifier(boost::bind(&CommandLineParsing::validate_out,this,_1))
-			, std::string("output : provide a file name for output (will be overwritten) or 'STDOUT/STDERR' to write to the according stream").c_str())
+			, std::string("output (multi-arg) : provide a file name for output (will be overwritten)"
+					" or 'STDOUT/STDERR' to write to the according stream (according to --outMode)."
+					"\nUse one of the following PREFIXES (colon-separated) to generate"
+					" ADDITIONAL output:"
+					"\n 'qMinE:' (query) for each position the minimal energy of any interaction covering the position (CSV format)"
+					"\n 'qAcc:' (query) ED accessibility values ('qPu'-like format)."
+					"\n 'qPu:' (query) unpaired probabilities values (RNAplfold format)."
+					"\n 'tMinE:' (target) for each position the minimal energy of any interaction covering the position (CSV format)"
+					"\n 'tAcc:' (target) ED accessibility values ('tPu'-like format)."
+					"\n 'tPu:' (target) unpaired probabilities values (RNAplfold format)."
+					"\nFor each, provide a file name or STDOUT/STDERR to write to the respective output stream."
+					).c_str())
 		("outMode"
 			, value<char>(&(outMode.val))
 				->default_value(outMode.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_outMode,this,_1))
 			, std::string("output mode :"
-					" 'N' normal output (ASCII char + energy),"
-					" 'D' detailed output (ASCII char + energy/position details),"
-					" 'C' CSV output (see --outCsvCols),"
-					" '1' backward compatible IntaRNA v1.* normal output,"
-					" 'O' backward compatible IntaRNA v1.* detailed output (former -o)"
+					"\n 'N' normal output (ASCII char + energy),"
+					"\n 'D' detailed output (ASCII char + energy/position details),"
+					"\n 'C' CSV output (see --outCsvCols),"
+					"\n '1' backward compatible IntaRNA v1.* normal output,"
+					"\n 'O' backward compatible IntaRNA v1.* detailed output (former -o)"
 					).c_str())
 	    ("outNumber,n"
 			, value<int>(&(outNumber.val))
@@ -370,10 +396,10 @@ CommandLineParsing::CommandLineParsing()
 				->default_value(outOverlap.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_outOverlap,this,_1))
 			, std::string("suboptimal output : interactions can overlap "
-					"(N) in none of the sequences, "
-					"(T) in the target only, "
-					"(Q) in the query only, "
-					"(B) in both sequences").c_str())
+					"\n 'N' in none of the sequences, "
+					"\n 'T' in the target only, "
+					"\n 'Q' in the query only, "
+					"\n 'B' in both sequences").c_str())
 		;
 	opts_cmdline_short.add(opts_output);
 	opts_output.add_options()
@@ -389,53 +415,12 @@ CommandLineParsing::CommandLineParsing()
 			, std::string("suboptimal output : only interactions with E <= (minE+deltaE) are reported").c_str())
 		("outCsvCols"
 			, value<std::string>(&(outCsvCols))
-				->default_value(outCsvCols)
+				->default_value(outCsvCols,"see text")
 				->notifier(boost::bind(&CommandLineParsing::validate_outCsvCols,this,_1))
 			, std::string("output : comma separated list of CSV column IDs to print if outMode=CSV."
 					" An empty argument prints all possible columns from the following available ID list: "
-					+ boost::replace_all_copy(OutputHandlerCsv::list2string(OutputHandlerCsv::string2list("")), ",", ", ")
-					).c_str())
-		("outQAccFile"
-			, value<std::string>(&(outQAccFile))
-				->notifier(boost::bind(&CommandLineParsing::validate_outQAccFile,this,_1))
-			, std::string("output : writes the query's ED values to the given file/stream"
-					" in a format similar to RNAplfold unpaired probability output."
-					" Use STDOUT/STDERR to write to the respective output stream."
-					).c_str())
-		("outTAccFile"
-			, value<std::string>(&(outTAccFile))
-				->notifier(boost::bind(&CommandLineParsing::validate_outTAccFile,this,_1))
-			, std::string("output : writes the target's ED values to the given file/stream"
-					" in a format similar to RNAplfold unpaired probability output."
-					" Use STDOUT/STDERR to write to the respective output stream."
-					).c_str())
-		("outQPuFile"
-			, value<std::string>(&(outQPuFile))
-				->notifier(boost::bind(&CommandLineParsing::validate_outQPuFile,this,_1))
-			, std::string("output : writes the query's unpaired probabilities used for ED values to the given file/stream"
-					" in RNAplfold unpaired probability output format."
-					" Use STDOUT/STDERR to write to the respective output stream."
-					).c_str())
-		("outTPuFile"
-			, value<std::string>(&(outTPuFile))
-				->notifier(boost::bind(&CommandLineParsing::validate_outTPuFile,this,_1))
-			, std::string("output : writes the target's unpaired probabilities used for ED values to the given file/stream"
-					" in RNAplfold unpaired probability output format."
-					" Use STDOUT/STDERR to write to the respective output stream."
-					).c_str())
-		("outQminEFile"
-			, value<std::string>(&(outQminEFile))
-				->notifier(boost::bind(&CommandLineParsing::validate_outQminEFile,this,_1))
-			, std::string("output : writes the query's minimal energy profile to the given file/stream,"
-					" i.e. for each position the minimal energy of any interaction covering this position."
-					" Use STDOUT/STDERR to write to the respective output stream."
-					).c_str())
-		("outTminEFile"
-			, value<std::string>(&(outTminEFile))
-				->notifier(boost::bind(&CommandLineParsing::validate_outTminEFile,this,_1))
-			, std::string("output : writes the target's minimal energy profile to the given file/stream,"
-					" i.e. for each position the minimal energy of any interaction covering this position."
-					" Use STDOUT/STDERR to write to the respective output stream."
+					+ boost::replace_all_copy(OutputHandlerCsv::list2string(OutputHandlerCsv::string2list("")), ",", ", ")+"."
+					+ "\nDefault = '"+outCsvCols+"'."
 					).c_str())
 	    ("verbose,v", "verbose output") // handled via easylogging++
 //	    (logFile_argument.c_str(), "name of log file to be used for output")
@@ -557,11 +542,14 @@ parse(int argc, char** argv)
 		try {
 
 			// open output stream
-			outStream = newOutputStream( out );
-			// check success
-			if (outStream == NULL) {
-				LOG(ERROR) <<"could not open output file --out='"<<out << "' for writing";
-				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+			{
+				// open according stream
+				outStream = newOutputStream( outPrefix2streamName.at(OutPrefixCode::OP_EMPTY) );
+				// check success
+				if (outStream == NULL) {
+					LOG(ERROR) <<"could not open output file --out='"<<outPrefix2streamName.at(OutPrefixCode::OP_EMPTY) << "' for writing";
+					updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+				}
 			}
 
 			// parse the sequences
@@ -712,13 +700,28 @@ parse(int argc, char** argv)
 				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 			}
 
-			// check ED/Pu output sanity
-			if (!outQAccFile.empty() && getQuerySequences().size()>1) throw std::runtime_error("--outQAccFile only supported for single query sequence input");
-			if (!outTAccFile.empty() && getTargetSequences().size()>1) throw std::runtime_error("--outTAccFile only supported for single target sequence input");
-			if (!outQPuFile.empty() && getQuerySequences().size()>1) throw std::runtime_error("--outQPuFile only supported for single query sequence input");
-			if (!outTPuFile.empty() && getTargetSequences().size()>1) throw std::runtime_error("--outTPuFile only supported for single target sequence input");
-			if (!outQminEFile.empty() && getQuerySequences().size()>1) throw std::runtime_error("--outQminEFile only supported for single query sequence input");
-			if (!outTminEFile.empty() && getTargetSequences().size()>1) throw std::runtime_error("--outTminEFile only supported for single target sequence input");
+			// check output sanity
+			{	// check for duplicates
+				bool noDuplicate = true;
+				for (auto c1=outPrefix2streamName.begin(); noDuplicate && c1!=outPrefix2streamName.end(); c1++) {
+					// skip empty entries
+					if (c1->second.empty()) { continue; }
+					for (auto c2=c1; noDuplicate && (++c2)!=outPrefix2streamName.end();) {
+						if ( ! c2->second.empty() && boost::iequals( c1->second, c2->second ) ) {
+							noDuplicate = false;
+							LOG(ERROR) <<"--out argument shows multiple times '"<<c1->second<<"' as target file/stream.";
+							updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+						}
+					}
+				}
+				// check if sequence numbers compatible
+				if (!outPrefix2streamName.at(OutPrefixCode::OP_qAcc).empty() && getQuerySequences().size()>1) throw std::runtime_error("--out=qAcc:.. only supported for single query sequence input");
+				if (!outPrefix2streamName.at(OutPrefixCode::OP_tAcc).empty() && getTargetSequences().size()>1) throw std::runtime_error("--out=tAcc:.. only supported for single target sequence input");
+				if (!outPrefix2streamName.at(OutPrefixCode::OP_qPu).empty() && getQuerySequences().size()>1) throw std::runtime_error("--out=qPu:.. only supported for single query sequence input");
+				if (!outPrefix2streamName.at(OutPrefixCode::OP_tPu).empty() && getTargetSequences().size()>1) throw std::runtime_error("--out=tPu:.. only supported for single target sequence input");
+				if (!outPrefix2streamName.at(OutPrefixCode::OP_qMinE).empty() && (getQuerySequences().size()>1||getTargetSequences().size()>1)) throw std::runtime_error("--out=qMinE:.. only supported for single query-target input");
+				if (!outPrefix2streamName.at(OutPrefixCode::OP_tMinE).empty() && (getQuerySequences().size()>1||getTargetSequences().size()>1)) throw std::runtime_error("--out=tMinE:.. only supported for single query-target input");
+			}
 
 #if INTARNA_MULITHREADING
 			// check if multi-threading
@@ -1373,11 +1376,12 @@ Predictor*
 CommandLineParsing::
 getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 {
-
+	// set up hub for prediction tracking (if needed)
 	PredictionTrackerHub * predTracker = new PredictionTrackerHub();
+
 	// check if minE-profile is to be generated
-	if (!outQminEFile.empty() || !outTminEFile.empty()) {
-		predTracker->addPredictionTracker( new PredictionTrackerProfileMinE( energy, outTminEFile, outQminEFile, "NA") );
+	if (!outPrefix2streamName.at(OutPrefixCode::OP_tMinE).empty() || !outPrefix2streamName.at(OutPrefixCode::OP_qMinE).empty()) {
+		predTracker->addPredictionTracker( new PredictionTrackerProfileMinE( energy, outPrefix2streamName.at(OutPrefixCode::OP_tMinE), outPrefix2streamName.at(OutPrefixCode::OP_qMinE), "NA") );
 	}
 
 	// check if any tracker registered

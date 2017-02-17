@@ -26,6 +26,19 @@ public:
 	//! type of a vector encoding base pair indices that are interacting
 	typedef std::vector<BasePair> PairingVec;
 
+	/**
+	 * Provides the seed information of an Interaction.
+	 */
+	class Seed {
+	public:
+		//! left-most base pair of seed
+		BasePair bp_i;
+		//! right-most base pair of seed
+		BasePair bp_j;
+		//! overall energy of seed
+		E_type energy;
+	};
+
 public:
 
 	//! the first interaction partner
@@ -40,8 +53,8 @@ public:
 	//! energy of the interaction (can be NaN)
 	E_type energy;
 
-	//! optional: range of seed interaction and full seed energy
-	InteractionRange * seedRange;
+	//! optional: seed information
+	Seed * seed;
 
 	/**
 	 * construction
@@ -49,6 +62,13 @@ public:
 	 * @param s2 the sequence of the second interaction partner
 	 */
 	Interaction( const RnaSequence & s1, const RnaSequence & s2 );
+
+	/**
+	 * copy construction from interaction
+	 *
+	 * @toCopy the interaction range to make this a copy of
+	 */
+	Interaction( const Interaction & toCopy );
 
 	/**
 	 * construction from interaction range, ie. forming base pairs at the
@@ -95,12 +115,12 @@ public:
 
 	/**
 	 * Sets the seedRange member according to the given data
-	 * @param ij1 left most base pair in seed
-	 * @param ij2 right most base pair in seed
+	 * @param bp_left left most base pair in seed
+	 * @param bp_right right most base pair in seed
 	 * @param energy full energy of the seed interaction
 	 */
 	void
-	setSeedRange( const BasePair ij1, const BasePair ij2, const E_type energy );
+	setSeedRange( const BasePair bp_left, const BasePair bp_right, const E_type energy );
 
 
 	/**
@@ -111,8 +131,22 @@ public:
 	 *
 	 * NOTE: the interaction energy is reset too.
 	 *
-	 * @param range the interaction range to get the boundaries from
-	 * @return the altered range object (*this)
+	 * @param toCopy the interaction to copy
+	 * @return the altered object (*this)
+	 */
+	Interaction &
+	operator= ( const Interaction & toCopy );
+
+	/**
+	 * Creates an interaction with one base pair for each interaction range
+	 * boundary.
+	 *
+	 * NOTE: the ends have to be complementary nucleotides
+	 *
+	 * NOTE: the interaction energy is reset too.
+	 *
+	 * @param range the interaction range to copy
+	 * @return the altered object (*this)
 	 */
 	Interaction &
 	operator= ( const InteractionRange & range );
@@ -213,8 +247,27 @@ Interaction::Interaction( const RnaSequence & s1, const RnaSequence & s2 )
 	, s2(&s2)
 	, basePairs()
 	, energy( std::numeric_limits<E_type>::signaling_NaN() )
-	, seedRange( NULL )
+	, seed( NULL )
 {
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+Interaction::Interaction( const Interaction & toCopy )
+:
+	s1(toCopy.s1)
+	, s2(toCopy.s2)
+	, basePairs(toCopy.basePairs)
+	, energy( toCopy.energy )
+	, seed( toCopy.seed == NULL ? NULL : new Seed() )
+{
+	// copy seed if needed
+	if (seed != NULL) {
+		seed->bp_i = toCopy.seed->bp_i;
+		seed->bp_j = toCopy.seed->bp_j;
+		seed->energy = toCopy.seed->energy;
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -226,7 +279,7 @@ Interaction::Interaction( const InteractionRange & range )
 	, s2(NULL)
 	, basePairs()
 	, energy( std::numeric_limits<E_type>::signaling_NaN() )
-	, seedRange( NULL )
+	, seed( NULL )
 {
 	// init data
 	this->operator =( range );
@@ -237,7 +290,7 @@ Interaction::Interaction( const InteractionRange & range )
 inline
 Interaction::~Interaction()
 {
-	CLEANUP(seedRange);
+	CLEANUP(seed);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -273,7 +326,7 @@ clear()
 	// clear energy
 	energy = std::numeric_limits<E_type>::signaling_NaN();
 	// undo seed information
-	CLEANUP(seedRange);
+	CLEANUP(seed);
 
 }
 

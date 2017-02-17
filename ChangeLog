@@ -1,4 +1,35 @@
 
+170217 Martin Mann :
+ * README.md :
+   + outfile section
+   + minE profile docu
+   * accessibility output corrected
+ + doc/figures/profile-minE.png : minE profile example
+ * CommandLineParsing :
+   - out*File : replaced by --out multi-arg handling
+   - validate_out*File() : obsolete
+   + OutPrefixCode : encodings for all valid prefixes of --out
+   + getCodeForPrefix() : provides the OutPrefixCode for a given prefix string
+   + outPrefix2streamName : holds for each registered --out prefix the user
+     provided file/stream name or an empty string if not provided
+     (filled by validate_out())
+   * out : now a vector of arguments to enable multi-arg occurrences
+   * write*Accessibility : uses now outPrefix2streamName values
+   * constructor :
+     + initialization of outPrefix2streamName
+     * argument help unified
+   * parse() :
+     + duplication check for --out arguments to avoid file write clashes
+ * Interaction :
+   + Seed : class to concentrate all seed-related information
+   - seedRange : replaced by seed member
+   + seed : optional Seed object
+   * setSeedRange() : fills seed member
+   + operator=(Interaction) : copy function that creates new seed object
+   + copy constructor: to copy seed object
+ * OutputHandler* :
+   * adaption to Interaction::Seed change
+
 170214 Martin Mann :
  + PredictionTrackerPairMinE : tracks for all intermolecular index pairs the
    minimal energy of any interaction covering this pair

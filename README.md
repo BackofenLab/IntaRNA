@@ -68,9 +68,11 @@ The following topics are covered by this documentation:
   - [Output modes](#outmodes)
   - [Suboptimal RNA-RNA interaction prediction and output restrictions](#subopts)
   - [Energy parameters and temperature](#energy)
-  - [Accessibility and unpaired probabilities](#accessibility)
-    - [Local versus global unpaired probabilities](#accLocalGlobal)
-    - [Read/write accessibility from/to file or stream](#accFromFile)
+  - [Additional output files](#outFiles)
+    - [Minimal energy profiles](#profileMinE)
+    - [Accessibility and unpaired probabilities](#accessibility)
+      - [Local versus global unpaired probabilities](#accLocalGlobal)
+      - [Read/write accessibility from/to file or stream](#accFromFile)
   - [Multi-threading and parallelized computation](#multithreading)
 
 
@@ -652,9 +654,53 @@ upper bound can be set independent for the query and target sequence via
 
 
 
+
+
+
 <br /><br />
+<a name="outFiles" />
+## Additional output files
+
+IntaRNA v2 enables the generation of various additional information in dedicated
+files/streams. The generation of such output is guided by an according (repeated)
+definition of the `--out` argument in combination with one of the following
+argument prefixes (case insensitive) that have to be colon-separated to the
+targeted file/stream name:
+
+- `qMinE:`|`tMinE:` the query/target's minimal interaction energy profile (CSV format), respectively
+- `qAcc:`|`tAcc:` the [query/target's ED accessibility values](#accessibility) (RNAplfold-like format), respectively
+- `qPu:`|`tPu:` the [query/target's unpaired probabilities](#accessibility) (RNAplfold format), respectively
+
+
+
+
+<br />
+<a name="profileMinE" />
+### Minimal energy profiles
+
+To get a more global view of possible interaction sites for a pair of interacting
+RNAs, one can generate the *minimal energy profile* for each sequence (independently).
+
+For instance, to generate the target's profile, add the following to your IntaRNA
+call: `--out=tMinE:MYPROFILEFILE.csv`
+This will produce an according CSV-file (`;` separated) with the according minimal
+energy profile data that can be visualized with any program of your liking.
+In the following, such an output was visualized using R:
+
+```R
+d <-  read.table("MYPROFLEFILE.csv",header=T,sep=";");
+plot( d[,1],d[,2], xlab="sequence index", ylab="minimal energy", type="l", col="blue", lwd=2)
+abline(h=0, col="red", lty=2, lwd=2)
+```
+
+![minimum energy profile](/doc/figures/profile-minE.png?raw=true "Minimum energy profile")
+
+
+
+
+<br />
 <a name="accessibility" />
-## Accessibility and unpaired probabilities
+### Accessibility and unpaired probabilities
 
 Accessibility describes the availability of an RNA subsequence for intermolecular
 base pairing. It can be expressed in terms of the probability of the subsequence
@@ -675,7 +721,7 @@ using the Vienna RNA package routines for query or target sequences, respectivel
 
 
 <a name="accLocalGlobal" />
-### Local versus global unpaired probabilities
+#### Local versus global unpaired probabilities
 
 Exact computation of unpaired probabilities (*Pu* terms) is considers all possible
 structures the sequence can adopt (the whole structure ensemble). This is referred
@@ -692,7 +738,7 @@ IntaRNA enables both global as well as local unpaired probability computation.
 To this end, the sliding window length has to be specified in order to enable/disable
 local folding.
 
-#### Use case examples global/local unpaired probability computation
+##### Use case examples global/local unpaired probability computation
 The use of global or local accessibilities can be defined independently 
 for query and target sequences using `--qAccW|L` and `--tAccW|L`, respectively.
 Here, `--?AccW` defines the sliding window length (0 sets it to the whole sequence length)
@@ -709,7 +755,7 @@ IntaRNA [..] --qAccW=0 --qAccL=0 --tAccW=150 --qAccL=100
 
 
 <a name="accFromFile" />
-### Read/write accessibility from/to file or stream
+#### Read/write accessibility from/to file or stream
 
 It is possible to read precomputed accessibility values from file or stream to
 avoid their runtime demanding computation. To this end, we support the following
@@ -717,8 +763,8 @@ formats
 
 | Input format | produced by |
 | ---- | --- |
-| RNAplfold unpaired probabilities | `RNAplfold -u` or `IntaRNA --out*PuFile` |
-| RNAplfold-styled ED values | `IntaRNA --out*AccFile` |
+| RNAplfold unpaired probabilities | `RNAplfold -u` or `IntaRNA --out=*Pu:` |
+| RNAplfold-styled ED values | `IntaRNA --out=*Acc:` |
 
 The **RNAplfold** format is a table encoding of a banded upper triangular matrix 
 with band width l. First row contains a header comment on the data starting with
@@ -741,7 +787,7 @@ example for a sequence of length 5 with a maximal window length of 3.
 
 ```
 
-#### Use case examples for read/write accessibilities and unpaired probabilities
+##### Use case examples for read/write accessibilities and unpaired probabilities
 If you have precomputed data, e.g. the file `plfold_lunp` with unpaired probabilities
 computed by **RNAplfold**, you can run
 ```bash
@@ -754,11 +800,15 @@ Another option is to store the accessibility data computed by IntaRNA for
 successive calls using 
 ```bash
 # storing and reusing (target) accessibility (Pu) data for successive IntaRNA calls
-IntaRNA [..] --outTPuFile=intarna.target.pu
+IntaRNA [..] --out=tPu:intarna.target.pu
 IntaRNA [..] --tAcc=P --tAccFile=intarna.target.pu
 # piping (target) accessibilities (ED values) between IntaRNA calls
-IntaRNA [..] --outTAccFile=STDOUT | IntaRNA [..] --tAcc=E --tAccFile=STDIN
+IntaRNA [..] --out=tAcc:STDOUT | IntaRNA [..] --tAcc=E --tAccFile=STDIN
 ```
+
+
+
+
 
 
 <br /><br />
