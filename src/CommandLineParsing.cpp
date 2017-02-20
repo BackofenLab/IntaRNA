@@ -1380,10 +1380,10 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 						// add sequence-specific prefix for output file
 						, getFullFilename( outPrefix2streamName.at(OutPrefixCode::OP_tMinE)
 								, &(energy.getAccessibility1().getSequence())
-								, NULL)
+								, &(energy.getAccessibility2().getAccessibilityOrigin().getSequence()))
 						// add sequence-specific prefix for output file
 						, getFullFilename( outPrefix2streamName.at(OutPrefixCode::OP_qMinE)
-								, NULL
+								, &(energy.getAccessibility1().getSequence())
 								, &(energy.getAccessibility2().getAccessibilityOrigin().getSequence()))
 						, "NA") );
 	}
