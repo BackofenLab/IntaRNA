@@ -73,7 +73,7 @@ fi
 
 
 ###############################################################################
-# DEBUG SUPPORT SETUP
+# MULTI-THREADING SUPPORT SETUP
 ###############################################################################
 
 AC_MSG_CHECKING([whether to enable multi-threading support])
@@ -88,11 +88,12 @@ if test x"$multithreadingEnabled" = x"yes"; then
 	AC_DEFINE([INTARNA_MULITHREADING], [1], [Enabling multi-threading support])
 	AC_SUBST([INTARNA_MULITHREADING],[1])
 	# ensure OPENMP can be used
-	AX_OPENMP([],[AC_MSG_ERROR([OPENMP support is mandatory for compilation])]])
+	AX_OPENMP([],[AC_MSG_ERROR([OPENMP support is mandatory for multi-threading compilation])]])
 	AM_CXXFLAGS="$AM_CXXFLAGS $OPENMP_CXXFLAGS"
 else
 	AC_DEFINE([INTARNA_MULITHREADING], [0], [Disabling multi-threading support])
 	AC_SUBST([INTARNA_MULITHREADING],[0])
+	AM_CXXFLAGS="$AM_CXXFLAGS -pthread"
 fi
 
 ###############################################################################
