@@ -167,7 +167,7 @@ writeProfile( std::ostream &out
 	for (MinEProfileIterator curE = begin; curE!=end; curE++) {
 		out
 			// out index
-			<<i++<<';'
+			<<i<<';'
 			// out nucleotide (index starts with 0)
 			<<rna.asString().at(i-1)<<';'
 			;

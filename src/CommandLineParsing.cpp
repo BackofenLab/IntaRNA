@@ -179,7 +179,6 @@ CommandLineParsing::CommandLineParsing()
 			, std::string("accessibility computation : structure constraint for each sequence position: '.' no constraint, '"+toString(AccessibilityConstraint::dotBracket_accessible)+"' unpaired, '"+toString(AccessibilityConstraint::dotBracket_blocked)+"' blocked. Note, blocked positions are excluded from interaction prediction and considered unpaired!").c_str())
 		("qAccFile"
 			, value<std::string>(&(qAccFile))
-				->notifier(boost::bind(&CommandLineParsing::validate_qAccFile,this,_1))
 			, std::string("accessibility computation : the file/stream to be parsed, if --qAcc is to be read from file. Used 'STDIN' if to read from standard input stream.").c_str())
 		("qIntLenMax"
 			, value<int>(&(qIntLenMax.val))
@@ -242,7 +241,6 @@ CommandLineParsing::CommandLineParsing()
 			, std::string("accessibility computation : structure constraint for each sequence position: '.' no constraint, '"+toString(AccessibilityConstraint::dotBracket_accessible)+"' unpaired, '"+toString(AccessibilityConstraint::dotBracket_blocked)+"' blocked. Note, blocked positions are excluded from interaction prediction and considered unpaired!").c_str())
 		("tAccFile"
 			, value<std::string>(&(tAccFile))
-				->notifier(boost::bind(&CommandLineParsing::validate_tAccFile,this,_1))
 			, std::string("accessibility computation : the file/stream to be parsed, if --tAcc is to be read from file. Used 'STDIN' if to read from standard input stream.").c_str())
 		("tIntLenMax"
 			, value<int>(&(tIntLenMax.val))
@@ -436,7 +434,7 @@ CommandLineParsing::CommandLineParsing()
 			, value<int>(&(threads.val))
 				->default_value(threads.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_threads,this,_1))
-			, std::string("maximal number of threads to be used for parallel computation of query-target-combinations."
+			, std::string("maximal number of threads to be used for parallel computation of query-target combinations."
 					" Note, the number of threads multiplies the required memory used for computation!"
 					" (arg in range ["+toString(threads.min)+","+toString(threads.max)+"])").c_str())
 #endif
@@ -556,8 +554,11 @@ parse(int argc, char** argv)
 
 			// parse the sequences
 			parseSequences("query",queryArg,query);
-			// parse the sequences
 			parseSequences("target",targetArg,target);
+
+			// valide accessibility input from file (requires parsed sequences)
+			validate_qAccFile( qAccFile );
+			validate_tAccFile( tAccFile );
 
 			// check seed setup
 			noSeedRequired = vm.count("noSeed") > 0;
@@ -650,8 +651,7 @@ parse(int argc, char** argv)
 			case 'E' : // drop to next handling
 			case 'P' : {
 				if (qAccFile.empty()) LOG(INFO) <<"qAcc = "<<qAcc.val<<" but no --qAccFile given";
-				if (!qAccConstr.empty()) LOG(INFO) <<"qAcc = "<<qAcc.val<<" : accessibility constraints (--qAccConstr) possibly not used in computation of loaded ED values";
-				if (getQuerySequences().size()>1) throw std::runtime_error("qAcc = "+toString(qAcc.val)+" only supported for single query sequence input");
+				if (vm.count("qAccConstr")>0) LOG(INFO) <<"qAcc = "<<qAcc.val<<" : accessibility constraints (--qAccConstr) possibly not used in computation of loaded ED values";
 			}	// drop to next handling
 			case 'N' : {
 				if (qAccL.val != qAccL.def) LOG(INFO) <<"qAcc = "<<qAcc.val<<" : ignoring --qAccL";
@@ -668,8 +668,7 @@ parse(int argc, char** argv)
 			case 'E' : // drop to next handling
 			case 'P' : {
 				if (tAccFile.empty()) LOG(INFO) <<"tAcc = "<<tAcc.val<<" but no --tAccFile given";
-				if (!tAccConstr.empty()) LOG(INFO) <<"tAcc = "<<tAcc.val<<" : accessibility constraints (--tAccConstr) possibly not used in computation of loaded ED values";
-				if (getTargetSequences().size()>1) throw std::runtime_error("tAcc = "+toString(tAcc.val)+" only supported for single target sequence input");
+				if (vm.count("tAccConstr")>0) LOG(INFO) <<"tAcc = "<<tAcc.val<<" : accessibility constraints (--tAccConstr) possibly not used in computation of loaded ED values";
 			}	// drop to next handling
 			case 'N' : {
 				if (tAccL.val != tAccL.def) LOG(INFO) <<"tAcc = "<<tAcc.val<<" : ignoring --tAccL";
@@ -716,13 +715,6 @@ parse(int argc, char** argv)
 						}
 					}
 				}
-				// check if sequence numbers compatible
-				if (!outPrefix2streamName.at(OutPrefixCode::OP_qAcc).empty() && getQuerySequences().size()>1) throw std::runtime_error("--out=qAcc:.. only supported for single query sequence input");
-				if (!outPrefix2streamName.at(OutPrefixCode::OP_tAcc).empty() && getTargetSequences().size()>1) throw std::runtime_error("--out=tAcc:.. only supported for single target sequence input");
-				if (!outPrefix2streamName.at(OutPrefixCode::OP_qPu).empty() && getQuerySequences().size()>1) throw std::runtime_error("--out=qPu:.. only supported for single query sequence input");
-				if (!outPrefix2streamName.at(OutPrefixCode::OP_tPu).empty() && getTargetSequences().size()>1) throw std::runtime_error("--out=tPu:.. only supported for single target sequence input");
-				if (!outPrefix2streamName.at(OutPrefixCode::OP_qMinE).empty() && (getQuerySequences().size()>1||getTargetSequences().size()>1)) throw std::runtime_error("--out=qMinE:.. only supported for single query-target input");
-				if (!outPrefix2streamName.at(OutPrefixCode::OP_tMinE).empty() && (getQuerySequences().size()>1||getTargetSequences().size()>1)) throw std::runtime_error("--out=tMinE:.. only supported for single query-target input");
 			}
 
 #if INTARNA_MULITHREADING
@@ -1021,8 +1013,8 @@ getQueryAccessibility( const size_t sequenceNumber ) const
 		if ( boost::iequals(qAccFile,"STDIN") ) {
 			accStream = &(std::cin);
 		} else {
-			// file support
-			accFileStream = new std::ifstream(qAccFile);
+			// file support : add sequence-specific prefix (for multi-sequence input)
+			accFileStream = new std::ifstream( getFullFilename(qAccFile, NULL, &(seq)) );
 			try {
 				if(!accFileStream->good()){
 					accFileStream->close();
@@ -1100,8 +1092,8 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 		if ( boost::iequals(tAccFile,"STDIN") ) {
 			accStream = &(std::cin);
 		} else {
-			// file support
-			accFileStream = new std::ifstream(tAccFile);
+			// file support : add sequence-specific prefix (for multi-sequence input)
+			accFileStream = new std::ifstream( getFullFilename(tAccFile, &(seq), NULL) );
 			try {
 				if(!accFileStream->good()){
 					accFileStream->close();
@@ -1383,12 +1375,28 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 
 	// check if minE-profile is to be generated
 	if (!outPrefix2streamName.at(OutPrefixCode::OP_tMinE).empty() || !outPrefix2streamName.at(OutPrefixCode::OP_qMinE).empty()) {
-		predTracker->addPredictionTracker( new PredictionTrackerProfileMinE( energy, outPrefix2streamName.at(OutPrefixCode::OP_tMinE), outPrefix2streamName.at(OutPrefixCode::OP_qMinE), "NA") );
+		predTracker->addPredictionTracker(
+				new PredictionTrackerProfileMinE( energy
+						// add sequence-specific prefix for output file
+						, getFullFilename( outPrefix2streamName.at(OutPrefixCode::OP_tMinE)
+								, &(energy.getAccessibility1().getSequence())
+								, NULL)
+						// add sequence-specific prefix for output file
+						, getFullFilename( outPrefix2streamName.at(OutPrefixCode::OP_qMinE)
+								, NULL
+								, &(energy.getAccessibility2().getAccessibilityOrigin().getSequence()))
+						, "NA") );
 	}
 
 	// check if minE-pairs are to be generated
 	if (!outPrefix2streamName.at(OutPrefixCode::OP_pMinE).empty()) {
-		predTracker->addPredictionTracker( new PredictionTrackerPairMinE( energy, outPrefix2streamName.at(OutPrefixCode::OP_pMinE), "NA") );
+		predTracker->addPredictionTracker(
+				new PredictionTrackerPairMinE( energy
+						// add sequence-specific prefix for output file
+						, getFullFilename( outPrefix2streamName.at(OutPrefixCode::OP_pMinE)
+								, &(energy.getAccessibility1().getSequence())
+								, &(energy.getAccessibility2().getAccessibilityOrigin().getSequence()))
+						, "NA") );
 	}
 
 	// check if any tracker registered
@@ -1591,7 +1599,7 @@ getTargetRanges( const size_t sequenceNumber ) const
 
 void
 CommandLineParsing::
-writeAccessibility( const Accessibility& acc, const std::string fileOrStream, const bool writeED ) const
+writeAccessibility( const Accessibility& acc, const std::string & fileOrStream, const bool writeED ) const
 {
 	if (fileOrStream.empty())
 		return;

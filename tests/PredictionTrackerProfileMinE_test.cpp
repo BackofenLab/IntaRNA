@@ -34,8 +34,8 @@ TEST_CASE( "PredictionTrackerProfileMinE", "[PredictionTrackerProfileMinE]" ) {
 //		LOG(DEBUG)<<"1.s2:\n"<<s2out.str();
 
 		// check output
-		REQUIRE( boost::regex_match(s1out.str(),boost::regex("^"+r1.getId()+";minE(\\s+\\d;X){"+toString(r1.size())+"}\\s*$"), boost::match_perl) );
-		REQUIRE( boost::regex_match(s2out.str(),boost::regex("^"+r2.getId()+";minE(\\s+\\d;X){"+toString(r2.size())+"}\\s*$"), boost::match_perl) );
+		REQUIRE( boost::regex_match(s1out.str(),boost::regex("^"+r1.getId()+";minE(\\s+\\d;\\w;X){"+toString(r1.size())+"}\\s*$"), boost::match_perl) );
+		REQUIRE( boost::regex_match(s2out.str(),boost::regex("^"+r2.getId()+";minE(\\s+\\d;\\w;X){"+toString(r2.size())+"}\\s*$"), boost::match_perl) );
 	}
 
 	SECTION("single range") {
@@ -53,8 +53,8 @@ TEST_CASE( "PredictionTrackerProfileMinE", "[PredictionTrackerProfileMinE]" ) {
 //		LOG(DEBUG)<<"2.s2:\n"<<s2out.str();
 
 		// check output
-		REQUIRE( boost::regex_match(s1out.str(),boost::regex("^"+r1.getId()+";minE(\\s+\\d;2){2}(\\s+\\d;X){"+toString(r1.size()-2)+"}\\s*$"), boost::match_perl) );
-		REQUIRE( boost::regex_match(s2out.str(),boost::regex("^"+r2.getId()+";minE(\\s+\\d;X){"+toString(r2.size()-2-4)+"}(\\s+\\d;2){2}(\\s+\\d;X){4}\\s*$"), boost::match_perl) );
+		REQUIRE( boost::regex_match(s1out.str(),boost::regex("^"+r1.getId()+";minE(\\s+\\d;\\w;2){2}(\\s+\\d;\\w;X){"+toString(r1.size()-2)+"}\\s*$"), boost::match_perl) );
+		REQUIRE( boost::regex_match(s2out.str(),boost::regex("^"+r2.getId()+";minE(\\s+\\d;\\w;X){"+toString(r2.size()-2-4)+"}(\\s+\\d;\\w;2){2}(\\s+\\d;\\w;X){4}\\s*$"), boost::match_perl) );
 	}
 
 
@@ -74,8 +74,8 @@ TEST_CASE( "PredictionTrackerProfileMinE", "[PredictionTrackerProfileMinE]" ) {
 //		LOG(DEBUG)<<"3.s2:\n"<<s2out.str();
 
 		// check output
-		REQUIRE( boost::regex_match(s1out.str(),boost::regex("^"+r1.getId()+";minE(\\s+\\d;2)(\\s+\\d;1){2}(\\s+\\d;X){"+toString(r1.size()-3)+"}\\s*$"), boost::match_perl) );
-		REQUIRE( boost::regex_match(s2out.str(),boost::regex("^"+r2.getId()+";minE(\\s+\\d;X){"+toString(r2.size()-3-4)+"}(\\s+\\d;1){2}(\\s+\\d;2)(\\s+\\d;X){4}\\s*$"), boost::match_perl) );
+		REQUIRE( boost::regex_match(s1out.str(),boost::regex("^"+r1.getId()+";minE(\\s+\\d;\\w;2)(\\s+\\d;\\w;1){2}(\\s+\\d;\\w;X){"+toString(r1.size()-3)+"}\\s*$"), boost::match_perl) );
+		REQUIRE( boost::regex_match(s2out.str(),boost::regex("^"+r2.getId()+";minE(\\s+\\d;\\w;X){"+toString(r2.size()-3-4)+"}(\\s+\\d;\\w;1){2}(\\s+\\d;\\w;2)(\\s+\\d;\\w;X){4}\\s*$"), boost::match_perl) );
 	}
 
 

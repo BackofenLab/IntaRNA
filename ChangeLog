@@ -1,4 +1,34 @@
 
+170219 Martin Mann :
+ * RnaSequence :
+   + operator == : equality check (id,length,seq)
+ * PredictionTrackerPairMinE :
+   * writeData() :
+     + col/row header now includes sequence position beside according nucleotide
+ * PredictionTrackerProfileMinE :
+   * writeProfile() :
+     + additional column for according nucleotide
+ * CommandLineParsing : 
+   + getFullFilename() : provides the fill in/output file name given a suffix,
+     i.e. adding a sequence specific prefix if needed
+   * validate_?AccFile() :
+     + getFullFilename() usage for multi-sequence accessibility input
+     + additional check to hinder STDIN-based multi-sequence accessibility input
+   * write*Accessibility() :
+     + getFullFilename() usage for multi-sequence accessibility output
+   * construction() :
+     - ?AccFile : no validation on parsing (requires prior full sequence parse)
+   * parse() :
+     + ?AccFile validation after sequence parsing is done
+     * bugfix: *AccConstr presence check corrected
+     * *Acc : accessibility load from file for multi-sequence input enabled
+     - generation of additional output files for multi-sequence input enabled
+   * get*Accessibility() :
+     + getFullFilename() usage for multi-sequence accessibility input
+   * getPredictor() :
+     + getFullFilename() usage for multi-sequence prediction tracking output
+   
+
 170217 Martin Mann :
  * README.md :
    + outfile section
