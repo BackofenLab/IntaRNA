@@ -115,16 +115,16 @@ writeData( std::ostream &out
 	// col[0] = seq1
 	// cell[0,0] = "minE"
 
-	// print header : minE;rSeq2[0],rSeq2[1],...
+	// print header : minE; "reveresedNucleotide _ index" ...
 	out <<"minE";
-	for (auto nt = rna2.begin(); nt!=rna2.end(); nt++) {
-		out <<';' <<(*nt);
+	for (size_t j=0; j<rna2.size(); j++) {
+		out <<';' <<rna2.at(j)<<"_"<<(energy.getAccessibility2().getReversedIndex(j)+1);
 	}
 	out <<'\n';
 	// print minE data
 	for (size_t i=0; i<pairMinE.size1(); i++) {
-		// out nt in seq1
-		out <<rna1.at(i);
+		// out nt in seq1 together with index
+		out <<rna1.at(i)<<"_"<<(i+1);
 		for (size_t j=0; j<pairMinE.size2(); j++) {
 			// out separator
 			out <<';';
