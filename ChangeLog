@@ -1,4 +1,6 @@
 
+##### version 2.0.1 
+
 170219 Martin Mann :
  * RnaSequence :
    + operator == : equality check (id,length,seq)
