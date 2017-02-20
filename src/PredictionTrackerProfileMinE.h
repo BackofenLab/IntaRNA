@@ -161,7 +161,7 @@ writeProfile( std::ostream &out
 	// write in CSV-like format (column data)
 
 	// print header : seq.ID ; minE
-	out <<boost::replace_all_copy(rna.getId(), ";", "_")<<";minE" <<'\n';
+	out <<"idx;"<<boost::replace_all_copy(rna.getId(), ";", "_")<<";minE" <<'\n';
 	// print minE data
 	size_t i=1;
 	for (MinEProfileIterator curE = begin; curE!=end; curE++) {
