@@ -732,7 +732,7 @@ d <- d[,2:ncol(d)];
 d[is.na(d)] = 0;
 d[d>0] = 0;
 # plot
-image( 1:nrow(d), 1:ncol(d), d, col = heat.colors(100), xlab="index in sequence 1", ylab="index in sequence 2");
+image( 1:nrow(d), 1:ncol(d), as.matrix(d), col = heat.colors(100), xlab="index in sequence 1", ylab="index in sequence 2");
 box();
 ```
 
