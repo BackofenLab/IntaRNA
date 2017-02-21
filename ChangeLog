@@ -1,6 +1,11 @@
 
 ##### version 2.0.1 
 
+170221 Martin Mann :
+ * PredictionTrackerPairMinE :
+   * writeData() :
+     * column order reversed to be index ascending
+
 170219 Martin Mann :
  * RnaSequence :
    + operator == : equality check (id,length,seq)

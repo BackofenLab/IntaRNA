@@ -5,16 +5,16 @@
 
 - create distribution source code tar ball
 - prepare release on github:
-  - upload source code tar ball
   - fill changelog
+  - upload source code tar ball
   - (upload win binary)
   - (upload linux binary)
   
 - tag release on github
+
+- update webserver
   
 - update bioconda recipe
 - update galaxy tool shed information
-
-- update binary on webserver
 
 - tweet release 
