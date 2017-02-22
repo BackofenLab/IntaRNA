@@ -14,6 +14,7 @@ nodist_IntaRNA_SOURCES = 	config.h \
 IntaRNA_SOURCES =	intaRNA.cpp \
 					easylogging++.h \
 					general.h \
+					general.cpp \
 					Accessibility.h \
 					Accessibility.cpp \
 					AccessibilityConstraint.h \
@@ -47,14 +48,20 @@ IntaRNA_SOURCES =	intaRNA.cpp \
 					OutputHandler.cpp \
 					OutputHandlerCsv.h \
 					OutputHandlerCsv.cpp \
+					OutputHandlerHub.h \
 					OutputHandlerIntaRNA1.h \
 					OutputHandlerIntaRNA1.cpp \
 					OutputHandlerRangeOnly.h \
 					OutputHandlerRangeOnly.cpp \
 					OutputHandlerText.h \
 					OutputHandlerText.cpp \
+					PredictionTracker.h \
+					PredictionTrackerHub.h \
+					PredictionTrackerPairMinE.h \
+					PredictionTrackerPairMinE.cpp \
+					PredictionTrackerProfileMinE.h \
+					PredictionTrackerProfileMinE.cpp \
 					Predictor.h \
-					Predictor.cpp \
 					PredictorMaxProb.h \
 					PredictorMaxProb.cpp \
 					PredictorMfe.h \

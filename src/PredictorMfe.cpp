@@ -6,8 +6,12 @@
 
 ////////////////////////////////////////////////////////////////////////////
 
-PredictorMfe::PredictorMfe( const InteractionEnergy & energy, OutputHandler & output )
-	: Predictor(energy,output)
+PredictorMfe::PredictorMfe(
+		const InteractionEnergy & energy
+		, OutputHandler & output
+		, PredictionTracker * predTracker
+		)
+	: Predictor(energy,output,predTracker)
 	, mfeInteractions()
 	, reportedInteractions()
 	, minStackingEnergy( energy.getBestE_interLoop() )
@@ -72,6 +76,13 @@ updateOptima( const size_t i1, const size_t j1
 
 	// check if nothing to be done
 	if (mfeInteractions.size() == 0) {
+		// report call if needed
+		if (predTracker != NULL) {
+			// get final energy of current interaction
+			E_type curE = isHybridE ? energy.getE( i1,j1, i2,j2, interE ) : interE;
+			// inform about prediction
+			predTracker->updateOptimumCalled( i1,j1, i2,j2, curE );
+		}
 		return;
 	}
 
@@ -79,6 +90,11 @@ updateOptima( const size_t i1, const size_t j1
 	E_type curE = isHybridE ? energy.getE( i1,j1, i2,j2, interE ) : interE;
 //	LOG(DEBUG) <<"energy( "<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" ) = "
 //			<<interE <<" : total = "<<curE;
+	// report call if needed
+	if (predTracker != NULL) {
+		// inform about prediction
+		predTracker->updateOptimumCalled( i1,j1, i2,j2, curE );
+	}
 
 	if (mfeInteractions.size() == 1) {
 		if (curE < mfeInteractions.begin()->energy) {

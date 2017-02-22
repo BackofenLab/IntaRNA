@@ -124,12 +124,21 @@ public:
 	isAmbiguous( const size_t i ) const;
 
 	/**
+	 * Checks for equality
+	 * @param rna2 the RnaSequence to compare to
+	 * @return true if both are describing the same sequence with the same identifier.
+	 */
+	const bool operator == ( const RnaSequence &rna2 ) const;
+
+	/**
 	 * prints the sequence id and the sequence to stream
 	 * @out the ostream to write to
 	 * @rna the RnaSequence object to add
 	 * @return the altered stream out
 	 */
 	friend std::ostream& operator<<(std::ostream& out, const RnaSequence& rna);
+
+
 
 public:
 
@@ -453,6 +462,25 @@ areComplementary( const RnaSequence & s1, const RnaSequence & s2,
 
 	// check via VRNA util
 	return BP_pair[s1.seqCode.at(p1)][s2.seqCode.at(p2)] > 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+inline
+const bool
+RnaSequence::
+operator == ( const RnaSequence &rna2 ) const
+{
+	return	// check if same object (pointer)
+			this == &rna2
+			|| (
+				// ensure same lengths
+				this->size() == rna2.size()
+				// ids are identical (most likely shorter, i.e. faster check)
+				&& this->id == rna2.id
+				// sequences identical
+				&& this->seqString == rna2.seqString
+			);
 }
 
 /////////////////////////////////////////////////////////////////////////////

@@ -2,7 +2,7 @@
 
 AC_PREREQ([2.65])
 # 5 argument version only available with aclocal >= 2.64
-AC_INIT( [IntaRNA], [2.0.0], [], [intaRNA], [http://www.bioinf.uni-freiburg.de] )
+AC_INIT( [IntaRNA], [2.0.1], [], [intaRNA], [http://www.bioinf.uni-freiburg.de] )
 
 
 # minimal required version of the boost library 
@@ -73,7 +73,7 @@ fi
 
 
 ###############################################################################
-# DEBUG SUPPORT SETUP
+# MULTI-THREADING SUPPORT SETUP
 ###############################################################################
 
 AC_MSG_CHECKING([whether to enable multi-threading support])
@@ -88,11 +88,12 @@ if test x"$multithreadingEnabled" = x"yes"; then
 	AC_DEFINE([INTARNA_MULITHREADING], [1], [Enabling multi-threading support])
 	AC_SUBST([INTARNA_MULITHREADING],[1])
 	# ensure OPENMP can be used
-	AX_OPENMP([],[AC_MSG_ERROR([OPENMP support is mandatory for compilation])]])
+	AX_OPENMP([],[AC_MSG_ERROR([OPENMP support is mandatory for multi-threading compilation])]])
 	AM_CXXFLAGS="$AM_CXXFLAGS $OPENMP_CXXFLAGS"
 else
 	AC_DEFINE([INTARNA_MULITHREADING], [0], [Disabling multi-threading support])
 	AC_SUBST([INTARNA_MULITHREADING],[0])
+	AM_CXXFLAGS="$AM_CXXFLAGS -pthread"
 fi
 
 ###############################################################################

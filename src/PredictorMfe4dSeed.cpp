@@ -9,8 +9,9 @@
 PredictorMfe4dSeed::
 PredictorMfe4dSeed( const InteractionEnergy & energy
 					, OutputHandler & output
+					, PredictionTracker * predTracker
 					, const SeedConstraint & seedConstraint )
- : PredictorMfe4d(energy,output)
+ : PredictorMfe4d(energy,output,predTracker)
 	, seedHandler(energy,seedConstraint)
 	, hybridE_seed(0,0)
 {

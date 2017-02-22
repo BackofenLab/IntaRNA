@@ -24,8 +24,16 @@ public:
 
 	/**
 	 * Construction call the super constructor
+	 *
+	 * @param energy the interaction energy handler
+	 * @param output the output handler to report optimal interactions to
+	 * @param predTracker the prediction tracker to be used or NULL if no
+	 *         tracking is to be done; if non-NULL, the tracker gets deleted
+	 *         on this->destruction.
 	 */
-	PredictorMfe( const InteractionEnergy & energy, OutputHandler & output );
+	PredictorMfe( const InteractionEnergy & energy
+				, OutputHandler & output
+				, PredictionTracker * predTracker );
 
 	virtual ~PredictorMfe();
 
@@ -37,6 +45,9 @@ protected:
 
 	//! access to the output handler of the super class
 	using Predictor::output;
+
+	//! access to the prediction tracker of the super class
+	using Predictor::predTracker;
 
 	// TODO provide all data structures as arguments to make predict() call threadsafe
 

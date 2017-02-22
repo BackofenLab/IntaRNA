@@ -99,4 +99,39 @@
 
 	const E_type E_INF = std::numeric_limits<E_type>::infinity();
 
+
+////////////////  UTILITY FUNCTION  /////////////////////
+
+#include <iostream>
+#include <string>
+
+/**
+ * Returns an open output stream for the given output name, i.e.
+ *
+ * - & std::cout : if outName == STDOUT
+ * - & std::cerr : if outName == STDERR
+ * - new std::fstream( outName ) : else if outName non-empty
+ *
+ * @param outName the name of the output to open. use STDOUT/STDERR for the
+ *        respective output stream or otherwise a filename to be created.
+ *
+ * @return the open output stream, or NULL in error case
+ *
+ */
+std::ostream *
+newOutputStream( const std::string & outName );
+
+
+/**
+ * Deletes an output stream pointer returned by newOutputStream().
+ * If it is a file stream, it is closed before deletion.
+ * If it is pointing to std::cout or std::cerr, nothing is done.
+ *
+ * @param outStream the pointer to the output stream to delete
+ */
+void
+deleteOutputStream( std::ostream * outStream );
+
+
+
 #endif /* GENERAL_H_ */

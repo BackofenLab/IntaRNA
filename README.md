@@ -55,9 +55,11 @@ If you use IntaRNA, please cite our articles
 The following topics are covered by this documentation:
 
 - [Installation](#install)
+  - [IntaRNA via conda](#instconda)
   - [Dependencies](#deps)
   - [Cloning from github](#instgithub)
   - [Source code distribution](#instsource)
+  - [IntaRNA docker container](#instdocker)
 - [Usage and Parameters](#usage)
   - [Just run ...](#defaultRun)
   - [Prediction modes, their features and emulated tools](#predModes)
@@ -66,9 +68,12 @@ The following topics are covered by this documentation:
   - [Output modes](#outmodes)
   - [Suboptimal RNA-RNA interaction prediction and output restrictions](#subopts)
   - [Energy parameters and temperature](#energy)
-  - [Accessibility and unpaired probabilities](#accessibility)
-    - [Local versus global unpaired probabilities](#accLocalGlobal)
-    - [Read/write accessibility from/to file or stream](#accFromFile)
+  - [Additional output files](#outFiles)
+    - [Minimal energy profiles](#profileMinE)
+    - [Minimal energy for all intermolecular index pairs](#pairMinE)
+    - [Accessibility and unpaired probabilities](#accessibility)
+      - [Local versus global unpaired probabilities](#accLocalGlobal)
+      - [Read/write accessibility from/to file or stream](#accFromFile)
   - [Multi-threading and parallelized computation](#multithreading)
 
 
@@ -78,13 +83,55 @@ The following topics are covered by this documentation:
 # Installation
 
 <br /><br />
+<a name="instconda" />
+## IntaRNA via conda (bioconda channel)
+
+The most easy way to locally install IntaRNA is via conda using the 
+[bioconda](https://bioconda.github.io/) 
+channel (linux only). This way, you will install a pre-built IntaRNA binary along
+with all dependencies.
+Follow
+[![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat-square)](http://bioconda.github.io/recipes/intarna/README.html)
+to get detailed information or run
+```bash
+conda install intarna
+```
+if you are using bioconda already.
+
+<br /><br />
+<a name="instdocker" />
+## IntaRNA docker container (via QUAY)
+
+An [IntaRNA docker container](https://quay.io/repository/biocontainers/intarna) 
+([?](https://www.docker.com/)) is provided from the bioconda package via 
+[Quay.io](https://quay.io/). This provides
+you with an encapsulated IntaRNA installation.
+
+
+<br /><br />
 <a name="deps" />
 ## Dependencies
 
+If you are going to compile IntaRNA from source, ensure you meet the following
+dependencies:
+
 - compiler supporting C++11 standard and OpenMP
-- GNU autotools (automake, autoconf, ..)
-- [boost C++ library](http://www.boost.org/) version >= 1.50.0
+- [boost C++ library](http://www.boost.org/) version >= 1.50.0 
+  (ensure the following libraries are installed; or install all e.g. in Ubuntu via package `libboost-all-dev`)
+  - libboost_regex
+  - libboost_program_options
+  - libboost_filesystem
+  - libboost_system
 - [Vienna RNA package](http://www.tbi.univie.ac.at/RNA/) version >= 2.3.0
+- if [cloning from github](#instgithub): GNU autotools (automake, autoconf, ..)
+
+Also used by IntaRNA, but already part of the source code distribution (and thus
+not needed to be installed separately):
+
+- [Catch](https://github.com/philsquared/Catch) test framework
+- [Easylogging++](https://github.com/easylogging/easyloggingpp) logging framework
+
+
 
 <br /><br />
 <a name="instgithub" />
@@ -132,6 +179,49 @@ to use the according `configure` options:
 - `--with-boost` : the prefix where the boost library is installed
 
 
+<br /><br />
+<a name="instwin" />
+## Microsoft Windows installation
+
+### ... from source
+IntaRNA can be compiled, installed, and used on a Microsoft Windows system when
+e.g. using [Cygwin](https://www.cygwin.com/) as 'linux emulator'. Just install
+Cygwin with the following packages:
+
+- *Devel*:
+ - make
+ - gcc-g++
+ - autoconf
+ - automake
+ - pkg-config
+- *Libs*:
+ - libboost-devel
+- *Perl*:
+ - perl
+
+and follow either [install from github](#instgithub) or 
+[install from package](#instsource).
+
+### ... using pre-compiled binaries
+
+For some releases, we also provide precompiled binary packages for Microsoft Windows at the
+[IntaRNA release page](https://github.com/BackofenLab/IntaRNA/releases) 
+that enable 'out-of-the-box' usage. If you
+want to use them:
+- [download](https://github.com/BackofenLab/IntaRNA/releases) the according ZIP archive and extract
+- open a [Windows command prompt](https://www.lifewire.com/how-to-open-command-prompt-2618089)
+- [run IntaRNA](#usage) 
+
+*Note*, these binaries come without any waranties, support or what-so-ever!
+They are just an offer due to according user requests.
+
+If you do not want to work within the IntaRNA directory or don't want to provide
+the full installation path with every IntaRNA call, you should add the installation
+directory to your [`Path` System variable](http://www.computerhope.com/issues/ch000549.htm)
+(using a semicolon `;` separator).
+
+
+
 
 <br /><br /><br /><br />
 <a name="usage" />
@@ -148,6 +238,10 @@ possible to define
 [energy parameters, temperature](#energy),
 and the [accessibility](#accessibility) handling. If you are doing high-throughput
 computations, you might also want to consider [multi-threading support](#multithreading).
+
+For ad hoc usage you can use the 
+[Freiburg RNA tools IntaRNA webserver](http://rna.informatik.uni-freiburg.de/IntaRNA/)
+(with limited parameterization).
 
 
 
@@ -316,6 +410,7 @@ are not enclosing any unpaired nucleotides (or if so only very few).
 IntaRNA supports the definition of such seed constraints and adds further
 options to even more constrain the seed selection. The list of options is given 
 by 
+
 - `--seedBP` : the number of base pairs the seed has to show
 - `--seedMaxUP` : the maximal overall number of unpaired bases within the seed
 - `--seedQMaxUP` : the maximal number of unpaired bases within the query's seed region
@@ -419,6 +514,7 @@ For each prediction, a row in the CSV is generated.
 Using the argument `--outCsvCols`, the user can specify what columns are 
 printed to the output using a comma-separated list of colIds. Available colIds 
 are
+
 - `id1` : id of first sequence
 - `id2` : id of second sequence
 - `seq1` : full first sequence
@@ -486,6 +582,7 @@ Pu1;Pu2;subseqDB;hybridDB
 ### Backward compatible IntaRNA v1.* output
 
 If your scripts/whatever is tuned to the old IntaRNA v1.* output, you can use
+
 - `--outMode=1` : IntaRNA v1.* normal output
 - `--outMode=O` : IntaRNA v1.* detailed output (former `-o` option)
 
@@ -503,6 +600,7 @@ interactions for each query-target pair (including the optimal one). Note, the
 suboptimal enumeration is increasingly sorted by energy.
 
 Furthermore, it is possible to *restrict (sub)optimal enumeration* using
+
 - `--outMaxE` : maximal energy for any interaction reported
 - `--outDeltaE` : maximal energy difference of suboptimal interactions' energy
   to the minimum free energy interaction
@@ -530,6 +628,7 @@ degree Celsius. Note, this is important especially for predictions within plants
 etc., since the default temperature is 37°C.
 
 The energy model used can be specified using the `--energy` parameters using
+
 - 'B' for base pair maximization similar to the Nussinov intramolecular structure prediction.
   Here, each base pair contributes an energy term of `-1` independently of its
   structural or sequence context. This mode is mainly useful for study or teaching 
@@ -564,9 +663,91 @@ upper bound can be set independent for the query and target sequence via
 
 
 
+
+
+
 <br /><br />
+<a name="outFiles" />
+## Additional output files
+
+IntaRNA v2 enables the generation of various additional information in dedicated
+files/streams. The generation of such output is guided by an according (repeated)
+definition of the `--out` argument in combination with one of the following
+argument prefixes (case insensitive) that have to be colon-separated to the
+targeted file/stream name:
+
+- `qMinE:`|`tMinE:` the query/target's minimal interaction energy profile (CSV format), respectively
+- `pMinE:` the minimal interaction energy for all pairs of query-target index pairs (CSV format)
+- `qAcc:`|`tAcc:` the [query/target's ED accessibility values](#accessibility) (RNAplfold-like format), respectively
+- `qPu:`|`tPu:` the [query/target's unpaired probabilities](#accessibility) (RNAplfold format), respectively
+
+Note, for *multiple sequences* in FASTA input, the provided file names
+are prefixed with with `s` and the according sequence's number (where indexing
+starts with 1) within the FASTA input to generate an individual file for each sequence.
+
+
+<br />
+<a name="profileMinE" />
+### Minimal energy profiles
+
+To get a more global view of possible interaction sites for a pair of interacting
+RNAs, one can generate the *minimal energy profile* for each sequence (independently).
+
+For instance, to generate the target's profile, add the following to your IntaRNA
+call: `--out=tMinE:MYPROFILEFILE.csv`. For the query's profile, use `--out=qMinE:..` respectively.
+This will produce an according CSV-file (`;` separated) with the according minimal
+energy profile data that can be visualized with any program of your liking.
+
+In the following, such an output was visualized using R:
+```R
+d <- read.table("MYPROFLEFILE.csv", header=T, sep=";");
+plot( d[,1], d[,3], xlab="sequence index", ylab="minimal energy", type="l", col="blue", lwd=2)
+abline(h=0, col="red", lty=2, lwd=2)
+```
+
+![Minimal interaction energy profile of an RNA](/doc/figures/profile-minE.png?raw=true "Minimal interaction energy profile of an RNA")
+
+This plot reveals two less but still stable (*E* below 0) interaction sites beside the
+mfe interaction close to the 5'-end of the molecule.
+
+
+<br />
+<a name="pairMinE" />
+### Minimal energy for all intermolecular index pairs
+
+To investigate how stable RNA-RNA interactions are distributed for a given pair
+of RNAs, you can also generate the minimal energy for all intermolecular index
+pairs using `--out=pMinE:MYPAIRMINE.csv`. This generates a CSV file (`;`separated)
+holding for each index pair the minimal energy of any interaction covering this
+index combination or `NA` if no covers it at all.
+
+This information can be visualized with your preferred program. In the following,
+the provided R call is used to generate a heatmap visualization of the 
+RNA-RNA interaction possibilities.
+
+```R
+# read data, skip first column, and replace NA and E>0 values with 0
+d <- read.table("MYPAIRMINE.csv",header=T,sep=";");
+d <- d[,2:ncol(d)];
+d[is.na(d)] = 0;
+d[d>0] = 0;
+# plot
+image( 1:nrow(d), 1:ncol(d), as.matrix(d), col = heat.colors(100), xlab="index in sequence 1", ylab="index in sequence 2");
+box();
+```
+
+The following plot (for the [minimal energy profile](#profileMinE) example from
+above) reveals, that the alternative stable (*E*<0) interactions all involve the
+mfe-site in the second sequence and are thus less likely to occure. 
+
+![Minimal interaction energy index pair information](/doc/figures/pair-minE.png?raw=true "Minimal interaction energy index pair information")
+
+
+
+
+<br />
 <a name="accessibility" />
-## Accessibility and unpaired probabilities
+### Accessibility and unpaired probabilities
 
 Accessibility describes the availability of an RNA subsequence for intermolecular
 base pairing. It can be expressed in terms of the probability of the subsequence
@@ -587,7 +768,7 @@ using the Vienna RNA package routines for query or target sequences, respectivel
 
 
 <a name="accLocalGlobal" />
-### Local versus global unpaired probabilities
+#### Local versus global unpaired probabilities
 
 Exact computation of unpaired probabilities (*Pu* terms) is considers all possible
 structures the sequence can adopt (the whole structure ensemble). This is referred
@@ -604,7 +785,7 @@ IntaRNA enables both global as well as local unpaired probability computation.
 To this end, the sliding window length has to be specified in order to enable/disable
 local folding.
 
-#### Use case examples global/local unpaired probability computation
+##### Use case examples global/local unpaired probability computation
 The use of global or local accessibilities can be defined independently 
 for query and target sequences using `--qAccW|L` and `--tAccW|L`, respectively.
 Here, `--?AccW` defines the sliding window length (0 sets it to the whole sequence length)
@@ -621,7 +802,7 @@ IntaRNA [..] --qAccW=0 --qAccL=0 --tAccW=150 --qAccL=100
 
 
 <a name="accFromFile" />
-### Read/write accessibility from/to file or stream
+#### Read/write accessibility from/to file or stream
 
 It is possible to read precomputed accessibility values from file or stream to
 avoid their runtime demanding computation. To this end, we support the following
@@ -629,8 +810,8 @@ formats
 
 | Input format | produced by |
 | ---- | --- |
-| RNAplfold unpaired probabilities | `RNAplfold -u` or `IntaRNA --out*PuFile` |
-| RNAplfold-styled ED values | `IntaRNA --out*AccFile` |
+| RNAplfold unpaired probabilities | `RNAplfold -u` or `IntaRNA --out=*Pu:` |
+| RNAplfold-styled ED values | `IntaRNA --out=*Acc:` |
 
 The **RNAplfold** format is a table encoding of a banded upper triangular matrix 
 with band width l. First row contains a header comment on the data starting with
@@ -653,24 +834,42 @@ example for a sequence of length 5 with a maximal window length of 3.
 
 ```
 
-#### Use case examples for read/write accessibilities and unpaired probabilities
+
+##### Use case examples for read/write accessibilities and unpaired probabilities
 If you have precomputed data, e.g. the file `plfold_lunp` with unpaired probabilities
 computed by **RNAplfold**, you can run
+
 ```bash
 # fill accessibilities from RNAplfold unpaired probabilities
 IntaRNA [..] --qAcc=P --qAccFile=plfold_lunp
 # fill accessibilities from RNAplfold unpaired probabilities via pipe
 cat plfold_lunp | IntaRNA [..] --qAcc=P --qAccFile=STDIN
 ```
+
 Another option is to store the accessibility data computed by IntaRNA for 
 successive calls using 
+
 ```bash
 # storing and reusing (target) accessibility (Pu) data for successive IntaRNA calls
-IntaRNA [..] --outTPuFile=intarna.target.pu
+IntaRNA [..] --out=tPu:intarna.target.pu
 IntaRNA [..] --tAcc=P --tAccFile=intarna.target.pu
 # piping (target) accessibilities (ED values) between IntaRNA calls
-IntaRNA [..] --outTAccFile=STDOUT | IntaRNA [..] --tAcc=E --tAccFile=STDIN
+IntaRNA [..] --out=tAcc:STDOUT | IntaRNA [..] --tAcc=E --tAccFile=STDIN
 ```
+
+
+Note, for *multiple sequences* in FASTA input, one can also load the
+accessibilities (for *all* sequencces) from file. To this end, the file names
+have to be prefixed with with `s` and the according sequence's number (where indexing
+starts with 1) within the FASTA input using a common suffix after the index.
+This suffix is to be provided to the according `--?AccFile` argument. 
+The files generated by `--out=?Acc:...` are already conform to this requirement,
+such that you can use the use case examples from above also for multi-sequence
+FASTA input. 
+Note, this is not supported for a piped setup (e.g. via `--out=tAcc:STDOUT`
+as shown above), since this does not produce the according output files!
+
+
 
 
 <br /><br />

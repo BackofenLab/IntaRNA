@@ -199,74 +199,74 @@ add( const Interaction & i )
 				break;
 
 			case seedStart1:
-				if (i.seedRange == NULL) {
+				if (i.seed == NULL) {
 					out <<std::numeric_limits<E_type>::signaling_NaN();
 				} else {
-					out <<(i.seedRange->r1.from+1);
+					out <<(i.seed->bp_i.first+1);
 				}
 				break;
 
 			case seedEnd1:
-				if (i.seedRange == NULL) {
+				if (i.seed == NULL) {
 					out <<std::numeric_limits<E_type>::signaling_NaN();
 				} else {
-					out <<(i.seedRange->r1.to+1);
+					out <<(i.seed->bp_j.first+1);
 				}
 				break;
 
 			case seedStart2:
-				if (i.seedRange == NULL) {
+				if (i.seed == NULL) {
 					out <<std::numeric_limits<E_type>::signaling_NaN();
 				} else {
-					out <<(i.seedRange->r2.to+1);
+					out <<(i.seed->bp_j.second+1);
 				}
 				break;
 
 			case seedEnd2:
-				if (i.seedRange == NULL) {
+				if (i.seed == NULL) {
 					out <<std::numeric_limits<E_type>::signaling_NaN();
 				} else {
-					out <<(i.seedRange->r2.from+1);
+					out <<(i.seed->bp_i.second+1);
 				}
 				break;
 
 			case seedE:
-				if (i.seedRange == NULL) {
+				if (i.seed == NULL) {
 					out <<std::numeric_limits<E_type>::signaling_NaN();
 				} else {
-					out <<i.seedRange->energy;
+					out <<i.seed->energy;
 				}
 				break;
 
 			case seedED1:
-				if (i.seedRange == NULL) {
+				if (i.seed == NULL) {
 					out <<std::numeric_limits<E_type>::signaling_NaN();
 				} else {
-					out <<energy.getED1( i.seedRange->r1.from, i.seedRange->r1.to );
+					out <<energy.getED1( i.seed->bp_i.first, i.seed->bp_j.first );
 				}
 				break;
 
 			case seedED2:
-				if (i.seedRange == NULL) {
+				if (i.seed == NULL) {
 					out <<std::numeric_limits<E_type>::signaling_NaN();
 				} else {
-					out <<energy.getAccessibility2().getAccessibilityOrigin().getED( i.seedRange->r2.to, i.seedRange->r2.from );
+					out <<energy.getAccessibility2().getAccessibilityOrigin().getED( i.seed->bp_j.second, i.seed->bp_i.second );
 				}
 				break;
 
 			case seedPu1:
-				if (i.seedRange == NULL) {
+				if (i.seed == NULL) {
 					out <<std::numeric_limits<E_type>::signaling_NaN();
 				} else {
-					out <<std::exp( - energy.getED1( i.seedRange->r1.from, i.seedRange->r1.to ) / energy.getRT() );
+					out <<std::exp( - energy.getED1( i.seed->bp_i.first, i.seed->bp_j.first ) / energy.getRT() );
 				}
 				break;
 
 			case seedPu2:
-				if (i.seedRange == NULL) {
+				if (i.seed == NULL) {
 					out <<std::numeric_limits<E_type>::signaling_NaN();
 				} else {
-					out <<std::exp( - energy.getAccessibility2().getAccessibilityOrigin().getED( i.seedRange->r2.to, i.seedRange->r2.from ) / energy.getRT() );
+					out <<std::exp( - energy.getAccessibility2().getAccessibilityOrigin().getED( i.seed->bp_j.second, i.seed->bp_i.second ) / energy.getRT() );
 				}
 				break;
 

@@ -7,9 +7,10 @@ PredictorMfe2dSeed::
 PredictorMfe2dSeed(
 		const InteractionEnergy & energy
 		, OutputHandler & output
+		, PredictionTracker * predTracker
 		, const SeedConstraint & seedConstraint )
  :
-	PredictorMfe2d(energy,output)
+	PredictorMfe2d(energy,output,predTracker)
 	, seedHandler(energy,seedConstraint)
 	, hybridE_pq_seed()
 {

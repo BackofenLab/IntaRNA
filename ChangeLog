@@ -1,4 +1,135 @@
 
+##### version 2.0.1 
+
+170221 Martin Mann :
+ * PredictionTrackerPairMinE :
+   * writeData() :
+     * column order reversed to be index ascending
+
+170219 Martin Mann :
+ * RnaSequence :
+   + operator == : equality check (id,length,seq)
+ * PredictionTrackerPairMinE :
+   * writeData() :
+     + col/row header now includes sequence position beside according nucleotide
+ * PredictionTrackerProfileMinE :
+   * writeProfile() :
+     + additional column for according nucleotide
+ * CommandLineParsing : 
+   + getFullFilename() : provides the fill in/output file name given a suffix,
+     i.e. adding a sequence specific prefix if needed
+   * validate_?AccFile() :
+     + getFullFilename() usage for multi-sequence accessibility input
+     + additional check to hinder STDIN-based multi-sequence accessibility input
+   * write*Accessibility() :
+     + getFullFilename() usage for multi-sequence accessibility output
+   * construction() :
+     - ?AccFile : no validation on parsing (requires prior full sequence parse)
+   * parse() :
+     + ?AccFile validation after sequence parsing is done
+     * bugfix: *AccConstr presence check corrected
+     * *Acc : accessibility load from file for multi-sequence input enabled
+     - generation of additional output files for multi-sequence input enabled
+   * get*Accessibility() :
+     + getFullFilename() usage for multi-sequence accessibility input
+   * getPredictor() :
+     + getFullFilename() usage for multi-sequence prediction tracking output
+   
+
+170217 Martin Mann :
+ * README.md :
+   + outfile section
+   + minE profile docu
+   * accessibility output corrected
+ + doc/figures/profile-minE.png : minE profile example
+ * CommandLineParsing :
+   - out*File : replaced by --out multi-arg handling
+   - validate_out*File() : obsolete
+   + OutPrefixCode : encodings for all valid prefixes of --out
+   + getCodeForPrefix() : provides the OutPrefixCode for a given prefix string
+   + outPrefix2streamName : holds for each registered --out prefix the user
+     provided file/stream name or an empty string if not provided
+     (filled by validate_out())
+   * out : now a vector of arguments to enable multi-arg occurrences
+   * write*Accessibility : uses now outPrefix2streamName values
+   * constructor :
+     + initialization of outPrefix2streamName
+     * argument help unified
+   * parse() :
+     + duplication check for --out arguments to avoid file write clashes
+   + PredictionTrackerPairMinE enabled
+ * Interaction :
+   + Seed : class to concentrate all seed-related information
+   - seedRange : replaced by seed member
+   + seed : optional Seed object
+   * setSeedRange() : fills seed member
+   + operator=(Interaction) : copy function that creates new seed object
+   + copy constructor: to copy seed object
+ * OutputHandler* :
+   * adaption to Interaction::Seed change
+
+170214 Martin Mann :
+ + PredictionTrackerPairMinE : tracks for all intermolecular index pairs the
+   minimal energy of any interaction covering this pair
+ + PredictionTrackerHub : forwards tracking information to all registered
+   trackers
+ * CommandLineParsing : 
+   * getPredictor() :
+     + PredictionTrackerHub used for tracker setup
+
+170212 Martin Mann :
+ * general :
+   + newOutputStream() : returns a pointer to a (newly allocated) output 
+     stream depending on the provided string
+   + deleteOutputStream() : deletes (if necessary) the pointer returned by
+     newOutputStream
+ * CommandLineParsing :
+   * bugfix : -n argument description wrong [thanks to Michael Uhl]
+   + out*minEFile + validator : stream name of minE profile output
+   * destruction :
+     + using deleteOutputStream()
+   * parse() :
+     + using newOutputStream()
+     + checks for out*minEfile
+   * getPredictor() :
+     + PredictionTracker setup
+   * writeAccessibility() :
+     + using newOutputStream()
+     + using deleteOutputStream()
+ * InteractionEnergy :
+   + getE( Z ) : ensemble energy from partition function
+ + OutputHandlerHub : hub for a list of OutputHandler objects to that the output
+   requests are forwarded
+ + PredictionTracker : general interface to track all step results produced by
+   a Predictor instance
+   + updateOptimumCalled() : triggered when a Predictor calls updateOptimum()
+ + PredictionTrackerProfileMinE : produces a profile of the minimum interaction
+   energy for each position of the interacting RNAs (covered by any interaction)
+   + stream-based construction
+   + filename/streamname-based construction
+ * Predictor :
+   + predTracker : optional PredictionTracker pointer
+   * constructor :
+     + predTracker
+   * destruction :
+     + delete predTracker
+ * PredictorMfe :
+   * updateOptimum() :
+     + calling predTracker->updateOptimumCalled() if non-NULL predTracker
+ * PredictorMfe* :
+   * constructor :
+     + predTracker
+ * PredictorMaxProb* :
+   * constructor :
+     + predTracker
+   * updateOptimum() :
+     + calling predTracker->updateOptimumCalled() if non-NULL predTracker
+   * using energy.getE( Z ) 
+ + tests : PredictionTrackerProfileMinE
+ * tests : rename OutputRangeOnly -> OutputHandlerRangeOnly
+
+##### version 2.0.0 
+
 170206 Martin Mann :
  * src/Makefile.am :
    + AUTOMAKE_OPTIONS = std-options : checks for std options of binary

@@ -95,6 +95,17 @@ public:
 			, const E_type hybridE ) const;
 
 	/**
+	 * Provides the ensemble energy for a given partition function Z.
+	 *
+	 * @param Z the ensemble's partition function to convert
+	 *
+	 * @return E = -RT * log( Z )
+	 */
+	virtual
+	E_type
+	getE( const E_type Z ) const;
+
+	/**
 	 * Provides details about the energy contributions for the given interaction
 	 *
 	 * @param interaction the interaction of interest
@@ -807,6 +818,18 @@ getE( const size_t i1, const size_t j1
 		return E_INF;
 	}
 }
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+InteractionEnergy::
+getE( const E_type Z ) const
+{
+	// convert partition function to ensemble energy
+	return - getRT() * std::log( Z );
+}
+
 
 ////////////////////////////////////////////////////////////////////////////
 

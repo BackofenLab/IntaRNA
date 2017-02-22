@@ -1,0 +1,15 @@
+
+# Galaxy tool shed integration (Zaher Wanli)
+
+You will find the wrapper in this folder, after Björn merges my PR.
+https://github.com/bgruening/galaxytools/tree/master/tools/rna_tools
+
+You will need to install PLanemo for linting and testing the wrappers.
+http://planemo.readthedocs.io/en/latest/readme.html
+
+You can find basic information about writing a wrapper here:
+http://planemo.readthedocs.io/en/latest/writing_standalone.html
+
+And for more details and information you can always refer to the Galaxy
+documentation, it's easy to read and very helpful.
+https://docs.galaxyproject.org/en/latest/dev/schema.html

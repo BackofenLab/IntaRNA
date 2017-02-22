@@ -43,4 +43,22 @@ TEST_CASE( "RnaSequence", "[RNAsequence]" ) {
 
 	}
 
+	SECTION( "operator==()" ) {
+
+		std::string id= "test", seq="AAAUUUGGGCCC";
+
+		RnaSequence rna(id, seq);
+
+		// check equality
+		REQUIRE( rna == rna );
+		REQUIRE( rna == RnaSequence(id,seq) );
+		REQUIRE( RnaSequence(id,seq) == rna );
+		REQUIRE_FALSE( rna == RnaSequence(id,seq+"A") );
+		REQUIRE_FALSE( RnaSequence(id,seq+"A") == rna );
+		REQUIRE_FALSE( rna == RnaSequence(id+"2",seq) );
+		REQUIRE_FALSE( RnaSequence(id+"2",seq) == rna );
+		REQUIRE_FALSE( rna == RnaSequence(id+"2",seq+"A") );
+		REQUIRE_FALSE( RnaSequence(id+"2",seq+"A") == rna );
+	}
+
 }
