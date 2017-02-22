@@ -56,10 +56,11 @@ The following topics are covered by this documentation:
 
 - [Installation](#install)
   - [IntaRNA via conda](#instconda)
+  - [IntaRNA docker container](#instdocker)
   - [Dependencies](#deps)
   - [Cloning from github](#instgithub)
   - [Source code distribution](#instsource)
-  - [IntaRNA docker container](#instdocker)
+  - [Microsoft Windows installation](#instwin)
 - [Usage and Parameters](#usage)
   - [Just run ...](#defaultRun)
   - [Prediction modes, their features and emulated tools](#predModes)
@@ -625,7 +626,7 @@ supported by IntaRNA.
 
 The temperature can be set via `--temperature=C`to set a temperature `C` in 
 degree Celsius. Note, this is important especially for predictions within plants
-etc., since the default temperature is 37°C.
+etc., since the default temperature is 37Â°C.
 
 The energy model used can be specified using the `--energy` parameters using
 
