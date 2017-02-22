@@ -101,7 +101,7 @@ fillHybridE()
 	
 	// iterate (decreasingly) over all left interaction starts
 	#pragma omp parallel for
-	for (size_t i1=hybridE.size1(); i1 > 0;i2--) {
+	for (size_t i1=hybridE.size1(); i1 > 0;i1--) {
 	for (size_t i2=hybridE.size2(); i2-- > 0;) {
 		//Moved all declarations inside so that each thread has its own copy
 		E_type curE = E_INF, curEtotal = E_INF, curCellEtotal = E_INF;
@@ -118,8 +118,8 @@ fillHybridE()
 
 		// TODO PARALLELIZE THIS DOUBLE LOOP ?!
 		// iterate over all loop sizes w1 (seq1) and w2 (seq2) (minus 1)
-		for (w1=1; w1-1 <= energy.getMaxInternalLoopSize1() && i1-1+w1<hybridE.size1(); w1++) {
-		for (w2=1; w2-1 <= energy.getMaxInternalLoopSize2() && i2+w2<hybridE.size2(); w2++) {
+		for (size_2 w1=1; w1-1 <= energy.getMaxInternalLoopSize1() && i1-1+w1<hybridE.size1(); w1++) {
+		for (size_2 w2=1; w2-1 <= energy.getMaxInternalLoopSize2() && i2+w2<hybridE.size2(); w2++) {
 			// direct cell access (const)
 			rightExt = &(hybridE(i1-1+w1,i2+w2));
 			// check if right side can pair
