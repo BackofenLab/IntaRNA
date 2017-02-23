@@ -81,7 +81,9 @@ getBestE_interLoop() const
 	std::set<int> basePairCodes;
 	for (int i=0; i<NBASES; i++) {
 	for (int j=0; j<NBASES; j++) {
-		basePairCodes.insert( BP_pair[i][j] );
+		if (BP_pair[i][j] != 0) {
+			basePairCodes.insert( BP_pair[i][j] );
+		}
 	}
 	}
 	// get minimal energy for any base pair code combination
