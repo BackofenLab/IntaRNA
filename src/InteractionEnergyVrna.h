@@ -34,6 +34,8 @@ class InteractionEnergyVrna: public InteractionEnergy {
 
 public:
 
+
+
 	/**
 	 * Construct energy utility object given the accessibility ED values for
 	 * two sequences.
@@ -108,7 +110,34 @@ public:
 	 */
 	virtual
 	E_type
-	getEU( const size_t numUnpaired ) const;
+	getE_multiUnpaired( const size_t numUnpaired ) const;
+
+	/**
+	 * Provides the energy contribution/penalty of the helix repesented by the
+	 * interaction right of a multi-site gap starting with base pair (j1,j2)
+	 *
+	 * @param j1 the end of the gap in seq1, ie the first base paired in the
+	 *           interaction site to the right of the gap
+	 * @param j2 the end of the gap in seq2, ie the first base paired in the
+	 *           interaction site to the right of the gap
+	 *
+	 * @return the energy contribution/penalty of the intermolecular helix
+	 *         within an intramolecular multiloop
+	 */
+	virtual
+	E_type
+	getE_multiHelix( const size_t j1, const size_t j2 ) const;
+
+	/**
+	 * Provides the energy contribution/penalty for closing an intermolecular
+	 * multiloop on the left of a multi-site gap.
+	 *
+	 * @return the energy contribution/penalty of the intermolecular helix
+	 *         within an intramolecular multiloop
+	 */
+	virtual
+	E_type
+	getE_multiClosing() const;
 
 	/**
 	 * Provides the duplex initiation energy.
@@ -458,9 +487,32 @@ isGC( const size_t i1, const size_t i2 ) const
 inline
 E_type
 InteractionEnergyVrna::
-getEU( const size_t numUnpaired ) const
+getE_multiUnpaired( const size_t numUnpaired ) const
 {
 	return numUnpaired * ((E_type)foldParams->MLbase) / (E_type)100.0;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+InteractionEnergyVrna::
+getE_multiHelix( const size_t j1, const size_t j2 ) const
+{
+	return ((E_type)foldParams->MLintern[
+	                                     BP_pair[accS2.getSequence().asCodes().at(j2)]
+	                                             [accS1.getSequence().asCodes().at(j1)]
+	                                    ]) / (E_type)100.0;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+InteractionEnergyVrna::
+getE_multiClosing() const
+{
+	return ((E_type)foldParams->MLclosing) / (E_type)100.0;
 }
 
 ////////////////////////////////////////////////////////////////////////////

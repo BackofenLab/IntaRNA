@@ -86,7 +86,33 @@ public:
 	 */
 	virtual
 	E_type
-	getEU( const size_t numUnpaired ) const;
+	getE_multiUnpaired( const size_t numUnpaired ) const;
+
+
+	/**
+	 * Provides the energy contribution/penalty of the helix repesented by the
+	 * interaction right of a multi-site gap starting with base pair (j1,j2)
+	 *
+	 * @param j1 the end of the gap in seq1, ie the first base paired in the
+	 *           interaction site to the right of the gap
+	 * @param j2 the end of the gap in seq2, ie the first base paired in the
+	 *           interaction site to the right of the gap
+	 *
+	 * @return 0.0
+	 */
+	virtual
+	E_type
+	getE_multiHelix( const size_t j1, const size_t j2 ) const;
+
+	/**
+	 * Provides the energy contribution/penalty for closing an intermolecular
+	 * multiloop on the left of a multi-site gap.
+	 *
+	 * @return 0.0
+	 */
+	virtual
+	E_type
+	getE_multiClosing() const;
 
 
 	/**
@@ -291,7 +317,27 @@ getES2( const size_t i2, const size_t j2 ) const
 inline
 E_type
 InteractionEnergyBasePair::
-getEU( const size_t numUnpaired ) const
+getE_multiUnpaired( const size_t numUnpaired ) const
+{
+	return 0.0;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+InteractionEnergyBasePair::
+getE_multiHelix( const size_t j1, const size_t j2 ) const
+{
+	return 0.0;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+InteractionEnergyBasePair::
+getE_multiClosing() const
 {
 	return 0.0;
 }

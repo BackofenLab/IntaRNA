@@ -20,6 +20,19 @@ class InteractionEnergy {
 public:
 
 	/**
+	 * defines where intramolecular structure contributions are to be considered
+	 * e.g. in getE_multi().
+	 */
+	enum ES_multi_mode {
+		//! incorporate ES for seq1 only
+		ES_multi_1only,
+		//! incorporate ES for seq2 only
+		ES_multi_2only,
+		//! incorporate ES for both sequences
+		ES_multi_both,
+	};
+
+	/**
 	 * Container that provides the different energy contributions for an interaction
 	 */
 	struct EnergyContributions {
@@ -185,6 +198,28 @@ public:
 
 
 	/**
+	 * Provides the energy contribution of an interaction site gap, i.e. the
+	 * provided regions are without intermolecular base pairs but are considered
+	 * to be involved in intramolecular base pairs only. The multi-site gap is
+	 * scored according to a multiloop in a single structure prediction model.
+	 * The ends of the two regions are supposed to form an intermolecular base
+	 * pair each, i.e. (i1,i2) and (j1,j2) have to be complementary.
+	 *
+	 * @param i1 the start of the structured region of seq1
+	 * @param j1 the end of the structured region of seq1
+	 * @param i2 the start of the structured region of seq2
+	 * @param j2 the end of the structured region of seq2
+	 * @param ES_mode defines for which sequence intramolecular structure
+	 *          contributions are to be considered
+	 * @return the energy contribution of a multi-site interaction gap
+	 */
+	virtual
+	E_type
+	getE_multi(  const size_t i1, const size_t j1
+				, const size_t i2, const size_t j2
+				, const ES_multi_mode ES_mode ) const;
+
+	/**
 	 * Provides the ensemble energy (ES) of all intramolecular substructures
 	 * that can be formed within a given region of sequence 1 under the
 	 * assumption that the region is part of an (intermolecular) multiloop,
@@ -229,7 +264,34 @@ public:
 	 */
 	virtual
 	E_type
-	getEU( const size_t numUnpaired ) const = 0;
+	getE_multiUnpaired( const size_t numUnpaired ) const = 0;
+
+	/**
+	 * Provides the energy contribution/penalty of the helix repesented by the
+	 * interaction right of a multi-site gap starting with base pair (j1,j2)
+	 *
+	 * @param j1 the end of the gap in seq1, ie the first base paired in the
+	 *           interaction site to the right of the gap
+	 * @param j2 the end of the gap in seq2, ie the first base paired in the
+	 *           interaction site to the right of the gap
+	 *
+	 * @return the energy contribution/penalty of the intermolecular helix
+	 *         within an intramolecular multiloop
+	 */
+	virtual
+	E_type
+	getE_multiHelix( const size_t j1, const size_t j2 ) const = 0;
+
+	/**
+	 * Provides the energy contribution/penalty for closing an intermolecular
+	 * multiloop on the left of a multi-site gap.
+	 *
+	 * @return the energy contribution/penalty of the intermolecular helix
+	 *         within an intramolecular multiloop
+	 */
+	virtual
+	E_type
+	getE_multiClosing() const = 0;
 
 	/**
 	 * Provides the duplex initiation energy.
@@ -828,6 +890,44 @@ getE( const E_type Z ) const
 {
 	// convert partition function to ensemble energy
 	return - getRT() * std::log( Z );
+}
+
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+InteractionEnergy::
+getE_multi(  const size_t i1, const size_t j1
+			, const size_t i2, const size_t j2
+			, const ES_multi_mode ES_mode ) const
+{
+#if IN_DEBUG_MODE
+	if (i1 >= j1 ) throw std::runtime_error("InteractionEnergy::getE_multi() : i1>=j1 : "+toString(i1)+" "+toString(j1));
+	if (i2 >= j2 ) throw std::runtime_error("InteractionEnergy::getE_multi() : i2>=j2 : "+toString(i2)+" "+toString(j2));
+	if (j1 >= size1()) throw std::runtime_error("InteractionEnergy::getE_multi() : j1>=size1() : "+toString(j1)+" "+toString(size1()));
+	if (j2 >= size2()) throw std::runtime_error("InteractionEnergy::getE_multi() : j2>=size2() : "+toString(j2)+" "+toString(size2()));
+	if (! areComplementary(i1,i2)) throw std::runtime_error("InteractionEnergy::getE_multi() : not complementary : "+toString(i1)+" "+toString(i2));
+	if (! areComplementary(j1,j2)) throw std::runtime_error("InteractionEnergy::getE_multi() : not complementary : "+toString(j1)+" "+toString(j2));
+#endif
+
+	return
+			// intramolecular structure contributions
+			  (ES_mode != ES_multi_2only ? getES1(i1,j1) : 0)
+			+ (ES_mode != ES_multi_1only ? getES2(i2,j2) : 0)
+			// dangling end treatments (including helix closure penalty)
+			+ getE_danglingRight(i1,i2)
+			+ getE_danglingLeft(j1,j2)
+			// multiloop unpaired contributions
+			+ getE_multiUnpaired(
+					(ES_mode == ES_multi_2only ? j1-i1-1 : 0 )
+					+ (ES_mode == ES_multi_1only ? j2-i2-1 : 0 )
+					);
+			// multiloop helix contribution (right side interaction site)
+			+ getE_multiHelix( j1, j2 )
+			// multiloop closure
+			+ getE_multiClosing()
+			;
 }
 
 

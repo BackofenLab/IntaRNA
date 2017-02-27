@@ -1,4 +1,18 @@
 
+170227 Martin Mann :
+ * InteractionEnergy :
+   + getE_multi() : generic function to get the energy contribution of a 
+     intramolecularly structured gap between two interaction sites
+ * InteractionEnergy :
+ * InteractionEnergyBasePair :
+ * InteractionEnergyIdxOffset :
+ * InteractionEnergyVrna :
+   - getEU() : renamed to getE_multiUnpaired()
+   + getE_multiUnpaired() : former getEU()
+   + getE_multiHelix() : penalty for the intermolecular site that is part of the
+     intermolecular multiloop as a helix (right interaction site)
+   + getE_multiClosing() : penalty for closing the multi-site gap (on the left)
+
 ##### version 2.0.1 
 
 170221 Martin Mann :

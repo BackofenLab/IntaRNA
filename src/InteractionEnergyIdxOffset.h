@@ -180,7 +180,36 @@ public:
 	 */
 	virtual
 	E_type
-	getEU( const size_t numUnpaired ) const;
+	getE_multiUnpaired( const size_t numUnpaired ) const;
+
+
+	/**
+	 * Provides the energy contribution/penalty of the helix repesented by the
+	 * interaction right of a multi-site gap starting with base pair (j1,j2)
+	 *
+	 * @param j1 the end of the gap in seq1, ie the first base paired in the
+	 *           interaction site to the right of the gap
+	 * @param j2 the end of the gap in seq2, ie the first base paired in the
+	 *           interaction site to the right of the gap
+	 *
+	 *
+	 * @return the energy contribution/penalty of the intermolecular helix
+	 *         within an intramolecular multiloop
+	 */
+	virtual
+	E_type
+	getE_multiHelix( const size_t j1, const size_t j2 ) const;
+
+	/**
+	 * Provides the energy contribution/penalty for closing an intermolecular
+	 * interaction left of a multi-site gap.
+	 *
+	 * @return the energy contribution/penalty of the intermolecular helix
+	 *         within an intramolecular multiloop
+	 */
+	virtual
+	E_type
+	getE_multiClosing() const;
 
 	/**
 	 * Provides the duplex initiation energy.
@@ -578,9 +607,30 @@ getES2( const size_t i2, const size_t j2 ) const
 inline
 E_type
 InteractionEnergyIdxOffset::
-getEU( const size_t numUnpaired ) const
+getE_multiUnpaired( const size_t numUnpaired ) const
 {
-	return energyOriginal.getEU( numUnpaired );
+	return energyOriginal.getE_multiUnpaired( numUnpaired );
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+InteractionEnergyIdxOffset::
+getE_multiHelix( const size_t j1, const size_t j2 ) const
+{
+	return energyOriginal.getE_multiHelix(j1+offset1, j2+offset2);
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+InteractionEnergyIdxOffset::
+getE_multiClosing() const
+{
+	return energyOriginal.getE_multiClosing();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -709,6 +759,7 @@ getRT() const
 {
 	return energyOriginal.getRT();
 }
+
 ////////////////////////////////////////////////////////////////////////////
 
 inline
