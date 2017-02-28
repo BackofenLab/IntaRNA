@@ -922,7 +922,7 @@ getE_multi(  const size_t i1, const size_t j1
 			+ getE_multiUnpaired(
 					(ES_mode == ES_multi_2only ? j1-i1-1 : 0 )
 					+ (ES_mode == ES_multi_1only ? j2-i2-1 : 0 )
-					);
+					)
 			// multiloop helix contribution (right side interaction site)
 			+ getE_multiHelix( j1, j2 )
 			// multiloop closure
