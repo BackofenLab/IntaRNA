@@ -100,36 +100,36 @@ fillHybridE()
 	// current minimal value
 	
 	// iterate (decreasingly) over all left interaction starts
+	for (size_t i1=hybridE.size1(); i1-- > 0;) {
 	#pragma omp parallel for
-	for (size_t i1=hybridE.size1(); i1 > 0;i1--) {
-	for (size_t i2=hybridE.size2(); i2-- > 0;) {
+	for (size_t i2=hybridE.size2(); i2 > 0;i2--) {
 		//Moved all declarations inside so that each thread has its own copy
 		E_type curE = E_INF, curEtotal = E_INF, curCellEtotal = E_INF;
 		BestInteraction * curCell = NULL;
 		const BestInteraction * rightExt = NULL;
 		// direct cell access
-		curCell = &(hybridE(i1-1,i2));
+		curCell = &(hybridE(i1,i2-1));
 		// check if left side can pair
 		if (E_isINF(curCell->E)) {
 			continue;
 		}
 		// current
-		curCellEtotal = energy.getE(i1-1,curCell->j1,i2,curCell->j2,curCell->E);
+		curCellEtotal = energy.getE(i1,curCell->j1,i2-1,curCell->j2,curCell->E);
 
 		// TODO PARALLELIZE THIS DOUBLE LOOP ?!
 		// iterate over all loop sizes w1 (seq1) and w2 (seq2) (minus 1)
-		for (size_2 w1=1; w1-1 <= energy.getMaxInternalLoopSize1() && i1-1+w1<hybridE.size1(); w1++) {
-		for (size_2 w2=1; w2-1 <= energy.getMaxInternalLoopSize2() && i2+w2<hybridE.size2(); w2++) {
+		for (size_2 w1=1; w1-1 <= energy.getMaxInternalLoopSize1() && i1+w1<hybridE.size1(); w1++) {
+		for (size_2 w2=1; w2-1 <= energy.getMaxInternalLoopSize2() && i2-1+w2<hybridE.size2(); w2++) {
 			// direct cell access (const)
-			rightExt = &(hybridE(i1-1+w1,i2+w2));
+			rightExt = &(hybridE(i1+w1,i2-1+w2));
 			// check if right side can pair
 			if (E_isINF(rightExt->E)) {
 				continue;
 			}
 			// compute energy for this loop sizes
-			curE = energy.getE_interLeft(i1-1,i1-1+w1,i2,i2+w2) + rightExt->E;
+			curE = energy.getE_interLeft(i1,i1+w1,i2-1,i2-1+w2) + rightExt->E;
 			// check if this combination yields better energy
-			curEtotal = energy.getE(i1-1,rightExt->j1,i2,rightExt->j2,curE);
+			curEtotal = energy.getE(i1,rightExt->j1,i2-1,rightExt->j2,curE);
 			if ( curEtotal < curCellEtotal )
 			{
 				// update current best for this left boundary
@@ -147,7 +147,7 @@ fillHybridE()
 		// update mfe if needed
 		#pragma omp critical
 		{
-			updateOptima( i1-1,curCell->j1, i2,curCell->j2, curCellEtotal, false );
+			updateOptima( i1,curCell->j1, i2-1,curCell->j2, curCellEtotal, false );
 		}
 	} // i2
 	} // i1
