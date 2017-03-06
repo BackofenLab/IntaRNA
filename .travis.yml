@@ -1,3 +1,4 @@
+sudo: false
 language: cpp
 
 cache:
@@ -10,6 +11,7 @@ addons:
     packages:
     - gcc-4.9
     - g++-4.9
+    - doxygen
 
 os:
     - linux
@@ -18,16 +20,17 @@ compiler:
     - gcc
 
 before_install:
-    - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+    - wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
     - chmod +x miniconda.sh
     - "./miniconda.sh -b"
-    - export PATH=/home/travis/miniconda2/bin:$PATH
+  - export CONDA_PATH=$HOME/miniconda3
+  - export PATH=$CONDA_PATH/bin:$PATH
     - conda update --yes conda
-    - conda install --yes viennarna automake boost -c conda-forge -c bioconda
-    - export CONDA_PATH=/home/travis/miniconda2/
-    - export CONDA_LIB_PATH=/home/travis/miniconda2/lib
-    - ls $CONDA_LIB_PATH
-    - ls $CONDA_PATH/include
+    - conda install --yes automake pkgconfig viennarna boost -c conda-forge -c bioconda
+#    - export CONDA_PATH=/home/travis/miniconda2/
+    - export CONDA_LIB_PATH=$CONDA_PATH/lib
+#    - ls $CONDA_LIB_PATH
+#    - ls $CONDA_PATH/include
     - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_LIB_PATH
 
 script:
@@ -38,7 +41,7 @@ script:
     - bash autotools-init.sh 
     - CC=gcc-4.9 CXX=g++-4.9 ./configure --with-boost=$CONDA_PATH --with-RNA=$CONDA_PATH --disable-pkg-config --prefix=$HOME/IntaRNA
     # compile, test and install IntaRNA
-    - make && make tests && make install
+    - make -j${CPU_COUNT} && make tests && make install
     ##### check IntaRNA build #####
     # run IntaRNA with help output
     - $HOME/IntaRNA/bin/IntaRNA -h
