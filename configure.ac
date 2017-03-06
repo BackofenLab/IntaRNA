@@ -187,7 +187,6 @@ AS_IF([test $want_boost = "no" || test $FOUND_BOOST != 1], [
 RNANOTFOUND=0
 AS_IF([test "x$HAVE_PKG_CONFIG" = "xyes"], [
 	AC_MSG_NOTICE([check if VRNA version >= $VRNA_REQUIRED_VERSION])
-	PKG_CHECK_EXISTS( [RNAlib2 >= $VRNA_REQUIRED_VERSION], [AC_MSG_NOTICE([exists])], [AC_MSG_NOTICE([no found !!!])])
 	PKG_CHECK_MODULES( [VRNA], [RNAlib2 >= $VRNA_REQUIRED_VERSION], [RNANOTFOUND=0], [RNANOTFOUND=1])
 ])
 
