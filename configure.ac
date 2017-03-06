@@ -34,6 +34,7 @@ OLD_CFLAGS=$CFLAGS
 # Checks for programs.
 AC_PROG_CXX
 AC_PROG_CC
+AC_PROG_RANLIB
 # reset compiler flags to initial flags
 CXXFLAGS=$OLD_CXXFLAGS
 CFLAGS=$OLD_CFLAGS
@@ -164,6 +165,8 @@ AC_HEADER_STDC
 # check boost test results
 ##########################################################################
 
+AC_MSG_NOTICE([ !!!!! DUMMY 0])
+
 # FOUND_BOOST is only defined if want_boost is "yes"
 AS_IF([test $want_boost = "no" || test $FOUND_BOOST != 1], [
 	AC_MSG_NOTICE([])
@@ -183,12 +186,16 @@ AS_IF([test $want_boost = "no" || test $FOUND_BOOST != 1], [
 ###############################################################################
 # check for Vienna RNA headers
 
+AC_MSG_NOTICE([ !!!!! DUMMY 1])
+
 RNANOTFOUND=0
 AS_IF([test "x$HAVE_PKG_CONFIG" = "xyes"], [
 	AC_MSG_NOTICE([check if VRNA version >= $VRNA_REQUIRED_VERSION])
 	PKG_CHECK_EXISTS( [RNAlib2 >= $VRNA_REQUIRED_VERSION], [AC_MSG_NOTICE([exists])], [AC_MSG_NOTICE([no found !!!])])
 	PKG_CHECK_MODULES( [VRNA], [RNAlib2 >= $VRNA_REQUIRED_VERSION], [RNANOTFOUND=0], [RNANOTFOUND=1])
 ])
+
+AC_MSG_NOTICE([ !!!!! DUMMY 2])
 
 AS_IF([test "$RNANOTFOUND" = "0"], [
 	AC_MSG_CHECKING([for compilation with Vienna RNA package headers])
