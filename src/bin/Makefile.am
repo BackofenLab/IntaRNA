@@ -29,7 +29,6 @@ IntaRNA_SOURCES =	\
 					CommandLineParsing.cpp \
 					IntaRNA.cpp
 					
-IntaRNA_CXXFLAGS =  -I$(top_builddir)/src -I. $(CXXFLAGS) $(AM_CXXFLAGS)
 IntaRNA_LDADD =  $(top_builddir)/src/IntaRNA/libIntaRNA.a
 
 ###############################################################################
