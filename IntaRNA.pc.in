@@ -1,0 +1,10 @@
+prefix=@PREFIX_PATH@
+exec_prefix=${prefix}/bin
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: IntaRNA
+Description: RNA-RNA interaction prediction C++ library
+Version: @VERSION@
+Libs: @LIBS@
+Cflags: 

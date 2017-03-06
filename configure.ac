@@ -220,7 +220,7 @@ AS_IF([test "$RNANOTFOUND" = "1"], [
 	AS_IF([test "x$HAVE_PKG_CONFIG" = "xyes"], [
 		# apply pkg-config options for VRNA package for further build
 		AM_CXXFLAGS="$AM_CXXFLAGS $VRNA_CFLAGS"
-		AM_LDFLAGS="$AM_LDFLAGS $VRNA_LIBS"
+		LIBS="$LIBS $VRNA_LIBS"
  	], [ # else
  		# guess that only lib information missing
 		LIBS="$LIBS -lRNA"
@@ -251,6 +251,8 @@ AS_IF([test "$DEPENDENCYNOTFOUND" = "1"], [
 AC_SUBST([AM_CXXFLAGS])
 AC_SUBST([AM_LDFLAGS])
 AC_SUBST([LIBS])
+AM_CONDITIONAL(enable_pkg_config, [test "x$HAVE_PKG_CONFIG" = "xyes"])
+
 
 # files to generate via autotools (.am or .in source files)
 AC_CONFIG_FILES([Makefile])
@@ -258,6 +260,7 @@ AC_CONFIG_FILES([src/Makefile])
 AC_CONFIG_FILES([src/intarna_config.h])
 AC_CONFIG_FILES([perl/Makefile])
 AC_CONFIG_FILES([tests/Makefile])
+AC_CONFIG_FILES([IntaRNA.pc])
 
 # generate the final Makefile etc.
 AC_OUTPUT
