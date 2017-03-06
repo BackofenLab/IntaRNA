@@ -40,7 +40,7 @@ public:
 	 * @param rna2 the second RNA interacting
 	 * @param r1 the range of rna1 interacting
 	 * @param r2 the range of rna2 interacting
-	 *
+	 * @param energy the energy value assigned to the range
 	 */
 	InteractionRange(
 				const RnaSequence & rna1

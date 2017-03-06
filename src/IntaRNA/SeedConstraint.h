@@ -24,8 +24,8 @@ public:
 	/**
 	 * Construction
 	 *
-	 * @param number of base pairs a seed has to have (>= 2)
-	 * @param maxUnpairedOverall_ the maximal (summed) number of unpaired bases
+	 * @param bp of base pairs a seed has to have (>= 2)
+	 * @param maxUnpairedOverall the maximal (summed) number of unpaired bases
 	 *        within both seq1 and seq2 allowed within a seed
 	 * @param maxUnpaired1 the maximal number of unpaired bases within seq1
 	 *        allowed within a seed

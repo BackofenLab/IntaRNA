@@ -132,8 +132,8 @@ public:
 
 	/**
 	 * prints the sequence id and the sequence to stream
-	 * @out the ostream to write to
-	 * @rna the RnaSequence object to add
+	 * @param out the ostream to write to
+	 * @param rna the RnaSequence object to add
 	 * @return the altered stream out
 	 */
 	friend std::ostream& operator<<(std::ostream& out, const RnaSequence& rna);
@@ -163,7 +163,7 @@ public:
 	 * is raised.
 	 *
 	 * @param seqString the string to encode
-	 * @param return the integer encoding
+	 * @return the integer encoding
 	 * @throw std::runtime_error if an unsupported nucleotide character is given
 	 */
 	static
@@ -178,7 +178,7 @@ public:
 	 * is raised.
 	 *
 	 * @param nucleotide the char to encode
-	 * @param return the integer encoding
+	 * @return the integer encoding
 	 * @throw std::runtime_error if an unsupported nucleotide character is given
 	 */
 	static

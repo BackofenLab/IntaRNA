@@ -50,6 +50,7 @@ public:
 	 *
 	 * Note, the stream is NOT closed nor deleted on destruction of this object!
 	 *
+	 * @param energy the energy function used
 	 * @param outStream the stream where the data
 	 *        is to be written to (has to be non-null)
 	 * @param E_INF_string the output string representation of E_INF values in

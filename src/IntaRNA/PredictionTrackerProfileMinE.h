@@ -49,6 +49,7 @@ public:
 	 * Constructs an PredictionTracker that collected for each positions of a
 	 * sequence the minimal energy of any interaction covering this position.
 	 *
+	 * @param energy the energy function used
 	 * @param seq1stream if non-NULL, the stream where the profile data for seq1
 	 *        is to be written to; if NULL, no data for seq1 is collected
 	 * @param seq2stream if non-NULL, the stream where the profile data for seq2

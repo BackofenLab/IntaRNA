@@ -68,7 +68,7 @@ public:
 	/**
 	 * copy construction from interaction
 	 *
-	 * @toCopy the interaction range to make this a copy of
+	 * @param toCopy the interaction range to make this a copy of
 	 */
 	Interaction( const Interaction & toCopy );
 

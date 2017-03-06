@@ -125,7 +125,6 @@ protected:
 	 * Computes all entries of the hybridE_seed matrix for interactions ending in
 	 * p=j1 and q=j2 and report all valid interactions to updateOptima()
 	 *
-	 * @param energy the energy function to use
 	 * @param j1 end of the interaction within seq 1
 	 * @param j2 end of the interaction within seq 2
 	 * @param i1min smallest value for i1

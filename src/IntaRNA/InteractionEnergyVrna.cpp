@@ -158,11 +158,11 @@ getBestE_dangling() const
 
 void
 InteractionEnergyVrna::
-computeES( const Accessibility & acc, InteractionEnergyVrna::EsMatrix & esValues )
+computeES( const Accessibility & acc, InteractionEnergyVrna::EsMatrix & esToFill )
 {
 
 	// prepare container
-	esValues.resize( acc.getSequence().size(), acc.getSequence().size() );
+	esToFill.resize( acc.getSequence().size(), acc.getSequence().size() );
 
 	// sequence length
 	const int seqLength = (int)acc.getSequence().size();
@@ -219,16 +219,16 @@ computeES( const Accessibility & acc, InteractionEnergyVrna::EsMatrix & esValues
 			// check if too short to enable a base pair
 			if (j-i+1 < minLoopSubseqLength) {
 				// make unfavorable
-				esValues(i,j) = E_INF;
+				esToFill(i,j) = E_INF;
 			} else {
 				// get Qm value
 				// indexing via iindx starts with 1 instead of 0
 				qm_val = foldData->exp_matrices->qm[foldData->iindx[i+1]-j+1];
 				if ( E_equal(qm_val, 0.) ) {
-					esValues(i,j) = E_INF;
+					esToFill(i,j) = E_INF;
 				} else {
 					// ES energy = -RT*log( Qm )
-					esValues(i,j) =  (E_type)( - RT*( std::log(qm_val)
+					esToFill(i,j) =  (E_type)( - RT*( std::log(qm_val)
 													+((FLT_OR_DBL)(j-i+1))*std::log(foldData->exp_params->pf_scale)));
 				}
 			}

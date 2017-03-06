@@ -77,7 +77,7 @@ public:
 
 	/**
 	 * Provides the reverse index range of a given sequence position.
-	 * @param i the index range of interest
+	 * @param r the index range of interest
 	 * @return the reversed index range, i.e. for index i : (seq.size()-i-1)
 	 */
 	IndexRange

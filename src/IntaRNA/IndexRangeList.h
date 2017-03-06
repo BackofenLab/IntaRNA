@@ -97,8 +97,8 @@ public:
 	/**
 	 * checks whether or not a given ascending index range is overlapping with at least
 	 * one of the stored index ranges
-	 * @param index the index to check
-	 * @return true if @p index is within one of the index ranges (including
+	 * @param range the range to check
+	 * @return true if @p range is within one of the index ranges (including
 	 *         boundaries); false otherwise
 	 */
 	bool overlaps( const IndexRange& range ) const;

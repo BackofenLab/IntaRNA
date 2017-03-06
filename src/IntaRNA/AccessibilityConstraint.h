@@ -47,7 +47,7 @@ public:
 	/**
 	 * Copy construction
 	 * @param toCopy the constraint to copy
-	 * @param revereseIndices whether or not to reverse indexing (eg to be used
+	 * @param reverseIndices whether or not to reverse indexing (eg to be used
 	 *        for ReverseAccessibility)
 	 */
 	AccessibilityConstraint( const AccessibilityConstraint& toCopy

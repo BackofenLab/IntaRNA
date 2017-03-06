@@ -59,7 +59,7 @@ public:
 
 	/**
 	 * Sets the index offset to be used for sequence 2
-	 * @param offset1 the index offset for sequence 2 to be used
+	 * @param offset2 the index offset for sequence 2 to be used
 	 */
 	void setOffset2(size_t offset2);
 

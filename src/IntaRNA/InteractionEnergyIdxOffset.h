@@ -52,7 +52,7 @@ public:
 
 	/**
 	 * Sets the index offset to be used for sequence 2
-	 * @param offset1 the index offset for sequence 2 to be used
+	 * @param offset2 the index offset for sequence 2 to be used
 	 */
 	void setOffset2(size_t offset2);
 
@@ -301,8 +301,8 @@ public:
 	 *
 	 * Note, the indices are shifted by an offset for computation.
 	 *
-	 * @param i1 the index of the first sequence interacting with i2
-	 * @param i2 the index of the second sequence interacting with i1
+	 * @param j1 the index of the first sequence interacting with j2
+	 * @param j2 the index of the second sequence interacting with j1
 	 *
 	 * @return the loop closure penalty for the right side of the interaction
 	 */

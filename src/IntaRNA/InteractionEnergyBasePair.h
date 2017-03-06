@@ -197,8 +197,8 @@ public:
 	 * Provides the penalty for closing an interaction with the given
 	 * base pair on the "right side" (j1 = 3' end of seq1 of the interaction)
 	 *
-	 * @param i1 the index of the first sequence interacting with i2
-	 * @param i2 the index of the second sequence interacting with i1
+	 * @param j1 the index of the first sequence interacting with j2
+	 * @param j2 the index of the second sequence interacting with j1
 	 *
 	 * @return 0.0
 	 */
