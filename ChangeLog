@@ -1,4 +1,18 @@
 
+170306 Martin Mann :
+ + src/IntaRNA : subfolder that holds all libIntaRNA related sources
+ + "IntaRNA" namespace for all libIntaRNA sources
+ + libIntaRNA.a build
+ * tests adapted to library usage
+ * configure.ac :
+   + pkg-config based VRNA version check (optional)
+   + --disable-pkg-config switch
+   * tests rewritten using AS_IF()
+   + AC_CONFIG_MACRO_DIR() replaces individual m4_include() calls
+   + VRNA_REQUIRED_VERSION variable
+   + AC_PROG_RANLIB
+   + pkg-config related files and commands
+
 170227 Martin Mann :
  * InteractionEnergy :
    + getE_multi() : generic function to get the energy contribution of a 
