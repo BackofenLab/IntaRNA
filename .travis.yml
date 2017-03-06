@@ -42,10 +42,8 @@ script:
     - bash autotools-init.sh 
     - CC=gcc-4.9 CXX=g++-4.9 ./configure --with-boost=$CONDA_PATH --with-RNA=$CONDA_PATH --prefix=$HOME/IntaRNA
     # compile, test and install IntaRNA
-    - make 
-    - make tests
-    #- make -j${CPU_COUNT} 
-    #- make tests -j${CPU_COUNT}
+    - make -j${CPU_COUNT} 
+    - make tests -j${CPU_COUNT}
     - make install
     ##### check IntaRNA build #####
     # run IntaRNA with help output
