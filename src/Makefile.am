@@ -1,7 +1,118 @@
 
+### std-options
 # check that installed programs support the --help and --version options
 # basic check that the program's run-time dependencies are satisfied
-AUTOMAKE_OPTIONS = std-options
+### subdir-objects
+# Place generated object files (.o) into the same directory as their source
+# files, in order to avoid collisions when non-recursive make is used.
+AUTOMAKE_OPTIONS = std-options subdir-objects
+
+AM_DEFAULT_SOURCE_EXT = .cpp
+
+###############################################################################
+# THE INTARNA LIBRARY
+###############################################################################
+
+# the library names to build (note we are building static libs only)
+lib_LIBRARIES = libIntaRNA.a
+
+# where to install the headers on the system
+libIntaRNA_adir = $(includedir)/IntaRNA
+
+# the list of header files that belong to the library (to be installed later)
+libIntaRNA_a_HEADERS =    \
+					general.h \
+					Accessibility.h \
+					AccessibilityConstraint.h \
+					AccessibilityDisabled.h \
+					AccessibilityFromStream.h \
+					AccessibilityVrna.h \
+					IndexRange.h \
+					IndexRangeList.h \
+					Interaction.h \
+					InteractionEnergy.h \
+					InteractionEnergyBasePair.h \
+					InteractionEnergyIdxOffset.h \
+					InteractionEnergyVrna.h \
+					InteractionRange.h \
+					OutputConstraint.h \
+					OutputHandler.h \
+					OutputHandlerCsv.h \
+					OutputHandlerHub.h \
+					OutputHandlerIntaRNA1.h \
+					OutputHandlerRangeOnly.h \
+					OutputHandlerText.h \
+					PredictionTracker.h \
+					PredictionTrackerHub.h \
+					PredictionTrackerPairMinE.h \
+					PredictionTrackerProfileMinE.h \
+					Predictor.h \
+					PredictorMaxProb.h \
+					PredictorMfe.h \
+					PredictorMfe2d.h \
+					PredictorMfe2dSeed.h \
+					PredictorMfe2dHeuristic.h \
+					PredictorMfe2dHeuristicSeed.h \
+					PredictorMfe4d.h \
+					PredictorMfe4dSeed.h \
+					ReverseAccessibility.h \
+					RnaSequence.h \
+					SeedConstraint.h \
+					SeedHandler.h \
+					SeedHandlerIdxOffset.h \
+					VrnaHandler.h
+
+# the sources to add to the library and to add to the source distribution
+libIntaRNA_a_SOURCES =    \
+                    $(libmylib_a_HEADERS) \
+					general.cpp \
+					Accessibility.cpp \
+					AccessibilityConstraint.cpp \
+					AccessibilityFromStream.cpp \
+					AccessibilityVrna.cpp \
+					IndexRange.cpp \
+					IndexRangeList.cpp \
+					Interaction.cpp \
+					InteractionEnergy.cpp \
+					InteractionEnergyBasePair.cpp \
+					InteractionEnergyIdxOffset.cpp \
+					InteractionEnergyVrna.cpp \
+					InteractionRange.cpp \
+					OutputConstraint.cpp \
+					OutputHandler.cpp \
+					OutputHandlerCsv.cpp \
+					OutputHandlerIntaRNA1.cpp \
+					OutputHandlerRangeOnly.cpp \
+					OutputHandlerText.cpp \
+					PredictionTrackerPairMinE.cpp \
+					PredictionTrackerProfileMinE.cpp \
+					PredictorMaxProb.cpp \
+					PredictorMfe.cpp \
+					PredictorMfe2d.cpp \
+					PredictorMfe2dSeed.cpp \
+					PredictorMfe2dHeuristic.cpp \
+					PredictorMfe2dHeuristicSeed.cpp \
+					PredictorMfe4d.cpp \
+					PredictorMfe4dSeed.cpp \
+					ReverseAccessibility.cpp \
+					RnaSequence.cpp \
+					SeedConstraint.cpp \
+					SeedHandler.cpp \
+					SeedHandlerIdxOffset.cpp \
+					VrnaHandler.cpp
+						
+################################################################
+# pkg-config
+################################################################
+
+if enable_pkg_config
+	pkgconfigdir = $(libdir)/pkgconfig
+	pkgconfig_DATA = ../IntaRNA.pc
+endif
+
+###############################################################################
+# THE INTARNA BINARY
+###############################################################################
 
 # the program to build
 bin_PROGRAMS = IntaRNA
@@ -11,83 +122,14 @@ nodist_IntaRNA_SOURCES = 	config.h \
 							intarna_config.h
 
 # intaRNA sources
-IntaRNA_SOURCES =	intaRNA.cpp \
+IntaRNA_SOURCES =	\
+                    $(libmylib_a_HEADERS) \
 					easylogging++.h \
-					general.h \
-					general.cpp \
-					Accessibility.h \
-					Accessibility.cpp \
-					AccessibilityConstraint.h \
-					AccessibilityConstraint.cpp \
-					AccessibilityDisabled.h \
-					AccessibilityFromStream.h \
-					AccessibilityFromStream.cpp \
-					AccessibilityVrna.h \
-					AccessibilityVrna.cpp \
 					CommandLineParsing.h \
 					CommandLineParsing.cpp \
-					IndexRange.h \
-					IndexRange.cpp \
-					IndexRangeList.h \
-					IndexRangeList.cpp \
-					Interaction.h \
-					Interaction.cpp \
-					InteractionEnergy.h \
-					InteractionEnergy.cpp \
-					InteractionEnergyBasePair.h \
-					InteractionEnergyBasePair.cpp \
-					InteractionEnergyIdxOffset.h \
-					InteractionEnergyIdxOffset.cpp \
-					InteractionEnergyVrna.h \
-					InteractionEnergyVrna.cpp \
-					InteractionRange.h \
-					InteractionRange.cpp \
-					OutputConstraint.h \
-					OutputConstraint.cpp \
-					OutputHandler.h \
-					OutputHandler.cpp \
-					OutputHandlerCsv.h \
-					OutputHandlerCsv.cpp \
-					OutputHandlerHub.h \
-					OutputHandlerIntaRNA1.h \
-					OutputHandlerIntaRNA1.cpp \
-					OutputHandlerRangeOnly.h \
-					OutputHandlerRangeOnly.cpp \
-					OutputHandlerText.h \
-					OutputHandlerText.cpp \
-					PredictionTracker.h \
-					PredictionTrackerHub.h \
-					PredictionTrackerPairMinE.h \
-					PredictionTrackerPairMinE.cpp \
-					PredictionTrackerProfileMinE.h \
-					PredictionTrackerProfileMinE.cpp \
-					Predictor.h \
-					PredictorMaxProb.h \
-					PredictorMaxProb.cpp \
-					PredictorMfe.h \
-					PredictorMfe.cpp \
-					PredictorMfe2d.h \
-					PredictorMfe2d.cpp \
-					PredictorMfe2dSeed.h \
-					PredictorMfe2dSeed.cpp \
-					PredictorMfe2dHeuristic.h \
-					PredictorMfe2dHeuristic.cpp \
-					PredictorMfe2dHeuristicSeed.h \
-					PredictorMfe2dHeuristicSeed.cpp \
-					PredictorMfe4d.h \
-					PredictorMfe4d.cpp \
-					PredictorMfe4dSeed.h \
-					PredictorMfe4dSeed.cpp \
-					ReverseAccessibility.h \
-					ReverseAccessibility.cpp \
-					RnaSequence.h \
-					RnaSequence.cpp \
-					SeedConstraint.h \
-					SeedConstraint.cpp \
-					SeedHandler.h \
-					SeedHandler.cpp \
-					SeedHandlerIdxOffset.h \
-					SeedHandlerIdxOffset.cpp \
-					VrnaHandler.h \
-					VrnaHandler.cpp
+					intaRNA.cpp
+					
+IntaRNA_LDADD =  $(top_builddir)/src/libIntaRNA.a
+
+###############################################################################
 

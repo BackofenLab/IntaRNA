@@ -16,11 +16,3 @@ tests: all
 
 test: tests
 
-################################################################
-# pkg-config
-################################################################
-
-if enable_pkg_config
-	pkgconfigdir = $(libdir)/pkgconfig
-	pkgconfig_DATA = IntaRNA.pc
-endif
