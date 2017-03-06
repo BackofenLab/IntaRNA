@@ -26,8 +26,6 @@ case "$host_os" in
 		AM_LDFLAGS="-Wl,--enable-auto-import $AM_LDFLAGS"
 esac
 
-# Checks for programs
-AC_CHECK_PROG([HAVE_PKG_CONFIG],[pkg-config],[yes],[no])
 
 # check for C++ compiler
 # store current compiler flags to avoid default setup via AC_PROG_CXX and *_CC
@@ -54,6 +52,26 @@ AX_CXX_COMPILE_STDCXX( [11], [noext], [mandatory])
 ###############################################################################
 
 ############  PARAMETERS  ########################################
+
+###############################################################################
+# PKG-CONFIG SETUP
+###############################################################################
+
+AC_MSG_CHECKING([whether to use and provide pkg-config information])
+pkgconfigEnabled=yes
+AC_ARG_ENABLE([pkg-config],
+	[AS_HELP_STRING([--disable-pkg-config],
+	    [disable pkg-config support (def=enabled)])],
+  	[pkgconfigEnabled="$enableval"],
+  	[pkgconfigEnabled=yes])
+AC_MSG_RESULT([$pkgconfigEnabled])
+AS_IF([test x"$pkgconfigEnabled" = x"yes"], [
+	# Checks for pkg-config
+	AC_CHECK_PROG([HAVE_PKG_CONFIG],[pkg-config],[yes],[no])
+], [
+	HAVE_PKG_CONFIG=no
+])
+
 
 ###############################################################################
 # DEBUG SUPPORT SETUP
