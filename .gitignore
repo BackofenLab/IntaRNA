@@ -48,6 +48,8 @@ compile
 */.deps
 */.deps/*
 /intaRNA-*.tar.gz
+doxygen-doc
+doxygen-doc/*
 
 
 # temp dir
