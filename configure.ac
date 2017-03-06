@@ -143,16 +143,21 @@ AS_IF([test  $RNAPATHSET = 1 ], [
 dnl generate doxygen documentation in Doxy
 ###############################################################################
 
-DX_HTML_FEATURE(ON)
-DX_CHM_FEATURE(OFF)
-DX_CHI_FEATURE(OFF)
-DX_MAN_FEATURE(OFF)
-DX_RTF_FEATURE(OFF)
-DX_XML_FEATURE(OFF)
-DX_PDF_FEATURE(OFF)
-DX_PS_FEATURE(OFF)
+AC_CHECK_PROG([HAVE_DOXYGEN],[doxygen],[yes],[no])
 
-#DX_INIT_DOXYGEN($PACKAGE_NAME, ["doc/doxygen.cfg"], ["Doxy"])
+AS_IF([test "x$HAVE_DOXYGEN" = "xyes"], [
+	# setup doxygen documentation to build
+	DX_HTML_FEATURE(ON)
+	DX_CHM_FEATURE(OFF)
+	DX_CHI_FEATURE(OFF)
+	DX_MAN_FEATURE(OFF)
+	DX_RTF_FEATURE(OFF)
+	DX_XML_FEATURE(OFF)
+	DX_PDF_FEATURE(OFF)
+	DX_PS_FEATURE(OFF)
+	# generate according options etc.
+	DX_INIT_DOXYGEN($PACKAGE_NAME, ["doc/doxygen.cfg"], ["doxygen-doc"])
+])
 
 ###############################################################################
 ###############################################################################
@@ -282,6 +287,7 @@ AC_SUBST([AM_CXXFLAGS])
 AC_SUBST([AM_LDFLAGS])
 AC_SUBST([LIBS])
 AM_CONDITIONAL(enable_pkg_config, [test "x$HAVE_PKG_CONFIG" = "xyes"])
+AM_CONDITIONAL(enable_doxygen, [test "x$HAVE_DOXYGEN" = "xyes"])
 
 
 # files to generate via autotools (.am or .in source files)
