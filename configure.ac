@@ -16,9 +16,7 @@ AC_CONFIG_AUX_DIR([.])
 AC_CONFIG_SRCDIR([src/intaRNA.cpp])
 AC_CONFIG_HEADERS([src/config.h])
 
-m4_include([m4/m4_ax_boost_base.m4])
-m4_include([m4/m4_ax_cxx_compile_stdcxx.m4])
-m4_include([m4/m4_ax_openmp.m4])
+AC_CONFIG_MACRO_DIR([m4])
 
 lt_enable_auto_import=""
 case "$host_os" in 
@@ -140,6 +138,21 @@ AS_IF([test  $RNAPATHSET = 1 ], [
 		AM_LDFLAGS="-L$with_RNA/lib $AM_LDFLAGS"
 	])
 ])
+
+###############################################################################
+dnl generate doxygen documentation in Doxy
+###############################################################################
+
+DX_HTML_FEATURE(ON)
+DX_CHM_FEATURE(OFF)
+DX_CHI_FEATURE(OFF)
+DX_MAN_FEATURE(OFF)
+DX_RTF_FEATURE(OFF)
+DX_XML_FEATURE(OFF)
+DX_PDF_FEATURE(OFF)
+DX_PS_FEATURE(OFF)
+
+#DX_INIT_DOXYGEN($PACKAGE_NAME, ["doc/doxygen.cfg"], ["Doxy"])
 
 ###############################################################################
 ###############################################################################
@@ -276,6 +289,7 @@ AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([src/Makefile])
 AC_CONFIG_FILES([src/IntaRNA/Makefile])
 AC_CONFIG_FILES([src/IntaRNA/intarna_config.h])
+AC_CONFIG_FILES([src/bin/Makefile])
 AC_CONFIG_FILES([perl/Makefile])
 AC_CONFIG_FILES([tests/Makefile])
 AC_CONFIG_FILES([IntaRNA.pc])
