@@ -1,7 +1,7 @@
 
 #include "CommandLineParsing.h"
 
-#include "general.h"
+#include "IntaRNA/general.h"
 
 #include <cmath>
 #include <stdexcept>
@@ -18,35 +18,35 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/assign/list_of.hpp>
 
-#include "AccessibilityConstraint.h"
+#include "IntaRNA/AccessibilityConstraint.h"
 
-#include "AccessibilityDisabled.h"
-#include "AccessibilityFromStream.h"
-#include "AccessibilityVrna.h"
+#include "IntaRNA/AccessibilityDisabled.h"
+#include "IntaRNA/AccessibilityFromStream.h"
+#include "IntaRNA/AccessibilityVrna.h"
 
-#include "InteractionEnergyBasePair.h"
-#include "InteractionEnergyVrna.h"
+#include "IntaRNA/InteractionEnergyBasePair.h"
+#include "IntaRNA/InteractionEnergyVrna.h"
 
-#include "PredictorMfe2dHeuristic.h"
-#include "PredictorMfe2d.h"
-#include "PredictorMfe4d.h"
-#include "PredictorMaxProb.h"
+#include "IntaRNA/PredictorMfe2dHeuristic.h"
+#include "IntaRNA/PredictorMfe2d.h"
+#include "IntaRNA/PredictorMfe4d.h"
+#include "IntaRNA/PredictorMaxProb.h"
 
-#include "PredictorMfe2dHeuristicSeed.h"
-#include "PredictorMfe2dSeed.h"
-#include "PredictorMfe4dSeed.h"
+#include "IntaRNA/PredictorMfe2dHeuristicSeed.h"
+#include "IntaRNA/PredictorMfe2dSeed.h"
+#include "IntaRNA/PredictorMfe4dSeed.h"
 
-#include "PredictionTracker.h"
-#include "PredictionTrackerHub.h"
-#include "PredictionTrackerPairMinE.h"
-#include "PredictionTrackerProfileMinE.h"
+#include "IntaRNA/PredictionTracker.h"
+#include "IntaRNA/PredictionTrackerHub.h"
+#include "IntaRNA/PredictionTrackerPairMinE.h"
+#include "IntaRNA/PredictionTrackerProfileMinE.h"
 
-#include "OutputHandlerCsv.h"
-#include "OutputHandlerIntaRNA1.h"
-#include "OutputHandlerText.h"
+#include "IntaRNA/OutputHandlerCsv.h"
+#include "IntaRNA/OutputHandlerIntaRNA1.h"
+#include "IntaRNA/OutputHandlerText.h"
 
 
-
+using namespace IntaRNA;
 
 
 ////////////////////////////////////////////////////////////////////////////

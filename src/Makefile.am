@@ -9,106 +9,13 @@ AUTOMAKE_OPTIONS = std-options subdir-objects
 
 AM_DEFAULT_SOURCE_EXT = .cpp
 
+
 ###############################################################################
-# THE INTARNA LIBRARY
+# FIRST BUILD LIBRARY
 ###############################################################################
 
-# the library names to build (note we are building static libs only)
-lib_LIBRARIES = libIntaRNA.a
-
-# where to install the headers on the system
-libIntaRNA_adir = $(includedir)/IntaRNA
-
-# the list of header files that belong to the library (to be installed later)
-libIntaRNA_a_HEADERS =    \
-					general.h \
-					Accessibility.h \
-					AccessibilityConstraint.h \
-					AccessibilityDisabled.h \
-					AccessibilityFromStream.h \
-					AccessibilityVrna.h \
-					IndexRange.h \
-					IndexRangeList.h \
-					Interaction.h \
-					InteractionEnergy.h \
-					InteractionEnergyBasePair.h \
-					InteractionEnergyIdxOffset.h \
-					InteractionEnergyVrna.h \
-					InteractionRange.h \
-					OutputConstraint.h \
-					OutputHandler.h \
-					OutputHandlerCsv.h \
-					OutputHandlerHub.h \
-					OutputHandlerIntaRNA1.h \
-					OutputHandlerRangeOnly.h \
-					OutputHandlerText.h \
-					PredictionTracker.h \
-					PredictionTrackerHub.h \
-					PredictionTrackerPairMinE.h \
-					PredictionTrackerProfileMinE.h \
-					Predictor.h \
-					PredictorMaxProb.h \
-					PredictorMfe.h \
-					PredictorMfe2d.h \
-					PredictorMfe2dSeed.h \
-					PredictorMfe2dHeuristic.h \
-					PredictorMfe2dHeuristicSeed.h \
-					PredictorMfe4d.h \
-					PredictorMfe4dSeed.h \
-					ReverseAccessibility.h \
-					RnaSequence.h \
-					SeedConstraint.h \
-					SeedHandler.h \
-					SeedHandlerIdxOffset.h \
-					VrnaHandler.h
-
-# the sources to add to the library and to add to the source distribution
-libIntaRNA_a_SOURCES =    \
-                    $(libmylib_a_HEADERS) \
-					general.cpp \
-					Accessibility.cpp \
-					AccessibilityConstraint.cpp \
-					AccessibilityFromStream.cpp \
-					AccessibilityVrna.cpp \
-					IndexRange.cpp \
-					IndexRangeList.cpp \
-					Interaction.cpp \
-					InteractionEnergy.cpp \
-					InteractionEnergyBasePair.cpp \
-					InteractionEnergyIdxOffset.cpp \
-					InteractionEnergyVrna.cpp \
-					InteractionRange.cpp \
-					OutputConstraint.cpp \
-					OutputHandler.cpp \
-					OutputHandlerCsv.cpp \
-					OutputHandlerIntaRNA1.cpp \
-					OutputHandlerRangeOnly.cpp \
-					OutputHandlerText.cpp \
-					PredictionTrackerPairMinE.cpp \
-					PredictionTrackerProfileMinE.cpp \
-					PredictorMaxProb.cpp \
-					PredictorMfe.cpp \
-					PredictorMfe2d.cpp \
-					PredictorMfe2dSeed.cpp \
-					PredictorMfe2dHeuristic.cpp \
-					PredictorMfe2dHeuristicSeed.cpp \
-					PredictorMfe4d.cpp \
-					PredictorMfe4dSeed.cpp \
-					ReverseAccessibility.cpp \
-					RnaSequence.cpp \
-					SeedConstraint.cpp \
-					SeedHandler.cpp \
-					SeedHandlerIdxOffset.cpp \
-					VrnaHandler.cpp
-						
-################################################################
-# pkg-config
-################################################################
-
-if enable_pkg_config
-	pkgconfigdir = $(libdir)/pkgconfig
-	pkgconfig_DATA = ../IntaRNA.pc
-endif
+# sub directories to check for Makefiles
+SUBDIRS = IntaRNA .
 
 ###############################################################################
 # THE INTARNA BINARY
@@ -118,8 +25,9 @@ endif
 bin_PROGRAMS = IntaRNA
 
 # generated intaRNA sources 
-nodist_IntaRNA_SOURCES = 	config.h \
-							intarna_config.h
+nodist_IntaRNA_SOURCES = 	\
+					config.h \
+					IntaRNA/intarna_config.h
 
 # intaRNA sources
 IntaRNA_SOURCES =	\
@@ -129,7 +37,7 @@ IntaRNA_SOURCES =	\
 					CommandLineParsing.cpp \
 					intaRNA.cpp
 					
-IntaRNA_LDADD =  $(top_builddir)/src/libIntaRNA.a
+IntaRNA_LDADD =  $(top_builddir)/src/IntaRNA/libIntaRNA.a
 
 ###############################################################################
 

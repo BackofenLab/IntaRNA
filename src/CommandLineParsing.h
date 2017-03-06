@@ -2,8 +2,8 @@
 #ifndef COMMANDLINEPARSING_H_
 #define COMMANDLINEPARSING_H_
 
-#include "general.h"
-#include "RnaSequence.h"
+#include "IntaRNA/general.h"
+#include "IntaRNA/RnaSequence.h"
 
 #include <boost/regex.hpp>
 #include <boost/program_options.hpp>
@@ -12,12 +12,14 @@
 #include <iostream>
 #include <cstdarg>
 
-#include "Accessibility.h"
-#include "InteractionEnergy.h"
-#include "OutputHandler.h"
-#include "Predictor.h"
-#include "SeedConstraint.h"
-#include "VrnaHandler.h"
+#include "IntaRNA/Accessibility.h"
+#include "IntaRNA/InteractionEnergy.h"
+#include "IntaRNA/OutputHandler.h"
+#include "IntaRNA/Predictor.h"
+#include "IntaRNA/SeedConstraint.h"
+#include "IntaRNA/VrnaHandler.h"
+
+using namespace IntaRNA;
 
 /**
  * Central handler for all command line arguments etc.

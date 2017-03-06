@@ -1,5 +1,5 @@
 
-#include "general.h"
+#include "IntaRNA/general.h"
 
 #include <iostream>
 #include <exception>
@@ -12,16 +12,17 @@
 
 #include "CommandLineParsing.h"
 
-#include "RnaSequence.h"
-#include "Accessibility.h"
-#include "InteractionEnergy.h"
-#include "Predictor.h"
-#include "OutputHandler.h"
-#include "OutputHandlerIntaRNA1.h"
+#include "IntaRNA/RnaSequence.h"
+#include "IntaRNA/Accessibility.h"
+#include "IntaRNA/InteractionEnergy.h"
+#include "IntaRNA/Predictor.h"
+#include "IntaRNA/OutputHandler.h"
+#include "IntaRNA/OutputHandlerIntaRNA1.h"
 
 // initialize logging for binary
 INITIALIZE_EASYLOGGINGPP
 
+using namespace IntaRNA;
 
 /////////////////////////////////////////////////////////////////////
 /**

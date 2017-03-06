@@ -3,7 +3,9 @@
 
 #undef NDEBUG
 
-#include "AccessibilityFromStream.h"
+#include "IntaRNA/AccessibilityFromStream.h"
+
+using namespace IntaRNA;
 
 const std::string seq = "uaugacugacuggcgcgcguacugacguga";
 

@@ -3,12 +3,14 @@
 
 #undef NDEBUG
 
-#include "PredictionTrackerProfileMinE.h"
-#include "AccessibilityDisabled.h"
-#include "ReverseAccessibility.h"
-#include "InteractionEnergyBasePair.h"
+#include "IntaRNA/PredictionTrackerProfileMinE.h"
+#include "IntaRNA/AccessibilityDisabled.h"
+#include "IntaRNA/ReverseAccessibility.h"
+#include "IntaRNA/InteractionEnergyBasePair.h"
 
 #include <stdexcept>
+
+using namespace IntaRNA;
 
 
 TEST_CASE( "PredictionTrackerProfileMinE", "[PredictionTrackerProfileMinE]" ) {

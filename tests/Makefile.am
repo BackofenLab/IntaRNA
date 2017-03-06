@@ -24,7 +24,7 @@ runTests_SOURCES =	catch.hpp \
 					runTests.cpp
 
 # add IntaRNA lib for linking
-LIBS= -L$(top_srcdir)/src -lIntaRNA @LIBS@
+LIBS= -L$(top_builddir)/src/IntaRNA -lIntaRNA @LIBS@
 
 # add source include for compilation
-runTests_CXXFLAGS =	-I$(top_srcdir)/src @AM_CXXFLAGS@ @CXXFLAGS@
+runTests_CXXFLAGS =	-I$(top_builddir)/src @AM_CXXFLAGS@ @CXXFLAGS@
