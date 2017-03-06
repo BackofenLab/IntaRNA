@@ -1,5 +1,11 @@
-sudo: false
+
+os:
+    - linux
+
 language: cpp
+
+compiler:
+    - gcc
 
 cache:
   apt: true
@@ -13,24 +19,19 @@ addons:
     - g++-4.9
     - doxygen
 
-os:
-    - linux
-
-compiler:
-    - gcc
 
 before_install:
     - wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
     - chmod +x miniconda.sh
     - "./miniconda.sh -b"
-  - export CONDA_PATH=$HOME/miniconda3
-  - export PATH=$CONDA_PATH/bin:$PATH
+    - export CONDA_PATH=$HOME/miniconda3
+    - export PATH=$CONDA_PATH/bin:$PATH
     - conda update --yes conda
     - conda install --yes automake pkgconfig viennarna boost -c conda-forge -c bioconda
-#    - export CONDA_PATH=/home/travis/miniconda2/
+    #    - export CONDA_PATH=/home/travis/miniconda2/
     - export CONDA_LIB_PATH=$CONDA_PATH/lib
-#    - ls $CONDA_LIB_PATH
-#    - ls $CONDA_PATH/include
+    #    - ls $CONDA_LIB_PATH
+    #    - ls $CONDA_PATH/include
     - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_LIB_PATH
 
 script:
