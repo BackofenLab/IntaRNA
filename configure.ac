@@ -7,6 +7,8 @@ AC_INIT( [IntaRNA], [2.0.1], [], [intaRNA], [http://www.bioinf.uni-freiburg.de] 
 
 # minimal required version of the boost library 
 BOOST_REQUIRED_VERSION=1.50.0
+# minimal required version of the Vienna RNA library
+VRNA_REQUIRED_VERSION=2.3.0
 
 
 AC_CANONICAL_HOST
@@ -25,6 +27,7 @@ case "$host_os" in
 esac
 
 # Checks for programs
+AC_CHECK_PROG([HAVE_PKG_CONFIG],[pkg-config],[yes],[no])
 
 # check for C++ compiler
 # store current compiler flags to avoid default setup via AC_PROG_CXX and *_CC
@@ -63,13 +66,13 @@ AC_ARG_ENABLE([debug],
 	    [enable debug data generation (def=disabled)])],
   	[debuger="$enableval"])
 AC_MSG_RESULT([$debuger])
-if test x"$debuger" = x"yes"; then
+AS_IF([test x"$debuger" = x"yes"], [
 	AC_DEFINE([_DEBUG], [1], [Run in DEBUG mode with additional assertions and debug output])
 	AM_CXXFLAGS="$AM_CXXFLAGS -g -O0 -Wno-uninitialized -Wno-deprecated" # -Wall"
-else
+], [
 	AC_DEFINE([NDEBUG], [1], [Run in normal mode with minimal assertions])
 	AM_CXXFLAGS="$AM_CXXFLAGS -O3 -fno-strict-aliasing -Wno-uninitialized -Wno-deprecated"
-fi
+])
 
 
 ###############################################################################
@@ -84,17 +87,17 @@ AC_ARG_ENABLE([multithreading],
   	[multithreadingEnabled="$enableval"],
   	[multithreadingEnabled=yes])
 AC_MSG_RESULT([$multithreadingEnabled])
-if test x"$multithreadingEnabled" = x"yes"; then
+AS_IF([test x"$multithreadingEnabled" = x"yes"], [
 	AC_DEFINE([INTARNA_MULITHREADING], [1], [Enabling multi-threading support])
 	AC_SUBST([INTARNA_MULITHREADING],[1])
 	# ensure OPENMP can be used
 	AX_OPENMP([],[AC_MSG_ERROR([OPENMP support is mandatory for multi-threading compilation])]])
 	AM_CXXFLAGS="$AM_CXXFLAGS $OPENMP_CXXFLAGS"
-else
+], [
 	AC_DEFINE([INTARNA_MULITHREADING], [0], [Disabling multi-threading support])
 	AC_SUBST([INTARNA_MULITHREADING],[0])
 	AM_CXXFLAGS="$AM_CXXFLAGS -pthread"
-fi
+])
 
 ###############################################################################
 # Vienna RNA package library path support, if not installed in usual directories
@@ -107,11 +110,17 @@ AC_ARG_WITH([RNA],
 	  [RNAPATHSET=1],
 	  [RNAPATHSET=0]
 )
-if test  $RNAPATHSET = 1 ; then
-	# set compiler and linker flags if needed
-	AM_CXXFLAGS="-I$with_RNA/include $AM_CXXFLAGS"
-	AM_LDFLAGS="-L$with_RNA/lib $AM_LDFLAGS"
-fi
+# handle user-defined path
+AS_IF([test  $RNAPATHSET = 1 ], [
+	AS_IF([test "x$HAVE_PKG_CONFIG" = "xyes"], [
+		# use pkg-config data if available
+		export PKG_CONFIG_PATH="$with_RNA/lib/pkgconfig/:$PKG_CONFIG_PATH"
+	], [
+		# guess compiler and linker flags if needed
+		AM_CXXFLAGS="-I$with_RNA/include $AM_CXXFLAGS"
+		AM_LDFLAGS="-L$with_RNA/lib $AM_LDFLAGS"
+	])
+])
 
 ###############################################################################
 ###############################################################################
@@ -138,63 +147,85 @@ AC_HEADER_STDC
 ##########################################################################
 
 # FOUND_BOOST is only defined if want_boost is "yes"
-if test $want_boost = "no" || test $FOUND_BOOST != 1; then
+AS_IF([test $want_boost = "no" || test $FOUND_BOOST != 1], [
 	AC_MSG_NOTICE([])
 	AC_MSG_NOTICE([The Boost Library was not found!])
 	AC_MSG_NOTICE([ -> If installed in a non-standard path, please use '--with-boost=PREFIX'.])
 	AC_MSG_NOTICE([])
  	DEPENDENCYNOTFOUND=1;
-else
+], [
 	AM_CXXFLAGS="$BOOST_CPPFLAGS $AM_CXXFLAGS"
 	AM_LDFLAGS="$BOOST_LDFLAGS $AM_LDFLAGS"
 	LIBS="$LIBS -lboost_regex -lboost_program_options -lboost_filesystem -lboost_system"
-fi
+])
 
 
 ###############################################################################
 # BEGIN VIENNA CHECK
 ###############################################################################
 # check for Vienna RNA headers
-AC_MSG_CHECKING([for the Vienna RNA package headers version >= 2.3.0])
-OLD_CPPFLAGS=$CPPFLAGS
-OLD_CXXFLAGS=$CXXFLAGS
-OLD_LDFLAGS=$LDFLAGS
-AC_LANG_PUSH([C])
-CPPFLAGS="$CPPFLAGS $AM_CXXFLAGS"
-LDFLAGS="$LDFLAGS $AM_LDFLAGS"
-AC_COMPILE_IFELSE(
-     [AC_LANG_PROGRAM([[#include <ViennaRNA/model.h>]],[[vrna_md_t tmp; vrna_md_copy(&tmp,&tmp);]])],
-     [ 
-		AC_MSG_RESULT([yes])
-		RNANOTFOUND=0;
-    ],
-     [
-       AC_MSG_RESULT([no])
-	   AC_MSG_NOTICE([DEBUG : used CPPFLAGS = $CPPFLAGS])
-	   AC_MSG_NOTICE([DEBUG : used  LDFLAGS = $LDFLAGS])
-       RNANOTFOUND=1;
-     ]
-)
-AC_LANG_POP([C])
-CPPFLAGS=$OLD_CPPFLAGS
-LDFLAGS=$OLD_LDFLAGS
+
+RNANOTFOUND=0
+AS_IF([test "x$HAVE_PKG_CONFIG" = "xyes"], [
+	AC_MSG_NOTICE(check if VRNA version >= $VRNA_REQUIRED_VERSION)
+	PKG_CHECK_MODULES( [VRNA], [RNAlib2 >= $VRNA_REQUIRED_VERSION] 
+		, [RNANOTFOUND=0] 
+		, [RNANOTFOUND=1])
+])
+
+AS_IF([test "$RNANOTFOUND" = "0"], [
+	AC_MSG_CHECKING([for the Vienna RNA package headers version >= 2.3.0])
+	OLD_CPPFLAGS=$CPPFLAGS
+	OLD_CXXFLAGS=$CXXFLAGS
+	OLD_LDFLAGS=$LDFLAGS
+	AC_LANG_PUSH([C])
+	CPPFLAGS="$CPPFLAGS $AM_CXXFLAGS"
+	LDFLAGS="$LDFLAGS $AM_LDFLAGS"
+	AS_IF([test "x$HAVE_PKG_CONFIG" = "xyes"], [
+		CPPFLAGS="$CPPFLAGS $VRNA_CFLAGS"
+		LDFLAGS="$LDFLAGS $VRNA_LIBS"
+	])
+	AC_COMPILE_IFELSE(
+	     [AC_LANG_PROGRAM([[#include <ViennaRNA/model.h>]],[[vrna_md_t tmp; vrna_md_copy(&tmp,&tmp);]])],
+	     [ 
+			AC_MSG_RESULT([yes])
+			RNANOTFOUND=0;
+	    ],
+	     [
+	       AC_MSG_RESULT([no])
+		   AC_MSG_NOTICE([DEBUG : used CPPFLAGS = $CPPFLAGS])
+		   AC_MSG_NOTICE([DEBUG : used  LDFLAGS = $LDFLAGS])
+	       RNANOTFOUND=1;
+	     ]
+	)
+	AC_LANG_POP([C])
+	CPPFLAGS=$OLD_CPPFLAGS
+	LDFLAGS=$OLD_LDFLAGS
+])
 
 # error output if ViennaRNA not found
-if test "$RNANOTFOUND" = "1"; then
+AS_IF([test "$RNANOTFOUND" = "1"], [
 	AC_MSG_NOTICE()
-	AC_MSG_NOTICE([The Vienna RNA C library version >= 2.3.0 is required.])
+	AC_MSG_NOTICE([The Vienna RNA C library version >= $VRNA_REQUIRED_VERSION is required.])
 	AC_MSG_NOTICE([ -> It can be obtained from http://www.tbi.univie.ac.at/.])
 	AC_MSG_NOTICE()
- 	if test "$RNAPATHSET" = "1"; then
+ 	AS_IF([test "$RNAPATHSET" = "1"], [
 		AC_MSG_NOTICE([ -> Can't find the Vienna RNA library in given path '$with_RNA'.])
- 	else
+ 	], [ # else
 		AC_MSG_NOTICE([ -> If installed in a non-standard path, please use '--with-RNA=PREFIX'.])
- 	fi
+ 	])
  	DEPENDENCYNOTFOUND=1;
-else
+],[ # else
 	# register Vienna RNA lib for linking
-	LIBS="$LIBS -lRNA"
-fi
+	AS_IF([test "x$HAVE_PKG_CONFIG" = "xyes"], [
+		# apply pkg-config options for VRNA package for further build
+		AM_CXXFLAGS="$AM_CXXFLAGS $VRNA_CFLAGS"
+		AM_LDFLAGS="$AM_LDFLAGS $VRNA_LIBS"
+ 	], [ # else
+ 		# guess that only lib information missing
+		LIBS="$LIBS -lRNA"
+ 	])
+])
 
 
 ###############################################################################
@@ -206,10 +237,10 @@ fi
 ###############################################################################
 
 # error ABORT if on of the libraries was not found
-if test "$DEPENDENCYNOTFOUND" = "1"; then
+AS_IF([test "$DEPENDENCYNOTFOUND" = "1"], [
 	AC_MSG_NOTICE()
 	AC_MSG_ERROR([Some dependency was not met! See above for errors and relate to './configure --help'.])
-fi
+])
 
 ##########################################################################
 
