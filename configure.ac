@@ -91,7 +91,7 @@ AS_IF([test x"$multithreadingEnabled" = x"yes"], [
 	AC_DEFINE([INTARNA_MULITHREADING], [1], [Enabling multi-threading support])
 	AC_SUBST([INTARNA_MULITHREADING],[1])
 	# ensure OPENMP can be used
-	AX_OPENMP([],[AC_MSG_ERROR([OPENMP support is mandatory for multi-threading compilation])]])
+	AX_OPENMP([],[AC_MSG_ERROR([OPENMP support is mandatory for multi-threading compilation])])
 	AM_CXXFLAGS="$AM_CXXFLAGS $OPENMP_CXXFLAGS"
 ], [
 	AC_DEFINE([INTARNA_MULITHREADING], [0], [Disabling multi-threading support])
@@ -167,10 +167,8 @@ AS_IF([test $want_boost = "no" || test $FOUND_BOOST != 1], [
 
 RNANOTFOUND=0
 AS_IF([test "x$HAVE_PKG_CONFIG" = "xyes"], [
-	AC_MSG_NOTICE(check if VRNA version >= $VRNA_REQUIRED_VERSION)
-	PKG_CHECK_MODULES( [VRNA], [RNAlib2 >= $VRNA_REQUIRED_VERSION] 
-		, [RNANOTFOUND=0] 
-		, [RNANOTFOUND=1])
+	AC_MSG_NOTICE([check if VRNA version >= $VRNA_REQUIRED_VERSION])
+	PKG_CHECK_MODULES( [VRNA], [RNAlib2 >= $VRNA_REQUIRED_VERSION], [RNANOTFOUND=0], [RNANOTFOUND=1])
 ])
 
 AS_IF([test "$RNANOTFOUND" = "0"], [
