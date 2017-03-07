@@ -1,4 +1,10 @@
 
+170307 Martin Mann :
+ * header defines prefixed with INTARNA_
+ * general.h :
+   + checks if defines with general names are already present
+   * intarna specific defines prefixed with INTARNA_
+
 170306 Martin Mann :
  + src/IntaRNA : subfolder that holds all libIntaRNA related sources
  + "IntaRNA" namespace for all libIntaRNA sources
