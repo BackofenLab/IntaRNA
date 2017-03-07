@@ -4,6 +4,8 @@
  * general.h :
    + checks if defines with general names are already present
    * intarna specific defines prefixed with INTARNA_
+ * configure.ac :
+   * VRNA configure flag conform with LocARNA (--with-vrna)
 
 170306 Martin Mann :
  + src/IntaRNA : subfolder that holds all libIntaRNA related sources

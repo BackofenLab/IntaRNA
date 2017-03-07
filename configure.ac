@@ -121,7 +121,7 @@ AS_IF([test x"$multithreadingEnabled" = x"yes"], [
 ###############################################################################
 AC_ARG_WITH([RNA],
 	[AC_HELP_STRING(
-	    [--with-RNA=PREFIX],
+	    [--with-vrna=PREFIX],
 	    [alternative prefix path to Vienna RNA library]
 	  )],
 	  [RNAPATHSET=1],
@@ -131,11 +131,11 @@ AC_ARG_WITH([RNA],
 AS_IF([test  $RNAPATHSET = 1 ], [
 	AS_IF([test "x$HAVE_PKG_CONFIG" = "xyes"], [
 		# use pkg-config data if available
-		export PKG_CONFIG_PATH="$with_RNA/lib/pkgconfig/:$PKG_CONFIG_PATH"
+		export PKG_CONFIG_PATH="$with_vrna/lib/pkgconfig/:$PKG_CONFIG_PATH"
 	], [
 		# guess compiler and linker flags if needed
-		AM_CXXFLAGS="-I$with_RNA/include $AM_CXXFLAGS"
-		AM_LDFLAGS="-L$with_RNA/lib $AM_LDFLAGS"
+		AM_CXXFLAGS="-I$with_vrna/include $AM_CXXFLAGS"
+		AM_LDFLAGS="-L$with_vrna/lib $AM_LDFLAGS"
 	])
 ])
 
@@ -245,9 +245,9 @@ AS_IF([test "$RNANOTFOUND" = "1"], [
 	AC_MSG_NOTICE([ -> It can be obtained from http://www.tbi.univie.ac.at/.])
 	AC_MSG_NOTICE()
  	AS_IF([test "$RNAPATHSET" = "1"], [
-		AC_MSG_NOTICE([ -> Can't find the Vienna RNA library in given path '$with_RNA'.])
+		AC_MSG_NOTICE([ -> Can't find the Vienna RNA library in given path '$with_vrna'.])
  	], [ # else
-		AC_MSG_NOTICE([ -> If installed in a non-standard path, please use '--with-RNA=PREFIX'.])
+		AC_MSG_NOTICE([ -> If installed in a non-standard path, please use '--with-vrna=PREFIX'.])
  	])
  	DEPENDENCYNOTFOUND=1;
 ],[ # else
