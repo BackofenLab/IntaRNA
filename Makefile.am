@@ -18,7 +18,7 @@ endif
 ################################################################
 
 # global test directive # ensure all is compiled (need object files for tests)
-.PHONY: tests test
+.PHONY: DX_PHONY tests test
 tests: all
 	@echo
 	@echo " => compiling and running tests ... will take a while ..."
