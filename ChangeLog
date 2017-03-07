@@ -6,6 +6,13 @@
    * intarna specific defines prefixed with INTARNA_
  * configure.ac :
    * VRNA configure flag conform with LocARNA (--with-vrna)
+ * README.md
+   + (minimal) library information added
+ * CommandLineParsing :
+   + argument boundaries for outDeltaE and outMaxE
+ * SeedHandler :
+   * traceBackSeed() : 
+     * bugfix: was not using offset1/2
 
 170306 Martin Mann :
  + src/IntaRNA : subfolder that holds all libIntaRNA related sources
