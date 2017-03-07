@@ -119,7 +119,7 @@ AS_IF([test x"$multithreadingEnabled" = x"yes"], [
 ###############################################################################
 # Vienna RNA package library path support, if not installed in usual directories
 ###############################################################################
-AC_ARG_WITH([RNA],
+AC_ARG_WITH([vrna],
 	[AC_HELP_STRING(
 	    [--with-vrna=PREFIX],
 	    [alternative prefix path to Vienna RNA library]
