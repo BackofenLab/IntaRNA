@@ -76,6 +76,7 @@ The following topics are covered by this documentation:
       - [Local versus global unpaired probabilities](#accLocalGlobal)
       - [Read/write accessibility from/to file or stream](#accFromFile)
   - [Multi-threading and parallelized computation](#multithreading)
+- [Library](#lib)
 
 
 
@@ -900,3 +901,24 @@ When using parallelization, you should have the following things in mind:
  
 The support for multi-threading can be completely disabled before compilation
 using `configure --disable-multithreading`.
+
+
+
+
+
+
+
+<br /><br /><br /><br />
+<a name="lib" />
+# Library
+
+The IntaRNA package also comes with a C++ library `libIntaRNA.a` containing the core classes
+and functionalities using within the IntaRNA tool. The whole library comes with
+a `IntaRNA` namespace and exhaustive class and member API documentation that is
+processed using doxygen to generate html/pdf versions.
+When IntaRNA is build while `pkg-config` is present, according pkg-config
+information is generated and installed too.
+
+
+
+
