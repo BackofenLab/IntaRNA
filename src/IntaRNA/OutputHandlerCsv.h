@@ -1,6 +1,6 @@
 
-#ifndef OUTPUTHANDLERCSV_H_
-#define OUTPUTHANDLERCSV_H_
+#ifndef INTARNA_OUTPUTHANDLERCSV_H_
+#define INTARNA_OUTPUTHANDLERCSV_H_
 
 #include "IntaRNA/general.h"
 

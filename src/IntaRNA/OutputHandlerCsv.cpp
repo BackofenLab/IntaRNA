@@ -56,7 +56,7 @@ void
 OutputHandlerCsv::
 add( const Interaction & i )
 {
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	// debug checks
 	if ( i.basePairs.size() > 0 && ! i.isValid() ) {
 		throw std::runtime_error("OutputHandlerCsv::add() : given interaction is not valid : "+toString(i));

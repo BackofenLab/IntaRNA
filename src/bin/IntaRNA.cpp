@@ -70,7 +70,7 @@ int main(int argc, char **argv){
 			// get accessibility handler
 			VLOG(1) <<"computing accessibility for query '"<<parameters.getQuerySequences().at(qi).getId()<<"'...";
 			Accessibility * queryAccOrig = parameters.getQueryAccessibility(qi);
-			CHECKNOTNULL(queryAccOrig,"query initialization failed");
+			INTARNA_CHECK_NOT_NULL(queryAccOrig,"query initialization failed");
 			// reverse indexing of target sequence for the computation
 			queryAcc[qi] = new ReverseAccessibility(*queryAccOrig);
 
@@ -110,7 +110,7 @@ int main(int argc, char **argv){
 
 					// VRNA not completely threadsafe ...
 					Accessibility * targetAcc = parameters.getTargetAccessibility(targetNumber);
-					CHECKNOTNULL(targetAcc,"target initialization failed");
+					INTARNA_CHECK_NOT_NULL(targetAcc,"target initialization failed");
 
 					// check if we have to warn about ambiguity
 					if (targetAcc->getSequence().isAmbiguous()) {
@@ -139,11 +139,11 @@ int main(int argc, char **argv){
 
 								// get energy computation handler for both sequences
 								InteractionEnergy* energy = parameters.getEnergyHandler( *targetAcc, *(queryAcc.at(queryNumber)) );
-								CHECKNOTNULL(energy,"energy initialization failed");
+								INTARNA_CHECK_NOT_NULL(energy,"energy initialization failed");
 
 								// get output/storage handler
 								OutputHandler * output = parameters.getOutputHandler( *energy );
-								CHECKNOTNULL(output,"output handler initialization failed");
+								INTARNA_CHECK_NOT_NULL(output,"output handler initialization failed");
 
 								// check if we have to add separator for IntaRNA v1 output
 								if (reportedInteractions > 0 && dynamic_cast<OutputHandlerIntaRNA1*>(output) != NULL) {
@@ -152,7 +152,7 @@ int main(int argc, char **argv){
 
 								// get interaction prediction handler
 								Predictor * predictor = parameters.getPredictor( *energy, *output );
-								CHECKNOTNULL(predictor,"predictor initialization failed");
+								INTARNA_CHECK_NOT_NULL(predictor,"predictor initialization failed");
 
 								// run prediction for all range combinations
 								BOOST_FOREACH(const IndexRange & tRange, parameters.getTargetRanges(targetNumber)) {
@@ -183,9 +183,9 @@ int main(int argc, char **argv){
 								reportedInteractions += output->reported();
 
 								// garbage collection
-								CLEANUP(predictor);
-								CLEANUP(output);
-								CLEANUP(energy);
+								 INTARNA_CLEANUP(predictor);
+								 INTARNA_CLEANUP(output);
+								 INTARNA_CLEANUP(energy);
 
 #if INTARNA_MULITHREADING
 							////////////////////// exception handling ///////////////////////////
@@ -224,7 +224,7 @@ int main(int argc, char **argv){
 					parameters.writeTargetAccessibility( *targetAcc );
 
 					// garbage collection
-					CLEANUP(targetAcc);
+					 INTARNA_CLEANUP(targetAcc);
 
 #if INTARNA_MULITHREADING
 				////////////////////// exception handling ///////////////////////////
@@ -265,9 +265,9 @@ int main(int argc, char **argv){
 			Accessibility* queryAccOrig = &(const_cast<Accessibility&>(queryAcc[queryNumber]->getAccessibilityOrigin()) );
 			// write accessibility to file if needed
 			parameters.writeQueryAccessibility( *queryAccOrig );
-			CLEANUP( queryAccOrig );
+			 INTARNA_CLEANUP( queryAccOrig );
 			// cleanup (now broken) reverse accessibility object
-			CLEANUP(queryAcc[queryNumber]);
+			 INTARNA_CLEANUP(queryAcc[queryNumber]);
 		}
 
 #if INTARNA_MULITHREADING

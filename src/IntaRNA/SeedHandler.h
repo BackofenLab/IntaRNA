@@ -1,6 +1,6 @@
 
-#ifndef SEEDHANDLER_H_
-#define SEEDHANDLER_H_
+#ifndef INTARNA_SEEDHANDLER_H_
+#define INTARNA_SEEDHANDLER_H_
 
 #include "IntaRNA/InteractionEnergy.h"
 #include "IntaRNA/SeedConstraint.h"
@@ -293,7 +293,7 @@ traceBackSeed( Interaction & interaction
 		, const size_t i2
 		)
 {
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	if ( i1 < offset1 ) throw std::runtime_error("SeedHandler::traceBackSeed(i1="+toString(i1)+") is out of range (>"+toString(offset1)+")");
 	if ( i1-offset1 >= seed.size1() ) throw std::runtime_error("SeedHandler::traceBackSeed(i1="+toString(i1)+") is out of range (<"+toString(seed.size1()+offset1)+")");
 	if ( i2 < offset2 ) throw std::runtime_error("SeedHandler::traceBackSeed(i2="+toString(i2)+") is out of range (>"+toString(offset2)+")");

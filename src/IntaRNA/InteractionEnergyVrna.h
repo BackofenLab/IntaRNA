@@ -1,6 +1,6 @@
 
-#ifndef INTERACTIONENERGYVIENNA_H_
-#define INTERACTIONENERGYVIENNA_H_
+#ifndef INTARNA_INTERACTIONENERGYVIENNA_H_
+#define INTARNA_INTERACTIONENERGYVIENNA_H_
 
 #include "IntaRNA/InteractionEnergy.h"
 #include "IntaRNA/VrnaHandler.h"
@@ -443,7 +443,7 @@ E_type
 InteractionEnergyVrna::
 getES1( const size_t i1, const size_t j1 ) const
 {
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	// sanity check
 	if (i1>j1) throw std::runtime_error("InteractionEnergy::getES1(i1="+toString(i1)+" > j1="+toString(j1));
 	if (j1>=size1()) throw std::runtime_error("InteractionEnergy::getES1() : j1="+toString(j1)+" >= size1()="+toString(size1()));
@@ -461,7 +461,7 @@ E_type
 InteractionEnergyVrna::
 getES2( const size_t i2, const size_t j2 ) const
 {
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	// sanity check
 	if (i2>j2) throw std::runtime_error("InteractionEnergy::getES2(i2="+toString(i2)+" > j2="+toString(j2));
 	if (j2>=size2()) throw std::runtime_error("InteractionEnergy::getES2() : j2="+toString(j2)+" >= size2()="+toString(size2()));

@@ -1,6 +1,6 @@
 
-#ifndef PREDICTIONTRACKERPAIRMINE_H_
-#define PREDICTIONTRACKERPAIRMINE_H_
+#ifndef INTARNA_PREDICTIONTRACKERPAIRMINE_H_
+#define INTARNA_PREDICTIONTRACKERPAIRMINE_H_
 
 #include "IntaRNA/PredictionTracker.h"
 #include "IntaRNA/InteractionEnergy.h"

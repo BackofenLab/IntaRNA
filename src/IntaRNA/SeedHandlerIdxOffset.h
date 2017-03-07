@@ -1,6 +1,6 @@
 
-#ifndef SEEDHANDLERIDXOFFSET_H_
-#define SEEDHANDLERIDXOFFSET_H_
+#ifndef INTARNA_SEEDHANDLERIDXOFFSET_H_
+#define INTARNA_SEEDHANDLERIDXOFFSET_H_
 
 #include "IntaRNA/SeedHandler.h"
 
@@ -284,7 +284,7 @@ void
 SeedHandlerIdxOffset::
 setOffset1( const size_t offset )
 {
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	if (offset >= seedHandlerOriginal.getInteractionEnergy().size1()) {
 		throw std::runtime_error("SeedHandlerIdxOffset.setOffset1("+toString(offset)
 				+") offset > seq1.length "+toString(seedHandlerOriginal.getInteractionEnergy().size1()));
@@ -303,7 +303,7 @@ void
 SeedHandlerIdxOffset::
 setOffset2( const size_t offset )
 {
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	if (offset >= seedHandlerOriginal.getInteractionEnergy().size2()) {
 		throw std::runtime_error("SeedHandlerIdxOffset.setOffset2("+toString(offset)
 				+") offset > seq2.length "+toString(seedHandlerOriginal.getInteractionEnergy().size2()));

@@ -8,7 +8,7 @@ InteractionRange &
 InteractionRange::
 operator= ( const Interaction & interaction )
 {
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	if (interaction.isEmpty())
 		throw std::runtime_error("InteractionRange::=(interaction) is empty!");
 	if (!interaction.isValid())
@@ -23,7 +23,7 @@ operator= ( const Interaction & interaction )
 	r2.to = interaction.basePairs.rbegin()->second;
 	energy = interaction.energy;
 
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	if (!isSane())
 		throw std::runtime_error("InteractionRange::=(interaction)="+toString(*this)+" not sane!");
 #endif

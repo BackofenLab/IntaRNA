@@ -10,7 +10,7 @@ SeedHandler::
 fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size_t i2max)
 {
 
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	if ( i1min > i1max ) throw std::runtime_error("SeedHandler::fillSeed: i1min("+toString(i1min)+") > i1max("+toString(i1max)+")");
 	if ( i2min > i2max ) throw std::runtime_error("SeedHandler::fillSeed: i2min("+toString(i2min)+") > i2max("+toString(i2max)+")");
 	if ( i1max > energy.size1() ) throw std::runtime_error("SeedHandler::fillSeed: i1max("+toString(i1max)+") > energy.size1("+toString(energy.size1())+")");

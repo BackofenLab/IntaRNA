@@ -1,6 +1,6 @@
 
-#ifndef INTERACTIONRANGE_H_
-#define INTERACTIONRANGE_H_
+#ifndef INTARNA_INTERACTIONRANGE_H_
+#define INTARNA_INTERACTIONRANGE_H_
 
 #include "IntaRNA/general.h"
 #include "IntaRNA/IndexRange.h"
@@ -54,7 +54,7 @@ public:
 		, r2((r2.from > rna2.size()?rna2.size()-1:r2.from), r2.to)
 		, energy(energy)
 	{
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 		if (!isSane())
 			throw std::runtime_error("InteractionRange("+toString(*this)+") not sane!");
 #endif

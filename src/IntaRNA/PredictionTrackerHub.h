@@ -1,6 +1,6 @@
 
-#ifndef PREDICTIONTRACKERHUB_H_
-#define PREDICTIONTRACKERHUB_H_
+#ifndef INTARNA_PREDICTIONTRACKERHUB_H_
+#define INTARNA_PREDICTIONTRACKERHUB_H_
 
 #include "IntaRNA/PredictionTracker.h"
 
@@ -146,7 +146,7 @@ PredictionTrackerHub::
 	if (isDeleteOnDestruction()) {
 		// delete all tracker
 		for( auto it = trackList.begin(); it != trackList.end(); it++ ) {
-			CLEANUP( (*it) );
+			 INTARNA_CLEANUP( (*it) );
 		}
 	}
 }
@@ -160,7 +160,7 @@ void
 PredictionTrackerHub::
 addPredictionTracker( PredictionTracker * tracker )
 {
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	if (tracker != NULL) {
 		// check if already present
 		for (auto it=trackList.begin(); it!=trackList.end(); it++) {
@@ -222,7 +222,7 @@ operator= ( const PredictionTrackerHub & toCopy)
 	// clean up current content
 	if (this->deleteTrackListOnDestruction) {
 		for (auto it=trackList.begin(); it!=trackList.end(); it++) {
-			CLEANUP( (*it) );
+			 INTARNA_CLEANUP( (*it) );
 		}
 	}
 	trackList.clear();

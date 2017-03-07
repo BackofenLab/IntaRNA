@@ -55,8 +55,8 @@ deleteOutputStream( std::ostream * outStream )
 	if (outFile != NULL) {
 		// close and delete file handle
 		outFile->close();
-		CLEANUP(outFile);
-#if IN_DEBUG_MODE
+		 INTARNA_CLEANUP(outFile);
+#if INTARNA_IN_DEBUG_MODE
 	} else {
 		// sanity check
 		if (outStream != &std::cout && outStream != &std::cerr) {

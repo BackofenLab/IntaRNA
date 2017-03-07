@@ -64,8 +64,8 @@ InteractionEnergyVrna::~InteractionEnergyVrna()
 		free(foldParams);
 		foldParams = NULL;
 	}
-	CLEANUP(esValues1);
-	CLEANUP(esValues2);
+	 INTARNA_CLEANUP(esValues1);
+	 INTARNA_CLEANUP(esValues2);
 
 }
 

@@ -1,6 +1,6 @@
 
-#ifndef SEEDCONSTRAINT_H_
-#define SEEDCONSTRAINT_H_
+#ifndef INTARNA_SEEDCONSTRAINT_H_
+#define INTARNA_SEEDCONSTRAINT_H_
 
 
 #include "IntaRNA/general.h"

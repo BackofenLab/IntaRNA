@@ -1,6 +1,6 @@
 
-#ifndef OUTPUTCONSTRAINT_H_
-#define OUTPUTCONSTRAINT_H_
+#ifndef INTARNA_OUTPUTCONSTRAINT_H_
+#define INTARNA_OUTPUTCONSTRAINT_H_
 
 #include "IntaRNA/general.h"
 

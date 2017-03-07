@@ -96,7 +96,7 @@ E_type
 AccessibilityVrna::
 calc_ensemble_free_energy( const int start_unfold, const int end_unfold, vrna_exp_param_s * partFoldParams )
 {
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	if (start_unfold >= 0 && end_unfold >= 0) {
 		checkIndices((size_t)start_unfold, (size_t)end_unfold);
 	} else {
@@ -270,7 +270,7 @@ fillByRNAplfold( const VrnaHandler &vrnaHandler
 	// time logging
 	TIMED_FUNC_IF(timerObj, VLOG_IS_ON(9));
 
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	// check if structure constraint given
 	if ( ! getAccConstraint().isEmpty() ) {
 		throw std::runtime_error("AccessibilityVrna::fillByRNAplfold() called but structure constraint present for sequence "+getSequence().getId());

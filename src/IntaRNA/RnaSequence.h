@@ -1,6 +1,6 @@
 
-#ifndef RNASEQUENCE_H_
-#define RNASEQUENCE_H_
+#ifndef INTARNA_RNASEQUENCE_H_
+#define INTARNA_RNASEQUENCE_H_
 
 #include <locale>
 #include <string>
@@ -256,7 +256,7 @@ RnaSequence::RnaSequence(
 	, seqCode(getCodeForString(this->seqString))
 	, ambiguous(this->seqString.find('N')!=std::string::npos)
 {
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	if (id.size() == 0) {
 		throw std::runtime_error("RnaSequence::RnaSequence : id empty");
 	}
@@ -347,7 +347,7 @@ String_type
 RnaSequence::
 getUpperCase( const std::string & seqString )
 {
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	if (!isValidSequenceIUPAC(seqString)) throw std::runtime_error("RnaSequence::getUpperCase() : the given sequence contains non-IUPAC codes : '"+seqString+"'");
 #endif
 
@@ -430,7 +430,7 @@ Code_type
 RnaSequence::
 getCodeForChar( const char nucleotide )
 {
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	// check if nucleotide character is NOT supported
 	if (SequenceAlphabet.find(nucleotide) == std::string::npos)
 		throw std::runtime_error("RnaSequence::getCodeForChar() : unsupported nucleotide character '"+toString(nucleotide)+"' in sequence");
@@ -449,7 +449,7 @@ RnaSequence::
 areComplementary( const RnaSequence & s1, const RnaSequence & s2,
 					const size_t p1, const size_t p2 )
 {
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	// check if valid positions
 	if (p1>=s1.size() || p2>=s2.size())
 		throw std::runtime_error("RnaSequence::areComplementary : index positions p1/p2 ("

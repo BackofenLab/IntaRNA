@@ -18,7 +18,7 @@ PredictionTrackerPairMinE(
 	, E_INF_string(E_INF_string)
 	, pairMinE( energy.size1(), energy.size2(), E_INF ) // init E_INF
 {
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	if (streamName.empty()) {
 		throw std::runtime_error("PredictionTrackerPairMinE() : streamName empty");
 	}
@@ -78,7 +78,7 @@ updateOptimumCalled( const size_t i1_, const size_t j1_
 	const size_t i2 =  (i2_ == RnaSequence::lastPos ? energy.size2()-1 : i2_);
 	const size_t j2 =  (j2_ == RnaSequence::lastPos ? energy.size2()-1 : j2_);
 
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	// sanity checks
 	if (i1>=energy.size1() || j1>=energy.size1()) throw std::runtime_error("PredictionTrackerPairMinE::updateProfile() : index-1 range ["+toString(i1)+","+toString(j1)+"] exceeds sequence-1 length "+toString(energy.size1()));
 	if (i1>j1) throw std::runtime_error("PredictionTrackerPairMinE::updateProfile() : i1 "+toString(i1)+" > j1 "+toString(j1));

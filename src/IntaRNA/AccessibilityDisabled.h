@@ -5,8 +5,8 @@
  *      Author: Mmann
  */
 
-#ifndef ACCESSIBILITYDISABLED_H_
-#define ACCESSIBILITYDISABLED_H_
+#ifndef INTARNA_ACCESSIBILITYDISABLED_H_
+#define INTARNA_ACCESSIBILITYDISABLED_H_
 
 #include "IntaRNA/Accessibility.h"
 

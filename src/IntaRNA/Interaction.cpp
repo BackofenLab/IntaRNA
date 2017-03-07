@@ -62,7 +62,7 @@ Interaction &
 Interaction::
 operator= ( const Interaction & toCopy )
 {
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	if (!toCopy.isValid())
 		throw std::runtime_error("Interaction::=("+toString(toCopy)+") not valid!");
 #endif
@@ -88,7 +88,7 @@ operator= ( const Interaction & toCopy )
 		*seed = *(toCopy.seed);
 	} else {
 		// remove seed information if present
-		CLEANUP(seed);
+		 INTARNA_CLEANUP(seed);
 	}
 
 	return *this;
@@ -100,7 +100,7 @@ Interaction &
 Interaction::
 operator= ( const InteractionRange & range )
 {
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	if (!range.isSane())
 		throw std::runtime_error("Interaction::=("+toString(range)+") not sane!");
 #endif
@@ -108,7 +108,7 @@ operator= ( const InteractionRange & range )
 	basePairs.clear();
 
 	// undo seed information
-	CLEANUP(seed);
+	 INTARNA_CLEANUP(seed);
 
 	// copy sequence handles
 	s1 = range.s1;
@@ -133,7 +133,7 @@ std::string
 Interaction::
 dotBar( const Interaction & i )
 {
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	if (!i.isValid())
 		throw std::runtime_error("Interaction::dotBar("+toString(i)+") not valid!");
 #endif
@@ -152,7 +152,7 @@ std::string
 Interaction::
 dotBracket( const Interaction & i, const char symOpen, const char symClose )
 {
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	if (!i.isValid())
 		throw std::runtime_error("Interaction::dotBracket("+toString(i)+") not valid!");
 #endif

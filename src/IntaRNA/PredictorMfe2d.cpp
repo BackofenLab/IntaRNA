@@ -49,7 +49,7 @@ predict( const IndexRange & r1
 		throw std::runtime_error("PredictorMfe2d : the enumeration of non-overlapping suboptimal interactions is not supported in this prediction mode");
 	}
 
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	// check indices
 	if (!(r1.isAscending() && r2.isAscending()) )
 		throw std::runtime_error("PredictorMfe2d::predict("+toString(r1)+","+toString(r2)+") is not sane");
@@ -102,7 +102,7 @@ initHybridE( const size_t j1, const size_t j2
 			, const size_t i1init, const size_t i2init
 			)
 {
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	if (i1init > j1)
 		throw std::runtime_error("PredictorMfe2d::initHybridE() : i1init > j1 : "+toString(i1init)+" > "+toString(j1));
 	if (i2init > j2)
@@ -263,7 +263,7 @@ traceBack( Interaction & interaction )
 		return;
 	}
 
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	// sanity checks
 	if ( ! interaction.isValid() ) {
 		throw std::runtime_error("PredictorMfe2d::traceBack() : given interaction not valid");

@@ -64,7 +64,7 @@ bool
 IndexRangeList::
 overlaps( const IndexRange& range ) const
 {
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	if (!range.isAscending())  {
 		throw std::runtime_error("IndexRangeList::overlaps("+toString(range)+") range is not ascending");
 	}
@@ -104,7 +104,7 @@ void
 IndexRangeList::
 push_back( const IndexRange& range )
 {
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	if (!range.isAscending())  {
 		throw std::runtime_error("IndexRangeList::push_back("+toString(range)+") range is not ascending");
 	}
@@ -113,7 +113,7 @@ push_back( const IndexRange& range )
 	}
 #endif
 	if (!list.empty() && list.rbegin()->to >= range.from) {
-		NOTIMPLEMENTED("IndexRangeList::push_back() : overlapping ranges are currently not supported")
+		INTARNA_NOT_IMPLEMENTED("IndexRangeList::push_back() : overlapping ranges are currently not supported")
 	}
 	// sorting should be OK (in debug mode.. ;) )
 	list.push_back( range );
@@ -125,7 +125,7 @@ IndexRangeList::iterator
 IndexRangeList::
 insert( const IndexRange& range )
 {
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	if (!range.isAscending())  {
 		throw std::runtime_error("IndexRangeList::insert("+toString(range)+") range is not ascending");
 	}
@@ -142,7 +142,7 @@ insert( const IndexRange& range )
 		if (r != list.end()) {
 			// check for overlap
 			if (range.to >= r->from) {
-				NOTIMPLEMENTED("IndexRangeList::insert() : overlapping ranges are currently not supported")
+				INTARNA_NOT_IMPLEMENTED("IndexRangeList::insert() : overlapping ranges are currently not supported")
 			}
 		}
 		// check if already existing (predecessor)
@@ -155,7 +155,7 @@ insert( const IndexRange& range )
 			}
 			// check for overlap
 			if (r->to >= range.from) {
-				NOTIMPLEMENTED("IndexRangeList::insert() : overlapping ranges are currently not supported")
+				INTARNA_NOT_IMPLEMENTED("IndexRangeList::insert() : overlapping ranges are currently not supported")
 			}
 			++r;
 		}
@@ -197,7 +197,7 @@ reverse( const size_t seqLength )
 	// reverse each entry
 	size_t tmpFrom;
 	for (IndexRangeList::iterator r=begin(); r!=end(); r++) {
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 		// check if reversal is possible
 		if (r->from >= seqLength || r->to >= seqLength) throw std::runtime_error("IndexRangeList::reverse("+toString(seqLength)+") = range "+toString(*r)+" exceeds seqLength");
 #endif

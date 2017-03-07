@@ -130,7 +130,7 @@ updateProfile(	  MinEProfile & profile
 {
 	// update if the profile is not empty (is to be filled)
 	if (! profile.empty()) {
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 		if (i>=profile.size() || j>=profile.size()) throw std::runtime_error("PredictionTrackerProfileMinE::updateProfile() : index range ["+toString(i)+","+toString(j)+"] exceeds sequence length "+toString(profile.size()));
 		if (i>j) throw std::runtime_error("PredictionTrackerProfileMinE::updateProfile() : i "+toString(i)+" > j "+toString(j));
 #endif

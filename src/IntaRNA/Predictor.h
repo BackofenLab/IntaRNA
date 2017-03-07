@@ -1,6 +1,6 @@
 
-#ifndef PREDICTOR_H_
-#define PREDICTOR_H_
+#ifndef INTARNA_PREDICTOR_H_
+#define INTARNA_PREDICTOR_H_
 
 #include "IntaRNA/general.h"
 #include "IntaRNA/InteractionEnergyIdxOffset.h"
@@ -147,7 +147,7 @@ Predictor::Predictor( const InteractionEnergy & energy
 inline
 Predictor::~Predictor()
 {
-	CLEANUP(predTracker);
+	 INTARNA_CLEANUP(predTracker);
 }
 
 ////////////////////////////////////////////////////////////////////////////

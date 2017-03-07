@@ -1,6 +1,6 @@
 
-#ifndef GENERAL_H_
-#define GENERAL_H_
+#ifndef INTARNA_GENERAL_H_
+#define INTARNA_GENERAL_H_
 
 
 //////////////  GENERAL CONFIGURE FLAGS  ////////////////
@@ -11,8 +11,8 @@
 
 #include "IntaRNA/intarna_config.h"
 
-//! central compiler flag whether or not debug mode is enabled
-#define IN_DEBUG_MODE ((defined(_DEBUG)) || (!defined (NDEBUG)))
+//! central flag whether or not debug mode is enabled
+#define INTARNA_IN_DEBUG_MODE ((defined(_DEBUG)) || (!defined (NDEBUG)))
 
 ////////////////  CENTRAL LOGGING LIB  //////////////////
 
@@ -25,7 +25,7 @@
 	#define ELPP_DISABLE_LOG_FILE_FROM_ARG 1
 #endif
 // enable debug error tracking
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	#define ELPP_DEBUG_ERRORS 1
 #endif
 
@@ -33,13 +33,13 @@
 
 ////////////////  GARBAGE COLLECTION  ///////////////////
 
-#define CLEANUP(pointer) if (pointer != NULL) {delete pointer; pointer=NULL;}
+#define  INTARNA_CLEANUP(pointer) if (pointer != NULL) {delete pointer; pointer=NULL;}
 
 ////////////////  ABORT NON-IMPLEMENTED  ////////////////
 
 #include <stdexcept>
 
-	#define NOTIMPLEMENTED(message)	\
+	#define INTARNA_NOT_IMPLEMENTED(message)	\
 		throw std::runtime_error( \
 					std::string("\nSTOP DUE TO MISSING IMPLEMENTATION : ") \
 					+ message \
@@ -49,7 +49,7 @@
 
 #include <stdexcept>
 
-	#define CHECKNOTNULL(pointer,message) if (pointer == NULL) {	\
+	#define INTARNA_CHECK_NOT_NULL(pointer,message) if (pointer == NULL) {	\
 		throw std::runtime_error( \
 					std::string("\nSTOP DUE TO NULL POINTER : ") \
 					+ message \
@@ -60,6 +60,9 @@
 
 #include <boost/lexical_cast.hpp>
 
+	#ifdef toString
+		#error toString already defined
+	#endif
 	#define toString( x ) boost::lexical_cast<std::string>(x)
 
 
@@ -67,6 +70,9 @@
 
 #include <cmath>
 
+	#ifdef numStringLength
+		#error numStringLength already defined
+	#endif
 	#define numStringLength( x ) ( (x==0) ? 1 : (1+std::floor(std::log10(x))) )
 
 
@@ -84,15 +90,27 @@ namespace IntaRNA {
 
 } // namespace
 
+#ifdef E_precisionEpsilon
+	#error E_precisionEpsilon already defined
+#endif
 	//! the delta difference range to consider two energies equivalent
 #define E_precisionEpsilon 1000.0*std::numeric_limits<E_type>::epsilon()
 
+#ifdef E_equal
+	#error E_equal already defined
+#endif
 	//! check if two energies are equal according to some epsilon
 #define E_equal( e1, e2 ) ( std::abs((e1)-(e2)) < E_precisionEpsilon)
 
+#ifdef E_isNotINF
+	#error E_isNotINF already defined
+#endif
 	//! check if a given energy is NOT set to E_INF
 #define E_isNotINF( e ) ( std::numeric_limits<E_type>::max() >= e )
 
+#ifdef E_isINF
+	#error E_isINF already defined
+#endif
 	//! check if a given energy is set to E_INF
 #define E_isINF( e ) (  std::numeric_limits<E_type>::max() < e )
 

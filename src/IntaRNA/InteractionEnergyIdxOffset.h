@@ -1,6 +1,6 @@
 
-#ifndef INTERACTIONENERGYIDXOFFSET_H_
-#define INTERACTIONENERGYIDXOFFSET_H_
+#ifndef INTARNA_INTERACTIONENERGYIDXOFFSET_H_
+#define INTARNA_INTERACTIONENERGYIDXOFFSET_H_
 
 #include "IntaRNA/InteractionEnergy.h"
 
@@ -448,7 +448,7 @@ InteractionEnergyIdxOffset( const InteractionEnergy & energyOriginal
 	, offset1(offset1)
 	, offset2(offset2)
 {
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	// input sanity checks
 	setOffset1(offset1);
 	setOffset2(offset2);
@@ -479,7 +479,7 @@ void
 InteractionEnergyIdxOffset::
 setOffset1(size_t offset1)
 {
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	if (offset1 >= energyOriginal.size1()) {
 		throw std::runtime_error("InteractionEnergyIdxOffset : offset1 "+toString(offset1)
 				+" > seq1.length "+toString(energyOriginal.size1()));
@@ -505,7 +505,7 @@ void
 InteractionEnergyIdxOffset::
 setOffset2(size_t offset2)
 {
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	if (offset2 >= energyOriginal.size2()) {
 		throw std::runtime_error("InteractionEnergyIdxOffset : offset2 "+toString(offset2)
 				+" > seq2.length "+toString(energyOriginal.size2()));
@@ -733,7 +733,7 @@ size_t
 InteractionEnergyIdxOffset::
 getIndex1( const Interaction::BasePair & bp ) const
 {
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	if (energyOriginal.getIndex1(bp)<offset1) throw std::runtime_error("InteractionEnergyIdxOffset::getIndex1("+toString(energyOriginal.getIndex1(bp))+") < offset1 = "+toString(offset1));
 #endif
 	return energyOriginal.getIndex1(bp)-offset1;
@@ -746,7 +746,7 @@ size_t
 InteractionEnergyIdxOffset::
 getIndex2( const Interaction::BasePair & bp ) const
 {
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	if (energyOriginal.getIndex2(bp)<offset2) throw std::runtime_error("InteractionEnergyIdxOffset::getIndex2("+toString(energyOriginal.getIndex2(bp))+") < offset2 = "+toString(offset2));
 #endif
 	return energyOriginal.getIndex2(bp)-offset2;

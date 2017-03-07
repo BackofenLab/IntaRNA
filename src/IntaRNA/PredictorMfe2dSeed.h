@@ -5,8 +5,8 @@
  *      Author: Mmann
  */
 
-#ifndef PREDICTORMFE2DSEED_H_
-#define PREDICTORMFE2DSEED_H_
+#ifndef INTARNA_PREDICTORMFE2DSEED_H_
+#define INTARNA_PREDICTORMFE2DSEED_H_
 
 #include "IntaRNA/PredictorMfe2d.h"
 #include "IntaRNA/SeedHandlerIdxOffset.h"

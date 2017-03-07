@@ -1,6 +1,6 @@
 
-#ifndef ACCESSIBILITYVIENNA_H_
-#define ACCESSIBILITYVIENNA_H_
+#ifndef INTARNA_ACCESSIBILITYVIENNA_H_
+#define INTARNA_ACCESSIBILITYVIENNA_H_
 
 #include "IntaRNA/Accessibility.h"
 #include "IntaRNA/VrnaHandler.h"

@@ -1,6 +1,6 @@
 
-#ifndef PREDICTORMAXPROB_H_
-#define PREDICTORMAXPROB_H_
+#ifndef INTARNA_PREDICTORMAXPROB_H_
+#define INTARNA_PREDICTORMAXPROB_H_
 
 #include "IntaRNA/Predictor.h"
 #include "IntaRNA/InteractionRange.h"

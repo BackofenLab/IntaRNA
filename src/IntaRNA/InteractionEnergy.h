@@ -1,6 +1,6 @@
 
-#ifndef INTERACTIONENERGY_H_
-#define INTERACTIONENERGY_H_
+#ifndef INTARNA_INTERACTIONENERGY_H_
+#define INTARNA_INTERACTIONENERGY_H_
 
 
 #include "IntaRNA/general.h"
@@ -904,7 +904,7 @@ getE_multi(  const size_t i1, const size_t j1
 			, const size_t i2, const size_t j2
 			, const ES_multi_mode ES_mode ) const
 {
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	if (i1 >= j1 ) throw std::runtime_error("InteractionEnergy::getE_multi() : i1>=j1 : "+toString(i1)+" "+toString(j1));
 	if (i2 >= j2 ) throw std::runtime_error("InteractionEnergy::getE_multi() : i2>=j2 : "+toString(i2)+" "+toString(j2));
 	if (j1 >= size1()) throw std::runtime_error("InteractionEnergy::getE_multi() : j1>=size1() : "+toString(j1)+" "+toString(size1()));

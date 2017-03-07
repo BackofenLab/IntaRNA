@@ -1,6 +1,6 @@
 
-#ifndef PREDICTIONTRACKER_H_
-#define PREDICTIONTRACKER_H_
+#ifndef INTARNA_PREDICTIONTRACKER_H_
+#define INTARNA_PREDICTIONTRACKER_H_
 
 
 #include "IntaRNA/general.h"

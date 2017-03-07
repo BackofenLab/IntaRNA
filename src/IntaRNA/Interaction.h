@@ -1,6 +1,6 @@
 
-#ifndef INTERACTION_H_
-#define INTERACTION_H_
+#ifndef INTARNA_INTERACTION_H_
+#define INTARNA_INTERACTION_H_
 
 #include <vector>
 #include <utility>
@@ -292,7 +292,7 @@ Interaction::Interaction( const InteractionRange & range )
 inline
 Interaction::~Interaction()
 {
-	CLEANUP(seed);
+	 INTARNA_CLEANUP(seed);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -328,7 +328,7 @@ clear()
 	// clear energy
 	energy = std::numeric_limits<E_type>::signaling_NaN();
 	// undo seed information
-	CLEANUP(seed);
+	 INTARNA_CLEANUP(seed);
 
 }
 

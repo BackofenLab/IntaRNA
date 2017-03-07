@@ -1,6 +1,6 @@
 
-#ifndef PREDICTORMFE4DSEED_H_
-#define PREDICTORMFE4DSEED_H_
+#ifndef INTARNA_PREDICTORMFE4DSEED_H_
+#define INTARNA_PREDICTORMFE4DSEED_H_
 
 #include "IntaRNA/PredictorMfe4d.h"
 #include "IntaRNA/SeedConstraint.h"

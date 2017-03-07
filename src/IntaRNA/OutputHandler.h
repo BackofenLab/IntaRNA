@@ -1,6 +1,6 @@
 
-#ifndef OUTPUTHANDLER_H_
-#define OUTPUTHANDLER_H_
+#ifndef INTARNA_OUTPUTHANDLER_H_
+#define INTARNA_OUTPUTHANDLER_H_
 
 #include "IntaRNA/general.h"
 #include "IntaRNA/Interaction.h"

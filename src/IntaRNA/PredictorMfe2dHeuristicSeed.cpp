@@ -43,7 +43,7 @@ predict( const IndexRange & r1
 	// measure timing
 	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
 
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	// check indices
 	if (!(r1.isAscending() && r2.isAscending()) )
 		throw std::runtime_error("PredictorMfe2dHeuristicSeed::predict("+toString(r1)+","+toString(r2)+") is not sane");
@@ -227,7 +227,7 @@ traceBack( Interaction & interaction )
 		return;
 	}
 
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	// sanity checks
 	if ( ! interaction.isValid() ) {
 		throw std::runtime_error("PredictorMfe2dHeuristicSeed::traceBack() : given interaction not valid");
@@ -331,7 +331,7 @@ traceBack( Interaction & interaction )
 
 		assert( !traceNotFound );
 	}
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	if ( (j2-i2) > 1 ) {
 		throw std::runtime_error("PredictorMfe2dHeuristicSeed::traceBack() : trace leaves ji<j2 : "+toString(i2)+"<"+toString(j2));
 	}

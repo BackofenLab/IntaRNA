@@ -1,6 +1,6 @@
 
-#ifndef INDEXRANGELIST_H_
-#define INDEXRANGELIST_H_
+#ifndef INTARNA_INDEXRANGELIST_H_
+#define INTARNA_INDEXRANGELIST_H_
 
 #include "IntaRNA/IndexRange.h"
 

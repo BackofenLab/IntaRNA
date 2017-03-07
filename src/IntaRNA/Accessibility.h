@@ -1,12 +1,6 @@
-/*
- * Accessibility.h
- *
- *  Created on: 25.06.2014
- *      Author: Mmann
- */
 
-#ifndef ACCESSIBILITY_H_
-#define ACCESSIBILITY_H_
+#ifndef INTARNA_ACCESSIBILITY_H_
+#define INTARNA_ACCESSIBILITY_H_
 
 
 #include "IntaRNA/general.h"
@@ -193,7 +187,7 @@ void
 Accessibility::
 checkIndices( const size_t from, const size_t to ) const
 {
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	if (from > to || to >= getSequence().size()) {
 		throw std::runtime_error("Accessibility::checkIndices : region ["+toString(from)+","+toString(to)+"] does not fulfill 0 <= from <= to < seq.length");
 	}

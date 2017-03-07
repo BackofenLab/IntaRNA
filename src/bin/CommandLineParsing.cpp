@@ -455,7 +455,7 @@ CommandLineParsing::CommandLineParsing()
 
 CommandLineParsing::~CommandLineParsing() {
 
-	CLEANUP(seedConstraint);
+	 INTARNA_CLEANUP(seedConstraint);
 
 	// reset output stream
 	deleteOutputStream( outStream );
@@ -517,7 +517,7 @@ parse(int argc, char** argv)
 			return parsingCode;
 		}
 		if (vm.count("version")) {
-			std::cout <<PACKAGE_STRING << "\n";
+			std::cout <<INTARNA_PACKAGE_STRING << "\n";
 			parsingCode = ReturnCode::STOP_ALL_FINE;
 			return parsingCode;
 		}
@@ -619,7 +619,7 @@ parse(int argc, char** argv)
 					}
 				} else {
 					// TODO report error
-					NOTIMPLEMENTED("--qAccConstr only supported for single sequence input");
+					INTARNA_NOT_IMPLEMENTED("--qAccConstr only supported for single sequence input");
 				}
 			} else {
 				// generate empty constraint
@@ -635,7 +635,7 @@ parse(int argc, char** argv)
 					}
 				} else {
 					// TODO report error
-					NOTIMPLEMENTED("--tAccConstr only supported for single sequence input");
+					INTARNA_NOT_IMPLEMENTED("--tAccConstr only supported for single sequence input");
 				}
 			} else {
 				// generate empty constraint
@@ -957,7 +957,7 @@ parseRegion( const std::string & argName, const std::string & value, const RnaSe
 	}
 	// might be BED file input
 	if ( validateFile( value ) ) {
-		NOTIMPLEMENTED("BED file input for index range list not implemented");
+		INTARNA_NOT_IMPLEMENTED("BED file input for index range list not implemented");
 		return;
 	}
 	assert(false) /*should never happen*/;
@@ -1018,12 +1018,12 @@ getQueryAccessibility( const size_t sequenceNumber ) const
 			try {
 				if(!accFileStream->good()){
 					accFileStream->close();
-					CLEANUP(accFileStream);
+					 INTARNA_CLEANUP(accFileStream);
 					throw std::runtime_error("accessibility parsing of --qAccFile : could not open file '"+qAccFile+"'");
 				}
 			} catch (std::exception & ex) {
 				accFileStream->close();
-				CLEANUP(accFileStream);
+				 INTARNA_CLEANUP(accFileStream);
 				throw std::runtime_error("accessibility parsing of --qAccFile : error while opening '"+qAccFile+"' : "+ex.what());
 			}
 			// set file stream as input stream
@@ -1038,7 +1038,7 @@ getQueryAccessibility( const size_t sequenceNumber ) const
 		// cleanup
 		if ( accFileStream != NULL ) {
 			accFileStream->close();
-			CLEANUP( accFileStream );
+			 INTARNA_CLEANUP( accFileStream );
 		}
 		return acc;
 	}
@@ -1055,10 +1055,10 @@ getQueryAccessibility( const size_t sequenceNumber ) const
 										, qAccW.val
 										);
 		default :
-			NOTIMPLEMENTED("query accessibility computation not implemented for energy = '"+toString(energy.val)+"'. Disable via --qAcc=N.");
+			INTARNA_NOT_IMPLEMENTED("query accessibility computation not implemented for energy = '"+toString(energy.val)+"'. Disable via --qAcc=N.");
 		} break;
 	default :
-		NOTIMPLEMENTED("CommandLineParsing::getQueryAccessibility : qAcc = '"+toString(qAcc.val)+"' is not supported");
+		INTARNA_NOT_IMPLEMENTED("CommandLineParsing::getQueryAccessibility : qAcc = '"+toString(qAcc.val)+"' is not supported");
 	}
 	return NULL;
 }
@@ -1097,12 +1097,12 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 			try {
 				if(!accFileStream->good()){
 					accFileStream->close();
-					CLEANUP(accFileStream);
+					 INTARNA_CLEANUP(accFileStream);
 					throw std::runtime_error("accessibility parsing of --tAccFile : could not open file '"+tAccFile+"'");
 				}
 			} catch (std::exception & ex) {
 				accFileStream->close();
-				CLEANUP(accFileStream);
+				 INTARNA_CLEANUP(accFileStream);
 				throw std::runtime_error("accessibility parsing of --tAccFile : error while opening '"+tAccFile+"' : "+ex.what());
 			}
 			// set file stream as input stream
@@ -1118,7 +1118,7 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 		// cleanup
 		if ( accFileStream != NULL ) {
 			accFileStream->close();
-			CLEANUP( accFileStream );
+			 INTARNA_CLEANUP( accFileStream );
 		}
 		return acc;
 	}
@@ -1134,10 +1134,10 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 										, tAccW.val
 										);
 		default :
-			NOTIMPLEMENTED("target accessibility computation not implemented for energy = '"+toString(energy.val)+"'. Disable via --tAcc=N.");
+			INTARNA_NOT_IMPLEMENTED("target accessibility computation not implemented for energy = '"+toString(energy.val)+"'. Disable via --tAcc=N.");
 		} break;
 	default :
-		NOTIMPLEMENTED("CommandLineParsing::getTargetAccessibility : tAcc = '"+toString(tAcc.val)+"' is not supported");
+		INTARNA_NOT_IMPLEMENTED("CommandLineParsing::getTargetAccessibility : tAcc = '"+toString(tAcc.val)+"' is not supported");
 	}
 	return NULL;
 }
@@ -1157,7 +1157,7 @@ getEnergyHandler( const Accessibility& accTarget, const ReverseAccessibility& ac
 	case 'B' : return new InteractionEnergyBasePair( accTarget, accQuery, tIntLoopMax.val, qIntLoopMax.val, initES );
 	case 'V' : return new InteractionEnergyVrna( accTarget, accQuery, vrnaHandler, tIntLoopMax.val, qIntLoopMax.val, initES );
 	default :
-		NOTIMPLEMENTED("CommandLineParsing::getEnergyHandler : energy = '"+toString(energy.val)+"' is not supported");
+		INTARNA_NOT_IMPLEMENTED("CommandLineParsing::getEnergyHandler : energy = '"+toString(energy.val)+"' is not supported");
 	}
 	return NULL;
 
@@ -1402,7 +1402,7 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 	// check if any tracker registered
 	if (predTracker->empty()) {
 		// cleanup to avoid overhead
-		CLEANUP(predTracker);
+		 INTARNA_CLEANUP(predTracker);
 		predTracker == NULL;
 	}
 
@@ -1415,23 +1415,23 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 			case 'H' :  return new PredictorMfe2dHeuristic( energy, output, predTracker );
 			case 'M' :  return new PredictorMfe2d( energy, output, predTracker );
 			case 'E' :  return new PredictorMfe4d( energy, output, predTracker );
-			default :  NOTIMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(pred.val));
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(pred.val));
 			}
 		} break;
 		// single-site max-prob interactions (contain only interior loops)
 		case 'P' : {
 			switch ( predMode.val ) {
 			case 'E' :  return new PredictorMaxProb( energy, output, predTracker );
-			default :  NOTIMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(pred.val)+" : try --mode=E");
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(pred.val)+" : try --mode=E");
 			}
 		} break;
 		// multi-site mfe interactions (contain interior and multi-loops loops)
 		case 'M' : {
 			switch ( predMode.val ) {
-			default :  NOTIMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(pred.val));
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(pred.val));
 			}
 		} break;
-		default : NOTIMPLEMENTED("mode "+toString(predMode.val)+" not implemented");
+		default : INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented");
 		}
 	} else {
 		// seed-constrained predictors
@@ -1447,17 +1447,17 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 		// single-site max-prob interactions (contain only interior loops)
 		case 'P' : {
 			switch ( predMode.val ) {
-			case 'E' :  NOTIMPLEMENTED("mode "+toString(predMode.val)+" not implemented for seed constraint (try --noSeed)"); return NULL;
-			default :  NOTIMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(pred.val));
+			case 'E' :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for seed constraint (try --noSeed)"); return NULL;
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(pred.val));
 			}
 		} break;
 		// multi-site mfe interactions (contain interior and multi-loops loops)
 		case 'M' : {
 			switch ( predMode.val ) {
-			default :  NOTIMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(pred.val));
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(pred.val));
 			}
 		} break;
-		default : NOTIMPLEMENTED("mode "+toString(predMode.val)+" not implemented");
+		default : INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented");
 		}
 	}
 }
@@ -1529,7 +1529,7 @@ getOutputHandler( const InteractionEnergy & energy ) const
 	case 'O' :
 		return new OutputHandlerIntaRNA1( getOutputStream(), energy, true );
 	default :
-		NOTIMPLEMENTED("Output mode "+toString(outMode.val)+" not implemented yet");
+		INTARNA_NOT_IMPLEMENTED("Output mode "+toString(outMode.val)+" not implemented yet");
 	}
 }
 
@@ -1571,7 +1571,7 @@ const IndexRangeList&
 CommandLineParsing::
 getQueryRanges( const size_t sequenceNumber ) const
 {
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	if (sequenceNumber>=qRegion.size())
 		throw std::runtime_error("CommandLineParsing::getQueryRanges("+toString(sequenceNumber)+") out of bounds");
 	if (qRegion.at(sequenceNumber).empty())
@@ -1586,7 +1586,7 @@ const IndexRangeList&
 CommandLineParsing::
 getTargetRanges( const size_t sequenceNumber ) const
 {
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	if (sequenceNumber>=tRegion.size())
 		throw std::runtime_error("CommandLineParsing::getTargetRanges("+toString(sequenceNumber)+") out of bounds");
 	if (tRegion.at(sequenceNumber).empty())

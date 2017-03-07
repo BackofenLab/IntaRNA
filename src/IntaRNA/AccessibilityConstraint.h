@@ -1,6 +1,6 @@
 
-#ifndef ACCESSIBILITYCONSTRAINT_H_
-#define ACCESSIBILITYCONSTRAINT_H_
+#ifndef INTARNA_ACCESSIBILITYCONSTRAINT_H_
+#define INTARNA_ACCESSIBILITYCONSTRAINT_H_
 
 #include "IntaRNA/IndexRangeList.h"
 #include "IntaRNA/RnaSequence.h"
@@ -222,7 +222,7 @@ AccessibilityConstraint( const std::string& dotBracket, const size_t maxBpSpan_ 
 	blocked(),
 	accessible()
 {
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	if (dotBracket.find_first_not_of(dotBracketAlphabet)!=std::string::npos) {
 		throw std::runtime_error("AccessibilityConstraint("+dotBracket+") contains unsupported characters");
 	}
@@ -230,7 +230,7 @@ AccessibilityConstraint( const std::string& dotBracket, const size_t maxBpSpan_ 
 
 	// check for base pairs (not implemented yet)
 	if (dotBracket.find_first_of("()") != std::string::npos) {
-		NOTIMPLEMENTED("AccessibilityConstraint(dotBracket) contains base pairs... currently only '."+toString(dotBracket_accessible)+toString(dotBracket_blocked)+"' implemented");
+		INTARNA_NOT_IMPLEMENTED("AccessibilityConstraint(dotBracket) contains base pairs... currently only '."+toString(dotBracket_accessible)+toString(dotBracket_blocked)+"' implemented");
 	}
 
 	// screen for blocked regions

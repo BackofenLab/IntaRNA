@@ -45,7 +45,7 @@ predict( const IndexRange & r1, const IndexRange & r2
 		throw std::runtime_error("PredictorMfe2dSeed : the enumeration of non-overlapping suboptimal interactions is not supported in this prediction mode");
 	}
 
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	// check indices
 	if (!(r1.isAscending() && r2.isAscending()) )
 		throw std::runtime_error("PredictorMfe2d::predict("+toString(r1)+","+toString(r2)+") is not sane");
@@ -201,7 +201,7 @@ traceBack( Interaction & interaction )
 		return;
 	}
 
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	// sanity checks
 	if ( ! interaction.isValid() ) {
 		throw std::runtime_error("PredictorMfe2dSeed::traceBack() : given interaction not valid");
@@ -228,7 +228,7 @@ traceBack( Interaction & interaction )
 			j2 = energy.getIndex2(interaction.basePairs.at(1))
 			;
 
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	// check if intervals are larger enough to contain a seed
 	if (std::min(j1-i1,j2-i2)+1 < seedHandler.getConstraint().getBasePairs()) {
 		// no seed possible, abort computation

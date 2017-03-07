@@ -1,6 +1,6 @@
 
-#ifndef OUTPUTHANDLERHUB_H_
-#define OUTPUTHANDLERHUB_H_
+#ifndef INTARNA_OUTPUTHANDLERHUB_H_
+#define INTARNA_OUTPUTHANDLERHUB_H_
 
 #include "IntaRNA/OutputHandler.h"
 
@@ -153,7 +153,7 @@ OutputHandlerHub::
 	if (isDeleteOnDestruction()) {
 		// delete all handler
 		for( auto it = outList.begin(); it != outList.end(); it++ ) {
-			CLEANUP( (*it) );
+			 INTARNA_CLEANUP( (*it) );
 		}
 	}
 }
@@ -167,7 +167,7 @@ void
 OutputHandlerHub::
 addOutputHandler( OutputHandler * handler )
 {
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	if (handler != NULL) {
 		// check if already present
 		for (auto it=outList.begin(); it!=outList.end(); it++) {
@@ -255,7 +255,7 @@ operator= ( const OutputHandlerHub & toCopy)
 	// clean up current content
 	if (this->deleteOutListOnDestruction) {
 		for (auto it=outList.begin(); it!=outList.end(); it++) {
-			CLEANUP( (*it) );
+			 INTARNA_CLEANUP( (*it) );
 		}
 	}
 	outList.clear();

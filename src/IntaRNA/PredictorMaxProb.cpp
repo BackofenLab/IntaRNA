@@ -46,10 +46,10 @@ predict( const IndexRange & r1
 	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
 
 	if (outConstraint.reportMax > 1) {
-		NOTIMPLEMENTED("PredictorMaxProb::predict(reportMax > 1) : not implemented");
+		INTARNA_NOT_IMPLEMENTED("PredictorMaxProb::predict(reportMax > 1) : not implemented");
 	}
 
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	// check indices (both regions ascending due to reversing of seq2)
 	if (!(r1.isAscending() && r2.isAscending()) )
 		throw std::runtime_error("PredictorMaxProb::predict("+toString(r1)+","+toString(r2)+") is not sane");
@@ -135,7 +135,7 @@ clear()
 	for (E4dMatrix::iterator1 iRows = hybridZ.begin1(); iRows != hybridZ.end1(); iRows++) {
 		for (E4dMatrix::iterator2 ijEntry = iRows.begin(); ijEntry != iRows.end(); ijEntry++) {
 			// delete 2d matrix for current ij
-			CLEANUP(*ijEntry);
+			 INTARNA_CLEANUP(*ijEntry);
 		}
 	}
 	// clear matrix, free data
@@ -246,7 +246,7 @@ initOptima( const OutputConstraint & outConstraint )
 	maxProbInteraction.r2.to = RnaSequence::lastPos;
 
 	if (outConstraint.reportMax > 1) {
-		NOTIMPLEMENTED("PredictorMaxProb::initOptima(reportMax > 1)");
+		INTARNA_NOT_IMPLEMENTED("PredictorMaxProb::initOptima(reportMax > 1)");
 	}
 }
 
@@ -301,7 +301,7 @@ reportOptima( const OutputConstraint & outConstraint )
 	}
 
 	if (outConstraint.reportMax > 1) {
-		NOTIMPLEMENTED("PredictorMaxProb::reportOptima(reportMax > 1)");
+		INTARNA_NOT_IMPLEMENTED("PredictorMaxProb::reportOptima(reportMax > 1)");
 	}
 
 	// maximal probability is

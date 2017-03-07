@@ -1,6 +1,6 @@
 
-#ifndef PREDICTORMFE2D_H_
-#define PREDICTORMFE2D_H_
+#ifndef INTARNA_PREDICTORMFE2D_H_
+#define INTARNA_PREDICTORMFE2D_H_
 
 #include "IntaRNA/PredictorMfe.h"
 #include "IntaRNA/Interaction.h"

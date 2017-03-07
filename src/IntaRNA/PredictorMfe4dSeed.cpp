@@ -46,7 +46,7 @@ predict( const IndexRange & r1
 	// measure timing
 	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
 
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	// check indices
 	if (!(r1.isAscending() && r2.isAscending()) )
 		throw std::runtime_error("PredictorMfe4dSeed::predict("+toString(r1)+","+toString(r2)+") is not sane");
@@ -220,7 +220,7 @@ clear()
 	for (E4dMatrix::iterator1 iRows = hybridE_seed.begin1(); iRows != hybridE_seed.end1(); iRows++) {
 		for (E4dMatrix::iterator2 ijEntry = iRows.begin(); ijEntry != iRows.end(); ijEntry++) {
 			// delete 2d matrix for current ij
-			CLEANUP(*ijEntry);
+			 INTARNA_CLEANUP(*ijEntry);
 		}
 	}
 	// clear matrix, free data
@@ -346,7 +346,7 @@ traceBack( Interaction & interaction )
 		return;
 	}
 
-#if IN_DEBUG_MODE
+#if INTARNA_IN_DEBUG_MODE
 	// sanity checks
 	if ( ! interaction.isValid() ) {
 		throw std::runtime_error("PredictorMfe4dSeed::traceBack() : given interaction not valid");
