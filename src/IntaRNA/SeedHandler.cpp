@@ -231,7 +231,7 @@ traceBackSeed( Interaction & interaction
 		if (bpIn==0) {
 			// add left base pair if not left seed boundary
 			if (i1 != i1_) {
-				interaction.basePairs.push_back( energy.getBasePair(i1,i2) );
+				interaction.basePairs.push_back( energy.getBasePair(i1+offset1,i2+offset2) );
 			}
 
 		} else {
@@ -253,12 +253,12 @@ traceBackSeed( Interaction & interaction
 				if ( E_isNotINF( getSeedE( k1, k2, bpIn-1, u1max-u1, u2max-u2 ) ) ) {
 
 					// check if correct trace
-					if ( E_equal( curE, energy.getE_interLeft(i1,k1,i2,k2)
+					if ( E_equal( curE, energy.getE_interLeft(i1+offset1,k1+offset1,i2+offset2,k2+offset2)
 										+ getSeedE( k1, k2, bpIn-1, u1max-u1, u2max-u2 )) )
 					{
 						// store left base pair if not left seed boundary
 						if (i1 != i1_) {
-							interaction.basePairs.push_back( energy.getBasePair(i1,i2) );
+							interaction.basePairs.push_back( energy.getBasePair(i1+offset1,i2+offset2) );
 						}
 						// store next energy value to trace
 						curE = getSeedE( k1, k2, bpIn-1, u1max-u1, u2max-u2 );
