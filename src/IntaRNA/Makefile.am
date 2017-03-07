@@ -113,8 +113,8 @@ nodist_libIntaRNA_a_SOURCES = 	\
 ################################################################
 
 if enable_pkg_config
-	pkgconfigdir = $(libdir)/pkgconfig
-	pkgconfig_DATA = $(top_srcdir)/IntaRNA.pc
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = $(top_srcdir)/IntaRNA.pc
 endif
 
 ###############################################################################
