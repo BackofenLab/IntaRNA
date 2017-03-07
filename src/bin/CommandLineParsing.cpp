@@ -161,7 +161,8 @@ CommandLineParsing::CommandLineParsing()
 			, value<int>(&(qAccW.val))
 				->default_value(qAccW.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_qAccW,this,_1))
-			, std::string("accessibility computation : sliding window size for query accessibility computation (arg in range ["+toString(qAccW.min)+","+toString(qAccW.max)+"];"
+			, std::string("accessibility computation : sliding window size for query accessibility computation"
+					" (arg in range ["+toString(qAccW.min)+","+toString(qAccW.max)+"];"
 					" 0 will use to the full sequence length)."
 					" Note, this also restricts the maximal interaction length (see --qIntLenMax)."
 					).c_str())
@@ -169,7 +170,8 @@ CommandLineParsing::CommandLineParsing()
 			, value<int>(&(qAccL.val))
 				->default_value(qAccL.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_qAccL,this,_1))
-			, std::string("accessibility computation : maximal loop length (base pair span) for query accessibility computation (arg in range ["+toString(qAccL.min)+","+toString(qAccL.max)+"]; 0 will use to sliding window size 'qAccW')").c_str())
+			, std::string("accessibility computation : maximal loop length (base pair span) for query accessibility computation"
+					" (arg in range ["+toString(qAccL.min)+","+toString(qAccL.max)+"]; 0 will use to sliding window size 'qAccW')").c_str())
 		;
 	opts_cmdline_short.add(opts_query);
 	opts_query.add_options()
@@ -194,7 +196,8 @@ CommandLineParsing::CommandLineParsing()
 			, value<int>(&(qIntLoopMax.val))
 				->default_value(qIntLoopMax.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_qIntLoopMax,this,_1))
-			, std::string("interaction site : maximal number of unpaired bases between neighbored interacting bases to be considered in interactions within the query (arg in range ["+toString(qIntLoopMax.min)+","+toString(qIntLoopMax.max)+"]; 0 enforces stackings only)").c_str())
+			, std::string("interaction site : maximal number of unpaired bases between neighbored interacting bases to be considered in interactions within the query"
+					" (arg in range ["+toString(qIntLoopMax.min)+","+toString(qIntLoopMax.max)+"]; 0 enforces stackings only)").c_str())
 		("qRegion"
 			, value<std::string>(&(qRegionString))
 				->notifier(boost::bind(&CommandLineParsing::validate_qRegion,this,_1))
@@ -223,7 +226,8 @@ CommandLineParsing::CommandLineParsing()
 			, value<int>(&(tAccW.val))
 				->default_value(tAccW.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_tAccW,this,_1))
-			, std::string("accessibility computation : sliding window size for query accessibility computation (arg in range ["+toString(tAccW.min)+","+toString(tAccW.max)+"];"
+			, std::string("accessibility computation : sliding window size for query accessibility computation"
+					" (arg in range ["+toString(tAccW.min)+","+toString(tAccW.max)+"];"
 					" 0 will use the full sequence length)"
 					" Note, this also restricts the maximal interaction length (see --tIntLenMax)."
 					).c_str())
@@ -231,7 +235,8 @@ CommandLineParsing::CommandLineParsing()
 			, value<int>(&(tAccL.val))
 				->default_value(tAccL.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_tAccL,this,_1))
-			, std::string("accessibility computation : maximal loop size (base pair span) for query accessibility computation (arg in range ["+toString(tAccL.min)+","+toString(tAccL.max)+"]; 0 will use the sliding window size 'tAccW')").c_str())
+			, std::string("accessibility computation : maximal loop size (base pair span) for query accessibility computation"
+					" (arg in range ["+toString(tAccL.min)+","+toString(tAccL.max)+"]; 0 will use the sliding window size 'tAccW')").c_str())
 		;
 	opts_cmdline_short.add(opts_target);
 	opts_target.add_options()
@@ -256,7 +261,8 @@ CommandLineParsing::CommandLineParsing()
 			, value<int>(&(tIntLoopMax.val))
 				->default_value(tIntLoopMax.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_tIntLoopMax,this,_1))
-			, std::string("interaction site : maximal number of unpaired bases between neighbored interacting bases to be considered in interactions within the target (arg in range ["+toString(tIntLoopMax.min)+","+toString(tIntLoopMax.max)+"]; 0 enforces stackings only)").c_str())
+			, std::string("interaction site : maximal number of unpaired bases between neighbored interacting bases to be considered in interactions within the target"
+					" (arg in range ["+toString(tIntLoopMax.min)+","+toString(tIntLoopMax.max)+"]; 0 enforces stackings only)").c_str())
 		("tRegion"
 			, value<std::string>(&(tRegionString))
 				->notifier(boost::bind(&CommandLineParsing::validate_tRegion,this,_1))
@@ -273,12 +279,14 @@ CommandLineParsing::CommandLineParsing()
 			, value<int>(&(seedBP.val))
 				->default_value(seedBP.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_seedBP,this,_1))
-			, std::string("number of inter-molecular base pairs within the seed region (arg in range ["+toString(seedBP.min)+","+toString(seedBP.max)+"])").c_str())
+			, std::string("number of inter-molecular base pairs within the seed region"
+					" (arg in range ["+toString(seedBP.min)+","+toString(seedBP.max)+"])").c_str())
 		("seedMaxUP"
 			, value<int>(&(seedMaxUP.val))
 				->default_value(seedMaxUP.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_seedMaxUP,this,_1))
-			, std::string("maximal overall number (query+target) of unpaired bases within the seed region (arg in range ["+toString(seedMaxUP.min)+","+toString(seedMaxUP.max)+"])").c_str())
+			, std::string("maximal overall number (query+target) of unpaired bases within the seed region"
+					" (arg in range ["+toString(seedMaxUP.min)+","+toString(seedMaxUP.max)+"])").c_str())
 		;
 	opts_cmdline_short.add(opts_seed);
 	opts_seed.add_options()
@@ -286,22 +294,26 @@ CommandLineParsing::CommandLineParsing()
 			, value<int>(&(seedQMaxUP.val))
 				->default_value(seedQMaxUP.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_seedQMaxUP,this,_1))
-			, std::string("maximal number of unpaired bases within the query's seed region (arg in range ["+toString(seedQMaxUP.min)+","+toString(seedQMaxUP.max)+"]); if -1 the value of seedMaxUP is used.").c_str())
+			, std::string("maximal number of unpaired bases within the query's seed region"
+					" (arg in range ["+toString(seedQMaxUP.min)+","+toString(seedQMaxUP.max)+"]); if -1 the value of seedMaxUP is used.").c_str())
 		("seedTMaxUP"
 			, value<int>(&(seedTMaxUP.val))
 				->default_value(seedTMaxUP.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_seedTMaxUP,this,_1))
-			, std::string("maximal number of unpaired bases within the target's seed region (arg in range ["+toString(seedTMaxUP.min)+","+toString(seedTMaxUP.max)+"]); if -1 the value of seedMaxUP is used.").c_str())
+			, std::string("maximal number of unpaired bases within the target's seed region"
+					" (arg in range ["+toString(seedTMaxUP.min)+","+toString(seedTMaxUP.max)+"]); if -1 the value of seedMaxUP is used.").c_str())
 		("seedMaxE"
 			, value<E_type>(&(seedMaxE.val))
 				->default_value(seedMaxE.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_seedMaxE,this,_1))
-			, std::string("maximal energy a seed region may have (arg in range ["+toString(seedMaxE.min)+","+toString(seedMaxE.max)+"]).").c_str())
+			, std::string("maximal energy a seed region may have"
+					" (arg in range ["+toString(seedMaxE.min)+","+toString(seedMaxE.max)+"]).").c_str())
 		("seedMinPu"
 			, value<E_type>(&(seedMinPu.val))
 				->default_value(seedMinPu.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_seedMinPu,this,_1))
-			, std::string("minimal unpaired probability (per sequence) a seed region may have (arg in range ["+toString(seedMinPu.min)+","+toString(seedMinPu.max)+"]).").c_str())
+			, std::string("minimal unpaired probability (per sequence) a seed region may have"
+					" (arg in range ["+toString(seedMinPu.min)+","+toString(seedMinPu.max)+"]).").c_str())
 		("seedQRange"
 			, value<std::string>(&(seedQRange))
 				->notifier(boost::bind(&CommandLineParsing::validate_seedQRange,this,_1))
@@ -350,7 +362,8 @@ CommandLineParsing::CommandLineParsing()
 			, value<T_type>(&(temperature.val))
 				->default_value(temperature.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_temperature,this,_1))
-			, std::string("temperature in Celsius to setup the VRNA energy parameters (arg in range ["+toString(temperature.min)+","+toString(temperature.max)+"])").c_str())
+			, std::string("temperature in Celsius to setup the VRNA energy parameters"
+					" (arg in range ["+toString(temperature.min)+","+toString(temperature.max)+"])").c_str())
 		;
 
 
@@ -390,7 +403,8 @@ CommandLineParsing::CommandLineParsing()
 			, value<int>(&(outNumber.val))
 				->default_value(outNumber.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_outNumber,this,_1))
-			, std::string("number of (sub)optimal interactions to report (arg in range ["+toString(outNumber.min)+","+toString(outNumber.max)+"])").c_str())
+			, std::string("number of (sub)optimal interactions to report"
+					" (arg in range ["+toString(outNumber.min)+","+toString(outNumber.max)+"])").c_str())
 	    ("outOverlap"
 			, value<char>(&(outOverlap.val))
 				->default_value(outOverlap.def)
@@ -407,12 +421,14 @@ CommandLineParsing::CommandLineParsing()
 			, value<double>(&(outMaxE.val))
 				->default_value(outMaxE.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_outMaxE,this,_1))
-			, std::string("only interactions with E <= maxE are reported").c_str())
+			, std::string("only interactions with E <= maxE are reported"
+					" (arg in range ["+toString(outMaxE.min)+","+toString(outMaxE.max)+"])").c_str())
 	    ("outDeltaE"
 			, value<double>(&(outDeltaE.val))
 				->default_value(outDeltaE.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_outDeltaE,this,_1))
-			, std::string("suboptimal output : only interactions with E <= (minE+deltaE) are reported").c_str())
+			, std::string("suboptimal output : only interactions with E <= (minE+deltaE) are reported"
+					" (arg in range ["+toString(outDeltaE.min)+","+toString(outDeltaE.max)+"])").c_str())
 		("outCsvCols"
 			, value<std::string>(&(outCsvCols))
 				->default_value(outCsvCols,"see text")
