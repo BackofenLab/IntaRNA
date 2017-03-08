@@ -1,5 +1,5 @@
 
-ACLOCAL_AMFLAGS=-I m4
+# ACLOCAL_AMFLAGS=-I m4
 
 # sub directories to check for Makefiles
 SUBDIRS = src perl tests .
@@ -11,6 +11,8 @@ SUBDIRS = src perl tests .
 if enable_doxygen
 ## doxygen documentation make target
 include $(top_srcdir)/doc/doxygen.am
+else
+DX_PHONY =
 endif
 
 ################################################################
