@@ -50,6 +50,7 @@ predict( const IndexRange & r1
 #endif
 
 
+
 	// set index offset
 	energy.setOffset1(r1.from);
 	energy.setOffset2(r2.from);
@@ -60,7 +61,6 @@ predict( const IndexRange & r1
 			, (r1.to==RnaSequence::lastPos?energy.size1()-1:r1.to)-r1.from+1 );
 	const size_t hybridEsize2 = std::min( energy.size2()
 			, (r2.to==RnaSequence::lastPos?energy.size2()-1:r2.to)-r2.from+1 );
-
 
 	// compute seed interactions for whole range
 	// and check if any seed possible
@@ -90,10 +90,9 @@ predict( const IndexRange & r1
 		{
 			// set to interaction initiation with according boundary
 			hybridE(i1,i2) = BestInteraction(energy.getE_init(), i1, i2);
-//		// alternative init obsolete due to default constructor used in matrix cell creation
-//		} else {
-//			// set to infinity, ie not used
-//			hybridE(i1,i2) = BestInteraction(E_INF, RnaSequence::lastPos, RnaSequence::lastPos);
+		} else {
+			// set to infinity, ie not used
+			hybridE(i1,i2) = BestInteraction(E_INF, RnaSequence::lastPos, RnaSequence::lastPos);
 		}
 
 	} // i2

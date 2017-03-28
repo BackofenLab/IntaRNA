@@ -75,10 +75,9 @@ predict( const IndexRange & r1
 		{
 			// set to interaction initiation with according boundary
 			hybridE(i1,i2) = BestInteraction(energy.getE_init(), i1, i2);
-//		// alternative init obsolete due to default constructor used in matrix cell creation
-//		} else {
-//			// set to infinity, ie not used
-//			hybridE(i1,i2) = BestInteraction(E_INF, RnaSequence::lastPos, RnaSequence::lastPos);
+		} else {
+			// set to infinity, ie not used
+			hybridE(i1,i2) = BestInteraction(E_INF, RnaSequence::lastPos, RnaSequence::lastPos);
 		}
 
 	} // i2

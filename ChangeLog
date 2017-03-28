@@ -1,4 +1,10 @@
 
+170328 Martin Mann :
+ * PredictorHeuristic* :
+   * predict() :
+     * bugfix : reinit was not overwriting all matrix entries 
+       (thanks to Alex Gawronski)
+
 170307 Martin Mann :
  * header defines prefixed with INTARNA_
  * general.h :
