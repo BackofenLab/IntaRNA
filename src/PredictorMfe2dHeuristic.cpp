@@ -143,13 +143,20 @@ fillHybridE()
 
 		} // w2
 		} // w1
-
+		curCellArr[i1][i2-1].E=curCell->E;
+		curCellArr[i1][i2-1].j1=curCell->j1;
+		curCellArr[i1][i2-1].j2=curCell->j2;
+		curCellEtotalArr[i1][i2-1] = curCellEtotal;
 		// update mfe if needed
+		/*
 		#pragma omp critical
 		{
 			updateOptima( i1,curCell->j1, i2-1,curCell->j2, curCellEtotal, false );
-		}
+		}*/
 	} // i2
+	for (size_t i2=hybridE.size2(); i2 > 0;i2--) {
+		updateOptima( i1,curCellArr[i1][i2-1].j1, i2-1,curCellArr[i1][i2-1].j2, curCellEtotalArr[i1][i2-1], false );
+	}
 	} // i1
 
 }
