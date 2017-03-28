@@ -19,12 +19,12 @@ bin_PROGRAMS = IntaRNA
 
 # generated intaRNA sources 
 nodist_IntaRNA_SOURCES = 	\
-					config.h \
+					../config.h \
 					IntaRNA/intarna_config.h
 
 # intaRNA sources
 IntaRNA_SOURCES =	\
-					easylogging++.h \
+					../easylogging++.h \
 					CommandLineParsing.h \
 					CommandLineParsing.cpp \
 					IntaRNA.cpp
