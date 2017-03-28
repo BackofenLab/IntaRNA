@@ -4,7 +4,9 @@
 
 #undef NDEBUG
 
-#include "AccessibilityConstraint.h"
+#include "IntaRNA/AccessibilityConstraint.h"
+
+using namespace IntaRNA;
 
 TEST_CASE( "AccessibilityConstraint", "[AccessibilityConstraint]" ) {
 

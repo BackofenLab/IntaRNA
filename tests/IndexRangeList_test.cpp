@@ -5,7 +5,10 @@
 
 #undef NDEBUG
 
-#include "IndexRangeList.h"
+#include "IntaRNA/IndexRangeList.h"
+
+using namespace IntaRNA;
+
 
 TEST_CASE( "IndexRangeList", "[IndexRangeList]" ) {
 

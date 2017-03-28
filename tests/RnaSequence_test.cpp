@@ -3,7 +3,9 @@
 
 #undef NDEBUG
 
-#include "RnaSequence.h"
+#include "IntaRNA/RnaSequence.h"
+
+using namespace IntaRNA;
 
 TEST_CASE( "RnaSequence", "[RNAsequence]" ) {
 

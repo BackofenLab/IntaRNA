@@ -4,7 +4,9 @@
 
 #undef NDEBUG
 
-#include "InteractionRange.h"
+#include "IntaRNA/InteractionRange.h"
+
+using namespace IntaRNA;
 
 TEST_CASE( "InteractionRange", "[InteractionRange]" ) {
 

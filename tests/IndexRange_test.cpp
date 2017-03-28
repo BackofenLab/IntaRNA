@@ -5,7 +5,9 @@
 
 #undef NDEBUG
 
-#include "IndexRange.h"
+#include "IntaRNA/IndexRange.h"
+
+using namespace IntaRNA;
 
 #include <sstream>
 

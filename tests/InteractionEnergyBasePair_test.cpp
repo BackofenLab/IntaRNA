@@ -3,8 +3,10 @@
 
 #undef NDEBUG
 
-#include "InteractionEnergyBasePair.h"
-#include "AccessibilityDisabled.h"
+#include "IntaRNA/InteractionEnergyBasePair.h"
+#include "IntaRNA/AccessibilityDisabled.h"
+
+using namespace IntaRNA;
 
 TEST_CASE( "InteractionEnergyBasePair", "[InteractionEnergyBasePair]" ) {
 

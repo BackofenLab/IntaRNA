@@ -48,6 +48,8 @@ compile
 */.deps
 */.deps/*
 /intaRNA-*.tar.gz
+doxygen-doc
+doxygen-doc/*
 
 
 # temp dir
@@ -65,3 +67,4 @@ tests/logs/*
 /seq.fasta
 /t.fasta
 /t2.fasta
+/IntaRNA.pc

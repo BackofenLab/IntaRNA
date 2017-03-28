@@ -3,8 +3,10 @@
 
 #undef NDEBUG
 
-#include "OutputHandlerRangeOnly.h"
+#include "IntaRNA/OutputHandlerRangeOnly.h"
 #include <stdexcept>
+
+using namespace IntaRNA;
 
 /**
  * Dummy class for testing the add result
