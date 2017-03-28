@@ -96,7 +96,7 @@ Follow
 [![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat-square)](http://bioconda.github.io/recipes/intarna/README.html)
 to get detailed information or run
 ```bash
-conda install intarna
+conda install -c bioconda intarna
 ```
 if you are using bioconda already.
 
