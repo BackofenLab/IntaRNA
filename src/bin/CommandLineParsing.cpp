@@ -23,6 +23,7 @@
 #include "IntaRNA/AccessibilityDisabled.h"
 #include "IntaRNA/AccessibilityFromStream.h"
 #include "IntaRNA/AccessibilityVrna.h"
+#include "IntaRNA/AccessibilityBasePair.h"
 
 #include "IntaRNA/InteractionEnergyBasePair.h"
 #include "IntaRNA/InteractionEnergyVrna.h"
@@ -1062,6 +1063,10 @@ getQueryAccessibility( const size_t sequenceNumber ) const
 	case 'C' : // compute VRNA-based accessibilities
 		switch( energy.val ) {
 		// TODO 'B'
+    case 'B' : new AccessibilityBasePair(seq,
+                   std::min( qIntLenMax.val == 0 ? seq.size() : qIntLenMax.val , qAccW.val == 0 ? seq.size() : qAccW.val ) ,
+                   &accConstraint);
+
 		case 'V' : // VRNA-based accessibilities
 			return new AccessibilityVrna( seq
 										, std::min( qIntLenMax.val == 0 ? seq.size() : qIntLenMax.val
@@ -1141,6 +1146,9 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 	case 'C' : // compute accessibilities
 		switch( energy.val ) {
 		// TODO 'B'
+    case 'B' : new AccessibilityBasePair(seq,
+                   std::min( qIntLenMax.val == 0 ? seq.size() : qIntLenMax.val , qAccW.val == 0 ? seq.size() : qAccW.val ) ,
+                   &accConstraint);
 		case 'V' : // VRNA-based accessibilities
 			return new AccessibilityVrna( seq
 										, std::min( tIntLenMax.val == 0 ? seq.size() : tIntLenMax.val

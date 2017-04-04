@@ -13,6 +13,7 @@ check_PROGRAMS = runTests
 runTests_SOURCES =	catch.hpp \
 					AccessibilityConstraint_test.cpp \
 					AccessibilityFromStream_test.cpp \
+					AccessibilityBasePair_test.cpp \
 					IndexRange_test.cpp  \
 					IndexRangeList_test.cpp  \
 					Interaction_test.cpp  \
