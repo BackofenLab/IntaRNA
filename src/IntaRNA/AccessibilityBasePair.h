@@ -16,29 +16,41 @@ namespace IntaRNA {
 
 class AccessibilityBasePair: public Accessibility {
 
-public:
-typedef double P_type;  // Probability type
-typedef boost::numeric::ublas::matrix<P_type> P2dMatrix;  // Probability matrix
-typedef boost::numeric::ublas::matrix<E_type> E2dMatrix;  // Energy matrix
+protected:
 
-  /***
-   * Constructor of AccessibilityBasePair
+	//! Probability type
+	typedef E_type P_type;
+
+	//! Probability matrix
+	typedef boost::numeric::ublas::matrix<P_type> P2dMatrix;
+
+	//! Energy matrix
+	typedef boost::numeric::ublas::matrix<E_type> E2dMatrix;
+
+public:
+
+	/***
+	 * Constructor of AccessibilityBasePair
 	 * @param seq The sequence the accessibility data belongs to
 	 * @param maxLength the maximal length of accessible regions (>0) to be
 	 *          considered. 0 defaults to the full sequence's length, otherwise
 	 *          is is internally set to min(maxLength,seq.length).
 	 * @param accConstr optional accessibility constraint
-   * @param basePairEnergy The energy value of the base pairs
-   * @param RT The temperature energy constant
-   */
-  AccessibilityBasePair(const RnaSequence& seq, const size_t maxLength,
-      const AccessibilityConstraint * const accConstr,
-      const E_type basePairEnergy = -1, const E_type RT = 1);
+	 * @param basePairEnergy The energy value of the base pairs
+	 * @param RT The temperature energy constant
+	 */
+	AccessibilityBasePair(
+			  const RnaSequence& seq
+			, const size_t maxLength
+			, const AccessibilityConstraint * const accConstr
+			, const E_type basePairEnergy = -1
+			, const E_type RT = 1
+			);
 
-  /***
-   * Destructor of AccessibilityBasePair
-   */
-  virtual ~AccessibilityBasePair();
+	/***
+	 * Destructor of AccessibilityBasePair
+	 */
+	virtual ~AccessibilityBasePair();
 
   /***
    * Returns the accessibility energy value between the indices (from, to)
@@ -52,13 +64,18 @@ typedef boost::numeric::ublas::matrix<E_type> E2dMatrix;  // Energy matrix
    */
 	virtual E_type getED( const size_t from, const size_t to ) const;
 
-private:
+protected:
 
-  const E_type basePairEnergy;
-  const E_type RT;
-  const E_type boltzmann = std::exp(-basePairEnergy / RT);
-  const size_t minLoopLength = 3;
-  const size_t N;
+	//! energy of an individual base pair
+	const E_type basePairEnergy;
+	//! temperature constant for normalization
+	const E_type RT;
+
+	const E_type weightPerBP = std::exp(-basePairEnergy / RT);
+	//! minimal number of unpaired bases enclosed by a base pair
+	const size_t minLoopLength = 3;
+	//! length of the sequence
+	const size_t N;
 
   /***
    * Results of getED lookup table
