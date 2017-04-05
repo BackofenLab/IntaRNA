@@ -28,6 +28,7 @@ libIntaRNA_a_HEADERS =    \
 					AccessibilityDisabled.h \
 					AccessibilityFromStream.h \
 					AccessibilityVrna.h \
+					AccessibilityBasePair.h \
 					IndexRange.h \
 					IndexRangeList.h \
 					Interaction.h \
@@ -71,6 +72,7 @@ libIntaRNA_a_SOURCES =    \
 					AccessibilityConstraint.cpp \
 					AccessibilityFromStream.cpp \
 					AccessibilityVrna.cpp \
+					AccessibilityBasePair.cpp \
 					IndexRange.cpp \
 					IndexRangeList.cpp \
 					Interaction.cpp \
