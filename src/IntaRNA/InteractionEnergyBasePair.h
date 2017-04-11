@@ -256,20 +256,47 @@ typedef boost::numeric::ublas::matrix<E_type> E2dMatrix;  // Energy matrix
 
 
 private:
+
   const E_type basePairEnergy = -1;
   const E_type RT = 1;
   const E_type boltzmann = std::exp(-basePairEnergy / RT);
   const size_t minLoopLength = 3;
 
+  /***
+   * Results of getES lookup table
+   */
   E2dMatrix logQ1;
   E2dMatrix logQ2;
 
-  void computeES(const Accessibility &accS, E2dMatrix &logq);
+  /***
+   * Compute the ES for a given sequence and store it in the given lookup table.
+   * @param accS Accessibility of the given sequence
+   * @param logQ The resulting lookuptable
+   */
+  void computeES(const Accessibility &accS, E2dMatrix &logQ);
 
-  E_type getQ(const size_t i, const size_t j, const RnaSequence &seq,
+  /***
+   * Get the partition function Q between the indices (from, to)
+   * @param from The start index of the region
+   * @param to The end index of the region
+   * @param seq RNA Sequence for which the table is computed.
+   * @param Q Lookup table for Q
+   * @param Qb Lookup table for Qb
+   * @returns the partition function value
+   */
+  E_type getQ(const size_t from, const size_t to, const RnaSequence &seq,
       E2dMatrix &Q, E2dMatrix &Qb);
 
-  E_type getQb(const size_t i, const size_t j, const RnaSequence &seq,
+  /***
+   * Get the base partition function Qb between the indices (from, to)
+   * @param from The start index of the region
+   * @param to The end index of the region
+   * @param seq RNA Sequence for which the table is computed.
+   * @param Q Lookup table for Q
+   * @param Qb Lookup table for Qb
+   * @returns the partition function value
+   */
+  E_type getQb(const size_t from, const size_t to, const RnaSequence &seq,
       E2dMatrix &Q, E2dMatrix &Qb);
 };
 
