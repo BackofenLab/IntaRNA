@@ -4,6 +4,9 @@
 
 #include "IntaRNA/InteractionEnergy.h"
 
+#include <boost/numeric/ublas/matrix.hpp>
+#include <boost/numeric/ublas/io.hpp>
+
 namespace IntaRNA {
 
 
@@ -16,6 +19,9 @@ class InteractionEnergyBasePair: public InteractionEnergy {
 
 
 public:
+typedef double P_type;  // Probability type
+typedef boost::numeric::ublas::matrix<P_type> P2dMatrix;  // Probability matrix
+typedef boost::numeric::ublas::matrix<E_type> E2dMatrix;  // Energy matrix
 
 	/**
 	 * Construct energy utility object given the accessibility ED values for
@@ -248,6 +254,23 @@ public:
 		return 0;
 	}
 
+
+private:
+  const E_type basePairEnergy = -1;
+  const E_type RT = 1;
+  const E_type boltzmann = std::exp(-basePairEnergy / RT);
+  const size_t minLoopLength = 3;
+
+  E2dMatrix logQ1;
+  E2dMatrix logQ2;
+
+  void computeES(const Accessibility &accS, E2dMatrix &logq);
+
+  E_type getQ(const size_t i, const size_t j, const RnaSequence &seq,
+      E2dMatrix &Q, E2dMatrix &Qb);
+
+  E_type getQb(const size_t i, const size_t j, const RnaSequence &seq,
+      E2dMatrix &Q, E2dMatrix &Qb);
 };
 
 
@@ -268,7 +291,8 @@ InteractionEnergyBasePair::InteractionEnergyBasePair(
 	InteractionEnergy(accS1, accS2, maxInternalLoopSize1, maxInternalLoopSize2)
 {
 	if (initES) {
-		INTARNA_NOT_IMPLEMENTED("InteractionEnergyVrna() : ES computation missing");
+    computeES(accS1, logQ1);
+    computeES(accS2, logQ2);
 	}
 }
 
@@ -290,11 +314,9 @@ getES1( const size_t i1, const size_t j1 ) const
 	// sanity check
 	if (i1>j1) throw std::runtime_error("InteractionEnergy::getES1(i1="+toString(i1)+" > j1="+toString(j1));
 	if (j1>=size1()) throw std::runtime_error("InteractionEnergy::getES1() : j1="+toString(j1)+" >= size1()="+toString(size1()));
+	if (logQ1.size() != size1()) throw std::runtime_error("ES wasn't computed.");
 #endif
-
-	INTARNA_NOT_IMPLEMENTED("InteractionEnergyVrna::getES2() : ES computation missing");
-	// return computed value
-	return E_INF;
+	return logQ1(i1, j1);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -308,11 +330,9 @@ getES2( const size_t i2, const size_t j2 ) const
 	// sanity check
 	if (i2>j2) throw std::runtime_error("InteractionEnergy::getES2(i2="+toString(i2)+" > j2="+toString(j2));
 	if (j2>=size2()) throw std::runtime_error("InteractionEnergy::getES2() : j2="+toString(j2)+" >= size2()="+toString(size2()));
+	if (logQ2.size() != size2()) throw std::runtime_error("ES wasn't computed.");
 #endif
-
-	INTARNA_NOT_IMPLEMENTED("InteractionEnergyVrna::getES2() : ES computation missing");
-	// return computed value
-	return E_INF;
+	return logQ2(i2, j2);
 }
 
 ////////////////////////////////////////////////////////////////////////////
