@@ -2,6 +2,9 @@
 #ifndef INTARNA_INTERACTIONENERGYBASEPAIR_H_
 #define INTARNA_INTERACTIONENERGYBASEPAIR_H_
 
+#include "general.h"
+#include "RnaSequence.h"
+#include "Accessibility.h"
 #include "IntaRNA/InteractionEnergy.h"
 
 #include <boost/numeric/ublas/triangular.hpp>

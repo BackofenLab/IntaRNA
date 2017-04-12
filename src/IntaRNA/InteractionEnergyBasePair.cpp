@@ -20,7 +20,12 @@ void InteractionEnergyBasePair::computeES(const RnaSequence &seq,
 
   for (size_t i = 0u; i < N; ++i) {
     for (size_t j = i; j < N; ++j) {
-      logQ(i, j) = -RT * std::log(getQ(i, j, seq, Q, Qb));
+      const E_type q_val = getQ(i, j, seq, Q, Qb);
+      if (E_equal(q_val, 1.0)) {
+        logQ(i, j) = E_INF;
+      } else {
+        logQ(i, j) = -RT * std::log(q_val);
+      }
     }
   }
 }
