@@ -140,4 +140,4 @@ protected:
 
 } // namespace
 
-#endif /* PREDICTORMAXPROB_H_ */
+#endif /* INTARNA_PREDICTORMAXPROB_H_ */

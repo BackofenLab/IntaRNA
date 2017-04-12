@@ -128,4 +128,4 @@ protected:
 
 } // namespace
 
-#endif /* PREDICTORMFE4DSEED_H_ */
+#endif /* INTARNA_PREDICTORMFE4DSEED_H_ */

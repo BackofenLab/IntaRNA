@@ -118,4 +118,4 @@ protected:
 
 } // namespace
 
-#endif /* PREDICTORMFE2DHEURISTICSEED_H_ */
+#endif /* INTARNA_PREDICTORMFE2DHEURISTICSEED_H_ */

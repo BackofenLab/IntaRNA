@@ -135,4 +135,4 @@ protected:
 
 } // namespace
 
-#endif /* PREDICTORMFE2DHEURISTIC_H_ */
+#endif /* INTARNA_PREDICTORMFE2DHEURISTIC_H_ */
