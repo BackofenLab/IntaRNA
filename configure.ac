@@ -70,6 +70,16 @@ AC_MSG_RESULT([$pkgconfigEnabled])
 AS_IF([test x"$pkgconfigEnabled" = x"yes"], [
 	# Checks for pkg-config
 	AC_CHECK_PROG([HAVE_PKG_CONFIG],[pkg-config],[yes],[no])
+	AS_IF([test "HAVE_PKG_CONFIG" == "yes"], [
+		dnl Testing presence of pkg-config
+		AC_MSG_CHECKING([pkg-config m4 macros])
+		AS_IF([test m4_ifdef([PKG_CHECK_MODULES], [yes], [no]) == yes], [
+			AC_MSG_RESULT([yes]);
+		], [
+			AC_MSG_RESULT([no]);
+			HAVE_PKG_CONFIG=no
+		])
+	])
 ], [
 	HAVE_PKG_CONFIG=no
 ])
