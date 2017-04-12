@@ -159,7 +159,7 @@ dnl generate doxygen documentation in Doxy
 AC_CHECK_PROG([HAVE_DOXYGEN],[doxygen],[yes],[no])
 
 AS_IF([test "x$HAVE_DOXYGEN" = "xyes"], [
-	AC_MSG_NOTICE([  ### loading doxygen.m4 ### ])
+	AC_MSG_NOTICE([  ...... loading doxygen.m4])
 	m4_include([m4/doxygen.m4])
 	# setup doxygen documentation to build
 	DX_HTML_FEATURE(ON)
@@ -175,7 +175,7 @@ AS_IF([test "x$HAVE_DOXYGEN" = "xyes"], [
 ],
 [
 	# disable doxygen
-	AC_MSG_NOTICE([  ### ignoring doxygen ### ])
+	AC_MSG_NOTICE([  ..... ignoring doxygen])
 
 	#AM_CONDITIONAL(DX_COND_doc, [test "x$HAVE_DOXYGEN" = "xyes"])
 ])
