@@ -17,6 +17,7 @@ addons:
     packages:
     - gcc-4.9
     - g++-4.9
+    - doxygen
     
 before_install:
     - wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
@@ -39,6 +40,8 @@ script:
     # generate autotools's files 
     - bash autotools-init.sh 
     - CC=gcc-4.9 CXX=g++-4.9 ./configure --with-boost=$CONDA_PATH --with-vrna=$CONDA_PATH --prefix=$HOME/IntaRNA
+    # compile documentation
+    make doxygen-doc-html
     # compile, test and install IntaRNA
     - make && make tests && make install
     ##### check IntaRNA build #####
