@@ -10,7 +10,8 @@ SUBDIRS = src perl tests .
 
 if enable_doxygen
 ## doxygen documentation make target
-include $(top_srcdir)/doc/doxygen.am
+@DX_RULES@
+# include $(top_srcdir)/doc/doxygen.am
 else
 DX_PHONY =
 endif
