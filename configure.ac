@@ -159,8 +159,8 @@ AS_IF([test "x$HAVE_DOXYGEN" = "xyes"], [
 	DX_INIT_DOXYGEN($PACKAGE_NAME, ["doc/doxygen.cfg"], ["doxygen-doc"])
 ],
 [
-	# disable doxygen 
-	AC_SUBST([DX_COND_doc],[false])
+	# disable doxygen
+	AM_CONDITIONAL(DX_COND_doc, [test "x$HAVE_DOXYGEN" = "xyes"])
 ])
 
 ###############################################################################
