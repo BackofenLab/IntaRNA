@@ -7,8 +7,7 @@
 #include "Accessibility.h"
 #include "AccessibilityConstraint.h"
 
-#include <boost/numeric/ublas/matrix.hpp>
-#include <boost/numeric/ublas/io.hpp>
+#include <boost/numeric/ublas/triangular.hpp>
 
 
 namespace IntaRNA {
@@ -28,6 +27,9 @@ protected:
 	typedef boost::numeric::ublas::matrix<E_type> E2dMatrix;
 
 public:
+typedef double P_type;  // Probability type
+typedef boost::numeric::ublas::triangular_matrix<P_type, boost::numeric::ublas::upper> P2dMatrix;  // Probability matrix
+typedef boost::numeric::ublas::triangular_matrix<E_type, boost::numeric::ublas::upper> E2dMatrix;  // Energy matrix
 
 	/***
 	 * Constructor of AccessibilityBasePair
@@ -71,11 +73,10 @@ protected:
 	//! temperature constant for normalization
 	const E_type RT;
 
-	const E_type weightPerBP = std::exp(-basePairEnergy / RT);
-	//! minimal number of unpaired bases enclosed by a base pair
-	const size_t minLoopLength = 3;
-	//! length of the sequence
-	const size_t N;
+  const E_type basePairEnergy;
+  const E_type RT;
+  const E_type basePairWeight = std::exp(-basePairEnergy / RT);
+  const size_t minLoopLength = 3;
 
   /***
    * Results of getED lookup table

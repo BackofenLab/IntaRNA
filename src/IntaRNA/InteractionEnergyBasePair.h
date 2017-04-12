@@ -4,8 +4,7 @@
 
 #include "IntaRNA/InteractionEnergy.h"
 
-#include <boost/numeric/ublas/matrix.hpp>
-#include <boost/numeric/ublas/io.hpp>
+#include <boost/numeric/ublas/triangular.hpp>
 
 namespace IntaRNA {
 
@@ -20,8 +19,8 @@ class InteractionEnergyBasePair: public InteractionEnergy {
 
 public:
 typedef double P_type;  // Probability type
-typedef boost::numeric::ublas::matrix<P_type> P2dMatrix;  // Probability matrix
-typedef boost::numeric::ublas::matrix<E_type> E2dMatrix;  // Energy matrix
+typedef boost::numeric::ublas::triangular_matrix<P_type, boost::numeric::ublas::upper> P2dMatrix;  // Probability matrix
+typedef boost::numeric::ublas::triangular_matrix<E_type, boost::numeric::ublas::upper> E2dMatrix;  // Energy matrix
 
 	/**
 	 * Construct energy utility object given the accessibility ED values for
@@ -45,6 +44,8 @@ typedef boost::numeric::ublas::matrix<E_type> E2dMatrix;  // Energy matrix
 					, const size_t maxInternalLoopSize1 = 16
 					, const size_t maxInternalLoopSize2 = 16
 					, const bool initES = false
+          , const E_type _RT = 1
+          , const E_type bpEnergy = -1
 				);
 
 	virtual ~InteractionEnergyBasePair();
@@ -257,9 +258,9 @@ typedef boost::numeric::ublas::matrix<E_type> E2dMatrix;  // Energy matrix
 
 private:
 
-  const E_type basePairEnergy = -1;
-  const E_type RT = 1;
-  const E_type boltzmann = std::exp(-basePairEnergy / RT);
+  const E_type basePairEnergy;
+  const E_type RT;
+  const E_type basePairWeight = std::exp(-basePairEnergy / RT);
   const size_t minLoopLength = 3;
 
   /***
@@ -270,10 +271,10 @@ private:
 
   /***
    * Compute the ES for a given sequence and store it in the given lookup table.
-   * @param accS Accessibility of the given sequence
+   * @param seq RNASequence
    * @param logQ The resulting lookuptable
    */
-  void computeES(const Accessibility &accS, E2dMatrix &logQ);
+  void computeES(const RnaSequence &seq, E2dMatrix &logQ);
 
   /***
    * Get the partition function Q between the indices (from, to)
@@ -313,13 +314,17 @@ InteractionEnergyBasePair::InteractionEnergyBasePair(
 		, const size_t maxInternalLoopSize1
 		, const size_t maxInternalLoopSize2
 		, const bool initES
+    , const E_type _RT
+    , const E_type bpEnergy
 	)
  :
-	InteractionEnergy(accS1, accS2, maxInternalLoopSize1, maxInternalLoopSize2)
+	InteractionEnergy(accS1, accS2, maxInternalLoopSize1, maxInternalLoopSize2),
+  RT(_RT),
+  basePairEnergy(bpEnergy)
 {
 	if (initES) {
-    computeES(accS1, logQ1);
-    computeES(accS2, logQ2);
+    computeES(accS1.getSequence(), logQ1);
+    computeES(accS2.getSequence(), logQ2);
 	}
 }
 
@@ -462,6 +467,6 @@ getBestE_dangling() const
 
 ////////////////////////////////////////////////////////////////////////////
 
-} // namespace
+}  // namespace IntaRNA
 
 #endif /* INTERACTIONENERGYBASEPAIR_H_ */
