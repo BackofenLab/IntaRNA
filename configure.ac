@@ -16,7 +16,10 @@ AC_CONFIG_AUX_DIR([.])
 AC_CONFIG_SRCDIR([src/easylogging++.h])
 AC_CONFIG_HEADERS([src/config.h])
 
-AC_CONFIG_MACRO_DIR([m4])
+# AC_CONFIG_MACRO_DIR([m4])
+m4_include([m4_ax_cxx_compile_stdcxx.m4])
+m4_include([m4_ax_openmp.m4])
+m4_include([m4_ax_boost_base.m4])
 
 lt_enable_auto_import=""
 case "$host_os" in 
@@ -146,6 +149,8 @@ dnl generate doxygen documentation in Doxy
 AC_CHECK_PROG([HAVE_DOXYGEN],[doxygen],[yes],[no])
 
 AS_IF([test "x$HAVE_DOXYGEN" = "xyes"], [
+	AC_MSG_NOTICE([  ### loading doxygen.m4 ### ])
+	m4_include([doxygen.m4])
 	# setup doxygen documentation to build
 	DX_HTML_FEATURE(ON)
 	DX_CHM_FEATURE(OFF)
@@ -160,7 +165,9 @@ AS_IF([test "x$HAVE_DOXYGEN" = "xyes"], [
 ],
 [
 	# disable doxygen
-	AM_CONDITIONAL(DX_COND_doc, [test "x$HAVE_DOXYGEN" = "xyes"])
+	AC_MSG_NOTICE([  ### ignoring doxygen ### ])
+
+	#AM_CONDITIONAL(DX_COND_doc, [test "x$HAVE_DOXYGEN" = "xyes"])
 ])
 
 ###############################################################################
