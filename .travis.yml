@@ -48,7 +48,7 @@ script:
     - echo
     - echo
     - echo
-    - make doxygen-doc-html
+    - make doxygen-doc
     # compile, test and install IntaRNA
     - make -j 2 && make tests -j 2 && make install
     ##### check IntaRNA build #####
