@@ -17,7 +17,7 @@ addons:
     packages:
     - gcc-4.9
     - g++-4.9
-    - doxygen
+    # - doxygen
     
 before_install:
     - wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
