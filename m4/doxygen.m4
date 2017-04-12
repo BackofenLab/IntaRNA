@@ -535,7 +535,8 @@ DX_V_DXGEN = \$(_DX_v_DXGEN_\$(V))
 _DX_v_DXGEN_ = \$(_DX_v_DXGEN_\$(AM_DEFAULT_VERBOSITY))
 _DX_v_DXGEN_0 = @echo \"  DXGEN \" \$<;
 
-.PHONY: doxygen-run doxygen-doc \$(DX_PS_GOAL) \$(DX_PDF_GOAL)
+# DONE BY MARTIN : RENAME ".PHONY" TO "DX_PHONY"
+DX_PHONY: doxygen-run doxygen-doc \$(DX_PS_GOAL) \$(DX_PDF_GOAL)
 
 .INTERMEDIATE: doxygen-run \$(DX_PS_GOAL) \$(DX_PDF_GOAL)
 
