@@ -171,7 +171,7 @@ AS_IF([test "x$HAVE_DOXYGEN" = "xyes"], [
 	DX_PDF_FEATURE(ON)
 	DX_PS_FEATURE(OFF)
 	# generate according options etc.
-	DX_INIT_DOXYGEN($PACKAGE_NAME, ["doc/doxygen.cfg"], ["doxygen-doc"])
+	DX_INIT_DOXYGEN($PACKAGE_NAME, [doc/doxygen.cfg], [doxygen-doc])
 ],
 [
 	# disable doxygen
