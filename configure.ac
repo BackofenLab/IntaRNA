@@ -2,7 +2,7 @@
 
 AC_PREREQ([2.65])
 # 5 argument version only available with aclocal >= 2.64
-AC_INIT( [IntaRNA], [2.0.2], [], [intaRNA], [http://www.bioinf.uni-freiburg.de] )
+AC_INIT( [IntaRNA], [2.0.3], [], [intaRNA], [http://www.bioinf.uni-freiburg.de] )
 
 
 # minimal required version of the boost library 
@@ -313,6 +313,7 @@ AC_CONFIG_FILES([src/IntaRNA/intarna_config.h])
 AC_CONFIG_FILES([src/bin/Makefile])
 AC_CONFIG_FILES([perl/Makefile])
 AC_CONFIG_FILES([tests/Makefile])
+AC_CONFIG_FILES([doc/Makefile])
 AC_CONFIG_FILES([IntaRNA.pc])
 
 # generate the final Makefile etc.

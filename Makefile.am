@@ -2,7 +2,7 @@
 # ACLOCAL_AMFLAGS=-I m4
 
 # sub directories to check for Makefiles
-SUBDIRS = src perl tests .
+SUBDIRS = src perl tests doc .
 
 ################################################################
 # doxygen
