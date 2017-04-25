@@ -37,6 +37,7 @@ libIntaRNA_a_HEADERS =    \
 					InteractionEnergyIdxOffset.h \
 					InteractionEnergyVrna.h \
 					InteractionRange.h \
+					NussinovHandler.h \
 					OutputConstraint.h \
 					OutputHandler.h \
 					OutputHandlerCsv.h \
@@ -81,6 +82,7 @@ libIntaRNA_a_SOURCES =    \
 					InteractionEnergyIdxOffset.cpp \
 					InteractionEnergyVrna.cpp \
 					InteractionRange.cpp \
+					NussinovHandler.cpp \
 					OutputConstraint.cpp \
 					OutputHandler.cpp \
 					OutputHandlerCsv.cpp \

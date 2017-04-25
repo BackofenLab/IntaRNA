@@ -5,6 +5,7 @@
 #include "general.h"
 #include "RnaSequence.h"
 #include "Accessibility.h"
+#include "NussinovHandler.h"
 #include "IntaRNA/InteractionEnergy.h"
 
 #include <boost/numeric/ublas/triangular.hpp>
@@ -19,11 +20,7 @@ namespace IntaRNA {
  */
 class InteractionEnergyBasePair: public InteractionEnergy {
 
-
 public:
-typedef double P_type;  // Probability type
-typedef boost::numeric::ublas::triangular_matrix<P_type, boost::numeric::ublas::upper> P2dMatrix;  // Probability matrix
-typedef boost::numeric::ublas::triangular_matrix<E_type, boost::numeric::ublas::upper> E2dMatrix;  // Energy matrix
 
 	/**
 	 * Construct energy utility object given the accessibility ED values for
@@ -40,15 +37,18 @@ typedef boost::numeric::ublas::triangular_matrix<E_type, boost::numeric::ublas::
 	 *          for an intermolecular loop closed by base pairs (i1,i2) and
 	 *          (j1,j2) : (j2-i2+1) <= maxInternalLoopSize
 	 * @param initES whether or not to compute and initialize ES values
-	 *
+	 * @param RT The energy constant corresponding to temperature
+   * @param bpEnergy The energy of the basepair
+   * @param minLoopLength The minimum loop length
 	 */
 	InteractionEnergyBasePair( const Accessibility & accS1
 					, const ReverseAccessibility & accS2
 					, const size_t maxInternalLoopSize1 = 16
 					, const size_t maxInternalLoopSize2 = 16
 					, const bool initES = false
-          , const E_type _RT = 1
+          , const E_type RT = 1
           , const E_type bpEnergy = -1
+          , const size_t minLoopLength = 3
 				);
 
 	virtual ~InteractionEnergyBasePair();
@@ -263,45 +263,22 @@ private:
 
   const E_type basePairEnergy;
   const E_type RT;
-  const E_type basePairWeight = std::exp(-basePairEnergy / RT);
-  const size_t minLoopLength = 3;
+  const E_type basePairWeight;
+  const size_t minLoopLength;
 
   /***
    * Results of getES lookup table
    */
-  E2dMatrix logQ1;
-  E2dMatrix logQ2;
+  NussinovHandler::E2dMatrix logQ1;
+  NussinovHandler::E2dMatrix logQ2;
 
   /***
    * Compute the ES for a given sequence and store it in the given lookup table.
    * @param seq RNASequence
    * @param logQ The resulting lookuptable
    */
-  void computeES(const RnaSequence &seq, E2dMatrix &logQ);
+  void computeES(const RnaSequence &seq, NussinovHandler::E2dMatrix &logQ);
 
-  /***
-   * Get the partition function Q between the indices (from, to)
-   * @param from The start index of the region
-   * @param to The end index of the region
-   * @param seq RNA Sequence for which the table is computed.
-   * @param Q Lookup table for Q
-   * @param Qb Lookup table for Qb
-   * @returns the partition function value
-   */
-  E_type getQ(const size_t from, const size_t to, const RnaSequence &seq,
-      E2dMatrix &Q, E2dMatrix &Qb);
-
-  /***
-   * Get the base partition function Qb between the indices (from, to)
-   * @param from The start index of the region
-   * @param to The end index of the region
-   * @param seq RNA Sequence for which the table is computed.
-   * @param Q Lookup table for Q
-   * @param Qb Lookup table for Qb
-   * @returns the partition function value
-   */
-  E_type getQb(const size_t from, const size_t to, const RnaSequence &seq,
-      E2dMatrix &Q, E2dMatrix &Qb);
 };
 
 
@@ -319,11 +296,16 @@ InteractionEnergyBasePair::InteractionEnergyBasePair(
 		, const bool initES
     , const E_type _RT
     , const E_type bpEnergy
+    , const size_t minLoopLen
 	)
  :
 	InteractionEnergy(accS1, accS2, maxInternalLoopSize1, maxInternalLoopSize2),
   RT(_RT),
-  basePairEnergy(bpEnergy)
+  basePairEnergy(bpEnergy),
+  minLoopLength(minLoopLen),
+  basePairWeight(std::exp(-bpEnergy / _RT))
+
+
 {
 	if (initES) {
     computeES(accS1.getSequence(), logQ1);
