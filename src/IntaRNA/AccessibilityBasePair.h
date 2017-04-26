@@ -16,17 +16,6 @@ namespace IntaRNA {
 
 class AccessibilityBasePair: public Accessibility {
 
-protected:
-
-	//! Probability type
-	typedef E_type P_type;
-
-	//! Probability matrix
-	typedef boost::numeric::ublas::matrix<P_type> P2dMatrix;
-
-	//! Energy matrix
-	typedef boost::numeric::ublas::matrix<E_type> E2dMatrix;
-
 public:
   /***
    * Constructor of AccessibilityBasePair
@@ -67,10 +56,9 @@ protected:
 	const E_type basePairEnergy;
 	//! temperature constant for normalization
 	const E_type RT;
-
-  const E_type basePairEnergy;
-  const E_type RT;
+  //! Boltzmann Energy weight
   const E_type basePairWeight;
+  //! minimum length of loops
   const size_t minLoopLength;
 
   /***

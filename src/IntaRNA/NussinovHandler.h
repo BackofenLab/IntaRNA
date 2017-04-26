@@ -14,10 +14,17 @@ namespace IntaRNA {
 class NussinovHandler {
 public:
 
-  typedef double P_type;  // Probability type
-  typedef boost::numeric::ublas::triangular_matrix<P_type, boost::numeric::ublas::upper> P2dMatrix;  // Probability matrix
-  typedef boost::numeric::ublas::triangular_matrix<E_type, boost::numeric::ublas::upper> E2dMatrix;  // Energy matrix
-  typedef boost::numeric::ublas::triangular_matrix<size_t, boost::numeric::ublas::upper> IdxMatrix;  // Index matrix
+  //! Probability triangular type
+  typedef double P_type;
+
+  //! Probability triangular matrix
+  typedef boost::numeric::ublas::triangular_matrix<P_type, boost::numeric::ublas::upper> P2dMatrix;
+
+  //! Energy triangular matrix
+  typedef boost::numeric::ublas::triangular_matrix<E_type, boost::numeric::ublas::upper> E2dMatrix;
+
+  //! Index triangular matrix
+  typedef boost::numeric::ublas::triangular_matrix<size_t, boost::numeric::ublas::upper> IdxMatrix;
 
   /***
    * Get the partition function Q between the indices (from, to)

@@ -261,9 +261,13 @@ public:
 
 private:
 
+	//! energy of an individual base pair
   const E_type basePairEnergy;
+	//! temperature constant for normalization
   const E_type RT;
+  //! Boltzmann Energy weight
   const E_type basePairWeight;
+  //! minimum length of loops
   const size_t minLoopLength;
 
   /***
