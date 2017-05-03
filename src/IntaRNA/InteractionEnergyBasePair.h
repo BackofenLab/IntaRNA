@@ -2,10 +2,10 @@
 #ifndef INTARNA_INTERACTIONENERGYBASEPAIR_H_
 #define INTARNA_INTERACTIONENERGYBASEPAIR_H_
 
-#include "general.h"
-#include "RnaSequence.h"
-#include "Accessibility.h"
-#include "NussinovHandler.h"
+#include "IntaRNA/general.h"
+#include "IntaRNA/RnaSequence.h"
+#include "IntaRNA/Accessibility.h"
+#include "IntaRNA/NussinovHandler.h"
 #include "IntaRNA/InteractionEnergy.h"
 
 
