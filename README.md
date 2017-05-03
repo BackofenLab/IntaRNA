@@ -121,10 +121,10 @@ dependencies:
 - compiler supporting C++11 standard and OpenMP
 - [boost C++ library](http://www.boost.org/) version >= 1.50.0 
   (ensure the following libraries are installed; or install all e.g. in Ubuntu via package `libboost-all-dev`)
-  - libboost_regex
-  - libboost_program_options
-  - libboost_filesystem
-  - libboost_system
+    - libboost_regex
+    - libboost_program_options
+    - libboost_filesystem
+    - libboost_system
 - [Vienna RNA package](http://www.tbi.univie.ac.at/RNA/) version >= 2.3.0
 - if [cloning from github](#instgithub): GNU autotools (automake, autoconf, ..)
 
@@ -192,15 +192,15 @@ e.g. using [Cygwin](https://www.cygwin.com/) as 'linux emulator'. Just install
 Cygwin with the following packages:
 
 - *Devel*:
- - make
- - gcc-g++
- - autoconf
- - automake
- - pkg-config
+   - make
+   - gcc-g++
+   - autoconf
+   - automake
+   - pkg-config
 - *Libs*:
- - libboost-devel
+   - libboost-devel
 - *Perl*:
- - perl
+   - perl
 
 and follow either [install from github](#instgithub) or 
 [install from package](#instsource).
@@ -228,6 +228,10 @@ directory to your [`Path` System variable](http://www.computerhope.com/issues/ch
 <br /><br />
 <a name="instosx" />
 ## OS X installation with homebrew (thanks to Lars Barquist)
+
+If you do not want to or can use the pre-compiled binaries for OS X available from 
+[bioconda](https://anaconda.org/bioconda/intarna), you can compile `IntaRNA` 
+locally.
 
 The following wraps up how to build `IntaRNA-2.0.2` under OS X (Sierra 10.12.4) using homebrew.
 
