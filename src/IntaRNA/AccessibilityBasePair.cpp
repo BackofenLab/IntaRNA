@@ -1,6 +1,7 @@
+
+#include "IntaRNA/general.h"
 #include "IntaRNA/AccessibilityBasePair.h"
 
-#include <stdexcept>
 
 
 namespace IntaRNA {
@@ -56,7 +57,8 @@ E_type
 AccessibilityBasePair::getED( const size_t from, const size_t to ) const
 {
   if (from > to || to < 0 || from >= seq.size()) {
-    throw std::runtime_error( "Arguments must satisfy 0 <= from <= to < seq.length" );
+    throw std::runtime_error( "AccessibilityBasePair::getED("+toString(from)+","+toString(to)
+                             +") : Arguments must satisfy 0 <= from <= to < seq.length" );
   }
   return logPu(from, to);
 };
