@@ -1,4 +1,12 @@
 
+170503 Martin Mann :
+ * README.md :
+   + OS X install instructions (thanks to Lars Barquist)
+
+170413 Martin Mann :
+ * doc/* 
+   + added to distribution build
+
 170412 Martin Mann :
  * configure.ac :
    * doxygen docu generation now truely optional
