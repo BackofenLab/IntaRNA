@@ -8,7 +8,6 @@
 #include "NussinovHandler.h"
 #include "IntaRNA/InteractionEnergy.h"
 
-#include <boost/numeric/ublas/triangular.hpp>
 
 namespace IntaRNA {
 
@@ -267,13 +266,12 @@ private:
   const E_type RT;
   //! Boltzmann Energy weight
   const E_type basePairWeight;
-  //! minimum length of loops
+  //! minimum length of loops within intramolecular structures (for ES values etc.)
   const size_t minLoopLength;
 
-  /***
-   * Results of getES lookup table
-   */
+  //! ES values for seq1
   NussinovHandler::E2dMatrix logQ1;
+  //! ES values for seq2
   NussinovHandler::E2dMatrix logQ2;
 
   /***
@@ -307,13 +305,13 @@ InteractionEnergyBasePair::InteractionEnergyBasePair(
   RT(_RT),
   basePairEnergy(bpEnergy),
   minLoopLength(minLoopLen),
-  basePairWeight(std::exp(-bpEnergy / _RT))
-
-
+  basePairWeight(std::exp(-bpEnergy / _RT)),
+  logQ1(),
+  logQ2()
 {
 	if (initES) {
-    computeES(accS1.getSequence(), logQ1);
-    computeES(accS2.getSequence(), logQ2);
+   	 computeES(accS1.getSequence(), logQ1);
+   	 computeES(accS2.getSequence(), logQ2);
 	}
 }
 
@@ -335,7 +333,7 @@ getES1( const size_t i1, const size_t j1 ) const
 	// sanity check
 	if (i1>j1) throw std::runtime_error("InteractionEnergy::getES1(i1="+toString(i1)+" > j1="+toString(j1));
 	if (j1>=size1()) throw std::runtime_error("InteractionEnergy::getES1() : j1="+toString(j1)+" >= size1()="+toString(size1()));
-	if (logQ1.size() != size1()) throw std::runtime_error("ES wasn't computed.");
+	if (logQ1.size() != size1()) throw std::runtime_error("InteractionEnergy::getES1() : ES wasn't computed yet.");
 #endif
 	return logQ1(i1, j1);
 }
@@ -351,7 +349,7 @@ getES2( const size_t i2, const size_t j2 ) const
 	// sanity check
 	if (i2>j2) throw std::runtime_error("InteractionEnergy::getES2(i2="+toString(i2)+" > j2="+toString(j2));
 	if (j2>=size2()) throw std::runtime_error("InteractionEnergy::getES2() : j2="+toString(j2)+" >= size2()="+toString(size2()));
-	if (logQ2.size() != size2()) throw std::runtime_error("ES wasn't computed.");
+	if (logQ2.size() != size2()) throw std::runtime_error("InteractionEnergy::getES2() : ES wasn't computed yet.");
 #endif
 	return logQ2(i2, j2);
 }
