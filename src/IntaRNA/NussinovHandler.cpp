@@ -1,11 +1,15 @@
 
-#include "NussinovHandler.h"
+#include "IntaRNA/NussinovHandler.h"
 
 namespace IntaRNA {
 
 void
-NussinovHandler::getBasePairs(const size_t from, const size_t to,
-    const IdxMatrix &traceback, std::vector<std::pair<size_t, size_t>> &pairs) {
+NussinovHandler::getBasePairs(
+    const size_t from, 
+    const size_t to,
+    const IdxMatrix &traceback, 
+    std::vector<std::pair<size_t, size_t>> &pairs) 
+{
   if (from >= to) {
     return ;
   }
@@ -26,7 +30,8 @@ NussinovHandler::getBasePairs(const size_t from, const size_t to,
 
 std::string
 NussinovHandler::dotBracket(const size_t from, const size_t to,
-    const RnaSequence &seq, const size_t minLoopLength) {
+    const RnaSequence &seq, const size_t minLoopLength) 
+{
   const size_t len = to - from + 1, offset = from;
   NussinovHandler::E2dMatrix nussinov(len + 1, len + 1);
   NussinovHandler::IdxMatrix traceback(len + 1, len + 1);
