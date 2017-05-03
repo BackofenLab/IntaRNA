@@ -2,11 +2,11 @@
 #ifndef INTARNA_ACCESSIBILITYBASEPAIR_H_
 #define INTARNA_ACCESSIBILITYBASEPAIR_H_
 
-#include "general.h"
-#include "RnaSequence.h"
-#include "Accessibility.h"
-#include "AccessibilityConstraint.h"
-#include "NussinovHandler.h"
+#include "IntaRNA/general.h"
+#include "IntaRNA/RnaSequence.h"
+#include "IntaRNA/Accessibility.h"
+#include "IntaRNA/AccessibilityConstraint.h"
+#include "IntaRNA/NussinovHandler.h"
 
 
 namespace IntaRNA {
