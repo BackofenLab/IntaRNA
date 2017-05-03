@@ -1,4 +1,4 @@
-#include "AccessibilityBasePair.h"
+#include "IntaRNA/AccessibilityBasePair.h"
 
 #include <stdexcept>
 
