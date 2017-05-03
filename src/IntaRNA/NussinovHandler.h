@@ -2,8 +2,9 @@
 #ifndef INTARNA_NUSSINOV_HANDLER
 #define INTARNA_NUSSINOV_HANDLER
 
-#include "general.h"
-#include "RnaSequence.h"
+#include "IntaRNA/general.h"
+#include "IntaRNA/RnaSequence.h"
+#include "IntaRNA/Interaction.h"
 #include <vector>
 #include <utility>
 
@@ -108,7 +109,7 @@ public:
    * @param pairs The resulting base-pairs
    */
   static void getBasePairs(const size_t from, const size_t to,
-      const IdxMatrix &traceback, std::vector<std::pair<size_t, size_t>> &pairs);
+      const IdxMatrix &traceback, Interaction::PairingVec &pairs);
 };
 
 }  // namespace IntaRNA
