@@ -3,6 +3,7 @@
 
 #undef NDEBUG
 
+#include <cmath>
 #include "IntaRNA/InteractionEnergyBasePair.h"
 #include "IntaRNA/AccessibilityDisabled.h"
 
@@ -16,7 +17,7 @@ TEST_CASE( "InteractionEnergyBasePair", "[InteractionEnergyBasePair]" ) {
 	ReverseAccessibility rAcc(acc);
 
 	size_t maxLoop1 = 1, maxLoop2 = 2;
-	InteractionEnergyBasePair energy( acc, rAcc, maxLoop1, maxLoop2);
+	InteractionEnergyBasePair energy( acc, rAcc, maxLoop1, maxLoop2, true, 1, -1, 1);
 
 	SECTION("data access") {
 		// check
@@ -66,5 +67,14 @@ TEST_CASE( "InteractionEnergyBasePair", "[InteractionEnergyBasePair]" ) {
 		REQUIRE_FALSE( energy.getE_interLeft( 0,3, 0,3 ) < 0.0 );
 
 	}
+
+  SECTION("ES computation") {
+    REQUIRE( abs(energy.getES1(0, 3) - (-1.313186)) < 1e-4 );
+    REQUIRE( abs(energy.getES2(0, 3) - (-1.313186)) < 1e-4 );
+    REQUIRE( std::isinf(energy.getES1(0, 2)) );
+    REQUIRE( std::isinf(energy.getES1(1, 2)) );
+    REQUIRE( std::isinf(energy.getES2(0, 2)) );
+    REQUIRE( std::isinf(energy.getES2(1, 2)) );
+  }
 
 }

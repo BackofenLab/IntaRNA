@@ -122,4 +122,4 @@ protected:
 
 } // namespace
 
-#endif /* PREDICTORMFE4D_H_ */
+#endif /* INTARNA_PREDICTORMFE4D_H_ */

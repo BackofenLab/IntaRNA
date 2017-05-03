@@ -2,7 +2,7 @@
 
 AC_PREREQ([2.65])
 # 5 argument version only available with aclocal >= 2.64
-AC_INIT( [IntaRNA], [2.0.2], [], [intaRNA], [http://www.bioinf.uni-freiburg.de] )
+AC_INIT( [IntaRNA], [2.0.3], [], [intaRNA], [http://www.bioinf.uni-freiburg.de] )
 
 
 # minimal required version of the boost library 
@@ -16,7 +16,10 @@ AC_CONFIG_AUX_DIR([.])
 AC_CONFIG_SRCDIR([src/easylogging++.h])
 AC_CONFIG_HEADERS([src/config.h])
 
-AC_CONFIG_MACRO_DIR([m4])
+# AC_CONFIG_MACRO_DIR([m4])
+m4_include([m4/m4_ax_cxx_compile_stdcxx.m4])
+m4_include([m4/m4_ax_openmp.m4])
+m4_include([m4/m4_ax_boost_base.m4])
 
 lt_enable_auto_import=""
 case "$host_os" in 
@@ -67,6 +70,16 @@ AC_MSG_RESULT([$pkgconfigEnabled])
 AS_IF([test x"$pkgconfigEnabled" = x"yes"], [
 	# Checks for pkg-config
 	AC_CHECK_PROG([HAVE_PKG_CONFIG],[pkg-config],[yes],[no])
+	AS_IF([test "HAVE_PKG_CONFIG" == "yes"], [
+		dnl Testing presence of pkg-config
+		AC_MSG_CHECKING([pkg-config m4 macros])
+		AS_IF([test m4_ifdef([PKG_CHECK_MODULES], [yes], [no]) == yes], [
+			AC_MSG_RESULT([yes]);
+		], [
+			AC_MSG_RESULT([no]);
+			HAVE_PKG_CONFIG=no
+		])
+	])
 ], [
 	HAVE_PKG_CONFIG=no
 ])
@@ -146,6 +159,8 @@ dnl generate doxygen documentation in Doxy
 AC_CHECK_PROG([HAVE_DOXYGEN],[doxygen],[yes],[no])
 
 AS_IF([test "x$HAVE_DOXYGEN" = "xyes"], [
+	# loading m4 macro
+	m4_include([m4/doxygen.m4])
 	# setup doxygen documentation to build
 	DX_HTML_FEATURE(ON)
 	DX_CHM_FEATURE(OFF)
@@ -156,7 +171,7 @@ AS_IF([test "x$HAVE_DOXYGEN" = "xyes"], [
 	DX_PDF_FEATURE(ON)
 	DX_PS_FEATURE(OFF)
 	# generate according options etc.
-	DX_INIT_DOXYGEN($PACKAGE_NAME, ["doc/doxygen.cfg"], ["doxygen-doc"])
+	DX_INIT_DOXYGEN($PACKAGE_NAME, [doc/doxygen.cfg], [doxygen-doc])
 ])
 
 ###############################################################################
@@ -298,6 +313,7 @@ AC_CONFIG_FILES([src/IntaRNA/intarna_config.h])
 AC_CONFIG_FILES([src/bin/Makefile])
 AC_CONFIG_FILES([perl/Makefile])
 AC_CONFIG_FILES([tests/Makefile])
+AC_CONFIG_FILES([doc/Makefile])
 AC_CONFIG_FILES([IntaRNA.pc])
 
 # generate the final Makefile etc.

@@ -61,6 +61,7 @@ The following topics are covered by this documentation:
   - [Cloning from github](#instgithub)
   - [Source code distribution](#instsource)
   - [Microsoft Windows installation](#instwin)
+  - [OS X installation with homebrew](#instosx)
 - [Usage and Parameters](#usage)
   - [Just run ...](#defaultRun)
   - [Prediction modes, their features and emulated tools](#predModes)
@@ -120,10 +121,10 @@ dependencies:
 - compiler supporting C++11 standard and OpenMP
 - [boost C++ library](http://www.boost.org/) version >= 1.50.0 
   (ensure the following libraries are installed; or install all e.g. in Ubuntu via package `libboost-all-dev`)
-  - libboost_regex
-  - libboost_program_options
-  - libboost_filesystem
-  - libboost_system
+    - libboost_regex
+    - libboost_program_options
+    - libboost_filesystem
+    - libboost_system
 - [Vienna RNA package](http://www.tbi.univie.ac.at/RNA/) version >= 2.3.0
 - if [cloning from github](#instgithub): GNU autotools (automake, autoconf, ..)
 
@@ -191,15 +192,15 @@ e.g. using [Cygwin](https://www.cygwin.com/) as 'linux emulator'. Just install
 Cygwin with the following packages:
 
 - *Devel*:
- - make
- - gcc-g++
- - autoconf
- - automake
- - pkg-config
+   - make
+   - gcc-g++
+   - autoconf
+   - automake
+   - pkg-config
 - *Libs*:
- - libboost-devel
+   - libboost-devel
 - *Perl*:
- - perl
+   - perl
 
 and follow either [install from github](#instgithub) or 
 [install from package](#instsource).
@@ -221,6 +222,61 @@ If you do not want to work within the IntaRNA directory or don't want to provide
 the full installation path with every IntaRNA call, you should add the installation
 directory to your [`Path` System variable](http://www.computerhope.com/issues/ch000549.htm)
 (using a semicolon `;` separator).
+
+
+
+<br /><br />
+<a name="instosx" />
+## OS X installation with homebrew (thanks to Lars Barquist)
+
+If you do not want to or can use the pre-compiled binaries for OS X available from 
+[bioconda](https://anaconda.org/bioconda/intarna), you can compile `IntaRNA` 
+locally.
+
+The following wraps up how to build `IntaRNA-2.0.2` under OS X (Sierra 10.12.4) using homebrew.
+
+First, install homebrew! :)
+
+```[bash]
+brew install gcc --without-multilib
+```
+
+`--without-multilib` is necessary for OpenMP multithreading support -- note 
+OS X default `gcc`/`clang` doesn't support OpenMP, so we need to install standard 
+`gcc`/`g++`
+
+```[bash]
+brew install boost --cc=gcc-6
+```
+
+`--cc=gcc-6` is necessary to build `boost` with standard `gcc`, rather than the 
+default bottle which appears to have been built with the system `clang`. 
+Brew installs `gcc`/`g++` as `/usr/local/bin/gcc-VERSION` by default to avoid 
+clashing with the system's `gcc`/`clang`. `6` is the current version as of 
+writing, but may change.
+
+```[bash]
+brew install viennarna
+brew install doxygen
+```
+
+Download and extract the IntaRNA source code package (e.g. `intaRNA-2.0.2.tar.gz`) from the [release page](releases/).
+
+```[bash]
+./configure CC=gcc-6 CXX=g++-6
+```
+
+This sets up makefiles to use standard `gcc`/`g++` from brew, which will 
+need an update to the appropriate compiler version if not still `6`. 
+You might also want to
+set `--prefix=INSTALLPATH` if you dont want to install IntaRNA globally.
+
+
+```[bash]
+Make
+make tests
+make install
+```
 
 
 

@@ -2,7 +2,12 @@
 #ifndef INTARNA_INTERACTIONENERGYBASEPAIR_H_
 #define INTARNA_INTERACTIONENERGYBASEPAIR_H_
 
+#include "IntaRNA/general.h"
+#include "IntaRNA/RnaSequence.h"
+#include "IntaRNA/Accessibility.h"
+#include "IntaRNA/NussinovHandler.h"
 #include "IntaRNA/InteractionEnergy.h"
+
 
 namespace IntaRNA {
 
@@ -13,7 +18,6 @@ namespace IntaRNA {
  * @author Martin Mann 2014
  */
 class InteractionEnergyBasePair: public InteractionEnergy {
-
 
 public:
 
@@ -32,13 +36,18 @@ public:
 	 *          for an intermolecular loop closed by base pairs (i1,i2) and
 	 *          (j1,j2) : (j2-i2+1) <= maxInternalLoopSize
 	 * @param initES whether or not to compute and initialize ES values
-	 *
+	 * @param RT The energy constant corresponding to temperature
+   * @param bpEnergy The energy of the basepair
+   * @param minLoopLength The minimum loop length
 	 */
 	InteractionEnergyBasePair( const Accessibility & accS1
 					, const ReverseAccessibility & accS2
 					, const size_t maxInternalLoopSize1 = 16
 					, const size_t maxInternalLoopSize2 = 16
 					, const bool initES = false
+          , const E_type RT = 1
+          , const E_type bpEnergy = -1
+          , const size_t minLoopLength = 3
 				);
 
 	virtual ~InteractionEnergyBasePair();
@@ -248,6 +257,30 @@ public:
 		return 0;
 	}
 
+
+private:
+
+	//! energy of an individual base pair
+  const E_type basePairEnergy;
+	//! temperature constant for normalization
+  const E_type RT;
+  //! Boltzmann Energy weight
+  const E_type basePairWeight;
+  //! minimum length of loops within intramolecular structures (for ES values etc.)
+  const size_t minLoopLength;
+
+  //! ES values for seq1
+  NussinovHandler::E2dMatrix logQ1;
+  //! ES values for seq2
+  NussinovHandler::E2dMatrix logQ2;
+
+  /***
+   * Compute the ES for a given sequence and store it in the given lookup table.
+   * @param seq RNASequence
+   * @param logQ The resulting lookuptable
+   */
+  void computeES(const RnaSequence &seq, NussinovHandler::E2dMatrix &logQ);
+
 };
 
 
@@ -263,12 +296,22 @@ InteractionEnergyBasePair::InteractionEnergyBasePair(
 		, const size_t maxInternalLoopSize1
 		, const size_t maxInternalLoopSize2
 		, const bool initES
+    , const E_type _RT
+    , const E_type bpEnergy
+    , const size_t minLoopLen
 	)
  :
-	InteractionEnergy(accS1, accS2, maxInternalLoopSize1, maxInternalLoopSize2)
+	InteractionEnergy(accS1, accS2, maxInternalLoopSize1, maxInternalLoopSize2),
+  RT(_RT),
+  basePairEnergy(bpEnergy),
+  minLoopLength(minLoopLen),
+  basePairWeight(std::exp(-bpEnergy / _RT)),
+  logQ1(),
+  logQ2()
 {
 	if (initES) {
-		INTARNA_NOT_IMPLEMENTED("InteractionEnergyVrna() : ES computation missing");
+   	 computeES(accS1.getSequence(), logQ1);
+   	 computeES(accS2.getSequence(), logQ2);
 	}
 }
 
@@ -290,11 +333,9 @@ getES1( const size_t i1, const size_t j1 ) const
 	// sanity check
 	if (i1>j1) throw std::runtime_error("InteractionEnergy::getES1(i1="+toString(i1)+" > j1="+toString(j1));
 	if (j1>=size1()) throw std::runtime_error("InteractionEnergy::getES1() : j1="+toString(j1)+" >= size1()="+toString(size1()));
+	if (logQ1.size() != size1()) throw std::runtime_error("InteractionEnergy::getES1() : ES wasn't computed yet.");
 #endif
-
-	INTARNA_NOT_IMPLEMENTED("InteractionEnergyVrna::getES2() : ES computation missing");
-	// return computed value
-	return E_INF;
+	return logQ1(i1, j1);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -308,11 +349,9 @@ getES2( const size_t i2, const size_t j2 ) const
 	// sanity check
 	if (i2>j2) throw std::runtime_error("InteractionEnergy::getES2(i2="+toString(i2)+" > j2="+toString(j2));
 	if (j2>=size2()) throw std::runtime_error("InteractionEnergy::getES2() : j2="+toString(j2)+" >= size2()="+toString(size2()));
+	if (logQ2.size() != size2()) throw std::runtime_error("InteractionEnergy::getES2() : ES wasn't computed yet.");
 #endif
-
-	INTARNA_NOT_IMPLEMENTED("InteractionEnergyVrna::getES2() : ES computation missing");
-	// return computed value
-	return E_INF;
+	return logQ2(i2, j2);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -415,6 +454,6 @@ getBestE_dangling() const
 
 ////////////////////////////////////////////////////////////////////////////
 
-} // namespace
+}  // namespace IntaRNA
 
 #endif /* INTERACTIONENERGYBASEPAIR_H_ */
