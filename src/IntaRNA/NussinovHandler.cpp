@@ -8,7 +8,7 @@ NussinovHandler::getBasePairs(
     const size_t from, 
     const size_t to,
     const IdxMatrix &traceback, 
-    std::vector<std::pair<size_t, size_t>> &pairs) 
+    Interaction::PairingVec &pairs) 
 {
   if (from >= to) {
     return ;
@@ -56,7 +56,7 @@ NussinovHandler::dotBracket(const size_t from, const size_t to,
     }
   }
   std::string result(len, '.');
-  std::vector<std::pair<size_t, size_t>> basepairs;
+  Interaction::PairingVec basepairs;
   getBasePairs(0, len - 1, traceback, basepairs);
   for (size_t k = 0; k < basepairs.size(); ++k) {
     size_t i = basepairs[k].first, j = basepairs[k].second;
