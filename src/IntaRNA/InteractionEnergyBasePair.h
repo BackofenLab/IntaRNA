@@ -333,7 +333,7 @@ getES1( const size_t i1, const size_t j1 ) const
 	// sanity check
 	if (i1>j1) throw std::runtime_error("InteractionEnergy::getES1(i1="+toString(i1)+" > j1="+toString(j1));
 	if (j1>=size1()) throw std::runtime_error("InteractionEnergy::getES1() : j1="+toString(j1)+" >= size1()="+toString(size1()));
-	if (logQ1.size() != size1()) throw std::runtime_error("InteractionEnergy::getES1() : ES wasn't computed yet.");
+	if (logQ1.size1() != size1()) throw std::runtime_error("InteractionEnergy::getES1() : ES wasn't computed yet.");
 #endif
 	return logQ1(i1, j1);
 }
@@ -349,7 +349,7 @@ getES2( const size_t i2, const size_t j2 ) const
 	// sanity check
 	if (i2>j2) throw std::runtime_error("InteractionEnergy::getES2(i2="+toString(i2)+" > j2="+toString(j2));
 	if (j2>=size2()) throw std::runtime_error("InteractionEnergy::getES2() : j2="+toString(j2)+" >= size2()="+toString(size2()));
-	if (logQ2.size() != size2()) throw std::runtime_error("InteractionEnergy::getES2() : ES wasn't computed yet.");
+	if (logQ2.size1() != size2()) throw std::runtime_error("InteractionEnergy::getES2() : ES wasn't computed yet.");
 #endif
 	return logQ2(i2, j2);
 }

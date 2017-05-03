@@ -1,4 +1,6 @@
 
+version 2.0.3
+
 170503 Martin Mann :
  * README.md :
    + OS X install instructions (thanks to Lars Barquist)
@@ -13,6 +15,7 @@
    * getES*() : enabled
  + tests for NussinovHandler 
  + tests for InteractionEnergyBasePair
+ + doc/latex-deps : provides required doxygen-latex dependencies
 
 170413 Martin Mann :
  * doc/* 
