@@ -2,6 +2,17 @@
 170503 Martin Mann :
  * README.md :
    + OS X install instructions (thanks to Lars Barquist)
+ + IntaRNA/NussinovHandler : (thanks to Mostafa Mahmoud) implementation of
+   intramolecular structure prediction, partition function and probability
+   computation using a variant of the Nussinov-Jacobson model
+ * IntaRNA/AccessibilityBasePair :
+   * uses NussinovHandler for computation
+ * IntaRNA/InteractionEnergyBasePair :
+   * uses NussinovHandler for computation
+   + computeES() : fill a given ES value container
+   * getES*() : enabled
+ + tests for NussinovHandler 
+ + tests for InteractionEnergyBasePair
 
 170413 Martin Mann :
  * doc/* 
