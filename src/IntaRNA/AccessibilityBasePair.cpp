@@ -1,6 +1,5 @@
 #include "AccessibilityBasePair.h"
 
-#include <boost/numeric/ublas/triangular.hpp>
 #include <stdexcept>
 
 
@@ -19,6 +18,7 @@ AccessibilityBasePair::AccessibilityBasePair(const RnaSequence& seq,
       minLoopLength(minLoopLen)
 {
   const size_t N = seq.size();
+  // create temporary matrices for ED computation
   NussinovHandler::E2dMatrix Q(N, N);
   NussinovHandler::E2dMatrix Qb(N, N);
   NussinovHandler::P2dMatrix Ppb(N, N);
@@ -26,6 +26,7 @@ AccessibilityBasePair::AccessibilityBasePair(const RnaSequence& seq,
 
   logPu.resize(N, N);
 
+  // init temporary matrices
   for (size_t i = 0u; i < N; ++i) {
     for (size_t j = i; j < N; ++j) {
       Q(i, j) = -1.0;
@@ -34,6 +35,7 @@ AccessibilityBasePair::AccessibilityBasePair(const RnaSequence& seq,
       Pu(i, j) = -1.0;
     }
   }
+  // compute ED values
   for (size_t i = 0u; i < N; ++i) {
     for (size_t j = i; j < N; ++j) {
       logPu(i, j) = -RT * std::log(NussinovHandler::getPu(i, j, seq, basePairWeight, minLoopLength, Q, Qb, Ppb, Pu));
