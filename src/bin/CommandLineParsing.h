@@ -8,6 +8,7 @@
 #include <boost/regex.hpp>
 #include <boost/program_options.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/filesystem.hpp>
 
 #include <iostream>
 #include <cstdarg>
@@ -1456,28 +1457,30 @@ getThreads() const
 inline
 std::string
 CommandLineParsing::
-getFullFilename( const std::string & fileName, const RnaSequence * target, const RnaSequence * query ) const
+getFullFilename( const std::string & fileNamePath, const RnaSequence * target, const RnaSequence * query ) const
 {
 	// do nothing for empty file names
-	if (fileName.empty()) {
-		return fileName;
+	if (fileNamePath.empty()) {
+		return fileNamePath;
 	}
 	// exclude stream names from prefixing
-	if (boost::iequals(fileName,"STDOUT") || boost::iequals(fileName,"STDERR")) {
-		return fileName;
+	if (boost::iequals(fileNamePath,"STDOUT") || boost::iequals(fileNamePath,"STDERR")) {
+		return fileNamePath;
 	}
-	// generate prefix
-	std::string prefix = "";
+
+	// generate file ID if necessary
+	std::string fileID = "";
+
 	// generate target only
 	if (target != NULL && query == NULL) {
 		if (getTargetSequences().size() > 1) {
-			prefix += "s";
+			fileID += "s";
 //			prefix += "t";
 			// search for index of the target sequence
 			for (size_t t = 0; t < getTargetSequences().size(); t++) {
 				if (getTargetSequences().at(t) == *target) {
 					// indexing starts with 1
-					prefix += toString(t+1);
+					fileID += toString(t+1);
 					break;
 				}
 			}
@@ -1486,13 +1489,13 @@ getFullFilename( const std::string & fileName, const RnaSequence * target, const
 	// generate query only
 	if (query != NULL && target == NULL) {
 		if (getQuerySequences().size() > 1) {
-			prefix += "s";
+			fileID += "s";
 //			prefix += "q";
 			// search for index of the query sequence
 			for (size_t q = 0; q < getQuerySequences().size(); q++) {
 				if (getQuerySequences().at(q) == *query) {
 					// indexing starts with 1
-					prefix += toString(q+1);
+					fileID += toString(q+1);
 					break;
 				}
 			}
@@ -1501,28 +1504,39 @@ getFullFilename( const std::string & fileName, const RnaSequence * target, const
 	// generate combined part
 	{
 		if (getQuerySequences().size() > 1 || getTargetSequences().size() > 1) {
-			prefix += "t";
+			fileID += "t";
 			// search for index of the target sequence
 			for (size_t t = 0; t < getTargetSequences().size(); t++) {
 				if (getTargetSequences().at(t) == *target) {
 					// indexing starts with 1
-					prefix += toString(t+1);
+					fileID += toString(t+1);
 					break;
 				}
 			}
-			prefix += "q";
+			fileID += "q";
 			// search for index of the query sequence
 			for (size_t q = 0; q < getQuerySequences().size(); q++) {
 				if (getQuerySequences().at(q) == *query) {
 					// indexing starts with 1
-					prefix += toString(q+1);
+					fileID += toString(q+1);
 					break;
 				}
 			}
 		}
 	}
-	// return compiled string
-	return prefix+fileName;
+
+	if (fileID.empty()) {
+		return fileNamePath;
+	} else {
+
+		// get position in fileNamePath where the
+		const size_t startOfExtension = fileNamePath.size() - boost::filesystem::path(fileNamePath).extension().string().size();
+
+		// return compiled file name including file ID
+		return fileNamePath.substr(0,startOfExtension)
+				+ "-" + fileID
+				+ fileNamePath.substr(startOfExtension);
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////
