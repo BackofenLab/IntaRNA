@@ -979,6 +979,37 @@ processed using doxygen to generate html/pdf versions.
 When IntaRNA is build while `pkg-config` is present, according pkg-config
 information is generated and installed too.
 
+## Mandatory `Easylogging++` initalization !
+
+Since IntaRNA makes heavy use of the `Easylogging++` library, you have to add (and adapt) 
+the following code to your central code that includes the `main()` function:
+```[c++]
+// get central IntaRNA-lib definitions and includes
+#include <IntaRNA/RnaSequence.h>
+// initialize logging for binary
+INITIALIZE_EASYLOGGINGPP
+
+[...]
+
+int main(int argc, char **argv){
+
+[...]
+		// set overall logging style
+		el::Loggers::reconfigureAllLoggers(el::ConfigurationType::Format, std::string("# %level : %msg"));
+		// no log file output
+		el::Loggers::reconfigureAllLoggers(el::ConfigurationType::ToFile, std::string("false"));
+		// set additional logging flags
+		el::Loggers::addFlag(el::LoggingFlag::ColoredTerminalOutput);
+		el::Loggers::addFlag(el::LoggingFlag::DisableApplicationAbortOnFatalLog);
+		el::Loggers::addFlag(el::LoggingFlag::LogDetailedCrashReason);
+		el::Loggers::addFlag(el::LoggingFlag::AllowVerboseIfModuleNotSpecified);
+
+		// setup logging with given parameters
+		START_EASYLOGGINGPP(argc, argv);
+[...]
+}
+```
+
 
 
 
