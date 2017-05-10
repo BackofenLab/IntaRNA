@@ -1,4 +1,14 @@
 
+170503 Martin Mann :
+ * README.md :
+   * output file description updated
+   + description of easylogging++ initialization for library usage 
+     (thanks to Maria Waldl) 
+ * bin/CommandLineParsing :
+   * getFullFilename() : 
+     * bugfix : handling of paths in file name definitions
+     * sequence index now suffix of filename (added in front of file extension) 
+
 version 2.0.3
 
 170503 Martin Mann :
