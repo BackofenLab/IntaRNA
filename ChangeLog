@@ -7,6 +7,7 @@
  * bin/CommandLineParsing :
    * getFullFilename() : 
      * bugfix : handling of paths in file name definitions
+       (thanks to Milad Miladi)
      * sequence index now suffix of filename (added in front of file extension) 
 
 version 2.0.3
