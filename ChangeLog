@@ -1,4 +1,16 @@
 
+version 2.0.4
+
+170706 Martin Mann :
+ * IntaRNA/OutputHandlerCsv :
+   + E_hybrid : hybrid-only energy = E - ED1 - ED2
+   + E_norm : length-normalized energy = E / ln( length1*length2 )
+   + E_hybridNorm : length-normalized hybrid-only energy =  E_hybrid / ln(l1*l2)
+
+170705 Martin Mann :
+ * perl/Intarna*.pl :
+   * shebang corrected
+
 170503 Martin Mann :
  * README.md :
    * output file description updated

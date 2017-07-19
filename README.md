@@ -598,6 +598,9 @@ are
 - `E_dangleR` : dangling end contribution of base pair (end1,start2)
 - `E_endL` : penalty of closing base pair (start1,end2)
 - `E_endR` : penalty of closing base pair (end1,start2)
+- `E_hybrid` : energy of hybridization only = E - ED1 - ED2
+- `E_norm` : length normalized energy = E / ln(length(seq1)*length(seq2))
+- `E_hybridNorm` : length normalized energy of hybridization only = E_hybrid / ln(length(seq1)*length(seq2))
 - `seedStart1` : start index of the seed in seq1
 - `seedEnd1` : end index of the seed in seq1
 - `seedStart2` : start index of the seed in seq2
