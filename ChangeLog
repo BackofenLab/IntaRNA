@@ -1,4 +1,6 @@
 
+version 2.0.4
+
 170706 Martin Mann :
  * IntaRNA/OutputHandlerCsv :
    + E_hybrid : hybrid-only energy = E - ED1 - ED2
