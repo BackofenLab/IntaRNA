@@ -107,7 +107,7 @@ predict( const IndexRange & r1
 
 	// compute hybridization energies WITHOUT seed condition
 	// sets also -energy -hybridE
-	// -> no hybrid update since updateOptima overwritten
+	// -> no tracker update since updateOptima overwritten
 	PredictorMfe2dHeuristic::fillHybridE();
 
 	// check if any interaction possible
@@ -118,7 +118,7 @@ predict( const IndexRange & r1
 		return;
 	}
 
-	// init mfe for later updates
+	// reinit mfe for later updates with final information
 	initOptima( outConstraint );
 
 	// compute entries
