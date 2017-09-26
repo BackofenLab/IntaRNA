@@ -89,6 +89,23 @@ protected:
 protected:
 
 	/**
+	 * optima update without tracker notification
+	 *
+	 * @param i1 the index of the first sequence interacting with i2
+	 * @param j1 the index of the first sequence interacting with j2
+	 * @param i2 the index of the second sequence interacting with i1
+	 * @param j2 the index of the second sequence interacting with j1
+	 * @param energy ignored
+	 * @param isHybridE ignored
+	 */
+	virtual
+	void
+	updateOptima( const size_t i1, const size_t j1
+			, const size_t i2, const size_t j2
+			, const E_type energy
+			, const bool isHybridE );
+
+	/**
 	 * Fills a given interaction (boundaries given) with the according
 	 * hybridizing base pairs.
 	 * @param interaction IN/OUT the interaction to fill
@@ -115,6 +132,29 @@ protected:
 
 
 };
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+inline
+void
+PredictorMfe2dHeuristicSeed::
+updateOptima( const size_t i1, const size_t j1
+		, const size_t i2, const size_t j2
+		, const E_type energy
+		, const bool isHybridE )
+{
+	// temporarily disable tracker
+	PredictionTracker * curPredTracker = this->predTracker;
+	this->predTracker = NULL;
+	// update optimum information
+	PredictorMfe2dHeuristic::updateOptima(i1,j1,i2,j2,energy,isHybridE);
+	// reenable tracker
+	this->predTracker = curPredTracker;
+}
+
+//////////////////////////////////////////////////////////////////////////
 
 } // namespace
 

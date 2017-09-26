@@ -1,4 +1,13 @@
 
+170926 Martin Mann :
+ * IntaRNA/PredictorMfe4dSeed :
+ * IntaRNA/PredictorMfe2dHeuristicSeed :
+   + updateOptima() to disable predTracker updates when fillHybridE() of super
+     class is called; 
+     --> BUGFIX : so far resulting tracker profiles were a mix of non-seeded and
+         seeded interactions and thus not complementary with the predicted
+         interactions
+
 version 2.0.4
 
 170706 Martin Mann :
@@ -9,7 +18,7 @@ version 2.0.4
 
 170705 Martin Mann :
  * perl/Intarna*.pl :
-   * shebang corrected
+   * shebang corrected (thanks to Patrick Wright)
 
 170503 Martin Mann :
  * README.md :
