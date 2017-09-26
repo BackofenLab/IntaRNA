@@ -73,7 +73,7 @@ updateOptima( const size_t i1, const size_t j1
 		, const E_type interE
 		, const bool isHybridE )
 {
-//	LOG(DEBUG) <<"energy( "<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" ) = "
+//	LOG(DEBUG) <<"PredictorMfe::updateOptima( "<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" , E = "
 //			<<interE;
 
 	// check if nothing to be done
@@ -100,8 +100,8 @@ updateOptima( const size_t i1, const size_t j1
 
 	if (mfeInteractions.size() == 1) {
 		if (curE < mfeInteractions.begin()->energy) {
-	//		LOG(DEBUG) <<"PredictorMfe::updateOptima() : new mfe ( "
-	//			<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" ) = " <<interE <<" : "<<curE;
+//			LOG(DEBUG) <<"PredictorMfe::updateOptima() : new mfe ( "
+//				<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" ) = " <<interE <<" : "<<curE;
 			// store new global min
 			mfeInteractions.begin()->energy = (curE);
 			// store interaction boundaries
