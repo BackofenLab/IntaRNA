@@ -402,6 +402,7 @@ getNextBest( Interaction & curBest )
 	// iterate (decreasingly) over all left interaction starts
 	E2dMatrix * curTable = NULL;
 	IndexRange r1,r2;
+	size_t d1 = 0, d2 = 0;  // temp vars to deals with possible interaction lengths
 	E_type curE = E_INF;
 	for (r1.from=hybridE.size1(); r1.from-- > 0;) {
 
@@ -422,18 +423,25 @@ getNextBest( Interaction & curBest )
 				continue;
 			}
 
+			// access energy table for left-most interaction base pair
 			curTable = hybridE(r1.from,r2.from);
 
-			for (r1.to=r1.from; r1.to<curTable->size1(); r1.to++) {
+			// iterate over all available interaction site lengths in seq1
+			for (d1 = 0; d1<curTable->size1(); d1++) {
 
+				// set according right interaction boundary in seq1
+				r1.to = r1.from + d1;
 				// check of overlapping
 				if (reportedInteractions.first.overlaps(r1)) {
 					// stop since all larger sites will overlap as well
 					break;;
 				}
 
-				for (r2.to=r2.from; r2.to<curTable->size2(); r2.to++) {
+				// iterate over all available interaction site lengths in seq2
+				for (d2=0; d2<curTable->size2(); d2++) {
 
+					// set according right interaction boundary in seq2
+					r2.to = r2.from + d2;
 					// check of overlapping
 					if (reportedInteractions.second.overlaps(r2)) {
 						// stop since all larger sites will overlap as well
@@ -441,7 +449,7 @@ getNextBest( Interaction & curBest )
 					}
 
 					// get overall energy of entry
-					curE = energy.getE( r1.from, r1.to, r2.from, r2.to, (*curTable)(r1.to,r2.to));
+					curE = energy.getE( r1.from, r1.to, r2.from, r2.to, (*curTable)(d1,d2));
 
 					// skip sites with energy too low
 					// or higher than current best found so far

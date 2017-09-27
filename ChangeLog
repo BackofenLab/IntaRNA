@@ -1,5 +1,10 @@
 
 170926 Martin Mann :
+ * IntaRNA/PredictorMfe4d :
+   * getNextBest() : BUGFIX : matrix access was not using interaction end 
+     distance and interaction data was wrongly storing distance as right index
+ 
+170926 Martin Mann :
  * IntaRNA/PredictorMfe4dSeed :
  * IntaRNA/PredictorMfe2dHeuristicSeed :
    + updateOptima() to disable predTracker updates when fillHybridE() of super
