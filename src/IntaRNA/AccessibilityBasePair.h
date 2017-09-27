@@ -11,7 +11,17 @@
 
 namespace IntaRNA {
 
-
+/**
+ * Provides accessibility penalties for a Nussinov-like energy scoring where
+ * each base pair is scored by #basePairEnergy independently from its structural
+ * context.
+ *
+ * This implementation is mainly for teaching and testing purpose.
+ *
+ * @author Mostafa Mahmoud
+ * @author Martin Mann
+ *
+ */
 class AccessibilityBasePair: public Accessibility {
 
 public:

@@ -190,6 +190,9 @@ predict( const IndexRange & r1
 	initOptima( tmpOutConstraint );
 
 	// fill matrix
+	// compute hybridization energies WITHOUT seed condition
+	// sets also -energy -hybridE
+	// -> no tracker update since updateOptima overwritten
 	fillHybridE( );
 
 	// check if any interaction possible
@@ -324,7 +327,7 @@ fillHybridE_seed( )
 
 			// update mfe if needed (call super class)
 			if (E_isNotINF(curMinE)) {
-				updateOptima( i1,j1,i2,j2, curMinE, true );
+				PredictorMfe4d::updateOptima( i1,j1,i2,j2, curMinE, true );
 			}
 
 		}

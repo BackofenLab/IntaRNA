@@ -1,4 +1,22 @@
 
+version 2.0.5
+
+170926 Martin Mann :
+ * IntaRNA/PredictorMfe4d :
+   * getNextBest() : BUGFIX : matrix access was not using interaction end 
+     distance and interaction data was wrongly storing distance as right index;
+     this was causing segfaults when requesting more than one prediction output
+     (thanks to Rick Gelhausen)
+ 
+170926 Martin Mann :
+ * IntaRNA/PredictorMfe4dSeed :
+ * IntaRNA/PredictorMfe2dHeuristicSeed :
+   + updateOptima() to disable predTracker updates when fillHybridE() of super
+     class is called; 
+     --> BUGFIX : so far resulting tracker profiles were a mix of non-seeded and
+         seeded interactions and thus not complementary with the predicted
+         interactions
+
 version 2.0.4
 
 170706 Martin Mann :
@@ -9,7 +27,7 @@ version 2.0.4
 
 170705 Martin Mann :
  * perl/Intarna*.pl :
-   * shebang corrected
+   * shebang corrected (thanks to Patrick Wright)
 
 170503 Martin Mann :
  * README.md :
