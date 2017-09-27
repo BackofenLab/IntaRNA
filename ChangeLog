@@ -2,7 +2,9 @@
 170926 Martin Mann :
  * IntaRNA/PredictorMfe4d :
    * getNextBest() : BUGFIX : matrix access was not using interaction end 
-     distance and interaction data was wrongly storing distance as right index
+     distance and interaction data was wrongly storing distance as right index;
+     this was causing segfaults when requesting more than one prediction output
+     (thanks to Rick Gelhausen)
  
 170926 Martin Mann :
  * IntaRNA/PredictorMfe4dSeed :
