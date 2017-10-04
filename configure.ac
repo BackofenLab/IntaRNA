@@ -8,7 +8,7 @@ AC_INIT( [IntaRNA], [2.0.5], [], [intaRNA], [http://www.bioinf.uni-freiburg.de] 
 # minimal required version of the boost library 
 BOOST_REQUIRED_VERSION=1.50.0
 # minimal required version of the Vienna RNA library
-VRNA_REQUIRED_VERSION=2.3.0
+VRNA_REQUIRED_VERSION=2.4.1
 
 
 AC_CANONICAL_HOST

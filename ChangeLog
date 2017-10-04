@@ -1,4 +1,8 @@
 
+171004 Martin Mann :
+ * configure.ac :
+   * bump minimal ViennaRNA version to 2.4.1 (for constraint interface) 
+
 version 2.0.5
 
 170926 Martin Mann :
