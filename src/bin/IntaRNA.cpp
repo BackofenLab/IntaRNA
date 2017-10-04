@@ -34,7 +34,15 @@ using namespace IntaRNA;
 int main(int argc, char **argv){
 
 	try {
-	
+
+//		// setup default logger
+//		el::Configurations defaultConf;
+//		defaultConf.setToDefault();
+//	    // Values are always std::string
+//		defaultConf.setGlobally(el::ConfigurationType::Format, "# %level %msg");
+//	    // default logger uses default configurations
+//	    el::Loggers::reconfigureLogger("default", defaultConf);
+
 		// set overall logging style
 		el::Loggers::reconfigureAllLoggers(el::ConfigurationType::Format, std::string("# %level : %msg"));
 		// TODO setup log file

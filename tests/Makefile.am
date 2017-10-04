@@ -10,7 +10,8 @@ TESTS = runTests
 check_PROGRAMS = runTests 
 
 # test sources
-runTests_SOURCES =	catch.hpp \
+runTests_SOURCES =	\
+					catch.hpp \
 					AccessibilityConstraint_test.cpp \
 					AccessibilityFromStream_test.cpp \
 					AccessibilityBasePair_test.cpp \
@@ -26,7 +27,9 @@ runTests_SOURCES =	catch.hpp \
 					runTests.cpp
 
 # add IntaRNA lib for linking
-LIBS= -L$(top_builddir)/src/IntaRNA -lIntaRNA @LIBS@
+LIBS= 	-L$(top_builddir)/src/IntaRNA -lIntaRNA \
+		-L$(top_builddir)/src -leasylogging \
+		@LIBS@
 
 # add source include for compilation
 runTests_CXXFLAGS =	-I$(top_builddir)/src @AM_CXXFLAGS@ @CXXFLAGS@
