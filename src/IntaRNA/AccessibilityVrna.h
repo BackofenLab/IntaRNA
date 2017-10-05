@@ -142,6 +142,32 @@ protected:
 						, const size_t plFoldW
 						, const size_t plFoldL );
 
+	/**
+	 * callback function used when calling vrna_probs_window()
+	 *
+	 * This function will be called for each probability data set in the sliding
+	 * window probability computation implementation of vrna_probs_window().
+	 * The argument @a type specifies the type of probability that is passed to
+	 * this function.
+	 *
+	 * @see vrna_probs_window()
+	 *
+	 * @param pr      An array of probabilities
+	 * @param pr_size The length of the probability array
+	 * @param j       The j-position (3'-end) of the probability intervals (indexing starting with 1)
+	 * @param max     The (theoretical) maximum length of the probability array
+	 * @param type    The type of probability that is passed to this function
+	 * @param storageRT    Auxiliary data: should hold a pair(AccessibilityVrna*,double RT)
+	 *
+	 */
+	static
+	void
+	callbackForStorage(	FLT_OR_DBL    *pr,
+	                    int           pr_size,
+	                    int           j,
+	                    int           max,
+	                    unsigned int  type,
+	                    void          *storageRT);
 
 };
 

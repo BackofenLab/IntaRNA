@@ -4,6 +4,9 @@
    + INTARNA_LOG_COLORING setup for console log coloring
  * bin/IntaRNA.cpp :
    * colored log output depends on INTARNA_LOG_COLORING
+ * IntaRNA/AccessibilityVrna :
+   + callbackForStorage() : callback function to use new VRNA API
+   * fillByRNAplfold() : window-based PU computation via new VRNA API
 
 171004 Martin Mann :
  * configure.ac :

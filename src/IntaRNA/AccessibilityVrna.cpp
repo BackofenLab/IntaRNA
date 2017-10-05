@@ -256,6 +256,50 @@ fillByConstraints( const VrnaHandler &vrnaHandler
 
 ///////////////////////////////////////////////////////////////////////////////
 
+void
+AccessibilityVrna::
+callbackForStorage(FLT_OR_DBL   *pr,
+					 int          pr_size,
+					 int          j, // right 3'-end of interval (indexing starting with 1)
+					 int          max,
+					 unsigned int type,
+					 void         *data)
+{
+	// check if expected data
+	if (type & (VRNA_PROBS_WINDOW_UP | VRNA_ANY_LOOP)) {
+
+		// access the storage data
+		std::pair< AccessibilityVrna*, double > storageRT = *((std::pair< AccessibilityVrna*, double >*)data);
+		// direct data access for computation
+	    const double RT = storageRT.second;
+	    EdMatrix & edValues = storageRT.first->edValues;
+
+	    // copy unpaired data for all available interval lengths
+	    for (int l = std::min(j,std::min(pr_size,max)); l>=1; l--) {
+			// get unpaired probability
+			double prob_unpaired = pr[l];
+			// get left interval boundary index
+			int i = j - l + 1;
+			// check if zero before computing its log-value
+			if (prob_unpaired == 0.0) {
+				// ED value = ED_UPPER_BOUND
+				edValues(i-1,j-1) = ED_UPPER_BOUND;
+			} else {
+				// compute ED value = E(unstructured in [i,j]) - E_all
+				edValues(i-1,j-1) = std::max<E_type>( 0., -RT*std::log(prob_unpaired));
+			}
+	    }
+
+	} else {
+#if INTARNA_IN_DEBUG_MODE
+		LOG( DEBUG ) <<"AccessibilityVrna::callbackForStorage() : getting unexpected data for type " << type;
+#endif
+	}
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
 
 void
 AccessibilityVrna::
@@ -292,58 +336,23 @@ fillByRNAplfold( const VrnaHandler &vrnaHandler
 	}
 	sequence[length] = '\0';
 
-	double ** pup = NULL;
-    pup       =(double **)  vrna_alloc((length+1)*sizeof(double *));
-    pup[0]    =(double *)   vrna_alloc(sizeof(double)); /*I only need entry 0*/
-    pup[0][0] = (int)getMaxLength(); // length of unpaired stretch in window
+    // setup folding data
+    vrna_fold_compound_t * fold_compound = vrna_fold_compound( sequence, &curModel, VRNA_OPTION_PF | VRNA_OPTION_WINDOW );
 
-    vrna_plist_t * dpp = NULL; // ?? whatever..
-
-    vrna_exp_param_t * pf_parameters = vrna_exp_params(& curModel);
-
+    // provide access to this object to be filled by the callback
+    // and the normalized temperature for the Boltzmann weight computation
+    std::pair< AccessibilityVrna*, double > storageRT(this, vrnaHandler.getRT());
 
 	// call folding and unpaired prob calculation
-    vrna_plist_t * pl = pfl_fold_par(sequence
-    		, plFoldW // winsize
-    		, (plFoldL==0? plFoldW : std::min(plFoldW,plFoldL)) // base pair distance
-    		, 0.0 // printing probability cut-off
-    		, pup // the unpaired probabilities to be filled
-    		, &dpp
-    		, NULL // pUfp
-    		, NULL // spup
-    		, pf_parameters
-    );
+    vrna_probs_window( fold_compound, plFoldW, VRNA_PROBS_WINDOW_UP, &callbackForStorage, (void*)(&storageRT));
 
-    const double RT = vrnaHandler.getRT();
-
-    // copy data
-    for (int j=1; j<=length; j++) {
-    	for (int i=std::max(1,j-(int)(pup[0][0]+0.49));i<=j; i++) {
-			// get unpaired probability
-			double prob_unpaired = pup[j][j-i+1];
-			// check if zero before computing its log-value
-			if (prob_unpaired == 0.0) {
-				// ED value = ED_UPPER_BOUND
-				edValues(i-1,j-1) = ED_UPPER_BOUND;
-			} else {
-				// compute ED value = E(unstructured in [i,j]) - E_all
-				edValues(i-1,j-1) = std::max<E_type>( 0., -RT*std::log(prob_unpaired));
-			}
-    	}
-    }
 
     // garbage collection
-    free(pf_parameters);
-    if (pl) free(pl);
-    if (dpp) free(dpp);
-	for (int i=0; i<=length; i++) {
-		// delete allocated rows
-		if (pup[i]) free(pup[i]);
-	}
-    free(pup);
+    vrna_fold_compound_free(fold_compound);
     free(sequence);
 
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
