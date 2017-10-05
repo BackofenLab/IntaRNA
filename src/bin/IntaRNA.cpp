@@ -39,6 +39,7 @@ int main(int argc, char **argv){
 		el::Loggers::reconfigureAllLoggers(el::ConfigurationType::Format, std::string("# %level : %msg"));
 		// TODO setup log file
 		el::Loggers::reconfigureAllLoggers(el::ConfigurationType::ToFile, std::string("false"));
+		el::Loggers::reconfigureAllLoggers(el::ConfigurationType::ToStandardOutput, std::string("true"));
 		// set additional logging flags
 		el::Loggers::addFlag(el::LoggingFlag::DisableApplicationAbortOnFatalLog);
 		el::Loggers::addFlag(el::LoggingFlag::LogDetailedCrashReason);

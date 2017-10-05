@@ -180,6 +180,8 @@ AS_IF([test "x$HAVE_DOXYGEN" = "xyes"], [
 
 # enable easylogging++ performance tracking
 AM_CXXFLAGS="$AM_CXXFLAGS -DELPP_FEATURE_PERFORMANCE_TRACKING"
+# disable default log file creation
+AM_CXXFLAGS="$AM_CXXFLAGS -DELPP_NO_DEFAULT_LOG_FILE"
 
 #############################
 # COLORING SETUP
@@ -196,8 +198,8 @@ AS_IF([test x"$logColoring" = x"yes"], [
 	AC_DEFINE([INTARNA_LOG_COLORING], [1], [Enabling console log coloring])
 	AC_SUBST([INTARNA_LOG_COLORING],[1])
 ], [
-	AC_DEFINE([INTARNA_LOG_COLORING], [1], [Disabling console log coloring])
-	AC_SUBST([INTARNA_LOG_COLORING],[1])
+	AC_DEFINE([INTARNA_LOG_COLORING], [0], [Disabling console log coloring])
+	AC_SUBST([INTARNA_LOG_COLORING],[0])
 ])
 
 

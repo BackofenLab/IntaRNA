@@ -1,6 +1,12 @@
 
 171004 Martin Mann :
  * configure.ac :
+   + INTARNA_LOG_COLORING setup for console log coloring
+ * bin/IntaRNA.cpp :
+   * colored log output depends on INTARNA_LOG_COLORING
+
+171004 Martin Mann :
+ * configure.ac :
    * bump minimal ViennaRNA version to 2.4.1 (for constraint interface) 
 
 version 2.0.5
