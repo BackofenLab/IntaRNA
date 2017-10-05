@@ -1,9 +1,9 @@
 
-171004 Martin Mann :
+171005 Martin Mann :
  * configure.ac :
-   + INTARNA_LOG_COLORING setup for console log coloring
- * bin/IntaRNA.cpp :
-   * colored log output depends on INTARNA_LOG_COLORING
+   + disable-log-coloring : sets INTARNA_LOG_COLORING for console log coloring
+ * bin/IntaRNA :
+   * colored log output depends now on INTARNA_LOG_COLORING macro
  * IntaRNA/AccessibilityVrna :
    + callbackForStorage() : callback function to use new VRNA API
    * fillByRNAplfold() : window-based PU computation via new VRNA API
@@ -11,6 +11,14 @@
 171004 Martin Mann :
  * configure.ac :
    * bump minimal ViennaRNA version to 2.4.1 (for constraint interface) 
+   * bump easylogging++ version to 9.95
+   + easylogging preprocessor macros to get new version compiled
+ + src/easylogging++.cc : source code of new easylogging++ version
+ + src/easylogging++.LICENCE.txt : licence information of easylogging++
+ + lib 'easylogging' since new version comes with source file
+ * tests : adaptation to new easylogging++ version and library
+ * bin/IntaRNA : 
+   * adaptation to new easylogging++ version and library
 
 version 2.0.5
 
