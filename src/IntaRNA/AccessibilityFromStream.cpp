@@ -21,7 +21,7 @@ AccessibilityFromStream(
 	, edValues()
 	, availMaxLength( Accessibility::getMaxLength() )
 {
-	if (accConstr_ != NULL && !accConstr_->isEmpty()) {
+	if (accConstraint != NULL && !accConstraint->isEmpty()) {
 		INTARNA_NOT_IMPLEMENTED("AccessibilityFromStream: accessibility constraints not supported yet");
 	}
 	switch( inStreamType ) {
