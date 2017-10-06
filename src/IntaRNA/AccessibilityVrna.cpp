@@ -273,15 +273,20 @@ callbackForStorage(FLT_OR_DBL   *pr,
 		// direct data access for computation
 	    const double RT = storageRT.second;
 	    EdMatrix & edValues = storageRT.first->edValues;
+	    const AccessibilityConstraint & accConstr = storageRT.first->getAccConstraint();
 
 	    // copy unpaired data for all available interval lengths
+	    // but ensure interval does not contain blocked positions
+	    bool isBlocked = false;
 	    for (int l = std::min(j,std::min(pr_size,max)); l>=1; l--) {
 			// get unpaired probability
 			double prob_unpaired = pr[l];
 			// get left interval boundary index
 			int i = j - l + 1;
+			// check if interval covers a blocked position
+	    	isBlocked &= accConstr.isMarkedBlocked(i);
 			// check if zero before computing its log-value
-			if (prob_unpaired == 0.0) {
+			if (isBlocked || prob_unpaired == 0.0) {
 				// ED value = ED_UPPER_BOUND
 				edValues(i-1,j-1) = ED_UPPER_BOUND;
 			} else {
@@ -422,14 +427,14 @@ fillByRNAup( const VrnaHandler &vrnaHandler
 	// check if any constraint present
 	// compute ED values for _all_ regions [i,j]
 	for (int i=(int)seqLength; i>0; i--) {
-		bool regionUnconstrained = getAccConstraint().isUnconstrained(i-1);
+		bool regionNotBlocked = !getAccConstraint().isMarkedBlocked(i-1);
 		// compute only for region lengths (j-i+1) <= maxLength
 		for(int j=i; j<=std::min((int)seqLength,unstr_out->w);j++)
 		{
 			// extend knowledge about "unconstrainedness" for the region
-			regionUnconstrained = regionUnconstrained && (getAccConstraint().isUnconstrained(j-1));
+			regionNotBlocked = regionNotBlocked && !(getAccConstraint().isMarkedBlocked(j-1));
 			// check if unconstrained within region (i,j)
-			if (regionUnconstrained) {
+			if (regionNotBlocked) {
 				// compute overall unpaired probability
 				double prob_unpaired =
 						unstr_out->H[i][j-i]+
