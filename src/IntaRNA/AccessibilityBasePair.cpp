@@ -18,6 +18,9 @@ AccessibilityBasePair::AccessibilityBasePair(const RnaSequence& seq,
       basePairWeight(std::exp(-bpEnergy / _RT)),
       minLoopLength(minLoopLen)
 {
+	if (accConstr_ != NULL && !accConstr_->isEmpty()) {
+		INTARNA_NOT_IMPLEMENTED("AccessibilityBasePair: accessibility constraints not supported yet");
+	}
   const size_t N = seq.size();
   // create temporary matrices for ED computation
   NussinovHandler::E2dMatrix Q(N, N);

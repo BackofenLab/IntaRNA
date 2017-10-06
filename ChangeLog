@@ -1,4 +1,12 @@
 
+171006 Martin Mann :
+ * AccessibilityVrna :
+   * fillByRNAup() :
+     * BUGFIX : have to check whether region is blocked not if constrained
+ * AccessibilityBasePair :
+ * AccessibilityFromStream :
+   + "not implemented" notification if accessibility constraints given
+
 171005 Martin Mann :
  * configure.ac :
    + disable-log-coloring : sets INTARNA_LOG_COLORING for console log coloring
