@@ -12,6 +12,15 @@
    * getQ(), getQb(), getPbp(), getPu() :
      * BUGFIX : boundary checks partially wrong
      + explicit lower bound handling
+ + SeedHandlerMfe : former SeedHandler implementation for mfe-seed access
+ * SeedHandler : now abstract interface
+ * Predictor*Seed :
+   * constructor() :
+     * takes now directly a SeedHandler instance instead of a SeedConstraint
+ * CommandLineParsing :
+   + getSeedHandler() : provides the seed handler according to the user input
+   * getPredictor() :
+     * uses now getSeedHandler() to setup Predictor*Seed instances
 
 171006 Martin Mann :
  * AccessibilityVrna :

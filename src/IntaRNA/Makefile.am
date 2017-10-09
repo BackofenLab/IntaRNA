@@ -62,6 +62,7 @@ libIntaRNA_a_HEADERS =    \
 					RnaSequence.h \
 					SeedConstraint.h \
 					SeedHandler.h \
+					SeedHandlerMfe.h \
 					SeedHandlerIdxOffset.h \
 					VrnaHandler.h
 
@@ -102,8 +103,7 @@ libIntaRNA_a_SOURCES =    \
 					ReverseAccessibility.cpp \
 					RnaSequence.cpp \
 					SeedConstraint.cpp \
-					SeedHandler.cpp \
-					SeedHandlerIdxOffset.cpp \
+					SeedHandlerMfe.cpp \
 					VrnaHandler.cpp
 
 

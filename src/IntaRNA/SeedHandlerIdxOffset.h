@@ -27,15 +27,12 @@ public:
 	/**
 	 * Construction
 	 * @param energy the energy function to be used for seed prediction (already offset)
-	 * @param seedConstraint the seed constraint to be applied
+	 * @param seedHandler the seed handler to be wrapped
 	 */
-	SeedHandlerIdxOffset(
-			const InteractionEnergy & energy
-			, const SeedConstraint & seedConstraint
-			);
+	SeedHandlerIdxOffset( SeedHandler * seedHandler );
 
 	/**
-	 * destruction
+	 * destruction of this object and the wrapped seed handler
 	 */
 	virtual ~SeedHandlerIdxOffset();
 
@@ -152,8 +149,8 @@ public:
 
 protected:
 
-	//! the index shifted seed constraint
-	SeedHandler seedHandlerOriginal;
+	//! the index shifted seed handler
+	SeedHandler * seedHandlerOriginal;
 
 	//! the index shifted seed constraint
 	SeedConstraint seedConstraintOffset;
@@ -175,13 +172,11 @@ protected:
 
 
 inline
-SeedHandlerIdxOffset::SeedHandlerIdxOffset(
-		const InteractionEnergy & energy
-		, const SeedConstraint & seedConstraint
-		)
+SeedHandlerIdxOffset::
+SeedHandlerIdxOffset( SeedHandler * seedHandlerInstance )
 	:
-		seedHandlerOriginal( energy, seedConstraint )
-		, seedConstraintOffset(seedConstraint)
+		seedHandlerOriginal( seedHandlerInstance )
+		, seedConstraintOffset( seedHandlerOriginal->getConstraint() )
 		, idxOffset1(0)
 		, idxOffset2(0)
 {
@@ -192,6 +187,10 @@ SeedHandlerIdxOffset::SeedHandlerIdxOffset(
 inline
 SeedHandlerIdxOffset::~SeedHandlerIdxOffset()
 {
+	if (seedHandlerOriginal != NULL) {
+		delete seedHandlerOriginal;
+		seedHandlerOriginal = NULL;
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -211,7 +210,7 @@ size_t
 SeedHandlerIdxOffset::
 fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size_t i2max)
 {
-	return seedHandlerOriginal.fillSeed( i1min+idxOffset1, i1max+idxOffset1, i2min+idxOffset2, i2max+idxOffset2 );
+	return seedHandlerOriginal->fillSeed( i1min+idxOffset1, i1max+idxOffset1, i2min+idxOffset2, i2max+idxOffset2 );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -224,7 +223,7 @@ traceBackSeed( Interaction & interaction
 		, const size_t i2
 		)
 {
-	seedHandlerOriginal.traceBackSeed( interaction, i1+idxOffset1, i2+idxOffset2 );
+	seedHandlerOriginal->traceBackSeed( interaction, i1+idxOffset1, i2+idxOffset2 );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -234,7 +233,7 @@ E_type
 SeedHandlerIdxOffset::
 getSeedE( const size_t i1, const size_t i2 ) const
 {
-	return seedHandlerOriginal.getSeedE( i1+idxOffset1, i2+idxOffset2 );
+	return seedHandlerOriginal->getSeedE( i1+idxOffset1, i2+idxOffset2 );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -244,7 +243,7 @@ size_t
 SeedHandlerIdxOffset::
 getSeedLength1( const size_t i1, const size_t i2 ) const
 {
-	return seedHandlerOriginal.getSeedLength1( i1+idxOffset1, i2+idxOffset2 );
+	return seedHandlerOriginal->getSeedLength1( i1+idxOffset1, i2+idxOffset2 );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -254,7 +253,7 @@ size_t
 SeedHandlerIdxOffset::
 getSeedLength2( const size_t i1, const size_t i2 ) const
 {
-	return seedHandlerOriginal.getSeedLength2( i1+idxOffset1, i2+idxOffset2 );
+	return seedHandlerOriginal->getSeedLength2( i1+idxOffset1, i2+idxOffset2 );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -285,15 +284,15 @@ SeedHandlerIdxOffset::
 setOffset1( const size_t offset )
 {
 #if INTARNA_IN_DEBUG_MODE
-	if (offset >= seedHandlerOriginal.getInteractionEnergy().size1()) {
+	if (offset >= seedHandlerOriginal->getInteractionEnergy().size1()) {
 		throw std::runtime_error("SeedHandlerIdxOffset.setOffset1("+toString(offset)
-				+") offset > seq1.length "+toString(seedHandlerOriginal.getInteractionEnergy().size1()));
+				+") offset > seq1.length "+toString(seedHandlerOriginal->getInteractionEnergy().size1()));
 	}
 #endif
 	// set idx offset
 	this->idxOffset1 = offset;
 	// update ranges of seed constraint
-	seedConstraintOffset.getRanges1() = seedHandlerOriginal.getConstraint().getRanges1().shift( -(int)offset, seedHandlerOriginal.getInteractionEnergy().size1()-1-offset );
+	seedConstraintOffset.getRanges1() = seedHandlerOriginal->getConstraint().getRanges1().shift( -(int)offset, seedHandlerOriginal->getInteractionEnergy().size1()-1-offset );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -304,15 +303,15 @@ SeedHandlerIdxOffset::
 setOffset2( const size_t offset )
 {
 #if INTARNA_IN_DEBUG_MODE
-	if (offset >= seedHandlerOriginal.getInteractionEnergy().size2()) {
+	if (offset >= seedHandlerOriginal->getInteractionEnergy().size2()) {
 		throw std::runtime_error("SeedHandlerIdxOffset.setOffset2("+toString(offset)
-				+") offset > seq2.length "+toString(seedHandlerOriginal.getInteractionEnergy().size2()));
+				+") offset > seq2.length "+toString(seedHandlerOriginal->getInteractionEnergy().size2()));
 	}
 #endif
 	// set idx offset
 	this->idxOffset2 = offset;
 	// update ranges of seed constraint
-	seedConstraintOffset.getRanges2() = seedHandlerOriginal.getConstraint().getRanges2().shift( -(int)offset, seedHandlerOriginal.getInteractionEnergy().size2()-1-offset );
+	seedConstraintOffset.getRanges2() = seedHandlerOriginal->getConstraint().getRanges2().shift( -(int)offset, seedHandlerOriginal->getInteractionEnergy().size2()-1-offset );
 }
 
 ////////////////////////////////////////////////////////////////////////////

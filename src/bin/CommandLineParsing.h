@@ -18,6 +18,7 @@
 #include "IntaRNA/OutputHandler.h"
 #include "IntaRNA/Predictor.h"
 #include "IntaRNA/SeedConstraint.h"
+#include "IntaRNA/SeedHandler.h"
 #include "IntaRNA/VrnaHandler.h"
 
 using namespace IntaRNA;
@@ -154,6 +155,16 @@ public:
 	 * @return the user defined seed constraints
 	 */
 	const SeedConstraint & getSeedConstraint( const InteractionEnergy & energy ) const;
+
+	/**
+	 * Provides a newly allocated seed handler object according to the user settings
+	 *
+	 * NOTE: the calling function has to remove the returned object!
+	 *
+	 * @param energy the interaction energy handler to be used
+	 * @return a newly allocated seed handler respective the user defined seed constraints
+	 */
+	SeedHandler * getSeedHandler( const InteractionEnergy & energy ) const;
 
 	/**
 	 * Access to the set folding temperature in Celsius.

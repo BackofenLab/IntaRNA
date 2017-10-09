@@ -42,6 +42,8 @@
 #include "IntaRNA/PredictionTrackerPairMinE.h"
 #include "IntaRNA/PredictionTrackerProfileMinE.h"
 
+#include "IntaRNA/SeedHandlerMfe.h"
+
 #include "IntaRNA/OutputHandlerCsv.h"
 #include "IntaRNA/OutputHandlerIntaRNA1.h"
 #include "IntaRNA/OutputHandlerText.h"
@@ -1474,9 +1476,9 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 		// single-site mfe interactions (contain only interior loops)
 		case 'S' : {
 			switch ( predMode.val ) {
-			case 'H' :  return new PredictorMfe2dHeuristicSeed( energy, output, predTracker, getSeedConstraint( energy ) );
-			case 'M' :  return new PredictorMfe2dSeed( energy, output, predTracker, getSeedConstraint( energy ) );
-			case 'E' :  return new PredictorMfe4dSeed( energy, output, predTracker, getSeedConstraint( energy ) );
+			case 'H' :  return new PredictorMfe2dHeuristicSeed( energy, output, predTracker, getSeedHandler( energy ) );
+			case 'M' :  return new PredictorMfe2dSeed( energy, output, predTracker, getSeedHandler( energy ) );
+			case 'E' :  return new PredictorMfe4dSeed( energy, output, predTracker, getSeedHandler( energy ) );
 			}
 		} break;
 		// single-site max-prob interactions (contain only interior loops)
@@ -1598,6 +1600,19 @@ getSeedConstraint( const InteractionEnergy & energy ) const
 						);
 	}
 	return *seedConstraint;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+SeedHandler *
+CommandLineParsing::
+getSeedHandler( const InteractionEnergy & energy ) const
+{
+	// get seed constraint
+	const SeedConstraint & seedConstr = getSeedConstraint( energy );
+
+	// create new seed handler using mfe computation
+	return new SeedHandlerMfe( energy, seedConstr );
 }
 
 ////////////////////////////////////////////////////////////////////////////
