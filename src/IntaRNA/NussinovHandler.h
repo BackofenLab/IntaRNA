@@ -110,6 +110,13 @@ public:
    */
   static void getBasePairs(const size_t from, const size_t to,
       const IdxMatrix &traceback, Interaction::PairingVec &pairs);
+
+  /***
+   * Prints the given matrix to stream. Mainly for debug.
+   * @param out the stream to write to
+   * @param M the matrix to print
+   */
+  static void printMatrix( std::ostream & out, const NussinovHandler::E2dMatrix &M);
 };
 
 }  // namespace IntaRNA
