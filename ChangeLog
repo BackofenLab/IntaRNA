@@ -1,4 +1,18 @@
 
+171009 Martin Mann :
+ * tests/*BasePair_test :
+   * explicit use of std::abs (should fix test error of github issue #91)
+   * BUGFIX: test values wrong (were derived from rounded values)
+     -> fixes github issue #91 (thanks to @sjannielefevre) 
+ * AccessibilityBasePair :
+   * constructor() :
+     + RT sanity check to avoid division by zero
+ * NussinovHandler :
+   + printMatrix() : utility function for debug to see matrix content
+   * getQ(), getQb(), getPbp(), getPu() :
+     * BUGFIX : boundary checks partially wrong
+     + explicit lower bound handling
+
 171006 Martin Mann :
  * AccessibilityVrna :
    * fillByRNAup() :
