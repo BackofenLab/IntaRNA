@@ -130,7 +130,7 @@ dependencies:
     - libboost_program_options
     - libboost_filesystem
     - libboost_system
-- [Vienna RNA package](http://www.tbi.univie.ac.at/RNA/) version >= 2.3.0
+- [Vienna RNA package](http://www.tbi.univie.ac.at/RNA/) version >= 2.4.1
 - if [cloning from github](#instgithub): GNU autotools (automake, autoconf, ..)
 
 Also used by IntaRNA, but already part of the source code distribution (and thus
