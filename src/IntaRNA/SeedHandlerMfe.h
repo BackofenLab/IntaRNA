@@ -233,6 +233,11 @@ SeedHandlerMfe::SeedHandlerMfe(
 		, offset1(0)
 		, offset2(0)
 {
+#if INTARNA_IN_DEBUG_MODE
+	if ( ! seedConstraint.getExplicitSeeds().empty()) {
+		LOG(WARNING) <<"explicit seeds definitions not supported by mfe-seed handler (and thus ignored)";
+	}
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////

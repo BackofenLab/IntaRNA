@@ -1,4 +1,8 @@
 
+171010 Martin Mann :
+ * README.md :
+   + explicit seed description
+
 171009 Martin Mann :
  * tests/*BasePair_test :
    * explicit use of std::abs (should fix test error of github issue #91)
@@ -21,6 +25,17 @@
    + getSeedHandler() : provides the seed handler according to the user input
    * getPredictor() :
      * uses now getSeedHandler() to setup Predictor*Seed instances
+   + '--seedTQ' argument for explicit seed encodings
+ * SeedHandlerMfe() :
+   * constructor() : sanity check in debug mode 
+ + SeedHandlerExplicit() : seed handler for explicitly defined seed interactions
+   + checkSeedEncoding() : tests sanity of seed encoding
+   + SeedData() : data structure that parses and holds explicit seed information
+ * SeedConstraint :
+   + explicitSeeds + getter : explicit seed encodings to be used
+ + tests/SeedHandlerExplicit :
+   + test checkSeedEncoding()
+   + test SeedData() parsing
 
 171006 Martin Mann :
  * AccessibilityVrna :

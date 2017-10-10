@@ -24,6 +24,7 @@ runTests_SOURCES =	\
 					NussinovHandler_test.cpp \
 					RnaSequence_test.cpp \
 					OutputHandlerRangeOnly_test.cpp \
+					SeedHandlerExplicit_test.cpp \
 					runTests.cpp
 
 # add IntaRNA lib for linking

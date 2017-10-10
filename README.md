@@ -71,6 +71,7 @@ The following topics are covered by this documentation:
   - [Prediction modes, their features and emulated tools](#predModes)
   - [Interaction restrictions](#interConstr)
   - [Seed constraints](#seed)
+  - [Explicit seed input](#seedExplicit)
   - [Output modes](#outmodes)
   - [Suboptimal RNA-RNA interaction prediction and output restrictions](#subopts)
   - [Energy parameters and temperature](#energy)
@@ -295,6 +296,7 @@ to balance predication quality and runtime requirement. Furthermore, it is
 possible to define 
 [interaction restrictions](#interConstr),
 [seed constraints](#seed), 
+[explicit seed information](#seedExplicit), 
 [output modes](#outmodes),
 [suboptimal enumeration](#subopts), 
 [energy parameters, temperature](#energy),
@@ -374,6 +376,7 @@ of equal length *n*.
 | Time complexity (prediction only) | O(*n*^2) | O(*n*^4) | O(*n*^4) |
 | Space complexity | O(*n*^2) | O(*n*^2) | O(*n*^4) |
 | [Seed constraint](#seed) | x | x | x |
+| [Explicit seeds](#seedExplicit) | x | x | x |
 | No [seed constraint](#seed) | x | x | x |
 | Minimum free energy interaction | not guaranteed | x | x |
 | Overlapping [suboptimal interactions](#subopts) | x | x | x |
@@ -487,6 +490,34 @@ Seed constraint usage can be globally disabled using the `--noSeed` flag.
 
 
 
+<br /><br />
+<a name="seedExplicit" />
+## Explicit seed input
+
+Some experiments provide hints or explicit knowledge about the seed or
+even provide details about some intermolecular base pairs formed between two RNAs.
+This information can be incorporated into IntaRNA predictions by providing
+*explicit seed information*. To this end, the `--seedQT` parameter can be used.
+It takes a comma-separated list of seed string encodings in the format 
+`startTbpsT&startQbpsQ`, which is in the same format as the IntaRNA `hybridDB`
+output (see below), i.e. e.g. `4|||.|&7||.||` to encode a seed interaction like 
+the following 
+```bash
+target
+             4    8
+             |    |
+      5'-AAAC    C UGGUUUGG-3'
+             AC C C
+             || | |
+             UG G G
+      3'-GGUU  U   CCCACAAA-5'
+             |    |
+            11    7
+query
+```
+If several or alternative seeds are known, you can provide all as a 
+comma-separated list and IntaRNA will consider all interactions that cover at
+least one of them.
 
 
 <br /><br />

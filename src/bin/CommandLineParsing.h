@@ -19,6 +19,7 @@
 #include "IntaRNA/Predictor.h"
 #include "IntaRNA/SeedConstraint.h"
 #include "IntaRNA/SeedHandler.h"
+#include "IntaRNA/SeedHandlerExplicit.h"
 #include "IntaRNA/VrnaHandler.h"
 
 using namespace IntaRNA;
@@ -397,6 +398,8 @@ protected:
 
 	//! whether or not a seed is to be required for an interaction or not
 	bool noSeedRequired;
+	//! explicit seed encodings (optional)
+	std::string seedTQ;
 	//! number of base pairs in seed
 	NumberParameter<int> seedBP;
 	//! max overall unpaired in seed
@@ -576,6 +579,12 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_tRegion(const std::string & value);
+
+	/**
+	 * Validates the explicit seed argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_seedTQ(const std::string & value);
 
 	/**
 	 * Validates the seedBP argument.
@@ -1150,6 +1159,37 @@ inline
 void CommandLineParsing::validate_tRegion(const std::string & value) {
 	// check and store region information
 	validateRegion( "tRegion", value );
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_seedTQ(const std::string & value) {
+	if (!value.empty()) {
+		// split by commas
+		size_t p2 = 0;
+		size_t p1 = value.find_first_not_of(',',p2);
+		size_t non_empty_seeds = 0;
+		// do for all substrings
+		while( p1 != std::string::npos ) {
+			// find end of current substring
+			p2 = value.find_first_of(',', p1 + 1);
+			const size_t length = (p2 == std::string::npos ? value.size() : p2) - p1;
+			// check substring
+			std::string errMsg = SeedHandlerExplicit::checkSeedEncoding( value.substr(p1, length));
+			non_empty_seeds++;
+			if (!errMsg.empty()) {
+				LOG(ERROR) <<"explicit seed encoding '" <<value.substr(p1, length) <<"' : "<<errMsg;
+				parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
+			}
+			// update p1
+			p1 = value.find_first_not_of(',',p2);
+		}
+		if (non_empty_seeds == 0) {
+			LOG(ERROR) <<"explicit seed encoding '" <<value <<"' does not contain any seed information";
+			parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
+		}
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////
