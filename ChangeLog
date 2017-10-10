@@ -2,6 +2,12 @@
 171010 Martin Mann :
  * README.md :
    + explicit seed description
+ * AccessibilityVrna :
+   * fillByConstraints() :
+   * fillByRNAup() :
+   * callbackForStorage() :
+     * BUGFIX : only check for block-constraint for region ends (is allowed to
+       contain a blocked subregion)
 
 171009 Martin Mann :
  * tests/*BasePair_test :

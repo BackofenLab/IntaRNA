@@ -234,19 +234,17 @@ fillByConstraints( const VrnaHandler &vrnaHandler
 	// compute ED values for _all_ regions [i,j]
 	for(int i=0; i<seq_len; i++)
 	{
-		bool regionUnconstrained = getAccConstraint().isUnconstrained(i);
+		const bool leftSideBlocked = getAccConstraint().isMarkedBlocked(i);
 		// compute only for region lengths (j-i+1) <= maxLength
 		for(int j=i; j<std::min(seq_len,i+(int)getMaxLength()); j++)
 		{
-			// extend knowledge about "unconstrainedness" for the region
-			regionUnconstrained = regionUnconstrained && getAccConstraint().isUnconstrained(j);
-			// check if unconstrained within region (i,j)
-			if (regionUnconstrained) {
-				// compute ED value = E(unstructured in [i,j]) - E_all
-				edValues(i,j) = std::max<E_type>(0.,(calc_ensemble_free_energy(i,j, partFoldParams) - E_all));
-			} else {
+			// check if ends are blocked
+			if (leftSideBlocked || getAccConstraint().isMarkedBlocked(j)) {
 				// region covers constrained elements --> set to upper bound
 				edValues(i,j) = ED_UPPER_BOUND;
+			} else {
+				// compute ED value = E(unstructured in [i,j]) - E_all
+				edValues(i,j) = std::max<E_type>(0.,(calc_ensemble_free_energy(i,j, partFoldParams) - E_all));
 			}
 
 		}
@@ -277,16 +275,15 @@ callbackForStorage(FLT_OR_DBL   *pr,
 
 	    // copy unpaired data for all available interval lengths
 	    // but ensure interval does not contain blocked positions
-	    bool isBlocked = false;
+	    const bool rightEndBlocked = accConstr.isMarkedBlocked(j-1);
 	    for (int l = std::min(j,std::min(pr_size,max)); l>=1; l--) {
 			// get unpaired probability
 			double prob_unpaired = pr[l];
 			// get left interval boundary index
 			int i = j - l + 1;
-			// check if interval covers a blocked position
-	    	isBlocked &= accConstr.isMarkedBlocked(i);
+			// check if interval ends are blocked positions
 			// check if zero before computing its log-value
-			if (isBlocked || prob_unpaired == 0.0) {
+			if (rightEndBlocked || accConstr.isMarkedBlocked(i-1) || prob_unpaired == 0.0) {
 				// ED value = ED_UPPER_BOUND
 				edValues(i-1,j-1) = ED_UPPER_BOUND;
 			} else {
@@ -427,14 +424,15 @@ fillByRNAup( const VrnaHandler &vrnaHandler
 	// check if any constraint present
 	// compute ED values for _all_ regions [i,j]
 	for (int i=(int)seqLength; i>0; i--) {
-		bool regionNotBlocked = !getAccConstraint().isMarkedBlocked(i-1);
+		const bool leftSideBlocked = getAccConstraint().isMarkedBlocked(i-1);
 		// compute only for region lengths (j-i+1) <= maxLength
 		for(int j=i; j<=std::min((int)seqLength,unstr_out->w);j++)
 		{
-			// extend knowledge about "unconstrainedness" for the region
-			regionNotBlocked = regionNotBlocked && !(getAccConstraint().isMarkedBlocked(j-1));
-			// check if unconstrained within region (i,j)
-			if (regionNotBlocked) {
+			// check if region ends are blocked
+			if (leftSideBlocked || getAccConstraint().isMarkedBlocked(j-1)) {
+				// region ends blocked --> set to upper bound
+				edValues(i-1,j-1) = ED_UPPER_BOUND;
+			} else {
 				// compute overall unpaired probability
 				double prob_unpaired =
 						unstr_out->H[i][j-i]+
@@ -449,10 +447,6 @@ fillByRNAup( const VrnaHandler &vrnaHandler
 					// compute ED value = E(unstructured in [i,j]) - E_all
 					edValues(i-1,j-1) = std::max<E_type>( 0., -RT*std::log(prob_unpaired));
 				}
-
-			} else {
-				// region covers constrained elements --> set to upper bound
-				edValues(i-1,j-1) = ED_UPPER_BOUND;
 			}
 		}
 	}
