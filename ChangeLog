@@ -1,4 +1,79 @@
 
+version 2.1.0
+
+171010 Martin Mann :
+ * README.md :
+   + explicit seed description
+ * AccessibilityVrna :
+   * fillByConstraints() :
+   * fillByRNAup() :
+   * callbackForStorage() :
+     * BUGFIX : only check for block-constraint for region ends (is allowed to
+       contain a blocked subregion)
+
+171009 Martin Mann :
+ * tests/*BasePair_test :
+   * explicit use of std::abs (should fix test error of github issue #91)
+   * BUGFIX: test values wrong (were derived from rounded values)
+     -> fixes github issue #91 (thanks to @sjannielefevre) 
+ * AccessibilityBasePair :
+   * constructor() :
+     + RT sanity check to avoid division by zero
+ * NussinovHandler :
+   + printMatrix() : utility function for debug to see matrix content
+   * getQ(), getQb(), getPbp(), getPu() :
+     * BUGFIX : boundary checks partially wrong
+     + explicit lower bound handling
+ + SeedHandlerMfe : former SeedHandler implementation for mfe-seed access
+ * SeedHandler : now abstract interface
+ * Predictor*Seed :
+   * constructor() :
+     * takes now directly a SeedHandler instance instead of a SeedConstraint
+ * CommandLineParsing :
+   + getSeedHandler() : provides the seed handler according to the user input
+   * getPredictor() :
+     * uses now getSeedHandler() to setup Predictor*Seed instances
+   + '--seedTQ' argument for explicit seed encodings
+ * SeedHandlerMfe() :
+   * constructor() : sanity check in debug mode 
+ + SeedHandlerExplicit() : seed handler for explicitly defined seed interactions
+   + checkSeedEncoding() : tests sanity of seed encoding
+   + SeedData() : data structure that parses and holds explicit seed information
+ * SeedConstraint :
+   + explicitSeeds + getter : explicit seed encodings to be used
+ + tests/SeedHandlerExplicit :
+   + test checkSeedEncoding()
+   + test SeedData() parsing
+
+171006 Martin Mann :
+ * AccessibilityVrna :
+   * fillByRNAup() :
+     * BUGFIX : have to check whether region is blocked not if constrained
+ * AccessibilityBasePair :
+ * AccessibilityFromStream :
+   + "not implemented" notification if accessibility constraints given
+
+171005 Martin Mann :
+ * configure.ac :
+   + disable-log-coloring : sets INTARNA_LOG_COLORING for console log coloring
+ * bin/IntaRNA :
+   * colored log output depends now on INTARNA_LOG_COLORING macro
+ * IntaRNA/AccessibilityVrna :
+   + callbackForStorage() : callback function to use new VRNA API
+   * fillByRNAplfold() : window-based PU computation via new VRNA API
+
+171004 Martin Mann :
+ * configure.ac :
+   * bump minimal ViennaRNA version to 2.4.1 (for constraint interface) 
+   * bump easylogging++ version to 9.95
+   + easylogging preprocessor macros to get new version compiled
+ + src/easylogging++.cc : source code of new easylogging++ version
+ + src/easylogging++.LICENCE.txt : licence information of easylogging++
+ + lib 'easylogging' since new version comes with source file
+ * tests : adaptation to new easylogging++ version and library
+ * bin/IntaRNA : 
+   * adaptation to new easylogging++ version and library
+
 version 2.0.5
 
 170926 Martin Mann :

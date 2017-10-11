@@ -10,10 +10,10 @@ PredictorMfe2dSeed(
 		const InteractionEnergy & energy
 		, OutputHandler & output
 		, PredictionTracker * predTracker
-		, const SeedConstraint & seedConstraint )
+		, SeedHandler * seedHandlerInstance )
  :
 	PredictorMfe2d(energy,output,predTracker)
-	, seedHandler(energy,seedConstraint)
+	, seedHandler(seedHandlerInstance)
 	, hybridE_pq_seed()
 {
 	assert( seedHandler.getConstraint().getBasePairs() > 1 );

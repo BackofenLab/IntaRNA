@@ -71,7 +71,7 @@ E_type
 NussinovHandler::getQ(const size_t i, const size_t j, const RnaSequence &seq,
     const E_type bpWeight, const size_t minLoopLength,
     NussinovHandler::E2dMatrix &Q, NussinovHandler::E2dMatrix &Qb) {
-  if (i > j || i < 0 || j >= seq.size() || i + minLoopLength >= j) {
+  if (i > j || j >= seq.size()) {
     return 1.0;
   }
   E_type &ret = Q(i, j);
@@ -80,9 +80,9 @@ NussinovHandler::getQ(const size_t i, const size_t j, const RnaSequence &seq,
     return ret;
   }
   // Else compute Q
-  ret = getQ(i, j - 1, seq, bpWeight, minLoopLength, Q, Qb);
+  ret = (j>0?getQ(i, j - 1, seq, bpWeight, minLoopLength, Q, Qb):1.0);
   for (size_t k = i; k + minLoopLength < j; ++k) {
-      ret += (getQ(i, k - 1, seq, bpWeight, minLoopLength, Q, Qb) *
+      ret += ( (k>0?getQ(i, k - 1, seq, bpWeight, minLoopLength, Q, Qb):1.0) *
               getQb(k, j, seq, bpWeight, minLoopLength, Q, Qb));
   }
   return ret;
@@ -93,7 +93,10 @@ E_type
 NussinovHandler::getQb(const size_t i, const size_t j, const RnaSequence &seq,
     const E_type bpWeight, const size_t minLoopLength,
     NussinovHandler::E2dMatrix &Q, NussinovHandler::E2dMatrix &Qb) {
-  if (i > j || i < 0 || j >= seq.size() || i + minLoopLength >= j) {
+  if (j >= seq.size()) {
+    return 1.0;
+  }
+  if (i + minLoopLength >= j) {
     return 0.0;
   }
   E_type &ret = Qb(i, j);
@@ -105,7 +108,7 @@ NussinovHandler::getQb(const size_t i, const size_t j, const RnaSequence &seq,
   if (RnaSequence::areComplementary(seq, seq, i, j)) {
     ret = getQ(i + 1, j - 1, seq, bpWeight, minLoopLength, Q, Qb) * bpWeight;
   } else {
-    ret = 0;
+    ret = 0.0;
   }
   return ret;
 }
@@ -116,7 +119,7 @@ NussinovHandler::getPbp(const size_t i, const size_t j, const RnaSequence &seq,
     const E_type bpWeight, const size_t minLoopLength,
     NussinovHandler::E2dMatrix &Q, NussinovHandler::E2dMatrix &Qb,
     NussinovHandler::P2dMatrix &Ppb) {
-  if (i > j || i < 0 || j >= seq.size() || i + minLoopLength >= j) {
+  if (j >= seq.size() || i + minLoopLength >= j) {
     return 0.0;
   }
   P_type &ret = Ppb(i, j);
@@ -126,12 +129,12 @@ NussinovHandler::getPbp(const size_t i, const size_t j, const RnaSequence &seq,
   }
   // Else compute Pbp
   ret = (getQb(i, j, seq, bpWeight, minLoopLength, Q, Qb) *
-         getQ(0, i - 1, seq, bpWeight, minLoopLength, Q, Qb) *
+         (i>0?getQ(0, i - 1, seq, bpWeight, minLoopLength, Q, Qb):1.0) *
          getQ(j + 1, seq.size() - 1, seq, bpWeight, minLoopLength, Q, Qb) /
          getQ(0, seq.size() - 1, seq, bpWeight, minLoopLength, Q, Qb));
   for (size_t p = 0; p < i; ++p) {
     for (size_t q = j + 1; q < seq.size(); ++q) {
-      if (RnaSequence::areComplementary(seq, seq, p, q)) {
+      if (p+minLoopLength < q && RnaSequence::areComplementary(seq, seq, p, q)) {
         ret += (bpWeight *
                 getPbp(p, q, seq, bpWeight, minLoopLength, Q, Qb, Ppb) *
                 getQ(p + 1, i - 1, seq, bpWeight, minLoopLength, Q, Qb) *
@@ -150,7 +153,7 @@ NussinovHandler::getPu(const size_t i, const size_t j, const RnaSequence &seq,
     const E_type bpWeight, const size_t minLoopLength,
     NussinovHandler::E2dMatrix &Q, NussinovHandler::E2dMatrix &Qb,
     NussinovHandler::P2dMatrix &Pbp, NussinovHandler::P2dMatrix &Pu) {
-  if (i > j || i < 0 || j >= seq.size() || i + minLoopLength >= j) {
+  if (i > j || j >= seq.size()) {
     return 0.0;
   }
   P_type &ret = Pu(i, j);
@@ -159,12 +162,12 @@ NussinovHandler::getPu(const size_t i, const size_t j, const RnaSequence &seq,
     return ret;
   }
   // Else compute Pu
-  ret = (getQ(0, i - 1, seq, bpWeight, minLoopLength, Q, Qb) *
+  ret = ((i>0?getQ(0, i - 1, seq, bpWeight, minLoopLength, Q, Qb):1.0) *
          getQ(j + 1, seq.size() - 1, seq, bpWeight, minLoopLength, Q, Qb) /
          getQ(0, seq.size() - 1, seq, bpWeight, minLoopLength, Q, Qb));
   for (size_t p = 0; p < i; ++p) {
     for (size_t q = j + 1; q < seq.size(); ++q) {
-      if (RnaSequence::areComplementary(seq, seq, p, q)) {
+      if (p+minLoopLength<q && RnaSequence::areComplementary(seq, seq, p, q)) {
         ret += (bpWeight *
                 getPbp(p, q, seq, bpWeight, minLoopLength, Q, Qb, Pbp) *
                 getQ(p + 1, i - 1, seq, bpWeight, minLoopLength, Q, Qb) *
@@ -174,6 +177,25 @@ NussinovHandler::getPu(const size_t i, const size_t j, const RnaSequence &seq,
     }
   }
   return ret;
+}
+
+void
+NussinovHandler::
+printMatrix( std::ostream & out, const NussinovHandler::E2dMatrix &M)
+{
+    std::cout <<"\n\n########\n";
+    for (int i =0; i<M.size1(); i++) {
+    	std::cout <<(i);
+    	for (int j=0; j <M.size2(); j++) {
+    		if (j<i) {
+    			std::cout <<" ---";
+    		} else {
+    			std::cout <<" "<<M(i,j);
+    		}
+    	}
+    	std::cout <<std::endl;
+    }
+    std::cout <<"########\n";
 }
 
 

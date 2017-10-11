@@ -35,6 +35,7 @@ public:
 	 * @param maxED maximal ED value a seed is allowed to have for each subsequence
 	 * @param ranges1 the index ranges of seq1 to be searched for seeds
 	 * @param ranges2reversed the index reversed ranges of seq2 to be searched for seeds
+	 * @param explicitSeeds the encodings of explicit seed interactions to be used
 	 */
 	SeedConstraint(  const size_t bp
 				, const size_t maxUnpairedOverall
@@ -44,6 +45,7 @@ public:
 				, const E_type maxED
 				, const IndexRangeList & ranges1
 				, const IndexRangeList & ranges2reversed
+				, const std::string & explicitSeeds
 				);
 
 	virtual ~SeedConstraint();
@@ -134,6 +136,13 @@ public:
 	getRanges2() const;
 
 	/**
+	 * Access to the explicit seed encodings to be used for prediction.
+	 * @return the provided explicit seed encodings
+	 */
+	const std::string &
+	getExplicitSeeds() const;
+
+	/**
 	 * Index ranges in seq1 to be searched for seeds or empty if all indices
 	 * are to be considered.
 	 * @return index ranges to be searched or empty list if all indices relevant
@@ -148,6 +157,13 @@ public:
 	 */
 	IndexRangeList &
 	getRanges2();
+
+	/**
+	 * Access to the explicit seed encodings to be used for prediction.
+	 * @return the provided explicit seed encodings
+	 */
+	std::string &
+	getExplicitSeeds();
 
 	/**
 	 * Prints the seed constraint details to stream
@@ -183,6 +199,9 @@ protected:
 	//! the index ranges of seq2 to be searched for seeds
 	IndexRangeList ranges2;
 
+	//! the string encoding of the explicit seed interactions to be used
+	std::string explicitSeeds;
+
 };
 
 
@@ -200,6 +219,7 @@ SeedConstraint::SeedConstraint(
 		, const E_type maxED_
 		, const IndexRangeList & ranges1
 		, const IndexRangeList & ranges2reversed
+		, const std::string & explicitSeeds
 		)
  :
 	  bp(bp_)
@@ -210,6 +230,7 @@ SeedConstraint::SeedConstraint(
 	, maxED(maxED_)
 	, ranges1(ranges1)
 	, ranges2(ranges2reversed)
+	, explicitSeeds(explicitSeeds)
 {
 	if (bp < 2) throw std::runtime_error("SeedConstraint() : base pair number ("+toString(bp)+") < 2");
 }
@@ -326,6 +347,24 @@ IndexRangeList &
 SeedConstraint::
 getRanges2() {
 	return ranges2;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+inline
+const std::string &
+SeedConstraint::
+getExplicitSeeds() const {
+	return explicitSeeds;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+inline
+std::string &
+SeedConstraint::
+getExplicitSeeds() {
+	return explicitSeeds;
 }
 
 /////////////////////////////////////////////////////////////////////////////

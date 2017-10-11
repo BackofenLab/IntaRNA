@@ -9,13 +9,14 @@ AUTOMAKE_OPTIONS = std-options subdir-objects
 
 AM_DEFAULT_SOURCE_EXT = .cpp
 
+###############################################################################
+
+# the programs to be build
+bin_PROGRAMS = IntaRNA
 
 ###############################################################################
 # THE INTARNA BINARY
 ###############################################################################
-
-# the program to build
-bin_PROGRAMS = IntaRNA
 
 # generated intaRNA sources 
 nodist_IntaRNA_SOURCES = 	\
@@ -23,13 +24,12 @@ nodist_IntaRNA_SOURCES = 	\
 					IntaRNA/intarna_config.h
 
 # intaRNA sources
-IntaRNA_SOURCES =	\
-					../easylogging++.h \
+IntaRNA_SOURCES =	IntaRNA.cpp \
 					CommandLineParsing.h \
-					CommandLineParsing.cpp \
-					IntaRNA.cpp
+					CommandLineParsing.cpp
 					
-IntaRNA_LDADD =  $(top_builddir)/src/IntaRNA/libIntaRNA.a
+IntaRNA_LDADD = 	$(top_builddir)/src/IntaRNA/libIntaRNA.a \
+					$(top_builddir)/src/libeasylogging.a
 
 ###############################################################################
 

@@ -1,20 +1,20 @@
 
-#include "IntaRNA/SeedHandler.h"
+#include "IntaRNA/SeedHandlerMfe.h"
 
 namespace IntaRNA {
 
 //////////////////////////////////////////////////////////////////////////
 
 size_t
-SeedHandler::
+SeedHandlerMfe::
 fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size_t i2max)
 {
 
 #if INTARNA_IN_DEBUG_MODE
-	if ( i1min > i1max ) throw std::runtime_error("SeedHandler::fillSeed: i1min("+toString(i1min)+") > i1max("+toString(i1max)+")");
-	if ( i2min > i2max ) throw std::runtime_error("SeedHandler::fillSeed: i2min("+toString(i2min)+") > i2max("+toString(i2max)+")");
-	if ( i1max > energy.size1() ) throw std::runtime_error("SeedHandler::fillSeed: i1max("+toString(i1max)+") > energy.size1("+toString(energy.size1())+")");
-	if ( i2max > energy.size2() ) throw std::runtime_error("SeedHandler::fillSeed: i2max("+toString(i2max)+") > energy.size2("+toString(energy.size2())+")");
+	if ( i1min > i1max ) throw std::runtime_error("SeedHandlerMfe::fillSeed: i1min("+toString(i1min)+") > i1max("+toString(i1max)+")");
+	if ( i2min > i2max ) throw std::runtime_error("SeedHandlerMfe::fillSeed: i2min("+toString(i2min)+") > i2max("+toString(i2max)+")");
+	if ( i1max > energy.size1() ) throw std::runtime_error("SeedHandlerMfe::fillSeed: i1max("+toString(i1max)+") > energy.size1("+toString(energy.size1())+")");
+	if ( i2max > energy.size2() ) throw std::runtime_error("SeedHandlerMfe::fillSeed: i2max("+toString(i2max)+") > energy.size2("+toString(energy.size2())+")");
 #endif
 
 	// TODO : if (umax==0) apply local alignment/exact match search based on sequence only
@@ -196,7 +196,7 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 //////////////////////////////////////////////////////////////////////////
 
 void
-SeedHandler::
+SeedHandlerMfe::
 traceBackSeed( Interaction & interaction
 		, const size_t i1_
 		, const size_t i2_

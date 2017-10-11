@@ -34,16 +34,19 @@ using namespace IntaRNA;
 int main(int argc, char **argv){
 
 	try {
-	
+
 		// set overall logging style
 		el::Loggers::reconfigureAllLoggers(el::ConfigurationType::Format, std::string("# %level : %msg"));
 		// TODO setup log file
 		el::Loggers::reconfigureAllLoggers(el::ConfigurationType::ToFile, std::string("false"));
+		el::Loggers::reconfigureAllLoggers(el::ConfigurationType::ToStandardOutput, std::string("true"));
 		// set additional logging flags
-		el::Loggers::addFlag(el::LoggingFlag::ColoredTerminalOutput);
 		el::Loggers::addFlag(el::LoggingFlag::DisableApplicationAbortOnFatalLog);
 		el::Loggers::addFlag(el::LoggingFlag::LogDetailedCrashReason);
 		el::Loggers::addFlag(el::LoggingFlag::AllowVerboseIfModuleNotSpecified);
+#if INTARNA_LOG_COLORING
+		el::Loggers::addFlag(el::LoggingFlag::ColoredTerminalOutput);
+#endif
 
 		// setup logging with given parameters
 		START_EASYLOGGINGPP(argc, argv);

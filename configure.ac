@@ -2,13 +2,13 @@
 
 AC_PREREQ([2.65])
 # 5 argument version only available with aclocal >= 2.64
-AC_INIT( [IntaRNA], [2.0.5], [], [intaRNA], [http://www.bioinf.uni-freiburg.de] )
+AC_INIT( [IntaRNA], [2.1.0], [], [intaRNA], [http://www.bioinf.uni-freiburg.de] )
 
 
 # minimal required version of the boost library 
 BOOST_REQUIRED_VERSION=1.50.0
 # minimal required version of the Vienna RNA library
-VRNA_REQUIRED_VERSION=2.3.0
+VRNA_REQUIRED_VERSION=2.4.1
 
 
 AC_CANONICAL_HOST
@@ -175,8 +175,36 @@ AS_IF([test "x$HAVE_DOXYGEN" = "xyes"], [
 ])
 
 ###############################################################################
+# EASYLOGGING++
 ###############################################################################
 
+# enable easylogging++ performance tracking
+AM_CXXFLAGS="$AM_CXXFLAGS -DELPP_FEATURE_PERFORMANCE_TRACKING"
+# disable default log file creation
+AM_CXXFLAGS="$AM_CXXFLAGS -DELPP_NO_DEFAULT_LOG_FILE"
+
+#############################
+# COLORING SETUP
+#############################
+
+AC_MSG_CHECKING([whether to enable coloring of console log output])
+logColoring=yes
+AC_ARG_ENABLE([log-coloring],
+	[AS_HELP_STRING([--disable-log-coloring],
+	    [disable console log coloring (def=enabled)])],
+  	[logColoring="$enableval"])
+AC_MSG_RESULT([$logColoring])
+AS_IF([test x"$logColoring" = x"yes"], [
+	AC_DEFINE([INTARNA_LOG_COLORING], [1], [Enabling console log coloring])
+	AC_SUBST([INTARNA_LOG_COLORING],[1])
+], [
+	AC_DEFINE([INTARNA_LOG_COLORING], [0], [Disabling console log coloring])
+	AC_SUBST([INTARNA_LOG_COLORING],[0])
+])
+
+
+
+###############################################################################
 
 ###############################################################################
 # BOOST CHECK

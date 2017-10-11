@@ -42,6 +42,8 @@
 #include "IntaRNA/PredictionTrackerPairMinE.h"
 #include "IntaRNA/PredictionTrackerProfileMinE.h"
 
+#include "IntaRNA/SeedHandlerMfe.h"
+
 #include "IntaRNA/OutputHandlerCsv.h"
 #include "IntaRNA/OutputHandlerIntaRNA1.h"
 #include "IntaRNA/OutputHandlerText.h"
@@ -95,6 +97,7 @@ CommandLineParsing::CommandLineParsing()
 	tRegion(),
 
 	noSeedRequired(false),
+	seedTQ(""),
 	seedBP(2,20,7),
 	seedMaxUP(0,20,0),
 	seedQMaxUP(-1,20,-1),
@@ -276,6 +279,10 @@ CommandLineParsing::CommandLineParsing()
 	opts_seed.add_options()
 	    ("noSeed", "if present, no seed is enforced within the predicted interactions")
 
+		("seedTQ"
+			, value<std::string>(&(seedTQ))
+				->notifier(boost::bind(&CommandLineParsing::validate_seedTQ,this,_1))
+			, std::string("comma separated list of explicit seed base pair encoding(s) in the format startTbpsT&startQbpsQ, e.g. '3|||.|&7||.||', where startT/Q are the indices of the 5' seed ends in target/query sequence and 'bps' the dot-bar base pair encodings. This disables all other seed constraints and seed identification.").c_str())
 		("seedBP"
 			, value<int>(&(seedBP.val))
 				->default_value(seedBP.def)
@@ -581,6 +588,7 @@ parse(int argc, char** argv)
 			noSeedRequired = vm.count("noSeed") > 0;
 			if (noSeedRequired) {
 				// input sanity check : maybe seed constraints defined -> warn
+				if (!seedTQ.empty()) LOG(INFO) <<"no seed constraint wanted, but explicit seedTQ provided (will be ignored)";
 				if (seedBP.val != seedBP.def) LOG(INFO) <<"no seed constraint wanted, but seedBP provided (will be ignored)";
 				if (seedMaxUP.val != seedMaxUP.def) LOG(INFO) <<"no seed constraint wanted, but seedMaxUP provided (will be ignored)";
 				if (seedQMaxUP.val != seedQMaxUP.def) LOG(INFO) <<"no seed constraint wanted, but seedQMaxUP provided (will be ignored)";
@@ -619,6 +627,22 @@ parse(int argc, char** argv)
 					if (target.at(i).size() < seedBP.val) {
 						throw error("length of target sequence "+toString(i+1)+" is below minimal number of seed base pairs (seedBP="+toString(seedBP.val)+")");
 					}
+				}
+
+				// check for explicit seed constraints
+				if (!seedTQ.empty()) {
+					if (target.size()>1 || query.size() > 1) {
+						throw error("explicit seed definition only for single query/target available");
+					}
+					// input sanity check : maybe seed constraints defined -> warn
+					if (seedBP.val != seedBP.def) LOG(INFO) <<"explicit seeds defined, but seedBP provided (will be ignored)";
+					if (seedMaxUP.val != seedMaxUP.def) LOG(INFO) <<"explicit seeds defined, but seedMaxUP provided (will be ignored)";
+					if (seedQMaxUP.val != seedQMaxUP.def) LOG(INFO) <<"explicit seeds defined, but seedQMaxUP provided (will be ignored)";
+					if (seedTMaxUP.val != seedTMaxUP.def) LOG(INFO) <<"explicit seeds defined, but seedTMaxUP provided (will be ignored)";
+					if (seedMaxE.val != seedMaxE.def) LOG(INFO) <<"explicit seeds defined, but seedMaxE provided (will be ignored)";
+					if (seedMinPu.val != seedMinPu.def) LOG(INFO) <<"explicit seeds defined, but seedMinPu provided (will be ignored)";
+					if (!seedQRange.empty()) LOG(INFO) <<"explicit seeds defined, but seedQRange provided (will be ignored)";
+					if (!seedTRange.empty()) LOG(INFO) <<"explicit seeds defined, but seedTRange provided (will be ignored)";
 				}
 			}
 
@@ -1474,9 +1498,9 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 		// single-site mfe interactions (contain only interior loops)
 		case 'S' : {
 			switch ( predMode.val ) {
-			case 'H' :  return new PredictorMfe2dHeuristicSeed( energy, output, predTracker, getSeedConstraint( energy ) );
-			case 'M' :  return new PredictorMfe2dSeed( energy, output, predTracker, getSeedConstraint( energy ) );
-			case 'E' :  return new PredictorMfe4dSeed( energy, output, predTracker, getSeedConstraint( energy ) );
+			case 'H' :  return new PredictorMfe2dHeuristicSeed( energy, output, predTracker, getSeedHandler( energy ) );
+			case 'M' :  return new PredictorMfe2dSeed( energy, output, predTracker, getSeedHandler( energy ) );
+			case 'E' :  return new PredictorMfe4dSeed( energy, output, predTracker, getSeedHandler( energy ) );
 			}
 		} break;
 		// single-site max-prob interactions (contain only interior loops)
@@ -1595,9 +1619,28 @@ getSeedConstraint( const InteractionEnergy & energy ) const
 							// shift ranges to start counting with 0
 							, IndexRangeList( seedTRange ).shift(-1,energy.size1()-1)
 							, IndexRangeList( seedQRange ).shift(-1,energy.size2()-1).reverse(energy.size2())
+							, seedTQ
 						);
 	}
 	return *seedConstraint;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+SeedHandler *
+CommandLineParsing::
+getSeedHandler( const InteractionEnergy & energy ) const
+{
+	// get seed constraint
+	const SeedConstraint & seedConstr = getSeedConstraint( energy );
+
+	if (!seedTQ.empty()) {
+		// create new seed handler for explicit seed definitions
+		return new SeedHandlerExplicit( energy, seedConstr );
+	} else {
+		// create new seed handler using mfe computation
+		return new SeedHandlerMfe( energy, seedConstr );
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////

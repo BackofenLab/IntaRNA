@@ -21,6 +21,9 @@ AccessibilityFromStream(
 	, edValues()
 	, availMaxLength( Accessibility::getMaxLength() )
 {
+	if (accConstraint != NULL && !accConstraint->isEmpty()) {
+		INTARNA_NOT_IMPLEMENTED("AccessibilityFromStream: accessibility constraints not supported yet");
+	}
 	switch( inStreamType ) {
 
 	case Pu_RNAplfold_Text :
