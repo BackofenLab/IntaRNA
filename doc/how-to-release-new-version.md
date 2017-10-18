@@ -4,17 +4,19 @@
 - increase counter in configure.ac
 
 - create distribution source code tar ball
+
 - prepare release on github:
   - fill changelog
   - upload source code tar ball
   - (upload win binary)
   - (upload linux binary)
+  - (upload API docu pdf and html.zip)
   
-- tag release on github
+- publish release on github
+  
+- update [bioconda recipe](https://github.com/bioconda/bioconda-recipes/tree/master/recipes/intarna)
+- update [galaxy tool shed information](https://github.com/bgruening/galaxytools/tree/master/tools/rna_tools/intarna/intarna.xml)
 
 - update webserver
-  
-- update bioconda recipe
-- update galaxy tool shed information
 
 - tweet release 
