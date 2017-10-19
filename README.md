@@ -36,6 +36,7 @@ Feel free to contribute to this project by writing
 with feature requests, bug reports, or just contact messages.
 
 ## Citation
+
 If you use IntaRNA, please cite our articles
 
 - [IntaRNA 2.0: enhanced and customizable prediction of RNA–RNA interactions](http://dx.doi.org/10.1093/nar/gkx279)
@@ -52,6 +53,7 @@ If you use IntaRNA, please cite our articles
 
 <br /><br /><br /><br />
 <a name="doc" />
+
 # Documentation
 
 ## Overview
@@ -88,10 +90,12 @@ The following topics are covered by this documentation:
 
 <br /><br /><br /><br />
 <a name="install" />
+
 # Installation
 
 <br /><br />
 <a name="instconda" />
+
 ## IntaRNA via conda (bioconda channel)
 
 The most easy way to locally install IntaRNA is via conda using the 
@@ -108,6 +112,7 @@ if you are using bioconda already.
 
 <br /><br />
 <a name="instdocker" />
+
 ## IntaRNA docker container (via QUAY)
 
 An [IntaRNA docker container](https://quay.io/repository/biocontainers/intarna) 
@@ -118,6 +123,7 @@ you with an encapsulated IntaRNA installation.
 
 <br /><br />
 <a name="deps" />
+
 ## Dependencies
 
 If you are going to compile IntaRNA from source, ensure you meet the following
@@ -143,6 +149,7 @@ not needed to be installed separately):
 
 <br /><br />
 <a name="instgithub" />
+
 ## Cloning *Source code* from github (or downloading ZIP-file)
 
 The data provided within the github repository
@@ -162,6 +169,7 @@ Afterwards, you can continue as if you would have downloaded an
 
 <br /><br />
 <a name="instsource" />
+
 ## IntaRNA package distribution (e.g. `intaRNA-2.0.0.tar.gz`)
 
 When downloading an IntaRNA package distribution (e.g. `intaRNA-2.0.0.tar.gz`) from the 
@@ -189,9 +197,11 @@ to use the according `configure` options:
 
 <br /><br />
 <a name="instwin" />
+
 ## Microsoft Windows installation
 
 ### ... from source
+
 IntaRNA can be compiled, installed, and used on a Microsoft Windows system when
 e.g. using [Cygwin](https://www.cygwin.com/) as 'linux emulator'. Just install
 Cygwin with the following packages:
@@ -232,6 +242,7 @@ directory to your [`Path` System variable](http://www.computerhope.com/issues/ch
 
 <br /><br />
 <a name="instosx" />
+
 ## OS X installation with homebrew (thanks to Lars Barquist)
 
 If you do not want to or can use the pre-compiled binaries for OS X available from 
@@ -288,6 +299,7 @@ make install
 
 <br /><br /><br /><br />
 <a name="usage" />
+
 # Usage and parameters
 
 IntaRNA comes with a vast variety of ways to tune or enhance *YOUR* RNA-RNA prediction.
@@ -311,6 +323,7 @@ For ad hoc usage you can use the
 
 <br /><br />
 <a name="defaultRun" />
+
 ## Just run ...
 
 If you just want to start and are fine with the default parameters set, 
@@ -364,6 +377,7 @@ list covering also more sophisticated options, run `--fullhelp`.
 
 <br /><br />
 <a name="predModes" />
+
 ## Prediction modes, their features and emulated tools
 
 For the prediction of *minimum free energy interactions*, the following modes
@@ -427,6 +441,7 @@ We *add seed-constraint support to RNAup-like computations* by removing the
 
 <br /><br />
 <a name="interConstr" />
+
 ## Interaction restrictions
 
 The predicted RNA-RNA interactions can be enhanced if additional
@@ -458,6 +473,7 @@ length (by setting both to 0).
 
 <br /><br />
 <a name="seed" />
+
 ## Seed constraints
 
 For different types of RNA-RNA interactions it was found that experimentally
@@ -492,6 +508,7 @@ Seed constraint usage can be globally disabled using the `--noSeed` flag.
 
 <br /><br />
 <a name="seedExplicit" />
+
 ## Explicit seed input
 
 Some experiments provide hints or explicit knowledge about the seed or
@@ -522,6 +539,7 @@ least one of them.
 
 <br /><br />
 <a name="outmodes" />
+
 ## Output modes
 
 The RNA-RNA interactions predicted by IntaRNA can be provided in different
@@ -543,6 +561,7 @@ given on standard output streams.
 
 
 <a name="outModeNormal" />
+
 ### Standard RNA-RNA interaction output with ASCII chart
 
 The standard output mode `--outMode=D` provides a detailed ASCII chart of the 
@@ -551,6 +570,7 @@ For an example see the [Just run ...](#defaultRun) section.
 
 
 <a name="outModeDetailed" />
+
 ### Detailed RNA-RNA interaction output with ASCII chart
 
 Using `--outMode=D`, a detailed ASCII chart of the interaction together with
@@ -599,6 +619,7 @@ Position annotations start indexing with 1 at the 5'-end of each RNA.
 and `Pu` denote unpaired probabilities of the respective interacting subsequences.
 
 <a name="outModeCsv" />
+
 ### Customizable CSV RNA-RNA interaction output
 
 IntaRNA provides via `--outMode=C` a flexible interface to generate RNA-RNA 
@@ -684,6 +705,7 @@ Pu1;Pu2;subseqDB;hybridDB
 
 
 <a name="outModeV1" />
+
 ### Backward compatible IntaRNA v1.* output
 
 If your scripts/whatever is tuned to the old IntaRNA v1.* output, you can use
@@ -696,6 +718,7 @@ If your scripts/whatever is tuned to the old IntaRNA v1.* output, you can use
 
 <br /><br />
 <a name="subopts" />
+
 ## Suboptimal RNA-RNA interaction prediction and output restrictions
 
 Besides the identification of the optimal (e.g. minimum-free-energy) RNA-RNA 
@@ -722,6 +745,7 @@ Furthermore, it is possible to *restrict (sub)optimal enumeration* using
 
 <br /><br />
 <a name="energy" />
+
 ## Energy parameters and temperatures
 
 The selection of the correct temperature and energy parameters is cruicial for
@@ -773,6 +797,7 @@ upper bound can be set independent for the query and target sequence via
 
 <br /><br />
 <a name="outFiles" />
+
 ## Additional output files
 
 IntaRNA v2 enables the generation of various additional information in dedicated
@@ -796,6 +821,7 @@ within the input.
 
 <br />
 <a name="profileMinE" />
+
 ### Minimal energy profiles
 
 To get a more global view of possible interaction sites for a pair of interacting
@@ -821,6 +847,7 @@ mfe interaction close to the 5'-end of the molecule.
 
 <br />
 <a name="pairMinE" />
+
 ### Minimal energy for all intermolecular index pairs
 
 To investigate how stable RNA-RNA interactions are distributed for a given pair
@@ -855,6 +882,7 @@ mfe-site in the second sequence and are thus less likely to occure.
 
 <br />
 <a name="accessibility" />
+
 ### Accessibility and unpaired probabilities
 
 Accessibility describes the availability of an RNA subsequence for intermolecular
@@ -876,6 +904,7 @@ using the Vienna RNA package routines for query or target sequences, respectivel
 
 
 <a name="accLocalGlobal" />
+
 #### Local versus global unpaired probabilities
 
 Exact computation of unpaired probabilities (*Pu* terms) is considers all possible
@@ -894,6 +923,7 @@ To this end, the sliding window length has to be specified in order to enable/di
 local folding.
 
 ##### Use case examples global/local unpaired probability computation
+
 The use of global or local accessibilities can be defined independently 
 for query and target sequences using `--qAccW|L` and `--tAccW|L`, respectively.
 Here, `--?AccW` defines the sliding window length (0 sets it to the whole sequence length)
@@ -910,6 +940,7 @@ IntaRNA [..] --qAccW=0 --qAccL=0 --tAccW=150 --qAccL=100
 
 
 <a name="accFromFile" />
+
 #### Read/write accessibility from/to file or stream
 
 It is possible to read precomputed accessibility values from file or stream to
@@ -944,6 +975,7 @@ example for a sequence of length 5 with a maximal window length of 3.
 
 
 ##### Use case examples for read/write accessibilities and unpaired probabilities
+
 If you have precomputed data, e.g. the file `plfold_lunp` with unpaired probabilities
 computed by **RNAplfold**, you can run
 
@@ -982,6 +1014,7 @@ as shown above), since this does not produce the according output files!
 
 <br /><br />
 <a name="multithreading" />
+
 ## Multi-threading and parallelized computation
 
 IntaRNA supports the parallelization of the target-query-combination processing. 
@@ -1016,6 +1049,7 @@ using `configure --disable-multithreading`.
 
 <br /><br /><br /><br />
 <a name="lib" />
+
 # Library for integration in external tools
 
 The IntaRNA package also comes with a C++ library `libIntaRNA.a` containing the core classes
