@@ -1079,8 +1079,8 @@ int main(int argc, char **argv){
 		el::Loggers::reconfigureAllLoggers(el::ConfigurationType::Format, std::string("# %level : %msg"));
 		// no log file output
 		el::Loggers::reconfigureAllLoggers(el::ConfigurationType::ToFile, std::string("false"));
+		el::Loggers::reconfigureAllLoggers(el::ConfigurationType::ToStandardOutput, std::string("true"));
 		// set additional logging flags
-		el::Loggers::addFlag(el::LoggingFlag::ColoredTerminalOutput);
 		el::Loggers::addFlag(el::LoggingFlag::DisableApplicationAbortOnFatalLog);
 		el::Loggers::addFlag(el::LoggingFlag::LogDetailedCrashReason);
 		el::Loggers::addFlag(el::LoggingFlag::AllowVerboseIfModuleNotSpecified);
@@ -1091,6 +1091,10 @@ int main(int argc, char **argv){
 }
 ```
 
-
+Note further, to get the library correctly working the following compiler 
+flags are used within the IntaRNA configuration:
+```[bash]
+    CXXFLAGS=" -DELPP_FEATURE_PERFORMANCE_TRACKING -DELPP_NO_DEFAULT_LOG_FILE "
+``` 
 
 
