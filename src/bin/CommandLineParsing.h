@@ -458,6 +458,9 @@ protected:
 	//! the CSV column selection
 	static const std::string outCsvCols_default;
 
+	//! (optional) file name for log output
+	std::string logFileName;
+
 	//! the vienna energy parameter handler initialized by #parse()
 	mutable VrnaHandler vrnaHandler;
 

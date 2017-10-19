@@ -129,6 +129,8 @@ CommandLineParsing::CommandLineParsing()
 	outMaxE( -999.0, +999.0, 0.0),
 	outCsvCols(outCsvCols_default),
 
+	logFileName(""),
+
 	vrnaHandler()
 
 {
@@ -447,7 +449,7 @@ CommandLineParsing::CommandLineParsing()
 					+ "\nDefault = '"+outCsvCols+"'."
 					).c_str())
 	    ("verbose,v", "verbose output") // handled via easylogging++
-//	    (logFile_argument.c_str(), "name of log file to be used for output")
+	    ("default-log-file", value<std::string>(&(logFileName)), "name of file to be used for log output (INFO, WARNING, VERBOSE, DEBUG)")
 	    ;
 
 	////  GENERAL OPTIONS  ////////////////////////////////////
