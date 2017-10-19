@@ -98,7 +98,7 @@ AC_ARG_ENABLE([debug],
 AC_MSG_RESULT([$debuger])
 AS_IF([test x"$debuger" = x"yes"], [
 	AC_DEFINE([_DEBUG], [1], [Run in DEBUG mode with additional assertions and debug output])
-	AM_CXXFLAGS="$AM_CXXFLAGS -g -O0 -Wno-uninitialized -Wno-deprecated" # -Wall"
+	AM_CXXFLAGS="$AM_CXXFLAGS -g -O0 -Wno-uninitialized -Wno-deprecated -DELPP_DEBUG_ERRORS" # -Wall"
 ], [
 	AC_DEFINE([NDEBUG], [1], [Run in normal mode with minimal assertions])
 	AM_CXXFLAGS="$AM_CXXFLAGS -O3 -fno-strict-aliasing -Wno-uninitialized -Wno-deprecated"
