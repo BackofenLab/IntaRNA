@@ -533,6 +533,15 @@ you can either name a file or one of the stream names `STDOUT`|`STDERR`. Note,
 any string not matching one of the two stream names is considered a file name.
 The file will be overwritten by IntaRNA!
 
+Besides interaction output, you can set the verbosity of computation information
+using the `-v` or `--verbose` arguments. To reduce the output to a minimum, you
+can redirect all logging output of user information, warnings or verbose output
+to a specific file using `--default-log-file=LOGFILENAME`. 
+If you are not interested in any logging output, redirect it to nirvana via 
+`--default-log-file=/dev/null`. Note, error output is not redirected and always
+given on standard output streams.
+
+
 <a name="outModeNormal" />
 ### Standard RNA-RNA interaction output with ASCII chart
 

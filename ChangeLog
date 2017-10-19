@@ -1,4 +1,16 @@
 
+171019 Martin Mann :
+ * configure.ac :
+   + in debug mode, set ELPP_DEBUG_ERRORS compiler define
+ * IntaRNA/general.h :
+   - ELPP_* defines removed since set via configure or not needed
+ * bin/CommandLineParsing :
+   + argument "--default-log-file" to redirect log output to file (except ERROR)
+   + logFileName : dummy variable for --default-log-file argument
+ * bin/IntaRNA :
+   + log-file handling
+   + flushing log streams on exit
+
 version 2.1.0
 
 171010 Martin Mann :
