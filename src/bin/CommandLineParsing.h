@@ -116,6 +116,30 @@ public:
 	const IndexRangeList& getTargetRanges( const size_t sequenceNumber ) const;
 
 	/**
+	 * Access to the ranges of sequences to analyze when the input includes multiple sequences.
+	 * @return the range of target sequences.
+	 */
+	const IndexRange& getQuerySeqRange() const;
+
+	/**
+	 * Access to the ranges of sequences to analyze when the input includes multiple sequences.
+	 * @return the range of target sequences.
+	 */
+	const IndexRange& getTargetSeqRange() const;
+
+	/**
+	 * Access to the maximum length of query regions.
+	 * @return the maximum length of query regions
+	 */
+	const size_t getQueryRegionLenMax() const;
+
+	/**
+	 * Access to the maximum length of target regions.
+	 * @return the maximum length of target regions
+	 */
+	const size_t getTargetRegionLenMax() const;
+
+	/**
 	 * Returns a newly allocated Energy object according to the user defined
 	 * parameters.
 	 * @param accTarget the accessibility object of the target sequence
@@ -359,6 +383,12 @@ protected:
 	std::string qRegionString;
 	//! the list of interaction intervals for each query sequence
 	IndexRangeListVec qRegion;
+	//! maximum length of automatically select query regions
+	NumberParameter<int> qRegionLenMax;
+	//! the string encoding of the range of query(ies)
+	std::string qRangeString;
+	//! the list of query ranges
+	IndexRange qRange;
 
 	//! the target command line argument
 	std::string targetArg;
@@ -382,6 +412,12 @@ protected:
 	std::string tRegionString;
 	//! the list of interaction intervals for each target sequence
 	IndexRangeListVec tRegion;
+	//! maximum length of automatically select target regions
+	NumberParameter<int> tRegionLenMax;
+	//! the string encoding of the range of target(s)
+	std::string tRangeString;
+	//! the list of target ranges
+	IndexRange tRange;
 
 	//! whether or not a seed is to be required for an interaction or not
 	bool noSeedRequired;
@@ -512,6 +548,18 @@ protected:
 	void validate_qRegion(const std::string & value);
 
 	/**
+	 * Validates the query's maximal region length argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_qRegionLenMax(const int & value);
+
+	/**
+	 * Validates the query's range argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_qRange(const std::string & value);
+
+	/**
 	 * Validates the target sequence argument.
 	 * @param value the argument value to validate
 	 */
@@ -564,6 +612,18 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_tRegion(const std::string & value);
+
+	/**
+	 * Validates the target's maximal region length argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_tRegionLenMax(const int & value);
+
+	/**
+	 * Validates the target's range argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_tRange(const std::string & value);
 
 	/**
 	 * Validates the seedBP argument.
@@ -821,6 +881,15 @@ protected:
 					, const std::string & value );
 
 	/**
+	 * Checks whether or not a range input is either a valid string encoding.
+	 * @param argName the name of the argument the @p value is for
+	 * @param value the argument's value to be parsed
+	 */
+	bool
+	validateRange( const std::string & argName
+					, const std::string & value );
+
+	/**
 	 * Validates whether or not a given output target value is either STDOUT,
 	 * STDERR, or non-empty (= file name)
 	 */
@@ -840,6 +909,20 @@ protected:
 				, const std::string & value
 				, const RnaSequenceVec & sequences
 				, IndexRangeListVec & rangeList );
+
+	/**
+	 * Parses a given range input and pushes the parsed ranges to the given
+	 * container.
+	 * @param argName the name of the argument the @p value is for
+	 * @param value the argument's value to be parsed
+	 * @param sequences the parsed sequences the regions are for
+	 * @param rangeList the container to feed the parsed ranges to (individually for each file if read from BED input)
+	 */
+	void
+	parseRange( const std::string & argName
+				, const std::string & value
+				, const RnaSequenceVec & sequences
+				, IndexRange & rangeList );
 
 	/**
 	 * Checks whether or not any command line argument were parsed. Throws a
@@ -1030,6 +1113,23 @@ void CommandLineParsing::validate_qRegion(const std::string & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
+void CommandLineParsing::validate_qRegionLenMax(const int & value)
+{
+	// forward check to general method
+	validate_numberArgument("qRegionLenMax", qRegionLenMax, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_qRange(const std::string & value) {
+	// check and store range information
+	validateRange( "qRange", value );
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
 void CommandLineParsing::validate_target(const std::string & value)
 {
 	validate_sequenceArgument("target",value);
@@ -1138,6 +1238,23 @@ inline
 void CommandLineParsing::validate_tRegion(const std::string & value) {
 	// check and store region information
 	validateRegion( "tRegion", value );
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_tRegionLenMax(const int & value)
+{
+	// forward check to general method
+	validate_numberArgument("tRegionLenMax", tRegionLenMax, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_tRange(const std::string & value) {
+	// check and store range information
+	validateRange( "tRange", value );
 }
 
 ////////////////////////////////////////////////////////////////////////////

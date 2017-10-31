@@ -114,4 +114,57 @@ writeRNAplfold_text( std::ostream& out, const E_type RT, const bool writeProbs )
 
 ////////////////////////////////////////////////////////////////////
 
+void
+Accessibility::
+compute_accessible_ranges( IndexRangeList& ranges, const size_t max_seq_length, E_type threshold, int i, int j) const
+{
+
+	const int l = 50; // Arbitrarily chosen window
+	int from = -1;
+	int to = -1;
+	E_type ED = ED_UPPER_BOUND;
+
+	for (i; i<j+1-l; i++) {
+
+		if(std::min<E_type>( ED_UPPER_BOUND, getED(i, i+l) ) < threshold){
+			if(from == -1 && i > to){
+				from = i;
+				to = i+l;
+	 			ED = getED(i, i+l);
+			}
+			else if(from != -1 && i <= (to-l/2)){
+				
+				if(ED < getED(i, i+l) && (i+l-to) == 1){
+					ED = getED(i, i+l);
+				}
+				to = i+l;
+			}
+			if(from != -1 && (i == j-l || (i > (to-l/2) && i <= to))){				
+				if((to-from) > max_seq_length){
+					compute_accessible_ranges(ranges, max_seq_length, ED, from, to);
+				}
+				else{
+					ranges.push_back(IndexRange(from+1,to+1));
+				}
+				from = -1;
+				ED = ED_UPPER_BOUND;
+			}
+		}
+		else if(from != -1 && (i == j-l || i > to)){			
+			if((to-from) > max_seq_length){
+				compute_accessible_ranges(ranges, max_seq_length, ED, from, to);
+			}
+			else{
+				ranges.push_back(IndexRange(from+1,to+1));
+			}
+			from = -1;
+			ED = ED_UPPER_BOUND;
+		}
+	}
+
+	return;
+}
+
+////////////////////////////////////////////////////////////////////
+
 } // namespace

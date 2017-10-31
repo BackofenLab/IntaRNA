@@ -81,6 +81,9 @@ CommandLineParsing::CommandLineParsing()
 	qIntLoopMax( 0, 30, 16),
 	qRegionString(""),
 	qRegion(),
+	qRegionLenMax( 0, 99999, 0),
+	qRangeString(""),
+	qRange(),
 
 	targetArg(""),
 	target(),
@@ -93,6 +96,9 @@ CommandLineParsing::CommandLineParsing()
 	tIntLoopMax( 0, 30, 16),
 	tRegionString(""),
 	tRegion(),
+	tRegionLenMax( 0, 99999, 0),
+	tRangeString(""),
+	tRange(),
 
 	noSeedRequired(false),
 	seedBP(2,20,7),
@@ -203,6 +209,19 @@ CommandLineParsing::CommandLineParsing()
 			, value<std::string>(&(qRegionString))
 				->notifier(boost::bind(&CommandLineParsing::validate_qRegion,this,_1))
 			, std::string("interaction site : query regions to be considered for interaction prediction. Either given as BED file (for multi-sequence FASTA input) or in the format 'from1-to1,from2-to2,..' assuming indexing starts with 1").c_str())
+		("qRegionLenMax"
+			, value<int>(&(qRegionLenMax.val))
+				->default_value(qRegionLenMax.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_qRegionLenMax,this,_1))
+			, std::string("interaction site : automatically select target regions to be considered for interaction prediction"
+					" up to the specified length based on accessibility. Overrides --qRegion."
+					" (arg in range ["+toString(qRegionLenMax.min)+",QUERY_LEN];"
+					" Disabled by default (value of 0))"
+					).c_str())
+		("qRange"
+			, value<std::string>(&(qRangeString))
+				->notifier(boost::bind(&CommandLineParsing::validate_qRange,this,_1))
+			, std::string("query selection : the range of sequences to use in the provided FASTA file (Useful when using entire transcriptome as input). In the format 'from1-to1' assuming indexing starts with 0").c_str())
 		;
 
 	////  TARGET SEQUENCE OPTIONS  ////////////////////////////////////
@@ -268,6 +287,19 @@ CommandLineParsing::CommandLineParsing()
 			, value<std::string>(&(tRegionString))
 				->notifier(boost::bind(&CommandLineParsing::validate_tRegion,this,_1))
 			, std::string("interaction site : target regions to be considered for interaction prediction. Either given as BED file (for multi-sequence FASTA input) or in the format 'from1-to1,from2-to2,..' assuming indexing starts with 1").c_str())
+		("tRegionLenMax"
+			, value<int>(&(tRegionLenMax.val))
+				->default_value(tRegionLenMax.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_tRegionLenMax,this,_1))
+			, std::string("interaction site : automatically select target regions to be considered for interaction prediction"
+					" up to the specified length based on accessibility. Overrides --tRegion."
+					" (arg in range ["+toString(tRegionLenMax.min)+",TARGET_LEN];"
+					" Disabled by default (value of 0))"
+					).c_str())
+		("tRange"
+			, value<std::string>(&(tRangeString))
+				->notifier(boost::bind(&CommandLineParsing::validate_tRange,this,_1))
+			, std::string("target selection : the range of sequences to use in the provided FASTA file (Useful when using entire transcriptome as input). In the format 'from1-to1' assuming indexing starts with 0").c_str())
 		;
 
 	////  SEED OPTIONS  ////////////////////////////////////
@@ -626,6 +658,10 @@ parse(int argc, char** argv)
 			parseRegion( "qRegion", qRegionString, query, qRegion );
 			parseRegion( "tRegion", tRegionString, target, tRegion );
 
+			// parse ranges to be used for interaction prediction
+			parseRange( "qRange", qRangeString, query, qRange );
+			parseRange( "tRange", tRangeString, target, tRange );
+
 			// check qAccConstr - query sequence compatibility
 			if (vm.count("qAccConstr") > 0) {
 				// only for single sequence input supported
@@ -982,6 +1018,51 @@ parseRegion( const std::string & argName, const std::string & value, const RnaSe
 
 ////////////////////////////////////////////////////////////////////////////
 
+bool
+CommandLineParsing::
+validateRange( const std::string & argName, const std::string & value )
+{
+	// check if nothing given
+	if (value.empty()) {
+		return true;
+	} else
+	// check if direct range input
+	if (boost::regex_match( value, IndexRange::regex, boost::match_perl )) {
+		return true;
+	} else
+	// no valid input
+	{
+		LOG(ERROR) <<"the argument for "<<argName<<" is neither a valid range string encoding nor a file that can be found";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+	}
+	return false;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void
+CommandLineParsing::
+parseRange( const std::string & argName, const std::string & value, const RnaSequenceVec & sequences, IndexRange & rangeList )
+{
+	// check if nothing given
+	if (value.empty()) {
+
+		rangeList = IndexRange(0,sequences.size()-1);
+		return;
+	} else
+	// check direct range input
+	if (boost::regex_match( value, IndexRange::regex, boost::match_perl )) {
+
+		// fill range list from string but shift by -1
+		rangeList = IndexRange( value );
+		return;
+	}
+
+	assert(false) /*should never happen*/;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
 const CommandLineParsing::RnaSequenceVec &
 CommandLineParsing::
 getQuerySequences() const
@@ -998,6 +1079,24 @@ getTargetSequences() const
 {
 	checkIfParsed();
 	return target;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+const size_t
+CommandLineParsing::
+getQueryRegionLenMax() const
+{
+	return qRegionLenMax.val;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+const size_t
+CommandLineParsing::
+getTargetRegionLenMax() const
+{
+	return tRegionLenMax.val;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1628,6 +1727,24 @@ getTargetRanges( const size_t sequenceNumber ) const
 		throw std::runtime_error("CommandLineParsing::getTargetRanges("+toString(sequenceNumber)+") is empty");
 #endif
 	return tRegion.at(sequenceNumber);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+const IndexRange&
+CommandLineParsing::
+getQuerySeqRange() const
+{
+	return qRange;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+const IndexRange&
+CommandLineParsing::
+getTargetSeqRange() const
+{
+	return tRange;
 }
 
 ////////////////////////////////////////////////////////////////////////////

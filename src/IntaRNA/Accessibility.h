@@ -108,6 +108,14 @@ public:
 	writeRNAplfold_ED_text( std::ostream& out ) const;
 
 	/**
+	 * Recursively computes a set of accessible ranges.
+	 *
+	 * @param out the output stream to write to
+	 */
+	void
+	compute_accessible_ranges( IndexRangeList& ranges, const size_t max_seq_length, E_type threshold, int i, int j ) const;
+
+	/**
 	 * Prints the accessibility values to stream as upper triangular matrix
 	 * @param out the ostream to write to
 	 * @param acc the Accessibility object to add

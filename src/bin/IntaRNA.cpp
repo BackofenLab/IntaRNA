@@ -85,6 +85,9 @@ int main(int argc, char **argv){
 		const bool parallelizeTargetLoop = parameters.getTargetSequences().size() > 1;
 		const bool parallelizeQueryLoop = !parallelizeTargetLoop && parameters.getQuerySequences().size() > 1;
 
+		const IndexRange target_range = parameters.getTargetSeqRange();
+		const IndexRange query_range = parameters.getQuerySeqRange();
+
 
 		// run prediction for all pairs of sequences
 		// first: iterate over all target sequences
@@ -96,7 +99,7 @@ int main(int argc, char **argv){
 		// parallelize this loop if possible; if not -> parallelize the query-loop
 		# pragma omp parallel for schedule(dynamic) num_threads( parameters.getThreads() ) shared(queryAcc,reportedInteractions,exceptionPtrDuringOmp,exceptionInfoDuringOmp) if(parallelizeTargetLoop)
 #endif
-		for ( size_t targetNumber = 0; targetNumber < parameters.getTargetSequences().size(); ++targetNumber )
+		for ( size_t targetNumber = target_range.from; targetNumber <= target_range.to; ++targetNumber )
 		{
 #if INTARNA_MULITHREADING
 			#pragma omp flush (threadAborted)
@@ -126,7 +129,7 @@ int main(int argc, char **argv){
 					// this parallelization should only be enabled if the outer target-loop is not parallelized
 					# pragma omp parallel for schedule(dynamic) num_threads( parameters.getThreads() ) shared(queryAcc,reportedInteractions,exceptionPtrDuringOmp,exceptionInfoDuringOmp,targetAcc,targetNumber) if(parallelizeQueryLoop)
 #endif
-					for ( size_t queryNumber = 0; queryNumber < parameters.getQuerySequences().size(); ++queryNumber )
+					for ( size_t queryNumber = query_range.from; queryNumber <= query_range.to; ++queryNumber )
 					{
 #if INTARNA_MULITHREADING
 						#pragma omp flush (threadAborted)
@@ -154,9 +157,31 @@ int main(int argc, char **argv){
 								Predictor * predictor = parameters.getPredictor( *energy, *output );
 								INTARNA_CHECK_NOT_NULL(predictor,"predictor initialization failed");
 
+								// get or compute target regions
+								IndexRangeList targetRegions;
+								const size_t tRegionLenMax = parameters.getTargetRegionLenMax();
+
+								if(tRegionLenMax == 0){
+									targetRegions = parameters.getTargetRanges(targetNumber);
+								}
+								else{
+									targetAcc->compute_accessible_ranges( targetRegions, tRegionLenMax, Accessibility::ED_UPPER_BOUND, 0, targetAcc->getSequence().size());
+								}
+
+								// get or compute query regions
+								IndexRangeList queryRegions;
+								const size_t qRegionLenMax = parameters.getQueryRegionLenMax();
+
+								if(qRegionLenMax == 0){
+									queryRegions = parameters.getQueryRanges(queryNumber);
+								}
+								else{
+									queryAcc.at(queryNumber)->compute_accessible_ranges( queryRegions, qRegionLenMax, Accessibility::ED_UPPER_BOUND, 0, queryAcc.at(queryNumber)->getSequence().size());
+								}
+
 								// run prediction for all range combinations
-								BOOST_FOREACH(const IndexRange & tRange, parameters.getTargetRanges(targetNumber)) {
-								BOOST_FOREACH(const IndexRange & qRange, parameters.getQueryRanges(queryNumber)) {
+								BOOST_FOREACH(const IndexRange & tRange, targetRegions) {
+								BOOST_FOREACH(const IndexRange & qRange, queryRegions) {
 
 #if INTARNA_MULITHREADING
 									#pragma omp critical(intarna_omp_logOutput)
@@ -260,7 +285,7 @@ int main(int argc, char **argv){
 		} // for targets
 
 		// garbage collection
-		for (size_t queryNumber=0; queryNumber < queryAcc.size(); queryNumber++) {
+		for (size_t queryNumber=0; queryNumber < queryAcc.size(); queryNumber++) {//(size_t queryNumber = query_range.from; queryNumber <= query_range.to; queryNumber++) {
 			// this is a hack to cleanup the original accessibility object
 			Accessibility* queryAccOrig = &(const_cast<Accessibility&>(queryAcc[queryNumber]->getAccessibilityOrigin()) );
 			// write accessibility to file if needed
