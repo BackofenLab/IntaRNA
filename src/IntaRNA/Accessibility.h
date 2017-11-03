@@ -108,12 +108,13 @@ public:
 	writeRNAplfold_ED_text( std::ostream& out ) const;
 
 	/**
-	 * Recursively computes a set of accessible ranges.
+	 * Recursively computes a set of accessible ranges shorter or equal to the given length threshold.
 	 *
-	 * @param out the output stream to write to
+	 * @param ranges reference to list that will contain the accessible ranges
+	 * @param max_seq_length maximum length for any range added to ranges
 	 */
 	void
-	compute_accessible_ranges( IndexRangeList& ranges, const size_t max_seq_length, E_type threshold, int i, int j ) const;
+	compute_accessible_ranges( IndexRangeList& ranges, const size_t max_seq_length) const;
 
 	/**
 	 * Prints the accessibility values to stream as upper triangular matrix
@@ -158,6 +159,18 @@ protected:
 	 */
 	void
 	writeRNAplfold_text( std::ostream& out, const E_type RT, const bool writeProbs ) const;
+
+	/**
+	 * Recursively computes a set of accessible ranges shorter or equal to the given length threshold.
+	 *
+	 * @param ranges reference to list that will contain the accessible ranges
+	 * @param max_seq_length maximum length for any range added to ranges
+	 * @param threshold the maximum ED from the previous recursion which is the upper bound for ED in the current recursion
+	 * @param i starting position of the current range in the sequence 
+	 * @param j ending position of the current range in the sequence 
+	 */
+	void
+	compute_accessible_ranges_recursive( IndexRangeList& ranges, const size_t max_seq_length, E_type threshold, int i, int j ) const;
 
 };
 

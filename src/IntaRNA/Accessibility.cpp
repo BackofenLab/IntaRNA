@@ -116,7 +116,16 @@ writeRNAplfold_text( std::ostream& out, const E_type RT, const bool writeProbs )
 
 void
 Accessibility::
-compute_accessible_ranges( IndexRangeList& ranges, const size_t max_seq_length, E_type threshold, int i, int j) const
+compute_accessible_ranges( IndexRangeList& ranges, const size_t max_seq_length) const
+{
+	compute_accessible_ranges_recursive( ranges, max_seq_length, ED_UPPER_BOUND, 0, getSequence().size());
+}
+
+////////////////////////////////////////////////////////////////////
+
+void
+Accessibility::
+compute_accessible_ranges_recursive( IndexRangeList& ranges, const size_t max_seq_length, E_type threshold, int i, int j) const
 {
 
 	const int l = 50; // Arbitrarily chosen window
@@ -141,7 +150,7 @@ compute_accessible_ranges( IndexRangeList& ranges, const size_t max_seq_length, 
 			}
 			if(from != -1 && (i == j-l || (i > (to-l/2) && i <= to))){				
 				if((to-from) > max_seq_length){
-					compute_accessible_ranges(ranges, max_seq_length, ED, from, to);
+					compute_accessible_ranges_recursive(ranges, max_seq_length, ED, from, to);
 				}
 				else{
 					ranges.push_back(IndexRange(from+1,to+1));
@@ -152,7 +161,7 @@ compute_accessible_ranges( IndexRangeList& ranges, const size_t max_seq_length, 
 		}
 		else if(from != -1 && (i == j-l || i > to)){			
 			if((to-from) > max_seq_length){
-				compute_accessible_ranges(ranges, max_seq_length, ED, from, to);
+				compute_accessible_ranges_recursive(ranges, max_seq_length, ED, from, to);
 			}
 			else{
 				ranges.push_back(IndexRange(from+1,to+1));

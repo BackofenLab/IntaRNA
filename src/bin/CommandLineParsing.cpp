@@ -1032,7 +1032,7 @@ validateRange( const std::string & argName, const std::string & value )
 	} else
 	// no valid input
 	{
-		LOG(ERROR) <<"the argument for "<<argName<<" is neither a valid range string encoding nor a file that can be found";
+		LOG(ERROR) <<"the argument for "<<argName<<" is not a valid range string encoding";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
 	return false;

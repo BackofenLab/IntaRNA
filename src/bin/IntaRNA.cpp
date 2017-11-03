@@ -165,7 +165,7 @@ int main(int argc, char **argv){
 									targetRegions = parameters.getTargetRanges(targetNumber);
 								}
 								else{
-									targetAcc->compute_accessible_ranges( targetRegions, tRegionLenMax, Accessibility::ED_UPPER_BOUND, 0, targetAcc->getSequence().size());
+									targetAcc->compute_accessible_ranges( targetRegions, tRegionLenMax);
 								}
 
 								// get or compute query regions
@@ -176,7 +176,7 @@ int main(int argc, char **argv){
 									queryRegions = parameters.getQueryRanges(queryNumber);
 								}
 								else{
-									queryAcc.at(queryNumber)->compute_accessible_ranges( queryRegions, qRegionLenMax, Accessibility::ED_UPPER_BOUND, 0, queryAcc.at(queryNumber)->getSequence().size());
+									queryAcc.at(queryNumber)->compute_accessible_ranges( queryRegions, qRegionLenMax);
 								}
 
 								// run prediction for all range combinations
