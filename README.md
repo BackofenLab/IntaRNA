@@ -485,6 +485,10 @@ by
 - `--seedQRange` : a list of index intervals where a seed in the query is allowed
 - `--seedTRange` : a list of index intervals where a seed in the target is allowed
 
+Alternatively, you can set 
+
+- `--seedTQ` : to specify [explicit seed interactions](seedExplicit)
+
 Seed constraint usage can be globally disabled using the `--noSeed` flag.
 
 
