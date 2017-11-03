@@ -497,7 +497,7 @@ Seed constraint usage can be globally disabled using the `--noSeed` flag.
 Some experiments provide hints or explicit knowledge about the seed or
 even provide details about some intermolecular base pairs formed between two RNAs.
 This information can be incorporated into IntaRNA predictions by providing
-*explicit seed information*. To this end, the `--seedQT` parameter can be used.
+*explicit seed information*. To this end, the `--seedTQ` parameter can be used.
 It takes a comma-separated list of seed string encodings in the format 
 `startTbpsT&startQbpsQ`, which is in the same format as the IntaRNA `hybridDB`
 output (see below), i.e. e.g. `4|||.|&7||.||` to encode a seed interaction like 
