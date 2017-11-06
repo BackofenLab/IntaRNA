@@ -118,7 +118,12 @@ void
 Accessibility::
 compute_accessible_ranges( IndexRangeList& ranges, const size_t max_seq_length) const
 {
-	compute_accessible_ranges_recursive( ranges, max_seq_length, ED_UPPER_BOUND, 0, getSequence().size());
+	if(getSequence().size() < max_seq_length){
+		ranges.push_back(IndexRange(0,getSequence().size()-1));
+	}
+	else{
+		compute_accessible_ranges_recursive( ranges, max_seq_length, ED_UPPER_BOUND, 0, getSequence().size());
+	}
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -153,7 +158,7 @@ compute_accessible_ranges_recursive( IndexRangeList& ranges, const size_t max_se
 					compute_accessible_ranges_recursive(ranges, max_seq_length, ED, from, to);
 				}
 				else{
-					ranges.push_back(IndexRange(from+1,to+1));
+					ranges.push_back(IndexRange(from,to));
 				}
 				from = -1;
 				ED = ED_UPPER_BOUND;
@@ -164,7 +169,7 @@ compute_accessible_ranges_recursive( IndexRangeList& ranges, const size_t max_se
 				compute_accessible_ranges_recursive(ranges, max_seq_length, ED, from, to);
 			}
 			else{
-				ranges.push_back(IndexRange(from+1,to+1));
+				ranges.push_back(IndexRange(from,to));
 			}
 			from = -1;
 			ED = ED_UPPER_BOUND;

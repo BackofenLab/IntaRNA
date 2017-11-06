@@ -221,7 +221,7 @@ CommandLineParsing::CommandLineParsing()
 		("qRange"
 			, value<std::string>(&(qRangeString))
 				->notifier(boost::bind(&CommandLineParsing::validate_qRange,this,_1))
-			, std::string("query selection : the range of sequences to use in the provided FASTA file (Useful when using entire transcriptome as input). In the format 'from1-to1' assuming indexing starts with 0").c_str())
+			, std::string("query selection : the range of sequences to use in the provided FASTA file (Useful when using entire transcriptome as input). In the format 'from1-to1' assuming indexing starts with 1").c_str())
 		;
 
 	////  TARGET SEQUENCE OPTIONS  ////////////////////////////////////
@@ -299,7 +299,7 @@ CommandLineParsing::CommandLineParsing()
 		("tRange"
 			, value<std::string>(&(tRangeString))
 				->notifier(boost::bind(&CommandLineParsing::validate_tRange,this,_1))
-			, std::string("target selection : the range of sequences to use in the provided FASTA file (Useful when using entire transcriptome as input). In the format 'from1-to1' assuming indexing starts with 0").c_str())
+			, std::string("target selection : the range of sequences to use in the provided FASTA file (Useful when using entire transcriptome as input). In the format 'from1-to1' assuming indexing starts with 1").c_str())
 		;
 
 	////  SEED OPTIONS  ////////////////////////////////////
@@ -1042,19 +1042,21 @@ validateRange( const std::string & argName, const std::string & value )
 
 void
 CommandLineParsing::
-parseRange( const std::string & argName, const std::string & value, const RnaSequenceVec & sequences, IndexRange & rangeList )
+parseRange( const std::string & argName, const std::string & value, const RnaSequenceVec & sequences, IndexRange & range )
 {
 	// check if nothing given
 	if (value.empty()) {
 
-		rangeList = IndexRange(0,sequences.size()-1);
+		range = IndexRange(0,sequences.size()-1);
 		return;
 	} else
 	// check direct range input
 	if (boost::regex_match( value, IndexRange::regex, boost::match_perl )) {
 
-		// fill range list from string but shift by -1
-		rangeList = IndexRange( value );
+		// create range from string but shift by -1
+		range = IndexRange( value );
+		range.from--;
+		range.to--;
 		return;
 	}
 
