@@ -1078,7 +1078,7 @@ Since IntaRNA makes heavy use of the `Easylogging++` library, you have to add (a
 the following code to your central code that includes the `main()` function:
 ```[c++]
 // get central IntaRNA-lib definitions and includes
-#include <IntaRNA/RnaSequence.h>
+#include <IntaRNA/general.h>
 // initialize logging for binary
 INITIALIZE_EASYLOGGINGPP
 

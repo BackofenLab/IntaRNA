@@ -5,6 +5,9 @@
    + tSet : parameter to define sequence subset to be considered for prediction
  * IndexRange :
    + LAST_INDEX : placeholder for last available index
+ * README.md :
+   + --qSet/--tSet docu added
+   * fixing easylogging lib use example
 
 171019 Martin Mann :
  * configure.ac :
@@ -14,6 +17,9 @@
  * bin/CommandLineParsing :
    + argument "--default-log-file" to redirect log output to file (except ERROR)
    + logFileName : dummy variable for --default-log-file argument
+ * README.md :
+   + --default-log-file docu added
+   + -v/--verbose docu added
  * bin/IntaRNA :
    + log-file handling
    + flushing log streams on exit
