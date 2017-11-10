@@ -3,6 +3,8 @@
  * CommandLineParsing :
    + qSet : parameter to define sequence subset to be considered for prediction
    + tSet : parameter to define sequence subset to be considered for prediction
+ * IndexRange :
+   + LAST_INDEX : placeholder for last available index
 
 171019 Martin Mann :
  * configure.ac :
