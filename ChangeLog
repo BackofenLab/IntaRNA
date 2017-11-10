@@ -1,4 +1,9 @@
 
+171111 Martin Mann :
+ * IntaRNA/PredictorMfe2dHeuristic :
+   * init curCellEtotal = E_INF to ignore effects of low ED of single positions
+     (already applied that way in PredictorMfe2dHeuristicSeed)
+
 171110 Martin Mann :
  * CommandLineParsing :
    + qSet : parameter to define sequence subset to be considered for prediction

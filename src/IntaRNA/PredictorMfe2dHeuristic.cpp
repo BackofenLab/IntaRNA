@@ -116,8 +116,12 @@ fillHybridE()
 		if (E_isINF(curCell->E)) {
 			continue;
 		}
-		// current
-		curCellEtotal = energy.getE(i1,curCell->j1,i2,curCell->j2,curCell->E);
+
+		// current best total energy value
+		// NOTE: by setting to E_INF instead of getE(curCell->E) we ignore the
+		// single intermolecular bp case to avoid the effect of extremely low
+		// EDs of single positions
+		curCellEtotal = E_INF;
 
 		// TODO PARALLELIZE THIS DOUBLE LOOP ?!
 		// iterate over all loop sizes w1 (seq1) and w2 (seq2) (minus 1)
