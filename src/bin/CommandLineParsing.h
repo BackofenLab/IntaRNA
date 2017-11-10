@@ -354,6 +354,10 @@ protected:
 	std::string queryArg;
 	//! the container holding all query sequences
 	RnaSequenceVec query;
+	//! subset of query sequence indices to be processed
+	IndexRangeList qSet;
+	//! string encoding of qSet
+	std::string qSetString;
 	//! accessibility computation mode for query sequences
 	CharParameter qAcc;
 	//! window length for query accessibility computation (plFold)
@@ -377,6 +381,10 @@ protected:
 	std::string targetArg;
 	//! the container holding all target sequences
 	RnaSequenceVec target;
+	//! subset of target sequence indices to be processed
+	IndexRangeList tSet;
+	//! string encoding of tSet
+	std::string tSetString;
 	//! accessibility computation mode for target sequences
 	CharParameter tAcc;
 	//! window length for target accessibility computation (plFold)
@@ -482,6 +490,12 @@ protected:
 	void validate_query(const std::string & value);
 
 	/**
+	 * Validates the query's qSet argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_qSet(const std::string & value);
+
+	/**
 	 * Validates the query accessibility argument.
 	 * @param value the argument value to validate
 	 */
@@ -534,6 +548,12 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_target(const std::string & value);
+
+	/**
+	 * Validates the target's tSet argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_tSet(const std::string & value);
 
 	/**
 	 * Validates the target accessibility argument.
@@ -796,10 +816,13 @@ protected:
 	 * @param paramName the name of the parameter (for exception handling)
 	 * @param input the input stream from where to read the FASTA data
 	 * @param sequences the container to fill
+	 * @param seqSubset the indices of the input sequences to store (all other
+	 *                  ignored)
 	 */
 	void parseSequencesFasta( const std::string & paramName,
 					std::istream& input,
-					RnaSequenceVec& sequences);
+					RnaSequenceVec& sequences,
+					const IndexRangeList & seqSubset );
 
 	/**
 	 * Checks whether or not a sequence container holds a specific number of
@@ -909,7 +932,6 @@ protected:
 					, const RnaSequence * target
 					, const RnaSequence * query ) const;
 
-
 };
 
 
@@ -947,6 +969,25 @@ inline
 void CommandLineParsing::validate_query(const std::string & value)
 {
 	validate_sequenceArgument("query",value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_qSet(const std::string & value) {
+	// clear current qSet data
+	qSet.clear();
+	// parse input value
+	if (!value.empty()) {
+		// check regex
+		if (!boost::regex_match(value, IndexRangeList::regex, boost::match_perl) ) {
+			LOG(ERROR) <<"qSet"<<" = " <<value <<" : is not in the format 'from1-to1,from2-to2,..'";
+			parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
+		} else {
+			// parse and store subset definitions
+			qSet = IndexRangeList(value);
+		}
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1062,6 +1103,24 @@ void CommandLineParsing::validate_target(const std::string & value)
 	validate_sequenceArgument("target",value);
 }
 
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_tSet(const std::string & value) {
+	// clear current qSet data
+	tSet.clear();
+	// parse input value
+	if (!value.empty()) {
+		// check regex
+		if (!boost::regex_match(value, IndexRangeList::regex, boost::match_perl) ) {
+			LOG(ERROR) <<"tSet"<<" = " <<value <<" : is not in the format 'from1-to1,from2-to2,..'";
+			parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
+		} else {
+			// parse and store subset definitions
+			tSet = IndexRangeList(value);
+		}
+	}
+}
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -1595,6 +1654,7 @@ getFullFilename( const std::string & fileNamePath, const RnaSequence * target, c
 				+ fileNamePath.substr(startOfExtension);
 	}
 }
+
 
 ////////////////////////////////////////////////////////////////////////////
 

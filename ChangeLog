@@ -1,4 +1,9 @@
 
+171110 Martin Mann :
+ * CommandLineParsing :
+   + qSet : parameter to define sequence subset to be considered for prediction
+   + tSet : parameter to define sequence subset to be considered for prediction
+
 171019 Martin Mann :
  * configure.ac :
    + in debug mode, set ELPP_DEBUG_ERRORS compiler define

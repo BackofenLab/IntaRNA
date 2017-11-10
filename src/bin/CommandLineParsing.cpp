@@ -74,6 +74,8 @@ CommandLineParsing::CommandLineParsing()
 
 	queryArg(""),
 	query(),
+	qSet(),
+	qSetString(""),
 	qAcc("NCPE",'C'),
 	qAccW( 0, 99999, 150),
 	qAccL( 0, 99999, 100),
@@ -86,6 +88,8 @@ CommandLineParsing::CommandLineParsing()
 
 	targetArg(""),
 	target(),
+	tSet(),
+	tSetString(""),
 	tAcc("NCPE",'C'),
 	tAccW( 0, 99999, 150),
 	tAccL( 0, 99999, 100),
@@ -181,6 +185,10 @@ CommandLineParsing::CommandLineParsing()
 		;
 	opts_cmdline_short.add(opts_query);
 	opts_query.add_options()
+		("qSet"
+			, value<std::string>(&(qSetString))
+				->notifier(boost::bind(&CommandLineParsing::validate_qSet,this,_1))
+			, std::string("query subset : List of sequence indices to consider for prediction in the format 'from1-to1,from2-to2,..' assuming indexing starts with 1").c_str())
 		("qAccConstr"
 			, value<std::string>(&(qAccConstr))
 				->notifier(boost::bind(&CommandLineParsing::validate_qAccConstr,this,_1))
@@ -246,6 +254,10 @@ CommandLineParsing::CommandLineParsing()
 		;
 	opts_cmdline_short.add(opts_target);
 	opts_target.add_options()
+		("tSet"
+			, value<std::string>(&(tSetString))
+				->notifier(boost::bind(&CommandLineParsing::validate_tSet,this,_1))
+			, std::string("target subset : List of sequence indices to consider for prediction in the format 'from1-to1,from2-to2,..' assuming indexing starts with 1").c_str())
 		("tAccConstr"
 			, value<std::string>(&(tAccConstr))
 				->notifier(boost::bind(&CommandLineParsing::validate_tAccConstr,this,_1))
@@ -578,8 +590,6 @@ parse(int argc, char** argv)
 				}
 			}
 
-			// get the subset of sequences to store
-			IndexRangeList qSet, tSet;
 			// parse the sequences
 			parseSequences("query",queryArg,query,qSet);
 			parseSequences("target",targetArg,target,tSet);
@@ -1258,16 +1268,33 @@ parseSequences(const std::string & paramName,
 					RnaSequenceVec& sequences,
 					const IndexRangeList & seqSubset )
 {
+
 	// clear sequence container
 	sequences.clear();
 
 	// read FASTA from STDIN stream
 	if (boost::iequals(paramArg,"STDIN")) {
-		parseSequencesFasta(paramName, std::cin, sequences);
+		parseSequencesFasta(paramName, std::cin, sequences, seqSubset);
 	} else
 	if (RnaSequence::isValidSequenceIUPAC(paramArg)) {
-		// direct sequence input
-		sequences.push_back(RnaSequence(paramName,paramArg));
+		// check if sequence is to be stored
+		if (seqSubset.empty() || seqSubset.covers(1)) {
+			// direct sequence input
+			sequences.push_back(RnaSequence(paramName,paramArg));
+		} else {
+			// would result in no sequence -> error
+			LOG(ERROR) <<"Parsing of "<<paramName<<" : only single sequence given but not listed in sequence subset '"<<seqSubset<<"'";
+			updateParsingCode( ReturnCode::STOP_PARSING_ERROR );
+		}
+		// check if sequence index range is within number of sequences
+		if (!seqSubset.empty()
+				&& seqSubset.rbegin()->to < IndexRange::LAST_INDEX
+				&& seqSubset.rbegin()->to > 1)
+		{
+			// provide user warning of maybe wrongly defined sequence subset
+			LOG(WARNING) <<"Sequence subset definition "<<seqSubset<<" exceeds sequence number "<<1<<" for parameter "<<paramName;
+		}
+
 	} else
 	{
 		// open file handle
@@ -1277,7 +1304,7 @@ parseSequences(const std::string & paramName,
 				LOG(ERROR) <<"FASTA parsing of "<<paramName<<" : could not open FASTA file  '"<<paramArg<<"'";
 				updateParsingCode( ReturnCode::STOP_PARSING_ERROR );
 			} else {
-				parseSequencesFasta(paramName, infile, sequences);
+				parseSequencesFasta(paramName, infile, sequences, seqSubset);
 			}
 		} catch (std::exception & ex) {
 			LOG(ERROR) <<"error while FASTA parsing of "<<paramName<<" : "<<ex.what();
@@ -1304,11 +1331,13 @@ void
 CommandLineParsing::
 parseSequencesFasta( const std::string & paramName,
 					std::istream& input,
-					RnaSequenceVec& sequences)
+					RnaSequenceVec& sequences,
+					const IndexRangeList & seqSubset)
 {
 	// temporary variables
 	std::string line, name, sequence;
 	int trimStart = 0;
+	size_t seqNumber = 0;
 
 	// read linewise
 	while( std::getline( input, line ) ) {
@@ -1325,8 +1354,13 @@ parseSequencesFasta( const std::string & paramName,
 					LOG(ERROR) <<"FASTA parsing of "<<paramName<<" : no sequence for ID '"<<name<<"'";
 					updateParsingCode( ReturnCode::STOP_PARSING_ERROR );
 				} else {
-					// store sequence
-					sequences.push_back( RnaSequence( name, sequence ) );
+					// update sequence counter
+					seqNumber++;
+					// check if sequence is to be stored
+					if (seqSubset.empty() || seqSubset.covers(seqNumber)) {
+						// store sequence
+						sequences.push_back( RnaSequence( name, sequence ) );
+					}
 				}
 				// clear name data
 				name.clear();
@@ -1367,8 +1401,22 @@ parseSequencesFasta( const std::string & paramName,
 		LOG(ERROR) <<"FASTA parsing of "<<paramName<<" : no sequence for ID '"<<name<<"'";
 		updateParsingCode( ReturnCode::STOP_PARSING_ERROR );
 	} else {
-		// store sequence
-		sequences.push_back( RnaSequence( name, sequence ) );
+		// update sequence counter
+		seqNumber++;
+		// check if sequence is to be stored
+		if (seqSubset.empty() || seqSubset.covers(seqNumber)) {
+			// store sequence
+			sequences.push_back( RnaSequence( name, sequence ) );
+		}
+	}
+
+	// check if sequence index range is within number of sequences
+	if (!seqSubset.empty()
+			&& seqSubset.rbegin()->to < IndexRange::LAST_INDEX
+			&& seqSubset.rbegin()->to > seqNumber)
+	{
+		// provide user warning of maybe wrongly defined sequence subset
+		LOG(WARNING) <<"Sequence subset definition "<<seqSubset<<" exceeds sequence number "<<seqNumber<<" for parameter "<<paramName;
 	}
 }
 
