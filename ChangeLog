@@ -3,6 +3,7 @@
  * CommandLineParsing :
    + qSet : parameter to define sequence subset to be considered for prediction
    + tSet : parameter to define sequence subset to be considered for prediction
+     (thanks to Alex Gawronski)
  * IndexRange :
    + LAST_INDEX : placeholder for last available index
  * README.md :
