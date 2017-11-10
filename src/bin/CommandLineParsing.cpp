@@ -578,9 +578,11 @@ parse(int argc, char** argv)
 				}
 			}
 
+			// get the subset of sequences to store
+			IndexRangeList qSet, tSet;
 			// parse the sequences
-			parseSequences("query",queryArg,query);
-			parseSequences("target",targetArg,target);
+			parseSequences("query",queryArg,query,qSet);
+			parseSequences("target",targetArg,target,tSet);
 
 			// valide accessibility input from file (requires parsed sequences)
 			validate_qAccFile( qAccFile );
