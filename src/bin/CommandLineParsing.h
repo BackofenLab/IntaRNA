@@ -782,10 +782,13 @@ protected:
 	 * @param paramName the name of the parameter (for exception handling)
 	 * @param paramArg the given argument for the parameter
 	 * @param sequences the container to fill
+	 * @param seqSubset the indices of the input sequences to store (all other
+	 *                  ignored)
 	 */
 	void parseSequences(const std::string & paramName,
 					const std::string& paramArg,
-					RnaSequenceVec& sequences );
+					RnaSequenceVec& sequences,
+					const IndexRangeList & seqSubset );
 
 	/**
 	 * Parses the parameter input stream from FASTA format and returns all

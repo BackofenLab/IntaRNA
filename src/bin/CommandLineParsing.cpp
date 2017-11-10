@@ -1253,7 +1253,8 @@ void
 CommandLineParsing::
 parseSequences(const std::string & paramName,
 					const std::string& paramArg,
-					RnaSequenceVec& sequences )
+					RnaSequenceVec& sequences,
+					const IndexRangeList & seqSubset )
 {
 	// clear sequence container
 	sequences.clear();
