@@ -362,6 +362,15 @@ IntaRNA -t myTargets.fasta -q myQueries.fasta
 cat myQueries.fasta | IntaRNA -q STDIN -t myTargets.fasta
 ```
 
+If you are working with large FASTA input files, e.g. covering a whole 
+transcriptome, you can restrict the prediction to a subset of the input 
+sequences using the `--qSet` or `--tSet` parameter as shown in the following.
+
+```bash
+# restrict prediction to the second load of 100 target sequences 
+IntaRNA -t myTranscriptome.fasta --tSet=101-200 -q myQuery.fasta
+```
+
 Nucleotide encodings different from `ACGUT` are rewritten as `N` and the respective
 positions are not considered to form base pairs (and this ignored).
 Thymine `T` encodings are replaced by uracil `U`, since a `ACGU`-only 
