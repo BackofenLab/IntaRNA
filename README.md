@@ -368,7 +368,7 @@ transcriptome, you can restrict the prediction to a subset of the input
 sequences using the `--qSet` or `--tSet` parameter as shown in the following.
 
 ```bash
-# restrict prediction to the second set of 100 input sequences 
+# restrict prediction to the second load of 100 target sequences 
 IntaRNA -t myTranscriptome.fasta --tSet=101-200 -q myQuery.fasta
 ```
 
