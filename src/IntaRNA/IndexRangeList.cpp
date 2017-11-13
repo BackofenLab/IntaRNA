@@ -2,6 +2,7 @@
 #include "IntaRNA/IndexRangeList.h"
 
 #include <algorithm>
+#include <exception>
 
 namespace IntaRNA {
 
@@ -174,7 +175,9 @@ get( const size_t idx )
 		throw std::runtime_error("IndexRangeList::get() : index "+toString(idx)+" out of range (>= "+toString(size())+")");
 	}
 	// access according element via iterator and return
-	return *(list.begin()+idx);
+	iterator idxIter = list.begin();
+	std::advance( idxIter, idx );
+	return *(idxIter);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -187,7 +190,9 @@ get( const size_t idx ) const
 		throw std::runtime_error("IndexRangeList::get() : index "+toString(idx)+" out of range (>= "+toString(size())+")");
 	}
 	// access according element via iterator and return
-	return *(list.begin()+idx);
+	const_iterator idxIter = list.begin();
+	std::advance( idxIter, idx );
+	return *(idxIter);
 }
 
 //////////////////////////////////////////////////////////////////////
