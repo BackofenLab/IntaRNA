@@ -1,4 +1,36 @@
 
+171113 Martin Raden :
+ * IntaRNA/IndexRangeList :
+   + get() : (constant) access to a certain range
+ + tests/testEasyLoggingSetup.icc : easylogging setup to be included in all
+   tests to enable (debug) logging from the IntaRNA lib
+ * tests/*_test.cpp :
+   + inclusion of testEasyLoggingSetup.icc
+ * Makefile.am :
+   + clean test executable to ensure rebuild
+ * tests/Makefile.am :
+   + easylogging++ compiler flags
+ * IntaRNA/Accessibility :
+   + decomposeByMaxEd() : automatically identifies highly accessible regions of
+     the sequence and provides list of according intervals where each is below
+     a given threshold in length (also lower bound provided). This is done by
+     iteratively identifying the max ED window (of given size) within too long
+     ranges and removing it, which results either in a shrink of the range or
+     a decomposition into two ranges. This is repeated until all ranges are 
+     sufficiently short.
+     (thanks to Alex Gawronski)
+ * tests/AccessibilityFromStream_test :
+   + test Accessibility.decomposeByMaxEd()
+ * bin/CommandLineParsing :
+   + qRegionLenMax/tRegionLenMax : (optional) maximal length of automatically
+     identified highly accessible regions in query/target
+   * qRegion/tRegion : mutable to enable lazy computation in get*Region()
+   * get*Region() :
+     + lazy computation of regions if according ?RegionLenMax > 0; uses a 
+       winSize == seedBP and a minimal range length of seedBP
+   * parse() :
+     + ensure that no manual regions defined if ?ReginLenMax provided 
+
 171111 Martin Raden :
  * IntaRNA/PredictorMfe2dHeuristic :
    * init curCellEtotal = E_INF to ignore effects of low ED of single positions

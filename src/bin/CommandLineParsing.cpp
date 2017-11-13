@@ -85,6 +85,7 @@ CommandLineParsing::CommandLineParsing()
 	qIntLoopMax( 0, 30, 16),
 	qRegionString(""),
 	qRegion(),
+	qRegionLenMax( 0, 99999, 0),
 
 	targetArg(""),
 	target(),
@@ -99,6 +100,7 @@ CommandLineParsing::CommandLineParsing()
 	tIntLoopMax( 0, 30, 16),
 	tRegionString(""),
 	tRegion(),
+	tRegionLenMax( 0, 99999, 0),
 
 	noSeedRequired(false),
 	seedTQ(""),
@@ -215,7 +217,24 @@ CommandLineParsing::CommandLineParsing()
 		("qRegion"
 			, value<std::string>(&(qRegionString))
 				->notifier(boost::bind(&CommandLineParsing::validate_qRegion,this,_1))
-			, std::string("interaction site : query regions to be considered for interaction prediction. Either given as BED file (for multi-sequence FASTA input) or in the format 'from1-to1,from2-to2,..' assuming indexing starts with 1").c_str())
+			, std::string("interaction site : query regions to be considered for"
+					" interaction prediction. Either given as BED file (for"
+					" multi-sequence FASTA input) or in the format"
+					" 'from1-to1,from2-to2,..' assuming indexing starts with 1."
+					" Consider '--qRegionLenMax' for automatic region setup for"
+					" long sequences."
+					).c_str())
+		("qRegionLenMax"
+			, value<int>(&(qRegionLenMax.val))
+				->default_value(qRegionLenMax.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_qRegionLenMax,this,_1))
+			, std::string("interaction site : maximal length of highly accessible regions"
+					" to be automatically identified. To this end, most inaccessible regions"
+					" of length '--seedBP' are iteratively removed from the available indices"
+					" until only regions below the given maximal length or remaining."
+					" (arg in range ["+toString(qRegionLenMax.min)+","+toString(qRegionLenMax.max)+"];"
+					" 0 defaults to no automatic range detection)"
+					).c_str())
 		;
 
 	////  TARGET SEQUENCE OPTIONS  ////////////////////////////////////
@@ -284,7 +303,24 @@ CommandLineParsing::CommandLineParsing()
 		("tRegion"
 			, value<std::string>(&(tRegionString))
 				->notifier(boost::bind(&CommandLineParsing::validate_tRegion,this,_1))
-			, std::string("interaction site : target regions to be considered for interaction prediction. Either given as BED file (for multi-sequence FASTA input) or in the format 'from1-to1,from2-to2,..' assuming indexing starts with 1").c_str())
+			, std::string("interaction site : target regions to be considered for"
+					" interaction prediction. Either given as BED file (for"
+					" multi-sequence FASTA input) or in the format"
+					" 'from1-to1,from2-to2,..' assuming indexing starts with 1."
+					" Consider '--tRegionLenMax' for automatic region setup for"
+					" long sequences."
+					).c_str())
+		("tRegionLenMax"
+			, value<int>(&(tRegionLenMax.val))
+				->default_value(tRegionLenMax.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_tRegionLenMax,this,_1))
+			, std::string("interaction site : maximal length of highly accessible regions"
+					" to be automatically identified. To this end, most inaccessible regions"
+					" of length '--seedBP' are iteratively removed from the available indices"
+					" until only regions below the given maximal length or remaining."
+					" (arg in range ["+toString(tRegionLenMax.min)+","+toString(tRegionLenMax.max)+"];"
+					" 0 defaults to no automatic range detection)"
+					).c_str())
 		;
 
 	////  SEED OPTIONS  ////////////////////////////////////
@@ -660,7 +696,14 @@ parse(int argc, char** argv)
 				}
 			}
 
-			// parse regions to be used for interaction prediction
+			// check regions to be used for interaction prediction
+			if (qRegionLenMax.val > 0 && !qRegionString.empty()) {
+				throw error("automatic query accessible region identification requested (--qRegionLenMax) but manual regions provided via (--qRegion)");
+			}
+			if (tRegionLenMax.val > 0 && !tRegionString.empty()) {
+				throw error("automatic target accessible region identification requested (--tRegionLenMax) but manual regions provided via (--tRegion)");
+			}
+			// parse region string if available
 			parseRegion( "qRegion", qRegionString, query, qRegion );
 			parseRegion( "tRegion", tRegionString, target, tRegion );
 
@@ -1708,6 +1751,18 @@ getQueryRanges( const size_t sequenceNumber ) const
 	if (qRegion.at(sequenceNumber).empty())
 		throw std::runtime_error("CommandLineParsing::getQueryRanges("+toString(sequenceNumber)+") is empty");
 #endif
+
+	// check if to be computed
+	if (qRegionLenMax.val > 0) {
+		// check if computation is needed
+		if (qRegion.at(sequenceNumber).begin()->to - qRegion.at(sequenceNumber).begin()->from +1 > qRegionLenMax.val) {
+			// compute highly accessible regions using ED-window-size = seedBP and minRangeLength = seedBP
+			qRegion.at(sequenceNumber) = getQueryAccessibility( sequenceNumber )->decomposeByMaxED( qRegionLenMax.val, seedBP.val, seedBP.val);
+			// inform user
+			VLOG(1) <<"detected accessible regions for query '"<<getQuerySequences().at(sequenceNumber).getId()<<"' : "<<qRegion.at(sequenceNumber);
+		}
+	}
+
 	return qRegion.at(sequenceNumber);
 }
 
@@ -1723,6 +1778,18 @@ getTargetRanges( const size_t sequenceNumber ) const
 	if (tRegion.at(sequenceNumber).empty())
 		throw std::runtime_error("CommandLineParsing::getTargetRanges("+toString(sequenceNumber)+") is empty");
 #endif
+
+	// check if to be computed
+	if (tRegionLenMax.val > 0) {
+		// check if computation is needed
+		if (tRegion.at(sequenceNumber).begin()->to - tRegion.at(sequenceNumber).begin()->from +1 > tRegionLenMax.val) {
+			// compute highly accessible regions using ED-window-size = seedBP and minRangeLength = seedBP
+			tRegion.at(sequenceNumber) = getTargetAccessibility( sequenceNumber )->decomposeByMaxED( tRegionLenMax.val, seedBP.val, seedBP.val);
+			// inform user
+			VLOG(1) <<"detected accessible regions for target '"<<getTargetSequences().at(sequenceNumber).getId()<<"' : "<<tRegion.at(sequenceNumber);
+		}
+	}
+
 	return tRegion.at(sequenceNumber);
 }
 
