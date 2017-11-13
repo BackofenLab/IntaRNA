@@ -479,7 +479,7 @@ intervals of accessible regions. It can be enabled by providing the maximal
 length of the resulting intervals via the parameters `--qRegionLenMax` and
 `--tRegionLenMax`.<br />
 More specifically, starting from the full 
-sequenc's index range, the algorithm iteratively identifies in every too-long
+sequence's index range, the algorithm iteratively identifies in every too-long
 range the window with highest ED value (penalty for non-accessibility). To
 this end, it uses windows of length `--seedBP` to find subsequences where it is
 most unlikely that a seed might be formed. This window is removed from the range,
