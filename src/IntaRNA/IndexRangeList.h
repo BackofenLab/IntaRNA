@@ -119,6 +119,22 @@ public:
 	iterator insert( const IndexRange& range );
 
 	/**
+	 * access to the stored range with the given index
+	 * @param idx the index of the range within the list to access
+	 * @return the range for index idx
+	 * @throws std::runtime_error if idx >= this.size()
+	 */
+	IndexRange & get( const size_t idx );
+
+	/**
+	 * Constant access to the stored range with the given index
+	 * @param idx the index of the range within the list to access
+	 * @return the range for index idx (const access)
+	 * @throws std::runtime_error if idx >= this.size()
+	 */
+	const IndexRange & get( const size_t idx ) const;
+
+	/**
 	 * removes an element from the list
 	 * @param i the iterator pointing to the element to delete
 	 */

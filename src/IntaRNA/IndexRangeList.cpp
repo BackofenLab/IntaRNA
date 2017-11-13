@@ -166,6 +166,32 @@ insert( const IndexRange& range )
 
 //////////////////////////////////////////////////////////////////////
 
+IndexRange &
+IndexRangeList::
+get( const size_t idx )
+{
+	if (idx >= size()) {
+		throw std::runtime_error("IndexRangeList::get() : index "+toString(idx)+" out of range (>= "+toString(size())+")");
+	}
+	// access according element via iterator and return
+	return *(list.begin()+idx);
+}
+
+//////////////////////////////////////////////////////////////////////
+
+const IndexRange &
+IndexRangeList::
+get( const size_t idx ) const
+{
+	if (idx >= size()) {
+		throw std::runtime_error("IndexRangeList::get() : index "+toString(idx)+" out of range (>= "+toString(size())+")");
+	}
+	// access according element via iterator and return
+	return *(list.begin()+idx);
+}
+
+//////////////////////////////////////////////////////////////////////
+
 IndexRangeList
 IndexRangeList::
 shift( const int indexShift, const size_t indexMax ) const
