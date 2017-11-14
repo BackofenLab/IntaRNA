@@ -164,18 +164,18 @@ decomposeByMaxED( const size_t maxRangeLength, const size_t winSize, const size_
 			// decompose
 			if (maxEdIdx == curRange.from) {
 				// prune start window
-				curRange.from = maxEdIdx+winSize;
+				curRange.from = std::min(maxEdIdx+winSize,curRange.to);
 			} else if (maxEdIdx >= maxIdx) {
 				// prune end
-				curRange.to = maxEdIdx-1;
+				curRange.to = std::min(maxEdIdx-1,curRange.from);
 			} else if (maxEdIdx - curRange.from < minRangeLength) {
 				// skip range in front of maxEdIdx since too short
-				curRange.from = maxEdIdx+winSize;
+				curRange.from = std::min(maxEdIdx+winSize,curRange.to);
 			} else {
 				// range after decomposition cut-point
-				IndexRange newRange(maxEdIdx+winSize, curRange.to);
+				IndexRange newRange(std::min(maxEdIdx+winSize,curRange.to), curRange.to);
 				// update current range
-				curRange.to=(maxEdIdx-1);
+				curRange.to=std::min(maxEdIdx-1,curRange.from);
 				// store new range if long enough
 				if (newRange.to-newRange.from+1 >= minRangeLength) {
 					accessibleRanges.push_back(newRange);
