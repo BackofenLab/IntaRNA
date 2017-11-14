@@ -145,7 +145,7 @@ TEST_CASE( "AccessibilityFromStream", "[AccessibilityFromStream]" ) {
 		// read PU values for fake ED values
 		AccessibilityFromStream acc( rna, 10, NULL, accStream, AccessibilityFromStream::ED_RNAplfold_Text, 1.0 );
 
-		REQUIRE( toString(acc.decomposeByMaxED( 8, 5, 1 )) == "5-5,11-11,25-29");
+		REQUIRE( toString(acc.decomposeByMaxED( 8, 5, 1 )) == "5-5,16-19,25-29");
 		REQUIRE( toString(acc.decomposeByMaxED( 8, 5, 2 )) == "16-19,25-29");
 		REQUIRE( toString(acc.decomposeByMaxED( 8, 5, 5 )) == "25-29");
 	}
