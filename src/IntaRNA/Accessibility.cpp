@@ -178,7 +178,7 @@ decomposeByMaxED( const size_t maxRangeLength, const size_t winSize, const size_
 				curRange.to=std::max(maxEdIdx-1,curRange.from);
 				// store new range if long enough
 				if (newRange.to-newRange.from+1 >= minRangeLength) {
-					accessibleRanges.push_back(newRange);
+					accessibleRanges.insert(newRange);
 				}
 			}
 		} else {
