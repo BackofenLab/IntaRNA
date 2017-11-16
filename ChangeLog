@@ -2,6 +2,9 @@
 171116 Martin Mann :
  * configure.ac :
    + --enable-static-linking flag added to build statically linked binaries
+ * IntaRNA/PredictorMfe2dHeuristic :
+   * undo change of 171111 since it is effecting seed-based predictor as well
+     and it is not benchmarked yet.. (thanks to Alex Gawronski)
 
 171111 Martin Mann :
  * IntaRNA/PredictorMfe2dHeuristic :
