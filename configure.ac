@@ -96,6 +96,7 @@ AC_ARG_ENABLE([debug],
 	    [enable debug data generation (def=disabled)])],
   	[debuger="$enableval"])
 AC_MSG_RESULT([$debuger])
+
 AS_IF([test x"$debuger" = x"yes"], [
 	AC_DEFINE([_DEBUG], [1], [Run in DEBUG mode with additional assertions and debug output])
 	AM_CXXFLAGS="$AM_CXXFLAGS -g -O0 -Wno-uninitialized -Wno-deprecated -DELPP_DEBUG_ERRORS" # -Wall"
@@ -104,6 +105,21 @@ AS_IF([test x"$debuger" = x"yes"], [
 	AM_CXXFLAGS="$AM_CXXFLAGS -O3 -fno-strict-aliasing -Wno-uninitialized -Wno-deprecated"
 ])
 
+###############################################################################
+# STATIC LINKING SUPPORT
+###############################################################################
+
+AC_MSG_CHECKING([whether to build statically linked binaries])
+AC_ARG_ENABLE([static-linking],
+    [AS_HELP_STRING([--enable-static-linking],
+	    [enables static linking of the executables (default=disabled)])],
+    [enable_static_linking=$enableval],
+    [enable_static_linking=no])
+AC_MSG_RESULT([$enable_static_linking])
+
+AS_IF([test x"$enable_static_linking" = x"yes"], [
+	AM_LDFLAGS="-static $AM_LDFLAGS"
+])
 
 ###############################################################################
 # MULTI-THREADING SUPPORT SETUP

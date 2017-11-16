@@ -1,4 +1,8 @@
 
+171116 Martin Mann :
+ * configure.ac :
+   + --enable-static-linking flag added to build statically linked binaries
+
 171111 Martin Mann :
  * IntaRNA/PredictorMfe2dHeuristic :
    * init curCellEtotal = E_INF to ignore effects of low ED of single positions
