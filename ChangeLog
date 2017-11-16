@@ -1,17 +1,17 @@
 
-171116 Martin Mann :
+171116 Martin Raden :
  * configure.ac :
    + --enable-static-linking flag added to build statically linked binaries
  * IntaRNA/PredictorMfe2dHeuristic :
    * undo change of 171111 since it is effecting seed-based predictor as well
      and it is not benchmarked yet.. (thanks to Alex Gawronski)
 
-171111 Martin Mann :
+171111 Martin Raden :
  * IntaRNA/PredictorMfe2dHeuristic :
    * init curCellEtotal = E_INF to ignore effects of low ED of single positions
      (already applied that way in PredictorMfe2dHeuristicSeed)
 
-171110 Martin Mann :
+171110 Martin Raden :
  * CommandLineParsing :
    + qSet : parameter to define sequence subset to be considered for prediction
    + tSet : parameter to define sequence subset to be considered for prediction
@@ -22,7 +22,7 @@
    + --qSet/--tSet docu added
    * fixing easylogging lib use example
 
-171019 Martin Mann :
+171019 Martin Raden :
  * configure.ac :
    + in debug mode, set ELPP_DEBUG_ERRORS compiler define
  * IntaRNA/general.h :
@@ -39,7 +39,7 @@
 
 version 2.1.0
 
-171010 Martin Mann :
+171010 Martin Raden :
  * README.md :
    + explicit seed description
  * AccessibilityVrna :
@@ -49,7 +49,7 @@ version 2.1.0
      * BUGFIX : only check for block-constraint for region ends (is allowed to
        contain a blocked subregion)
 
-171009 Martin Mann :
+171009 Martin Raden :
  * tests/*BasePair_test :
    * explicit use of std::abs (should fix test error of github issue #91)
    * BUGFIX: test values wrong (were derived from rounded values)
@@ -83,7 +83,7 @@ version 2.1.0
    + test checkSeedEncoding()
    + test SeedData() parsing
 
-171006 Martin Mann :
+171006 Martin Raden :
  * AccessibilityVrna :
    * fillByRNAup() :
      * BUGFIX : have to check whether region is blocked not if constrained
@@ -91,7 +91,7 @@ version 2.1.0
  * AccessibilityFromStream :
    + "not implemented" notification if accessibility constraints given
 
-171005 Martin Mann :
+171005 Martin Raden :
  * configure.ac :
    + disable-log-coloring : sets INTARNA_LOG_COLORING for console log coloring
  * bin/IntaRNA :
@@ -100,7 +100,7 @@ version 2.1.0
    + callbackForStorage() : callback function to use new VRNA API
    * fillByRNAplfold() : window-based PU computation via new VRNA API
 
-171004 Martin Mann :
+171004 Martin Raden :
  * configure.ac :
    * bump minimal ViennaRNA version to 2.4.1 (for constraint interface) 
    * bump easylogging++ version to 9.95
@@ -114,14 +114,14 @@ version 2.1.0
 
 version 2.0.5
 
-170926 Martin Mann :
+170926 Martin Raden :
  * IntaRNA/PredictorMfe4d :
    * getNextBest() : BUGFIX : matrix access was not using interaction end 
      distance and interaction data was wrongly storing distance as right index;
      this was causing segfaults when requesting more than one prediction output
      (thanks to Rick Gelhausen)
  
-170926 Martin Mann :
+170926 Martin Raden :
  * IntaRNA/PredictorMfe4dSeed :
  * IntaRNA/PredictorMfe2dHeuristicSeed :
    + updateOptima() to disable predTracker updates when fillHybridE() of super
@@ -132,13 +132,13 @@ version 2.0.5
 
 version 2.0.4
 
-170706 Martin Mann :
+170706 Martin Raden :
  * IntaRNA/OutputHandlerCsv :
    + E_hybrid : hybrid-only energy = E - ED1 - ED2
    + E_norm : length-normalized energy = E / ln( length1*length2 )
    + E_hybridNorm : length-normalized hybrid-only energy =  E_hybrid / ln(l1*l2)
 
-170705 Martin Mann :
+170705 Martin Raden :
  * perl/Intarna*.pl :
    * shebang corrected (thanks to Patrick Wright)
 
