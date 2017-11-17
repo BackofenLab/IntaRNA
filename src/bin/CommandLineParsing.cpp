@@ -621,8 +621,7 @@ parse(int argc, char** argv)
 				outStream = newOutputStream( outPrefix2streamName.at(OutPrefixCode::OP_EMPTY) );
 				// check success
 				if (outStream == NULL) {
-					LOG(ERROR) <<"could not open output file --out='"<<outPrefix2streamName.at(OutPrefixCode::OP_EMPTY) << "' for writing";
-					updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+					throw error("could not open output file --out='"<<outPrefix2streamName.at(OutPrefixCode::OP_EMPTY) << "' for writing");
 				}
 			}
 
@@ -651,8 +650,7 @@ parse(int argc, char** argv)
 				// check query search ranges
 				if (!seedQRange.empty()) {
 					if (query.size()!=1) {
-						LOG(ERROR) <<"seedQRange given but not only one query sequence provided";
-						updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+						throw error("seedQRange given but not only one query sequence provided");
 					} else {
 						validate_indexRangeList("seedQRange",seedQRange, 1, query.begin()->size());
 					}
@@ -660,8 +658,7 @@ parse(int argc, char** argv)
 				// check target search ranges
 				if (!seedTRange.empty()) {
 					if (target.size()!=1) {
-						LOG(ERROR) <<"seedTRange given but not only one target sequence provided";
-						updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+						throw error("seedTRange given but not only one target sequence provided");
 					} else {
 						validate_indexRangeList("seedTRange",seedTRange, 1, target.begin()->size());
 					}
@@ -783,20 +780,17 @@ parse(int argc, char** argv)
 
 			// check qAcc upper bound
 			if (qAccL.val > qAccW.val && qAccW.val != 0) {
-				LOG(ERROR) <<"qAccL = " <<qAccL.val <<" : has to be <= qAccW (=" <<qAccW.val<<")";
-				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+				throw error("qAccL = " <<qAccL.val <<" : has to be <= qAccW (=" <<qAccW.val<<")");
 			}
 
 			// check qAcc upper bound
 			if (tAccL.val > tAccW.val && tAccW.val != 0) {
-				LOG(ERROR) <<"tAccL = " <<tAccL.val <<" : has to be <= tAccW (=" <<tAccW.val<<")";
-				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+				throw error("tAccL = " <<tAccL.val <<" : has to be <= tAccW (=" <<tAccW.val<<")");
 			}
 
 			// check CSV stuff
 			if (outCsvCols != outCsvCols_default && outMode.val != 'C') {
-				LOG(ERROR) <<"outCsvCols set but outMode != C ("<<outMode.val<<")";
-				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+				throw error("outCsvCols set but outMode != C ("<<outMode.val<<")");
 			}
 
 			// check output sanity
@@ -808,8 +802,7 @@ parse(int argc, char** argv)
 					for (auto c2=c1; noDuplicate && (++c2)!=outPrefix2streamName.end();) {
 						if ( ! c2->second.empty() && boost::iequals( c1->second, c2->second ) ) {
 							noDuplicate = false;
-							LOG(ERROR) <<"--out argument shows multiple times '"<<c1->second<<"' as target file/stream.";
-							updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+							throw error("--out argument shows multiple times '"<<c1->second<<"' as target file/stream.");
 						}
 					}
 				}
@@ -823,7 +816,7 @@ parse(int argc, char** argv)
 					LOG(WARNING) <<"Multi-threading enabled in high-mem-prediction mode : ensure you have enough memory available!";
 				}
 				if (outMode.val == '1' || outMode.val == 'O') {
-					throw std::runtime_error("Multi-threading not supported for IntaRNA v1 output");
+					throw error("Multi-threading not supported for IntaRNA v1 output");
 				}
 			}
 #endif
