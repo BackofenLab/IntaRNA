@@ -1,75 +1,7 @@
 
-171117 Martin Raden :
- * bin/CommandLineParsing :
-   * unify input error handling via throw
-   + check if accessibility available for RegionLenMax-based decomposition
-
-171113 Martin Raden :
- * IntaRNA/IndexRangeList :
-   + get() : (constant) access to a certain range
- + tests/testEasyLoggingSetup.icc : easylogging setup to be included in all
-   tests to enable (debug) logging from the IntaRNA lib
- * tests/*_test.cpp :
-   + inclusion of testEasyLoggingSetup.icc
- * Makefile.am :
-   + clean test executable to ensure rebuild
- * tests/Makefile.am :
-   + easylogging++ compiler flags
- * IntaRNA/Accessibility :
-   + decomposeByMaxEd() : automatically identifies highly accessible regions of
-     the sequence and provides list of according intervals where each is below
-     a given threshold in length (also lower bound provided). This is done by
-     iteratively identifying the max ED window (of given size) within too long
-     ranges and removing it, which results either in a shrink of the range or
-     a decomposition into two ranges. This is repeated until all ranges are 
-     sufficiently short.
-     (thanks to Alex Gawronski)
- * tests/AccessibilityFromStream_test :
-   + test Accessibility.decomposeByMaxEd()
- * bin/CommandLineParsing :
-   + qRegionLenMax/tRegionLenMax : (optional) maximal length of automatically
-     identified highly accessible regions in query/target
-   * qRegion/tRegion : mutable to enable lazy computation in get*Region()
-   * get*Region() :
-     + lazy computation of regions if according ?RegionLenMax > 0; uses a 
-       winSize == seedBP and a minimal range length of seedBP
-   * parse() :
-     + ensure that no manual regions defined if ?ReginLenMax provided 
-
-171111 Martin Raden :
- * IntaRNA/PredictorMfe2dHeuristic :
-   * init curCellEtotal = E_INF to ignore effects of low ED of single positions
-     (already applied that way in PredictorMfe2dHeuristicSeed)
-
-171110 Martin Raden :
- * CommandLineParsing :
-   + qSet : parameter to define sequence subset to be considered for prediction
-   + tSet : parameter to define sequence subset to be considered for prediction
-     (thanks to Alex Gawronski)
- * IndexRange :
-   + LAST_INDEX : placeholder for last available index
- * README.md :
-   + --qSet/--tSet docu added
-   * fixing easylogging lib use example
-
-171019 Martin Raden :
- * configure.ac :
-   + in debug mode, set ELPP_DEBUG_ERRORS compiler define
- * IntaRNA/general.h :
-   - ELPP_* defines removed since set via configure or not needed
- * bin/CommandLineParsing :
-   + argument "--default-log-file" to redirect log output to file (except ERROR)
-   + logFileName : dummy variable for --default-log-file argument
- * README.md :
-   + --default-log-file docu added
-   + -v/--verbose docu added
- * bin/IntaRNA :
-   + log-file handling
-   + flushing log streams on exit
-
 version 2.1.0
 
-171010 Martin Raden :
+171010 Martin Mann :
  * README.md :
    + explicit seed description
  * AccessibilityVrna :
@@ -79,7 +11,7 @@ version 2.1.0
      * BUGFIX : only check for block-constraint for region ends (is allowed to
        contain a blocked subregion)
 
-171009 Martin Raden :
+171009 Martin Mann :
  * tests/*BasePair_test :
    * explicit use of std::abs (should fix test error of github issue #91)
    * BUGFIX: test values wrong (were derived from rounded values)
@@ -113,7 +45,7 @@ version 2.1.0
    + test checkSeedEncoding()
    + test SeedData() parsing
 
-171006 Martin Raden :
+171006 Martin Mann :
  * AccessibilityVrna :
    * fillByRNAup() :
      * BUGFIX : have to check whether region is blocked not if constrained
@@ -121,7 +53,7 @@ version 2.1.0
  * AccessibilityFromStream :
    + "not implemented" notification if accessibility constraints given
 
-171005 Martin Raden :
+171005 Martin Mann :
  * configure.ac :
    + disable-log-coloring : sets INTARNA_LOG_COLORING for console log coloring
  * bin/IntaRNA :
@@ -130,7 +62,7 @@ version 2.1.0
    + callbackForStorage() : callback function to use new VRNA API
    * fillByRNAplfold() : window-based PU computation via new VRNA API
 
-171004 Martin Raden :
+171004 Martin Mann :
  * configure.ac :
    * bump minimal ViennaRNA version to 2.4.1 (for constraint interface) 
    * bump easylogging++ version to 9.95
@@ -144,14 +76,14 @@ version 2.1.0
 
 version 2.0.5
 
-170926 Martin Raden :
+170926 Martin Mann :
  * IntaRNA/PredictorMfe4d :
    * getNextBest() : BUGFIX : matrix access was not using interaction end 
      distance and interaction data was wrongly storing distance as right index;
      this was causing segfaults when requesting more than one prediction output
      (thanks to Rick Gelhausen)
  
-170926 Martin Raden :
+170926 Martin Mann :
  * IntaRNA/PredictorMfe4dSeed :
  * IntaRNA/PredictorMfe2dHeuristicSeed :
    + updateOptima() to disable predTracker updates when fillHybridE() of super
@@ -162,13 +94,13 @@ version 2.0.5
 
 version 2.0.4
 
-170706 Martin Raden :
+170706 Martin Mann :
  * IntaRNA/OutputHandlerCsv :
    + E_hybrid : hybrid-only energy = E - ED1 - ED2
    + E_norm : length-normalized energy = E / ln( length1*length2 )
    + E_hybridNorm : length-normalized hybrid-only energy =  E_hybrid / ln(l1*l2)
 
-170705 Martin Raden :
+170705 Martin Mann :
  * perl/Intarna*.pl :
    * shebang corrected (thanks to Patrick Wright)
 
