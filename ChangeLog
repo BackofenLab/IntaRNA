@@ -10,8 +10,8 @@
  * IntaRNA/AccessibilityVrna :
    * construction() : 
      - checks to enable constraints only for RNAup-based computation
-     + temporary trigger to enable RNAup-based computation is plFoldW == 0
-       (should get obsolete when switching to plfold-based only)
+     - RNAup-based computation option removed
+     * plfold-based computation only
    * callbackForStorage() :
      * prob_unpaired == 0 check via E_equal()
    * fillByRNAplfold() :

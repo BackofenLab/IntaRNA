@@ -49,32 +49,17 @@ AccessibilityVrna::AccessibilityVrna(
 	edValues( getSequence().size(), getSequence().size(), 0, getMaxLength() )
 {
 
-	// check if RNAup-based accessibility computation to be used
-	if (plFoldW==0) {
+	// VRNA computation not completely threadsafe
 #if INTARNA_MULITHREADING
 		#pragma omp critical(intarna_omp_callingVRNA)
 #endif
-		{
-			// NOTE, THIS FUNCTION IS NOT THREADSAFE ...
-			fillByRNAup(vrnaHandler
-				, getAccConstraint().getMaxBpSpan()
-				);
-			// inefficient ED value computation O(n^2)*O(n^5) for debugging
-//			fillByConstraints(vrnaHandler, (plFoldW==0? getSequence().size() : std::min(plFoldW,getSequence().size())), plFoldL);
-		} // omp critical(intarna_omp_callingVRNA)
-	} else {
-		// VRNA computation not completely threadsafe
-#if INTARNA_MULITHREADING
-		#pragma omp critical(intarna_omp_callingVRNA)
-#endif
-		{
-			fillByRNAplfold(vrnaHandler
-					, (plFoldW==0? getSequence().size() : std::min(plFoldW,getSequence().size()))
-					, getAccConstraint().getMaxBpSpan()
-					);
-		} // omp critical(intarna_omp_callingVRNA)
-	}
-
+{
+	// window-based accessibility computation
+	fillByRNAplfold(vrnaHandler
+			, (plFoldW==0? getSequence().size() : std::min(plFoldW,getSequence().size()))
+			, getAccConstraint().getMaxBpSpan()
+			);
+} // omp critical(intarna_omp_callingVRNA)
 
 }
 
@@ -400,10 +385,6 @@ fillByRNAup( const VrnaHandler &vrnaHandler
 	no_closingGU = curModel.noGUclosure;
 	energy_set = curModel.energy_set;
 
-	// TODO CHECK IF TO BE CALLED OR NOT
-//	update_fold_params();
-//	    vrna_params_subst();
-
 	////////  RNAup-like (VRNA2-API) unpaired probability calculation  ///////
 
 	char * sequence = (char *) vrna_alloc(sizeof(char) * (seqLength + 1));
@@ -424,8 +405,6 @@ fillByRNAup( const VrnaHandler &vrnaHandler
 	const double min_energy = fold( sequence, structure );
 	// overwrite structure again with constraint since it now holds the mfe structure
 	for (int i=0; i<seqLength; i++) { structure[i] = getAccConstraint().getVrnaDotBracket(i); }
-//	// compute the partition function scaling value
-//	const double pf_scale = std::exp(-(curModel.sfact*min_energy)/RT/seqLength);
 	// compute partition function matrices to prepare unpaired probability calculation
 	const float ensemble_energy = pf_fold(sequence, structure);
 	// compute unpaired probabilities (cast-hack due to non-conform VRNA interface)
