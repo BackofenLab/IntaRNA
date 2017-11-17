@@ -5,6 +5,8 @@
    + check if accessibility available for RegionLenMax-based decomposition
    * validate_*AccConstr() :
      - check that not in plfold-based mode
+   * AccConstr :
+     + paired constraint option
  * IntaRNA/VrnaHandler : 
    + modle.compute_bpp = 1 to enable correct ED computation via plfold routines
  * IntaRNA/AccessibilityVrna :
@@ -19,6 +21,25 @@
      + constraint setup
  * README.md :
    + --q/tAccConstr description
+ * IntaRNA/AccessibilityConstraint :
+   + dotBracket_unconstrained : holds unconstrained encoding char
+   + dotBracket_paired : holds paired encoding char
+   * dotBracket_alphabet : now compiled from static vars only (excludes round
+     brackets that were part of it so far but never enabled)
+   - is*(from,to) : obsolete (and wrong) checks for regions removed
+   + paired : list of ranges marked as paired
+   + isMarkedPaired(i) : whether or not a position is marked as paired
+   * constructor() :
+     + parse paired ranges
+     - check for round brackets (obsolete)
+   * is*() : take paired into account
+   * getVrnaDotBracket() :
+     + returns '|' for paired positions
+ * IntaRNA/Accessibility* :
+   * getED() :
+     * bugfix : do accessibility check only on interval ends (not whole region)
+ * tests/AccessibilityConstraint_test :
+   + test for position marked as paired
 
 171116 Martin Raden :
  * configure.ac :

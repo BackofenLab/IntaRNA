@@ -989,6 +989,7 @@ parameters. Both take a string encoding for each sequence position whether it is
 
 - `.` unconstrained
 - `x` for sure accessible (unpaired)
+- `p` paired intramolecularly with some other position of this RNA
 - `b` blocked by some other interaction (implies single-strandedness)
 
 Note, *blocked* regions are currently assumed to be bound single-stranded by some

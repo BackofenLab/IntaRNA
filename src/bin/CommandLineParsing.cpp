@@ -198,6 +198,7 @@ CommandLineParsing::CommandLineParsing()
 					" a string of query sequence length encoding for each position:"
 					" '.' no constraint,"
 					" '"+toString(AccessibilityConstraint::dotBracket_accessible)+"' unpaired,"
+					" '"+toString(AccessibilityConstraint::dotBracket_paired)+"' paired (intramolecularly), or"
 					" '"+toString(AccessibilityConstraint::dotBracket_blocked)+"' blocked."
 					" Note, blocked positions are excluded from interaction prediction and constrained to be unpaired!").c_str())
 		("qAccFile"
@@ -289,6 +290,7 @@ CommandLineParsing::CommandLineParsing()
 					" a string of target sequence length encoding for each position:"
 					" '.' no constraint,"
 					" '"+toString(AccessibilityConstraint::dotBracket_accessible)+"' unpaired,"
+					" '"+toString(AccessibilityConstraint::dotBracket_paired)+"' paired (intramolecularly), or"
 					" '"+toString(AccessibilityConstraint::dotBracket_blocked)+"' blocked."
 					" Note, blocked positions are excluded from interaction prediction and constrained to be unpaired!").c_str())
 		("tAccFile"
