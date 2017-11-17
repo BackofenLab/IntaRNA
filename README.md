@@ -463,10 +463,28 @@ This report barrier can be altered using `--outMaxE`. For suboptimal interaction
 restriction, please refer to [suboptimal interaction prediction](#subopts) section.
 
 Furthermore, the region where interactions are supposed to occur can be restricted
-for target and query independently. To this end, a list of according index pairs
+for target and query independently. To this end, a list of according 
+subregion-defining index pairs
 can be provided using `--qRegion` and `--tRegion`, respectively. The indexing 
 starts with 1 and should be in the format `from1-end1,from2-end2,..` using
 integers.
+
+If you are dealing with very long sequences it might be useful to use the
+*automatic identification of accessible regions*, which dramatically reduces
+runtime and memory consumption of IntaRNA since predictions are only done for
+individual regions and not for the whole sequence. Here, we use a 
+heuristic approach that finds and ignores subregions that are unlikely to form
+an interaction, resulting in a decomposition of the full sequence range into
+intervals of accessible regions. It can be enabled by providing the maximal 
+length of the resulting intervals via the parameters `--qRegionLenMax` and
+`--tRegionLenMax`.<br />
+More specifically, starting from the full 
+sequence's index range, the algorithm iteratively identifies in every too-long
+range the window with highest ED value (penalty for non-accessibility). To
+this end, it uses windows of length `--seedBP` to find subsequences where it is
+most unlikely that a seed might be formed. This window is removed from the range,
+which results in two shorter ranges. If a range is shorter than `--seedBP`, it
+is completely removed.
 
 Finally, it is possible to restrict the overall length an interaction is allowed
 to have. This can be done independently for the query and target sequence using
@@ -529,7 +547,9 @@ This information can be incorporated into IntaRNA predictions by providing
 *explicit seed information*. To this end, the `--seedTQ` parameter can be used.
 It takes a comma-separated list of seed string encodings in the format 
 `startTbpsT&startQbpsQ`, which is in the same format as the IntaRNA `hybridDB`
-output (see below), i.e. e.g. `4|||.|&7||.||` to encode a seed interaction like 
+output (see below), i.e. e.g. `--seedTQ='4|||.|&7||.||'` 
+(ensure you quote the seed encoding to avoid a shell interpretation of the pipe symbol '|') 
+to encode a seed interaction like 
 the following 
 ```bash
 target

@@ -375,7 +375,10 @@ protected:
 	//! the string encoding of the interaction intervals for the query(s)
 	std::string qRegionString;
 	//! the list of interaction intervals for each query sequence
-	IndexRangeListVec qRegion;
+	mutable IndexRangeListVec qRegion;
+	//! maximal length of automatically detected highly accessible regions for
+	//! for query sequences; if 0, no automatic detection is done
+	NumberParameter<int> qRegionLenMax;
 
 	//! the target command line argument
 	std::string targetArg;
@@ -402,7 +405,10 @@ protected:
 	//! the string encoding of the interaction intervals for the target(s)
 	std::string tRegionString;
 	//! the list of interaction intervals for each target sequence
-	IndexRangeListVec tRegion;
+	mutable IndexRangeListVec tRegion;
+	//! maximal length of automatically detected highly accessible regions for
+	//! for target sequences; if 0, no automatic detection is done
+	NumberParameter<int> tRegionLenMax;
 
 	//! whether or not a seed is to be required for an interaction or not
 	bool noSeedRequired;
@@ -544,6 +550,12 @@ protected:
 	void validate_qRegion(const std::string & value);
 
 	/**
+	 * Validates the query's region max length argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_qRegionLenMax(const int & value);
+
+	/**
 	 * Validates the target sequence argument.
 	 * @param value the argument value to validate
 	 */
@@ -602,6 +614,12 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_tRegion(const std::string & value);
+
+	/**
+	 * Validates the target's region max length argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_tRegionLenMax(const int & value);
 
 	/**
 	 * Validates the explicit seed argument.
@@ -1098,6 +1116,15 @@ void CommandLineParsing::validate_qRegion(const std::string & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
+void CommandLineParsing::validate_qRegionLenMax(const int & value)
+{
+	// forward check to general method
+	validate_numberArgument("qRegionLenMax", qRegionLenMax, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
 void CommandLineParsing::validate_target(const std::string & value)
 {
 	validate_sequenceArgument("target",value);
@@ -1224,6 +1251,15 @@ inline
 void CommandLineParsing::validate_tRegion(const std::string & value) {
 	// check and store region information
 	validateRegion( "tRegion", value );
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_tRegionLenMax(const int & value)
+{
+	// forward check to general method
+	validate_numberArgument("tRegionLenMax", tRegionLenMax, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////

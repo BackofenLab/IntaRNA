@@ -10,6 +10,9 @@ using namespace IntaRNA;
 
 TEST_CASE( "AccessibilityConstraint", "[AccessibilityConstraint]" ) {
 
+	// setup easylogging++ stuff if not already done
+	#include "testEasyLoggingSetup.icc"
+
 
 	SECTION("check empty construction") {
 		AccessibilityConstraint c(10);
