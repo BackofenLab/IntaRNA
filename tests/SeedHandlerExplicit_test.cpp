@@ -11,9 +11,6 @@ using namespace IntaRNA;
 
 TEST_CASE( "SeedHandlerExplicit", "[SeedHandlerExplicit]" ) {
 
-	// setup easylogging++ stuff if not already done
-	#include "testEasyLoggingSetup.icc"
-
 	RnaSequence rna("test","ACGUACGU");
 
 	AccessibilityDisabled acc(rna,rna.size(),NULL);

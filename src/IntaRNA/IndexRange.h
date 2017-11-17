@@ -21,10 +21,6 @@ class IndexRange {
 
 public:
 
-	//! placeholder to define the whole range (without explicit naming the last
-	//! index) is defined
-	static const size_t LAST_INDEX;
-
 	//! the start of the index range
 	size_t from;
 

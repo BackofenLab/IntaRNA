@@ -167,19 +167,6 @@ TEST_CASE( "IndexRangeList", "[IndexRangeList]" ) {
 
 	}
 
-	SECTION("check get") {
-
-		// create list
-		rangeList.insert(IndexRange(1,2));
-		rangeList.insert(IndexRange(4,8));
-		rangeList.insert(IndexRange(10,10));
-
-		REQUIRE( rangeList.get(0) == IndexRange(1,2) );
-		REQUIRE( rangeList.get(1) == IndexRange(4,8) );
-		REQUIRE( rangeList.get(2) == IndexRange(10,10) );
-
-	}
-
 	SECTION("check reverse") {
 
 		// create list

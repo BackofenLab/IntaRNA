@@ -15,9 +15,6 @@ using namespace IntaRNA;
 
 TEST_CASE( "PredictionTrackerProfileMinE", "[PredictionTrackerProfileMinE]" ) {
 
-	// setup easylogging++ stuff if not already done
-	#include "testEasyLoggingSetup.icc"
-
 	// setup dummy data
 	RnaSequence r1("r1","AACCG");
 	RnaSequence r2("r2","AGUUNNNN");

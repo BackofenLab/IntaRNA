@@ -116,8 +116,7 @@ fillHybridE()
 		if (E_isINF(curCell->E)) {
 			continue;
 		}
-
-		// current best total energy value (covers to far E_init only)
+		// current
 		curCellEtotal = energy.getE(i1,curCell->j1,i2,curCell->j2,curCell->E);
 
 		// TODO PARALLELIZE THIS DOUBLE LOOP ?!

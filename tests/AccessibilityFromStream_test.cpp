@@ -50,9 +50,6 @@ const std::string accString =
 
 TEST_CASE( "AccessibilityFromStream", "[AccessibilityFromStream]" ) {
 
-// setup easylogging++ stuff if not already done
-#include "testEasyLoggingSetup.icc"
-
 	// create data
 	RnaSequence rna("test",seq);
 
@@ -136,18 +133,6 @@ TEST_CASE( "AccessibilityFromStream", "[AccessibilityFromStream]" ) {
 		RnaSequence rnaDouble("tooLong",seq+seq);
 		// trigger parsing exception
 		REQUIRE_THROWS( AccessibilityFromStream( rnaDouble, 10, NULL, accStream, AccessibilityFromStream::Pu_RNAplfold_Text, 1.0 ) );
-	}
-
-	SECTION("test decomposeByMaxED()") {
-		// prepare stream to read from
-		std::istringstream  accStream(accString);
-		RnaSequence rna("tooLong",seq);
-		// read PU values for fake ED values
-		AccessibilityFromStream acc( rna, 10, NULL, accStream, AccessibilityFromStream::ED_RNAplfold_Text, 1.0 );
-
-		REQUIRE( toString(acc.decomposeByMaxED( 8, 5, 1 )) == "5-5,16-19,25-29");
-		REQUIRE( toString(acc.decomposeByMaxED( 8, 5, 2 )) == "16-19,25-29");
-		REQUIRE( toString(acc.decomposeByMaxED( 8, 5, 5 )) == "25-29");
 	}
 
 }
