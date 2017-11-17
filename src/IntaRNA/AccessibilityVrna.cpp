@@ -49,13 +49,8 @@ AccessibilityVrna::AccessibilityVrna(
 	edValues( getSequence().size(), getSequence().size(), 0, getMaxLength() )
 {
 
-	// check if constraint given
-	// or sliding window empty
-	// or larger than sequence length
-	if ( (! getAccConstraint().isEmpty()) || (plFoldW==0) || (plFoldW >= getSequence().size()) ) {
-		if (plFoldW > 0 && plFoldW < getSequence().size() ) {
-			throw std::runtime_error("sequence '"+seq.getId()+"': accuracy constraints provided but sliding window enabled (>0), which is currently not supported");
-		}
+	// check if RNAup-based accessibility computation to be used
+	if (plFoldW==0) {
 #if INTARNA_MULITHREADING
 		#pragma omp critical(intarna_omp_callingVRNA)
 #endif
@@ -283,7 +278,7 @@ callbackForStorage(FLT_OR_DBL   *pr,
 			int i = j - l + 1;
 			// check if interval ends are blocked positions
 			// check if zero before computing its log-value
-			if (rightEndBlocked || accConstr.isMarkedBlocked(i-1) || prob_unpaired == 0.0) {
+			if (rightEndBlocked || accConstr.isMarkedBlocked(i-1) || E_equal(prob_unpaired, 0.0) ) {
 				// ED value = ED_UPPER_BOUND
 				edValues(i-1,j-1) = ED_UPPER_BOUND;
 			} else {
@@ -317,10 +312,6 @@ fillByRNAplfold( const VrnaHandler &vrnaHandler
 	TIMED_FUNC_IF(timerObj, VLOG_IS_ON(9));
 
 #if INTARNA_IN_DEBUG_MODE
-	// check if structure constraint given
-	if ( ! getAccConstraint().isEmpty() ) {
-		throw std::runtime_error("AccessibilityVrna::fillByRNAplfold() called but structure constraint present for sequence "+getSequence().getId());
-	}
 	if (plFoldW < 3) {
 		throw std::runtime_error("AccessibilityVrna::fillByRNAplfold() : plFoldW < 3");
 	}
@@ -340,6 +331,30 @@ fillByRNAplfold( const VrnaHandler &vrnaHandler
 
     // setup folding data
     vrna_fold_compound_t * fold_compound = vrna_fold_compound( sequence, &curModel, VRNA_OPTION_PF | VRNA_OPTION_WINDOW );
+
+	// setup folding constraints
+	if ( ! getAccConstraint().isEmpty() ) {
+		// copy structure constraint
+		char * structure = structure = (char *) vrna_alloc(sizeof(char) * (length + 1));
+		for (int i=0; i<length; i++) {
+		// copy accessibility constraint
+		structure[i] = getAccConstraint().getVrnaDotBracket(i);
+		}
+		// set array end indicator
+		structure[length] = '\0';
+
+		// Adding hard constraints from pseudo dot-bracket
+		unsigned int constraint_options = VRNA_CONSTRAINT_DB_DEFAULT;
+		// enforce constraints
+		constraint_options |= VRNA_CONSTRAINT_DB_ENFORCE_BP;
+
+		// add constraint information to the fold compound object
+		vrna_constraints_add(fold_compound, (const char *)structure, constraint_options);
+
+		// cleanup
+		free(structure);
+	}
+
 
     // provide access to this object to be filled by the callback
     // and the normalized temperature for the Boltzmann weight computation

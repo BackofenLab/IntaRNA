@@ -194,7 +194,12 @@ CommandLineParsing::CommandLineParsing()
 		("qAccConstr"
 			, value<std::string>(&(qAccConstr))
 				->notifier(boost::bind(&CommandLineParsing::validate_qAccConstr,this,_1))
-			, std::string("accessibility computation : structure constraint for each sequence position: '.' no constraint, '"+toString(AccessibilityConstraint::dotBracket_accessible)+"' unpaired, '"+toString(AccessibilityConstraint::dotBracket_blocked)+"' blocked. Note, blocked positions are excluded from interaction prediction and considered unpaired!").c_str())
+			, std::string("accessibility computation : structure constraint :"
+					" a string of query sequence length encoding for each position:"
+					" '.' no constraint,"
+					" '"+toString(AccessibilityConstraint::dotBracket_accessible)+"' unpaired,"
+					" '"+toString(AccessibilityConstraint::dotBracket_blocked)+"' blocked."
+					" Note, blocked positions are excluded from interaction prediction and considered unpaired!").c_str())
 		("qAccFile"
 			, value<std::string>(&(qAccFile))
 			, std::string("accessibility computation : the file/stream to be parsed, if --qAcc is to be read from file. Used 'STDIN' if to read from standard input stream.").c_str())
@@ -280,7 +285,12 @@ CommandLineParsing::CommandLineParsing()
 		("tAccConstr"
 			, value<std::string>(&(tAccConstr))
 				->notifier(boost::bind(&CommandLineParsing::validate_tAccConstr,this,_1))
-			, std::string("accessibility computation : structure constraint for each sequence position: '.' no constraint, '"+toString(AccessibilityConstraint::dotBracket_accessible)+"' unpaired, '"+toString(AccessibilityConstraint::dotBracket_blocked)+"' blocked. Note, blocked positions are excluded from interaction prediction and considered unpaired!").c_str())
+			, std::string("accessibility computation : structure constraint :"
+					" a string of target sequence length encoding for each position:"
+					" '.' no constraint,"
+					" '"+toString(AccessibilityConstraint::dotBracket_accessible)+"' unpaired,"
+					" '"+toString(AccessibilityConstraint::dotBracket_blocked)+"' blocked."
+					" Note, blocked positions are excluded from interaction prediction and considered unpaired!").c_str())
 		("tAccFile"
 			, value<std::string>(&(tAccFile))
 			, std::string("accessibility computation : the file/stream to be parsed, if --tAcc is to be read from file. Used 'STDIN' if to read from standard input stream.").c_str())

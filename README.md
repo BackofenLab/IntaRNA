@@ -81,6 +81,7 @@ The following topics are covered by this documentation:
     - [Minimal energy for all intermolecular index pairs](#pairMinE)
     - [Accessibility and unpaired probabilities](#accessibility)
       - [Local versus global unpaired probabilities](#accLocalGlobal)
+      - [Constrain regions to be accessible or blocked](#accConstraints)
       - [Read/write accessibility from/to file or stream](#accFromFile)
   - [Multi-threading and parallelized computation](#multithreading)
 - [Library for integration in external tools](#lib)
@@ -415,7 +416,7 @@ Given these features, we can emulate and extend a couple of RNA-RNA interaction
 tools using IntaRNA.
 
 **TargetScan** and **RNAhybrid** are approaches that predict the interaction hybrid with 
-minimal interaction energy without consideratio whether or not the interacting 
+minimal interaction energy without consideration whether or not the interacting 
 subsequences are probably involved involved in intramolecular base pairings. Furthermore,
 no seed constraint is taken into account.
 This prediction result can be emulated (depending on the used prediction mode) 
@@ -968,6 +969,35 @@ independently while respecting `AccL <= AccW`.
 IntaRNA [..] --qAccW=0 --qAccL=0 --tAccW=0 --qAccL=0
 # using local accessibilities for target and global for query
 IntaRNA [..] --qAccW=0 --qAccL=0 --tAccW=150 --qAccL=100
+```
+
+
+<a name="accConstraints" />
+
+#### Constraints for accessibility computation
+
+For some RNAs additional accessibility information is available. For instance,
+it might be known from experiments that some subsequence is unpaired or already
+bound by some other factors. The first case (unpaired) makes such regions 
+especially interesting for interaction prediction and should result in no ED
+penalties for these regions. In the second case (blocked) the region should be 
+excluded from interaction prediction.
+
+To incorporate such information, IntaRNA provides the possibility to constrain
+the accessibility computation using the `--qAccConstr` and `--tAccConstr` 
+parameters. Both take a string encoding for each sequence position whether it is
+
+- `.` unconstrained
+- `x` for sure accessible (unpaired)
+- `b` blocked by some other interaction (implies single-strandedness)
+
+Note, currently blocked regions are assumed to be bound single-stranded, i.e.
+are treated as unpaired for ED computation.
+
+```bash
+# constraining some central query positions to be blocked by some other molecules
+IntaRNA [..] --query="GGGGGGGCCCCCCC" \
+        --qAccConstr="...bbbb......."
 ```
 
 
