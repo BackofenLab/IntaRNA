@@ -1,4 +1,9 @@
 
+171117 Martin Raden :
+ * bin/CommandLineParsing :
+   * unify input error handling via throw
+   + check if accessibility available for RegionLenMax-based decomposition
+
 171113 Martin Raden :
  * IntaRNA/IndexRangeList :
    + get() : (constant) access to a certain range
