@@ -621,7 +621,7 @@ parse(int argc, char** argv)
 				outStream = newOutputStream( outPrefix2streamName.at(OutPrefixCode::OP_EMPTY) );
 				// check success
 				if (outStream == NULL) {
-					throw error("could not open output file --out='"<<outPrefix2streamName.at(OutPrefixCode::OP_EMPTY) << "' for writing");
+					throw error("could not open output file --out='"+toString(outPrefix2streamName.at(OutPrefixCode::OP_EMPTY))+ "' for writing");
 				}
 			}
 
@@ -786,7 +786,7 @@ parse(int argc, char** argv)
 
 			// check qAcc upper bound
 			if (qAccL.val > qAccW.val && qAccW.val != 0) {
-				throw error("qAccL = " +toString(qAccL.val) + " : has to be <= qAccW (=" +toString(qAccW.val) * ")");
+				throw error("qAccL = " +toString(qAccL.val) + " : has to be <= qAccW (=" +toString(qAccW.val) + ")");
 			}
 
 			// check qAcc upper bound
