@@ -694,6 +694,12 @@ parse(int argc, char** argv)
 			}
 
 			// check regions to be used for interaction prediction
+			if ( qRegionLenMax.val > 0 && qAcc.val == 'N' ) {
+				throw error("automatic query accessible region identification requested (--qRegionLenMax) but accessibility computation disabled (--qAcc=N)");
+			}
+			if ( tRegionLenMax.val > 0 && tAcc.val == 'N' ) {
+				throw error("automatic query accessible region identification requested (--tRegionLenMax) but accessibility computation disabled (--tAcc=N)");
+			}
 			if (qRegionLenMax.val > 0 && !qRegionString.empty()) {
 				throw error("automatic query accessible region identification requested (--qRegionLenMax) but manual regions provided via (--qRegion)");
 			}
