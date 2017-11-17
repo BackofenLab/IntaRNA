@@ -978,7 +978,7 @@ IntaRNA [..] --qAccW=0 --qAccL=0 --tAccW=150 --qAccL=100
 
 For some RNAs additional accessibility information is available. For instance,
 it might be known from experiments that some subsequence is unpaired or already
-bound by some other factors. The first case (unpaired) makes such regions 
+bound by some other factor. The first case (unpaired) makes such regions 
 especially interesting for interaction prediction and should result in no ED
 penalties for these regions. In the second case (blocked) the region should be 
 excluded from interaction prediction.
@@ -991,8 +991,8 @@ parameters. Both take a string encoding for each sequence position whether it is
 - `x` for sure accessible (unpaired)
 - `b` blocked by some other interaction (implies single-strandedness)
 
-Note, currently blocked regions are assumed to be bound single-stranded, i.e.
-are treated as unpaired for ED computation.
+Note, *blocked* regions are currently assumed to be bound single-stranded by some
+other factor and thus are *treated as unpaired* for ED computation.
 
 ```bash
 # constraining some central query positions to be blocked by some other molecules
