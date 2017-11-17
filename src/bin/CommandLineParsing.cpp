@@ -199,7 +199,7 @@ CommandLineParsing::CommandLineParsing()
 					" '.' no constraint,"
 					" '"+toString(AccessibilityConstraint::dotBracket_accessible)+"' unpaired,"
 					" '"+toString(AccessibilityConstraint::dotBracket_blocked)+"' blocked."
-					" Note, blocked positions are excluded from interaction prediction and considered unpaired!").c_str())
+					" Note, blocked positions are excluded from interaction prediction and constrained to be unpaired!").c_str())
 		("qAccFile"
 			, value<std::string>(&(qAccFile))
 			, std::string("accessibility computation : the file/stream to be parsed, if --qAcc is to be read from file. Used 'STDIN' if to read from standard input stream.").c_str())
@@ -290,7 +290,7 @@ CommandLineParsing::CommandLineParsing()
 					" '.' no constraint,"
 					" '"+toString(AccessibilityConstraint::dotBracket_accessible)+"' unpaired,"
 					" '"+toString(AccessibilityConstraint::dotBracket_blocked)+"' blocked."
-					" Note, blocked positions are excluded from interaction prediction and considered unpaired!").c_str())
+					" Note, blocked positions are excluded from interaction prediction and constrained to be unpaired!").c_str())
 		("tAccFile"
 			, value<std::string>(&(tAccFile))
 			, std::string("accessibility computation : the file/stream to be parsed, if --tAcc is to be read from file. Used 'STDIN' if to read from standard input stream.").c_str())
