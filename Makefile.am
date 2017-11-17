@@ -26,6 +26,7 @@ tests: all
 	@echo
 	@echo " => compiling and running tests ... will take a while ..."
 	@echo
+	@$(MAKE) clean-checkPROGRAMS -s -C tests
 	@$(MAKE) check -s -C tests
 
 test: tests

@@ -13,6 +13,9 @@ const std::string seq = "gguccacguccaa";
 
 TEST_CASE("AccessibilityBasePair", "[AccessibilityBasePair]") {
 
+	// setup easylogging++ stuff if not already done
+	#include "testEasyLoggingSetup.icc"
+
   RnaSequence rna("test", seq);
 
   SECTION("Basepair Energy difference") {

@@ -9,6 +9,9 @@ using namespace IntaRNA;
 
 TEST_CASE( "RnaSequence", "[RNAsequence]" ) {
 
+	// setup easylogging++ stuff if not already done
+	#include "testEasyLoggingSetup.icc"
+
 
 	SECTION( "sequence with non-ACGU" ) {
 		bool exceptionRaised = ! RnaSequence::isValidSequenceIUPAC("ACUGAC_error");

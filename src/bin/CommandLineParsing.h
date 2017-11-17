@@ -354,6 +354,10 @@ protected:
 	std::string queryArg;
 	//! the container holding all query sequences
 	RnaSequenceVec query;
+	//! subset of query sequence indices to be processed
+	IndexRangeList qSet;
+	//! string encoding of qSet
+	std::string qSetString;
 	//! accessibility computation mode for query sequences
 	CharParameter qAcc;
 	//! window length for query accessibility computation (plFold)
@@ -371,12 +375,19 @@ protected:
 	//! the string encoding of the interaction intervals for the query(s)
 	std::string qRegionString;
 	//! the list of interaction intervals for each query sequence
-	IndexRangeListVec qRegion;
+	mutable IndexRangeListVec qRegion;
+	//! maximal length of automatically detected highly accessible regions for
+	//! for query sequences; if 0, no automatic detection is done
+	NumberParameter<int> qRegionLenMax;
 
 	//! the target command line argument
 	std::string targetArg;
 	//! the container holding all target sequences
 	RnaSequenceVec target;
+	//! subset of target sequence indices to be processed
+	IndexRangeList tSet;
+	//! string encoding of tSet
+	std::string tSetString;
 	//! accessibility computation mode for target sequences
 	CharParameter tAcc;
 	//! window length for target accessibility computation (plFold)
@@ -394,7 +405,10 @@ protected:
 	//! the string encoding of the interaction intervals for the target(s)
 	std::string tRegionString;
 	//! the list of interaction intervals for each target sequence
-	IndexRangeListVec tRegion;
+	mutable IndexRangeListVec tRegion;
+	//! maximal length of automatically detected highly accessible regions for
+	//! for target sequences; if 0, no automatic detection is done
+	NumberParameter<int> tRegionLenMax;
 
 	//! whether or not a seed is to be required for an interaction or not
 	bool noSeedRequired;
@@ -458,6 +472,9 @@ protected:
 	//! the CSV column selection
 	static const std::string outCsvCols_default;
 
+	//! (optional) file name for log output
+	std::string logFileName;
+
 	//! the vienna energy parameter handler initialized by #parse()
 	mutable VrnaHandler vrnaHandler;
 
@@ -477,6 +494,12 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_query(const std::string & value);
+
+	/**
+	 * Validates the query's qSet argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_qSet(const std::string & value);
 
 	/**
 	 * Validates the query accessibility argument.
@@ -527,10 +550,22 @@ protected:
 	void validate_qRegion(const std::string & value);
 
 	/**
+	 * Validates the query's region max length argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_qRegionLenMax(const int & value);
+
+	/**
 	 * Validates the target sequence argument.
 	 * @param value the argument value to validate
 	 */
 	void validate_target(const std::string & value);
+
+	/**
+	 * Validates the target's tSet argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_tSet(const std::string & value);
 
 	/**
 	 * Validates the target accessibility argument.
@@ -579,6 +614,12 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_tRegion(const std::string & value);
+
+	/**
+	 * Validates the target's region max length argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_tRegionLenMax(const int & value);
 
 	/**
 	 * Validates the explicit seed argument.
@@ -779,10 +820,13 @@ protected:
 	 * @param paramName the name of the parameter (for exception handling)
 	 * @param paramArg the given argument for the parameter
 	 * @param sequences the container to fill
+	 * @param seqSubset the indices of the input sequences to store (all other
+	 *                  ignored)
 	 */
 	void parseSequences(const std::string & paramName,
 					const std::string& paramArg,
-					RnaSequenceVec& sequences );
+					RnaSequenceVec& sequences,
+					const IndexRangeList & seqSubset );
 
 	/**
 	 * Parses the parameter input stream from FASTA format and returns all
@@ -790,10 +834,13 @@ protected:
 	 * @param paramName the name of the parameter (for exception handling)
 	 * @param input the input stream from where to read the FASTA data
 	 * @param sequences the container to fill
+	 * @param seqSubset the indices of the input sequences to store (all other
+	 *                  ignored)
 	 */
 	void parseSequencesFasta( const std::string & paramName,
 					std::istream& input,
-					RnaSequenceVec& sequences);
+					RnaSequenceVec& sequences,
+					const IndexRangeList & seqSubset );
 
 	/**
 	 * Checks whether or not a sequence container holds a specific number of
@@ -903,7 +950,6 @@ protected:
 					, const RnaSequence * target
 					, const RnaSequence * query ) const;
 
-
 };
 
 
@@ -941,6 +987,25 @@ inline
 void CommandLineParsing::validate_query(const std::string & value)
 {
 	validate_sequenceArgument("query",value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_qSet(const std::string & value) {
+	// clear current qSet data
+	qSet.clear();
+	// parse input value
+	if (!value.empty()) {
+		// check regex
+		if (!boost::regex_match(value, IndexRangeList::regex, boost::match_perl) ) {
+			LOG(ERROR) <<"qSet"<<" = " <<value <<" : is not in the format 'from1-to1,from2-to2,..'";
+			parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
+		} else {
+			// parse and store subset definitions
+			qSet = IndexRangeList(value);
+		}
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1051,11 +1116,38 @@ void CommandLineParsing::validate_qRegion(const std::string & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
+void CommandLineParsing::validate_qRegionLenMax(const int & value)
+{
+	// forward check to general method
+	validate_numberArgument("qRegionLenMax", qRegionLenMax, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
 void CommandLineParsing::validate_target(const std::string & value)
 {
 	validate_sequenceArgument("target",value);
 }
 
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_tSet(const std::string & value) {
+	// clear current qSet data
+	tSet.clear();
+	// parse input value
+	if (!value.empty()) {
+		// check regex
+		if (!boost::regex_match(value, IndexRangeList::regex, boost::match_perl) ) {
+			LOG(ERROR) <<"tSet"<<" = " <<value <<" : is not in the format 'from1-to1,from2-to2,..'";
+			parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
+		} else {
+			// parse and store subset definitions
+			tSet = IndexRangeList(value);
+		}
+	}
+}
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -1159,6 +1251,15 @@ inline
 void CommandLineParsing::validate_tRegion(const std::string & value) {
 	// check and store region information
 	validateRegion( "tRegion", value );
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_tRegionLenMax(const int & value)
+{
+	// forward check to general method
+	validate_numberArgument("tRegionLenMax", tRegionLenMax, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1589,6 +1690,7 @@ getFullFilename( const std::string & fileNamePath, const RnaSequence * target, c
 				+ fileNamePath.substr(startOfExtension);
 	}
 }
+
 
 ////////////////////////////////////////////////////////////////////////////
 

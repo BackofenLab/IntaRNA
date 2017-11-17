@@ -51,6 +51,18 @@ int main(int argc, char **argv){
 		// setup logging with given parameters
 		START_EASYLOGGINGPP(argc, argv);
 
+		// check if log file set and update all loggers before going on
+		el::Logger* logger = el::Loggers::getLogger("default");
+		if (logger != NULL && logger->configurations() != NULL && logger->configurations()->hasConfiguration(el::ConfigurationType::Filename))
+		{
+			// default all to file
+			el::Loggers::reconfigureAllLoggers(el::ConfigurationType::ToStandardOutput, std::string("false"));
+			el::Loggers::reconfigureAllLoggers(el::ConfigurationType::ToFile, std::string("true"));
+			// enforec error out to standard output
+			el::Loggers::reconfigureAllLoggers(el::Level::Error, el::ConfigurationType::ToStandardOutput, std::string("true"));
+			el::Loggers::reconfigureAllLoggers(el::Level::Error, el::ConfigurationType::ToFile, std::string("false"));
+		}
+
 		// parse command line parameters
 		CommandLineParsing parameters;
 		{
@@ -288,15 +300,18 @@ int main(int argc, char **argv){
 	} catch (std::exception & e) {
 		LOG(WARNING) <<"Exception raised : " <<e.what() <<"\n\n"
 			<<"  ==> Please report to the IntaRNA development team! Thanks!\n";
+		el::Loggers::flushAll();
 		return -1;
 	} catch (...) {
 		std::exception_ptr eptr = std::current_exception();
 		LOG(WARNING) <<"Unknown exception raised \n\n"
 			<<"  ==> Please report to the IntaRNA development team! Thanks!\n";
+		el::Loggers::flushAll();
 		return -1;
 	}
 
 	  // all went fine
+	el::Loggers::flushAll();
 	return 0;
 }
 

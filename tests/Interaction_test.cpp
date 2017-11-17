@@ -11,6 +11,9 @@ using namespace IntaRNA;
 
 TEST_CASE( "Interaction", "[Interaction]" ) {
 
+	// setup easylogging++ stuff if not already done
+	#include "testEasyLoggingSetup.icc"
+
 	RnaSequence r("test","AACCGGUU");
 
 	SECTION("empty construction") {
