@@ -786,17 +786,17 @@ parse(int argc, char** argv)
 
 			// check qAcc upper bound
 			if (qAccL.val > qAccW.val && qAccW.val != 0) {
-				throw error("qAccL = " <<qAccL.val <<" : has to be <= qAccW (=" <<qAccW.val<<")");
+				throw error("qAccL = " +toString(qAccL.val) + " : has to be <= qAccW (=" +toString(qAccW.val) * ")");
 			}
 
 			// check qAcc upper bound
 			if (tAccL.val > tAccW.val && tAccW.val != 0) {
-				throw error("tAccL = " <<tAccL.val <<" : has to be <= tAccW (=" <<tAccW.val<<")");
+				throw error("tAccL = " +toString(tAccL.val)+" : has to be <= tAccW (=" +toString(tAccW.val)+")");
 			}
 
 			// check CSV stuff
 			if (outCsvCols != outCsvCols_default && outMode.val != 'C') {
-				throw error("outCsvCols set but outMode != C ("<<outMode.val<<")");
+				throw error("outCsvCols set but outMode != C ("+toString(outMode.val)+")");
 			}
 
 			// check output sanity
@@ -808,7 +808,7 @@ parse(int argc, char** argv)
 					for (auto c2=c1; noDuplicate && (++c2)!=outPrefix2streamName.end();) {
 						if ( ! c2->second.empty() && boost::iequals( c1->second, c2->second ) ) {
 							noDuplicate = false;
-							throw error("--out argument shows multiple times '"<<c1->second<<"' as target file/stream.");
+							throw error("--out argument shows multiple times '"+toString(c1->second)+"' as target file/stream.");
 						}
 					}
 				}
