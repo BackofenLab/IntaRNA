@@ -5,14 +5,21 @@ namespace IntaRNA {
 
 ////////////////////////////////////////////////////////////////////////
 
+// the marker for unconstrained positions in dot-bracket notation
+const char AccessibilityConstraint::dotBracket_unconstrained = '.';
 // the marker for blocked positions in dot-bracket notation
 const char AccessibilityConstraint::dotBracket_blocked = 'b';
 // the marker for accessible positions in dot-bracket notation
 const char AccessibilityConstraint::dotBracket_accessible = 'x';
+// the marker for paired positions in dot-bracket notation
+const char AccessibilityConstraint::dotBracket_paired = 'p';
 
-const std::string AccessibilityConstraint::dotBracketAlphabet = ".()"
+const std::string AccessibilityConstraint::dotBracketAlphabet =
+					 toString(AccessibilityConstraint::dotBracket_unconstrained)
 					+toString(AccessibilityConstraint::dotBracket_accessible)
-					+toString(AccessibilityConstraint::dotBracket_blocked);
+					+toString(AccessibilityConstraint::dotBracket_blocked)
+					+toString(AccessibilityConstraint::dotBracket_paired)
+					;
 
 
 ////////////////////////////////////////////////////////////////////////

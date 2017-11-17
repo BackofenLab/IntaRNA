@@ -3,6 +3,43 @@
  * bin/CommandLineParsing :
    * unify input error handling via throw
    + check if accessibility available for RegionLenMax-based decomposition
+   * validate_*AccConstr() :
+     - check that not in plfold-based mode
+   * AccConstr :
+     + paired constraint option
+ * IntaRNA/VrnaHandler : 
+   + modle.compute_bpp = 1 to enable correct ED computation via plfold routines
+ * IntaRNA/AccessibilityVrna :
+   * construction() : 
+     - checks to enable constraints only for RNAup-based computation
+     - RNAup-based computation option removed
+     * plfold-based computation only
+   * callbackForStorage() :
+     * prob_unpaired == 0 check via E_equal()
+   * fillByRNAplfold() :
+     - debug check that no constraint is defined
+     + constraint setup
+ * README.md :
+   + --q/tAccConstr description
+ * IntaRNA/AccessibilityConstraint :
+   + dotBracket_unconstrained : holds unconstrained encoding char
+   + dotBracket_paired : holds paired encoding char
+   * dotBracket_alphabet : now compiled from static vars only (excludes round
+     brackets that were part of it so far but never enabled)
+   - is*(from,to) : obsolete (and wrong) checks for regions removed
+   + paired : list of ranges marked as paired
+   + isMarkedPaired(i) : whether or not a position is marked as paired
+   * constructor() :
+     + parse paired ranges
+     - check for round brackets (obsolete)
+   * is*() : take paired into account
+   * getVrnaDotBracket() :
+     + returns '|' for paired positions
+ * IntaRNA/Accessibility* :
+   * getED() :
+     * bugfix : do accessibility check only on interval ends (not whole region)
+ * tests/AccessibilityConstraint_test :
+   + test for position marked as paired
 
 171116 Martin Raden :
  * configure.ac :
@@ -985,7 +1022,7 @@ version 2.0.2
    - isOutNonOverlapping() : obsolete
    - isOutputReportMax() : obsolete
    + outOverlap + validator : overlap encoding
-   + getOutputConstraint() : central data structure for output constraints´
+   + getOutputConstraint() : central data structure for output constraints
    - regexRangeEncoding : obsolete due to IndexRangeList::regex
    * parseRegion() : now uses IndexRangeList string constructor and shift() for
      initialization
@@ -1665,7 +1702,7 @@ version 2.0.2
  * README : 
    + compilation information
    + refers to README.md
- + README.md (by Björn Grüning)
+ + README.md (by Bjoern Gruening)
  * COPYING : refers to LICENSE
  + LICENSE : now MIT license for intarna 2.*
  * configure.ac : replaced by new version for intarna 2.*

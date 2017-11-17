@@ -49,37 +49,17 @@ AccessibilityVrna::AccessibilityVrna(
 	edValues( getSequence().size(), getSequence().size(), 0, getMaxLength() )
 {
 
-	// check if constraint given
-	// or sliding window empty
-	// or larger than sequence length
-	if ( (! getAccConstraint().isEmpty()) || (plFoldW==0) || (plFoldW >= getSequence().size()) ) {
-		if (plFoldW > 0 && plFoldW < getSequence().size() ) {
-			throw std::runtime_error("sequence '"+seq.getId()+"': accuracy constraints provided but sliding window enabled (>0), which is currently not supported");
-		}
+	// VRNA computation not completely threadsafe
 #if INTARNA_MULITHREADING
 		#pragma omp critical(intarna_omp_callingVRNA)
 #endif
-		{
-			// NOTE, THIS FUNCTION IS NOT THREADSAFE ...
-			fillByRNAup(vrnaHandler
-				, getAccConstraint().getMaxBpSpan()
-				);
-			// inefficient ED value computation O(n^2)*O(n^5) for debugging
-//			fillByConstraints(vrnaHandler, (plFoldW==0? getSequence().size() : std::min(plFoldW,getSequence().size())), plFoldL);
-		} // omp critical(intarna_omp_callingVRNA)
-	} else {
-		// VRNA computation not completely threadsafe
-#if INTARNA_MULITHREADING
-		#pragma omp critical(intarna_omp_callingVRNA)
-#endif
-		{
-			fillByRNAplfold(vrnaHandler
-					, (plFoldW==0? getSequence().size() : std::min(plFoldW,getSequence().size()))
-					, getAccConstraint().getMaxBpSpan()
-					);
-		} // omp critical(intarna_omp_callingVRNA)
-	}
-
+{
+	// window-based accessibility computation
+	fillByRNAplfold(vrnaHandler
+			, (plFoldW==0? getSequence().size() : std::min(plFoldW,getSequence().size()))
+			, getAccConstraint().getMaxBpSpan()
+			);
+} // omp critical(intarna_omp_callingVRNA)
 
 }
 
@@ -283,7 +263,7 @@ callbackForStorage(FLT_OR_DBL   *pr,
 			int i = j - l + 1;
 			// check if interval ends are blocked positions
 			// check if zero before computing its log-value
-			if (rightEndBlocked || accConstr.isMarkedBlocked(i-1) || prob_unpaired == 0.0) {
+			if (rightEndBlocked || accConstr.isMarkedBlocked(i-1) || E_equal(prob_unpaired, 0.0) ) {
 				// ED value = ED_UPPER_BOUND
 				edValues(i-1,j-1) = ED_UPPER_BOUND;
 			} else {
@@ -317,10 +297,6 @@ fillByRNAplfold( const VrnaHandler &vrnaHandler
 	TIMED_FUNC_IF(timerObj, VLOG_IS_ON(9));
 
 #if INTARNA_IN_DEBUG_MODE
-	// check if structure constraint given
-	if ( ! getAccConstraint().isEmpty() ) {
-		throw std::runtime_error("AccessibilityVrna::fillByRNAplfold() called but structure constraint present for sequence "+getSequence().getId());
-	}
 	if (plFoldW < 3) {
 		throw std::runtime_error("AccessibilityVrna::fillByRNAplfold() : plFoldW < 3");
 	}
@@ -340,6 +316,30 @@ fillByRNAplfold( const VrnaHandler &vrnaHandler
 
     // setup folding data
     vrna_fold_compound_t * fold_compound = vrna_fold_compound( sequence, &curModel, VRNA_OPTION_PF | VRNA_OPTION_WINDOW );
+
+	// setup folding constraints
+	if ( ! getAccConstraint().isEmpty() ) {
+		// copy structure constraint
+		char * structure = structure = (char *) vrna_alloc(sizeof(char) * (length + 1));
+		for (int i=0; i<length; i++) {
+		// copy accessibility constraint
+		structure[i] = getAccConstraint().getVrnaDotBracket(i);
+		}
+		// set array end indicator
+		structure[length] = '\0';
+
+		// Adding hard constraints from pseudo dot-bracket
+		unsigned int constraint_options = VRNA_CONSTRAINT_DB_DEFAULT;
+		// enforce constraints
+		constraint_options |= VRNA_CONSTRAINT_DB_ENFORCE_BP;
+
+		// add constraint information to the fold compound object
+		vrna_constraints_add(fold_compound, (const char *)structure, constraint_options);
+
+		// cleanup
+		free(structure);
+	}
+
 
     // provide access to this object to be filled by the callback
     // and the normalized temperature for the Boltzmann weight computation
@@ -385,10 +385,6 @@ fillByRNAup( const VrnaHandler &vrnaHandler
 	no_closingGU = curModel.noGUclosure;
 	energy_set = curModel.energy_set;
 
-	// TODO CHECK IF TO BE CALLED OR NOT
-//	update_fold_params();
-//	    vrna_params_subst();
-
 	////////  RNAup-like (VRNA2-API) unpaired probability calculation  ///////
 
 	char * sequence = (char *) vrna_alloc(sizeof(char) * (seqLength + 1));
@@ -409,8 +405,6 @@ fillByRNAup( const VrnaHandler &vrnaHandler
 	const double min_energy = fold( sequence, structure );
 	// overwrite structure again with constraint since it now holds the mfe structure
 	for (int i=0; i<seqLength; i++) { structure[i] = getAccConstraint().getVrnaDotBracket(i); }
-//	// compute the partition function scaling value
-//	const double pf_scale = std::exp(-(curModel.sfact*min_energy)/RT/seqLength);
 	// compute partition function matrices to prepare unpaired probability calculation
 	const float ensemble_energy = pf_fold(sequence, structure);
 	// compute unpaired probabilities (cast-hack due to non-conform VRNA interface)
