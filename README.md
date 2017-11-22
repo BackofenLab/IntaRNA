@@ -1013,9 +1013,9 @@ and all positions not covered by the encoding are assumed to be unconstrained
 ```bash
 # applying the same constraints by different encodings to query and target
 # example 1
-IntaRNA [..] --qAccConstr="...bbbb....." --qAccConstr="b:4-7"
+IntaRNA [..] --qAccConstr="...bbbb....." --tAccConstr="b:4-7"
 # example 2
-IntaRNA [..] --qAccConstr="..bb..xxp.bb" --qAccConstr="b:3-4,11-12,x:7-8,p:9-9"
+IntaRNA [..] --qAccConstr="..bb..xxp.bb" --tAccConstr="b:3-4,11-12,x:7-8,p:9-9"
 ```
 
 
