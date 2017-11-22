@@ -287,12 +287,15 @@ CommandLineParsing::CommandLineParsing()
 			, value<std::string>(&(tAccConstr))
 				->notifier(boost::bind(&CommandLineParsing::validate_tAccConstr,this,_1))
 			, std::string("accessibility computation : structure constraint :"
-					" a string of target sequence length encoding for each position:"
+					"\ntEITHER a string of target sequence length encoding for each position:"
 					" '.' no constraint,"
 					" '"+toString(AccessibilityConstraint::dotBracket_accessible)+"' unpaired,"
 					" '"+toString(AccessibilityConstraint::dotBracket_paired)+"' paired (intramolecularly), or"
 					" '"+toString(AccessibilityConstraint::dotBracket_blocked)+"' blocked."
-					" Note, blocked positions are excluded from interaction prediction and constrained to be unpaired!").c_str())
+					" Note, blocked positions are excluded from interaction prediction and constrained to be unpaired!"
+					"\nOR an index range based encoding that is prefixed by the according constraint letter and a colon,"
+					" e.g. 'b:3-4,33-40,p:1-2,12-20'"
+					).c_str())
 		("tAccFile"
 			, value<std::string>(&(tAccFile))
 			, std::string("accessibility computation : the file/stream to be parsed, if --tAcc is to be read from file. Used 'STDIN' if to read from standard input stream.").c_str())
@@ -945,25 +948,10 @@ void
 CommandLineParsing::
 validate_structureConstraintArgument(const std::string & name, const std::string & value)
 {
-	// check if valid alphabet
-	if (value.find_first_not_of(AccessibilityConstraint::dotBracketAlphabet) != std::string::npos) {
-		LOG(ERROR) <<""<<name<<" '"<<value <<"' : contains invalid characters!";
+	// check if valid encoding
+	if (boost::regex_match( value, AccessibilityConstraint::regex, boost::match_perl )) {
+		LOG(ERROR) <<"constraint "<<name<<" = '"<<value <<"' is not correctly encoded!";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
-	} else {
-		// check for base pair balance / nestedness
-		int bpStackLvl = 0;
-		for (std::string::const_iterator c = value.begin(); c!=value.end(); ++c) {
-			switch (*c) {
-			case '(' : ++bpStackLvl; break;
-			case ')' : --bpStackLvl; break;
-			default: break;
-			}
-			if (bpStackLvl<0) {
-				LOG(ERROR) <<""<<name<<" '"<<value <<"' : unbalanced base pairs!";
-				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
-			}
-		}
-
 	}
 }
 
@@ -1106,7 +1094,13 @@ getQueryAccessibility( const size_t sequenceNumber ) const
 	const RnaSequence& seq = getQuerySequences().at(sequenceNumber);
 
 	// create temporary constraint object (will be copied)
-	AccessibilityConstraint accConstraint(qAccConstr,qAccL.val);
+	AccessibilityConstraint accConstraint(seq.size());
+	try {
+		// try parsing
+		accConstraint = AccessibilityConstraint(seq.size(), qAccConstr, qAccL.val);
+	} catch (std::exception & ex) {
+		throw std::runtime_error(toString("query accessibility constraint : ")+ex.what());
+	}
 	// construct selected accessibility object
 	switch(qAcc.val) {
 
@@ -1192,9 +1186,15 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 	if (sequenceNumber >= getTargetSequences().size()) {
 		throw std::runtime_error("CommandLineParsing::getTargetAccessibility : sequence number "+toString(sequenceNumber)+" is out of range (<"+toString(getTargetSequences().size())+")");
 	}
-	// create temporary constraint object (will be copied)
-	AccessibilityConstraint accConstraint(tAccConstr,tAccL.val);
 	const RnaSequence& seq = getTargetSequences().at(sequenceNumber);
+	// create temporary constraint object (will be copied)
+	AccessibilityConstraint accConstraint(seq.size());
+	try {
+		accConstraint = AccessibilityConstraint(seq.size(), tAccConstr, tAccL.val);
+	} catch (std::exception & ex) {
+		throw std::runtime_error(toString("target accessibility constraint : ")+ex.what());
+	}
+
 	switch(tAcc.val) {
 
 	case 'N' : // no accessibility

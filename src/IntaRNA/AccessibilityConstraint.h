@@ -5,6 +5,8 @@
 #include "IntaRNA/IndexRangeList.h"
 #include "IntaRNA/RnaSequence.h"
 
+#include <boost/regex.hpp>
+
 #include <utility>
 #include <vector>
 
@@ -34,9 +36,17 @@ public:
 	//! the marker for paired positions in dot-bracket notation
 	static const char dotBracket_paired;
 
+	//! collection of all allowed encoding of constraints
+	static const std::string dotBracket_constraints;
+
 	//! the alphabet to encode accessibility constraints in dot-bracket notation
 	static const std::string dotBracketAlphabet;
 
+	//! regular expression that encodes a single region encoding as index list
+	static const std::string regionIndexList;
+
+	//! the regular expression that marks a non-empty valid constraint encoding
+	static const boost::regex regex;
 
 public:
 
@@ -59,11 +69,14 @@ public:
 
 	/**
 	 * Constraint construction based on VRNA-like dot-bracket encoding
+	 * @param length length of the constrained sequence
 	 * @param dotBracket the constraint encoding in VRNA-like dot-bracket encoding
 	 * @param maxBpSpan the maximal base pair span to be used for accessibility
 	 *        computation; set to 0 for full sequence length
 	 */
-	AccessibilityConstraint( const std::string& dotBracket, const size_t maxBpSpan = 0 );
+	AccessibilityConstraint( const size_t length
+							, const std::string& dotBracket
+							, const size_t maxBpSpan = 0 );
 
 	virtual ~AccessibilityConstraint();
 
@@ -141,6 +154,8 @@ public:
 	AccessibilityConstraint & operator= ( const AccessibilityConstraint & c );
 
 
+	friend std::ostream& operator<<(std::ostream& out, const AccessibilityConstraint& c);
+
 protected:
 
 	//! the overall sequence length this constraint is about
@@ -176,6 +191,15 @@ protected:
 };
 
 
+/**
+ * Prints the accessibility constraint in range-based encoding to stream
+ * @param out the ostream to write to
+ * @param c the AccessibilityConstraint object to add
+ * @return the altered stream out
+ */
+std::ostream& operator<<(std::ostream& out, const AccessibilityConstraint& c);
+
+
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
@@ -190,32 +214,6 @@ AccessibilityConstraint( const size_t length_, const size_t maxBpSpan_ )
 	accessible(),
 	paired()
 {
-}
-
-////////////////////////////////////////////////////////////////////////
-
-inline
-AccessibilityConstraint::
-AccessibilityConstraint( const std::string& dotBracket, const size_t maxBpSpan_ )
-	:
-	length(dotBracket.size()),
-	maxBpSpan( maxBpSpan_==0 ? length : std::min(maxBpSpan_,length) ),
-	blocked(),
-	accessible(),
-	paired()
-{
-#if INTARNA_IN_DEBUG_MODE
-	if (dotBracket.find_first_not_of(dotBracketAlphabet)!=std::string::npos) {
-		throw std::runtime_error("AccessibilityConstraint("+dotBracket+") contains unsupported characters");
-	}
-#endif
-
-	// screen for blocked regions
-	screenDotBracket( dotBracket, dotBracket_blocked, blocked );
-	// screen for accessible regions
-	screenDotBracket( dotBracket, dotBracket_accessible, accessible );
-	// screen for accessible regions
-	screenDotBracket( dotBracket, dotBracket_paired, paired );
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -361,6 +359,32 @@ operator= ( const AccessibilityConstraint & c )
 	paired = c.paired;
 
 	return *this;
+}
+
+////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+
+inline
+std::ostream& operator<<(std::ostream& out, const AccessibilityConstraint& c)
+{
+	bool alreadyPrinted = false;
+	// print ranges if non-empty
+	if (!c.accessible.empty()) {
+		out <<(alreadyPrinted?",":"") <<AccessibilityConstraint::dotBracket_accessible <<':' <<c.accessible;
+		alreadyPrinted = true;
+	}
+	// print ranges if non-empty
+	if (!c.blocked.empty()) {
+		out <<(alreadyPrinted?",":"") <<AccessibilityConstraint::dotBracket_blocked <<':' <<c.blocked;
+		alreadyPrinted = true;
+	}
+	// print ranges if non-empty
+	if (!c.paired.empty()) {
+		out <<(alreadyPrinted?",":"") <<AccessibilityConstraint::dotBracket_paired <<':' <<c.paired;
+		alreadyPrinted = true;
+	}
+	return out;
 }
 
 ////////////////////////////////////////////////////////////////////////
