@@ -1001,6 +1001,24 @@ IntaRNA [..] --query="GGGGGGGCCCCCCC" \
         --qAccConstr="...bbbb......."
 ```
 
+It is also possible to provide a more compact index-range-based encoding of the
+constraints, which is especially useful for longer sequences or if you have only
+a few constrained regions. To this end, one can provide a comma-separated list 
+of index ranges that are prefixed with the according constraint letter from 
+above and a colon. Best check the following examples, which should give a good
+idea how to use. Note, indexing is supposed to be based on a minimal index of 1
+and all positions not covered by the encoding are assumed to be unconstrained
+(which must not to be encoded explicitely).
+
+```bash
+# applying the same constraints by different encodings to query and target
+# example 1
+IntaRNA [..] --qAccConstr="...bbbb....." --qAccConstr="b:4-7"
+# example 2
+IntaRNA [..] --qAccConstr="..bb..xxp.bb" --qAccConstr="b:3-4,11-12,x:7-8,p:9-9"
+```
+
+
 
 <a name="accFromFile" />
 

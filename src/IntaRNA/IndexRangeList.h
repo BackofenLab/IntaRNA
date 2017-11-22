@@ -27,6 +27,9 @@ protected:
 
 public:
 
+	//! regular expression string (without start/end matching)
+	static const std::string regexString;
+
 	//! regular expression that matches valid IndexRangeList string encodings
 	static const boost::regex regex;
 

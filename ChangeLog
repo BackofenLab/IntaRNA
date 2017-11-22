@@ -1,4 +1,32 @@
 
+171122 Martin Raden :
+ * README.md :
+   + discussion and examples for range-based constraint encoding
+ * tests/AccessibilityConstraint :
+   + test for range-based encoding parsing
+ * IntaRNA/IndexRangeList :
+   + regexString : string encoding of regex without start/end matching to be
+     used in other regex encodings
+ * IntaRNA/AccessibilityConstraint :
+   + dotBracket_constraints : list of constraint encodings
+   + regionIndexList : regular expression string that matches the region list
+     for a single constraint encoding
+   + regex : overall regex that matches both dotBracketAlphabet as well as
+     range-based encodings
+   + operator << : prints the constraint in range-based encoding
+   * construction :
+     + length now mandatory since not necessarily available via constraint 
+       string encoding length
+     + parsing of range-based encoding with according error messages
+ * bin/CommandLineParsing :
+   * get*Accessibility():
+     + constraint parsing now encapsulated by try-catch to report dedicated
+       error messages for query/target encodings
+   + *AccConstr parameter description extended with range-based encoding
+   * validate_structureConstraintArgument() :
+     - obsolete structure check removed
+     * validation now via regex
+
 171117 Martin Raden :
  * bin/CommandLineParsing :
    * unify input error handling via throw
