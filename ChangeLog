@@ -1,4 +1,17 @@
 
+171123 Martin Raden :
+ * bin/CommandLineParsing :
+   * validate_outputTarget() :
+     + check whether or not parent directory of output file exists
+     + check whether or not the output file can be overwritten (if existing)
+ * IntaRNA/general :
+   * E_precisionEpsilon : now = sqrt(numeric_limits<E_type>::min())
+     (was 1000*numeric_limits<E_type>::epsilon(), which was much too large)
+ * IntaRNA/AccessibilityVrna :
+   * callbackForStorage() :
+     * undo last change, ie. check for 0-pUvalues now again via '==' instead of
+       E_equal
+
 171122 Martin Raden :
  * README.md :
    + discussion and examples for range-based constraint encoding

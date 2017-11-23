@@ -263,7 +263,7 @@ callbackForStorage(FLT_OR_DBL   *pr,
 			int i = j - l + 1;
 			// check if interval ends are blocked positions
 			// check if zero before computing its log-value
-			if (rightEndBlocked || accConstr.isMarkedBlocked(i-1) || E_equal(prob_unpaired, 0.0) ) {
+			if (rightEndBlocked || accConstr.isMarkedBlocked(i-1) || (prob_unpaired == 0.0) ) {
 				// ED value = ED_UPPER_BOUND
 				edValues(i-1,j-1) = ED_UPPER_BOUND;
 			} else {
