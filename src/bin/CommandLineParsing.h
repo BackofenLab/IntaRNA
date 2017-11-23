@@ -1425,10 +1425,43 @@ void CommandLineParsing::validate_outputTarget(
 	if (boost::iequals(value,"STDOUT") || boost::iequals(value,"STDERR")) {
 		return;
 	}
+
+	///////////  ASSUME IT IS A FILENAME/-PATH  ///////////////
+
 	// check if empty filename
 	if ( value.empty() ) {
 		LOG(ERROR) <<argName<<" : no output defined (empty)";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+		return;
+	}
+
+	// check if parent directory exists
+	boost::filesystem::path p(value);
+	if ( !p.parent_path().empty() && ! boost::filesystem::exists(p.parent_path()) ) {
+		LOG(ERROR) <<argName<<" : parent directory '"<<p.parent_path().string()<<"' of output file '"<<value<<"' does not exist";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+		return;
+	}
+
+	// check if output file exists and can not be overwritten
+	if ( boost::filesystem::exists(p) ) {
+		// start overwriting and catch if needed
+		bool fileCanNotBeOverwritten = false;
+		try {
+			// open dummy file stream to check if writeable
+			std::ofstream file(value);
+			if (!file) {
+				fileCanNotBeOverwritten = true;
+			}
+			file.close();
+		} catch (std::exception & ex) {
+			fileCanNotBeOverwritten = true;
+		}
+		if (fileCanNotBeOverwritten) {
+			LOG(ERROR) <<argName<<" : of output file '"<<value<<"' exists and can not be overwritten";
+			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+			return;
+		}
 	}
 }
 
