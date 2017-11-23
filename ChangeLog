@@ -17,6 +17,8 @@
      * now computation is considered thread-safe, i.e. no omp_critical needed
  * bin/IntaRNA :
    + parallelization of query accessibility computation
+ * README.md :
+   - non-parallelization of accessibility computation not true anymore
 
 171122 Martin Raden :
  * README.md :

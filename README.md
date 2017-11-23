@@ -1102,19 +1102,9 @@ IntaRNA supports the parallelization of the target-query-combination processing.
 The maximal number of threads to be used can be specified using the `--threads` parameter.
 If `--threads=k > 0`, than *k* predictions are processed in parallel.
 
-When using parallelization, you should have the following things in mind:
+When using parallelization, you should have the following thing in mind:
 
-- Most of the IntaRNA runtime (in heuristic prediction mode) 
-  is consumed by [accessibility computation](#accessibility) 
-  (if not [loaded from file](#accFromFile)). 
-  Currently, due to some thread-safety issues with the 
-  routines from the Vienna RNA package, the IntaRNA
-  accessibility computation is done serially. This significantly reduces the
-  multi-threading effect when running IntaRNA in the fast heuristic mode (`--mode=H`).
-  If you run a non-heuristic prediction mode, multi-threading will show a more
-  dramatic decrease in runtime performance, since here the interaction prediction
-  is the computationally more demanding step.
-- The memory consumption will be much higher, since each thread runs an independent
+- The memory consumption will be (much) higher, since each thread runs an independent
   prediction (with according memory consumption). Thus, ensure you have enough
   RAM available when using many threads of memory-demanding 
   [prediction modes](#predModes).
