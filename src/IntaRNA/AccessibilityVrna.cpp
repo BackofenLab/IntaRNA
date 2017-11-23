@@ -49,17 +49,19 @@ AccessibilityVrna::AccessibilityVrna(
 	edValues( getSequence().size(), getSequence().size(), 0, getMaxLength() )
 {
 
-	// VRNA computation not completely threadsafe
-#if INTARNA_MULITHREADING
-		#pragma omp critical(intarna_omp_callingVRNA)
-#endif
-{
 	// window-based accessibility computation
 	fillByRNAplfold(vrnaHandler
 			, (plFoldW==0? getSequence().size() : std::min(plFoldW,getSequence().size()))
 			, getAccConstraint().getMaxBpSpan()
 			);
-} // omp critical(intarna_omp_callingVRNA)
+
+// fillByRNAplfold computation not threadsafe
+//#if INTARNA_MULITHREADING
+//		#pragma omp critical(intarna_omp_callingVRNA)
+//#endif
+//{
+//	fillByRNAplfold(..); // obsolete
+//} // omp critical(intarna_omp_callingVRNA)
 
 }
 

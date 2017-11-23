@@ -9,8 +9,14 @@
      (was 1000*numeric_limits<E_type>::epsilon(), which was much too large)
  * IntaRNA/AccessibilityVrna :
    * callbackForStorage() :
-     * undo last change, ie. check for 0-pUvalues now again via '==' instead of
+     * undo last change, i.e. check for 0-pUvalues now again via '==' instead of
        E_equal
+ * IntaRNA/AccessibilityVrna :
+ * IntaRNA/InteractionEnergyVrna :
+   * construction() :
+     * now computation is considered thread-safe, i.e. no omp_critical needed
+ * bin/IntaRNA :
+   + parallelization of query accessibility computation
 
 171122 Martin Raden :
  * README.md :
