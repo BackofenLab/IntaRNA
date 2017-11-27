@@ -1,6 +1,14 @@
 
 171123 Martin Raden :
  * bin/CommandLineParsing :
+   * getThreads() :
+     * returns threads.max if threads.val == 0
+   * threads :
+     * min value = 0 (request maximal number of threads)
+     * parameter docu updated accordingly
+
+171123 Martin Raden :
+ * bin/CommandLineParsing :
    * validate_outputTarget() :
      + check whether or not parent directory of output file exists
      + check whether or not the output file can be overwritten (if existing)

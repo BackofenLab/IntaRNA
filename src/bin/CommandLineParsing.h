@@ -1623,7 +1623,7 @@ size_t
 CommandLineParsing::
 getThreads() const
 {
-	return threads.val;
+	return threads.val == 0 ? threads.max : threads.val;
 }
 #endif
 

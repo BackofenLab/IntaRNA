@@ -1100,9 +1100,10 @@ as shown above), since this does not produce the according output files!
 
 IntaRNA supports the parallelization of the target-query-combination processing. 
 The maximal number of threads to be used can be specified using the `--threads` parameter.
-If `--threads=k > 0`, than *k* predictions are processed in parallel.
+If `--threads=k != 1`, than *k* predictions are processed in parallel. A value of
+0 requests the maximally available number of threads for this machine.
 
-When using parallelization, you should have the following thing in mind:
+When using parallelization, you should have the following in mind:
 
 - The memory consumption will be (much) higher, since each thread runs an independent
   prediction (with according memory consumption). Thus, ensure you have enough

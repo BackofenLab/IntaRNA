@@ -119,7 +119,7 @@ CommandLineParsing::CommandLineParsing()
 	pred( "SP", 'S'),
 	predMode( "HME", 'H'),
 #if INTARNA_MULITHREADING
-	threads( 1, omp_get_max_threads(), 1),
+	threads( 0, omp_get_max_threads(), 1),
 #endif
 
 	energy("BV",'V'),
@@ -524,6 +524,7 @@ CommandLineParsing::CommandLineParsing()
 				->default_value(threads.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_threads,this,_1))
 			, std::string("maximal number of threads to be used for parallel computation of query-target combinations."
+					" A value of 0 requests all available CPUs."
 					" Note, the number of threads multiplies the required memory used for computation!"
 					" (arg in range ["+toString(threads.min)+","+toString(threads.max)+"])").c_str())
 #endif
@@ -831,7 +832,7 @@ parse(int argc, char** argv)
 
 #if INTARNA_MULITHREADING
 			// check if multi-threading
-			if (threads.val > 1 && getTargetSequences().size() > 1) {
+			if (threads.val != 1 && getTargetSequences().size() > 1) {
 				// warn if >= 4D space prediction enabled
 				if (pred.val != 'S' || predMode.val == 'E') {
 					LOG(WARNING) <<"Multi-threading enabled in high-mem-prediction mode : ensure you have enough memory available!";
