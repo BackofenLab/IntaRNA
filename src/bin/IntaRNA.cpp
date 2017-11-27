@@ -18,6 +18,7 @@
 #include "IntaRNA/Predictor.h"
 #include "IntaRNA/OutputHandler.h"
 #include "IntaRNA/OutputHandlerIntaRNA1.h"
+#include "IntaRNA/OutputHandlerInteractionList.h"
 
 // initialize logging for binary
 INITIALIZE_EASYLOGGINGPP
@@ -214,10 +215,15 @@ int main(int argc, char **argv){
 									dynamic_cast<OutputHandlerIntaRNA1*>(output)->addSeparator( true );
 								}
 
-								// todo setup collecting output handler to ensure k-best output per query-taget combination
+								// setup collecting output handler to ensure
+								// k-best output per query-target combination
+								// and not per region combination if not requested
+								OutputHandlerInteractionList bestInteractions(
+										(parameters.reportBestPerRegion() ? std::numeric_limits<size_t>::max() : 1 )
+											* parameters.getOutputConstraint().reportMax );
 
 								// get interaction prediction handler
-								Predictor * predictor = parameters.getPredictor( *energy, *output );
+								Predictor * predictor = parameters.getPredictor( *energy, bestInteractions );
 								INTARNA_CHECK_NOT_NULL(predictor,"predictor initialization failed");
 
 								// run prediction for all range combinations
@@ -243,6 +249,12 @@ int main(int argc, char **argv){
 
 								} // target ranges
 								} // query ranges
+
+								// update final output handler
+								BOOST_FOREACH( const Interaction * inter, bestInteractions) {
+									// forward all reported interactions for all regions to final output handler
+									output->add(*inter);
+								}
 
 #if INTARNA_MULITHREADING
 								#pragma omp atomic update

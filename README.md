@@ -468,7 +468,9 @@ for target and query independently. To this end, a list of according
 subregion-defining index pairs
 can be provided using `--qRegion` and `--tRegion`, respectively. The indexing 
 starts with 1 and should be in the format `from1-end1,from2-end2,..` using
-integers.
+integers. Note, if you want to have predictions individually for each region
+combination (rather than just the best for each query-target combination) you
+want to add `--outPerRegion` to the call.
 
 If you are dealing with very long sequences it might be useful to use the
 *automatic identification of accessible regions*, which dramatically reduces

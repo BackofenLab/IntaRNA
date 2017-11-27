@@ -8,12 +8,24 @@
      * parameter docu updated accordingly
    * validateRegion() :
      + instantiate range list to ensure that it is ascending and non-overlapping
+   + outPerRegion : parameter flag to define how reporting per region should be
+     done
+   + reportBestPerRegion() : access ot outPerRegion
  * IntaRNA/IndexRangeList :
    * sanity checks now also in non-debug mode to ensure sane instances
  * IntaRNA/IndexRange :
    * operator+/-(int shift) : returns a shifted range
  * bin/IntaRNA :
    * bugfix: verbose range report was not shifting ranges by +1
+   + use OutputHandlerInteractionList to handle predictions for all region
+     combinations for a query-target combination; setup maximal size based on 
+     CommandLineParsing::reportBestPerRegion()
+ * README.md :
+   + '--outPerRegion' docu added
+ * IntaRNA/Interaction :
+   + operator < : less-than comparison based on energy and indexing/#bp/seed.E
+ + IntaRNA/OutputHandlerInteractionList : stores the best k interactions sorted
+   by Interaction::operator<()
 
 171123 Martin Raden :
  * bin/CommandLineParsing :

@@ -134,6 +134,7 @@ CommandLineParsing::CommandLineParsing()
 	outDeltaE( 0.0, 100.0, 100.0),
 	outMaxE( -999.0, +999.0, 0.0),
 	outCsvCols(outCsvCols_default),
+	outPerRegion(false),
 
 	logFileName(""),
 
@@ -511,6 +512,8 @@ CommandLineParsing::CommandLineParsing()
 					+ boost::replace_all_copy(OutputHandlerCsv::list2string(OutputHandlerCsv::string2list("")), ",", ", ")+"."
 					+ "\nDefault = '"+outCsvCols+"'."
 					).c_str())
+	    ("outPerRegion", "output : if given, best interactions are reported independently"
+	    		" for all region combinations; otherwise only the best for each query-target combination")
 	    ("verbose,v", "verbose output") // handled via easylogging++
 	    ("default-log-file", value<std::string>(&(logFileName)), "name of file to be used for log output (INFO, WARNING, VERBOSE, DEBUG)")
 	    ;
@@ -640,6 +643,7 @@ parse(int argc, char** argv)
 					throw error("could not open output file --out='"+toString(outPrefix2streamName.at(OutPrefixCode::OP_EMPTY))+ "' for writing");
 				}
 			}
+			outPerRegion = vm.count("outPerRegion") > 0;
 
 			// parse the sequences
 			parseSequences("query",queryArg,query,qSet);

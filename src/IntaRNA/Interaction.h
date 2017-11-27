@@ -155,6 +155,18 @@ public:
 
 
 	/**
+	 * Checks whether or not this interaction is considered better (smaller)
+	 * than another interaction of the same sequences
+	 * @param i the interaction to compare to (for the same sequences!)
+	 * @return energy < i.energy
+	 * 			|| (energy == i.energy && bpLeft < i.bpLeft)
+	 * 			|| (energy == i.energy && bpLeft == i.bpLeft && bpRight < i.bpRight)
+	 */
+	bool operator < ( const Interaction &i ) const;
+
+
+
+	/**
 	 * Compares if an interaction has larger energy that a given value
 	 *
 	 * @param energy the energy to compare to
@@ -340,6 +352,58 @@ Interaction::
 compareEnergy( const E_type & energy, const Interaction & hasLargerE )
 {
 	return energy < hasLargerE.energy && !(E_equal(energy,hasLargerE.energy));
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+Interaction::
+operator < ( const Interaction &i ) const
+{
+#if INTARNA_IN_DEBUG_MODE
+	if (i.s1 != s1 || i.s2 != s2) throw std::runtime_error("Interaction::operator < () : comparing interactions for different sequences");
+	if (basePairs.empty() || i.basePairs.empty()) throw std::runtime_error("Interaction::operator < () : comparing empty interactions");
+#endif
+	// check if energy is larger
+	if (energy > i.energy && !(E_equal(energy, i.energy))) {
+		return false;
+	}
+	// check if energy is equal
+	if (E_equal(energy, i.energy)) {
+		return
+		// i1 is smaller
+			basePairs.begin()->first < i.basePairs.begin()->first // i1
+		// i1 is equal BUT i2 smaller
+		|| (basePairs.begin()->first == i.basePairs.begin()->first // i1
+				&& basePairs.begin()->second < i.basePairs.begin()->second) // i2
+		// i1 and i2 are equal BUT j1 smaller
+		|| (basePairs.begin()->first == i.basePairs.begin()->first // i1
+				&& basePairs.begin()->second == i.basePairs.begin()->second // i2
+				&& basePairs.end()->first < i.basePairs.end()->first) // j1
+		// i1, i2 and j1 are equal BUT j2 smaller
+		|| (basePairs.begin()->first == i.basePairs.begin()->first // i1
+				&& basePairs.begin()->second == i.basePairs.begin()->second // i2
+				&& basePairs.end()->first == i.basePairs.end()->first // j1
+				&& basePairs.end()->second < i.basePairs.end()->second) // j2
+		// i1, i2, j1, j2 are equal BUT more base pairs
+		|| (basePairs.begin()->first == i.basePairs.begin()->first // i1
+				&& basePairs.begin()->second == i.basePairs.begin()->second // i2
+				&& basePairs.end()->first == i.basePairs.end()->first // j1
+				&& basePairs.end()->second == i.basePairs.end()->second // j2
+				&& basePairs.size() > i.basePairs.size())
+		// i1, i2, j1, j2, #bps are equal BUT seed energy smaller
+		|| (basePairs.begin()->first == i.basePairs.begin()->first // i1
+				&& basePairs.begin()->second == i.basePairs.begin()->second // i2
+				&& basePairs.end()->first == i.basePairs.end()->first // j1
+				&& basePairs.end()->second == i.basePairs.end()->second // j2
+				&& basePairs.size() == i.basePairs.size()
+				&& seed != NULL && i.seed != NULL && seed->energy < i.seed->energy)
+			;
+	} else {
+		// has to have smaller energy
+		return true;
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////

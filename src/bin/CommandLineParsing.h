@@ -197,6 +197,14 @@ public:
 	void
 	writeTargetAccessibility( const Accessibility & acc ) const;
 
+	/**
+	 * Whether or not output is to be written for each region combination
+	 * @return true if output is to be written for each region combination;
+	 *         false otherwise (best for each query-target combination only)
+	 */
+	bool
+	reportBestPerRegion() const;
+
 #if INTARNA_MULITHREADING
 	/**
 	 * Number of threads to be used for parallel processing of
@@ -471,6 +479,10 @@ protected:
 	std::string outCsvCols;
 	//! the CSV column selection
 	static const std::string outCsvCols_default;
+	//! whether or not best interaction output should be provided independently
+	//! for all region combinations or only the best for each query-target
+	//! combination
+	bool outPerRegion;
 
 	//! (optional) file name for log output
 	std::string logFileName;
@@ -1714,6 +1726,16 @@ getFullFilename( const std::string & fileNamePath, const RnaSequence * target, c
 	}
 }
 
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+CommandLineParsing::
+reportBestPerRegion() const
+{
+	return outPerRegion;
+}
 
 ////////////////////////////////////////////////////////////////////////////
 
