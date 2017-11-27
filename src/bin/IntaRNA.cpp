@@ -215,7 +215,6 @@ int main(int argc, char **argv){
 								}
 
 								// todo setup collecting output handler to ensure k-best output per query-taget combination
-								OutputHandler
 
 								// get interaction prediction handler
 								Predictor * predictor = parameters.getPredictor( *energy, *output );
