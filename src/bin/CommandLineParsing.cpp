@@ -1003,6 +1003,12 @@ validateRegion( const std::string & argName, const std::string & value )
 	} else
 	// check if direct range input
 	if (boost::regex_match( value, IndexRangeList::regex, boost::match_perl )) {
+		try {
+			// test if parsable as ascending, non-overlapping range list
+			IndexRangeList tmpList(value);
+		} catch (std::exception & ex) {
+			return false;
+		}
 		return true;
 	} else
 	// might be BED file input

@@ -6,6 +6,10 @@
    * threads :
      * min value = 0 (request maximal number of threads)
      * parameter docu updated accordingly
+   * validateRegion() :
+     + instantiate range list to ensure that it is ascending and non-overlapping
+ * IntaRNA/IndexRangeList :
+   * sanity checks now also in non-debug mode to ensure sane instances
 
 171123 Martin Raden :
  * bin/CommandLineParsing :
