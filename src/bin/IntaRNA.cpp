@@ -214,11 +214,15 @@ int main(int argc, char **argv){
 									dynamic_cast<OutputHandlerIntaRNA1*>(output)->addSeparator( true );
 								}
 
+								// todo setup collecting output handler to ensure k-best output per query-taget combination
+								OutputHandler
+
 								// get interaction prediction handler
 								Predictor * predictor = parameters.getPredictor( *energy, *output );
 								INTARNA_CHECK_NOT_NULL(predictor,"predictor initialization failed");
 
 								// run prediction for all range combinations
+								// TODO parallelize if only one target and query
 								BOOST_FOREACH(const IndexRange & tRange, parameters.getTargetRanges(targetNumber)) {
 								BOOST_FOREACH(const IndexRange & qRange, parameters.getQueryRanges(queryNumber)) {
 
@@ -227,10 +231,10 @@ int main(int argc, char **argv){
 #endif
 									{ VLOG(1) <<"predicting interactions for"
 											<<" target "<<targetAcc->getSequence().getId()
-											<<" (range " <<tRange<<")"
+											<<" (range " <<(tRange+1)<<")"
 											<<" and"
 											<<" query "<<queryAcc.at(queryNumber)->getSequence().getId()
-											<<" (range " <<qRange<<")"
+											<<" (range " <<(qRange+1)<<")"
 											<<"..."; }
 
 									predictor->predict(	  tRange

@@ -1,5 +1,5 @@
 
-171123 Martin Raden :
+171127 Martin Raden :
  * bin/CommandLineParsing :
    * getThreads() :
      * returns threads.max if threads.val == 0
@@ -10,6 +10,10 @@
      + instantiate range list to ensure that it is ascending and non-overlapping
  * IntaRNA/IndexRangeList :
    * sanity checks now also in non-debug mode to ensure sane instances
+ * IntaRNA/IndexRange :
+   * operator+/-(int shift) : returns a shifted range
+ * bin/IntaRNA :
+   * bugfix: verbose range report was not shifting ranges by +1
 
 171123 Martin Raden :
  * bin/CommandLineParsing :

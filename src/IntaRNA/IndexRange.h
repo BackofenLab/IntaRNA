@@ -4,7 +4,6 @@
 
 
 #include "IntaRNA/general.h"
-#include "IntaRNA/RnaSequence.h"
 
 #include <stdexcept>
 
@@ -25,6 +24,9 @@ public:
 	//! index) is defined
 	static const size_t LAST_INDEX;
 
+	//! placeholder for not-defined values
+	static const size_t NA_INDEX;
+
 	//! the start of the index range
 	size_t from;
 
@@ -39,10 +41,10 @@ public:
 	/**
 	 * Creates a range
 	 * @param from the start index (default 0)
-	 * @param to the end index (default max())
+	 * @param to the end index (default NA_INDEX)
 	 */
 	IndexRange(const size_t from = 0,
-			const size_t to = RnaSequence::lastPos)
+			const size_t to = NA_INDEX)
 		: from(from), to(to)
 	{
 	}
@@ -53,7 +55,7 @@ public:
 	 *  ostream operator
 	 */
 	IndexRange(const std::string & stringEncoding)
-		: from(0), to(RnaSequence::lastPos)
+		: from(0), to(NA_INDEX)
 	{
 		fromString(stringEncoding);
 	}
@@ -79,6 +81,40 @@ public:
 	bool isDescending() const
 	{
 		return from >= to;
+	}
+
+	/**
+	 * Adds the given shift to the index range but ensure that the minimal value
+	 * is 0.
+	 * @param r the range to be added to
+	 * @param shift the shift to be added to r
+	 * @return an altered range or (NA_INDEX,NA_INDEX) if the range falls
+	 *    completely below zero or changing from to the lower bound of 0.
+	 */
+	IndexRange operator + ( const int shift ) const {
+		if (shift == 0) {
+			return *this;
+		}
+		if (shift > 0) {
+			return IndexRange(from+shift, to+shift);
+		}
+		if (to < std::abs(shift)) {
+			return IndexRange( NA_INDEX, NA_INDEX);
+		}
+		return IndexRange( from - std::min(from, (size_t)std::abs(shift)), to + shift );
+	}
+
+	/**
+	 * Substracts the given shift to the index range but ensure that the minimal
+	 * value is 0.
+	 * @param r the range to be altered
+	 * @param shift the shift to be substracted from r
+	 * @return an altered range or (NA_INDEX,NA_INDEX) if the range falls
+	 *    completely below zero or changing from to the lower bound of 0.
+	 */
+	IndexRange operator - ( const int shift ) const {
+		// forward implementation using inverted shift
+		return this->operator+(-shift);
 	}
 
 	/**
