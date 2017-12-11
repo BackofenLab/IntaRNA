@@ -292,7 +292,7 @@ fillHybridE( )
 
 void
 PredictorMfe4d::
-traceBack( Interaction & interaction )
+traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 {
 	// check if something to trace
 	if (interaction.basePairs.size() < 2) {

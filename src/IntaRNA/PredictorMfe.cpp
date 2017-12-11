@@ -181,7 +181,7 @@ reportOptima( const OutputConstraint & outConstraint )
 		while( curBest.energy < maxE && reported < outConstraint.reportMax ) {
 			// report current best
 			// fill interaction with according base pairs
-			traceBack( curBest );
+			traceBack( curBest, outConstraint );
 			// report mfe interaction
 			output.add( curBest );
 
@@ -225,7 +225,7 @@ reportOptima( const OutputConstraint & outConstraint )
 			if (i->energy < maxE) {
 
 				// fill mfe interaction with according base pairs
-				traceBack( *i );
+				traceBack( *i, outConstraint );
 				// report mfe interaction
 				output.add( *i );
 				// count

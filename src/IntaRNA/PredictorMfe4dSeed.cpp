@@ -342,7 +342,7 @@ fillHybridE_seed( )
 
 void
 PredictorMfe4dSeed::
-traceBack( Interaction & interaction )
+traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 {
 	// check if something to trace
 	if (interaction.basePairs.size() < 2) {
@@ -456,7 +456,7 @@ traceBack( Interaction & interaction )
 			rightSide.basePairs.push_back( energy.getBasePair(i1,i2) );
 			rightSide.basePairs.push_back( energy.getBasePair(j1,j2) );
 			// call traceback of super class
-			PredictorMfe4d::traceBack( rightSide );
+			PredictorMfe4d::traceBack( rightSide, outConstraint );
 			// copy base pairs (excluding last)
 			for (size_t i=0; i+1<rightSide.basePairs.size(); i++) {
 				interaction.basePairs.push_back( rightSide.basePairs.at(i) );

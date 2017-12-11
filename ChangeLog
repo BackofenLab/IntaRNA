@@ -1,4 +1,34 @@
 
+171211 Martin Raden :
+ * IntaRNA/PredictorMfe :
+   * traceBack() : 
+     + argument outConstraint (needed to bugfix the PredictorMfe2d computation)
+   * reportOptima() :
+     + forwards outConstraint to traceBack() call
+ * IntaRNA/PredictorMfe* :
+   * adaption to traceBack() interface changes
+ * IntaRNA/PredictorMfe2d :
+   * traceBack() :
+     * bugfix: outConstraint missing in fillHybridE() call but called with 
+       (&outConstraint = i1) and (i1 = i2), which caused infinite tracebacks
+   * initHybridE() :
+     - default argument values (=0) removed to avoid wrong argument use (see
+       traceBack() bugfix)
+     - special initialization removed to simplify code (and not applied anyway)
+   * fillHybridE() :
+     - default argument values (=0) removed to avoid wrong argument use (see
+       traceBack() bugfix)
+     * computation simplified
+ * IntaRNA/PredictorMfe2d :
+   * fillHybridE() :
+     * bugfix: outConstraint missing in fillHybridE() call but called with 
+       (&outConstraint = i1) and (i1 = i2), which caused infinite tracebacks
+ * IntaRNA/PredictorMfe2dSeed :
+   * fillHybridE_seed() :
+     + outConstraint argument
+     * bugfix: outConstraint missing in fillHybridE() call but called with 
+       (&outConstraint = i1) and (i1 = i2), which caused infinite tracebacks
+
 171127 Martin Raden :
  * bin/CommandLineParsing :
    * getThreads() :
@@ -10,7 +40,7 @@
      + instantiate range list to ensure that it is ascending and non-overlapping
    + outPerRegion : parameter flag to define how reporting per region should be
      done
-   + reportBestPerRegion() : access ot outPerRegion
+   + reportBestPerRegion() : access to outPerRegion
  * IntaRNA/IndexRangeList :
    * sanity checks now also in non-debug mode to ensure sane instances
  * IntaRNA/IndexRange :

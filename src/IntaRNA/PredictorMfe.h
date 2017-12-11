@@ -106,10 +106,11 @@ protected:
 	 * hybridizing base pairs.
 	 * Note, the
 	 * @param interaction IN/OUT the interaction to fill
+	 * @param outConstraint constrains the interactions reported to the output handler
 	 */
 	virtual
 	void
-	traceBack( Interaction & interaction ) = 0;
+	traceBack( Interaction & interaction, const OutputConstraint & outConstraint  ) = 0;
 
 
 	/**

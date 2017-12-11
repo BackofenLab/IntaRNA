@@ -166,7 +166,7 @@ fillHybridE()
 
 void
 PredictorMfe2dHeuristic::
-traceBack( Interaction & interaction )
+traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 {
 	// check if something to trace
 	if (interaction.basePairs.size() < 2) {

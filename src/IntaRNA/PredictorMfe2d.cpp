@@ -84,7 +84,7 @@ predict( const IndexRange & r1
 				continue;
 
 			// fill matrix and store best interaction
-			fillHybridE( j1, j2, outConstraint );
+			fillHybridE( j1, j2, outConstraint, 0, 0 );
 
 		}
 	}
@@ -122,44 +122,17 @@ initHybridE( const size_t j1, const size_t j2
 	hybridErange.r2.from = std::max(i2init,j2-std::min(j2,energy.getAccessibility2().getMaxLength()+1));
 	hybridErange.r2.to = j2;
 
-	// temporary variable to reduce lookups
-	E_type curED1 = 0.0;
-
-	// init used part with E_INF - 1 and E_INF if ED test fails
-	// iterating decreasing window size seq1 (only sane windows)
 	for (i1=hybridErange.r1.from; i1<=j1; i1++ ) {
-		w1 = j1-i1+1;
-		curED1 = energy.getED1(i1,j1);
-		// iterating decreasing window size seq2 (only sane windows)
 		for (i2=hybridErange.r2.from; i2<=j2; i2++) {
-			w2 = j2-i2+1;
-			// check if all larger windows needing this site are already set to INF
-			bool largerWindowsINF = i1==hybridErange.r1.from && i2==hybridErange.r2.from;
-			// check all larger windows w1 + i2p..j2 (that might need this window for computation)
-			for (size_t i2p=hybridErange.r2.from; largerWindowsINF && i2p>i2; i2p++) {
-				// check if larger window is E_INF
-				largerWindowsINF = E_isINF(hybridE_pq(i1,i2p));
-			}
-			// check all larger windows w2 + w1p (that might need this window for computation)
-			for (size_t i1p=hybridErange.r1.from; largerWindowsINF && i1p>i1; i1p++) {
-				// check if larger window is E_INF
-				largerWindowsINF = E_isINF(hybridE_pq(i1,i2));
-			}
-
-			// if it holds for all w'>=w: ED1(i1+w1')+ED2(i2+w2')-outConstraint.maxE > -1*(min(w1',w2')*EmaxStacking + Einit + 2*Edangle + 2*Eend)
-			// ie. the ED values exceed the max possible energy gain of an interaction
-			if( largerWindowsINF
-				&& ( -1.0*(std::min(w1,w2)*minStackingEnergy + minInitDangleEndEnergy)
-					< (curED1 + energy.getED2(i2,j2) - outConstraint.maxE))
-				)
+			// check if complementary, i.e. to be computed
+			if( energy.areComplementary(i1,i2) )
 			{
+				// mark as to be computed (has to be < E_INF)
+				hybridE_pq(i1,i2) = E_MAX;
+			} else {
 				// mark as NOT to be computed
 				hybridE_pq(i1,i2) = E_INF;
-				continue;
 			}
-
-			// mark as to be computed (has to be < E_INF)
-			hybridE_pq(i1,i2) = E_MAX;
 		}
 	}
 
@@ -193,25 +166,11 @@ fillHybridE( const size_t j1, const size_t j2
 	for (i1=hybridErange.r1.to+1; i1-- > hybridErange.r1.from; ) {
 		w1 = j1-i1+1;
 		// w1 width check obsolete due to hybridErange setup
-		// get maximal w2 for this w1
-		const size_t maxW2 = getMaxInteractionWidth( w1, energy.getMaxInternalLoopSize1());
 		// screen for left boundaries in seq2
 		for (i2=hybridErange.r2.to+1; i2-- > hybridErange.r2.from; ) {
-			w2 = j2-i2+1;
 			// w2 width check obsolete due to hybridErange setup
-			// check if widths' combination possible
-			if ( w2 > maxW2 || w1 > getMaxInteractionWidth( w2, energy.getMaxInternalLoopSize2()) )
-			{
-				// combination not possible
-				hybridE_pq(i1,i2) = E_INF;
-				continue;
-			}
-			// check if left boundary (i1,i2) is complementary
-			if (!energy.areComplementary(i1,i2)) {
-				// interaction not possible
-				hybridE_pq(i1,i2) = E_INF;
-				continue;
-			}
+			w2 = j2-i2+1;
+			curMinE = E_INF;
 
 			// check if this cell is to be computed (!=E_INF)
 			if( E_isNotINF( hybridE_pq(i1,i2) ) ) {
@@ -219,26 +178,27 @@ fillHybridE( const size_t j1, const size_t j2
 				// compute entry
 
 				// either interaction initiation
-				if ( w1==1 && w2==1 )  {
+				if ( i1==j1 && i2==j2 )  {
 					curMinE = energy.getE_init();
-				} else {
-				// or only internal loop energy (nothing between i and j)
+				} else { // or more complex stuff
+					// test only internal loop energy (nothing between i and j)
+					// will be E_INF if loop is too large
 					curMinE = energy.getE_interLeft(i1,j1,i2,j2)
 							+ hybridE_pq(j1,j2);
-				}
 
-				// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
-				if (w1 > 2 && w2 > 2) {
-					for (k1=std::min(j1-1,i1+energy.getMaxInternalLoopSize1()+1); k1>i1; k1--) {
-					for (k2=std::min(j2-1,i2+energy.getMaxInternalLoopSize2()+1); k2>i2; k2--) {
-						// check if (k1,k2) are valid left boundary
-						if ( E_isNotINF( hybridE_pq(k1,k2) ) ) {
-							curMinE = std::min( curMinE,
-									(energy.getE_interLeft(i1,k1,i2,k2)
-											+ hybridE_pq(k1,k2) )
-									);
+					// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
+					if (w1 > 2 && w2 > 2) {
+						for (k1=std::min(j1-1,i1+energy.getMaxInternalLoopSize1()+1); k1>i1; k1--) {
+						for (k2=std::min(j2-1,i2+energy.getMaxInternalLoopSize2()+1); k2>i2; k2--) {
+							// check if (k1,k2) are valid left boundary
+							if ( E_isNotINF( hybridE_pq(k1,k2) ) ) {
+								curMinE = std::min( curMinE,
+										(energy.getE_interLeft(i1,k1,i2,k2)
+												+ hybridE_pq(k1,k2) )
+										);
+							}
 						}
-					}
+						}
 					}
 				}
 				// store value
@@ -256,7 +216,7 @@ fillHybridE( const size_t j1, const size_t j2
 
 void
 PredictorMfe2d::
-traceBack( Interaction & interaction )
+traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 {
 	// check if something to trace
 	if (interaction.basePairs.size() < 2) {
@@ -272,6 +232,7 @@ traceBack( Interaction & interaction )
 		throw std::runtime_error("PredictorMfe2d::traceBack() : given interaction does not contain boundaries only");
 	}
 #endif
+
 
 	// check for single interaction
 	if (interaction.basePairs.at(0).first == interaction.basePairs.at(1).first) {
@@ -289,18 +250,17 @@ traceBack( Interaction & interaction )
 			i2 = energy.getIndex2(interaction.basePairs.at(0)),
 			j2 = energy.getIndex2(interaction.basePairs.at(1));
 
-
 	// refill submatrix of mfe interaction
-	fillHybridE( j1, j2, i1, i2 );
+	fillHybridE( j1, j2, outConstraint, i1, i2 );
 
 	// the currently traced value for i1-j1, i2-j2
 	E_type curE = hybridE_pq(i1,i2);
 
 	// trace back
 	while( i1 != j1 ) {
+
 		// check if just internal loop
-		if ( E_equal( curE, (energy.getE_interLeft(i1,j1,i2,j2) )
-				+ hybridE_pq(j1,j2)) )
+		if ( E_equal( curE, (energy.getE_interLeft(i1,j1,i2,j2) + hybridE_pq(j1,j2)) ) )
 		{
 			break;
 		}
@@ -315,8 +275,7 @@ traceBack( Interaction & interaction )
 				// check if (k1,k2) are valid left boundary
 				if ( E_isNotINF( hybridE_pq(k1,k2) ) ) {
 					if ( E_equal( curE,
-							(energy.getE_interLeft(i1,k1,i2,k2)
-							+ hybridE_pq(k1,k2)) ) )
+							(energy.getE_interLeft(i1,k1,i2,k2) + hybridE_pq(k1,k2)) ) )
 					{
 						// stop searching
 						traceNotFound = false;
@@ -331,7 +290,7 @@ traceBack( Interaction & interaction )
 			}
 			}
 		}
-	// do until only right boundary is left over
+	// do until only right boundary base pair is left over
 	}
 
 	// sort final interaction (to make valid) (faster than calling sort())
