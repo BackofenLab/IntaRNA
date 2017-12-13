@@ -1,4 +1,8 @@
 
+171213 Martin Raden :
+ * configure.ac :
+   * leading spaces in macros removed
+
 171211 Martin Raden :
  * IntaRNA/PredictorMfe :
    * traceBack() : 
