@@ -2,7 +2,7 @@
 
 AC_PREREQ([2.65])
 # 5 argument version only available with aclocal >= 2.64
-AC_INIT( [IntaRNA], [2.1.0], [], [intaRNA], [http://www.bioinf.uni-freiburg.de] )
+AC_INIT([IntaRNA], [2.1.0], [], [intaRNA], [http://www.bioinf.uni-freiburg.de] )
 
 
 # minimal required version of the boost library 
@@ -47,7 +47,7 @@ AM_INIT_AUTOMAKE([1.11])
 AC_LANG([C++])
 
 # ensure we are using c11 C++ standard
-AX_CXX_COMPILE_STDCXX( [11], [noext], [mandatory])
+AX_CXX_COMPILE_STDCXX([11], [noext], [mandatory])
 
 
 ###############################################################################
@@ -264,7 +264,7 @@ AS_IF([test $want_boost = "no" || test $FOUND_BOOST != 1], [
 RNANOTFOUND=0
 AS_IF([test "x$HAVE_PKG_CONFIG" = "xyes"], [
 	AC_MSG_NOTICE([check if VRNA version >= $VRNA_REQUIRED_VERSION])
-	PKG_CHECK_MODULES( [VRNA], [RNAlib2 >= $VRNA_REQUIRED_VERSION], [RNANOTFOUND=0], [RNANOTFOUND=1])
+	PKG_CHECK_MODULES([VRNA], [RNAlib2 >= $VRNA_REQUIRED_VERSION], [RNANOTFOUND=0], [RNANOTFOUND=1])
 ])
 
 AS_IF([test "$RNANOTFOUND" = "0"], [
