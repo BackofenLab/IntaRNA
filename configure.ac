@@ -53,6 +53,31 @@ AX_CXX_COMPILE_STDCXX([11], [noext], [mandatory])
 ###############################################################################
 ###############################################################################
 
+############  DEFAULT MACROS IF PKG-CONFIG MISSING ###############
+
+m4_define_default([PKG_PROG_PKG_CONFIG],
+	[AC_MSG_CHECKING([pkg-config])
+		AC_MSG_RESULT([no])])
+
+PKG_PROG_PKG_CONFIG 
+
+# If the pkg-config autoconf support isn't installed, define its
+# autoconf macro to disable any packages depending on it.
+#
+m4_define_default([PKG_CHECK_MODULES],
+	[AC_MSG_CHECKING([$1])
+	AC_MSG_RESULT([no])
+	$4])
+
+   
+############  SILENT (MINIMAL) MAKEFILE OUTPUT ###################
+
+# show full make output via `make V=1`
+m4_ifdef(
+    [AM_SILENT_RULES],
+    [AM_SILENT_RULES([yes])]
+) 
+
 ############  PARAMETERS  ########################################
 
 ###############################################################################
@@ -70,16 +95,6 @@ AC_MSG_RESULT([$pkgconfigEnabled])
 AS_IF([test x"$pkgconfigEnabled" = x"yes"], [
 	# Checks for pkg-config
 	AC_CHECK_PROG([HAVE_PKG_CONFIG],[pkg-config],[yes],[no])
-	AS_IF([test "HAVE_PKG_CONFIG" == "yes"], [
-		dnl Testing presence of pkg-config
-		AC_MSG_CHECKING([pkg-config m4 macros])
-		AS_IF([test m4_ifdef([PKG_CHECK_MODULES], [yes], [no]) == yes], [
-			AC_MSG_RESULT([yes]);
-		], [
-			AC_MSG_RESULT([no]);
-			HAVE_PKG_CONFIG=no
-		])
-	])
 ], [
 	HAVE_PKG_CONFIG=no
 ])

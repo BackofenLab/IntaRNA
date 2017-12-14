@@ -2,6 +2,9 @@
 171213 Martin Raden :
  * configure.ac :
    * leading spaces in macros removed
+   + default macro definitions if pkg-config not existent
+   + silent make output enabled per default (full output with 'make V=1')
+   - obsolete pkg-config m4 check removed
 
 171211 Martin Raden :
  * IntaRNA/PredictorMfe :
