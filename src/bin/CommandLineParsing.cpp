@@ -1383,7 +1383,7 @@ parseSequences(const std::string & paramName,
 	bool valid = true;
 
 	// ensure at least one sequence was parsed
-	valid = valid && validateSequenceNumber(paramName, sequences, 1, 99999);
+	valid = valid && validateSequenceNumber(paramName, sequences, 1, 999999);
 	// validate alphabet
 	valid = valid && validateSequenceAlphabet(paramName, sequences);
 
