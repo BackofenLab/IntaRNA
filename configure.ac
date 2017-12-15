@@ -16,8 +16,6 @@ AC_CONFIG_AUX_DIR([.])
 AC_CONFIG_SRCDIR([src/easylogging++.h])
 AC_CONFIG_HEADERS([src/config.h])
 
-m4_pattern_allow([AC_MSG_WARN])
-
 # AC_CONFIG_MACRO_DIR([m4])
 m4_include([m4/m4-ax_cxx_compile_stdcxx.m4])
 m4_include([m4/m4-ax_openmp.m4])
