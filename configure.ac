@@ -16,10 +16,16 @@ AC_CONFIG_AUX_DIR([.])
 AC_CONFIG_SRCDIR([src/easylogging++.h])
 AC_CONFIG_HEADERS([src/config.h])
 
+m4_pattern_allow([AC_MSG_WARN])
+
 # AC_CONFIG_MACRO_DIR([m4])
-m4_include([m4/m4_ax_cxx_compile_stdcxx.m4])
-m4_include([m4/m4_ax_openmp.m4])
-m4_include([m4/m4_ax_boost_base.m4])
+m4_include([m4/m4-ax_cxx_compile_stdcxx.m4])
+m4_include([m4/m4-ax_openmp.m4])
+m4_include([m4/m4-ax_boost_base.m4])
+m4_include([m4/m4-ax_boost_system.m4])
+m4_include([m4/m4-ax_boost_filesystem.m4])
+m4_include([m4/m4-ax_boost_program_options.m4])
+m4_include([m4/m4-ax_boost_regex.m4])
 
 lt_enable_auto_import=""
 case "$host_os" in 
@@ -242,6 +248,10 @@ AS_IF([test x"$logColoring" = x"yes"], [
 ###############################################################################
 
 AX_BOOST_BASE([$BOOST_REQUIRED_VERSION], [FOUND_BOOST=1;], [FOUND_BOOST=0;])
+AX_BOOST_SYSTEM
+AX_BOOST_FILESYSTEM
+AX_BOOST_PROGRAM_OPTIONS
+AX_BOOST_REGEX
 
 
 ############  CHECKS  ############################################

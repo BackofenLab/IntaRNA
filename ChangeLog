@@ -1,8 +1,13 @@
 
+171214 Martin Raden :
+ * m4:
+   * *.m4 : updated to recent versions
+   + m4-ax_boost_*.m4 : boost library checks 
+
 171213 Martin Raden :
  * configure.ac :
    * leading spaces in macros removed
-   + default macro definitions if pkg-config not existent
+   + default macro definitions if pkg.m4 not available
    + silent make output enabled per default (full output with 'make V=1')
    - obsolete pkg-config m4 check removed
 
