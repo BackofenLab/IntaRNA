@@ -29,6 +29,10 @@ before_install:
     - conda install --yes gcc automake pkgconfig viennarna boost=1.61.* -c conda-forge -c bioconda
     #    - export CONDA_PATH=/home/travis/miniconda2/
     - export CONDA_LIB_PATH=$CONDA_PATH/lib
+    - echo "DEBUG checking for boost lib64 names"
+    - ls $CONDA_PATH/lib64
+    - echo "DEBUG checking for boost lib names"
+    - ls $CONDA_PATH/lib
     #    - ls $CONDA_LIB_PATH
     #    - ls $CONDA_PATH/include
     - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_LIB_PATH
