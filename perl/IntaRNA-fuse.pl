@@ -20,7 +20,14 @@ if (!getopts("t:q:l:n:", \%args) or (defined $args{h} && $args{h}==1)) {
 #if (!defined $args{q}) { die "query not specified"; };
 $args{t} = "aguuagucaaugaccuuuugcaccgcuuugcggugcuuuccuggaacaacaaaaugucauauacaccgaugagugaucucggacaacaaggguuguucgacaucacucggaca"; # fhlA (from figure)
 $args{q} = "gaaacggagcggcaccucuuuuaacccuugaagucacugcccguuucgagaguuucucaacucgaauaacuaaagccaacgugaacuuuugcggaucuccaggauccgc"; # OxyS (from figure)
-$args{q} = "AGAATAGCAATGAACGATTATCCCTATCAAGCATTCTGACTGATAATTGCTCACAGAAACGGAGCGGCACCTCTTTTAACCCTTGAAGTCACTGCCCGTTTCGAGAGTTTCTCAACTCGAATAACTAAAGCCAACGTGAACTTTTGCGGATCTCCAGGATCCGCTTTTTTTTGCCATAAAAAA"; # OxyS (from Rfam)
+#$args{q} = "AGAATAGCAATGAACGATTATCCCTATCAAGCATTCTGACTGATAATTGCTCACAGAAACGGAGCGGCACCTCTTTTAACCCTTGAAGTCACTGCCCGTTTCGAGAGTTTCTCAACTCGAATAACTAAAGCCAACGTGAACTTTTGCGGATCTCCAGGATCCGCTTTTTTTTGCCATAAAAAA"; # OxyS (from Rfam)
+
+$args{t} = "AUGGUUGUAAUUCCGGCAAUCUGGAGGCGUUCUGGACAGGGGUUCGAUUCCCCUCACCUCCACCA"; # accessfold example from figure
+$args{q} = "GGGGGUGUACUGGUCUCGACAGGGCGGACAAAGGUGCGCAGGCAACU"; # accessfold example from figure
+
+$args{t} = "GGCCAAGUUGUGCUCGAUUGUUCUAAGGUAACUUAGAACAGUUUGAAUGGGUUGAAUAUAGAGACCGCAUGAAUAUUC"; # CrossCatalytic paper construct
+$args{q} = "GGUUCAUGUGCUCGAUUGUUACGUAAGUAACAGUUUGAAUGGGUUGAAUAUAGAGACCGCAACUUA"; # CrossCatalytic paper construct
+
 # fill optional arguments if missing
 if (!defined $args{n}) { $args{n} = 10; };
 #if (!defined $args{w}) { $args{w} = 150; };
@@ -46,6 +53,7 @@ if ( `echo $args{q} | RNAfold --maxBPspan=$args{l} --noPS -p0` =~ /energy of ens
 my $intaRNAargs = "-t $args{t} --tAccW=0 --tAccL=$args{l}"
 				." -q $args{q} --qAccW=0 --qAccL=$args{l}"
 				." --outOverlap=N -n $args{n} "
+				." --seedBP=7 "
 				." --outMode=C --outCsvCols='start1, end1, start2, end2, E, ED1, ED2, E_init, hybridDB'";
 
 my @subopts = split /\n/, `$intaRNAbinPath/IntaRNA $intaRNAargs`;
@@ -108,10 +116,10 @@ for ( my $s=2; $s <= $#subopts; $s++ ) {
 			print "combined ED1 = ".($targetEconstr-$targetEfull)." ED2 = ".($queryEconstr-$queryEfull)."\n";
 			print "E = ".($data[4]-$data[5]-$data[6]
 						+$dataMfeConstr[4]-$dataMfeConstr[5]-$dataMfeConstr[6]
-						+$targetEconstr-$targetEfull+$queryEconstr-$queryEfull)." = E(subopt)-ED1&2(subopt)-E(mfeConstr)-ED1&2(mfeConstr)+ED1+ED2\n";
+						+$targetEconstr-$targetEfull+$queryEconstr-$queryEfull)." = E(subopt)-ED1&2(subopt)+E(mfeConstr)-ED1&2(mfeConstr)+ED1+ED2\n";
 			print "E' = ".($data[4]-$data[5]-$data[6]
 						+$dataMfeConstr[4]-$dataMfeConstr[5]-$dataMfeConstr[6]
-						+$targetEconstr-$targetEfull+$queryEconstr-$queryEfull-$data[7])." = E(subopt)-ED1&2(subopt)-E(mfeConstr)-ED1&2(mfeConstr)+ED1+ED2-Einit\n";
+						+$targetEconstr-$targetEfull+$queryEconstr-$queryEfull-$data[7])." = E(subopt)-ED1&2(subopt)+E(mfeConstr)-ED1&2(mfeConstr)+ED1+ED2-Einit\n";
 			print "\n";
 		}
 	}
