@@ -39,13 +39,13 @@ my $defCsvColsEssential = "E,start1,end1,start2,end2,ED1,ED2,E_init";
 my $defCsvCols = "$defCsvColsEssential,hybridDB";
 
 # check if arguments ok
-if (!getopts("ht:q:l:n:c:", \%args) or (defined $args{h} && $args{h}==1)) {
+if (!getopts("ht:q:l:n:o:", \%args) or (defined $args{h} && $args{h}==1)) {
 	print "Available arguments:\n"
 	."  -t\ttarget sequence (=seq1)\n"
 	."  -q\tquery sequence (=seq2)\n"
-	."  -c\t(opt) CSV cols to report (def=$defCsvCols)\n"
 	."  -n\t(opt) max. number of subopts (def=$defN)\n"
 	."  -l\t(opt) max. intramol. base pair span (def=$defL)\n"
+	."  -o\t(opt) CSV columns to report (def=$defCsvCols)\n"
 	."  -h\t(opt) parameter list\n"
 	;
 	if (defined $args{h} && $args{h}==1) {
@@ -79,11 +79,11 @@ if (!defined $args{q}) { die "ERROR: query not specified"; };
 # fill optional arguments if missing
 if (!defined $args{n}) { $args{n} = $defN; };
 if (!defined $args{l}) { $args{l} = $defL; };
-if (!defined $args{c}) { $args{c} = $defCsvCols; };
+if (!defined $args{o}) { $args{o} = $defCsvCols; };
 
 # ensure needed CSV colums are available
 for my $csvCol (split /,/, $defCsvColsEssential) {
-	my $tmpString = ",".$args{c}.",";
+	my $tmpString = ",".$args{o}.",";
 	if ( $tmpString !~ /,\s*$csvCol\s*,/) {die "ERROR: essential CSV column '$csvCol' not present in argument '-c'"};
 }
 
@@ -108,7 +108,7 @@ if ( `echo $args{q} | RNAfold --maxBPspan=$args{l} --noPS -p0` =~ /energy of ens
 my $intaRNAargs = "-t $args{t} --tAccW=0 --tAccL=$args{l}"
 				." -q $args{q} --qAccW=0 --qAccL=$args{l}"
 				." --outOverlap=N -n $args{n} "
-				." --outMode=C --outCsvCols='$args{c}'";
+				." --outMode=C --outCsvCols='$args{o}'";
 
 my @subopts = split /\n/, `$intaRNAbinPath/IntaRNA $intaRNAargs`;
 
@@ -123,10 +123,13 @@ sub min ($$) { $_[$_[0] > $_[1]] }
 # get mfe interaction data for checks
 my @dataMfe = split /;/, $subopts[1];
 print $subopts[0]."\n";
+# mapping of col names to col number
 my %h2i;
 my @dataHdr = split /;/, $subopts[0];
 for ( my $i=0; $i <= $#dataHdr; $i++ ) {
-	$h2i{$dataHdr[$i]} = $i;
+	my $tmpC = $dataHdr[$i];
+	$tmpC =~ s/^\s+|\s+$//g; # trim 
+	$h2i{$tmpC} = $i; # store mapping
 }
 print $subopts[1]."\n";
 # iterate over all suboptimal interactions
@@ -150,9 +153,10 @@ for ( my $s=2; $s <= $#subopts; $s++ ) {
 		my $overlap = min($overlapT,$overlapQ) / min($dataMfe[$h2i{'end1'}]-$dataMfe[$h2i{'start1'}],$dataMfe[$h2i{'end2'}]-$dataMfe[$h2i{'start2'}]);
 		# check if overlapping at all  
 		if ($overlap > 0) {
-			# print combined interaction details
 #			print "\n# compatible interactions with mfe-overlap = $overlap :\n".$subopts[$s]."\n".$constraintOut[1]."\n";
+			########################################
 			# compute overall energy
+			########################################
 			# generate RNAfold constraints
 			my $tmp = $args{t}; $tmp =~ s/./\./g;
 			my @tConstr = split //, 
@@ -166,23 +170,26 @@ for ( my $s=2; $s <= $#subopts; $s++ ) {
 			my $targetEconstr = 0;
 			$tmp = join("",@tConstr);
 			if ( `echo -e "$args{t}\n$tmp" | RNAfold --maxBPspan=$args{l} --noPS -p0 -C` =~ /energy of ensemble = (\S+) kcal/ ) {	$targetEconstr = $1; }
-#			print "echo -e '$args{t}\\n$tmp' | RNAfold --maxBPspan=$args{l} --noPS -p0 -C\n";
 			my $queryEconstr = 0;
 			$tmp = join("",@qConstr);
 			if ( `echo -e "$args{q}\n$tmp" | RNAfold --maxBPspan=$args{l} --noPS -p0 -C` =~ /energy of ensemble = (\S+) kcal/ ) {	$queryEconstr = $1; }
-#			print "echo -e '$args{q}\\n$tmp' | RNAfold --maxBPspan=$args{l} --noPS -p0 -C\n";
+			# compute ED values for combined interaction
 			my $ED1 = ($targetEconstr-$targetEfull);
 			my $ED2 = ($queryEconstr-$queryEfull);
-#			print "combined ED1 = $ED1  ED2 = $ED2\n";
-			my $E = ($data[$h2i{'E'}]-$data[$h2i{'ED1'}]-$data[$h2i{'ED2'}]
-						+$dataMfeConstr[$h2i{'E'}]-$dataMfeConstr[$h2i{'ED1'}]-$dataMfeConstr[$h2i{'ED2'}]
-						+$targetEconstr-$targetEfull+$queryEconstr-$queryEfull);
-#			print "E = $E = E(subopt)-ED1&2(subopt)+E(mfeConstr)-ED1&2(mfeConstr)+ED1+ED2\n";
-#			my $Eprime = ($data[$h2i{'E'}]-$data[$h2i{'ED1'}]-$data[$h2i{'ED2'}]
-#						+$dataMfeConstr[$h2i{'E'}]-$dataMfeConstr[$h2i{'ED1'}]-$dataMfeConstr[$h2i{'ED2'}]
-#						+$targetEconstr-$targetEfull+$queryEconstr-$queryEfull-$data[$h2i{'E_init'}]);
-#			print "E' = $Eprime = E(subopt)-ED1&2(subopt)+E(mfeConstr)-ED1&2(mfeConstr)+ED1+ED2-Einit\n";
-			my @outCols = split /,/, $args{c};
+			# calculate final energy of combined interaction
+			my $E = # s.E - s.ED1 - s.ED2
+					$data[$h2i{'E'}]-$data[$h2i{'ED1'}]-$data[$h2i{'ED2'}]
+					# + c.E - c.ED1 - c.ED2
+					+$dataMfeConstr[$h2i{'E'}]-$dataMfeConstr[$h2i{'ED1'}]-$dataMfeConstr[$h2i{'ED2'}]
+					# + ED1 + ED2
+					+$ED1 +$ED2;
+			# calculate energy minus one E_init term
+#			my $Eprime = $E - $data[$h2i{'E_init'}]);
+
+			########################################
+			# print combined interaction details 
+			########################################
+			my @outCols = split /,/, $args{o};
 			for (my $c=0; $c <= $#outCols; $c++) {
 				if ($outCols[$c] eq "E") { print $E; }
 				elsif ($outCols[$c] eq "ED1") { print $ED1; }
