@@ -28,6 +28,9 @@ $args{q} = "GGGGGUGUACUGGUCUCGACAGGGCGGACAAAGGUGCGCAGGCAACU"; # accessfold examp
 $args{t} = "GGCCAAGUUGUGCUCGAUUGUUCUAAGGUAACUUAGAACAGUUUGAAUGGGUUGAAUAUAGAGACCGCAUGAAUAUUC"; # CrossCatalytic paper construct
 $args{q} = "GGUUCAUGUGCUCGAUUGUUACGUAAGUAACAGUUUGAAUGGGUUGAAUAUAGAGACCGCAACUUA"; # CrossCatalytic paper construct
 
+$args{t} = "GGGATCAATTGGCTTACCCGCGATAAAATGTTACCATTCTGTTGCTTTTATGTATAAGAACAGGTAAGCCCTACCATGCCACATTCCTACGATTACGATGCCATAGTAATAGGTTCCGGCCCCGGCGGCGAAGGCGCTGCAATGGGCCTG"; # sthA (b3962) intarna-2 paper
+$args{q} = "guaggguacagagguaagauguucuaucuuucagaccuuuuacuucacguaaucggauuuggcugaauauuuuagccgccccagucaguaaugacuggggcguuuuuua"; # Spot42 intarna-2 paper
+
 # fill optional arguments if missing
 if (!defined $args{n}) { $args{n} = 10; };
 #if (!defined $args{w}) { $args{w} = 150; };
