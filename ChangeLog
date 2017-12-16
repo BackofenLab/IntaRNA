@@ -1,4 +1,8 @@
 
+171216 Martin Raden :
+ * bin/CommandLineParsing :
+   - check for equal length of sequence and constraint removed since obsolete
+
 171214 Martin Raden :
  * m4:
    * *.m4 : updated to recent versions

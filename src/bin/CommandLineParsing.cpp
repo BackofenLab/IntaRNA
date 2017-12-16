@@ -733,12 +733,7 @@ parse(int argc, char** argv)
 			// check qAccConstr - query sequence compatibility
 			if (vm.count("qAccConstr") > 0) {
 				// only for single sequence input supported
-				if (validateSequenceNumber("qAccConstr",query,1,1)) {
-					// check length
-					if (qAccConstr.size() != query.at(0).size()) {
-						throw error("qAccConstr and query sequence differ in size");
-					}
-				} else {
+				if (!validateSequenceNumber("qAccConstr",query,1,1)) {
 					// TODO report error
 					INTARNA_NOT_IMPLEMENTED("--qAccConstr only supported for single sequence input");
 				}
@@ -749,12 +744,7 @@ parse(int argc, char** argv)
 			// check tAccConstr - target sequence compatibility
 			if (vm.count("tAccConstr") > 0) {
 				// only for single sequence input supported
-				if (validateSequenceNumber("tAccConstr",target,1,1)) {
-					// check length
-					if (tAccConstr.size() != target.at(0).size()) {
-						throw error("tAccConstr and target sequence differ in size");
-					}
-				} else {
+				if (!validateSequenceNumber("tAccConstr",target,1,1)) {
 					// TODO report error
 					INTARNA_NOT_IMPLEMENTED("--tAccConstr only supported for single sequence input");
 				}
