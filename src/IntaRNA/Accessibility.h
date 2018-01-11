@@ -151,7 +151,7 @@ public:
 	 * @param RT the relative temperature to be used for Boltzmann weight computation
 	 */
 	void
-	decomposeByMinPu( IndexRangeList & ranges, const size_t minPu, const E_type RT ) const;
+	decomposeByMinPu( IndexRangeList & ranges, const double minPu, const E_type RT ) const;
 
 protected:
 

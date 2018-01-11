@@ -196,7 +196,7 @@ decomposeByMaxED( const size_t maxRangeLength, const size_t winSize, const size_
 
 void
 Accessibility::
-decomposeByMinPu( IndexRangeList & ranges, const size_t minPu, const E_type RT ) const
+decomposeByMinPu( IndexRangeList & ranges, const double minPu, const E_type RT ) const
 {
 	// the range list to fill
 	IndexRangeList out;
@@ -209,7 +209,7 @@ decomposeByMinPu( IndexRangeList & ranges, const size_t minPu, const E_type RT )
 
 		size_t lastStart = range->to +1;
 		for (size_t i= range->from; i <= range->to; i++) {
-			if (getED(i,i) > maxED && !E_equal(getED(i,i),maxED)) {
+			if (E_isINF(getED(i,i)) || (getED(i,i) > maxED && !E_equal(getED(i,i),maxED))) {
 				// check if end of range found and to be stored
 				if (lastStart < i) {
 					out.push_back(IndexRange(lastStart,i));

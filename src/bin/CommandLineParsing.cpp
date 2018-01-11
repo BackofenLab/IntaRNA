@@ -775,6 +775,7 @@ parse(int argc, char** argv)
 			case 'P' : {
 				if (qAccFile.empty()) LOG(INFO) <<"qAcc = "<<qAcc.val<<" but no --qAccFile given";
 				if (vm.count("qAccConstr")>0) LOG(INFO) <<"qAcc = "<<qAcc.val<<" : accessibility constraints (--qAccConstr) possibly not used in computation of loaded ED values";
+				break;
 			}	// drop to next handling
 			case 'N' : {
 				if (qAccL.val != qAccL.def) LOG(INFO) <<"qAcc = "<<qAcc.val<<" : ignoring --qAccL";
@@ -792,6 +793,7 @@ parse(int argc, char** argv)
 			case 'P' : {
 				if (tAccFile.empty()) LOG(INFO) <<"tAcc = "<<tAcc.val<<" but no --tAccFile given";
 				if (vm.count("tAccConstr")>0) LOG(INFO) <<"tAcc = "<<tAcc.val<<" : accessibility constraints (--tAccConstr) possibly not used in computation of loaded ED values";
+				break;
 			}	// drop to next handling
 			case 'N' : {
 				if (tAccL.val != tAccL.def) LOG(INFO) <<"tAcc = "<<tAcc.val<<" : ignoring --tAccL";
@@ -1769,6 +1771,7 @@ const IndexRangeList&
 CommandLineParsing::
 getQueryRanges( const InteractionEnergy & energy, const size_t sequenceNumber ) const
 {
+	checkIfParsed();
 #if INTARNA_IN_DEBUG_MODE
 	if (sequenceNumber>=qRegion.size())
 		throw std::runtime_error("CommandLineParsing::getQueryRanges("+toString(sequenceNumber)+") out of bounds");
@@ -1800,6 +1803,7 @@ const IndexRangeList&
 CommandLineParsing::
 getTargetRanges( const InteractionEnergy & energy, const size_t sequenceNumber ) const
 {
+	checkIfParsed();
 #if INTARNA_IN_DEBUG_MODE
 	if (sequenceNumber>=tRegion.size())
 		throw std::runtime_error("CommandLineParsing::getTargetRanges("+toString(sequenceNumber)+") out of bounds");
