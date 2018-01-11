@@ -133,6 +133,7 @@ CommandLineParsing::CommandLineParsing()
 	outOverlap( "NTQB", 'Q' ),
 	outDeltaE( 0.0, 100.0, 100.0),
 	outMaxE( -999.0, +999.0, 0.0),
+	outMinPu( 0.0, 1.0, 0.0),
 	outCsvCols(outCsvCols_default),
 	outPerRegion(false),
 
@@ -497,6 +498,12 @@ CommandLineParsing::CommandLineParsing()
 				->notifier(boost::bind(&CommandLineParsing::validate_outMaxE,this,_1))
 			, std::string("only interactions with E <= maxE are reported"
 					" (arg in range ["+toString(outMaxE.min)+","+toString(outMaxE.max)+"])").c_str())
+	    ("outMinPu"
+			, value<double>(&(outMinPu.val))
+				->default_value(outMinPu.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_outMinPu,this,_1))
+			, std::string("only interactions where all individual positions of both interacting sites have an unpaired probability >= minPu are reported"
+					" (arg in range ["+toString(outMinPu.min)+","+toString(outMinPu.max)+"])").c_str())
 	    ("outDeltaE"
 			, value<double>(&(outDeltaE.val))
 				->default_value(outDeltaE.def)
@@ -713,6 +720,8 @@ parse(int argc, char** argv)
 				}
 			}
 
+			///////////////  PARSE AND PREPARE PREDICTION RANGES  //////////////
+
 			// check regions to be used for interaction prediction
 			if ( qRegionLenMax.val > 0 && qAcc.val == 'N' ) {
 				throw error("automatic query accessible region identification requested (--qRegionLenMax) but accessibility computation disabled (--qAcc=N)");
@@ -729,6 +738,9 @@ parse(int argc, char** argv)
 			// parse region string if available
 			parseRegion( "qRegion", qRegionString, query, qRegion );
 			parseRegion( "tRegion", tRegionString, target, tRegion );
+
+
+			//////////////// ACCESSIBILITY CONSTRAINTS ///////////////////
 
 			// check qAccConstr - query sequence compatibility
 			if (vm.count("qAccConstr") > 0) {
@@ -1278,7 +1290,7 @@ getEnergyHandler( const Accessibility& accTarget, const ReverseAccessibility& ac
 {
 	checkIfParsed();
 
-	// check whether to compute ES values (for multi-site predictions
+	// check whether to compute ES values (for multi-site predictions)
 	const bool initES = std::string("M").find(pred.val) != std::string::npos;
 
 	switch( energy.val ) {
@@ -1755,7 +1767,7 @@ getSeedHandler( const InteractionEnergy & energy ) const
 
 const IndexRangeList&
 CommandLineParsing::
-getQueryRanges( const size_t sequenceNumber ) const
+getQueryRanges( const InteractionEnergy & energy, const size_t sequenceNumber ) const
 {
 #if INTARNA_IN_DEBUG_MODE
 	if (sequenceNumber>=qRegion.size())
@@ -1764,7 +1776,7 @@ getQueryRanges( const size_t sequenceNumber ) const
 		throw std::runtime_error("CommandLineParsing::getQueryRanges("+toString(sequenceNumber)+") is empty");
 #endif
 
-	// check if to be computed
+	// check if ranges are to be computed
 	if (qRegionLenMax.val > 0) {
 		// check if computation is needed
 		if (qRegion.at(sequenceNumber).begin()->to - qRegion.at(sequenceNumber).begin()->from +1 > qRegionLenMax.val) {
@@ -1775,6 +1787,10 @@ getQueryRanges( const size_t sequenceNumber ) const
 		}
 	}
 
+	// decompose ranges based in minimal unpaired probability value per position
+	// since all ranges covering a position will have a lower unpaired probability
+	getQueryAccessibility( sequenceNumber )->decomposeByMinPu( qRegion.at(sequenceNumber), outMinPu.val, energy.getRT() );
+
 	return qRegion.at(sequenceNumber);
 }
 
@@ -1782,7 +1798,7 @@ getQueryRanges( const size_t sequenceNumber ) const
 
 const IndexRangeList&
 CommandLineParsing::
-getTargetRanges( const size_t sequenceNumber ) const
+getTargetRanges( const InteractionEnergy & energy, const size_t sequenceNumber ) const
 {
 #if INTARNA_IN_DEBUG_MODE
 	if (sequenceNumber>=tRegion.size())
@@ -1801,6 +1817,11 @@ getTargetRanges( const size_t sequenceNumber ) const
 			VLOG(1) <<"detected accessible regions for target '"<<getTargetSequences().at(sequenceNumber).getId()<<"' : "<<tRegion.at(sequenceNumber);
 		}
 	}
+
+	// decompose ranges based in minimal unpaired probability value per position
+	// since all ranges covering a position will have a lower unpaired probability
+	getTargetAccessibility( sequenceNumber )->decomposeByMinPu( tRegion.at(sequenceNumber), outMinPu.val, energy.getRT() );
+
 
 	return tRegion.at(sequenceNumber);
 }

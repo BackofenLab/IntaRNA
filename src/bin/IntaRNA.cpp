@@ -228,8 +228,8 @@ int main(int argc, char **argv){
 
 								// run prediction for all range combinations
 								// TODO parallelize if only one target and query
-								BOOST_FOREACH(const IndexRange & tRange, parameters.getTargetRanges(targetNumber)) {
-								BOOST_FOREACH(const IndexRange & qRange, parameters.getQueryRanges(queryNumber)) {
+								BOOST_FOREACH(const IndexRange & tRange, parameters.getTargetRanges(*energy, targetNumber)) {
+								BOOST_FOREACH(const IndexRange & qRange, parameters.getQueryRanges(*energy, queryNumber)) {
 
 #if INTARNA_MULITHREADING
 									#pragma omp critical(intarna_omp_logOutput)

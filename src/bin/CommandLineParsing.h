@@ -103,20 +103,22 @@ public:
 	/**
 	 * Access to the ranges to screen for interactions for the query with the
 	 * according sequence number.
+	 * @param energy the energy handler later used for prediction (needed for region postprocessing)
 	 * @param sequenceNumber the number of the sequence within the vector
 	 *         returned by getQuerySequences()
 	 * @return the range list for the according sequence.
 	 */
-	const IndexRangeList& getQueryRanges( const size_t sequenceNumber ) const;
+	const IndexRangeList& getQueryRanges( const InteractionEnergy & energy, const size_t sequenceNumber ) const;
 
 	/**
 	 * Access to the ranges to screen for interactions for the target with the
 	 * according sequence number.
+	 * @param energy the energy handler later used for prediction (needed for region postprocessing)
 	 * @param sequenceNumber the number of the sequence within the vector
 	 *         returned by getTargetSequences()
 	 * @return the range list for the according sequence.
 	 */
-	const IndexRangeList& getTargetRanges( const size_t sequenceNumber ) const;
+	const IndexRangeList& getTargetRanges( const InteractionEnergy & energy, const size_t sequenceNumber ) const;
 
 	/**
 	 * Returns a newly allocated Energy object according to the user defined
@@ -475,6 +477,8 @@ protected:
 	NumberParameter<double> outDeltaE;
 	//! max E allowed to report an interaction
 	NumberParameter<double> outMaxE;
+	//! min unpaired prob of an interacting subsequence allowed
+	NumberParameter<double> outMinPu;
 	//! the CSV column selection
 	std::string outCsvCols;
 	//! the CSV column selection
@@ -755,6 +759,12 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_outMaxE(const double & value);
+
+	/**
+	 * Validates the outMinPu argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_outMinPu(const double & value);
 
 	/**
 	 * Validates the outCsvCols argument.
@@ -1566,6 +1576,14 @@ inline
 void CommandLineParsing::validate_outMaxE(const double & value) {
 	// forward check to general method
 	validate_numberArgument("outMaxE", outMaxE, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_outMinPu(const double & value) {
+	// forward check to general method
+	validate_numberArgument("outMinPu", outMinPu, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////

@@ -1,4 +1,15 @@
 
+180111 Martin Raden :
+ * IntaRNA/Accessibility:
+   + decomposeByMinPu() : decomposes a given list of ranges to subranges by
+     excluding all positions that have an unpaired probability below a given
+     threshold
+ * bin/CommandLineParsing :
+   + '--outMinPu' argument + validators
+   * get*Ranges() :
+     + calling Accessibility->decomposeByMinPu() for each range list
+     + energy argument (needed for RT access)
+
 171216 Martin Raden :
  * bin/CommandLineParsing :
    - check for equal length of sequence and constraint removed since obsolete

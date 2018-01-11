@@ -194,4 +194,44 @@ decomposeByMaxED( const size_t maxRangeLength, const size_t winSize, const size_
 
 ////////////////////////////////////////////////////////////////////
 
+void
+Accessibility::
+decomposeByMinPu( IndexRangeList & ranges, const size_t minPu, const E_type RT ) const
+{
+	// the range list to fill
+	IndexRangeList out;
+
+	// compute the maximal energy penalty according to the minimal unpaired probability
+	const E_type maxED = - RT * std::log( minPu );
+
+	// decompose each range individually
+	for (auto range = ranges.begin(); range != ranges.end(); range++) {
+
+		size_t lastStart = range->to +1;
+		for (size_t i= range->from; i <= range->to; i++) {
+			if (getED(i,i) > maxED && !E_equal(getED(i,i),maxED)) {
+				// check if end of range found and to be stored
+				if (lastStart < i) {
+					out.push_back(IndexRange(lastStart,i));
+				}
+				lastStart = range->to +1;
+			} else {
+				// check if beginning of new range
+				if (lastStart > i) {
+					lastStart = i;
+				}
+			}
+		}
+		// handle last open range
+		if (lastStart <= range->to) {
+			out.push_back(IndexRange(lastStart,range->to));
+		}
+	}
+
+	// replace input ranges with final decomposed list
+	ranges = out;
+}
+
+////////////////////////////////////////////////////////////////////
+
 } // namespace

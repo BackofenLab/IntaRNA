@@ -463,6 +463,15 @@ interaction should have a negative energy (<0) to be energetically favorable.
 This report barrier can be altered using `--outMaxE`. For suboptimal interaction
 restriction, please refer to [suboptimal interaction prediction](#subopts) section.
 
+If you are only interested in predictions for highly accessible regions, i.e. 
+with a high probability to be unpaired, you can use the `--outMinPu` parameter.
+If given, each individual position of the interacting subsequences has to have
+an unpaired probability reaching at least the given value. This significantly
+increases prediction time but will exclude predictions where the formation of
+the interaction (intermolecular base pairing) replaces intramolecular base 
+pairing (where the latter will cause low unpaired probabilities for the 
+respective positions).
+
 Furthermore, the region where interactions are supposed to occur can be restricted
 for target and query independently. To this end, a list of according 
 subregion-defining index pairs
