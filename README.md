@@ -667,7 +667,9 @@ and `Pu` denote unpaired probabilities of the respective interacting subsequence
 ### Customizable CSV RNA-RNA interaction output
 
 IntaRNA provides via `--outMode=C` a flexible interface to generate RNA-RNA 
-interaction output in CSV format (using `;` as separator).
+interaction output in CSV format (using `;` as separator). Note, target sequence
+information is listed with index `1` while query sequence information is given
+by index `2`.
 
 ```bash
 # call: IntaRNA -t AAACACCCCCGGUGGUUUGG -q AAACACCCCCGGUGGUUUGG --outMode=C --noSeed --outOverlap=B -n 3
@@ -682,8 +684,8 @@ Using the argument `--outCsvCols`, the user can specify what columns are
 printed to the output using a comma-separated list of colIds. Available colIds 
 are
 
-- `id1` : id of first sequence
-- `id2` : id of second sequence
+- `id1` : id of first sequence (target)
+- `id2` : id of second sequence (query)
 - `seq1` : full first sequence
 - `seq2` : full second sequence
 - `subseq1` : interacting subsequence of first sequence
@@ -757,7 +759,7 @@ If your scripts/whatever is tuned to the old IntaRNA v1.* output, you can use
 - `--outMode=1` : IntaRNA v1.* normal output
 - `--outMode=O` : IntaRNA v1.* detailed output (former `-o` option)
 
-
+Note, for for IntaRNA v1.* output, currently *no multi-threading computation* is available!
 
 
 <br /><br />
