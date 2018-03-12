@@ -258,7 +258,7 @@ callbackForStorage(FLT_OR_DBL   *pr,
 	    // copy unpaired data for all available interval lengths
 	    // but ensure interval does not contain blocked positions
 	    const bool rightEndBlocked = accConstr.isMarkedBlocked(j-1);
-	    for (int l = std::min(j,std::min(pr_size,max)); l>=1; l--) {
+	    for (int l = std::min(j,std::min(pr_size,std::min(max,(int)storageRT.first->getMaxLength()))); l>=1; l--) {
 			// get unpaired probability
 			double prob_unpaired = pr[l];
 			// get left interval boundary index
