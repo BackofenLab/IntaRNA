@@ -83,7 +83,11 @@ updateOptima( const size_t i1, const size_t j1
 			// get final energy of current interaction
 			E_type curE = isHybridE ? energy.getE( i1,j1, i2,j2, interE ) : interE;
 			// inform about prediction
-			predTracker->updateOptimumCalled( i1,j1, i2,j2, curE );
+			predTracker->updateOptimumCalled( i1 + energy.getOffset1()
+											, j1 + energy.getOffset1()
+											, i2 + energy.getOffset2()
+											, j2 + energy.getOffset2()
+											, curE );
 		}
 		return;
 	}
@@ -95,7 +99,11 @@ updateOptima( const size_t i1, const size_t j1
 	// report call if needed
 	if (predTracker != NULL) {
 		// inform about prediction
-		predTracker->updateOptimumCalled( i1,j1, i2,j2, curE );
+		predTracker->updateOptimumCalled( i1 + energy.getOffset1()
+										, j1 + energy.getOffset1()
+										, i2 + energy.getOffset2()
+										, j2 + energy.getOffset2()
+										, curE );
 	}
 
 	if (mfeInteractions.size() == 1) {

@@ -1,4 +1,11 @@
 
+180312 Martin Raden :
+ * IntaRNA/PredictorMaxProb :
+ * IntaRNA/PredictorMfe :
+   * updateOptima() :
+     * bugfix : call of predTracker->updateOptimumCalled() was done without
+       index offset information (fixes github issue #110) 
+
 180111 Martin Raden :
  * IntaRNA/Accessibility:
    + decomposeByMinPu() : decomposes a given list of ranges to subranges by
