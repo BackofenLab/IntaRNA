@@ -202,7 +202,7 @@ Accessibility::Accessibility( const RnaSequence& seq
 	seq(seq)
 	// set maxLength to appropriate value
 	, maxLength( maxLength==0 ? seq.size() : std::min(maxLength,seq.size()) )
-	, accConstraint( seq.size() )
+	, accConstraint( seq.size(), 0, "" )
 {
 	// set constraint if needed
 	if (accConstraint_ != NULL) {

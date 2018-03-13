@@ -55,8 +55,12 @@ public:
 	 * @param length length of the constrained sequence
 	 * @param maxBpSpan the maximal base pair span to be used for accessibility
 	 *        computation; set to 0 for full sequence length
+	 * @param shapeFile if non-empty: name of the SHAPE reactivity data file to
+	 *        be used for accessibility computation
 	 */
-	AccessibilityConstraint( const size_t length, const size_t maxBpSpan = 0 );
+	AccessibilityConstraint(  const size_t length
+							, const size_t maxBpSpan
+							, const std::string & shapeFile );
 
 	/**
 	 * Copy construction
@@ -73,10 +77,13 @@ public:
 	 * @param dotBracket the constraint encoding in VRNA-like dot-bracket encoding
 	 * @param maxBpSpan the maximal base pair span to be used for accessibility
 	 *        computation; set to 0 for full sequence length
+	 * @param shapeFile if non-empty: name of the SHAPE reactivity data file to
+	 *        be used for accessibility computation
 	 */
 	AccessibilityConstraint( const size_t length
 							, const std::string& dotBracket
-							, const size_t maxBpSpan = 0 );
+							, const size_t maxBpSpan
+							, const std::string & shapeFile );
 
 	virtual ~AccessibilityConstraint();
 
@@ -147,6 +154,13 @@ public:
 	getMaxBpSpan() const;
 
 	/**
+	 * Get filename from where to read SHAPE reactivity data.
+	 * @return the filename or an empty string if no SHAPE data available
+	 */
+	const std::string &
+	getShapeFile() const;
+
+	/**
 	 * Assignment of constraints for the same rna sequence.
 	 *
 	 * @param c the interaction to make this a copy of
@@ -163,6 +177,9 @@ protected:
 
 	//! the maximal base pair span to be used for accessibility computation
 	size_t maxBpSpan;
+
+	//! filename of SHAPE reactivity data or empty if no SHAPE data to be used
+	std::string shapeFile;
 
 	//! sorted list of ranges that are marked as blocked
 	IndexRangeList blocked;
@@ -206,10 +223,13 @@ std::ostream& operator<<(std::ostream& out, const AccessibilityConstraint& c);
 
 inline
 AccessibilityConstraint::
-AccessibilityConstraint( const size_t length_, const size_t maxBpSpan_ )
+AccessibilityConstraint( const size_t length_
+					, const size_t maxBpSpan_
+					, const std::string & shapeFile_ )
 	:
 	length(length_),
 	maxBpSpan( maxBpSpan_==0 ? length : std::min(maxBpSpan_,length) ),
+	shapeFile(shapeFile_),
 	blocked(),
 	accessible(),
 	paired()
@@ -311,7 +331,7 @@ AccessibilityConstraint::
 isEmpty() const
 {
 	// check if any constrained regions given
-	return (accessible.size() + blocked.size() + paired.size()) == 0;
+	return (accessible.size() + blocked.size() + paired.size() + shapeFile.size()) == 0;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -342,6 +362,16 @@ AccessibilityConstraint::
 getMaxBpSpan() const
 {
 	return maxBpSpan;
+}
+
+////////////////////////////////////////////////////////////////////////
+
+inline
+const std::string &
+AccessibilityConstraint::
+getShapeFile() const
+{
+	return shapeFile;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -382,6 +412,11 @@ std::ostream& operator<<(std::ostream& out, const AccessibilityConstraint& c)
 	// print ranges if non-empty
 	if (!c.paired.empty()) {
 		out <<(alreadyPrinted?",":"") <<AccessibilityConstraint::dotBracket_paired <<':' <<c.paired;
+		alreadyPrinted = true;
+	}
+	// print shape file if non-empty
+	if (!c.shapeFile.empty()) {
+		out <<(alreadyPrinted?",":"") <<"shapeFile" <<':' <<c.shapeFile;
 		alreadyPrinted = true;
 	}
 	return out;

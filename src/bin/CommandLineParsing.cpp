@@ -86,6 +86,7 @@ CommandLineParsing::CommandLineParsing()
 	qRegionString(""),
 	qRegion(),
 	qRegionLenMax( 0, 99999, 0),
+	qShape(""),
 
 	targetArg(""),
 	target(),
@@ -101,6 +102,7 @@ CommandLineParsing::CommandLineParsing()
 	tRegionString(""),
 	tRegion(),
 	tRegionLenMax( 0, 99999, 0),
+	tShape(""),
 
 	noSeedRequired(false),
 	seedTQ(""),
@@ -243,6 +245,10 @@ CommandLineParsing::CommandLineParsing()
 					" (arg in range ["+toString(qRegionLenMax.min)+","+toString(qRegionLenMax.max)+"];"
 					" 0 defaults to no automatic range detection)"
 					).c_str())
+		("qShape"
+			, value<std::string>(&qShape)
+				->notifier(boost::bind(&CommandLineParsing::validate_qShape,this,_1))
+			, "file name from where to read the query sequence's SHAPE reactivity data to guide its accessibility computation")
 		;
 
 	////  TARGET SEQUENCE OPTIONS  ////////////////////////////////////
@@ -338,6 +344,10 @@ CommandLineParsing::CommandLineParsing()
 					" (arg in range ["+toString(tRegionLenMax.min)+","+toString(tRegionLenMax.max)+"];"
 					" 0 defaults to no automatic range detection)"
 					).c_str())
+		("tShape"
+			, value<std::string>(&qShape)
+				->notifier(boost::bind(&CommandLineParsing::validate_tShape,this,_1))
+			, "file name from where to read the target sequence's SHAPE reactivity data to guide its accessibility computation")
 		;
 
 	////  SEED OPTIONS  ////////////////////////////////////
@@ -1109,10 +1119,10 @@ getQueryAccessibility( const size_t sequenceNumber ) const
 	const RnaSequence& seq = getQuerySequences().at(sequenceNumber);
 
 	// create temporary constraint object (will be copied)
-	AccessibilityConstraint accConstraint(seq.size());
+	AccessibilityConstraint accConstraint(seq.size(),0,"");
 	try {
 		// try parsing
-		accConstraint = AccessibilityConstraint(seq.size(), qAccConstr, qAccL.val);
+		accConstraint = AccessibilityConstraint(seq.size(), qAccConstr, qAccL.val, "");
 	} catch (std::exception & ex) {
 		throw std::runtime_error(toString("query accessibility constraint : ")+ex.what());
 	}
@@ -1203,9 +1213,9 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 	}
 	const RnaSequence& seq = getTargetSequences().at(sequenceNumber);
 	// create temporary constraint object (will be copied)
-	AccessibilityConstraint accConstraint(seq.size());
+	AccessibilityConstraint accConstraint(seq.size(), 0, "");
 	try {
-		accConstraint = AccessibilityConstraint(seq.size(), tAccConstr, tAccL.val);
+		accConstraint = AccessibilityConstraint(seq.size(), tAccConstr, tAccL.val, "");
 	} catch (std::exception & ex) {
 		throw std::runtime_error(toString("target accessibility constraint : ")+ex.what());
 	}

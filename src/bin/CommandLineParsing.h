@@ -389,6 +389,9 @@ protected:
 	//! maximal length of automatically detected highly accessible regions for
 	//! for query sequences; if 0, no automatic detection is done
 	NumberParameter<int> qRegionLenMax;
+	//! optional file name that contains structure probing reactivity data for
+	//! the query sequence (e.g. SHAPE data) to guide accessibility prediction
+	std::string qShape;
 
 	//! the target command line argument
 	std::string targetArg;
@@ -419,6 +422,9 @@ protected:
 	//! maximal length of automatically detected highly accessible regions for
 	//! for target sequences; if 0, no automatic detection is done
 	NumberParameter<int> tRegionLenMax;
+	//! optional file name that contains structure probing reactivity data for
+	//! the target sequence (e.g. SHAPE data) to guide accessibility prediction
+	std::string tShape;
 
 	//! whether or not a seed is to be required for an interaction or not
 	bool noSeedRequired;
@@ -572,6 +578,12 @@ protected:
 	void validate_qRegionLenMax(const int & value);
 
 	/**
+	 * Validates the query's SHAPE reactivity data file.
+	 * @param value the filename of the query's SHAPE reactivity data
+	 */
+	void validate_qShape( const std::string & value );
+
+	/**
 	 * Validates the target sequence argument.
 	 * @param value the argument value to validate
 	 */
@@ -636,6 +648,12 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_tRegionLenMax(const int & value);
+
+	/**
+	 * Validates the target's SHAPE reactivity data file.
+	 * @param value the filename of the target's SHAPE reactivity data
+	 */
+	void validate_tShape( const std::string & value );
 
 	/**
 	 * Validates the explicit seed argument.
@@ -803,7 +821,7 @@ protected:
 		// alphabet check
 		if ( ! param.isInRange(value) ) {
 			LOG(ERROR) <<name<<" = " <<value <<" : has to be in the range [" <<param.min <<","<<param.max<<"]";
-			parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
+			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 		}
 	}
 
@@ -1022,7 +1040,7 @@ void CommandLineParsing::validate_qSet(const std::string & value) {
 		// check regex
 		if (!boost::regex_match(value, IndexRangeList::regex, boost::match_perl) ) {
 			LOG(ERROR) <<"qSet"<<" = " <<value <<" : is not in the format 'from1-to1,from2-to2,..'";
-			parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
+			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 		} else {
 			// parse and store subset definitions
 			qSet = IndexRangeList(value);
@@ -1142,6 +1160,16 @@ void CommandLineParsing::validate_qRegionLenMax(const int & value)
 ////////////////////////////////////////////////////////////////////////////
 
 inline
+void CommandLineParsing::validate_qShape( const std::string & value )
+{
+	if (!validateFile( value )) {
+		LOG(ERROR) <<"Can not access/read query's SHAPE reactivity file '" <<value <<"'";
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
 void CommandLineParsing::validate_target(const std::string & value)
 {
 	validate_sequenceArgument("target",value);
@@ -1158,7 +1186,7 @@ void CommandLineParsing::validate_tSet(const std::string & value) {
 		// check regex
 		if (!boost::regex_match(value, IndexRangeList::regex, boost::match_perl) ) {
 			LOG(ERROR) <<"tSet"<<" = " <<value <<" : is not in the format 'from1-to1,from2-to2,..'";
-			parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
+			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 		} else {
 			// parse and store subset definitions
 			tSet = IndexRangeList(value);
@@ -1277,6 +1305,16 @@ void CommandLineParsing::validate_tRegionLenMax(const int & value)
 ////////////////////////////////////////////////////////////////////////////
 
 inline
+void CommandLineParsing::validate_tShape( const std::string & value )
+{
+	if (!validateFile( value )) {
+		LOG(ERROR) <<"Can not access/read target's SHAPE reactivity file '" <<value <<"'";
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
 void CommandLineParsing::validate_seedTQ(const std::string & value) {
 	if (!value.empty()) {
 		// split by commas
@@ -1293,14 +1331,14 @@ void CommandLineParsing::validate_seedTQ(const std::string & value) {
 			non_empty_seeds++;
 			if (!errMsg.empty()) {
 				LOG(ERROR) <<"explicit seed encoding '" <<value.substr(p1, length) <<"' : "<<errMsg;
-				parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
+				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 			}
 			// update p1
 			p1 = value.find_first_not_of(',',p2);
 		}
 		if (non_empty_seeds == 0) {
 			LOG(ERROR) <<"explicit seed encoding '" <<value <<"' does not contain any seed information";
-			parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
+			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 		}
 	}
 }
@@ -1361,7 +1399,7 @@ void CommandLineParsing::validate_seedQRange(const std::string & value) {
 		// check regex
 		if (!boost::regex_match(value, IndexRangeList::regex, boost::match_perl) ) {
 			LOG(ERROR) <<"seedQRange"<<" = " <<value <<" : is not in the format 'from1-to1,from2-to2,..'";
-			parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
+			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 		}
 	}
 }
@@ -1374,7 +1412,7 @@ void CommandLineParsing::validate_seedTRange(const std::string & value) {
 		// check regex
 		if (!boost::regex_match(value, IndexRangeList::regex, boost::match_perl) ) {
 			LOG(ERROR) <<"seedTRange"<<" = " <<value <<" : is not in the format 'from1-to1,from2-to2,..'";
-			parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
+			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 		}
 	}
 }

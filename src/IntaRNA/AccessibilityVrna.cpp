@@ -261,6 +261,7 @@ callbackForStorage(FLT_OR_DBL   *pr,
 	    for (int l = std::min(j,std::min(pr_size,std::min(max,(int)storageRT.first->getMaxLength()))); l>=1; l--) {
 			// get unpaired probability
 			double prob_unpaired = pr[l];
+//			TODO: check for [0,1] range and correct if needed (print WARNING)
 			// get left interval boundary index
 			int i = j - l + 1;
 			// check if interval ends are blocked positions
@@ -340,6 +341,21 @@ fillByRNAplfold( const VrnaHandler &vrnaHandler
 
 		// cleanup
 		free(structure);
+
+		// check if SHAPE reactivity data available
+		if (!getAccConstraint().getShapeFile().empty()) {
+
+			// add SHAPE reactivity data
+			// add SHAPE data as soft constraints
+			vrna_constraints_add_SHAPE(fold_compound,
+			                           getAccConstraint().getShapeFile().c_str(),
+			                           "Z", // shape_method,
+			                           "O", // shape_conversion,
+			                           0, // verbose,
+			                           VRNA_OPTION_PF | VRNA_OPTION_WINDOW );
+
+
+		}
 	}
 
 

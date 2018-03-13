@@ -19,7 +19,7 @@ AccessibilityBasePair::AccessibilityBasePair(const RnaSequence& seq,
       minLoopLength(minLoopLen)
 {
 	if (accConstr_ != NULL && !accConstr_->isEmpty()) {
-		INTARNA_NOT_IMPLEMENTED("AccessibilityBasePair: accessibility constraints not supported yet");
+		INTARNA_NOT_IMPLEMENTED("AccessibilityBasePair: accessibility constraints not supported");
 	}
 	if (RT == 0.0) {
 		throw std::runtime_error("AccessibilityBasePair: RT == 0.0");

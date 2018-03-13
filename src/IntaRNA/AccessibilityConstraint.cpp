@@ -44,10 +44,12 @@ AccessibilityConstraint::
 AccessibilityConstraint(
 			  const size_t length_
 			, const std::string& stringEncoding
-			, const size_t maxBpSpan_ )
+			, const size_t maxBpSpan_
+			, const std::string & shapeFile_ )
 	:
 	length(length_),
 	maxBpSpan( maxBpSpan_==0 ? length : std::min(maxBpSpan_,length) ),
+	shapeFile(shapeFile_),
 	blocked(),
 	accessible(),
 	paired()
