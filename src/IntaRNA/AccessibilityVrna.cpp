@@ -349,8 +349,8 @@ fillByRNAplfold( const VrnaHandler &vrnaHandler
 			// add SHAPE data as soft constraints
 			vrna_constraints_add_SHAPE(fold_compound,
 			                           getAccConstraint().getShapeFile().c_str(),
-			                           "Z", // shape_method,
-			                           "O", // shape_conversion,
+			                           getAccConstraint().getShapeMethod().c_str(), // shape_method,
+			                           getAccConstraint().getShapeConversion().c_str(), // shape_conversion,
 			                           0, // verbose,
 			                           VRNA_OPTION_PF | VRNA_OPTION_WINDOW );
 

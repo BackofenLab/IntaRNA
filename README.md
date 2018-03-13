@@ -73,6 +73,7 @@ The following topics are covered by this documentation:
   - [Interaction restrictions](#interConstr)
   - [Seed constraints](#seed)
   - [Explicit seed input](#seedExplicit)
+  - [SHAPE reactivity data to enhance accessibility computation](#shape)
   - [Output modes](#outmodes)
   - [Suboptimal RNA-RNA interaction prediction and output restrictions](#subopts)
   - [Energy parameters and temperature](#energy)
@@ -131,12 +132,12 @@ dependencies:
 
 - compiler supporting C++11 standard and OpenMP
 - [boost C++ library](http://www.boost.org/) version >= 1.50.0 
-  (ensure the following libraries are installed; or install all e.g. in Ubuntu via package `libboost-all-dev`)
+  (ensure the following libraries are installed for development (not just runtime libraries!); or install all e.g. in Ubuntu via package `libboost-all-dev`)
     - libboost_regex
     - libboost_program_options
     - libboost_filesystem
     - libboost_system
-- [Vienna RNA package](http://www.tbi.univie.ac.at/RNA/) version >= 2.4.3
+- [Vienna RNA package](http://www.tbi.univie.ac.at/RNA/) version >= 2.4.4
 - if [cloning from github](#instgithub): GNU autotools (automake, autoconf, ..)
 
 Also used by IntaRNA, but already part of the source code distribution (and thus
@@ -309,6 +310,7 @@ possible to define
 [interaction restrictions](#interConstr),
 [seed constraints](#seed), 
 [explicit seed information](#seedExplicit), 
+[SHAPE reactivity constraints](#shape), 
 [output modes](#outmodes),
 [suboptimal enumeration](#subopts), 
 [energy parameters, temperature](#energy),
@@ -400,6 +402,7 @@ of equal length *n*.
 | Space complexity | O(*n*^2) | O(*n*^2) | O(*n*^4) |
 | [Seed constraint](#seed) | x | x | x |
 | [Explicit seeds](#seedExplicit) | x | x | x |
+| [SHAPE reactivity constraint](#shape) | x | x | x |
 | No [seed constraint](#seed) | x | x | x |
 | Minimum free energy interaction | not guaranteed | x | x |
 | Overlapping [suboptimal interactions](#subopts) | x | x | x |
@@ -579,6 +582,32 @@ query
 If several or alternative seeds are known, you can provide all as a 
 comma-separated list and IntaRNA will consider all interactions that cover at
 least one of them.
+
+
+
+<br /><br />
+<a name="shape" />
+
+## SHAPE reactivity data to enhance accessibility computation
+
+For some RNA sequences, experimental reactivity data is available that can be
+used to guide/help the structure and thus accessibility prediction for the RNA
+molecule. IntaRNA supports such data by interfacing the Vienna RNA package
+capabilities for SHAPE reactivity data incorporation, see 
+[Lorenz et al. (2016)](https://dx.doi.org/10.1186%2Fs13015-016-0070-z) or the
+[RNAfold manpage](https://www.tbi.univie.ac.at/RNA/RNAfold.1.html).
+
+The SHAPE reactivity data can be provided via file using `--qShape` or
+`--tShape` for query or target sequence, respectively. 
+Independently for each, it is possible
+to define the methods to be used to convert the data into pseudo energies and
+pairing probabilities. The respective IntaRNA arguments are
+`--qShapeMethod`|`--tShapeMethod`
+and `--qShapeConversion`|`--tShapeConversion`, which mimics the according 
+tool arguments in the Vienna RNA package (see e.g. the 
+[RNAfold manpage](https://www.tbi.univie.ac.at/RNA/RNAfold.1.html)).
+
+
 
 
 <br /><br />

@@ -64,6 +64,7 @@ CommandLineParsing::CommandLineParsing()
 	opts_query("Query"),
 	opts_target("Target"),
 	opts_seed("Seed"),
+	opts_shape("SHAPE"),
 	opts_inter("Interaction"),
 	opts_general("General"),
 	opts_output("Output"),
@@ -87,6 +88,8 @@ CommandLineParsing::CommandLineParsing()
 	qRegion(),
 	qRegionLenMax( 0, 99999, 0),
 	qShape(""),
+	qShapeMethod("Zb0.89"),
+	qShapeConversion("Os1.6i-2.29"),
 
 	targetArg(""),
 	target(),
@@ -103,6 +106,8 @@ CommandLineParsing::CommandLineParsing()
 	tRegion(),
 	tRegionLenMax( 0, 99999, 0),
 	tShape(""),
+	tShapeMethod("Zb0.89"),
+	tShapeConversion("Os1.6i-2.29"),
 
 	noSeedRequired(false),
 	seedTQ(""),
@@ -245,10 +250,6 @@ CommandLineParsing::CommandLineParsing()
 					" (arg in range ["+toString(qRegionLenMax.min)+","+toString(qRegionLenMax.max)+"];"
 					" 0 defaults to no automatic range detection)"
 					).c_str())
-		("qShape"
-			, value<std::string>(&qShape)
-				->notifier(boost::bind(&CommandLineParsing::validate_qShape,this,_1))
-			, "file name from where to read the query sequence's SHAPE reactivity data to guide its accessibility computation")
 		;
 
 	////  TARGET SEQUENCE OPTIONS  ////////////////////////////////////
@@ -344,10 +345,6 @@ CommandLineParsing::CommandLineParsing()
 					" (arg in range ["+toString(tRegionLenMax.min)+","+toString(tRegionLenMax.max)+"];"
 					" 0 defaults to no automatic range detection)"
 					).c_str())
-		("tShape"
-			, value<std::string>(&qShape)
-				->notifier(boost::bind(&CommandLineParsing::validate_tShape,this,_1))
-			, "file name from where to read the target sequence's SHAPE reactivity data to guide its accessibility computation")
 		;
 
 	////  SEED OPTIONS  ////////////////////////////////////
@@ -408,6 +405,63 @@ CommandLineParsing::CommandLineParsing()
 				->notifier(boost::bind(&CommandLineParsing::validate_seedTRange,this,_1))
 			, std::string("interval(s) in the target to search for seeds in format 'from1-to1,from2-to2,...' (Note, only for single target)").c_str())
 		;
+
+	////  SHAPE OPTIONS  ////////////////////////
+
+	opts_shape.add_options()
+		("qShape"
+			, value<std::string>(&qShape)
+				->notifier(boost::bind(&CommandLineParsing::validate_qShape,this,_1))
+			, "file name from where to read the query sequence's SHAPE reactivity data to guide its accessibility computation")
+		("tShape"
+			, value<std::string>(&qShape)
+				->notifier(boost::bind(&CommandLineParsing::validate_tShape,this,_1))
+			, "SHAPE: file name from where to read the target sequence's SHAPE reactivity data to guide its accessibility computation")
+		("qShapeMethod"
+				, value<std::string>(&qShapeMethod)
+					->notifier(boost::bind(&CommandLineParsing::validate_tShapeMethod,this,_1))
+				, std::string("SHAPE: method how to integrate SHAPE reactivity data into query accessibility computation via pseudo energies:"
+					"\n"
+					" 'D': Convert by using a linear equation according to Deigan et al. (2009). The calculated pseudo energies will "
+					"be applied for every nucleotide involved in a stacked pair. "
+					"The slope 'm' and the intercept 'b' can be set using e.g. 'Dm1.8b-0.6' (=defaults for 'D')."
+					"\n"
+					" 'Z':  Convert according to Zarringhalam et al. (2012) via pairing probabilities by using linear mapping. "
+					"Aberration from the observed pairing probabilities will be penalized, which can be adjusted by the factor beta e.g. 'Zb0.89' (=default for 'Z')."
+					"\n"
+					" 'W': Apply a given vector of perturbation energies to unpaired nucleotides according to Washietl et al. (2012). "
+					"Perturbation vectors can be calculated by using RNApvmin."
+					).c_str())
+		("tShapeMethod"
+			, value<std::string>(&qShapeMethod)
+				->notifier(boost::bind(&CommandLineParsing::validate_tShapeMethod,this,_1))
+			, std::string("SHAPE: method how to integrate SHAPE reactivity data into target accessibility computation via pseudo energies.\n"
+					"[for encodings see --qShapeMethod]"
+					).c_str())
+		("qShapeConversion"
+				, value<std::string>(&qShapeConversion)
+					->notifier(boost::bind(&CommandLineParsing::validate_tShapeConversion,this,_1))
+				, std::string("SHAPE: method how to convert SHAPE reactivities to pairing probabilities for query accessibility computation. "
+					"This parameter is useful when dealing with the SHAPE incorporation according to Zarringhalam et al. (2012). "
+					"The following methods can be used to convert SHAPE reactivities into the probability for a certain nucleotide to be unpaired:"
+					"\n"
+					" 'M': Linear mapping according to Zarringhalam et al. (2012)"
+					"\n"
+					" 'C': Use a cutoff-approach to divide into paired and unpaired nucleotides, e.g. 'C0.25' (= default for 'C')"
+					"\n"
+					" 'S': Skip the normalizing step since the input data already represents probabilities for being unpaired rather than raw reactivity values"
+					"\n"
+					" 'L': Linear model to convert reactivity into a probability for being unpaired, e.g. 'Ls0.68i0.2' for slope of 0.68 and intercept of 0.2 (=default for 'L')"
+					"\n"
+					" 'O': Linear model to convert the log reactivity into a probability for being unpaired, e.g. 'Os1.6i-2.29' to use a slope of 1.6 and an intercept of -2.29 (=default for 'O')"
+					).c_str())
+		("tShapeConversion"
+				, value<std::string>(&qShapeConversion)
+					->notifier(boost::bind(&CommandLineParsing::validate_tShapeConversion,this,_1))
+				, std::string("SHAPE: method how to convert SHAPE reactivities to pairing probabilities for target accessibility computation.\n"
+					"[for encodings see --qShapeConversion]"
+					).c_str())
+			;
 
 	////  INTERACTION/ENERGY OPTIONS  ////////////////////////
 
@@ -556,7 +610,7 @@ CommandLineParsing::CommandLineParsing()
 
 	////  GENERAL OPTIONS  ////////////////////////////////////
 
-	opts_cmdline_all.add(opts_query).add(opts_target).add(opts_seed).add(opts_inter).add(opts_output).add(opts_general);
+	opts_cmdline_all.add(opts_query).add(opts_target).add(opts_seed).add(opts_shape).add(opts_inter).add(opts_output).add(opts_general);
 
 
 }
@@ -1119,10 +1173,10 @@ getQueryAccessibility( const size_t sequenceNumber ) const
 	const RnaSequence& seq = getQuerySequences().at(sequenceNumber);
 
 	// create temporary constraint object (will be copied)
-	AccessibilityConstraint accConstraint(seq.size(),0,"");
+	AccessibilityConstraint accConstraint(seq.size(),0,"","","");
 	try {
 		// try parsing
-		accConstraint = AccessibilityConstraint(seq.size(), qAccConstr, qAccL.val, "");
+		accConstraint = AccessibilityConstraint(seq.size(), qAccConstr, qAccL.val, qShape, qShapeMethod, qShapeConversion);
 	} catch (std::exception & ex) {
 		throw std::runtime_error(toString("query accessibility constraint : ")+ex.what());
 	}
@@ -1213,9 +1267,9 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 	}
 	const RnaSequence& seq = getTargetSequences().at(sequenceNumber);
 	// create temporary constraint object (will be copied)
-	AccessibilityConstraint accConstraint(seq.size(), 0, "");
+	AccessibilityConstraint accConstraint(seq.size(), 0, "","","");
 	try {
-		accConstraint = AccessibilityConstraint(seq.size(), tAccConstr, tAccL.val, "");
+		accConstraint = AccessibilityConstraint(seq.size(), tAccConstr, tAccL.val, tShape, tShapeMethod, tShapeConversion);
 	} catch (std::exception & ex) {
 		throw std::runtime_error(toString("target accessibility constraint : ")+ex.what());
 	}

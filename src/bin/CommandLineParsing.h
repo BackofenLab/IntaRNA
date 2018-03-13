@@ -344,6 +344,8 @@ protected:
 	boost::program_options::options_description opts_target;
 	//! seed specific options
 	boost::program_options::options_description opts_seed;
+	//! SHAPE reactivity data specific options
+	boost::program_options::options_description opts_shape;
 	//! interaction/energy specific options
 	boost::program_options::options_description opts_inter;
 	//! general options
@@ -392,6 +394,12 @@ protected:
 	//! optional file name that contains structure probing reactivity data for
 	//! the query sequence (e.g. SHAPE data) to guide accessibility prediction
 	std::string qShape;
+	//! optional encoding what method is to be used to convert the data from
+	//! qShape to pseudo energies for according accessibility prediction
+	std::string qShapeMethod;
+	//! optional encoding how data from qShape is converted into pairing
+	//! probabilities for according accessibility prediction
+	std::string qShapeConversion;
 
 	//! the target command line argument
 	std::string targetArg;
@@ -425,6 +433,12 @@ protected:
 	//! optional file name that contains structure probing reactivity data for
 	//! the target sequence (e.g. SHAPE data) to guide accessibility prediction
 	std::string tShape;
+	//! optional encoding what method is to be used to convert the data from
+	//! tShape to pseudo energies for according accessibility prediction
+	std::string tShapeMethod;
+	//! optional encoding how data from tShape is converted into pairing
+	//! probabilities for according accessibility prediction
+	std::string tShapeConversion;
 
 	//! whether or not a seed is to be required for an interaction or not
 	bool noSeedRequired;
@@ -584,6 +598,19 @@ protected:
 	void validate_qShape( const std::string & value );
 
 	/**
+	 * Validates the query's method to transform SHAPE reactivity data to
+	 * pseudo energies.
+	 * @param value the query's SHAPE method encoding
+	 */
+	void validate_qShapeMethod( const std::string & value );
+
+	/**
+	 * Validates the query's SHAPE reactivity data conversion method encoding.
+	 * @param value the query's SHAPE conversion method encoding
+	 */
+	void validate_qShapeConversion( const std::string & value );
+
+	/**
 	 * Validates the target sequence argument.
 	 * @param value the argument value to validate
 	 */
@@ -654,6 +681,19 @@ protected:
 	 * @param value the filename of the target's SHAPE reactivity data
 	 */
 	void validate_tShape( const std::string & value );
+
+	/**
+	 * Validates the target's method to transform SHAPE reactivity data to
+	 * pseudo energies.
+	 * @param value the target's SHAPE method encoding
+	 */
+	void validate_tShapeMethod( const std::string & value );
+
+	/**
+	 * Validates the target's SHAPE reactivity data conversion method encoding.
+	 * @param value the target's SHAPE conversion method encoding
+	 */
+	void validate_tShapeConversion( const std::string & value );
 
 	/**
 	 * Validates the explicit seed argument.
@@ -1164,6 +1204,30 @@ void CommandLineParsing::validate_qShape( const std::string & value )
 {
 	if (!validateFile( value )) {
 		LOG(ERROR) <<"Can not access/read query's SHAPE reactivity file '" <<value <<"'";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_qShapeMethod( const std::string & value )
+{
+
+	if (!boost::regex_match(value, AccessibilityConstraint::regexShapeMethod, boost::match_perl) ) {
+		LOG(ERROR) <<"Query's SHAPE method encoding'" <<value <<"' is not valid.";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_qShapeConversion( const std::string & value )
+{
+	if (!boost::regex_match(value, AccessibilityConstraint::regexShapeConversion, boost::match_perl) ) {
+		LOG(ERROR) <<"Query's SHAPE conversion method encoding'" <<value <<"' is not valid.";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
 }
 
@@ -1309,6 +1373,30 @@ void CommandLineParsing::validate_tShape( const std::string & value )
 {
 	if (!validateFile( value )) {
 		LOG(ERROR) <<"Can not access/read target's SHAPE reactivity file '" <<value <<"'";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_tShapeMethod( const std::string & value )
+{
+	if (!boost::regex_match(value, AccessibilityConstraint::regexShapeMethod, boost::match_perl) ) {
+		LOG(ERROR) <<"Target's SHAPE method encoding'" <<value <<"' is not valid.";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_tShapeConversion( const std::string & value )
+{
+
+	if (!boost::regex_match(value, AccessibilityConstraint::regexShapeConversion, boost::match_perl) ) {
+		LOG(ERROR) <<"Target's SHAPE conversion method encoding'" <<value <<"' is not valid.";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
 }
 
