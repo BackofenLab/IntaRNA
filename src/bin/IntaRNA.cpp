@@ -227,7 +227,7 @@ int main(int argc, char **argv){
 								INTARNA_CHECK_NOT_NULL(predictor,"predictor initialization failed");
 
 								// run prediction for all range combinations
-								// TODO parallelize if only one target and query
+								// NOTE: CAN NOT BE PARALLELIZED UNLESS predictor.predict() is threadsafe (currently not, eg. due to offset setup)
 								BOOST_FOREACH(const IndexRange & tRange, parameters.getTargetRanges(*energy, targetNumber)) {
 								BOOST_FOREACH(const IndexRange & qRange, parameters.getQueryRanges(*energy, queryNumber)) {
 
