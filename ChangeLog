@@ -23,6 +23,11 @@
      + sanity check of shapeMethod/shapeConversion if shapeFile non-empty
    * copyconstructor :
      + copying of shape* members
+   * regex : bugfix : was not correctly encoding dotbracket strings or index
+     range lists
+ * tests/AccessibilityConstraint :
+   * adaptation to AccessibilityConstraint constructor changes
+   + tests for regex matching
  * IntaRNA/Accessibility :
    * adaptation to AccessibilityConstraint constructor changes
  * IntaRNA/AccessibilityVrna :
@@ -33,7 +38,9 @@
    + SHAPE argument list
      * q|tShape : moved here from query|target argument list
      + q|tShapeMethod : method to convert SHAPE to pseudo energies
-     + q|tShapeConversion : method to convert SHAPE to pairing probabilities
+     + q|tShapeConversion : method to convert SHAPE to pairing probabilitie
+   * validate_structureConstraintArgument() :
+     * bugfix: check had to be reversed
 
 1802 Martin Raden :
  * IntaRNA/AccessibilityConstraint :
@@ -689,7 +696,7 @@ version 2.0.2
  * OutputHandlerText :
    + detailedOutput : flag to switch between detailed and reduced output
    * add() : 
-     + heads detailedOutput flag
+     + heeds detailedOutput flag
    * construction() :
      + detailedOutput flag handling
  * PredictorMfe2d :

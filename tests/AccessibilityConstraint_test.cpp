@@ -17,7 +17,7 @@ TEST_CASE( "AccessibilityConstraint", "[AccessibilityConstraint]" ) {
 
 
 	SECTION("check empty construction") {
-		AccessibilityConstraint c(seqLength);
+		AccessibilityConstraint c(seqLength,0,"","","");
 		REQUIRE( c.isEmpty() );
 		REQUIRE_FALSE( c.isMarkedBlocked(0) );
 		REQUIRE_FALSE( c.isMarkedAccessible(0) );
@@ -25,9 +25,48 @@ TEST_CASE( "AccessibilityConstraint", "[AccessibilityConstraint]" ) {
 		REQUIRE( c.isUnconstrained(0) );
 	}
 
+	SECTION("check regular expressions") {
+		boost::regex regex;
+
+		// general test
+		regex = boost::regex("\\s");
+		REQUIRE_FALSE(boost::regex_match( "", regex, boost::match_perl ));
+		REQUIRE(boost::regex_match( " ", regex, boost::match_perl ));
+
+		// test dot-bracket alphabet
+		regex = boost::regex("["+AccessibilityConstraint::dotBracketAlphabet+"]+");
+		REQUIRE_FALSE(boost::regex_match( "", regex, boost::match_perl ));
+		REQUIRE(boost::regex_match( AccessibilityConstraint::dotBracketAlphabet, regex, boost::match_perl ));
+
+		// test dot-bracket alphabet
+		regex = boost::regex("^(["
+				+ AccessibilityConstraint::dotBracketAlphabet
+				+"]+|"+
+				+"("+AccessibilityConstraint::regionIndexList
+					+"(,"+AccessibilityConstraint::regionIndexList+")*"
+				+"))$");
+		regex = AccessibilityConstraint::regex;
+		REQUIRE_FALSE(boost::regex_match( "", regex, boost::match_perl ));
+		REQUIRE(boost::regex_match( AccessibilityConstraint::dotBracketAlphabet, regex, boost::match_perl ));
+		REQUIRE(boost::regex_match( "b:3-4", regex, boost::match_perl ));
+		REQUIRE(boost::regex_match( "b:3-4,11-12", regex, boost::match_perl ));
+		REQUIRE(boost::regex_match( "x:11-12", regex, boost::match_perl ));
+		REQUIRE(boost::regex_match( "x:3-4,11-12", regex, boost::match_perl ));
+		REQUIRE(boost::regex_match( "p:11-12", regex, boost::match_perl ));
+		REQUIRE(boost::regex_match( "p:3-4,11-12", regex, boost::match_perl ));
+		REQUIRE(boost::regex_match( "b:3-4,11-12,x:7-8,p:9-9", regex, boost::match_perl ));
+
+		REQUIRE_FALSE(boost::regex_match( "b:3-4d,11-12,x:7-8,p:9-9", regex, boost::match_perl ));
+		REQUIRE_FALSE(boost::regex_match( "b:3-4,11-12,f:7-8,p:9-9", regex, boost::match_perl ));
+		REQUIRE_FALSE(boost::regex_match( "b:3-4,11-12,x:7--8,p:9-9", regex, boost::match_perl ));
+		REQUIRE_FALSE(boost::regex_match( "b:3-4.0,11-12,x:7-8,p:9-9", regex, boost::match_perl ));
+		REQUIRE_FALSE(boost::regex_match( "b:3-4,11,6-12,x:7-8,p:9-9", regex, boost::match_perl ));
+		REQUIRE_FALSE(boost::regex_match( "b:,x:7-8,p:9-9", regex, boost::match_perl ));
+	}
+
 	SECTION("check dot-bracket construction") {
 		std::string constraint = "..bb..xxp.bb";
-		AccessibilityConstraint c(seqLength,constraint);
+		AccessibilityConstraint c(seqLength,constraint,0,"","","");
 
 		REQUIRE_FALSE( c.isEmpty() );
 		REQUIRE_FALSE( c.isMarkedBlocked(0) );
@@ -64,7 +103,7 @@ TEST_CASE( "AccessibilityConstraint", "[AccessibilityConstraint]" ) {
 
 	SECTION("check range-based construction") {
 		std::string constraint = "b:3-4,11-12,x:7-8,p:9-9";
-		AccessibilityConstraint c(seqLength,constraint);
+		AccessibilityConstraint c(seqLength,constraint,0,"","","");
 
 		REQUIRE_FALSE( c.isEmpty() );
 		REQUIRE_FALSE( c.isMarkedBlocked(0) );

@@ -1022,7 +1022,7 @@ CommandLineParsing::
 validate_structureConstraintArgument(const std::string & name, const std::string & value)
 {
 	// check if valid encoding
-	if (boost::regex_match( value, AccessibilityConstraint::regex, boost::match_perl )) {
+	if (!boost::regex_match( value, AccessibilityConstraint::regex, boost::match_perl )) {
 		LOG(ERROR) <<"constraint "<<name<<" = '"<<value <<"' is not correctly encoded!";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
