@@ -414,12 +414,12 @@ CommandLineParsing::CommandLineParsing()
 				->notifier(boost::bind(&CommandLineParsing::validate_qShape,this,_1))
 			, "file name from where to read the query sequence's SHAPE reactivity data to guide its accessibility computation")
 		("tShape"
-			, value<std::string>(&qShape)
+			, value<std::string>(&tShape)
 				->notifier(boost::bind(&CommandLineParsing::validate_tShape,this,_1))
 			, "SHAPE: file name from where to read the target sequence's SHAPE reactivity data to guide its accessibility computation")
 		("qShapeMethod"
 				, value<std::string>(&qShapeMethod)
-					->notifier(boost::bind(&CommandLineParsing::validate_tShapeMethod,this,_1))
+					->notifier(boost::bind(&CommandLineParsing::validate_qShapeMethod,this,_1))
 				, std::string("SHAPE: method how to integrate SHAPE reactivity data into query accessibility computation via pseudo energies:"
 					"\n"
 					" 'D': Convert by using a linear equation according to Deigan et al. (2009). The calculated pseudo energies will "
@@ -433,14 +433,14 @@ CommandLineParsing::CommandLineParsing()
 					"Perturbation vectors can be calculated by using RNApvmin."
 					).c_str())
 		("tShapeMethod"
-			, value<std::string>(&qShapeMethod)
+			, value<std::string>(&tShapeMethod)
 				->notifier(boost::bind(&CommandLineParsing::validate_tShapeMethod,this,_1))
 			, std::string("SHAPE: method how to integrate SHAPE reactivity data into target accessibility computation via pseudo energies.\n"
 					"[for encodings see --qShapeMethod]"
 					).c_str())
 		("qShapeConversion"
 				, value<std::string>(&qShapeConversion)
-					->notifier(boost::bind(&CommandLineParsing::validate_tShapeConversion,this,_1))
+					->notifier(boost::bind(&CommandLineParsing::validate_qShapeConversion,this,_1))
 				, std::string("SHAPE: method how to convert SHAPE reactivities to pairing probabilities for query accessibility computation. "
 					"This parameter is useful when dealing with the SHAPE incorporation according to Zarringhalam et al. (2012). "
 					"The following methods can be used to convert SHAPE reactivities into the probability for a certain nucleotide to be unpaired:"
@@ -456,7 +456,7 @@ CommandLineParsing::CommandLineParsing()
 					" 'O': Linear model to convert the log reactivity into a probability for being unpaired, e.g. 'Os1.6i-2.29' to use a slope of 1.6 and an intercept of -2.29 (=default for 'O')"
 					).c_str())
 		("tShapeConversion"
-				, value<std::string>(&qShapeConversion)
+				, value<std::string>(&tShapeConversion)
 					->notifier(boost::bind(&CommandLineParsing::validate_tShapeConversion,this,_1))
 				, std::string("SHAPE: method how to convert SHAPE reactivities to pairing probabilities for target accessibility computation.\n"
 					"[for encodings see --qShapeConversion]"

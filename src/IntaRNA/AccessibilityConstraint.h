@@ -462,6 +462,9 @@ operator= ( const AccessibilityConstraint & c )
 	// copy data
 	length = c.length;
 	maxBpSpan = c.maxBpSpan;
+	shapeFile = c.shapeFile;
+	shapeMethod = c.shapeMethod;
+	shapeConversion = c.shapeConversion;
 	blocked = c.blocked;
 	accessible = c.accessible;
 	paired = c.paired;

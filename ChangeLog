@@ -25,6 +25,8 @@
      + copying of shape* members
    * regex : bugfix : was not correctly encoding dotbracket strings or index
      range lists
+   * operator= :
+     + shape members copied
  * tests/AccessibilityConstraint :
    * adaptation to AccessibilityConstraint constructor changes
    + tests for regex matching
