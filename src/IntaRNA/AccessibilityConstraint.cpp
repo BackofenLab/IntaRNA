@@ -48,7 +48,7 @@ const boost::regex AccessibilityConstraint::regexShapeMethod("^((D(m-?(\\d+|\\d+
 // S
 // Ls0.5i0.5
 // Os0.5i-0.5
-const boost::regex AccessibilityConstraint::regexShapeConversion("^((M)|(C(\\d+|\\d+.\\d+))|(S)|((L|O)s-?(\\d+|\\d+.\\d+)i-?(\\d+|\\d+.\\d+)))$");
+const boost::regex AccessibilityConstraint::regexShapeConversion("^((M)|(C(\\d+|\\d+.\\d+)?)|(S)|((L|O)(s-?(\\d+|\\d+.\\d+)i-?(\\d+|\\d+.\\d+))?))$");
 
 
 ////////////////////////////////////////////////////////////////////////
