@@ -1215,7 +1215,7 @@ void CommandLineParsing::validate_qShapeMethod( const std::string & value )
 {
 
 	if (!boost::regex_match(value, AccessibilityConstraint::regexShapeMethod, boost::match_perl) ) {
-		LOG(ERROR) <<"Query's SHAPE method encoding'" <<value <<"' is not valid.";
+		LOG(ERROR) <<"Query's SHAPE method encoding '" <<value <<"' is not valid.";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
 }
@@ -1226,7 +1226,7 @@ inline
 void CommandLineParsing::validate_qShapeConversion( const std::string & value )
 {
 	if (!boost::regex_match(value, AccessibilityConstraint::regexShapeConversion, boost::match_perl) ) {
-		LOG(ERROR) <<"Query's SHAPE conversion method encoding'" <<value <<"' is not valid.";
+		LOG(ERROR) <<"Query's SHAPE conversion method encoding '" <<value <<"' is not valid.";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
 }
@@ -1383,7 +1383,7 @@ inline
 void CommandLineParsing::validate_tShapeMethod( const std::string & value )
 {
 	if (!boost::regex_match(value, AccessibilityConstraint::regexShapeMethod, boost::match_perl) ) {
-		LOG(ERROR) <<"Target's SHAPE method encoding'" <<value <<"' is not valid.";
+		LOG(ERROR) <<"Target's SHAPE method encoding '" <<value <<"' is not valid.";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
 }
@@ -1395,7 +1395,7 @@ void CommandLineParsing::validate_tShapeConversion( const std::string & value )
 {
 
 	if (!boost::regex_match(value, AccessibilityConstraint::regexShapeConversion, boost::match_perl) ) {
-		LOG(ERROR) <<"Target's SHAPE conversion method encoding'" <<value <<"' is not valid.";
+		LOG(ERROR) <<"Target's SHAPE conversion method encoding '" <<value <<"' is not valid.";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
 }
