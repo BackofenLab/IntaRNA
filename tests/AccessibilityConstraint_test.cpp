@@ -24,7 +24,7 @@ TEST_CASE( "AccessibilityConstraint", "[AccessibilityConstraint]" ) {
 		REQUIRE( c.isAccessible(0) );
 		REQUIRE( c.isUnconstrained(0) );
 	}
-
+/*
 	SECTION("check regular expressions") {
 		boost::regex regex;
 
@@ -63,7 +63,7 @@ TEST_CASE( "AccessibilityConstraint", "[AccessibilityConstraint]" ) {
 		REQUIRE_FALSE(boost::regex_match( "b:3-4,11,6-12,x:7-8,p:9-9", regex, boost::match_perl ));
 		REQUIRE_FALSE(boost::regex_match( "b:,x:7-8,p:9-9", regex, boost::match_perl ));
 	}
-
+*/
 	SECTION("check dot-bracket construction") {
 		std::string constraint = "..bb..xxp.bb";
 		AccessibilityConstraint c(seqLength,constraint,0,"","","");
