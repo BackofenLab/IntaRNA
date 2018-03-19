@@ -980,7 +980,7 @@ concert with an output stream/file name (colon-separated) can be passed via the
 `--out` argument using the `spotProb:` prefix, e.g.
 
 ```[bash]
-IntaRNA ... --out=spotProb:5&67,33&12:spotProb.csv
+IntaRNA ... --out=spotProb:5&67,33&12:mySpotProbFile.csv
 ```
 
 The reported probability is the ratio of according partition functions. That is,
