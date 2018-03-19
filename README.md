@@ -973,8 +973,9 @@ RNAs (e.g. refer to [SHAPE data](#shape) or
 [structure/accessibility constraints](#accConstraints)).
 
 To this end, one can specify the spots of interest by intermolecular index pairs,
-e.g. using `5&67` to encode the fifth target RNA position and the 67th query RNA
-position. Note, indexing starts with 1. 
+e.g. using `5&67` to encode the fifth target RNA position (first number of the
+encoding) and the 67th query RNA
+position (second number of the encoding). Note, indexing starts with 1. 
 Multiple spots can be provided as comma-separated list. The list in
 concert with an output stream/file name (colon-separated) can be passed via the
 `--out` argument using the `spotProb:` prefix, e.g.
@@ -995,6 +996,12 @@ the spots if spanned by `I`, the `noSpotZ` partition function is increased by
 the probability of interactions not covering any of the tracked spots is 
 computed by `noSpotZ/overallZ` and reported for the pseudo-spot encoding `0&0`
 (since indexing starts with 1).
+
+*NOTE* and be aware that the probabilities are *only estimates* since IntaRNA
+is not considering (in default prediction mode) all possible interactions due 
+to its heuristic (see [discussion about suboptimal interactions](#subopts)).
+Nevertheless, since the Boltzmann probabilities are dominated by the low(est)
+energy interactions, we consider the probability estimates as meaningful!
 
 
 <br />
