@@ -27,7 +27,7 @@ runTests_SOURCES =	\
 					SeedHandlerExplicit_test.cpp \
 					runTests.cpp
 
-#					AccessibilityConstraint_test.cpp \
+#					AccessibilityConstraint_test.cpp
 
 # add IntaRNA lib for linking
 LIBS= 	-L$(top_builddir)/src/IntaRNA -lIntaRNA \
