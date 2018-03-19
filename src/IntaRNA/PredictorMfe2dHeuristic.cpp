@@ -212,8 +212,10 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 	// trace back
 	// temp variables
 	size_t k1,k2;
-	// do until only right boundary is left over
+	// check all possible splits of the interval (i1,i2)-(j1,j2)
+	// only reasonable, if there is an enclosed position k1 between i1-j1
 	while( (j1-i1) > 1 ) {
+
 		const BestInteraction * curCell = NULL;
 		bool traceNotFound = true;
 		// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
@@ -241,11 +243,6 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 		}
 		assert( !traceNotFound );
 	}
-#if INTARNA_IN_DEBUG_MODE
-	if ( (j2-i2) > 1 ) {
-		throw std::runtime_error("PredictorMfe2dHeuristic::traceBack() : trace leaves ji<j2 : "+toString(i2)+"<"+toString(j2));
-	}
-#endif
 
 	// sort final interaction (to make valid) (faster than calling sort())
 	if (interaction.basePairs.size() > 2) {
