@@ -42,4 +42,5 @@ script:
     - echo -e "catch throw\nrun\nbt" | gdb tests/runTests
     ##### check IntaRNA build #####
     # run IntaRNA with help output
+    - ./src/bin/IntaRNA -h
     - $HOME/IntaRNA/bin/IntaRNA -h
