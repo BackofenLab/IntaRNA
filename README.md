@@ -80,6 +80,7 @@ The following topics are covered by this documentation:
   - [Additional output files](#outFiles)
     - [Minimal energy profiles](#profileMinE)
     - [Minimal energy for all intermolecular index pairs](#pairMinE)
+    - [Interaction probabilities for interaction spots of interest](#spotProb)
     - [Accessibility and unpaired probabilities](#accessibility)
       - [Local versus global unpaired probabilities](#accLocalGlobal)
       - [Constrain regions to be accessible or blocked](#accConstraints)
@@ -802,6 +803,12 @@ end, the argument `-n N` or `--outNumber=N` can be used to generate up to `N`
 interactions for each query-target pair (including the optimal one). Note, the
 suboptimal enumeration is increasingly sorted by energy.
 
+Note: suboptimal interaction enumeration is not exhaustive! That is, for each
+interaction site (defined by the left- and right-most intermolecular base pair)
+only the best interaction is reported! In heuristic prediction mode (default
+mode of IntaRNA), this is even less exhaustive, since only for each left-most
+interaction boundary one interaction is reported!
+
 Furthermore, it is possible to *restrict (sub)optimal enumeration* using
 
 - `--outMaxE` : maximal energy for any interaction reported
@@ -953,6 +960,41 @@ mfe-site in the second sequence and are thus less likely to occure.
 ![Minimal interaction energy index pair information](/doc/figures/pair-minE.png?raw=true "Minimal interaction energy index pair information")
 
 
+
+<br />
+<a name="spotProb" />
+
+### Interaction probabilities for interaction spots of interest
+
+For some research questions, putative regions of interactions are known from
+other sources and it is of interest to study the effect of competitive binding
+or other scenarios that might influence the accessibility of the interacting
+RNAs (e.g. refer to [SHAPE data](#shape) or 
+[structure/accessibility constraints](#accConstraints)).
+
+To this end, one can specify the spots of interest by intermolecular index pairs,
+e.g. using `5&67` to encode the fifth target RNA position and the 67th query RNA
+position. Note, indexing starts with 1. 
+Multiple spots can be provided as comma-separated list. The list in
+concert with an output stream/file name (colon-separated) can be passed via the
+`--out` argument using the `spotProb:` prefix, e.g.
+
+```[bash]
+IntaRNA ... --out=spotProb:5&67,33&12:spotProb.csv
+```
+
+The reported probability is the ratio of according partition functions. That is,
+for each interaction `I` that respects all input constraints and has an energy 
+below 0 (or set `--outMaxE` value) the respective Boltzmann weight `bw(I)` 
+is computed by `bw(I) = exp( - E(I) / RT )`. This weight is added to the 
+`overallZ` partition function. Furthermore, we add the weight to a respective
+spot associated partition function `spotZ`, if the interaction `I` spans the spot, ie.
+the spot's indices are within the interaction subsequences of `I`. If none of
+the spots if spanned by `I`, the `noSpotZ` partition function is increased by
+`bw(I)`. The final probability of a spot is than given by `spotZ/overallZ` and
+the probability of interactions not covering any of the tracked spots is 
+computed by `noSpotZ/overallZ` and reported for the pseudo-spot encoding `0&0`
+(since indexing starts with 1).
 
 
 <br />

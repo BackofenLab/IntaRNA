@@ -20,6 +20,7 @@
 #include "IntaRNA/SeedConstraint.h"
 #include "IntaRNA/SeedHandler.h"
 #include "IntaRNA/SeedHandlerExplicit.h"
+#include "IntaRNA/PredictionTrackerSpotProb.h"
 #include "IntaRNA/VrnaHandler.h"
 
 using namespace IntaRNA;
@@ -233,6 +234,7 @@ protected:
 		OP_tAcc,
 		OP_qPu,
 		OP_tPu,
+		OP_spotProb,
 		OP_UNKNOWN
 	};
 
@@ -257,6 +259,7 @@ protected:
 		if (prefLC == "tacc")	{ return OutPrefixCode::OP_tAcc; } else
 		if (prefLC == "qpu")	{ return OutPrefixCode::OP_qPu; } else
 		if (prefLC == "tpu")	{ return OutPrefixCode::OP_tPu; } else
+		if (prefLC == "spotprob")	{ return OutPrefixCode::OP_spotProb; } else
 		// not known
 		return OutPrefixCode::OP_UNKNOWN;
 	}
@@ -507,6 +510,8 @@ protected:
 	//! for all region combinations or only the best for each query-target
 	//! combination
 	bool outPerRegion;
+	//! for SpotProb output : spots to be tracked
+	std::string outSpotProbSpots;
 
 	//! (optional) file name for log output
 	std::string logFileName;
@@ -1662,6 +1667,21 @@ void CommandLineParsing::validate_out(const std::vector<std::string> & list) {
 			}
 			// store prefix to identify another existence
 			std::string streamName = v->substr(v->find(':')+1);
+			// handle SpotProb setup
+			if (curPrefCode == OP_spotProb) {
+				// get spotProb spots
+				outSpotProbSpots = streamName.substr(0,streamName.find(':'));
+				// check if valid spot encoding
+				if (!boost::regex_match(outSpotProbSpots, PredictionTrackerSpotProb::regexSpotString, boost::match_perl)){
+					// check sanity of spot encodings (indexing starts with 1)
+					LOG(ERROR) <<"--out : spot encoding '"<<curPref<<"' is not valid.";
+					updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+					break;
+				}
+				// get stream name (remove spot encoding prefix)
+				streamName = streamName.substr(outSpotProbSpots.size()+1);
+			}
+
 			// forward check to general method
 			validate_outputTarget( "--out="+curPref+":", streamName );
 			// store stream name

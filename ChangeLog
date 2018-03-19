@@ -1,4 +1,26 @@
 
+180319 Martin Raden :
+ * IntaRNA/PredictorMfe2dHeuristic :
+   * traceBack() :
+     * bugfix: wrong sanity check in debug mode (thanks to Rick Gelhausen)
+ * IntaRNA/Predictor :
+   * updateOptima() :
+     * bugfix: PredictionTracker call was not doing lastPos-handling
+ * README.md : 
+   + spotProb docu added
+ + IntaRNA/PredictionTrackingSpotProb : tracks for a given set of interaction
+   spots their probability to be covered/spanned by an interaction. furthermore,
+   the probability that none of the spots of interest is covered is provided.
+ + test/PredictionTrackingSpotProb
+ * bin/CommandLineParsing :
+   * OutputPrefixCodes :
+     + OP_spotProb : for spotProb output mode
+   + outSpotProbSpots : member to store the spots to be tracked (if provided)
+   * --out argument :
+   * validate_out() :
+   * getPredictor() : 
+     + handling of "spotProb" prefix for spot probability tracking
+
 180312 Martin Raden :
  * IntaRNA/PredictorMaxProb :
  * IntaRNA/PredictorMfe :

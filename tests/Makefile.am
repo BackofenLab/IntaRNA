@@ -21,6 +21,7 @@ runTests_SOURCES =	\
 					InteractionEnergyBasePair_test.cpp  \
 					InteractionRange_test.cpp  \
 					PredictionTrackerProfileMinE_test.cpp \
+					PredictionTrackerSpotProb_test.cpp \
 					NussinovHandler_test.cpp \
 					RnaSequence_test.cpp \
 					OutputHandlerRangeOnly_test.cpp \
