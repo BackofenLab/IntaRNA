@@ -273,8 +273,8 @@ AccessibilityConstraint( const size_t length_
 	length(length_),
 	maxBpSpan( maxBpSpan_==0 ? length : std::min(maxBpSpan_,length) ),
 	shapeFile(shapeFile_),
-	shapeMethod(shapeFile.empty() ? "" : shapeMethod_),
-	shapeConversion(shapeFile.empty() ? "" : shapeConversion_),
+	shapeMethod(shapeFile_.empty() ? "" : shapeMethod_),
+	shapeConversion(shapeFile_.empty() ? "" : shapeConversion_),
 	blocked(),
 	accessible(),
 	paired()
