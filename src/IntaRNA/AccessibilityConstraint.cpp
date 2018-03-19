@@ -34,7 +34,7 @@ const boost::regex AccessibilityConstraint::regex(
 					+"]+)|"+
 					+"("+AccessibilityConstraint::regionIndexList
 						+"(,"+AccessibilityConstraint::regionIndexList+")*"
-					+")"+
+//					+")"+
 					+")"
 					);
 
