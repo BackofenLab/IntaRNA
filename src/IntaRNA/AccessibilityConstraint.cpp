@@ -29,13 +29,13 @@ const std::string AccessibilityConstraint::regionIndexList =
 					;
 
 const boost::regex AccessibilityConstraint::regex(
-					"^(["
+					"(["
 					+ AccessibilityConstraint::dotBracketAlphabet
-					+"]+|"+
+					+"]+)|"+
 					+"("+AccessibilityConstraint::regionIndexList
 						+"(,"+AccessibilityConstraint::regionIndexList+")*"
 					+")"+
-					+")$"
+					+")"
 					);
 
 // D | Dm1.9 | Db-0.7 | Dm1.9b-0.7
