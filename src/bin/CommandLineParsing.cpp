@@ -206,12 +206,15 @@ CommandLineParsing::CommandLineParsing()
 			, value<std::string>(&(qAccConstr))
 				->notifier(boost::bind(&CommandLineParsing::validate_qAccConstr,this,_1))
 			, std::string("accessibility computation : structure constraint :"
-					" a string of query sequence length encoding for each position:"
+					"\n EITHER a string of query sequence length encoding for each position:"
 					" '.' no constraint,"
 					" '"+toString(AccessibilityConstraint::dotBracket_accessible)+"' unpaired,"
 					" '"+toString(AccessibilityConstraint::dotBracket_paired)+"' paired (intramolecularly), or"
 					" '"+toString(AccessibilityConstraint::dotBracket_blocked)+"' blocked."
-					" Note, blocked positions are excluded from interaction prediction and constrained to be unpaired!").c_str())
+					" Note, blocked positions are excluded from interaction prediction and constrained to be unpaired!"
+					"\n OR an index range based encoding that is prefixed by the according constraint letter and a colon,"
+					" e.g. 'b:3-4,33-40,p:1-2,12-20'"
+					).c_str())
 		("qAccFile"
 			, value<std::string>(&(qAccFile))
 			, std::string("accessibility computation : the file/stream to be parsed, if --qAcc is to be read from file. Used 'STDIN' if to read from standard input stream.").c_str())
@@ -298,13 +301,13 @@ CommandLineParsing::CommandLineParsing()
 			, value<std::string>(&(tAccConstr))
 				->notifier(boost::bind(&CommandLineParsing::validate_tAccConstr,this,_1))
 			, std::string("accessibility computation : structure constraint :"
-					"\ntEITHER a string of target sequence length encoding for each position:"
+					"\n EITHER a string of target sequence length encoding for each position:"
 					" '.' no constraint,"
 					" '"+toString(AccessibilityConstraint::dotBracket_accessible)+"' unpaired,"
 					" '"+toString(AccessibilityConstraint::dotBracket_paired)+"' paired (intramolecularly), or"
 					" '"+toString(AccessibilityConstraint::dotBracket_blocked)+"' blocked."
 					" Note, blocked positions are excluded from interaction prediction and constrained to be unpaired!"
-					"\nOR an index range based encoding that is prefixed by the according constraint letter and a colon,"
+					"\n OR an index range based encoding that is prefixed by the according constraint letter and a colon,"
 					" e.g. 'b:3-4,33-40,p:1-2,12-20'"
 					).c_str())
 		("tAccFile"
