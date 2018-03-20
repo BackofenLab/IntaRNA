@@ -595,7 +595,7 @@ For some RNA sequences, experimental reactivity data is available that can be
 used to guide/help the structure and thus accessibility prediction for the RNA
 molecule. IntaRNA supports such data by interfacing the Vienna RNA package
 capabilities for SHAPE reactivity data incorporation, see 
-[Lorenz et al. (2016)](https://dx.doi.org/10.1186%2Fs13015-016-0070-z) or the
+Lorenz et al. ([2015](https://doi.org/10.1093/bioinformatics/btv523), [2016](https://dx.doi.org/10.1186%2Fs13015-016-0070-z)) or the
 [RNAfold manpage](https://www.tbi.univie.ac.at/RNA/RNAfold.1.html).
 
 The SHAPE reactivity data can be provided via file using `--qShape` or
