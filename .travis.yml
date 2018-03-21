@@ -22,7 +22,7 @@ before_install:
     - export CONDA_PATH=$HOME/miniconda3
     - export PATH=$CONDA_PATH/bin:$PATH
     - conda update --yes conda
-    - conda install --yes gcc gdb automake pkgconfig viennarna boost=1.61.* -c conda-forge -c bioconda
+    - conda install --yes gcc automake pkgconfig viennarna boost=1.61.* -c conda-forge -c bioconda
     - export CONDA_LIB_PATH=$CONDA_PATH/lib
     #    - ls $CONDA_LIB_PATH
     #    - ls $CONDA_PATH/include
@@ -34,14 +34,11 @@ script:
     - cd $TRAVIS_BUILD_DIR 
     # generate autotools's files 
     - bash autotools-init.sh 
-    - ./configure --enable-debug --with-boost=$CONDA_PATH --with-boost-libdir=$CONDA_LIB_PATH --with-vrna=$CONDA_PATH --prefix=$HOME/IntaRNA
+    - ./configure --with-boost=$CONDA_PATH --with-boost-libdir=$CONDA_LIB_PATH --with-vrna=$CONDA_PATH --prefix=$HOME/IntaRNA
     # compile documentation
     # - make doxygen-doc
     # compile, test and install IntaRNA
     - make -j 2 && make tests -j 2 && make install
-    - echo -e "catch throw\nrun\nbt" | gdb tests/runTests
     ##### check IntaRNA build #####
     # run IntaRNA with help output
-    - ./src/bin/IntaRNA -h
-    - echo -e "catch throw\nrun -h\nbt" | gdb src/bin/IntaRNA
     - $HOME/IntaRNA/bin/IntaRNA -h

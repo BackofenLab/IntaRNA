@@ -12,6 +12,7 @@ check_PROGRAMS = runTests
 # test sources
 runTests_SOURCES =	\
 					catch.hpp \
+					AccessibilityConstraint_test.cpp \
 					AccessibilityFromStream_test.cpp \
 					AccessibilityBasePair_test.cpp \
 					IndexRange_test.cpp  \
@@ -27,7 +28,6 @@ runTests_SOURCES =	\
 					SeedHandlerExplicit_test.cpp \
 					runTests.cpp
 
-#					AccessibilityConstraint_test.cpp
 
 # add IntaRNA lib for linking
 LIBS= 	-L$(top_builddir)/src/IntaRNA -lIntaRNA \
