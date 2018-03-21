@@ -26,7 +26,7 @@ const std::string AccessibilityConstraint::dotBracketAlphabet =
 					;
 const std::string AccessibilityConstraint::regionIndexList =
 					"["+AccessibilityConstraint::dotBracket_constraints+"]:"
-					+"((\\d|[123456789]\\d*)-(\\d|[123456789]\\d*),)*(\\d|[123456789]\\d*)-(\\d|[123456789]\\d*)"
+					+"([123456789]\\d*-[123456789]\\d*,)*[123456789]\\d*-[123456789]\\d*"
 					;
 
 const boost::regex AccessibilityConstraint::regex(
