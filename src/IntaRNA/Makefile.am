@@ -50,6 +50,7 @@ libIntaRNA_a_HEADERS =    \
 					PredictionTrackerHub.h \
 					PredictionTrackerPairMinE.h \
 					PredictionTrackerProfileMinE.h \
+					PredictionTrackerSpotProb.h \
 					Predictor.h \
 					PredictorMaxProb.h \
 					PredictorMfe.h \
@@ -95,6 +96,7 @@ libIntaRNA_a_SOURCES =    \
 					OutputHandlerText.cpp \
 					PredictionTrackerPairMinE.cpp \
 					PredictionTrackerProfileMinE.cpp \
+					PredictionTrackerSpotProb.cpp \
 					PredictorMaxProb.cpp \
 					PredictorMfe.cpp \
 					PredictorMfe2d.cpp \

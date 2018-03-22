@@ -48,6 +48,12 @@ public:
 	//! the regular expression that marks a non-empty valid constraint encoding
 	static const boost::regex regex;
 
+	//! the regular expression to be matched by shapeMethod encodings
+	static const boost::regex regexShapeMethod;
+
+	//! the regular expression to be matched by shapeConversion encodings
+	static const boost::regex regexShapeConversion;
+
 public:
 
 	/**
@@ -55,8 +61,19 @@ public:
 	 * @param length length of the constrained sequence
 	 * @param maxBpSpan the maximal base pair span to be used for accessibility
 	 *        computation; set to 0 for full sequence length
+	 * @param shapeFile if non-empty: name of the SHAPE reactivity data file to
+	 *        be used for accessibility computation
+	 * @param shapeMethod if non-empty: encoding of the method to be used to
+	 *        convert SHAPE reactivity data to pseudo energies
+	 * @param shapeConversion if non-empty: encoding of the method to be used to
+	 *        convert SHAPE reactivity data to pairing probabilities
 	 */
-	AccessibilityConstraint( const size_t length, const size_t maxBpSpan = 0 );
+	AccessibilityConstraint(  const size_t length
+							, const size_t maxBpSpan
+							, const std::string & shapeFile
+							, const std::string & shapeMethod
+							, const std::string & shapeConversion
+							);
 
 	/**
 	 * Copy construction
@@ -73,10 +90,20 @@ public:
 	 * @param dotBracket the constraint encoding in VRNA-like dot-bracket encoding
 	 * @param maxBpSpan the maximal base pair span to be used for accessibility
 	 *        computation; set to 0 for full sequence length
+	 * @param shapeFile if non-empty: name of the SHAPE reactivity data file to
+	 *        be used for accessibility computation
+	 * @param shapeMethod if non-empty: encoding of the method to be used to
+	 *        convert SHAPE reactivity data to pseudo energies
+	 * @param shapeConversion if non-empty: encoding of the method to be used to
+	 *        convert SHAPE reactivity data to pairing probabilities
 	 */
 	AccessibilityConstraint( const size_t length
 							, const std::string& dotBracket
-							, const size_t maxBpSpan = 0 );
+							, const size_t maxBpSpan
+							, const std::string & shapeFile
+							, const std::string & shapeMethod
+							, const std::string & shapeConversion
+							);
 
 	virtual ~AccessibilityConstraint();
 
@@ -147,6 +174,27 @@ public:
 	getMaxBpSpan() const;
 
 	/**
+	 * Get filename from where to read SHAPE reactivity data.
+	 * @return the filename or an empty string if no SHAPE data available
+	 */
+	const std::string &
+	getShapeFile() const;
+
+	/**
+	 * Get method how to convert SHAPE reactivity data to pseudo energies.
+	 * @return the encoding or an empty string if no SHAPE data available
+	 */
+	const std::string &
+	getShapeMethod() const;
+
+	/**
+	 * Get method how to convert SHAPE reactivity data to pairing probabilities.
+	 * @return the encoding or an empty string if no SHAPE data available
+	 */
+	const std::string &
+	getShapeConversion() const;
+
+	/**
 	 * Assignment of constraints for the same rna sequence.
 	 *
 	 * @param c the interaction to make this a copy of
@@ -163,6 +211,15 @@ protected:
 
 	//! the maximal base pair span to be used for accessibility computation
 	size_t maxBpSpan;
+
+	//! filename of SHAPE reactivity data or empty if no SHAPE data to be used
+	std::string shapeFile;
+
+	//! method for converting SHAPE reactivity data to pseudo energies
+	std::string shapeMethod;
+
+	//! method for conversion of SHAPE reactivity data to paired probabilities
+	std::string shapeConversion;
 
 	//! sorted list of ranges that are marked as blocked
 	IndexRangeList blocked;
@@ -206,14 +263,32 @@ std::ostream& operator<<(std::ostream& out, const AccessibilityConstraint& c);
 
 inline
 AccessibilityConstraint::
-AccessibilityConstraint( const size_t length_, const size_t maxBpSpan_ )
+AccessibilityConstraint( const size_t length_
+					, const size_t maxBpSpan_
+					, const std::string & shapeFile_
+					, const std::string & shapeMethod_
+					, const std::string & shapeConversion_
+					)
 	:
 	length(length_),
 	maxBpSpan( maxBpSpan_==0 ? length : std::min(maxBpSpan_,length) ),
+	shapeFile(shapeFile_),
+	shapeMethod(shapeFile_.empty() ? "" : shapeMethod_),
+	shapeConversion(shapeFile_.empty() ? "" : shapeConversion_),
 	blocked(),
 	accessible(),
 	paired()
 {
+#if INTARNA_IN_DEBUG_MODE
+	if (!shapeFile.empty()) {
+		if (!boost::regex_match( shapeMethod, AccessibilityConstraint::regexShapeMethod, boost::match_perl )) {
+			throw std::runtime_error("AccessibilityConstraint(shapeMethod="+shapeMethod+") does not match its encoding regular expression");
+		}
+		if (!boost::regex_match( shapeConversion, AccessibilityConstraint::regexShapeConversion, boost::match_perl )) {
+			throw std::runtime_error("AccessibilityConstraint(shapeConversion="+shapeConversion+") does not match its encoding regular expression");
+		}
+	}
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -225,6 +300,9 @@ AccessibilityConstraint( const AccessibilityConstraint& toCopy
 	:
 	length(toCopy.length)
 	, maxBpSpan(toCopy.maxBpSpan)
+	, shapeFile(toCopy.shapeFile)
+	, shapeMethod(toCopy.shapeMethod)
+	, shapeConversion(toCopy.shapeConversion)
 	, blocked(toCopy.blocked)
 	, accessible(toCopy.accessible)
 	, paired(toCopy.paired)
@@ -311,7 +389,7 @@ AccessibilityConstraint::
 isEmpty() const
 {
 	// check if any constrained regions given
-	return (accessible.size() + blocked.size() + paired.size()) == 0;
+	return (accessible.size() + blocked.size() + paired.size() + shapeFile.size()) == 0;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -347,6 +425,36 @@ getMaxBpSpan() const
 ////////////////////////////////////////////////////////////////////////
 
 inline
+const std::string &
+AccessibilityConstraint::
+getShapeFile() const
+{
+	return shapeFile;
+}
+
+////////////////////////////////////////////////////////////////////////
+
+inline
+const std::string &
+AccessibilityConstraint::
+getShapeMethod() const
+{
+	return shapeMethod;
+}
+
+////////////////////////////////////////////////////////////////////////
+
+inline
+const std::string &
+AccessibilityConstraint::
+getShapeConversion() const
+{
+	return shapeConversion;
+}
+
+////////////////////////////////////////////////////////////////////////
+
+inline
 AccessibilityConstraint &
 AccessibilityConstraint::
 operator= ( const AccessibilityConstraint & c )
@@ -354,6 +462,9 @@ operator= ( const AccessibilityConstraint & c )
 	// copy data
 	length = c.length;
 	maxBpSpan = c.maxBpSpan;
+	shapeFile = c.shapeFile;
+	shapeMethod = c.shapeMethod;
+	shapeConversion = c.shapeConversion;
 	blocked = c.blocked;
 	accessible = c.accessible;
 	paired = c.paired;
@@ -382,6 +493,11 @@ std::ostream& operator<<(std::ostream& out, const AccessibilityConstraint& c)
 	// print ranges if non-empty
 	if (!c.paired.empty()) {
 		out <<(alreadyPrinted?",":"") <<AccessibilityConstraint::dotBracket_paired <<':' <<c.paired;
+		alreadyPrinted = true;
+	}
+	// print shape file if non-empty
+	if (!c.shapeFile.empty()) {
+		out <<(alreadyPrinted?",":"") <<"shapeFile" <<':' <<c.shapeFile;
 		alreadyPrinted = true;
 	}
 	return out;

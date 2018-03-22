@@ -25,18 +25,31 @@ const std::string AccessibilityConstraint::dotBracketAlphabet =
 					+AccessibilityConstraint::dotBracket_constraints
 					;
 const std::string AccessibilityConstraint::regionIndexList =
-					"["+AccessibilityConstraint::dotBracket_constraints+"]:"+IndexRangeList::regex.str()
+					"["+AccessibilityConstraint::dotBracket_constraints+"]:"
+					+"([123456789]\\d*-[123456789]\\d*,)*[123456789]\\d*-[123456789]\\d*"
 					;
 
 const boost::regex AccessibilityConstraint::regex(
-					"^("
+					"(["
 					+ AccessibilityConstraint::dotBracketAlphabet
-					+"|"+
+					+"]+)|"+
 					+"("+AccessibilityConstraint::regionIndexList
 						+"(,"+AccessibilityConstraint::regionIndexList+")*"
-					+")"+
-					+")$"
+					+")"
 					);
+
+// D | Dm1.9 | Db-0.7 | Dm1.9b-0.7
+// Z | Zb0.8
+// W
+const boost::regex AccessibilityConstraint::regexShapeMethod("^((D(m-?(\\d+|\\d+.\\d+))?(b-?(\\d+|\\d+.\\d+))?)|(Z(b(\\d+|\\d+.\\d+))?)|(W))$");
+
+// M
+// C0.2
+// S
+// Ls0.5i0.5
+// Os0.5i-0.5
+const boost::regex AccessibilityConstraint::regexShapeConversion("^((M)|(C(\\d+|\\d+.\\d+)?)|(S)|((L|O)(s-?(\\d+|\\d+.\\d+)i-?(\\d+|\\d+.\\d+))?))$");
+
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -44,17 +57,32 @@ AccessibilityConstraint::
 AccessibilityConstraint(
 			  const size_t length_
 			, const std::string& stringEncoding
-			, const size_t maxBpSpan_ )
+			, const size_t maxBpSpan_
+			, const std::string & shapeFile_
+			, const std::string & shapeMethod_
+			, const std::string & shapeConversion_
+			)
 	:
 	length(length_),
 	maxBpSpan( maxBpSpan_==0 ? length : std::min(maxBpSpan_,length) ),
+	shapeFile(shapeFile_),
+	shapeMethod(shapeFile_.empty() ? "" : shapeMethod_),
+	shapeConversion(shapeFile_.empty() ? "" : shapeConversion_),
 	blocked(),
 	accessible(),
 	paired()
 {
 #if INTARNA_IN_DEBUG_MODE
-	if (boost::regex_match( stringEncoding, AccessibilityConstraint::regex, boost::match_perl )) {
+	if (!boost::regex_match( stringEncoding, AccessibilityConstraint::regex, boost::match_perl )) {
 		throw std::runtime_error("AccessibilityConstraint("+stringEncoding+") does not match its encoding regular expression");
+	}
+	if (!shapeFile.empty()) {
+		if (!boost::regex_match( shapeMethod, AccessibilityConstraint::regexShapeMethod, boost::match_perl )) {
+			throw std::runtime_error("AccessibilityConstraint(shapeMethod="+shapeMethod+") does not match its encoding regular expression");
+		}
+		if (!boost::regex_match( shapeConversion, AccessibilityConstraint::regexShapeConversion, boost::match_perl )) {
+			throw std::runtime_error("AccessibilityConstraint(shapeConversion="+shapeConversion+") does not match its encoding regular expression");
+		}
 	}
 #endif
 

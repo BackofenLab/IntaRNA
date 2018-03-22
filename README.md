@@ -73,12 +73,14 @@ The following topics are covered by this documentation:
   - [Interaction restrictions](#interConstr)
   - [Seed constraints](#seed)
   - [Explicit seed input](#seedExplicit)
+  - [SHAPE reactivity data to enhance accessibility computation](#shape)
   - [Output modes](#outmodes)
   - [Suboptimal RNA-RNA interaction prediction and output restrictions](#subopts)
   - [Energy parameters and temperature](#energy)
   - [Additional output files](#outFiles)
     - [Minimal energy profiles](#profileMinE)
     - [Minimal energy for all intermolecular index pairs](#pairMinE)
+    - [Interaction probabilities for interaction spots of interest](#spotProb)
     - [Accessibility and unpaired probabilities](#accessibility)
       - [Local versus global unpaired probabilities](#accLocalGlobal)
       - [Constrain regions to be accessible or blocked](#accConstraints)
@@ -131,12 +133,12 @@ dependencies:
 
 - compiler supporting C++11 standard and OpenMP
 - [boost C++ library](http://www.boost.org/) version >= 1.50.0 
-  (ensure the following libraries are installed; or install all e.g. in Ubuntu via package `libboost-all-dev`)
+  (ensure the following libraries are installed for development (not just runtime libraries!); or install all e.g. in Ubuntu via package `libboost-all-dev`)
     - libboost_regex
     - libboost_program_options
     - libboost_filesystem
     - libboost_system
-- [Vienna RNA package](http://www.tbi.univie.ac.at/RNA/) version >= 2.4.3
+- [Vienna RNA package](http://www.tbi.univie.ac.at/RNA/) version >= 2.4.4
 - if [cloning from github](#instgithub): GNU autotools (automake, autoconf, ..)
 
 Also used by IntaRNA, but already part of the source code distribution (and thus
@@ -309,6 +311,7 @@ possible to define
 [interaction restrictions](#interConstr),
 [seed constraints](#seed), 
 [explicit seed information](#seedExplicit), 
+[SHAPE reactivity constraints](#shape), 
 [output modes](#outmodes),
 [suboptimal enumeration](#subopts), 
 [energy parameters, temperature](#energy),
@@ -400,6 +403,7 @@ of equal length *n*.
 | Space complexity | O(*n*^2) | O(*n*^2) | O(*n*^4) |
 | [Seed constraint](#seed) | x | x | x |
 | [Explicit seeds](#seedExplicit) | x | x | x |
+| [SHAPE reactivity constraint](#shape) | x | x | x |
 | No [seed constraint](#seed) | x | x | x |
 | Minimum free energy interaction | not guaranteed | x | x |
 | Overlapping [suboptimal interactions](#subopts) | x | x | x |
@@ -579,6 +583,32 @@ query
 If several or alternative seeds are known, you can provide all as a 
 comma-separated list and IntaRNA will consider all interactions that cover at
 least one of them.
+
+
+
+<br /><br />
+<a name="shape" />
+
+## SHAPE reactivity data to enhance accessibility computation
+
+For some RNA sequences, experimental reactivity data is available that can be
+used to guide/help the structure and thus accessibility prediction for the RNA
+molecule. IntaRNA supports such data by interfacing the Vienna RNA package
+capabilities for SHAPE reactivity data incorporation, see 
+Lorenz et al. ([2015](https://doi.org/10.1093/bioinformatics/btv523), [2016](https://dx.doi.org/10.1186%2Fs13015-016-0070-z)) or the
+[RNAfold manpage](https://www.tbi.univie.ac.at/RNA/RNAfold.1.html).
+
+The SHAPE reactivity data can be provided via file using `--qShape` or
+`--tShape` for query or target sequence, respectively. 
+Independently for each, it is possible
+to define the methods to be used to convert the data into pseudo energies and
+pairing probabilities. The respective IntaRNA arguments are
+`--qShapeMethod`|`--tShapeMethod`
+and `--qShapeConversion`|`--tShapeConversion`, which mimics the according 
+tool arguments in the Vienna RNA package (see e.g. the 
+[RNAfold manpage](https://www.tbi.univie.ac.at/RNA/RNAfold.1.html)).
+
+
 
 
 <br /><br />
@@ -773,6 +803,12 @@ end, the argument `-n N` or `--outNumber=N` can be used to generate up to `N`
 interactions for each query-target pair (including the optimal one). Note, the
 suboptimal enumeration is increasingly sorted by energy.
 
+Note: suboptimal interaction enumeration is not exhaustive! That is, for each
+interaction site (defined by the left- and right-most intermolecular base pair)
+only the best interaction is reported! In heuristic prediction mode (default
+mode of IntaRNA), this is even less exhaustive, since only for each left-most
+interaction boundary one interaction is reported!
+
 Furthermore, it is possible to *restrict (sub)optimal enumeration* using
 
 - `--outMaxE` : maximal energy for any interaction reported
@@ -924,6 +960,48 @@ mfe-site in the second sequence and are thus less likely to occure.
 ![Minimal interaction energy index pair information](/doc/figures/pair-minE.png?raw=true "Minimal interaction energy index pair information")
 
 
+
+<br />
+<a name="spotProb" />
+
+### Interaction probabilities for interaction spots of interest
+
+For some research questions, putative regions of interactions are known from
+other sources and it is of interest to study the effect of competitive binding
+or other scenarios that might influence the accessibility of the interacting
+RNAs (e.g. refer to [SHAPE data](#shape) or 
+[structure/accessibility constraints](#accConstraints)).
+
+To this end, one can specify the spots of interest by intermolecular index pairs,
+e.g. using `5&67` to encode the fifth target RNA position (first number of the
+encoding) and the 67th query RNA
+position (second number of the encoding). Note, indexing starts with 1. 
+Multiple spots can be provided as comma-separated list. The list in
+concert with an output stream/file name (colon-separated) can be passed via the
+`--out` argument using the `spotProb:` prefix, e.g.
+
+```[bash]
+IntaRNA ... --out=spotProb:5&67,33&12:mySpotProbFile.csv
+```
+
+The reported probability is the ratio of according partition functions. That is,
+for each interaction `I` that respects all input constraints and has an energy 
+below 0 (or set `--outMaxE` value) the respective Boltzmann weight `bw(I)` 
+is computed by `bw(I) = exp( - E(I) / RT )`. This weight is added to the 
+`overallZ` partition function. Furthermore, we add the weight to a respective
+spot associated partition function `spotZ`, if the interaction `I` spans the spot, ie.
+the spot's indices are within the interaction subsequences of `I`. If none of
+the spots if spanned by `I`, the `noSpotZ` partition function is increased by
+`bw(I)`. The final probability of a spot is than given by `spotZ/overallZ` and
+the probability of interactions not covering any of the tracked spots is 
+computed by `noSpotZ/overallZ` and reported for the pseudo-spot encoding `0&0`
+(since indexing starts with 1).
+
+*NOTE* and be aware that the probabilities are *only estimates* since IntaRNA
+is not considering (in default prediction mode) all possible interactions due 
+to its heuristic (see [discussion about suboptimal interactions](#subopts)).
+Nevertheless, since the Boltzmann probabilities are dominated by the low(est)
+energy interactions, we consider the probability estimates as meaningful!
 
 
 <br />

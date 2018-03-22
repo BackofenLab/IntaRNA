@@ -41,6 +41,7 @@
 #include "IntaRNA/PredictionTrackerHub.h"
 #include "IntaRNA/PredictionTrackerPairMinE.h"
 #include "IntaRNA/PredictionTrackerProfileMinE.h"
+#include "IntaRNA/PredictionTrackerSpotProb.h"
 
 #include "IntaRNA/SeedHandlerMfe.h"
 
@@ -64,6 +65,7 @@ CommandLineParsing::CommandLineParsing()
 	opts_query("Query"),
 	opts_target("Target"),
 	opts_seed("Seed"),
+	opts_shape("SHAPE"),
 	opts_inter("Interaction"),
 	opts_general("General"),
 	opts_output("Output"),
@@ -86,6 +88,9 @@ CommandLineParsing::CommandLineParsing()
 	qRegionString(""),
 	qRegion(),
 	qRegionLenMax( 0, 99999, 0),
+	qShape(""),
+	qShapeMethod("Zb0.89"),
+	qShapeConversion("Os1.6i-2.29"),
 
 	targetArg(""),
 	target(),
@@ -101,6 +106,9 @@ CommandLineParsing::CommandLineParsing()
 	tRegionString(""),
 	tRegion(),
 	tRegionLenMax( 0, 99999, 0),
+	tShape(""),
+	tShapeMethod("Zb0.89"),
+	tShapeConversion("Os1.6i-2.29"),
 
 	noSeedRequired(false),
 	seedTQ(""),
@@ -136,6 +144,7 @@ CommandLineParsing::CommandLineParsing()
 	outMinPu( 0.0, 1.0, 0.0),
 	outCsvCols(outCsvCols_default),
 	outPerRegion(false),
+	outSpotProbSpots(""),
 
 	logFileName(""),
 
@@ -197,12 +206,15 @@ CommandLineParsing::CommandLineParsing()
 			, value<std::string>(&(qAccConstr))
 				->notifier(boost::bind(&CommandLineParsing::validate_qAccConstr,this,_1))
 			, std::string("accessibility computation : structure constraint :"
-					" a string of query sequence length encoding for each position:"
+					"\n EITHER a string of query sequence length encoding for each position:"
 					" '.' no constraint,"
 					" '"+toString(AccessibilityConstraint::dotBracket_accessible)+"' unpaired,"
 					" '"+toString(AccessibilityConstraint::dotBracket_paired)+"' paired (intramolecularly), or"
 					" '"+toString(AccessibilityConstraint::dotBracket_blocked)+"' blocked."
-					" Note, blocked positions are excluded from interaction prediction and constrained to be unpaired!").c_str())
+					" Note, blocked positions are excluded from interaction prediction and constrained to be unpaired!"
+					"\n OR an index range based encoding that is prefixed by the according constraint letter and a colon,"
+					" e.g. 'b:3-4,33-40,p:1-2,12-20'"
+					).c_str())
 		("qAccFile"
 			, value<std::string>(&(qAccFile))
 			, std::string("accessibility computation : the file/stream to be parsed, if --qAcc is to be read from file. Used 'STDIN' if to read from standard input stream.").c_str())
@@ -289,13 +301,13 @@ CommandLineParsing::CommandLineParsing()
 			, value<std::string>(&(tAccConstr))
 				->notifier(boost::bind(&CommandLineParsing::validate_tAccConstr,this,_1))
 			, std::string("accessibility computation : structure constraint :"
-					"\ntEITHER a string of target sequence length encoding for each position:"
+					"\n EITHER a string of target sequence length encoding for each position:"
 					" '.' no constraint,"
 					" '"+toString(AccessibilityConstraint::dotBracket_accessible)+"' unpaired,"
 					" '"+toString(AccessibilityConstraint::dotBracket_paired)+"' paired (intramolecularly), or"
 					" '"+toString(AccessibilityConstraint::dotBracket_blocked)+"' blocked."
 					" Note, blocked positions are excluded from interaction prediction and constrained to be unpaired!"
-					"\nOR an index range based encoding that is prefixed by the according constraint letter and a colon,"
+					"\n OR an index range based encoding that is prefixed by the according constraint letter and a colon,"
 					" e.g. 'b:3-4,33-40,p:1-2,12-20'"
 					).c_str())
 		("tAccFile"
@@ -399,6 +411,63 @@ CommandLineParsing::CommandLineParsing()
 			, std::string("interval(s) in the target to search for seeds in format 'from1-to1,from2-to2,...' (Note, only for single target)").c_str())
 		;
 
+	////  SHAPE OPTIONS  ////////////////////////
+
+	opts_shape.add_options()
+		("qShape"
+			, value<std::string>(&qShape)
+				->notifier(boost::bind(&CommandLineParsing::validate_qShape,this,_1))
+			, "file name from where to read the query sequence's SHAPE reactivity data to guide its accessibility computation")
+		("tShape"
+			, value<std::string>(&tShape)
+				->notifier(boost::bind(&CommandLineParsing::validate_tShape,this,_1))
+			, "SHAPE: file name from where to read the target sequence's SHAPE reactivity data to guide its accessibility computation")
+		("qShapeMethod"
+				, value<std::string>(&qShapeMethod)
+					->notifier(boost::bind(&CommandLineParsing::validate_qShapeMethod,this,_1))
+				, std::string("SHAPE: method how to integrate SHAPE reactivity data into query accessibility computation via pseudo energies:"
+					"\n"
+					" 'D': Convert by using a linear equation according to Deigan et al. (2009). The calculated pseudo energies will "
+					"be applied for every nucleotide involved in a stacked pair. "
+					"The slope 'm' and the intercept 'b' can be set using e.g. 'Dm1.8b-0.6' (=defaults for 'D')."
+					"\n"
+					" 'Z':  Convert according to Zarringhalam et al. (2012) via pairing probabilities by using linear mapping. "
+					"Aberration from the observed pairing probabilities will be penalized, which can be adjusted by the factor beta e.g. 'Zb0.89' (=default for 'Z')."
+					"\n"
+					" 'W': Apply a given vector of perturbation energies to unpaired nucleotides according to Washietl et al. (2012). "
+					"Perturbation vectors can be calculated by using RNApvmin."
+					).c_str())
+		("tShapeMethod"
+			, value<std::string>(&tShapeMethod)
+				->notifier(boost::bind(&CommandLineParsing::validate_tShapeMethod,this,_1))
+			, std::string("SHAPE: method how to integrate SHAPE reactivity data into target accessibility computation via pseudo energies.\n"
+					"[for encodings see --qShapeMethod]"
+					).c_str())
+		("qShapeConversion"
+				, value<std::string>(&qShapeConversion)
+					->notifier(boost::bind(&CommandLineParsing::validate_qShapeConversion,this,_1))
+				, std::string("SHAPE: method how to convert SHAPE reactivities to pairing probabilities for query accessibility computation. "
+					"This parameter is useful when dealing with the SHAPE incorporation according to Zarringhalam et al. (2012). "
+					"The following methods can be used to convert SHAPE reactivities into the probability for a certain nucleotide to be unpaired:"
+					"\n"
+					" 'M': Linear mapping according to Zarringhalam et al. (2012)"
+					"\n"
+					" 'C': Use a cutoff-approach to divide into paired and unpaired nucleotides, e.g. 'C0.25' (= default for 'C')"
+					"\n"
+					" 'S': Skip the normalizing step since the input data already represents probabilities for being unpaired rather than raw reactivity values"
+					"\n"
+					" 'L': Linear model to convert reactivity into a probability for being unpaired, e.g. 'Ls0.68i0.2' for slope of 0.68 and intercept of 0.2 (=default for 'L')"
+					"\n"
+					" 'O': Linear model to convert the log reactivity into a probability for being unpaired, e.g. 'Os1.6i-2.29' to use a slope of 1.6 and an intercept of -2.29 (=default for 'O')"
+					).c_str())
+		("tShapeConversion"
+				, value<std::string>(&tShapeConversion)
+					->notifier(boost::bind(&CommandLineParsing::validate_tShapeConversion,this,_1))
+				, std::string("SHAPE: method how to convert SHAPE reactivities to pairing probabilities for target accessibility computation.\n"
+					"[for encodings see --qShapeConversion]"
+					).c_str())
+			;
+
 	////  INTERACTION/ENERGY OPTIONS  ////////////////////////
 
 	opts_inter.add_options()
@@ -461,6 +530,7 @@ CommandLineParsing::CommandLineParsing()
 					"\n 'tAcc:' (target) ED accessibility values ('tPu'-like format)."
 					"\n 'tPu:' (target) unpaired probabilities values (RNAplfold format)."
 					"\n 'pMinE:' (query+target) for each index pair the minimal energy of any interaction covering the pair (CSV format)"
+					"\n 'spotProb:' (query+target) tracks for a given set of interaction spots their probability to be covered by an interaction. Spots are encoded by comma-separated 'idx1&idx2' pairs. For each spot a probability is provided in concert with the probability that none of the spots (encoded by '0&0') is covered (CSV format). The spot encoding is followed colon-separated by the output stream/file name, eg. '--out=\"spotProb:3&76,59&2:STDERR\"'. NOTE: value has to be quoted due to '&' symbol!"
 					"\nFor each, provide a file name or STDOUT/STDERR to write to the respective output stream."
 					).c_str())
 		("outMode"
@@ -546,7 +616,7 @@ CommandLineParsing::CommandLineParsing()
 
 	////  GENERAL OPTIONS  ////////////////////////////////////
 
-	opts_cmdline_all.add(opts_query).add(opts_target).add(opts_seed).add(opts_inter).add(opts_output).add(opts_general);
+	opts_cmdline_all.add(opts_query).add(opts_target).add(opts_seed).add(opts_shape).add(opts_inter).add(opts_output).add(opts_general);
 
 
 }
@@ -958,7 +1028,7 @@ CommandLineParsing::
 validate_structureConstraintArgument(const std::string & name, const std::string & value)
 {
 	// check if valid encoding
-	if (boost::regex_match( value, AccessibilityConstraint::regex, boost::match_perl )) {
+	if (!boost::regex_match( value, AccessibilityConstraint::regex, boost::match_perl )) {
 		LOG(ERROR) <<"constraint "<<name<<" = '"<<value <<"' is not correctly encoded!";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
@@ -1109,10 +1179,10 @@ getQueryAccessibility( const size_t sequenceNumber ) const
 	const RnaSequence& seq = getQuerySequences().at(sequenceNumber);
 
 	// create temporary constraint object (will be copied)
-	AccessibilityConstraint accConstraint(seq.size());
+	AccessibilityConstraint accConstraint(seq.size(),0,"","","");
 	try {
 		// try parsing
-		accConstraint = AccessibilityConstraint(seq.size(), qAccConstr, qAccL.val);
+		accConstraint = AccessibilityConstraint(seq.size(), qAccConstr, qAccL.val, qShape, qShapeMethod, qShapeConversion);
 	} catch (std::exception & ex) {
 		throw std::runtime_error(toString("query accessibility constraint : ")+ex.what());
 	}
@@ -1203,9 +1273,9 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 	}
 	const RnaSequence& seq = getTargetSequences().at(sequenceNumber);
 	// create temporary constraint object (will be copied)
-	AccessibilityConstraint accConstraint(seq.size());
+	AccessibilityConstraint accConstraint(seq.size(), 0, "","","");
 	try {
-		accConstraint = AccessibilityConstraint(seq.size(), tAccConstr, tAccL.val);
+		accConstraint = AccessibilityConstraint(seq.size(), tAccConstr, tAccL.val, tShape, tShapeMethod, tShapeConversion);
 	} catch (std::exception & ex) {
 		throw std::runtime_error(toString("target accessibility constraint : ")+ex.what());
 	}
@@ -1578,6 +1648,16 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 								, &(energy.getAccessibility1().getSequence())
 								, &(energy.getAccessibility2().getAccessibilityOrigin().getSequence()))
 						, "NA") );
+	}
+
+	// check if spotProbs are to be tracked
+	if (!outPrefix2streamName.at(OutPrefixCode::OP_spotProb).empty()) {
+		predTracker->addPredictionTracker(
+				new PredictionTrackerSpotProb( energy
+								// get encoding
+								, outSpotProbSpots
+								, outPrefix2streamName.at(OutPrefixCode::OP_spotProb) )
+							);
 	}
 
 	// check if any tracker registered

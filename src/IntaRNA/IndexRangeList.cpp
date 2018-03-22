@@ -8,9 +8,9 @@ namespace IntaRNA {
 
 //////////////////////////////////////////////////////////////////////
 
-const std::string IndexRangeList::regexString("(\\d|([123456789]\\d*)-(\\d|[123456789]\\d*),)*(\\d|[123456789]\\d*)-(\\d|[123456789]\\d*)");
+const std::string IndexRangeList::regexString("((\\d|[123456789]\\d*)-(\\d|[123456789]\\d*),)*(\\d|[123456789]\\d*)-(\\d|[123456789]\\d*)");
 
-const boost::regex IndexRangeList::regex("^"+IndexRangeList::regexString+"$");
+const boost::regex IndexRangeList::regex(IndexRangeList::regexString);
 
 //////////////////////////////////////////////////////////////////////
 

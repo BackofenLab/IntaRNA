@@ -1,10 +1,92 @@
 
+180319 Martin Raden :
+ * IntaRNA/PredictorMfe2dHeuristic :
+   * traceBack() :
+     * bugfix: wrong sanity check in debug mode (thanks to Rick Gelhausen)
+ * IntaRNA/Predictor :
+   * updateOptima() :
+     * bugfix: PredictionTracker call was not doing lastPos-handling
+ * README.md : 
+   + spotProb docu added
+ + IntaRNA/PredictionTrackingSpotProb : tracks for a given set of interaction
+   spots their probability to be covered/spanned by an interaction. furthermore,
+   the probability that none of the spots of interest is covered is provided.
+ + test/PredictionTrackingSpotProb
+ * bin/CommandLineParsing :
+   * OutputPrefixCodes :
+     + OP_spotProb : for spotProb output mode
+   + outSpotProbSpots : member to store the spots to be tracked (if provided)
+   * --out argument :
+   * validate_out() :
+   * getPredictor() : 
+     + handling of "spotProb" prefix for spot probability tracking
+
 180312 Martin Raden :
  * IntaRNA/PredictorMaxProb :
  * IntaRNA/PredictorMfe :
    * updateOptima() :
      * bugfix : call of predTracker->updateOptimumCalled() was done without
        index offset information (fixes github issue #110) 
+ * IntaRNA/AccessibilityVrna :
+   * callbackForStorage() :
+     * bugfix : copying was not heeding maximal interaction length 
+       (fixes github issue #112)
+ * configure :
+   * bump VRNA dependency to v2.4.4 for recent SHAPE-related bugfix
+ * README.md :
+   + SHAPE-reactivity-related section 
+ * IntaRNA/AccessibilityConstraint :
+   + regexShapeMethod : regex for shapeMethod parsing
+   + regexShapeConversion : regex for shapeConversion parsing
+   + shapeMethod member + getter
+   + shapeConversion member + getter
+   * constructor :
+     + argument for shapeMethod/shapeConversion
+     + sanity check of shapeMethod/shapeConversion if shapeFile non-empty
+   * copyconstructor :
+     + copying of shape* members
+   * regex : bugfix : was not correctly encoding dotbracket strings or index
+     range lists
+   * operator= :
+     + shape members copied
+ * tests/AccessibilityConstraint :
+   * adaptation to AccessibilityConstraint constructor changes
+   + tests for regex matching
+ * IntaRNA/Accessibility :
+   * adaptation to AccessibilityConstraint constructor changes
+ * IntaRNA/AccessibilityVrna :
+   * fillByRNAplfold() :
+     + get shapeMethod and shapeConversion from AccessibilityConstraint
+ * bin/CommandLineParsing :
+   * adaptation to AccessibilityConstraint constructor changes
+   + SHAPE argument list
+     * q|tShape : moved here from query|target argument list
+     + q|tShapeMethod : method to convert SHAPE to pseudo energies
+     + q|tShapeConversion : method to convert SHAPE to pairing probabilitie
+   * validate_structureConstraintArgument() :
+     * bugfix: check had to be reversed
+
+1802 Martin Raden :
+ * IntaRNA/AccessibilityConstraint :
+   * constructor() :
+     - default arguments removed to avoid wrong constructor selection
+     + shapeFile argument to pass file name of SHAPE reactivity data to be used
+   + shapeFile member + getter
+   * isEmpty() :
+     + check if shapeFile empty
+   * operator<< :
+     + output of shapeFile if non-empty
+ * IntaRNA/Accessibility :
+   * adaptation to AccessibilityConstraint constructor changes
+ * IntaRNA/AccessibilityVrna :
+   * fillByRNAplfold() :
+     + call vrna_constraints_add_SHAPE() if shapeFile of AccessibilityConstraint
+       not empty
+ * bin/CommandLineParsing :
+   + q/tShape argument + validation : file name from which to read SHAPE
+     reactivity data to guide accessibility computation (via soft constraints)
+   * adaptation to AccessibilityConstraint constructor changes
+   * unification of parsing code update via usage of updateParsingCode()
 
 180111 Martin Raden :
  * IntaRNA/Accessibility:
@@ -638,7 +720,7 @@ version 2.0.2
  * OutputHandlerText :
    + detailedOutput : flag to switch between detailed and reduced output
    * add() : 
-     + heads detailedOutput flag
+     + heeds detailedOutput flag
    * construction() :
      + detailedOutput flag handling
  * PredictorMfe2d :
