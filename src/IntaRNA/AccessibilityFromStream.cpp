@@ -22,7 +22,7 @@ AccessibilityFromStream(
 	, availMaxLength( Accessibility::getMaxLength() )
 {
 	if (accConstraint != NULL && !accConstraint->isEmpty()) {
-		INTARNA_NOT_IMPLEMENTED("AccessibilityFromStream: accessibility constraints not supported yet");
+		INTARNA_NOT_IMPLEMENTED("AccessibilityFromStream: accessibility constraints not supported for direct accessibility input");
 	}
 	switch( inStreamType ) {
 

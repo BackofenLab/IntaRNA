@@ -73,8 +73,7 @@ updateOptima( const size_t i1, const size_t j1
 		, const E_type interE
 		, const bool isHybridE )
 {
-//	LOG(DEBUG) <<"PredictorMfe::updateOptima( "<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" , E = "
-//			<<interE;
+//	LOG(DEBUG) <<"PredictorMfe::updateOptima( "<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" , E = " <<interE;
 
 	// check if nothing to be done
 	if (mfeInteractions.size() == 0) {
@@ -82,8 +81,14 @@ updateOptima( const size_t i1, const size_t j1
 		if (predTracker != NULL) {
 			// get final energy of current interaction
 			E_type curE = isHybridE ? energy.getE( i1,j1, i2,j2, interE ) : interE;
-			// inform about prediction
-			predTracker->updateOptimumCalled( i1,j1, i2,j2, curE );
+			if (E_isNotINF(curE)) {
+				// inform about prediction
+				predTracker->updateOptimumCalled( i1 + (i1==RnaSequence::lastPos ? 0 : energy.getOffset1())
+												, j1 + (j1==RnaSequence::lastPos ? 0 : energy.getOffset1())
+												, i2 + (i2==RnaSequence::lastPos ? 0 : energy.getOffset2())
+												, j2 + (j2==RnaSequence::lastPos ? 0 : energy.getOffset2())
+												, curE );
+			}
 		}
 		return;
 	}
@@ -93,9 +98,13 @@ updateOptima( const size_t i1, const size_t j1
 //	LOG(DEBUG) <<"energy( "<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" ) = "
 //			<<interE <<" : total = "<<curE;
 	// report call if needed
-	if (predTracker != NULL) {
+	if (predTracker != NULL && E_isNotINF(curE)) {
 		// inform about prediction
-		predTracker->updateOptimumCalled( i1,j1, i2,j2, curE );
+		predTracker->updateOptimumCalled( i1 + (i1==RnaSequence::lastPos ? 0 : energy.getOffset1())
+										, j1 + (j1==RnaSequence::lastPos ? 0 : energy.getOffset1())
+										, i2 + (i2==RnaSequence::lastPos ? 0 : energy.getOffset2())
+										, j2 + (j2==RnaSequence::lastPos ? 0 : energy.getOffset2())
+										, curE );
 	}
 
 	if (mfeInteractions.size() == 1) {
@@ -181,7 +190,7 @@ reportOptima( const OutputConstraint & outConstraint )
 		while( curBest.energy < maxE && reported < outConstraint.reportMax ) {
 			// report current best
 			// fill interaction with according base pairs
-			traceBack( curBest );
+			traceBack( curBest, outConstraint );
 			// report mfe interaction
 			output.add( curBest );
 
@@ -225,7 +234,7 @@ reportOptima( const OutputConstraint & outConstraint )
 			if (i->energy < maxE) {
 
 				// fill mfe interaction with according base pairs
-				traceBack( *i );
+				traceBack( *i, outConstraint );
 				// report mfe interaction
 				output.add( *i );
 				// count

@@ -14,10 +14,6 @@ addons:
   apt:
     sources:
     - ubuntu-toolchain-r-test
-    packages:
-    #- gcc-4.9
-    #- g++-4.9
-    # - doxygen
     
 before_install:
     - wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
@@ -27,7 +23,6 @@ before_install:
     - export PATH=$CONDA_PATH/bin:$PATH
     - conda update --yes conda
     - conda install --yes gcc automake pkgconfig viennarna boost=1.61.* -c conda-forge -c bioconda
-    #    - export CONDA_PATH=/home/travis/miniconda2/
     - export CONDA_LIB_PATH=$CONDA_PATH/lib
     #    - ls $CONDA_LIB_PATH
     #    - ls $CONDA_PATH/include
@@ -39,8 +34,7 @@ script:
     - cd $TRAVIS_BUILD_DIR 
     # generate autotools's files 
     - bash autotools-init.sh 
-    #- CC=gcc-4.9 CXX=g++-4.9 ./configure --with-boost=$CONDA_PATH --with-vrna=$CONDA_PATH --prefix=$HOME/IntaRNA
-    - ./configure --with-boost=$CONDA_PATH --with-vrna=$CONDA_PATH --prefix=$HOME/IntaRNA
+    - ./configure --with-boost=$CONDA_PATH --with-boost-libdir=$CONDA_LIB_PATH --with-vrna=$CONDA_PATH --prefix=$HOME/IntaRNA
     # compile documentation
     # - make doxygen-doc
     # compile, test and install IntaRNA

@@ -61,6 +61,7 @@ VrnaHandler( double temperature, const std::string * const vrnaParamFile )
 //	  int     energy_set;                   /**<  @brief  Specifies the energy set that defines set of compatible base pairs */
 //	  int     backtrack;                    /**<  @brief  Specifies whether or not secondary structures should be backtraced */
 //	  char    backtrack_type;               /**<  @brief  Specifies in which matrix to backtrack */
+	model.compute_bpp = 1;
 //	  int     compute_bpp;                  /**<  @brief  Specifies whether or not backward recursions for base pair probability (bpp) computation will be performed */
 //	  char    nonstandards[64];             /**<  @brief  contains allowed non standard bases */
 	model.max_bp_span = -1;

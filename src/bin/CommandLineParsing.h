@@ -20,6 +20,7 @@
 #include "IntaRNA/SeedConstraint.h"
 #include "IntaRNA/SeedHandler.h"
 #include "IntaRNA/SeedHandlerExplicit.h"
+#include "IntaRNA/PredictionTrackerSpotProb.h"
 #include "IntaRNA/VrnaHandler.h"
 
 using namespace IntaRNA;
@@ -103,20 +104,22 @@ public:
 	/**
 	 * Access to the ranges to screen for interactions for the query with the
 	 * according sequence number.
+	 * @param energy the energy handler later used for prediction (needed for region postprocessing)
 	 * @param sequenceNumber the number of the sequence within the vector
 	 *         returned by getQuerySequences()
 	 * @return the range list for the according sequence.
 	 */
-	const IndexRangeList& getQueryRanges( const size_t sequenceNumber ) const;
+	const IndexRangeList& getQueryRanges( const InteractionEnergy & energy, const size_t sequenceNumber ) const;
 
 	/**
 	 * Access to the ranges to screen for interactions for the target with the
 	 * according sequence number.
+	 * @param energy the energy handler later used for prediction (needed for region postprocessing)
 	 * @param sequenceNumber the number of the sequence within the vector
 	 *         returned by getTargetSequences()
 	 * @return the range list for the according sequence.
 	 */
-	const IndexRangeList& getTargetRanges( const size_t sequenceNumber ) const;
+	const IndexRangeList& getTargetRanges( const InteractionEnergy & energy, const size_t sequenceNumber ) const;
 
 	/**
 	 * Returns a newly allocated Energy object according to the user defined
@@ -197,6 +200,14 @@ public:
 	void
 	writeTargetAccessibility( const Accessibility & acc ) const;
 
+	/**
+	 * Whether or not output is to be written for each region combination
+	 * @return true if output is to be written for each region combination;
+	 *         false otherwise (best for each query-target combination only)
+	 */
+	bool
+	reportBestPerRegion() const;
+
 #if INTARNA_MULITHREADING
 	/**
 	 * Number of threads to be used for parallel processing of
@@ -223,6 +234,7 @@ protected:
 		OP_tAcc,
 		OP_qPu,
 		OP_tPu,
+		OP_spotProb,
 		OP_UNKNOWN
 	};
 
@@ -247,6 +259,7 @@ protected:
 		if (prefLC == "tacc")	{ return OutPrefixCode::OP_tAcc; } else
 		if (prefLC == "qpu")	{ return OutPrefixCode::OP_qPu; } else
 		if (prefLC == "tpu")	{ return OutPrefixCode::OP_tPu; } else
+		if (prefLC == "spotprob")	{ return OutPrefixCode::OP_spotProb; } else
 		// not known
 		return OutPrefixCode::OP_UNKNOWN;
 	}
@@ -334,6 +347,8 @@ protected:
 	boost::program_options::options_description opts_target;
 	//! seed specific options
 	boost::program_options::options_description opts_seed;
+	//! SHAPE reactivity data specific options
+	boost::program_options::options_description opts_shape;
 	//! interaction/energy specific options
 	boost::program_options::options_description opts_inter;
 	//! general options
@@ -371,7 +386,19 @@ protected:
 	//! the string encoding of the interaction intervals for the query(s)
 	std::string qRegionString;
 	//! the list of interaction intervals for each query sequence
-	IndexRangeListVec qRegion;
+	mutable IndexRangeListVec qRegion;
+	//! maximal length of automatically detected highly accessible regions for
+	//! for query sequences; if 0, no automatic detection is done
+	NumberParameter<int> qRegionLenMax;
+	//! optional file name that contains structure probing reactivity data for
+	//! the query sequence (e.g. SHAPE data) to guide accessibility prediction
+	std::string qShape;
+	//! optional encoding what method is to be used to convert the data from
+	//! qShape to pseudo energies for according accessibility prediction
+	std::string qShapeMethod;
+	//! optional encoding how data from qShape is converted into pairing
+	//! probabilities for according accessibility prediction
+	std::string qShapeConversion;
 
 	//! the target command line argument
 	std::string targetArg;
@@ -394,7 +421,19 @@ protected:
 	//! the string encoding of the interaction intervals for the target(s)
 	std::string tRegionString;
 	//! the list of interaction intervals for each target sequence
-	IndexRangeListVec tRegion;
+	mutable IndexRangeListVec tRegion;
+	//! maximal length of automatically detected highly accessible regions for
+	//! for target sequences; if 0, no automatic detection is done
+	NumberParameter<int> tRegionLenMax;
+	//! optional file name that contains structure probing reactivity data for
+	//! the target sequence (e.g. SHAPE data) to guide accessibility prediction
+	std::string tShape;
+	//! optional encoding what method is to be used to convert the data from
+	//! tShape to pseudo energies for according accessibility prediction
+	std::string tShapeMethod;
+	//! optional encoding how data from tShape is converted into pairing
+	//! probabilities for according accessibility prediction
+	std::string tShapeConversion;
 
 	//! whether or not a seed is to be required for an interaction or not
 	bool noSeedRequired;
@@ -453,10 +492,18 @@ protected:
 	NumberParameter<double> outDeltaE;
 	//! max E allowed to report an interaction
 	NumberParameter<double> outMaxE;
+	//! min unpaired prob of an interacting subsequence allowed
+	NumberParameter<double> outMinPu;
 	//! the CSV column selection
 	std::string outCsvCols;
 	//! the CSV column selection
 	static const std::string outCsvCols_default;
+	//! whether or not best interaction output should be provided independently
+	//! for all region combinations or only the best for each query-target
+	//! combination
+	bool outPerRegion;
+	//! for SpotProb output : spots to be tracked
+	std::string outSpotProbSpots;
 
 	//! the vienna energy parameter handler initialized by #parse()
 	mutable VrnaHandler vrnaHandler;
@@ -527,6 +574,31 @@ protected:
 	void validate_qRegion(const std::string & value);
 
 	/**
+	 * Validates the query's region max length argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_qRegionLenMax(const int & value);
+
+	/**
+	 * Validates the query's SHAPE reactivity data file.
+	 * @param value the filename of the query's SHAPE reactivity data
+	 */
+	void validate_qShape( const std::string & value );
+
+	/**
+	 * Validates the query's method to transform SHAPE reactivity data to
+	 * pseudo energies.
+	 * @param value the query's SHAPE method encoding
+	 */
+	void validate_qShapeMethod( const std::string & value );
+
+	/**
+	 * Validates the query's SHAPE reactivity data conversion method encoding.
+	 * @param value the query's SHAPE conversion method encoding
+	 */
+	void validate_qShapeConversion( const std::string & value );
+
+	/**
 	 * Validates the target sequence argument.
 	 * @param value the argument value to validate
 	 */
@@ -579,6 +651,31 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_tRegion(const std::string & value);
+
+	/**
+	 * Validates the target's region max length argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_tRegionLenMax(const int & value);
+
+	/**
+	 * Validates the target's SHAPE reactivity data file.
+	 * @param value the filename of the target's SHAPE reactivity data
+	 */
+	void validate_tShape( const std::string & value );
+
+	/**
+	 * Validates the target's method to transform SHAPE reactivity data to
+	 * pseudo energies.
+	 * @param value the target's SHAPE method encoding
+	 */
+	void validate_tShapeMethod( const std::string & value );
+
+	/**
+	 * Validates the target's SHAPE reactivity data conversion method encoding.
+	 * @param value the target's SHAPE conversion method encoding
+	 */
+	void validate_tShapeConversion( const std::string & value );
 
 	/**
 	 * Validates the explicit seed argument.
@@ -704,6 +801,12 @@ protected:
 	void validate_outMaxE(const double & value);
 
 	/**
+	 * Validates the outMinPu argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_outMinPu(const double & value);
+
+	/**
 	 * Validates the outCsvCols argument.
 	 * @param value the argument value to validate
 	 */
@@ -740,7 +843,7 @@ protected:
 		// alphabet check
 		if ( ! param.isInRange(value) ) {
 			LOG(ERROR) <<name<<" = " <<value <<" : has to be in the range [" <<param.min <<","<<param.max<<"]";
-			parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
+			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 		}
 	}
 
@@ -946,6 +1049,25 @@ void CommandLineParsing::validate_query(const std::string & value)
 ////////////////////////////////////////////////////////////////////////////
 
 inline
+void CommandLineParsing::validate_qSet(const std::string & value) {
+	// clear current qSet data
+	qSet.clear();
+	// parse input value
+	if (!value.empty()) {
+		// check regex
+		if (!boost::regex_match(value, IndexRangeList::regex, boost::match_perl) ) {
+			LOG(ERROR) <<"qSet"<<" = " <<value <<" : is not in the format 'from1-to1,from2-to2,..'";
+			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+		} else {
+			// parse and store subset definitions
+			qSet = IndexRangeList(value);
+		}
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
 void CommandLineParsing::validate_qIntLenMax(const int & value)
 {
 	// forward check to general method
@@ -1005,11 +1127,6 @@ void CommandLineParsing::validate_qAccConstr(const std::string & value)
 {
 	// forward check to general method
 	validate_structureConstraintArgument("qAccConstr", value);
-	// check if no sliding window computation requested
-	if (qAccW.val > 0 || qAccL.val > 0) {
-		LOG(ERROR) <<"query accessibility constraint not possible for sliding window computation (qAccL/W > 0)";
-		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
-	}
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1051,11 +1168,72 @@ void CommandLineParsing::validate_qRegion(const std::string & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
+void CommandLineParsing::validate_qRegionLenMax(const int & value)
+{
+	// forward check to general method
+	validate_numberArgument("qRegionLenMax", qRegionLenMax, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_qShape( const std::string & value )
+{
+	if (!validateFile( value )) {
+		LOG(ERROR) <<"Can not access/read query's SHAPE reactivity file '" <<value <<"'";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_qShapeMethod( const std::string & value )
+{
+
+	if (!boost::regex_match(value, AccessibilityConstraint::regexShapeMethod, boost::match_perl) ) {
+		LOG(ERROR) <<"Query's SHAPE method encoding '" <<value <<"' is not valid.";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_qShapeConversion( const std::string & value )
+{
+	if (!boost::regex_match(value, AccessibilityConstraint::regexShapeConversion, boost::match_perl) ) {
+		LOG(ERROR) <<"Query's SHAPE conversion method encoding '" <<value <<"' is not valid.";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
 void CommandLineParsing::validate_target(const std::string & value)
 {
 	validate_sequenceArgument("target",value);
 }
 
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_tSet(const std::string & value) {
+	// clear current qSet data
+	tSet.clear();
+	// parse input value
+	if (!value.empty()) {
+		// check regex
+		if (!boost::regex_match(value, IndexRangeList::regex, boost::match_perl) ) {
+			LOG(ERROR) <<"tSet"<<" = " <<value <<" : is not in the format 'from1-to1,from2-to2,..'";
+			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+		} else {
+			// parse and store subset definitions
+			tSet = IndexRangeList(value);
+		}
+	}
+}
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -1119,11 +1297,6 @@ void CommandLineParsing::validate_tAccConstr(const std::string & value)
 {
 	// forward check to general method
 	validate_structureConstraintArgument("tAccConstr", value);
-	// check if no sliding window computation requested
-	if (tAccW.val > 0 || tAccL.val > 0) {
-		LOG(ERROR) <<"query accessibility constraint not possible for sliding window computation (tAccL/W > 0)";
-		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
-	}
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1164,6 +1337,49 @@ void CommandLineParsing::validate_tRegion(const std::string & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
+void CommandLineParsing::validate_tRegionLenMax(const int & value)
+{
+	// forward check to general method
+	validate_numberArgument("tRegionLenMax", tRegionLenMax, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_tShape( const std::string & value )
+{
+	if (!validateFile( value )) {
+		LOG(ERROR) <<"Can not access/read target's SHAPE reactivity file '" <<value <<"'";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_tShapeMethod( const std::string & value )
+{
+	if (!boost::regex_match(value, AccessibilityConstraint::regexShapeMethod, boost::match_perl) ) {
+		LOG(ERROR) <<"Target's SHAPE method encoding '" <<value <<"' is not valid.";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_tShapeConversion( const std::string & value )
+{
+
+	if (!boost::regex_match(value, AccessibilityConstraint::regexShapeConversion, boost::match_perl) ) {
+		LOG(ERROR) <<"Target's SHAPE conversion method encoding '" <<value <<"' is not valid.";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
 void CommandLineParsing::validate_seedTQ(const std::string & value) {
 	if (!value.empty()) {
 		// split by commas
@@ -1180,14 +1396,14 @@ void CommandLineParsing::validate_seedTQ(const std::string & value) {
 			non_empty_seeds++;
 			if (!errMsg.empty()) {
 				LOG(ERROR) <<"explicit seed encoding '" <<value.substr(p1, length) <<"' : "<<errMsg;
-				parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
+				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 			}
 			// update p1
 			p1 = value.find_first_not_of(',',p2);
 		}
 		if (non_empty_seeds == 0) {
 			LOG(ERROR) <<"explicit seed encoding '" <<value <<"' does not contain any seed information";
-			parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
+			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 		}
 	}
 }
@@ -1248,7 +1464,7 @@ void CommandLineParsing::validate_seedQRange(const std::string & value) {
 		// check regex
 		if (!boost::regex_match(value, IndexRangeList::regex, boost::match_perl) ) {
 			LOG(ERROR) <<"seedQRange"<<" = " <<value <<" : is not in the format 'from1-to1,from2-to2,..'";
-			parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
+			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 		}
 	}
 }
@@ -1261,7 +1477,7 @@ void CommandLineParsing::validate_seedTRange(const std::string & value) {
 		// check regex
 		if (!boost::regex_match(value, IndexRangeList::regex, boost::match_perl) ) {
 			LOG(ERROR) <<"seedTRange"<<" = " <<value <<" : is not in the format 'from1-to1,from2-to2,..'";
-			parsingCode = std::max(ReturnCode::STOP_PARSING_ERROR,parsingCode);
+			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 		}
 	}
 }
@@ -1334,10 +1550,43 @@ void CommandLineParsing::validate_outputTarget(
 	if (boost::iequals(value,"STDOUT") || boost::iequals(value,"STDERR")) {
 		return;
 	}
+
+	///////////  ASSUME IT IS A FILENAME/-PATH  ///////////////
+
 	// check if empty filename
 	if ( value.empty() ) {
 		LOG(ERROR) <<argName<<" : no output defined (empty)";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+		return;
+	}
+
+	// check if parent directory exists
+	boost::filesystem::path p(value);
+	if ( !p.parent_path().empty() && ! boost::filesystem::exists(p.parent_path()) ) {
+		LOG(ERROR) <<argName<<" : parent directory '"<<p.parent_path().string()<<"' of output file '"<<value<<"' does not exist";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+		return;
+	}
+
+	// check if output file exists and can not be overwritten
+	if ( boost::filesystem::exists(p) ) {
+		// start overwriting and catch if needed
+		bool fileCanNotBeOverwritten = false;
+		try {
+			// open dummy file stream to check if writeable
+			std::ofstream file(value);
+			if (!file) {
+				fileCanNotBeOverwritten = true;
+			}
+			file.close();
+		} catch (std::exception & ex) {
+			fileCanNotBeOverwritten = true;
+		}
+		if (fileCanNotBeOverwritten) {
+			LOG(ERROR) <<argName<<" : of output file '"<<value<<"' exists and can not be overwritten";
+			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+			return;
+		}
 	}
 }
 
@@ -1390,6 +1639,21 @@ void CommandLineParsing::validate_out(const std::vector<std::string> & list) {
 			}
 			// store prefix to identify another existence
 			std::string streamName = v->substr(v->find(':')+1);
+			// handle SpotProb setup
+			if (curPrefCode == OP_spotProb) {
+				// get spotProb spots
+				outSpotProbSpots = streamName.substr(0,streamName.find(':'));
+				// check if valid spot encoding
+				if (!boost::regex_match(outSpotProbSpots, PredictionTrackerSpotProb::regexSpotString, boost::match_perl)){
+					// check sanity of spot encodings (indexing starts with 1)
+					LOG(ERROR) <<"--out : spot encoding '"<<curPref<<"' is not valid.";
+					updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+					break;
+				}
+				// get stream name (remove spot encoding prefix)
+				streamName = streamName.substr(outSpotProbSpots.size()+1);
+			}
+
 			// forward check to general method
 			validate_outputTarget( "--out="+curPref+":", streamName );
 			// store stream name
@@ -1430,6 +1694,14 @@ inline
 void CommandLineParsing::validate_outMaxE(const double & value) {
 	// forward check to general method
 	validate_numberArgument("outMaxE", outMaxE, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_outMinPu(const double & value) {
+	// forward check to general method
+	validate_numberArgument("outMinPu", outMinPu, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1499,7 +1771,7 @@ size_t
 CommandLineParsing::
 getThreads() const
 {
-	return threads.val;
+	return threads.val == 0 ? threads.max : threads.val;
 }
 #endif
 
@@ -1588,6 +1860,16 @@ getFullFilename( const std::string & fileNamePath, const RnaSequence * target, c
 				+ "-" + fileID
 				+ fileNamePath.substr(startOfExtension);
 	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+CommandLineParsing::
+reportBestPerRegion() const
+{
+	return outPerRegion;
 }
 
 ////////////////////////////////////////////////////////////////////////////

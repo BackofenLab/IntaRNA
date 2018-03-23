@@ -1,3 +1,339 @@
+version 2.2.0
+
+180319 Martin Raden :
+ * IntaRNA/PredictorMfe2dHeuristic :
+   * traceBack() :
+     * bugfix: wrong sanity check in debug mode (thanks to Rick Gelhausen)
+ * IntaRNA/Predictor :
+   * updateOptima() :
+     * bugfix: PredictionTracker call was not doing lastPos-handling
+ * README.md : 
+   + spotProb docu added
+ + IntaRNA/PredictionTrackingSpotProb : tracks for a given set of interaction
+   spots their probability to be covered/spanned by an interaction. furthermore,
+   the probability that none of the spots of interest is covered is provided.
+ + test/PredictionTrackingSpotProb
+ * bin/CommandLineParsing :
+   * OutputPrefixCodes :
+     + OP_spotProb : for spotProb output mode
+   + outSpotProbSpots : member to store the spots to be tracked (if provided)
+   * --out argument :
+   * validate_out() :
+   * getPredictor() : 
+     + handling of "spotProb" prefix for spot probability tracking
+
+180312 Martin Raden :
+ * IntaRNA/PredictorMaxProb :
+ * IntaRNA/PredictorMfe :
+   * updateOptima() :
+     * bugfix : call of predTracker->updateOptimumCalled() was done without
+       index offset information (fixes github issue #110) 
+ * IntaRNA/AccessibilityVrna :
+   * callbackForStorage() :
+     * bugfix : copying was not heeding maximal interaction length 
+       (fixes github issue #112)
+ * configure :
+   * bump VRNA dependency to v2.4.4 for recent SHAPE-related bugfix
+ * README.md :
+   + SHAPE-reactivity-related section 
+ * IntaRNA/AccessibilityConstraint :
+   + regexShapeMethod : regex for shapeMethod parsing
+   + regexShapeConversion : regex for shapeConversion parsing
+   + shapeMethod member + getter
+   + shapeConversion member + getter
+   * constructor :
+     + argument for shapeMethod/shapeConversion
+     + sanity check of shapeMethod/shapeConversion if shapeFile non-empty
+   * copyconstructor :
+     + copying of shape* members
+   * regex : bugfix : was not correctly encoding dotbracket strings or index
+     range lists
+   * operator= :
+     + shape members copied
+ * tests/AccessibilityConstraint :
+   * adaptation to AccessibilityConstraint constructor changes
+   + tests for regex matching
+ * IntaRNA/Accessibility :
+   * adaptation to AccessibilityConstraint constructor changes
+ * IntaRNA/AccessibilityVrna :
+   * fillByRNAplfold() :
+     + get shapeMethod and shapeConversion from AccessibilityConstraint
+ * bin/CommandLineParsing :
+   * adaptation to AccessibilityConstraint constructor changes
+   + SHAPE argument list
+     * q|tShape : moved here from query|target argument list
+     + q|tShapeMethod : method to convert SHAPE to pseudo energies
+     + q|tShapeConversion : method to convert SHAPE to pairing probabilitie
+   * validate_structureConstraintArgument() :
+     * bugfix: check had to be reversed
+
+1802 Martin Raden :
+ * IntaRNA/AccessibilityConstraint :
+   * constructor() :
+     - default arguments removed to avoid wrong constructor selection
+     + shapeFile argument to pass file name of SHAPE reactivity data to be used
+   + shapeFile member + getter
+   * isEmpty() :
+     + check if shapeFile empty
+   * operator<< :
+     + output of shapeFile if non-empty
+ * IntaRNA/Accessibility :
+   * adaptation to AccessibilityConstraint constructor changes
+ * IntaRNA/AccessibilityVrna :
+   * fillByRNAplfold() :
+     + call vrna_constraints_add_SHAPE() if shapeFile of AccessibilityConstraint
+       not empty
+ * bin/CommandLineParsing :
+   + q/tShape argument + validation : file name from which to read SHAPE
+     reactivity data to guide accessibility computation (via soft constraints)
+   * adaptation to AccessibilityConstraint constructor changes
+   * unification of parsing code update via usage of updateParsingCode()
+
+180111 Martin Raden :
+ * IntaRNA/Accessibility:
+   + decomposeByMinPu() : decomposes a given list of ranges to subranges by
+     excluding all positions that have an unpaired probability below a given
+     threshold
+ * bin/CommandLineParsing :
+   + '--outMinPu' argument + validators
+   * get*Ranges() :
+     + calling Accessibility->decomposeByMinPu() for each range list
+     + energy argument (needed for RT access)
+
+171216 Martin Raden :
+ * bin/CommandLineParsing :
+   - check for equal length of sequence and constraint removed since obsolete
+
+171214 Martin Raden :
+ * m4:
+   * *.m4 : updated to recent versions
+   + m4-ax_boost_*.m4 : boost library checks 
+
+171213 Martin Raden :
+ * configure.ac :
+   * leading spaces in macros removed
+   + default macro definitions if pkg.m4 not available
+   + silent make output enabled per default (full output with 'make V=1')
+   - obsolete pkg-config m4 check removed
+
+171211 Martin Raden :
+ * IntaRNA/PredictorMfe :
+   * traceBack() : 
+     + argument outConstraint (needed to bugfix the PredictorMfe2d computation)
+   * reportOptima() :
+     + forwards outConstraint to traceBack() call
+ * IntaRNA/PredictorMfe* :
+   * adaption to traceBack() interface changes
+ * IntaRNA/PredictorMfe2d :
+   * traceBack() :
+     * bugfix: outConstraint missing in fillHybridE() call but called with 
+       (&outConstraint = i1) and (i1 = i2), which caused infinite tracebacks
+   * initHybridE() :
+     - default argument values (=0) removed to avoid wrong argument use (see
+       traceBack() bugfix)
+     - special initialization removed to simplify code (and not applied anyway)
+   * fillHybridE() :
+     - default argument values (=0) removed to avoid wrong argument use (see
+       traceBack() bugfix)
+     * computation simplified
+ * IntaRNA/PredictorMfe2d :
+   * fillHybridE() :
+     * bugfix: outConstraint missing in fillHybridE() call but called with 
+       (&outConstraint = i1) and (i1 = i2), which caused infinite tracebacks
+ * IntaRNA/PredictorMfe2dSeed :
+   * fillHybridE_seed() :
+     + outConstraint argument
+     * bugfix: outConstraint missing in fillHybridE() call but called with 
+       (&outConstraint = i1) and (i1 = i2), which caused infinite tracebacks
+
+171127 Martin Raden :
+ * bin/CommandLineParsing :
+   * getThreads() :
+     * returns threads.max if threads.val == 0
+   * threads :
+     * min value = 0 (request maximal number of threads)
+     * parameter docu updated accordingly
+   * validateRegion() :
+     + instantiate range list to ensure that it is ascending and non-overlapping
+   + outPerRegion : parameter flag to define how reporting per region should be
+     done
+   + reportBestPerRegion() : access to outPerRegion
+ * IntaRNA/IndexRangeList :
+   * sanity checks now also in non-debug mode to ensure sane instances
+ * IntaRNA/IndexRange :
+   * operator+/-(int shift) : returns a shifted range
+ * bin/IntaRNA :
+   * bugfix: verbose range report was not shifting ranges by +1
+   + use OutputHandlerInteractionList to handle predictions for all region
+     combinations for a query-target combination; setup maximal size based on 
+     CommandLineParsing::reportBestPerRegion()
+ * README.md :
+   + '--outPerRegion' docu added
+ * IntaRNA/Interaction :
+   + operator < : less-than comparison based on energy and indexing/#bp/seed.E
+ + IntaRNA/OutputHandlerInteractionList : stores the best k interactions sorted
+   by Interaction::operator<()
+
+171123 Martin Raden :
+ * bin/CommandLineParsing :
+   * validate_outputTarget() :
+     + check whether or not parent directory of output file exists
+     + check whether or not the output file can be overwritten (if existing)
+ * IntaRNA/general :
+   * E_precisionEpsilon : now = sqrt(numeric_limits<E_type>::min())
+     (was 1000*numeric_limits<E_type>::epsilon(), which was much too large)
+ * IntaRNA/AccessibilityVrna :
+   * callbackForStorage() :
+     * undo last change, i.e. check for 0-pUvalues now again via '==' instead of
+       E_equal
+ * IntaRNA/AccessibilityVrna :
+ * IntaRNA/InteractionEnergyVrna :
+   * construction() :
+     * now computation is considered thread-safe, i.e. no omp_critical needed
+ * bin/IntaRNA :
+   + parallelization of query accessibility computation
+ * README.md :
+   - non-parallelization of accessibility computation not true anymore
+
+171122 Martin Raden :
+ * README.md :
+   + discussion and examples for range-based constraint encoding
+ * tests/AccessibilityConstraint :
+   + test for range-based encoding parsing
+ * IntaRNA/IndexRangeList :
+   + regexString : string encoding of regex without start/end matching to be
+     used in other regex encodings
+ * IntaRNA/AccessibilityConstraint :
+   + dotBracket_constraints : list of constraint encodings
+   + regionIndexList : regular expression string that matches the region list
+     for a single constraint encoding
+   + regex : overall regex that matches both dotBracketAlphabet as well as
+     range-based encodings
+   + operator << : prints the constraint in range-based encoding
+   * construction :
+     + length now mandatory since not necessarily available via constraint 
+       string encoding length
+     + parsing of range-based encoding with according error messages
+ * bin/CommandLineParsing :
+   * get*Accessibility():
+     + constraint parsing now encapsulated by try-catch to report dedicated
+       error messages for query/target encodings
+   + *AccConstr parameter description extended with range-based encoding
+   * validate_structureConstraintArgument() :
+     - obsolete structure check removed
+     * validation now via regex
+
+171117 Martin Raden :
+ * bin/CommandLineParsing :
+   * unify input error handling via throw
+   + check if accessibility available for RegionLenMax-based decomposition
+   * validate_*AccConstr() :
+     - check that not in plfold-based mode
+   * AccConstr :
+     + paired constraint option
+ * IntaRNA/VrnaHandler : 
+   + modle.compute_bpp = 1 to enable correct ED computation via plfold routines
+ * IntaRNA/AccessibilityVrna :
+   * construction() : 
+     - checks to enable constraints only for RNAup-based computation
+     - RNAup-based computation option removed
+     * plfold-based computation only
+   * callbackForStorage() :
+     * prob_unpaired == 0 check via E_equal()
+   * fillByRNAplfold() :
+     - debug check that no constraint is defined
+     + constraint setup
+ * README.md :
+   + --q/tAccConstr description
+ * IntaRNA/AccessibilityConstraint :
+   + dotBracket_unconstrained : holds unconstrained encoding char
+   + dotBracket_paired : holds paired encoding char
+   * dotBracket_alphabet : now compiled from static vars only (excludes round
+     brackets that were part of it so far but never enabled)
+   - is*(from,to) : obsolete (and wrong) checks for regions removed
+   + paired : list of ranges marked as paired
+   + isMarkedPaired(i) : whether or not a position is marked as paired
+   * constructor() :
+     + parse paired ranges
+     - check for round brackets (obsolete)
+   * is*() : take paired into account
+   * getVrnaDotBracket() :
+     + returns '|' for paired positions
+ * IntaRNA/Accessibility* :
+   * getED() :
+     * bugfix : do accessibility check only on interval ends (not whole region)
+ * tests/AccessibilityConstraint_test :
+   + test for position marked as paired
+
+171116 Martin Raden :
+ * configure.ac :
+   + --enable-static-linking flag added to build statically linked binaries
+ * IntaRNA/PredictorMfe2dHeuristic :
+   * undo change of 171111 since it is effecting seed-based predictor as well
+     and it is not benchmarked yet.. (thanks to Alex Gawronski)
+
+171113 Martin Raden :
+ * IntaRNA/IndexRangeList :
+   + get() : (constant) access to a certain range
+ + tests/testEasyLoggingSetup.icc : easylogging setup to be included in all
+   tests to enable (debug) logging from the IntaRNA lib
+ * tests/*_test.cpp :
+   + inclusion of testEasyLoggingSetup.icc
+ * Makefile.am :
+   + clean test executable to ensure rebuild
+ * tests/Makefile.am :
+   + easylogging++ compiler flags
+ * IntaRNA/Accessibility :
+   + decomposeByMaxEd() : automatically identifies highly accessible regions of
+     the sequence and provides list of according intervals where each is below
+     a given threshold in length (also lower bound provided). This is done by
+     iteratively identifying the max ED window (of given size) within too long
+     ranges and removing it, which results either in a shrink of the range or
+     a decomposition into two ranges. This is repeated until all ranges are 
+     sufficiently short.
+     (thanks to Alex Gawronski)
+ * tests/AccessibilityFromStream_test :
+   + test Accessibility.decomposeByMaxEd()
+ * bin/CommandLineParsing :
+   + qRegionLenMax/tRegionLenMax : (optional) maximal length of automatically
+     identified highly accessible regions in query/target
+   * qRegion/tRegion : mutable to enable lazy computation in get*Region()
+   * get*Region() :
+     + lazy computation of regions if according ?RegionLenMax > 0; uses a 
+       winSize == seedBP and a minimal range length of seedBP
+   * parse() :
+     + ensure that no manual regions defined if ?ReginLenMax provided 
+
+171111 Martin Raden :
+ * IntaRNA/PredictorMfe2dHeuristic :
+   * init curCellEtotal = E_INF to ignore effects of low ED of single positions
+     (already applied that way in PredictorMfe2dHeuristicSeed)
+
+171110 Martin Raden :
+ * CommandLineParsing :
+   + qSet : parameter to define sequence subset to be considered for prediction
+   + tSet : parameter to define sequence subset to be considered for prediction
+     (thanks to Alex Gawronski)
+ * IndexRange :
+   + LAST_INDEX : placeholder for last available index
+ * README.md :
+   + --qSet/--tSet docu added
+   * fixing easylogging lib use example
+
+171019 Martin Raden :
+ * configure.ac :
+   + in debug mode, set ELPP_DEBUG_ERRORS compiler define
+ * IntaRNA/general.h :
+   - ELPP_* defines removed since set via configure or not needed
+ * bin/CommandLineParsing :
+   + argument "--default-log-file" to redirect log output to file (except ERROR)
+   + logFileName : dummy variable for --default-log-file argument
+ * README.md :
+   + --default-log-file docu added
+   + -v/--verbose docu added
+ * bin/IntaRNA :
+   + log-file handling
+   + flushing log streams on exit
 
 version 2.1.0
 
@@ -385,7 +721,7 @@ version 2.0.2
  * OutputHandlerText :
    + detailedOutput : flag to switch between detailed and reduced output
    * add() : 
-     + heads detailedOutput flag
+     + heeds detailedOutput flag
    * construction() :
      + detailedOutput flag handling
  * PredictorMfe2d :
@@ -910,7 +1246,7 @@ version 2.0.2
    - isOutNonOverlapping() : obsolete
    - isOutputReportMax() : obsolete
    + outOverlap + validator : overlap encoding
-   + getOutputConstraint() : central data structure for output constraints´
+   + getOutputConstraint() : central data structure for output constraints
    - regexRangeEncoding : obsolete due to IndexRangeList::regex
    * parseRegion() : now uses IndexRangeList string constructor and shift() for
      initialization
@@ -1590,7 +1926,7 @@ version 2.0.2
  * README : 
    + compilation information
    + refers to README.md
- + README.md (by Björn Grüning)
+ + README.md (by Bjoern Gruening)
  * COPYING : refers to LICENSE
  + LICENSE : now MIT license for intarna 2.*
  * configure.ac : replaced by new version for intarna 2.*

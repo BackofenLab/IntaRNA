@@ -5,6 +5,8 @@
 #include "IntaRNA/IndexRangeList.h"
 #include "IntaRNA/RnaSequence.h"
 
+#include <boost/regex.hpp>
+
 #include <utility>
 #include <vector>
 
@@ -25,14 +27,32 @@ class AccessibilityConstraint {
 
 public:
 
+	//! the marker for unconstrained positions in dot-bracket notation
+	static const char dotBracket_unconstrained;
 	//! the marker for blocked positions in dot-bracket notation
 	static const char dotBracket_blocked;
 	//! the marker for accessible positions in dot-bracket notation
 	static const char dotBracket_accessible;
+	//! the marker for paired positions in dot-bracket notation
+	static const char dotBracket_paired;
+
+	//! collection of all allowed encoding of constraints
+	static const std::string dotBracket_constraints;
 
 	//! the alphabet to encode accessibility constraints in dot-bracket notation
 	static const std::string dotBracketAlphabet;
 
+	//! regular expression that encodes a single region encoding as index list
+	static const std::string regionIndexList;
+
+	//! the regular expression that marks a non-empty valid constraint encoding
+	static const boost::regex regex;
+
+	//! the regular expression to be matched by shapeMethod encodings
+	static const boost::regex regexShapeMethod;
+
+	//! the regular expression to be matched by shapeConversion encodings
+	static const boost::regex regexShapeConversion;
 
 public:
 
@@ -41,8 +61,19 @@ public:
 	 * @param length length of the constrained sequence
 	 * @param maxBpSpan the maximal base pair span to be used for accessibility
 	 *        computation; set to 0 for full sequence length
+	 * @param shapeFile if non-empty: name of the SHAPE reactivity data file to
+	 *        be used for accessibility computation
+	 * @param shapeMethod if non-empty: encoding of the method to be used to
+	 *        convert SHAPE reactivity data to pseudo energies
+	 * @param shapeConversion if non-empty: encoding of the method to be used to
+	 *        convert SHAPE reactivity data to pairing probabilities
 	 */
-	AccessibilityConstraint( const size_t length, const size_t maxBpSpan = 0 );
+	AccessibilityConstraint(  const size_t length
+							, const size_t maxBpSpan
+							, const std::string & shapeFile
+							, const std::string & shapeMethod
+							, const std::string & shapeConversion
+							);
 
 	/**
 	 * Copy construction
@@ -55,11 +86,24 @@ public:
 
 	/**
 	 * Constraint construction based on VRNA-like dot-bracket encoding
+	 * @param length length of the constrained sequence
 	 * @param dotBracket the constraint encoding in VRNA-like dot-bracket encoding
 	 * @param maxBpSpan the maximal base pair span to be used for accessibility
 	 *        computation; set to 0 for full sequence length
+	 * @param shapeFile if non-empty: name of the SHAPE reactivity data file to
+	 *        be used for accessibility computation
+	 * @param shapeMethod if non-empty: encoding of the method to be used to
+	 *        convert SHAPE reactivity data to pseudo energies
+	 * @param shapeConversion if non-empty: encoding of the method to be used to
+	 *        convert SHAPE reactivity data to pairing probabilities
 	 */
-	AccessibilityConstraint( const std::string& dotBracket, const size_t maxBpSpan = 0 );
+	AccessibilityConstraint( const size_t length
+							, const std::string& dotBracket
+							, const size_t maxBpSpan
+							, const std::string & shapeFile
+							, const std::string & shapeMethod
+							, const std::string & shapeConversion
+							);
 
 	virtual ~AccessibilityConstraint();
 
@@ -72,15 +116,6 @@ public:
 	isMarkedBlocked( const size_t i ) const;
 
 	/**
-	 * Checks whether or not a range is marked as blocked or not
-	 * @param from the start of the range of interest
-	 * @param to the end of the range of interest
-	 * @return true if position i is marked blocked
-	 */
-	bool
-	isMarkedBlocked( const size_t from, const size_t to ) const;
-
-	/**
 	 * Checks whether or not a sequence position is marked as accessible or not
 	 * @param i the position of interest
 	 * @return true if position i is marked accessible
@@ -89,13 +124,13 @@ public:
 	isMarkedAccessible( const size_t i ) const;
 
 	/**
-	 * Checks whether or not a range is marked as accessible or not
-	 * @param from the start of the range of interest
-	 * @param to the end of the range of interest
+	 * Checks whether or not a sequence position is marked as intramolecularly
+	 * paired or not
+	 * @param i the position of interest
 	 * @return true if position i is marked accessible
 	 */
 	bool
-	isMarkedAccessible( const size_t from, const size_t to ) const;
+	isMarkedPaired( const size_t i ) const;
 
 	/**
 	 * Checks whether or not a sequence position is not constrained
@@ -106,30 +141,12 @@ public:
 	isUnconstrained( const size_t i ) const;
 
 	/**
-	 * Checks whether or not a sequence range is not constrained
-	 * @param from the start of the range of interest
-	 * @param to the end of the range of interest
-	 * @return true if position i is not constrained
-	 */
-	bool
-	isUnconstrained( const size_t from, const size_t to ) const;
-
-	/**
 	 * Checks whether or not a position is available for interaction
 	 * @param i the position of interest
 	 * @return true if the position @p i is available interaction; false otherwise
 	 */
 	bool
 	isAccessible( const size_t i ) const;
-
-	/**
-	 * Checks whether or not a range is available for interaction
-	 * @param from the start of the range of interest
-	 * @param to the end of the range of interest
-	 * @return true if the position @p i is available interaction; false otherwise
-	 */
-	bool
-	isAccessible( const size_t from, const size_t to ) const;
 
 	/**
 	 * Checks whether or not any accessibility constraints (base pairs, blocked,
@@ -157,12 +174,35 @@ public:
 	getMaxBpSpan() const;
 
 	/**
+	 * Get filename from where to read SHAPE reactivity data.
+	 * @return the filename or an empty string if no SHAPE data available
+	 */
+	const std::string &
+	getShapeFile() const;
+
+	/**
+	 * Get method how to convert SHAPE reactivity data to pseudo energies.
+	 * @return the encoding or an empty string if no SHAPE data available
+	 */
+	const std::string &
+	getShapeMethod() const;
+
+	/**
+	 * Get method how to convert SHAPE reactivity data to pairing probabilities.
+	 * @return the encoding or an empty string if no SHAPE data available
+	 */
+	const std::string &
+	getShapeConversion() const;
+
+	/**
 	 * Assignment of constraints for the same rna sequence.
 	 *
 	 * @param c the interaction to make this a copy of
 	 */
 	AccessibilityConstraint & operator= ( const AccessibilityConstraint & c );
 
+
+	friend std::ostream& operator<<(std::ostream& out, const AccessibilityConstraint& c);
 
 protected:
 
@@ -172,11 +212,23 @@ protected:
 	//! the maximal base pair span to be used for accessibility computation
 	size_t maxBpSpan;
 
+	//! filename of SHAPE reactivity data or empty if no SHAPE data to be used
+	std::string shapeFile;
+
+	//! method for converting SHAPE reactivity data to pseudo energies
+	std::string shapeMethod;
+
+	//! method for conversion of SHAPE reactivity data to paired probabilities
+	std::string shapeConversion;
+
 	//! sorted list of ranges that are marked as blocked
 	IndexRangeList blocked;
 
 	//! sorted list of ranges that are marked as accessible
 	IndexRangeList accessible;
+
+	//! sorted list of ranges that are marked as paired (intramolecular)
+	IndexRangeList paired;
 
 protected:
 
@@ -196,47 +248,47 @@ protected:
 };
 
 
+/**
+ * Prints the accessibility constraint in range-based encoding to stream
+ * @param out the ostream to write to
+ * @param c the AccessibilityConstraint object to add
+ * @return the altered stream out
+ */
+std::ostream& operator<<(std::ostream& out, const AccessibilityConstraint& c);
+
+
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
 
 inline
 AccessibilityConstraint::
-AccessibilityConstraint( const size_t length_, const size_t maxBpSpan_ )
+AccessibilityConstraint( const size_t length_
+					, const size_t maxBpSpan_
+					, const std::string & shapeFile_
+					, const std::string & shapeMethod_
+					, const std::string & shapeConversion_
+					)
 	:
 	length(length_),
 	maxBpSpan( maxBpSpan_==0 ? length : std::min(maxBpSpan_,length) ),
+	shapeFile(shapeFile_),
+	shapeMethod(shapeFile_.empty() ? "" : shapeMethod_),
+	shapeConversion(shapeFile_.empty() ? "" : shapeConversion_),
 	blocked(),
-	accessible()
-{
-}
-
-////////////////////////////////////////////////////////////////////////
-
-inline
-AccessibilityConstraint::
-AccessibilityConstraint( const std::string& dotBracket, const size_t maxBpSpan_ )
-	:
-	length(dotBracket.size()),
-	maxBpSpan( maxBpSpan_==0 ? length : std::min(maxBpSpan_,length) ),
-	blocked(),
-	accessible()
+	accessible(),
+	paired()
 {
 #if INTARNA_IN_DEBUG_MODE
-	if (dotBracket.find_first_not_of(dotBracketAlphabet)!=std::string::npos) {
-		throw std::runtime_error("AccessibilityConstraint("+dotBracket+") contains unsupported characters");
+	if (!shapeFile.empty()) {
+		if (!boost::regex_match( shapeMethod, AccessibilityConstraint::regexShapeMethod, boost::match_perl )) {
+			throw std::runtime_error("AccessibilityConstraint(shapeMethod="+shapeMethod+") does not match its encoding regular expression");
+		}
+		if (!boost::regex_match( shapeConversion, AccessibilityConstraint::regexShapeConversion, boost::match_perl )) {
+			throw std::runtime_error("AccessibilityConstraint(shapeConversion="+shapeConversion+") does not match its encoding regular expression");
+		}
 	}
 #endif
-
-	// check for base pairs (not implemented yet)
-	if (dotBracket.find_first_of("()") != std::string::npos) {
-		INTARNA_NOT_IMPLEMENTED("AccessibilityConstraint(dotBracket) contains base pairs... currently only '."+toString(dotBracket_accessible)+toString(dotBracket_blocked)+"' implemented");
-	}
-
-	// screen for blocked regions
-	screenDotBracket( dotBracket, dotBracket_blocked, blocked );
-	// screen for accessible regions
-	screenDotBracket( dotBracket, dotBracket_accessible, accessible );
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -248,10 +300,13 @@ AccessibilityConstraint( const AccessibilityConstraint& toCopy
 	:
 	length(toCopy.length)
 	, maxBpSpan(toCopy.maxBpSpan)
+	, shapeFile(toCopy.shapeFile)
+	, shapeMethod(toCopy.shapeMethod)
+	, shapeConversion(toCopy.shapeConversion)
 	, blocked(toCopy.blocked)
 	, accessible(toCopy.accessible)
+	, paired(toCopy.paired)
 {
-	// TODO copy structure constraints etc.
 
 	if (reverseIndices) {
 
@@ -261,7 +316,9 @@ AccessibilityConstraint( const AccessibilityConstraint& toCopy
 		// reverse accessible
 		accessible.reverse(length);
 
-		// TODO reverse structure constraints
+		// reverse accessible
+		paired.reverse(length);
+
 	}
 }
 
@@ -287,16 +344,6 @@ isMarkedBlocked(const size_t i) const
 inline
 bool
 AccessibilityConstraint::
-isMarkedBlocked(const size_t from, const size_t to) const
-{
-	return blocked.covers(from,to);
-}
-
-////////////////////////////////////////////////////////////////////////
-
-inline
-bool
-AccessibilityConstraint::
 isMarkedAccessible(const size_t i) const
 {
 	return accessible.covers(i);
@@ -307,9 +354,9 @@ isMarkedAccessible(const size_t i) const
 inline
 bool
 AccessibilityConstraint::
-isMarkedAccessible(const size_t from, const size_t to) const
+isMarkedPaired(const size_t i) const
 {
-	return accessible.covers(from,to);
+	return paired.covers(i);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -320,20 +367,7 @@ AccessibilityConstraint::
 isUnconstrained( const size_t i ) const
 {
 	return isEmpty()
-	// TODO handle base pairing constraints etc..
-			|| !(isMarkedAccessible(i) || isMarkedBlocked(i));
-}
-
-////////////////////////////////////////////////////////////////////////
-
-inline
-bool
-AccessibilityConstraint::
-isUnconstrained( const size_t from, const size_t to ) const
-{
-	return isEmpty()
-	// TODO handle base pairing constraints etc..
-			|| !(isMarkedAccessible(from,to) || isMarkedBlocked(from,to));
+			|| !(isMarkedAccessible(i) || isMarkedBlocked(i) || isMarkedPaired(i));
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -343,21 +377,8 @@ bool
 AccessibilityConstraint::
 isAccessible( const size_t i ) const
 {
-	// TODO handle base pairing constraints etc.
 	return isEmpty()
-			|| !isMarkedBlocked(i);
-}
-
-////////////////////////////////////////////////////////////////////////
-
-inline
-bool
-AccessibilityConstraint::
-isAccessible( const size_t from, const size_t to ) const
-{
-	// TODO handle base pairing constraints etc.
-	return isEmpty()
-			|| !isMarkedBlocked( from, to );
+			|| !(isMarkedBlocked(i) || isMarkedPaired(i));
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -367,9 +388,8 @@ bool
 AccessibilityConstraint::
 isEmpty() const
 {
-	// TODO CHECK FOR BASE PAIRS ETC
 	// check if any constrained regions given
-	return (accessible.size() + blocked.size()) == 0;
+	return (accessible.size() + blocked.size() + paired.size() + shapeFile.size()) == 0;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -384,7 +404,10 @@ getVrnaDotBracket(const size_t i) const
 		return 'x';
 	}
 
-	// TODO add base pair handling etc.
+	// check if intramolecularly paired
+	if (isMarkedPaired(i)) {
+		return '|';
+	}
 
 	return '.';
 }
@@ -402,6 +425,36 @@ getMaxBpSpan() const
 ////////////////////////////////////////////////////////////////////////
 
 inline
+const std::string &
+AccessibilityConstraint::
+getShapeFile() const
+{
+	return shapeFile;
+}
+
+////////////////////////////////////////////////////////////////////////
+
+inline
+const std::string &
+AccessibilityConstraint::
+getShapeMethod() const
+{
+	return shapeMethod;
+}
+
+////////////////////////////////////////////////////////////////////////
+
+inline
+const std::string &
+AccessibilityConstraint::
+getShapeConversion() const
+{
+	return shapeConversion;
+}
+
+////////////////////////////////////////////////////////////////////////
+
+inline
 AccessibilityConstraint &
 AccessibilityConstraint::
 operator= ( const AccessibilityConstraint & c )
@@ -409,11 +462,45 @@ operator= ( const AccessibilityConstraint & c )
 	// copy data
 	length = c.length;
 	maxBpSpan = c.maxBpSpan;
+	shapeFile = c.shapeFile;
+	shapeMethod = c.shapeMethod;
+	shapeConversion = c.shapeConversion;
 	blocked = c.blocked;
 	accessible = c.accessible;
-	// TODO copy structure constraints etc.
+	paired = c.paired;
 
 	return *this;
+}
+
+////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+
+inline
+std::ostream& operator<<(std::ostream& out, const AccessibilityConstraint& c)
+{
+	bool alreadyPrinted = false;
+	// print ranges if non-empty
+	if (!c.accessible.empty()) {
+		out <<(alreadyPrinted?",":"") <<AccessibilityConstraint::dotBracket_accessible <<':' <<c.accessible;
+		alreadyPrinted = true;
+	}
+	// print ranges if non-empty
+	if (!c.blocked.empty()) {
+		out <<(alreadyPrinted?",":"") <<AccessibilityConstraint::dotBracket_blocked <<':' <<c.blocked;
+		alreadyPrinted = true;
+	}
+	// print ranges if non-empty
+	if (!c.paired.empty()) {
+		out <<(alreadyPrinted?",":"") <<AccessibilityConstraint::dotBracket_paired <<':' <<c.paired;
+		alreadyPrinted = true;
+	}
+	// print shape file if non-empty
+	if (!c.shapeFile.empty()) {
+		out <<(alreadyPrinted?",":"") <<"shapeFile" <<':' <<c.shapeFile;
+		alreadyPrinted = true;
+	}
+	return out;
 }
 
 ////////////////////////////////////////////////////////////////////////

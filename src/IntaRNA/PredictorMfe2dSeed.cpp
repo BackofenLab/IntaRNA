@@ -95,7 +95,7 @@ predict( const IndexRange & r1, const IndexRange & r2
 				continue;
 
 			// compute hybridE_pq_seed and update mfe via PredictorMfe2d::updateOptima()
-			fillHybridE_seed( j1, j2 );
+			fillHybridE_seed( j1, j2, 0, 0, outConstraint );
 		}
 	}
 
@@ -108,11 +108,12 @@ predict( const IndexRange & r1, const IndexRange & r2
 
 void
 PredictorMfe2dSeed::
-fillHybridE_seed( const size_t j1, const size_t j2, const size_t i1min, const size_t i2min )
+fillHybridE_seed( const size_t j1, const size_t j2, const size_t i1min, const size_t i2min
+		, const OutputConstraint & outConstraint )
 {
 
 	// compute hybridE_pq
-	fillHybridE( j1, j2, i1min, i2min );
+	fillHybridE( j1, j2, outConstraint, i1min, i2min );
 
 	assert(i1min <= j1);
 	assert(i2min <= j2);
@@ -194,7 +195,7 @@ fillHybridE_seed( const size_t j1, const size_t j2, const size_t i1min, const si
 
 void
 PredictorMfe2dSeed::
-traceBack( Interaction & interaction )
+traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 {
 	// check if something to trace
 	if (interaction.basePairs.size() < 2) {
@@ -241,7 +242,7 @@ traceBack( Interaction & interaction )
 
 
 	// refill submatrices of mfe interaction
-	fillHybridE_seed( j1, j2, i1, i2 );
+	fillHybridE_seed( j1, j2, i1, i2, outConstraint );
 
 	// the currently traced value for i1-j1, i2-j2
 	E_type curE = hybridE_pq_seed(i1,i2);
@@ -314,7 +315,7 @@ traceBack( Interaction & interaction )
 			rightSide.basePairs.push_back( energy.getBasePair(i1,i2) );
 			rightSide.basePairs.push_back( energy.getBasePair(j1,j2) );
 			// call traceback of super class
-			PredictorMfe2d::traceBack( rightSide );
+			PredictorMfe2d::traceBack( rightSide, outConstraint );
 			// copy base pairs (excluding last)
 			for (size_t i=0; i+1<rightSide.basePairs.size(); i++) {
 				interaction.basePairs.push_back( rightSide.basePairs.at(i) );
