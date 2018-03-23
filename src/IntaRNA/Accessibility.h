@@ -116,6 +116,20 @@ public:
 	friend std::ostream& operator<<(std::ostream& out, const Accessibility& acc);
 
 
+
+	/**
+	 * Decomposes a given range list into subranges that contain only positions
+	 * where the position-wise unpaired probability is above a given threshold,
+	 * since any interaction site enclosing this positions has a lower
+	 * probability.
+	 *
+	 * @param ranges INOUT the list of ranges to decompose
+	 * @param minPu the minimal unpaired probability threshold
+	 * @param RT the relative temperature to be used for Boltzmann weight computation
+	 */
+	void
+	decomposeByMinPu( IndexRangeList & ranges, const double minPu, const E_type RT ) const;
+
 protected:
 
 	//! the RNA sequence the accessibilities correspond to
@@ -165,7 +179,7 @@ Accessibility::Accessibility( const RnaSequence& seq
 	seq(seq)
 	// set maxLength to appropriate value
 	, maxLength( maxLength==0 ? seq.size() : std::min(maxLength,seq.size()) )
-	, accConstraint( seq.size() )
+	, accConstraint( seq.size(), 0, "", "", "" )
 {
 	// set constraint if needed
 	if (accConstraint_ != NULL) {

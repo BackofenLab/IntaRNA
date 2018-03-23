@@ -43,12 +43,14 @@ libIntaRNA_a_HEADERS =    \
 					OutputHandlerCsv.h \
 					OutputHandlerHub.h \
 					OutputHandlerIntaRNA1.h \
+					OutputHandlerInteractionList.h \
 					OutputHandlerRangeOnly.h \
 					OutputHandlerText.h \
 					PredictionTracker.h \
 					PredictionTrackerHub.h \
 					PredictionTrackerPairMinE.h \
 					PredictionTrackerProfileMinE.h \
+					PredictionTrackerSpotProb.h \
 					Predictor.h \
 					PredictorMaxProb.h \
 					PredictorMfe.h \
@@ -89,10 +91,12 @@ libIntaRNA_a_SOURCES =    \
 					OutputHandler.cpp \
 					OutputHandlerCsv.cpp \
 					OutputHandlerIntaRNA1.cpp \
+					OutputHandlerInteractionList.cpp \
 					OutputHandlerRangeOnly.cpp \
 					OutputHandlerText.cpp \
 					PredictionTrackerPairMinE.cpp \
 					PredictionTrackerProfileMinE.cpp \
+					PredictionTrackerSpotProb.cpp \
 					PredictorMaxProb.cpp \
 					PredictorMfe.cpp \
 					PredictorMfe2d.cpp \

@@ -1,14 +1,13 @@
-# this is example-file: configure.ac
 
 AC_PREREQ([2.65])
 # 5 argument version only available with aclocal >= 2.64
-AC_INIT( [IntaRNA], [2.1.0], [], [intaRNA], [http://www.bioinf.uni-freiburg.de] )
+AC_INIT([IntaRNA], [2.2.0], [], [intaRNA], [http://www.bioinf.uni-freiburg.de] )
 
 
 # minimal required version of the boost library 
 BOOST_REQUIRED_VERSION=1.50.0
 # minimal required version of the Vienna RNA library
-VRNA_REQUIRED_VERSION=2.4.1
+VRNA_REQUIRED_VERSION=2.4.4
 
 
 AC_CANONICAL_HOST
@@ -17,9 +16,13 @@ AC_CONFIG_SRCDIR([src/easylogging++.h])
 AC_CONFIG_HEADERS([src/config.h])
 
 # AC_CONFIG_MACRO_DIR([m4])
-m4_include([m4/m4_ax_cxx_compile_stdcxx.m4])
-m4_include([m4/m4_ax_openmp.m4])
-m4_include([m4/m4_ax_boost_base.m4])
+m4_include([m4/m4-ax_cxx_compile_stdcxx.m4])
+m4_include([m4/m4-ax_openmp.m4])
+m4_include([m4/m4-ax_boost_base.m4])
+m4_include([m4/m4-ax_boost_system.m4])
+m4_include([m4/m4-ax_boost_filesystem.m4])
+m4_include([m4/m4-ax_boost_program_options.m4])
+m4_include([m4/m4-ax_boost_regex.m4])
 
 lt_enable_auto_import=""
 case "$host_os" in 
@@ -47,11 +50,36 @@ AM_INIT_AUTOMAKE([1.11])
 AC_LANG([C++])
 
 # ensure we are using c11 C++ standard
-AX_CXX_COMPILE_STDCXX( [11], [noext], [mandatory])
+AX_CXX_COMPILE_STDCXX([11], [noext], [mandatory])
 
 
 ###############################################################################
 ###############################################################################
+
+############  DEFAULT MACROS IF PKG-CONFIG MISSING ###############
+
+m4_define_default([PKG_PROG_PKG_CONFIG],
+	[AC_MSG_CHECKING([pkg-config])
+		AC_MSG_RESULT([no])])
+
+PKG_PROG_PKG_CONFIG 
+
+# If the pkg-config autoconf support isn't installed, define its
+# autoconf macro to disable any packages depending on it.
+#
+m4_define_default([PKG_CHECK_MODULES],
+	[AC_MSG_CHECKING([$1])
+	AC_MSG_RESULT([no])
+	$4])
+
+   
+############  SILENT (MINIMAL) MAKEFILE OUTPUT ###################
+
+# show full make output via `make V=1`
+m4_ifdef(
+    [AM_SILENT_RULES],
+    [AM_SILENT_RULES([yes])]
+) 
 
 ############  PARAMETERS  ########################################
 
@@ -70,16 +98,6 @@ AC_MSG_RESULT([$pkgconfigEnabled])
 AS_IF([test x"$pkgconfigEnabled" = x"yes"], [
 	# Checks for pkg-config
 	AC_CHECK_PROG([HAVE_PKG_CONFIG],[pkg-config],[yes],[no])
-	AS_IF([test "HAVE_PKG_CONFIG" == "yes"], [
-		dnl Testing presence of pkg-config
-		AC_MSG_CHECKING([pkg-config m4 macros])
-		AS_IF([test m4_ifdef([PKG_CHECK_MODULES], [yes], [no]) == yes], [
-			AC_MSG_RESULT([yes]);
-		], [
-			AC_MSG_RESULT([no]);
-			HAVE_PKG_CONFIG=no
-		])
-	])
 ], [
 	HAVE_PKG_CONFIG=no
 ])
@@ -96,14 +114,30 @@ AC_ARG_ENABLE([debug],
 	    [enable debug data generation (def=disabled)])],
   	[debuger="$enableval"])
 AC_MSG_RESULT([$debuger])
+
 AS_IF([test x"$debuger" = x"yes"], [
 	AC_DEFINE([_DEBUG], [1], [Run in DEBUG mode with additional assertions and debug output])
-	AM_CXXFLAGS="$AM_CXXFLAGS -g -O0 -Wno-uninitialized -Wno-deprecated" # -Wall"
+	AM_CXXFLAGS="$AM_CXXFLAGS -g -O0 -Wno-uninitialized -Wno-deprecated -DELPP_DEBUG_ERRORS" # -Wall"
 ], [
 	AC_DEFINE([NDEBUG], [1], [Run in normal mode with minimal assertions])
 	AM_CXXFLAGS="$AM_CXXFLAGS -O3 -fno-strict-aliasing -Wno-uninitialized -Wno-deprecated"
 ])
 
+###############################################################################
+# STATIC LINKING SUPPORT
+###############################################################################
+
+AC_MSG_CHECKING([whether to build statically linked binaries])
+AC_ARG_ENABLE([static-linking],
+    [AS_HELP_STRING([--enable-static-linking],
+	    [enables static linking of the executables (default=disabled)])],
+    [enable_static_linking=$enableval],
+    [enable_static_linking=no])
+AC_MSG_RESULT([$enable_static_linking])
+
+AS_IF([test x"$enable_static_linking" = x"yes"], [
+	AM_LDFLAGS="-static $AM_LDFLAGS"
+])
 
 ###############################################################################
 # MULTI-THREADING SUPPORT SETUP
@@ -211,6 +245,10 @@ AS_IF([test x"$logColoring" = x"yes"], [
 ###############################################################################
 
 AX_BOOST_BASE([$BOOST_REQUIRED_VERSION], [FOUND_BOOST=1;], [FOUND_BOOST=0;])
+AX_BOOST_SYSTEM
+AX_BOOST_FILESYSTEM
+AX_BOOST_PROGRAM_OPTIONS
+AX_BOOST_REGEX
 
 
 ############  CHECKS  ############################################
@@ -248,7 +286,7 @@ AS_IF([test $want_boost = "no" || test $FOUND_BOOST != 1], [
 RNANOTFOUND=0
 AS_IF([test "x$HAVE_PKG_CONFIG" = "xyes"], [
 	AC_MSG_NOTICE([check if VRNA version >= $VRNA_REQUIRED_VERSION])
-	PKG_CHECK_MODULES( [VRNA], [RNAlib2 >= $VRNA_REQUIRED_VERSION], [RNANOTFOUND=0], [RNANOTFOUND=1])
+	PKG_CHECK_MODULES([VRNA], [RNAlib2 >= $VRNA_REQUIRED_VERSION], [RNANOTFOUND=0], [RNANOTFOUND=1])
 ])
 
 AS_IF([test "$RNANOTFOUND" = "0"], [

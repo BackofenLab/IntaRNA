@@ -185,9 +185,9 @@ getED( const size_t from, const size_t to ) const
 	checkIndices(from,to);
 
 	if ((to-from+1) <= getMaxLength()) {
-		// check for constrained positions within region
-		if (!getAccConstraint().isAccessible(from,to)) {
-			// position covers a blocked position --> omit accessibility
+		// check for constrained end positions
+		if (!getAccConstraint().isAccessible(from) || !getAccConstraint().isAccessible(to)) {
+			// end position blocked --> omit accessibility
 			return ED_UPPER_BOUND;
 		}
 		// return according ED value from the precomputed matrix

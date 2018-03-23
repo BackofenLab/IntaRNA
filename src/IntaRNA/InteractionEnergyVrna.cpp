@@ -40,18 +40,18 @@ InteractionEnergyVrna::InteractionEnergyVrna(
 
 	// init ES values if needed
 	if (initES) {
-		// VRNA computation not completely threadsafe
-#if INTARNA_MULITHREADING
-		#pragma omp critical(intarna_omp_callingVRNA)
-#endif
-		{
-			// create ES container to be filled
-			esValues1 = new EsMatrix();
-			esValues2 = new EsMatrix();
-			// fill ES container
-			computeES( accS1, *esValues1 );
-			computeES( accS2, *esValues2 );
-		} // omp critical(intarna_omp_callingVRNA)
+//	23.11.2017 : should not be relevant anymore
+//#if INTARNA_MULITHREADING
+//		#pragma omp critical(intarna_omp_callingVRNA)
+//#endif
+//		{
+		// create ES container to be filled
+		esValues1 = new EsMatrix();
+		esValues2 = new EsMatrix();
+		// fill ES container
+		computeES( accS1, *esValues1 );
+		computeES( accS2, *esValues2 );
+//		} // omp critical(intarna_omp_callingVRNA)
 	}
 }
 
@@ -183,20 +183,18 @@ computeES( const Accessibility & acc, InteractionEnergyVrna::EsMatrix & esToFill
 	vrna_md_copy( &curModel, &foldModel );
 	// set maximal base pair span
 	curModel.max_bp_span = acc.getAccConstraint().getMaxBpSpan();
-	if (curModel.max_bp_span == (int)acc.getSequence().size()) {
+	if (curModel.max_bp_span >= (int)acc.getSequence().size()) {
 		curModel.max_bp_span = -1;
 	}
+	// TODO check if VRNA_OPTION_WINDOW reasonable to speedup
 	vrna_fold_compound_t * foldData = vrna_fold_compound( sequence, &foldModel, VRNA_OPTION_PF);
 
-	// set accessibility constraint
-    unsigned int constraint_options = 0;
-    constraint_options    |= VRNA_CONSTRAINT_DB
-                          |  VRNA_CONSTRAINT_DB_PIPE
-                          |  VRNA_CONSTRAINT_DB_DOT
-                          |  VRNA_CONSTRAINT_DB_X
-                          |  VRNA_CONSTRAINT_DB_ANG_BRACK
-                          |  VRNA_CONSTRAINT_DB_RND_BRACK;
-    vrna_constraints_add( foldData, (const char *)structureConstraint, constraint_options);
+	// Adding hard constraints from pseudo dot-bracket
+	unsigned int constraint_options = VRNA_CONSTRAINT_DB_DEFAULT;
+	// enforce constraints
+	constraint_options |= VRNA_CONSTRAINT_DB_ENFORCE_BP;
+
+	vrna_constraints_add( foldData, (const char *)structureConstraint, constraint_options);
 
     // compute correct partition function scaling via mfe
     FLT_OR_DBL min_free_energy = vrna_mfe( foldData, NULL );

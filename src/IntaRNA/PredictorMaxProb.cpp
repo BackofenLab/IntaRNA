@@ -269,7 +269,11 @@ updateOptima( const size_t i1, const size_t j1
 	// report call if needed
 	if (predTracker != NULL) {
 		// inform about prediction
-		predTracker->updateOptimumCalled( i1,j1, i2,j2, energy.getE(curZ) );
+		predTracker->updateOptimumCalled( i1 + energy.getOffset1()
+										, j1 + energy.getOffset1()
+										, i2 + energy.getOffset2()
+										, j2 + energy.getOffset2()
+										, energy.getE(curZ) );
 	}
 
 	// update overall partition function

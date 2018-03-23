@@ -221,7 +221,7 @@ predict( const IndexRange & r1
 
 void
 PredictorMfe2dHeuristicSeed::
-traceBack( Interaction & interaction )
+traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 {
 	// check if something to trace
 	if (interaction.basePairs.size() < 2) {
@@ -315,7 +315,7 @@ traceBack( Interaction & interaction )
 				Interaction bpsRight(*(interaction.s1), *(interaction.s2) );
 				bpsRight.basePairs.push_back( energy.getBasePair(i1,i2) );
 				bpsRight.basePairs.push_back( energy.getBasePair(j1,j2) );
-				PredictorMfe2dHeuristic::traceBack( bpsRight );
+				PredictorMfe2dHeuristic::traceBack( bpsRight, outConstraint );
 				// copy remaining base pairs
 				Interaction::PairingVec & bps = bpsRight.basePairs;
 				// copy all base pairs excluding the right most

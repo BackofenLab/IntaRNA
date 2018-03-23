@@ -18,6 +18,7 @@
 #include "IntaRNA/Predictor.h"
 #include "IntaRNA/OutputHandler.h"
 #include "IntaRNA/OutputHandlerIntaRNA1.h"
+#include "IntaRNA/OutputHandlerInteractionList.h"
 
 // initialize logging for binary
 INITIALIZE_EASYLOGGINGPP
@@ -61,6 +62,14 @@ int main(int argc, char **argv){
 			}
 		}
 
+#if INTARNA_MULITHREADING
+		// OMP shared variables to enable exception forwarding from within OMP parallelized for loop
+		bool threadAborted = false;
+		std::exception_ptr exceptionPtrDuringOmp = NULL;
+		std::stringstream exceptionInfoDuringOmp;
+#endif
+
+
 		// number of already reported interactions to enable IntaRNA v1 separator output
 		size_t reportedInteractions = 0;
 
@@ -68,20 +77,65 @@ int main(int argc, char **argv){
 		std::vector< ReverseAccessibility * > queryAcc(parameters.getQuerySequences().size(), NULL);
 
 		// compute all query accessibilities to enable parallelization
-		// do serially since not all VRNA routines are threadsafe
+#if INTARNA_MULITHREADING
+		// parallelize this loop if possible; if not -> parallelize the query-loop
+		# pragma omp parallel for schedule(dynamic) num_threads( parameters.getThreads() ) shared(queryAcc,reportedInteractions,exceptionPtrDuringOmp,exceptionInfoDuringOmp)
+#endif
 		for (size_t qi=0; qi<queryAcc.size(); qi++) {
 			// get accessibility handler
-			VLOG(1) <<"computing accessibility for query '"<<parameters.getQuerySequences().at(qi).getId()<<"'...";
-			Accessibility * queryAccOrig = parameters.getQueryAccessibility(qi);
-			INTARNA_CHECK_NOT_NULL(queryAccOrig,"query initialization failed");
-			// reverse indexing of target sequence for the computation
-			queryAcc[qi] = new ReverseAccessibility(*queryAccOrig);
+#if INTARNA_MULITHREADING
+			#pragma omp flush (threadAborted)
+			// explicit try-catch-block due to missing OMP exception forwarding
+			if (!threadAborted) {
+				try {
+					// get query accessibility handler
+					#pragma omp critical(intarna_omp_logOutput)
+#endif
+					VLOG(1) <<"computing accessibility for query '"<<parameters.getQuerySequences().at(qi).getId()<<"'...";
+					Accessibility * queryAccOrig = parameters.getQueryAccessibility(qi);
+					INTARNA_CHECK_NOT_NULL(queryAccOrig,"query initialization failed");
+					// reverse indexing of target sequence for the computation
+					queryAcc[qi] = new ReverseAccessibility(*queryAccOrig);
 
-			// check if we have to warn about ambiguity
-			if (queryAccOrig->getSequence().isAmbiguous()) {
-				LOG(INFO) <<"Sequence '"<<queryAccOrig->getSequence().getId()
-						<<"' contains ambiguous nucleotide encodings. These positions are ignored for interaction computation.";
-			}
+					// check if we have to warn about ambiguity
+					if (queryAccOrig->getSequence().isAmbiguous()) {
+#if INTARNA_MULITHREADING
+						#pragma omp critical(intarna_omp_logOutput)
+#endif
+						LOG(INFO) <<"Sequence '"<<queryAccOrig->getSequence().getId()
+								<<"' contains ambiguous nucleotide encodings. These positions are ignored for interaction computation.";
+					}
+#if INTARNA_MULITHREADING
+				////////////////////// exception handling ///////////////////////////
+				} catch (std::exception & e) {
+					// ensure exception handling for first failed thread only
+					#pragma omp critical(intarna_omp_exception)
+					{
+						if (!threadAborted) {
+							// store exception information
+							exceptionPtrDuringOmp = std::make_exception_ptr(e);
+							exceptionInfoDuringOmp <<" #thread "<<omp_get_thread_num() <<" #query "<<qi <<" : "<<e.what();
+							// trigger abortion of all threads
+							threadAborted = true;
+							#pragma omp flush (threadAborted)
+						}
+					} // omp critical(intarna_omp_exception)
+				} catch (...) {
+					// ensure exception handling for first failed thread only
+					#pragma omp critical(intarna_omp_exception)
+					{
+						if (!threadAborted) {
+							// store exception information
+							exceptionPtrDuringOmp = std::current_exception();
+							exceptionInfoDuringOmp <<" #thread "<<omp_get_thread_num() <<" #query "<<qi;
+							// trigger abortion of all threads
+							threadAborted = true;
+							#pragma omp flush (threadAborted)
+						}
+					} // omp critical(intarna_omp_exception)
+				}
+			} // if not threadAborted
+#endif
 		}
 
 		// check which loop to parallelize
@@ -92,10 +146,6 @@ int main(int argc, char **argv){
 		// run prediction for all pairs of sequences
 		// first: iterate over all target sequences
 #if INTARNA_MULITHREADING
-		// OMP shared variables to enable exception forwarding from within OMP parallelized for loop
-		bool threadAborted = false;
-		std::exception_ptr exceptionPtrDuringOmp = NULL;
-		std::stringstream exceptionInfoDuringOmp;
 		// parallelize this loop if possible; if not -> parallelize the query-loop
 		# pragma omp parallel for schedule(dynamic) num_threads( parameters.getThreads() ) shared(queryAcc,reportedInteractions,exceptionPtrDuringOmp,exceptionInfoDuringOmp) if(parallelizeTargetLoop)
 #endif
@@ -153,23 +203,33 @@ int main(int argc, char **argv){
 									dynamic_cast<OutputHandlerIntaRNA1*>(output)->addSeparator( true );
 								}
 
+								// setup collecting output handler to ensure
+								// k-best output per query-target combination
+								// and not per region combination if not requested
+								OutputHandlerInteractionList bestInteractions(
+										(parameters.reportBestPerRegion() ? std::numeric_limits<size_t>::max() : 1 )
+											* parameters.getOutputConstraint().reportMax );
+
 								// get interaction prediction handler
-								Predictor * predictor = parameters.getPredictor( *energy, *output );
+								Predictor * predictor = parameters.getPredictor( *energy, bestInteractions );
 								INTARNA_CHECK_NOT_NULL(predictor,"predictor initialization failed");
 
 								// run prediction for all range combinations
-								BOOST_FOREACH(const IndexRange & tRange, parameters.getTargetRanges(targetNumber)) {
-								BOOST_FOREACH(const IndexRange & qRange, parameters.getQueryRanges(queryNumber)) {
+								// NOTE: RANGE COMBINATIONS CAN NOT BE PARALLELIZED UNLESS
+								// (a) predictor.predict() is threadsafe (currently not, eg. due to offset setup)
+								// (b) or for each range pair a separate predictor is created (overhead to be checked)
+								BOOST_FOREACH(const IndexRange & tRange, parameters.getTargetRanges(*energy, targetNumber)) {
+								BOOST_FOREACH(const IndexRange & qRange, parameters.getQueryRanges(*energy, queryNumber)) {
 
 #if INTARNA_MULITHREADING
 									#pragma omp critical(intarna_omp_logOutput)
 #endif
 									{ VLOG(1) <<"predicting interactions for"
 											<<" target "<<targetAcc->getSequence().getId()
-											<<" (range " <<tRange<<")"
+											<<" (range " <<(tRange+1)<<")"
 											<<" and"
 											<<" query "<<queryAcc.at(queryNumber)->getSequence().getId()
-											<<" (range " <<qRange<<")"
+											<<" (range " <<(qRange+1)<<")"
 											<<"..."; }
 
 									predictor->predict(	  tRange
@@ -179,6 +239,12 @@ int main(int argc, char **argv){
 
 								} // target ranges
 								} // query ranges
+
+								// update final output handler
+								BOOST_FOREACH( const Interaction * inter, bestInteractions) {
+									// forward all reported interactions for all regions to final output handler
+									output->add(*inter);
+								}
 
 #if INTARNA_MULITHREADING
 								#pragma omp atomic update

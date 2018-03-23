@@ -72,14 +72,17 @@ The following topics are covered by this documentation:
   - [Interaction restrictions](#interConstr)
   - [Seed constraints](#seed)
   - [Explicit seed input](#seedExplicit)
+  - [SHAPE reactivity data to enhance accessibility computation](#shape)
   - [Output modes](#outmodes)
   - [Suboptimal RNA-RNA interaction prediction and output restrictions](#subopts)
   - [Energy parameters and temperature](#energy)
   - [Additional output files](#outFiles)
     - [Minimal energy profiles](#profileMinE)
     - [Minimal energy for all intermolecular index pairs](#pairMinE)
+    - [Interaction probabilities for interaction spots of interest](#spotProb)
     - [Accessibility and unpaired probabilities](#accessibility)
       - [Local versus global unpaired probabilities](#accLocalGlobal)
+      - [Constrain regions to be accessible or blocked](#accConstraints)
       - [Read/write accessibility from/to file or stream](#accFromFile)
   - [Multi-threading and parallelized computation](#multithreading)
 - [Library for integration in external tools](#lib)
@@ -125,12 +128,12 @@ dependencies:
 
 - compiler supporting C++11 standard and OpenMP
 - [boost C++ library](http://www.boost.org/) version >= 1.50.0 
-  (ensure the following libraries are installed; or install all e.g. in Ubuntu via package `libboost-all-dev`)
+  (ensure the following libraries are installed for development (not just runtime libraries!); or install all e.g. in Ubuntu via package `libboost-all-dev`)
     - libboost_regex
     - libboost_program_options
     - libboost_filesystem
     - libboost_system
-- [Vienna RNA package](http://www.tbi.univie.ac.at/RNA/) version >= 2.4.1
+- [Vienna RNA package](http://www.tbi.univie.ac.at/RNA/) version >= 2.4.4
 - if [cloning from github](#instgithub): GNU autotools (automake, autoconf, ..)
 
 Also used by IntaRNA, but already part of the source code distribution (and thus
@@ -297,6 +300,7 @@ possible to define
 [interaction restrictions](#interConstr),
 [seed constraints](#seed), 
 [explicit seed information](#seedExplicit), 
+[SHAPE reactivity constraints](#shape), 
 [output modes](#outmodes),
 [suboptimal enumeration](#subopts), 
 [energy parameters, temperature](#energy),
@@ -377,6 +381,7 @@ of equal length *n*.
 | Space complexity | O(*n*^2) | O(*n*^2) | O(*n*^4) |
 | [Seed constraint](#seed) | x | x | x |
 | [Explicit seeds](#seedExplicit) | x | x | x |
+| [SHAPE reactivity constraint](#shape) | x | x | x |
 | No [seed constraint](#seed) | x | x | x |
 | Minimum free energy interaction | not guaranteed | x | x |
 | Overlapping [suboptimal interactions](#subopts) | x | x | x |
@@ -393,7 +398,7 @@ Given these features, we can emulate and extend a couple of RNA-RNA interaction
 tools using IntaRNA.
 
 **TargetScan** and **RNAhybrid** are approaches that predict the interaction hybrid with 
-minimal interaction energy without consideratio whether or not the interacting 
+minimal interaction energy without consideration whether or not the interacting 
 subsequences are probably involved involved in intramolecular base pairings. Furthermore,
 no seed constraint is taken into account.
 This prediction result can be emulated (depending on the used prediction mode) 
@@ -439,11 +444,22 @@ interaction should have a negative energy (<0) to be energetically favorable.
 This report barrier can be altered using `--outMaxE`. For suboptimal interaction
 restriction, please refer to [suboptimal interaction prediction](#subopts) section.
 
+If you are only interested in predictions for highly accessible regions, i.e. 
+with a high probability to be unpaired, you can use the `--outMinPu` parameter.
+If given, each individual position of the interacting subsequences has to have
+an unpaired probability reaching at least the given value. This significantly
+increases prediction time but will exclude predictions where the formation of
+the interaction (intermolecular base pairing) replaces intramolecular base 
+pairing (where the latter will cause low unpaired probabilities for the 
+respective positions).
+
 Furthermore, the region where interactions are supposed to occur can be restricted
 for target and query independently. To this end, a list of according index pairs
 can be provided using `--qRegion` and `--tRegion`, respectively. The indexing 
 starts with 1 and should be in the format `from1-end1,from2-end2,..` using
-integers.
+integers. Note, if you want to have predictions individually for each region
+combination (rather than just the best for each query-target combination) you
+want to add `--outPerRegion` to the call.
 
 Finally, it is possible to restrict the overall length an interaction is allowed
 to have. This can be done independently for the query and target sequence using
@@ -526,6 +542,32 @@ comma-separated list and IntaRNA will consider all interactions that cover at
 least one of them.
 
 
+
+<br /><br />
+<a name="shape" />
+
+## SHAPE reactivity data to enhance accessibility computation
+
+For some RNA sequences, experimental reactivity data is available that can be
+used to guide/help the structure and thus accessibility prediction for the RNA
+molecule. IntaRNA supports such data by interfacing the Vienna RNA package
+capabilities for SHAPE reactivity data incorporation, see 
+Lorenz et al. ([2015](https://doi.org/10.1093/bioinformatics/btv523), [2016](https://dx.doi.org/10.1186%2Fs13015-016-0070-z)) or the
+[RNAfold manpage](https://www.tbi.univie.ac.at/RNA/RNAfold.1.html).
+
+The SHAPE reactivity data can be provided via file using `--qShape` or
+`--tShape` for query or target sequence, respectively. 
+Independently for each, it is possible
+to define the methods to be used to convert the data into pseudo energies and
+pairing probabilities. The respective IntaRNA arguments are
+`--qShapeMethod`|`--tShapeMethod`
+and `--qShapeConversion`|`--tShapeConversion`, which mimics the according 
+tool arguments in the Vienna RNA package (see e.g. the 
+[RNAfold manpage](https://www.tbi.univie.ac.at/RNA/RNAfold.1.html)).
+
+
+
+
 <br /><br />
 <a name="outmodes" />
 ## Output modes
@@ -599,7 +641,9 @@ and `Pu` denote unpaired probabilities of the respective interacting subsequence
 ### Customizable CSV RNA-RNA interaction output
 
 IntaRNA provides via `--outMode=C` a flexible interface to generate RNA-RNA 
-interaction output in CSV format (using `;` as separator).
+interaction output in CSV format (using `;` as separator). Note, target sequence
+information is listed with index `1` while query sequence information is given
+by index `2`.
 
 ```bash
 # call: IntaRNA -t AAACACCCCCGGUGGUUUGG -q AAACACCCCCGGUGGUUUGG --outMode=C --noSeed --outOverlap=B -n 3
@@ -614,8 +658,8 @@ Using the argument `--outCsvCols`, the user can specify what columns are
 printed to the output using a comma-separated list of colIds. Available colIds 
 are
 
-- `id1` : id of first sequence
-- `id2` : id of second sequence
+- `id1` : id of first sequence (target)
+- `id2` : id of second sequence (query)
 - `seq1` : full first sequence
 - `seq2` : full second sequence
 - `subseq1` : interacting subsequence of first sequence
@@ -688,7 +732,7 @@ If your scripts/whatever is tuned to the old IntaRNA v1.* output, you can use
 - `--outMode=1` : IntaRNA v1.* normal output
 - `--outMode=O` : IntaRNA v1.* detailed output (former `-o` option)
 
-
+Note, for for IntaRNA v1.* output, currently *no multi-threading computation* is available!
 
 
 <br /><br />
@@ -700,6 +744,12 @@ interaction, IntaRNA enables the enumeration of suboptimal interactions. To this
 end, the argument `-n N` or `--outNumber=N` can be used to generate up to `N`
 interactions for each query-target pair (including the optimal one). Note, the
 suboptimal enumeration is increasingly sorted by energy.
+
+Note: suboptimal interaction enumeration is not exhaustive! That is, for each
+interaction site (defined by the left- and right-most intermolecular base pair)
+only the best interaction is reported! In heuristic prediction mode (default
+mode of IntaRNA), this is even less exhaustive, since only for each left-most
+interaction boundary one interaction is reported!
 
 Furthermore, it is possible to *restrict (sub)optimal enumeration* using
 
@@ -849,6 +899,48 @@ mfe-site in the second sequence and are thus less likely to occure.
 
 
 
+<br />
+<a name="spotProb" />
+
+### Interaction probabilities for interaction spots of interest
+
+For some research questions, putative regions of interactions are known from
+other sources and it is of interest to study the effect of competitive binding
+or other scenarios that might influence the accessibility of the interacting
+RNAs (e.g. refer to [SHAPE data](#shape) or 
+[structure/accessibility constraints](#accConstraints)).
+
+To this end, one can specify the spots of interest by intermolecular index pairs,
+e.g. using `5&67` to encode the fifth target RNA position (first number of the
+encoding) and the 67th query RNA
+position (second number of the encoding). Note, indexing starts with 1. 
+Multiple spots can be provided as comma-separated list. The list in
+concert with an output stream/file name (colon-separated) can be passed via the
+`--out` argument using the `spotProb:` prefix, e.g.
+
+```[bash]
+IntaRNA ... --out=spotProb:5&67,33&12:mySpotProbFile.csv
+```
+
+The reported probability is the ratio of according partition functions. That is,
+for each interaction `I` that respects all input constraints and has an energy 
+below 0 (or set `--outMaxE` value) the respective Boltzmann weight `bw(I)` 
+is computed by `bw(I) = exp( - E(I) / RT )`. This weight is added to the 
+`overallZ` partition function. Furthermore, we add the weight to a respective
+spot associated partition function `spotZ`, if the interaction `I` spans the spot, ie.
+the spot's indices are within the interaction subsequences of `I`. If none of
+the spots if spanned by `I`, the `noSpotZ` partition function is increased by
+`bw(I)`. The final probability of a spot is than given by `spotZ/overallZ` and
+the probability of interactions not covering any of the tracked spots is 
+computed by `noSpotZ/overallZ` and reported for the pseudo-spot encoding `0&0`
+(since indexing starts with 1).
+
+*NOTE* and be aware that the probabilities are *only estimates* since IntaRNA
+is not considering (in default prediction mode) all possible interactions due 
+to its heuristic (see [discussion about suboptimal interactions](#subopts)).
+Nevertheless, since the Boltzmann probabilities are dominated by the low(est)
+energy interactions, we consider the probability estimates as meaningful!
+
 
 <br />
 <a name="accessibility" />
@@ -904,6 +996,54 @@ IntaRNA [..] --qAccW=0 --qAccL=0 --tAccW=0 --qAccL=0
 # using local accessibilities for target and global for query
 IntaRNA [..] --qAccW=0 --qAccL=0 --tAccW=150 --qAccL=100
 ```
+
+
+<a name="accConstraints" />
+
+#### Constraints for accessibility computation
+
+For some RNAs additional accessibility information is available. For instance,
+it might be known from experiments that some subsequence is unpaired or already
+bound by some other factor. The first case (unpaired) makes such regions 
+especially interesting for interaction prediction and should result in no ED
+penalties for these regions. In the second case (blocked) the region should be 
+excluded from interaction prediction.
+
+To incorporate such information, IntaRNA provides the possibility to constrain
+the accessibility computation using the `--qAccConstr` and `--tAccConstr` 
+parameters. Both take a string encoding for each sequence position whether it is
+
+- `.` unconstrained
+- `x` for sure accessible (unpaired)
+- `p` paired intramolecularly with some other position of this RNA
+- `b` blocked by some other interaction (implies single-strandedness)
+
+Note, *blocked* regions are currently assumed to be bound single-stranded by some
+other factor and thus are *treated as unpaired* for ED computation.
+
+```bash
+# constraining some central query positions to be blocked by some other molecules
+IntaRNA [..] --query="GGGGGGGCCCCCCC" \
+        --qAccConstr="...bbbb......."
+```
+
+It is also possible to provide a more compact index-range-based encoding of the
+constraints, which is especially useful for longer sequences or if you have only
+a few constrained regions. To this end, one can provide a comma-separated list 
+of index ranges that are prefixed with the according constraint letter from 
+above and a colon. Best check the following examples, which should give a good
+idea how to use. Note, indexing is supposed to be based on a minimal index of 1
+and all positions not covered by the encoding are assumed to be unconstrained
+(which must not to be encoded explicitely).
+
+```bash
+# applying the same constraints by different encodings to query and target
+# example 1
+IntaRNA [..] --qAccConstr="...bbbb....." --tAccConstr="b:4-7"
+# example 2
+IntaRNA [..] --qAccConstr="..bb..xxp.bb" --tAccConstr="b:3-4,11-12,x:7-8,p:9-9"
+```
+
 
 
 <a name="accFromFile" />
@@ -983,21 +1123,12 @@ as shown above), since this does not produce the according output files!
 
 IntaRNA supports the parallelization of the target-query-combination processing. 
 The maximal number of threads to be used can be specified using the `--threads` parameter.
-If `--threads=k > 0`, than *k* predictions are processed in parallel.
+If `--threads=k != 1`, than *k* predictions are processed in parallel. A value of
+0 requests the maximally available number of threads for this machine.
 
-When using parallelization, you should have the following things in mind:
+When using parallelization, you should have the following in mind:
 
-- Most of the IntaRNA runtime (in heuristic prediction mode) 
-  is consumed by [accessibility computation](#accessibility) 
-  (if not [loaded from file](#accFromFile)). 
-  Currently, due to some thread-safety issues with the 
-  routines from the Vienna RNA package, the IntaRNA
-  accessibility computation is done serially. This significantly reduces the
-  multi-threading effect when running IntaRNA in the fast heuristic mode (`--mode=H`).
-  If you run a non-heuristic prediction mode, multi-threading will show a more
-  dramatic decrease in runtime performance, since here the interaction prediction
-  is the computationally more demanding step.
-- The memory consumption will be much higher, since each thread runs an independent
+- The memory consumption will be (much) higher, since each thread runs an independent
   prediction (with according memory consumption). Thus, ensure you have enough
   RAM available when using many threads of memory-demanding 
   [prediction modes](#predModes).

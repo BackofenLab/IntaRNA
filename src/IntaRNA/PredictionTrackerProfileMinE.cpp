@@ -113,6 +113,7 @@ updateOptimumCalled( const size_t i1, const size_t j1
 
 	// update seq2 profile
 	updateProfile( seq2minE
+					// swap base pairs due to reversed indexing
 					, bp_r.second, bp_l.second
 					, curE
 					);
