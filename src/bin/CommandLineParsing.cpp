@@ -76,8 +76,6 @@ CommandLineParsing::CommandLineParsing()
 
 	queryArg(""),
 	query(),
-	qSet(),
-	qSetString(""),
 	qAcc("NCPE",'C'),
 	qAccW( 0, 99999, 150),
 	qAccL( 0, 99999, 100),
@@ -94,8 +92,6 @@ CommandLineParsing::CommandLineParsing()
 
 	targetArg(""),
 	target(),
-	tSet(),
-	tSetString(""),
 	tAcc("NCPE",'C'),
 	tAccW( 0, 99999, 150),
 	tAccL( 0, 99999, 100),
@@ -145,8 +141,6 @@ CommandLineParsing::CommandLineParsing()
 	outCsvCols(outCsvCols_default),
 	outPerRegion(false),
 	outSpotProbSpots(""),
-
-	logFileName(""),
 
 	vrnaHandler()
 
@@ -198,10 +192,6 @@ CommandLineParsing::CommandLineParsing()
 		;
 	opts_cmdline_short.add(opts_query);
 	opts_query.add_options()
-		("qSet"
-			, value<std::string>(&(qSetString))
-				->notifier(boost::bind(&CommandLineParsing::validate_qSet,this,_1))
-			, std::string("query subset : List of sequence indices to consider for prediction in the format 'from1-to1,from2-to2,..' assuming indexing starts with 1").c_str())
 		("qAccConstr"
 			, value<std::string>(&(qAccConstr))
 				->notifier(boost::bind(&CommandLineParsing::validate_qAccConstr,this,_1))
@@ -237,24 +227,7 @@ CommandLineParsing::CommandLineParsing()
 		("qRegion"
 			, value<std::string>(&(qRegionString))
 				->notifier(boost::bind(&CommandLineParsing::validate_qRegion,this,_1))
-			, std::string("interaction site : query regions to be considered for"
-					" interaction prediction. Either given as BED file (for"
-					" multi-sequence FASTA input) or in the format"
-					" 'from1-to1,from2-to2,..' assuming indexing starts with 1."
-					" Consider '--qRegionLenMax' for automatic region setup for"
-					" long sequences."
-					).c_str())
-		("qRegionLenMax"
-			, value<int>(&(qRegionLenMax.val))
-				->default_value(qRegionLenMax.def)
-				->notifier(boost::bind(&CommandLineParsing::validate_qRegionLenMax,this,_1))
-			, std::string("interaction site : maximal length of highly accessible regions"
-					" to be automatically identified. To this end, most inaccessible regions"
-					" of length '--seedBP' are iteratively removed from the available indices"
-					" until only regions below the given maximal length or remaining."
-					" (arg in range ["+toString(qRegionLenMax.min)+","+toString(qRegionLenMax.max)+"];"
-					" 0 defaults to no automatic range detection)"
-					).c_str())
+			, std::string("interaction site : query regions to be considered for interaction prediction. Either given as BED file (for multi-sequence FASTA input) or in the format 'from1-to1,from2-to2,..' assuming indexing starts with 1").c_str())
 		;
 
 	////  TARGET SEQUENCE OPTIONS  ////////////////////////////////////
@@ -293,10 +266,6 @@ CommandLineParsing::CommandLineParsing()
 		;
 	opts_cmdline_short.add(opts_target);
 	opts_target.add_options()
-		("tSet"
-			, value<std::string>(&(tSetString))
-				->notifier(boost::bind(&CommandLineParsing::validate_tSet,this,_1))
-			, std::string("target subset : List of sequence indices to consider for prediction in the format 'from1-to1,from2-to2,..' assuming indexing starts with 1").c_str())
 		("tAccConstr"
 			, value<std::string>(&(tAccConstr))
 				->notifier(boost::bind(&CommandLineParsing::validate_tAccConstr,this,_1))
@@ -332,24 +301,7 @@ CommandLineParsing::CommandLineParsing()
 		("tRegion"
 			, value<std::string>(&(tRegionString))
 				->notifier(boost::bind(&CommandLineParsing::validate_tRegion,this,_1))
-			, std::string("interaction site : target regions to be considered for"
-					" interaction prediction. Either given as BED file (for"
-					" multi-sequence FASTA input) or in the format"
-					" 'from1-to1,from2-to2,..' assuming indexing starts with 1."
-					" Consider '--tRegionLenMax' for automatic region setup for"
-					" long sequences."
-					).c_str())
-		("tRegionLenMax"
-			, value<int>(&(tRegionLenMax.val))
-				->default_value(tRegionLenMax.def)
-				->notifier(boost::bind(&CommandLineParsing::validate_tRegionLenMax,this,_1))
-			, std::string("interaction site : maximal length of highly accessible regions"
-					" to be automatically identified. To this end, most inaccessible regions"
-					" of length '--seedBP' are iteratively removed from the available indices"
-					" until only regions below the given maximal length or remaining."
-					" (arg in range ["+toString(tRegionLenMax.min)+","+toString(tRegionLenMax.max)+"];"
-					" 0 defaults to no automatic range detection)"
-					).c_str())
+			, std::string("interaction site : target regions to be considered for interaction prediction. Either given as BED file (for multi-sequence FASTA input) or in the format 'from1-to1,from2-to2,..' assuming indexing starts with 1").c_str())
 		;
 
 	////  SEED OPTIONS  ////////////////////////////////////
@@ -592,7 +544,7 @@ CommandLineParsing::CommandLineParsing()
 	    ("outPerRegion", "output : if given, best interactions are reported independently"
 	    		" for all region combinations; otherwise only the best for each query-target combination")
 	    ("verbose,v", "verbose output") // handled via easylogging++
-	    ("default-log-file", value<std::string>(&(logFileName)), "name of file to be used for log output (INFO, WARNING, VERBOSE, DEBUG)")
+//	    (logFile_argument.c_str(), "name of log file to be used for output")
 	    ;
 
 	////  GENERAL OPTIONS  ////////////////////////////////////
@@ -717,14 +669,15 @@ parse(int argc, char** argv)
 				outStream = newOutputStream( outPrefix2streamName.at(OutPrefixCode::OP_EMPTY) );
 				// check success
 				if (outStream == NULL) {
-					throw error("could not open output file --out='"+toString(outPrefix2streamName.at(OutPrefixCode::OP_EMPTY))+ "' for writing");
+					LOG(ERROR) <<"could not open output file --out='"<<outPrefix2streamName.at(OutPrefixCode::OP_EMPTY) << "' for writing";
+					updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 				}
 			}
 			outPerRegion = vm.count("outPerRegion") > 0;
 
 			// parse the sequences
-			parseSequences("query",queryArg,query,qSet);
-			parseSequences("target",targetArg,target,tSet);
+			parseSequences("query",queryArg,query);
+			parseSequences("target",targetArg,target);
 
 			// valide accessibility input from file (requires parsed sequences)
 			validate_qAccFile( qAccFile );
@@ -747,7 +700,8 @@ parse(int argc, char** argv)
 				// check query search ranges
 				if (!seedQRange.empty()) {
 					if (query.size()!=1) {
-						throw error("seedQRange given but not only one query sequence provided");
+						LOG(ERROR) <<"seedQRange given but not only one query sequence provided";
+						updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 					} else {
 						validate_indexRangeList("seedQRange",seedQRange, 1, query.begin()->size());
 					}
@@ -755,7 +709,8 @@ parse(int argc, char** argv)
 				// check target search ranges
 				if (!seedTRange.empty()) {
 					if (target.size()!=1) {
-						throw error("seedTRange given but not only one target sequence provided");
+						LOG(ERROR) <<"seedTRange given but not only one target sequence provided";
+						updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 					} else {
 						validate_indexRangeList("seedTRange",seedTRange, 1, target.begin()->size());
 					}
@@ -880,17 +835,20 @@ parse(int argc, char** argv)
 
 			// check qAcc upper bound
 			if (qAccL.val > qAccW.val && qAccW.val != 0) {
-				throw error("qAccL = " +toString(qAccL.val) + " : has to be <= qAccW (=" +toString(qAccW.val) + ")");
+				LOG(ERROR) <<"qAccL = " <<qAccL.val <<" : has to be <= qAccW (=" <<qAccW.val<<")";
+				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 			}
 
 			// check qAcc upper bound
 			if (tAccL.val > tAccW.val && tAccW.val != 0) {
-				throw error("tAccL = " +toString(tAccL.val)+" : has to be <= tAccW (=" +toString(tAccW.val)+")");
+				LOG(ERROR) <<"tAccL = " <<tAccL.val <<" : has to be <= tAccW (=" <<tAccW.val<<")";
+				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 			}
 
 			// check CSV stuff
 			if (outCsvCols != outCsvCols_default && outMode.val != 'C') {
-				throw error("outCsvCols set but outMode != C ("+toString(outMode.val)+")");
+				LOG(ERROR) <<"outCsvCols set but outMode != C ("<<outMode.val<<")";
+				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 			}
 
 			// check output sanity
@@ -902,7 +860,8 @@ parse(int argc, char** argv)
 					for (auto c2=c1; noDuplicate && (++c2)!=outPrefix2streamName.end();) {
 						if ( ! c2->second.empty() && boost::iequals( c1->second, c2->second ) ) {
 							noDuplicate = false;
-							throw error("--out argument shows multiple times '"+toString(c1->second)+"' as target file/stream.");
+							LOG(ERROR) <<"--out argument shows multiple times '"<<c1->second<<"' as target file/stream.";
+							updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 						}
 					}
 				}
@@ -916,7 +875,7 @@ parse(int argc, char** argv)
 					LOG(WARNING) <<"Multi-threading enabled in high-mem-prediction mode : ensure you have enough memory available!";
 				}
 				if (outMode.val == '1' || outMode.val == 'O') {
-					throw error("Multi-threading not supported for IntaRNA v1 output");
+					throw std::runtime_error("Multi-threading not supported for IntaRNA v1 output");
 				}
 			}
 #endif
@@ -1404,36 +1363,18 @@ void
 CommandLineParsing::
 parseSequences(const std::string & paramName,
 					const std::string& paramArg,
-					RnaSequenceVec& sequences,
-					const IndexRangeList & seqSubset )
+					RnaSequenceVec& sequences )
 {
-
 	// clear sequence container
 	sequences.clear();
 
 	// read FASTA from STDIN stream
 	if (boost::iequals(paramArg,"STDIN")) {
-		parseSequencesFasta(paramName, std::cin, sequences, seqSubset);
+		parseSequencesFasta(paramName, std::cin, sequences);
 	} else
 	if (RnaSequence::isValidSequenceIUPAC(paramArg)) {
-		// check if sequence is to be stored
-		if (seqSubset.empty() || seqSubset.covers(1)) {
-			// direct sequence input
-			sequences.push_back(RnaSequence(paramName,paramArg));
-		} else {
-			// would result in no sequence -> error
-			LOG(ERROR) <<"Parsing of "<<paramName<<" : only single sequence given but not listed in sequence subset '"<<seqSubset<<"'";
-			updateParsingCode( ReturnCode::STOP_PARSING_ERROR );
-		}
-		// check if sequence index range is within number of sequences
-		if (!seqSubset.empty()
-				&& seqSubset.rbegin()->to < IndexRange::LAST_INDEX
-				&& seqSubset.rbegin()->to > 1)
-		{
-			// provide user warning of maybe wrongly defined sequence subset
-			LOG(WARNING) <<"Sequence subset definition "<<seqSubset<<" exceeds sequence number "<<1<<" for parameter "<<paramName;
-		}
-
+		// direct sequence input
+		sequences.push_back(RnaSequence(paramName,paramArg));
 	} else
 	{
 		// open file handle
@@ -1443,7 +1384,7 @@ parseSequences(const std::string & paramName,
 				LOG(ERROR) <<"FASTA parsing of "<<paramName<<" : could not open FASTA file  '"<<paramArg<<"'";
 				updateParsingCode( ReturnCode::STOP_PARSING_ERROR );
 			} else {
-				parseSequencesFasta(paramName, infile, sequences, seqSubset);
+				parseSequencesFasta(paramName, infile, sequences);
 			}
 		} catch (std::exception & ex) {
 			LOG(ERROR) <<"error while FASTA parsing of "<<paramName<<" : "<<ex.what();
@@ -1470,13 +1411,11 @@ void
 CommandLineParsing::
 parseSequencesFasta( const std::string & paramName,
 					std::istream& input,
-					RnaSequenceVec& sequences,
-					const IndexRangeList & seqSubset)
+					RnaSequenceVec& sequences)
 {
 	// temporary variables
 	std::string line, name, sequence;
 	int trimStart = 0;
-	size_t seqNumber = 0;
 
 	// read linewise
 	while( std::getline( input, line ) ) {
@@ -1493,13 +1432,8 @@ parseSequencesFasta( const std::string & paramName,
 					LOG(ERROR) <<"FASTA parsing of "<<paramName<<" : no sequence for ID '"<<name<<"'";
 					updateParsingCode( ReturnCode::STOP_PARSING_ERROR );
 				} else {
-					// update sequence counter
-					seqNumber++;
-					// check if sequence is to be stored
-					if (seqSubset.empty() || seqSubset.covers(seqNumber)) {
-						// store sequence
-						sequences.push_back( RnaSequence( name, sequence ) );
-					}
+					// store sequence
+					sequences.push_back( RnaSequence( name, sequence ) );
 				}
 				// clear name data
 				name.clear();
@@ -1540,22 +1474,8 @@ parseSequencesFasta( const std::string & paramName,
 		LOG(ERROR) <<"FASTA parsing of "<<paramName<<" : no sequence for ID '"<<name<<"'";
 		updateParsingCode( ReturnCode::STOP_PARSING_ERROR );
 	} else {
-		// update sequence counter
-		seqNumber++;
-		// check if sequence is to be stored
-		if (seqSubset.empty() || seqSubset.covers(seqNumber)) {
-			// store sequence
-			sequences.push_back( RnaSequence( name, sequence ) );
-		}
-	}
-
-	// check if sequence index range is within number of sequences
-	if (!seqSubset.empty()
-			&& seqSubset.rbegin()->to < IndexRange::LAST_INDEX
-			&& seqSubset.rbegin()->to > seqNumber)
-	{
-		// provide user warning of maybe wrongly defined sequence subset
-		LOG(WARNING) <<"Sequence subset definition "<<seqSubset<<" exceeds sequence number "<<seqNumber<<" for parameter "<<paramName;
+		// store sequence
+		sequences.push_back( RnaSequence( name, sequence ) );
 	}
 }
 
@@ -1905,7 +1825,6 @@ getTargetRanges( const InteractionEnergy & energy, const size_t sequenceNumber )
 	// decompose ranges based in minimal unpaired probability value per position
 	// since all ranges covering a position will have a lower unpaired probability
 	getTargetAccessibility( sequenceNumber )->decomposeByMinPu( tRegion.at(sequenceNumber), outMinPu.val, energy.getRT() );
-
 
 	return tRegion.at(sequenceNumber);
 }

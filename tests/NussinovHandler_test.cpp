@@ -14,9 +14,6 @@ using namespace IntaRNA;
 
 TEST_CASE("NussinovHandler", "[NussinovHandler]") {
 
-	// setup easylogging++ stuff if not already done
-	#include "testEasyLoggingSetup.icc"
-
   SECTION("Dot bracket representation") {
 
     const std::vector<std::pair<std::string, size_t>> seqs = {{"gguccacguccaa", 3}, {"ggugcccg", 2}, {"gguccacguccaagguc", 6}};

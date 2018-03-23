@@ -10,9 +10,6 @@ using namespace IntaRNA;
 
 TEST_CASE( "InteractionRange", "[InteractionRange]" ) {
 
-	// setup easylogging++ stuff if not already done
-	#include "testEasyLoggingSetup.icc"
-
 	RnaSequence r("test","AACCGGUU");
 
 

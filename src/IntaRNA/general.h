@@ -16,6 +16,19 @@
 
 ////////////////  CENTRAL LOGGING LIB  //////////////////
 
+// disable default log file creation
+#ifndef ELPP_NO_DEFAULT_LOG_FILE
+	#define ELPP_NO_DEFAULT_LOG_FILE 1
+#endif
+// disable log file argument (and parsing)
+#ifndef ELPP_DISABLE_LOG_FILE_FROM_ARG
+	#define ELPP_DISABLE_LOG_FILE_FROM_ARG 1
+#endif
+// enable debug error tracking
+#if INTARNA_IN_DEBUG_MODE
+	#define ELPP_DEBUG_ERRORS 1
+#endif
+
 #include "easylogging++.h"
 
 ////////////////  GARBAGE COLLECTION  ///////////////////
