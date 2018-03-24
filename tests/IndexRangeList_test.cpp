@@ -12,6 +12,8 @@ using namespace IntaRNA;
 
 TEST_CASE( "IndexRangeList", "[IndexRangeList]" ) {
 
+	// setup easylogging++ stuff if not already done
+	#include "testEasyLoggingSetup.icc"
 
 	IndexRangeList rangeList;
 

@@ -1,6 +1,5 @@
-[![Build Status](https://travis-ci.org/BackofenLab/IntaRNA.svg?branch=master)](https://travis-ci.org/BackofenLab/IntaRNA)
 
-# IntaRNA version 2.*
+# IntaRNA [![GitHub](https://img.shields.io/github/tag/BackofenLab/IntaRNA.svg)](https://github.com/BackofenLab/IntaRNA/releases)  [![Bioconda](https://anaconda.org/bioconda/intarna/badges/version.svg)](https://anaconda.org/bioconda/intarna) [![Docker Repository on Quay](https://quay.io/repository/biocontainers/intarna/status "Docker Repository on Quay")](https://quay.io/repository/biocontainers/intarna) [![Build Status](https://travis-ci.org/BackofenLab/IntaRNA.svg?branch=master)](https://travis-ci.org/BackofenLab/IntaRNA)
 
 **Efficient RNA-RNA interaction prediction incorporating accessibility and 
 seeding of interaction sites**
@@ -36,6 +35,7 @@ Feel free to contribute to this project by writing
 with feature requests, bug reports, or just contact messages.
 
 ## Citation
+
 If you use IntaRNA, please cite our articles
 
 - [IntaRNA 2.0: enhanced and customizable prediction of RNA–RNA interactions](http://dx.doi.org/10.1093/nar/gkx279)
@@ -52,6 +52,7 @@ If you use IntaRNA, please cite our articles
 
 <br /><br /><br /><br />
 <a name="doc" />
+
 # Documentation
 
 ## Overview
@@ -91,10 +92,12 @@ The following topics are covered by this documentation:
 
 <br /><br /><br /><br />
 <a name="install" />
+
 # Installation
 
 <br /><br />
 <a name="instconda" />
+
 ## IntaRNA via conda (bioconda channel)
 
 The most easy way to locally install IntaRNA is via conda using the 
@@ -111,6 +114,7 @@ if you are using bioconda already.
 
 <br /><br />
 <a name="instdocker" />
+
 ## IntaRNA docker container (via QUAY)
 
 An [IntaRNA docker container](https://quay.io/repository/biocontainers/intarna) 
@@ -121,6 +125,7 @@ you with an encapsulated IntaRNA installation.
 
 <br /><br />
 <a name="deps" />
+
 ## Dependencies
 
 If you are going to compile IntaRNA from source, ensure you meet the following
@@ -146,6 +151,7 @@ not needed to be installed separately):
 
 <br /><br />
 <a name="instgithub" />
+
 ## Cloning *Source code* from github (or downloading ZIP-file)
 
 The data provided within the github repository
@@ -165,6 +171,7 @@ Afterwards, you can continue as if you would have downloaded an
 
 <br /><br />
 <a name="instsource" />
+
 ## IntaRNA package distribution (e.g. `intaRNA-2.0.0.tar.gz`)
 
 When downloading an IntaRNA package distribution (e.g. `intaRNA-2.0.0.tar.gz`) from the 
@@ -192,9 +199,11 @@ to use the according `configure` options:
 
 <br /><br />
 <a name="instwin" />
+
 ## Microsoft Windows installation
 
 ### ... from source
+
 IntaRNA can be compiled, installed, and used on a Microsoft Windows system when
 e.g. using [Cygwin](https://www.cygwin.com/) as 'linux emulator'. Just install
 Cygwin with the following packages:
@@ -235,6 +244,7 @@ directory to your [`Path` System variable](http://www.computerhope.com/issues/ch
 
 <br /><br />
 <a name="instosx" />
+
 ## OS X installation with homebrew (thanks to Lars Barquist)
 
 If you do not want to or can use the pre-compiled binaries for OS X available from 
@@ -291,6 +301,7 @@ make install
 
 <br /><br /><br /><br />
 <a name="usage" />
+
 # Usage and parameters
 
 IntaRNA comes with a vast variety of ways to tune or enhance *YOUR* RNA-RNA prediction.
@@ -315,6 +326,7 @@ For ad hoc usage you can use the
 
 <br /><br />
 <a name="defaultRun" />
+
 ## Just run ...
 
 If you just want to start and are fine with the default parameters set, 
@@ -354,6 +366,15 @@ IntaRNA -t myTargets.fasta -q myQueries.fasta
 cat myQueries.fasta | IntaRNA -q STDIN -t myTargets.fasta
 ```
 
+If you are working with large FASTA input files, e.g. covering a whole 
+transcriptome, you can restrict the prediction to a subset of the input 
+sequences using the `--qSet` or `--tSet` parameter as shown in the following.
+
+```bash
+# restrict prediction to the second load of 100 target sequences 
+IntaRNA -t myTranscriptome.fasta --tSet=101-200 -q myQuery.fasta
+```
+
 Nucleotide encodings different from `ACGUT` are rewritten as `N` and the respective
 positions are not considered to form base pairs (and this ignored).
 Thymine `T` encodings are replaced by uracil `U`, since a `ACGU`-only 
@@ -368,6 +389,7 @@ list covering also more sophisticated options, run `--fullhelp`.
 
 <br /><br />
 <a name="predModes" />
+
 ## Prediction modes, their features and emulated tools
 
 For the prediction of *minimum free energy interactions*, the following modes
@@ -432,6 +454,7 @@ We *add seed-constraint support to RNAup-like computations* by removing the
 
 <br /><br />
 <a name="interConstr" />
+
 ## Interaction restrictions
 
 The predicted RNA-RNA interactions can be enhanced if additional
@@ -454,12 +477,30 @@ pairing (where the latter will cause low unpaired probabilities for the
 respective positions).
 
 Furthermore, the region where interactions are supposed to occur can be restricted
-for target and query independently. To this end, a list of according index pairs
+for target and query independently. To this end, a list of according 
+subregion-defining index pairs
 can be provided using `--qRegion` and `--tRegion`, respectively. The indexing 
 starts with 1 and should be in the format `from1-end1,from2-end2,..` using
 integers. Note, if you want to have predictions individually for each region
 combination (rather than just the best for each query-target combination) you
 want to add `--outPerRegion` to the call.
+
+If you are dealing with very long sequences it might be useful to use the
+*automatic identification of accessible regions*, which dramatically reduces
+runtime and memory consumption of IntaRNA since predictions are only done for
+individual regions and not for the whole sequence. Here, we use a 
+heuristic approach that finds and ignores subregions that are unlikely to form
+an interaction, resulting in a decomposition of the full sequence range into
+intervals of accessible regions. It can be enabled by providing the maximal 
+length of the resulting intervals via the parameters `--qRegionLenMax` and
+`--tRegionLenMax`.<br />
+More specifically, starting from the full 
+sequence's index range, the algorithm iteratively identifies in every too-long
+range the window with highest ED value (penalty for non-accessibility). To
+this end, it uses windows of length `--seedBP` to find subsequences where it is
+most unlikely that a seed might be formed. This window is removed from the range,
+which results in two shorter ranges. If a range is shorter than `--seedBP`, it
+is completely removed.
 
 Finally, it is possible to restrict the overall length an interaction is allowed
 to have. This can be done independently for the query and target sequence using
@@ -474,6 +515,7 @@ length (by setting both to 0).
 
 <br /><br />
 <a name="seed" />
+
 ## Seed constraints
 
 For different types of RNA-RNA interactions it was found that experimentally
@@ -512,6 +554,7 @@ Seed constraint usage can be globally disabled using the `--noSeed` flag.
 
 <br /><br />
 <a name="seedExplicit" />
+
 ## Explicit seed input
 
 Some experiments provide hints or explicit knowledge about the seed or
@@ -570,6 +613,7 @@ tool arguments in the Vienna RNA package (see e.g. the
 
 <br /><br />
 <a name="outmodes" />
+
 ## Output modes
 
 The RNA-RNA interactions predicted by IntaRNA can be provided in different
@@ -581,7 +625,17 @@ you can either name a file or one of the stream names `STDOUT`|`STDERR`. Note,
 any string not matching one of the two stream names is considered a file name.
 The file will be overwritten by IntaRNA!
 
+Besides interaction output, you can set the verbosity of computation information
+using the `-v` or `--verbose` arguments. To reduce the output to a minimum, you
+can redirect all logging output of user information, warnings or verbose output
+to a specific file using `--default-log-file=LOGFILENAME`. 
+If you are not interested in any logging output, redirect it to nirvana via 
+`--default-log-file=/dev/null`. Note, error output is not redirected and always
+given on standard output streams.
+
+
 <a name="outModeNormal" />
+
 ### Standard RNA-RNA interaction output with ASCII chart
 
 The standard output mode `--outMode=D` provides a detailed ASCII chart of the 
@@ -590,6 +644,7 @@ For an example see the [Just run ...](#defaultRun) section.
 
 
 <a name="outModeDetailed" />
+
 ### Detailed RNA-RNA interaction output with ASCII chart
 
 Using `--outMode=D`, a detailed ASCII chart of the interaction together with
@@ -638,6 +693,7 @@ Position annotations start indexing with 1 at the 5'-end of each RNA.
 and `Pu` denote unpaired probabilities of the respective interacting subsequences.
 
 <a name="outModeCsv" />
+
 ### Customizable CSV RNA-RNA interaction output
 
 IntaRNA provides via `--outMode=C` a flexible interface to generate RNA-RNA 
@@ -725,6 +781,7 @@ Pu1;Pu2;subseqDB;hybridDB
 
 
 <a name="outModeV1" />
+
 ### Backward compatible IntaRNA v1.* output
 
 If your scripts/whatever is tuned to the old IntaRNA v1.* output, you can use
@@ -737,6 +794,7 @@ Note, for for IntaRNA v1.* output, currently *no multi-threading computation* is
 
 <br /><br />
 <a name="subopts" />
+
 ## Suboptimal RNA-RNA interaction prediction and output restrictions
 
 Besides the identification of the optimal (e.g. minimum-free-energy) RNA-RNA 
@@ -769,6 +827,7 @@ Furthermore, it is possible to *restrict (sub)optimal enumeration* using
 
 <br /><br />
 <a name="energy" />
+
 ## Energy parameters and temperatures
 
 The selection of the correct temperature and energy parameters is cruicial for
@@ -820,6 +879,7 @@ upper bound can be set independent for the query and target sequence via
 
 <br /><br />
 <a name="outFiles" />
+
 ## Additional output files
 
 IntaRNA v2 enables the generation of various additional information in dedicated
@@ -843,6 +903,7 @@ within the input.
 
 <br />
 <a name="profileMinE" />
+
 ### Minimal energy profiles
 
 To get a more global view of possible interaction sites for a pair of interacting
@@ -868,6 +929,7 @@ mfe interaction close to the 5'-end of the molecule.
 
 <br />
 <a name="pairMinE" />
+
 ### Minimal energy for all intermolecular index pairs
 
 To investigate how stable RNA-RNA interactions are distributed for a given pair
@@ -944,6 +1006,7 @@ energy interactions, we consider the probability estimates as meaningful!
 
 <br />
 <a name="accessibility" />
+
 ### Accessibility and unpaired probabilities
 
 Accessibility describes the availability of an RNA subsequence for intermolecular
@@ -965,6 +1028,7 @@ using the Vienna RNA package routines for query or target sequences, respectivel
 
 
 <a name="accLocalGlobal" />
+
 #### Local versus global unpaired probabilities
 
 Exact computation of unpaired probabilities (*Pu* terms) is considers all possible
@@ -983,6 +1047,7 @@ To this end, the sliding window length has to be specified in order to enable/di
 local folding.
 
 ##### Use case examples global/local unpaired probability computation
+
 The use of global or local accessibilities can be defined independently 
 for query and target sequences using `--qAccW|L` and `--tAccW|L`, respectively.
 Here, `--?AccW` defines the sliding window length (0 sets it to the whole sequence length)
@@ -1047,6 +1112,7 @@ IntaRNA [..] --qAccConstr="..bb..xxp.bb" --tAccConstr="b:3-4,11-12,x:7-8,p:9-9"
 
 
 <a name="accFromFile" />
+
 #### Read/write accessibility from/to file or stream
 
 It is possible to read precomputed accessibility values from file or stream to
@@ -1081,6 +1147,7 @@ example for a sequence of length 5 with a maximal window length of 3.
 
 
 ##### Use case examples for read/write accessibilities and unpaired probabilities
+
 If you have precomputed data, e.g. the file `plfold_lunp` with unpaired probabilities
 computed by **RNAplfold**, you can run
 
@@ -1119,6 +1186,7 @@ as shown above), since this does not produce the according output files!
 
 <br /><br />
 <a name="multithreading" />
+
 ## Multi-threading and parallelized computation
 
 IntaRNA supports the parallelization of the target-query-combination processing. 
@@ -1144,6 +1212,7 @@ using `configure --disable-multithreading`.
 
 <br /><br /><br /><br />
 <a name="lib" />
+
 # Library for integration in external tools
 
 The IntaRNA package also comes with a C++ library `libIntaRNA.a` containing the core classes
@@ -1160,7 +1229,7 @@ Since IntaRNA makes heavy use of the `Easylogging++` library, you have to add (a
 the following code to your central code that includes the `main()` function:
 ```[c++]
 // get central IntaRNA-lib definitions and includes
-#include <IntaRNA/RnaSequence.h>
+#include <IntaRNA/general.h>
 // initialize logging for binary
 INITIALIZE_EASYLOGGINGPP
 
@@ -1173,8 +1242,8 @@ int main(int argc, char **argv){
 		el::Loggers::reconfigureAllLoggers(el::ConfigurationType::Format, std::string("# %level : %msg"));
 		// no log file output
 		el::Loggers::reconfigureAllLoggers(el::ConfigurationType::ToFile, std::string("false"));
+		el::Loggers::reconfigureAllLoggers(el::ConfigurationType::ToStandardOutput, std::string("true"));
 		// set additional logging flags
-		el::Loggers::addFlag(el::LoggingFlag::ColoredTerminalOutput);
 		el::Loggers::addFlag(el::LoggingFlag::DisableApplicationAbortOnFatalLog);
 		el::Loggers::addFlag(el::LoggingFlag::LogDetailedCrashReason);
 		el::Loggers::addFlag(el::LoggingFlag::AllowVerboseIfModuleNotSpecified);
@@ -1185,6 +1254,10 @@ int main(int argc, char **argv){
 }
 ```
 
-
+Note further, to get the library correctly working the following compiler 
+flags are used within the IntaRNA configuration:
+```[bash]
+    CXXFLAGS=" -DELPP_FEATURE_PERFORMANCE_TRACKING -DELPP_NO_DEFAULT_LOG_FILE "
+``` 
 
 
