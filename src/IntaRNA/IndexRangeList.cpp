@@ -2,6 +2,7 @@
 #include "IntaRNA/IndexRangeList.h"
 
 #include <algorithm>
+#include <exception>
 
 namespace IntaRNA {
 
@@ -160,6 +161,36 @@ insert( const IndexRange& range )
 		// insert accordingly preserving sorting
 		return list.insert( r, range );
 	}
+}
+
+//////////////////////////////////////////////////////////////////////
+
+IndexRange &
+IndexRangeList::
+get( const size_t idx )
+{
+	if (idx >= size()) {
+		throw std::runtime_error("IndexRangeList::get() : index "+toString(idx)+" out of range (>= "+toString(size())+")");
+	}
+	// access according element via iterator and return
+	iterator idxIter = list.begin();
+	std::advance( idxIter, idx );
+	return *(idxIter);
+}
+
+//////////////////////////////////////////////////////////////////////
+
+const IndexRange &
+IndexRangeList::
+get( const size_t idx ) const
+{
+	if (idx >= size()) {
+		throw std::runtime_error("IndexRangeList::get() : index "+toString(idx)+" out of range (>= "+toString(size())+")");
+	}
+	// access according element via iterator and return
+	const_iterator idxIter = list.begin();
+	std::advance( idxIter, idx );
+	return *(idxIter);
 }
 
 //////////////////////////////////////////////////////////////////////

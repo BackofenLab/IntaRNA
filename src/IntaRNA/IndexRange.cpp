@@ -1,4 +1,6 @@
 
+#include <limits>
+
 #include "IntaRNA/IndexRange.h"
 
 namespace IntaRNA {

@@ -30,6 +30,9 @@ public:
 
 TEST_CASE( "OutputHandlerRangeOnly", "[OutputHandlerRangeOnly]" ) {
 
+	// setup easylogging++ stuff if not already done
+	#include "testEasyLoggingSetup.icc"
+
 	RnaSequence r("test","AACCGGUU");
 
 	RangeStore succOut(r);

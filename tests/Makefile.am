@@ -12,6 +12,7 @@ check_PROGRAMS = runTests
 # test sources
 runTests_SOURCES =	\
 					catch.hpp \
+					testEasyLoggingSetup.icc \
 					AccessibilityConstraint_test.cpp \
 					AccessibilityFromStream_test.cpp \
 					AccessibilityBasePair_test.cpp \
@@ -35,4 +36,5 @@ LIBS= 	-L$(top_builddir)/src/IntaRNA -lIntaRNA \
 		@LIBS@
 
 # add source include for compilation
-runTests_CXXFLAGS =	-I$(top_builddir)/src @AM_CXXFLAGS@ @CXXFLAGS@
+runTests_CXXFLAGS =	-I$(top_builddir)/src @AM_CXXFLAGS@ @CXXFLAGS@ \
+		-DELPP_NO_LOG_TO_FILE

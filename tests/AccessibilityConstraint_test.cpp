@@ -38,12 +38,6 @@ TEST_CASE( "AccessibilityConstraint", "[AccessibilityConstraint]" ) {
 		REQUIRE(boost::regex_match( AccessibilityConstraint::dotBracketAlphabet, regex, boost::match_perl ));
 
 		// test dot-bracket alphabet
-		regex = boost::regex("^(["
-				+ AccessibilityConstraint::dotBracketAlphabet
-				+"]+|"+
-				+"("+AccessibilityConstraint::regionIndexList
-					+"(,"+AccessibilityConstraint::regionIndexList+")*"
-				+"))$");
 		regex = AccessibilityConstraint::regex;
 		REQUIRE_FALSE(boost::regex_match( "", regex, boost::match_perl ));
 		REQUIRE(boost::regex_match( AccessibilityConstraint::dotBracketAlphabet, regex, boost::match_perl ));

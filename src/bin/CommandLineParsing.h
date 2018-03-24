@@ -369,6 +369,10 @@ protected:
 	std::string queryArg;
 	//! the container holding all query sequences
 	RnaSequenceVec query;
+	//! subset of query sequence indices to be processed
+	IndexRangeList qSet;
+	//! string encoding of qSet
+	std::string qSetString;
 	//! accessibility computation mode for query sequences
 	CharParameter qAcc;
 	//! window length for query accessibility computation (plFold)
@@ -404,6 +408,10 @@ protected:
 	std::string targetArg;
 	//! the container holding all target sequences
 	RnaSequenceVec target;
+	//! subset of target sequence indices to be processed
+	IndexRangeList tSet;
+	//! string encoding of tSet
+	std::string tSetString;
 	//! accessibility computation mode for target sequences
 	CharParameter tAcc;
 	//! window length for target accessibility computation (plFold)
@@ -434,7 +442,6 @@ protected:
 	//! optional encoding how data from tShape is converted into pairing
 	//! probabilities for according accessibility prediction
 	std::string tShapeConversion;
-
 
 	//! whether or not a seed is to be required for an interaction or not
 	bool noSeedRequired;
@@ -506,6 +513,9 @@ protected:
 	//! for SpotProb output : spots to be tracked
 	std::string outSpotProbSpots;
 
+	//! (optional) file name for log output
+	std::string logFileName;
+
 	//! the vienna energy parameter handler initialized by #parse()
 	mutable VrnaHandler vrnaHandler;
 
@@ -525,6 +535,12 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_query(const std::string & value);
+
+	/**
+	 * Validates the query's qSet argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_qSet(const std::string & value);
 
 	/**
 	 * Validates the query accessibility argument.
@@ -604,6 +620,12 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_target(const std::string & value);
+
+	/**
+	 * Validates the target's tSet argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_tSet(const std::string & value);
 
 	/**
 	 * Validates the target accessibility argument.
@@ -883,10 +905,13 @@ protected:
 	 * @param paramName the name of the parameter (for exception handling)
 	 * @param paramArg the given argument for the parameter
 	 * @param sequences the container to fill
+	 * @param seqSubset the indices of the input sequences to store (all other
+	 *                  ignored)
 	 */
 	void parseSequences(const std::string & paramName,
 					const std::string& paramArg,
-					RnaSequenceVec& sequences );
+					RnaSequenceVec& sequences,
+					const IndexRangeList & seqSubset );
 
 	/**
 	 * Parses the parameter input stream from FASTA format and returns all
@@ -894,10 +919,13 @@ protected:
 	 * @param paramName the name of the parameter (for exception handling)
 	 * @param input the input stream from where to read the FASTA data
 	 * @param sequences the container to fill
+	 * @param seqSubset the indices of the input sequences to store (all other
+	 *                  ignored)
 	 */
 	void parseSequencesFasta( const std::string & paramName,
 					std::istream& input,
-					RnaSequenceVec& sequences);
+					RnaSequenceVec& sequences,
+					const IndexRangeList & seqSubset );
 
 	/**
 	 * Checks whether or not a sequence container holds a specific number of
@@ -1006,7 +1034,6 @@ protected:
 	getFullFilename( const std::string & fileName
 					, const RnaSequence * target
 					, const RnaSequence * query ) const;
-
 
 };
 
@@ -1862,6 +1889,7 @@ getFullFilename( const std::string & fileNamePath, const RnaSequence * target, c
 				+ fileNamePath.substr(startOfExtension);
 	}
 }
+
 
 ////////////////////////////////////////////////////////////////////////////
 

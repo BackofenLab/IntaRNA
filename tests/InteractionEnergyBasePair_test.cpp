@@ -11,6 +11,9 @@ using namespace IntaRNA;
 
 TEST_CASE( "InteractionEnergyBasePair", "[InteractionEnergyBasePair]" ) {
 
+	// setup easylogging++ stuff if not already done
+	#include "testEasyLoggingSetup.icc"
+
 	RnaSequence rna("test","ACGU");
 
 	AccessibilityDisabled acc(rna,rna.size(),NULL);
