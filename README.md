@@ -196,6 +196,15 @@ to use the according `configure` options:
 - `--with-vrna` : the prefix where the Vienna RNA package is installed
 - `--with-boost` : the prefix where the boost library is installed
 
+Note, the latter is for instance the case if your `configure` call returns an
+error message as follows:
+```[bash]
+checking whether the Boost::System library is available... yes
+configure: error: Could not find a version of the library!
+```
+In that case your boost libraries are most likely installed to a non-standard 
+directory that you have to specify either using `--with-boost` or just the 
+library directory via `--with-boost-libdir`. 
 
 <br /><br />
 <a name="instwin" />
