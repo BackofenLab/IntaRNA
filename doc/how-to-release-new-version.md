@@ -4,6 +4,7 @@
 - increase counter in configure.ac
 
 - create distribution source code tar ball
+  - extract tar ball and check if compiling and tests working
 
 - prepare release on github:
   - fill changelog
