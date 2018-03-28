@@ -9,6 +9,8 @@
    + usage of reportedInteractions member
    * destructor() :
      + check if nothing was reported and provide according output
+     
+version 2.2.0
 
 180319 Martin Raden :
  * IntaRNA/PredictorMfe2dHeuristic :
