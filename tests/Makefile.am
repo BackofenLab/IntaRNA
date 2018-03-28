@@ -36,5 +36,4 @@ LIBS= 	-L$(top_builddir)/src/IntaRNA -lIntaRNA \
 		@LIBS@
 
 # add source include for compilation
-runTests_CXXFLAGS =	-I$(top_builddir)/src @AM_CXXFLAGS@ @CXXFLAGS@ \
-		-DELPP_NO_LOG_TO_FILE
+runTests_CXXFLAGS =	-I$(top_builddir)/src @AM_CXXFLAGS@ @CXXFLAGS@

@@ -1,4 +1,3 @@
-# this is example-file: configure.ac
 
 AC_PREREQ([2.65])
 # 5 argument version only available with aclocal >= 2.64
