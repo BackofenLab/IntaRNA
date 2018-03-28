@@ -35,6 +35,25 @@ OutputHandlerText(
 OutputHandlerText::
 ~OutputHandlerText()
 {
+
+	// special handling if no base pairs present
+	if (reportedInteractions == 0) {
+		// ensure outputs do not intervene
+		std::stringstream outTmp;
+		outTmp <<"\n"
+			<<"no favorable interaction for "
+			<<energy.getAccessibility1().getSequence().getId()
+			<<" and "
+			<<energy.getAccessibility2().getSequence().getId()
+			<<'\n';
+#if INTARNA_MULITHREADING
+		#pragma omp critical(intarna_omp_outputStreamUpdate)
+#endif
+		{
+			out <<outTmp.str();
+		} // omp critical(intarna_omp_outputStreamUpdate)
+	}
+
 	out.flush();
 }
 
@@ -51,18 +70,8 @@ add( const Interaction & i )
 	}
 #endif
 
-	// special handling if no base pairs present
-	if (i.basePairs.size() == 0) {
-		// ensure outputs do not intervene
-#if INTARNA_MULITHREADING
-		#pragma omp critical(intarna_omp_outputStreamUpdate)
-#endif
-		{
-			out <<"\n"
-				<<"no favorable interaction for "<<i.s1->getId() <<" and "<<i.s2->getId()<<std::endl;
-		} // omp critical(intarna_omp_outputStreamUpdate)
-		return;
-	}
+	// count the interaction
+	reportedInteractions++;
 
 	// get interaction start/end per sequence
 	const size_t i1 = i.basePairs.begin()->first;
@@ -253,13 +262,12 @@ add( const Interaction & i )
 	// get individual energy contributions
 	InteractionEnergy::EnergyContributions contr = energy.getE_contributions(i);
 
-	// ensure outputs do not intervene
-#if INTARNA_MULITHREADING
-	#pragma omp critical(intarna_omp_outputStreamUpdate)
-#endif
 	{
+		// ensure outputs do not intervene
+		std::stringstream outTmp;
+
 		// print full interaction to output stream
-		out <<'\n'
+		outTmp <<'\n'
 			// get ID of s1
 			<<i.s1->getId() <<'\n'
 			// get position in s1
@@ -279,7 +287,7 @@ add( const Interaction & i )
 			;
 
 		if (detailedOutput) {
-			out
+			outTmp
 				// interaction range
 				<<"\n"
 				<<"interaction seq1   = "<<(i.basePairs.begin()->first +1)<<" -- "<<(i.basePairs.rbegin()->first +1) <<'\n'
@@ -287,13 +295,13 @@ add( const Interaction & i )
 				;
 		} // detailed
 			// print energy
-		out
+		outTmp
 			<<"\n"
 			<<"interaction energy = "<<i.energy <<" kcal/mol\n"
 			;
 
 		if (detailedOutput) {
-			out
+			outTmp
 				<<"  = E(init)        = "<<contr.init<<'\n'
 				<<"  + E(loops)       = "<<contr.loops<<'\n'
 				<<"  + E(dangleLeft)  = "<<contr.dangleLeft<<'\n'
@@ -308,7 +316,7 @@ add( const Interaction & i )
 
 			// print seed information if available
 			if (i.seed != NULL) {
-				out
+				outTmp
 					<<"\n"
 					<<"seed seq1   = "<<(i.seed->bp_i.first +1)<<" -- "<<(i.seed->bp_j.first +1) <<'\n'
 					<<"seed seq2   = "<<(i.seed->bp_j.second +1)<<" -- "<<(i.seed->bp_i.second +1) <<'\n'
@@ -320,7 +328,14 @@ add( const Interaction & i )
 					;
 			} // seed
 		} // detailed
-	} // omp critical(intarna_omp_outputStreamUpdate)
+		// ensure outputs do not intervene
+	#if INTARNA_MULITHREADING
+		#pragma omp critical(intarna_omp_outputStreamUpdate)
+	#endif
+		{
+			out <<outTmp.str();
+		} // omp critical(intarna_omp_outputStreamUpdate)
+	}
 
 }
 

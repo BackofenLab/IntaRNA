@@ -61,6 +61,9 @@ public:
 
 protected:
 
+	//! counter of reported interactions
+	using OutputHandler::reportedInteractions;
+
 	//! the output stream to write the interaction text representation to
 	std::ostream & out;
 

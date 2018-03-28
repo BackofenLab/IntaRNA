@@ -1,4 +1,15 @@
 
+180328 Martin Raden :
+ * IntaRNA/OutputHandlerCsv :
+ * IntaRNA/OutputHandlerIntaRNA1 :
+ * IntaRNA/OutputHandlerText :
+     + data first written to local stream before pushed (via OMP critical) to
+       final output stream. This should fix some multi-threading output issues.
+ * IntaRNA/OutputHandlerText :
+   + usage of reportedInteractions member
+   * destructor() :
+     + check if nothing was reported and provide according output
+
 180319 Martin Raden :
  * IntaRNA/PredictorMfe2dHeuristic :
    * traceBack() :
