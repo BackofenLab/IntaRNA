@@ -57,28 +57,31 @@ add( const Interaction & i )
 	// count report
 	reportedInteractions++;
 
-	// ensure outputs do not intervene
-#if INTARNA_MULITHREADING
-	#pragma omp critical(intarna_omp_outputStreamUpdate)
-#endif
-	{
-		if (!initialOutputDone) {
-			if (printSeparator) {
-				out <<"\n=========================\n"
-					<<'\n';
+	if (!initialOutputDone) {
+		// ensure outputs do not intervene
+		std::stringstream outTmp;
+		if (printSeparator) {
+			outTmp <<"\n=========================\n"
+				<<'\n';
 
 
-			}
-			// write sequences in FASTA to out
-			out
-			<<">" <<energy.getAccessibility1().getSequence().getId() <<"\n"
-			<<(detailedOutput ? energy.getAccessibility1().getSequence().asString()+"\n" : "")
-			<<">" <<energy.getAccessibility2().getSequence().getId() <<"\n"
-			<<(detailedOutput ? energy.getAccessibility2().getAccessibilityOrigin().getSequence().asString()+"\n" : "")
-			;
-			initialOutputDone = true;
 		}
-	} // omp critical(intarna_omp_outputStreamUpdate)
+		// write sequences in FASTA to outTmp
+		outTmp
+		<<">" <<energy.getAccessibility1().getSequence().getId() <<"\n"
+		<<(detailedOutput ? energy.getAccessibility1().getSequence().asString()+"\n" : "")
+		<<">" <<energy.getAccessibility2().getSequence().getId() <<"\n"
+		<<(detailedOutput ? energy.getAccessibility2().getAccessibilityOrigin().getSequence().asString()+"\n" : "")
+		;
+		initialOutputDone = true;
+
+	#if INTARNA_MULITHREADING
+		#pragma omp critical(intarna_omp_outputStreamUpdate)
+	#endif
+		{
+			out <<outTmp.str();
+		} // omp critical(intarna_omp_outputStreamUpdate)
+	}
 
 	// get interaction start/end per sequence
 	const size_t i1 = i.basePairs.begin()->first;
@@ -188,14 +191,11 @@ add( const Interaction & i )
 	s2Unbound <<reverse(i.s2->asString().substr( 0, j2))
 			<<"-5'";
 
-	// ensure outputs do not intervene
-#if INTARNA_MULITHREADING
-	#pragma omp critical(intarna_omp_outputStreamUpdate)
-#endif
 	{
-
+		// ensure outputs do not intervene
+		std::stringstream outTmp;
 		// print full interaction to output stream
-		out <<'\n'
+		outTmp <<'\n'
 			// print collected interaction stuff
 			<<s1Unbound.str() <<'\n'
 			<<s1Bound.str() <<'\n'
@@ -207,7 +207,7 @@ add( const Interaction & i )
 			// get individual energy contributions
 			InteractionEnergy::EnergyContributions contr = energy.getE_contributions(i);
 				// print interaction details
-			out	<<'\n'
+			outTmp	<<'\n'
 				<<"positions(target)     : "<<(i.basePairs.begin()->first +1)<<" -- "<<(i.basePairs.rbegin()->first +1) <<'\n'
 				<<"positions seed(target): "<<(i.seed!=NULL?toString(i.seed->bp_i.first +1):"?")<<" -- "<<(i.seed!=NULL?toString(i.seed->bp_j.first +1):"?") <<'\n'
 				<<"positions with dangle(target): "<<(i.basePairs.begin()->first +1)<<" -- "<<(i.basePairs.rbegin()->first +1) <<'\n'
@@ -222,12 +222,19 @@ add( const Interaction & i )
 				;
 		} else {
 			// normal minimal information output
-			out	<<'\n'
+			outTmp	<<'\n'
 				<<"energy: "<<i.energy <<" kcal/mol\n"
 				;
 		}
 
-	} // omp critical(intarna_omp_outputStreamUpdate)
+		// ensure outputs do not intervene
+	#if INTARNA_MULITHREADING
+		#pragma omp critical(intarna_omp_outputStreamUpdate)
+	#endif
+		{
+			out <<outTmp.str();
+		} // omp critical(intarna_omp_outputStreamUpdate)
+	}
 
 }
 

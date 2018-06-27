@@ -1,4 +1,22 @@
 
+180627 Martin Raden / Milad Miladi :
+ * adaption to VRNA v2.4.8
+
+180328 Martin Raden :
+ * IntaRNA/OutputHandlerCsv :
+ * IntaRNA/OutputHandlerIntaRNA1 :
+ * IntaRNA/OutputHandlerText :
+     + data first written to local stream before pushed (via OMP critical) to
+       final output stream. This should fix some multi-threading output issues.
+ * IntaRNA/OutputHandlerText :
+   + usage of reportedInteractions member
+   * destructor() :
+     + check if nothing was reported and provide according output
+ * bin/CommandLineParsing :
+   * "version" output extended with used VRNA and boost version
+     
+version 2.2.0
+
 180319 Martin Raden :
  * IntaRNA/PredictorMfe2dHeuristic :
    * traceBack() :

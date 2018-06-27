@@ -18,6 +18,15 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/assign/list_of.hpp>
 
+
+extern "C" {
+	#include <ViennaRNA/vrna_config.h>
+}
+
+#define _STRINGIFY(s) #s
+#define STRINGIFY(s) _STRINGIFY(s)
+
+
 #include "IntaRNA/AccessibilityConstraint.h"
 
 #include "IntaRNA/AccessibilityDisabled.h"
@@ -687,7 +696,16 @@ parse(int argc, char** argv)
 			return parsingCode;
 		}
 		if (vm.count("version")) {
-			std::cout <<INTARNA_PACKAGE_STRING << "\n";
+			std::cout
+					<<INTARNA_PACKAGE_STRING
+					<< "\n"
+					<<" using Vienna RNA package "
+						<<STRINGIFY(VRNA_VERSION)
+					<<" and boost "
+						<<(BOOST_VERSION / 100000)
+						<<'.'<<(BOOST_VERSION / 100 % 1000)
+						<<'.'<<(BOOST_VERSION%100)
+					<< "\n";
 			parsingCode = ReturnCode::STOP_ALL_FINE;
 			return parsingCode;
 		}
