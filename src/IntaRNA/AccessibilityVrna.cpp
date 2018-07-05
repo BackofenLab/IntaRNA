@@ -12,6 +12,7 @@ extern "C" {
 	#include <ViennaRNA/part_func.h>
 	#include <ViennaRNA/fold.h>
 	#include <ViennaRNA/model.h>
+	#include <ViennaRNA/constraints/SHAPE.h>
 }
 
 // RNAup-like ED filling
