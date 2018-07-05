@@ -1,4 +1,19 @@
 
+180705 Martin Raden :
+ + IntaRNA/PredictionTrackerProfileSpotProb : computes a profile for each 
+   sequence position about the probability that a position is covered by an
+   interaction (but not necessarily base paired within) = spot probability
+ * IntaRNA/Makefile :
+   + PredictionTrackerProfileSpotProb
+ * bin/CommandLineParsing :
+   + PredictionTrackerProfileSpotProb
+   * '--out' argument :
+     + q|tSpotProb : generate spot probability profile for query|target
+   * getCodeForOutPrefix() :
+     + parsing of "q|tSpotProb"
+ * README.md : 
+   + docu of spot probability profiles 
+
 180328 Martin Raden :
  * IntaRNA/OutputHandlerCsv :
  * IntaRNA/OutputHandlerIntaRNA1 :

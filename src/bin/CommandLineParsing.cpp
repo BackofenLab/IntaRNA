@@ -51,6 +51,7 @@ extern "C" {
 #include "IntaRNA/PredictionTrackerPairMinE.h"
 #include "IntaRNA/PredictionTrackerProfileMinE.h"
 #include "IntaRNA/PredictionTrackerSpotProb.h"
+#include "IntaRNA/PredictionTrackerProfileSpotProb.h"
 
 #include "IntaRNA/SeedHandlerMfe.h"
 
@@ -533,9 +534,11 @@ CommandLineParsing::CommandLineParsing()
 					"\nUse one of the following PREFIXES (colon-separated) to generate"
 					" ADDITIONAL output:"
 					"\n 'qMinE:' (query) for each position the minimal energy of any interaction covering the position (CSV format)"
+					"\n 'qSpotProb:' (query) for each position the probability that is is covered by an interaction covering (CSV format)"
 					"\n 'qAcc:' (query) ED accessibility values ('qPu'-like format)."
 					"\n 'qPu:' (query) unpaired probabilities values (RNAplfold format)."
 					"\n 'tMinE:' (target) for each position the minimal energy of any interaction covering the position (CSV format)"
+					"\n 'tSpotProb:' (target) for each position the probability that is is covered by an interaction covering (CSV format)"
 					"\n 'tAcc:' (target) ED accessibility values ('tPu'-like format)."
 					"\n 'tPu:' (target) unpaired probabilities values (RNAplfold format)."
 					"\n 'pMinE:' (query+target) for each index pair the minimal energy of any interaction covering the pair (CSV format)"
@@ -1655,6 +1658,21 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 								, &(energy.getAccessibility1().getSequence())
 								, &(energy.getAccessibility2().getAccessibilityOrigin().getSequence()))
 						, "NA") );
+	}
+
+	// check if spotProb-profile is to be generated
+	if (!outPrefix2streamName.at(OutPrefixCode::OP_tSpotProb).empty() || !outPrefix2streamName.at(OutPrefixCode::OP_qSpotProb).empty()) {
+		predTracker->addPredictionTracker(
+				new PredictionTrackerProfileSpotProb( energy
+						// add sequence-specific prefix for output file
+						, getFullFilename( outPrefix2streamName.at(OutPrefixCode::OP_tSpotProb)
+								, &(energy.getAccessibility1().getSequence())
+								, &(energy.getAccessibility2().getAccessibilityOrigin().getSequence()))
+						// add sequence-specific prefix for output file
+						, getFullFilename( outPrefix2streamName.at(OutPrefixCode::OP_qSpotProb)
+								, &(energy.getAccessibility1().getSequence())
+								, &(energy.getAccessibility2().getAccessibilityOrigin().getSequence()))
+						, "0") );
 	}
 
 	// check if minE-pairs are to be generated
