@@ -1,4 +1,9 @@
 
+180710 Martin Raden :
+ * IntaRNA/Predictor* :
+   * traceback() :
+     * sanity check corrected (debug mode only) to handle single bp interaction
+
 180705 Martin Raden :
  + IntaRNA/PredictionTrackerProfileSpotProb : computes a profile for each 
    sequence position about the probability that a position is covered by an

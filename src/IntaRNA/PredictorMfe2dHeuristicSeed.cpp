@@ -234,9 +234,6 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 
 #if INTARNA_IN_DEBUG_MODE
 	// sanity checks
-	if ( ! interaction.isValid() ) {
-		throw std::runtime_error("PredictorMfe2dHeuristicSeed::traceBack() : given interaction not valid");
-	}
 	if ( interaction.basePairs.size() != 2 ) {
 		throw std::runtime_error("PredictorMfe2dHeuristicSeed::traceBack() : given interaction does not contain boundaries only");
 	}
@@ -249,6 +246,13 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 		// update done
 		return;
 	}
+
+#if INTARNA_IN_DEBUG_MODE
+	// sanity checks
+	if ( ! interaction.isValid() ) {
+		throw std::runtime_error("PredictorMfe2dHeuristicSeed::traceBack() : given interaction not valid");
+	}
+#endif
 
 	// ensure sorting
 	interaction.sort();
