@@ -1,4 +1,9 @@
 
+180711 Martin Raden :
+ * IntaRNA/Interaction :
+   * operator < : 
+     * bugfix: right base pair access was incorrect (thanks to Sebastian Holler)
+
 180710 Martin Raden :
  * IntaRNA/Predictor* :
    * traceback() :
