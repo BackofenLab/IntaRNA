@@ -1,4 +1,8 @@
 
+180807 Martin Raden :
+ * Makefile.am :
+   + set GCC_COLORS (if not already present) to enable gcc output coloring
+
 180711 Martin Raden :
  * IntaRNA/Interaction :
    * operator < : 
