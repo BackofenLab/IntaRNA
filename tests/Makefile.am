@@ -27,6 +27,7 @@ runTests_SOURCES =	\
 					RnaSequence_test.cpp \
 					OutputHandlerRangeOnly_test.cpp \
 					SeedHandlerExplicit_test.cpp \
+					SeedHandlerNoBulge_test.cpp \
 					runTests.cpp
 
 

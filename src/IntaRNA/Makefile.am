@@ -68,6 +68,7 @@ libIntaRNA_a_HEADERS =    \
 					SeedHandlerExplicit.h \
 					SeedHandlerIdxOffset.h \
 					SeedHandlerMfe.h \
+					SeedHandlerNoBulge.h \
 					VrnaHandler.h
 
 # the sources to add to the library and to add to the source distribution
@@ -112,6 +113,7 @@ libIntaRNA_a_SOURCES =    \
 					SeedConstraint.cpp \
 					SeedHandlerExplicit.cpp \
 					SeedHandlerMfe.cpp \
+					SeedHandlerNoBulge.cpp \
 					VrnaHandler.cpp
 
 
