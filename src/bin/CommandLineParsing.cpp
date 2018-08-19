@@ -54,6 +54,7 @@ extern "C" {
 #include "IntaRNA/PredictionTrackerProfileSpotProb.h"
 
 #include "IntaRNA/SeedHandlerMfe.h"
+#include "IntaRNA/SeedHandlerNoBulge.h"
 
 #include "IntaRNA/OutputHandlerCsv.h"
 #include "IntaRNA/OutputHandlerIntaRNA1.h"
@@ -1954,8 +1955,14 @@ getSeedHandler( const InteractionEnergy & energy ) const
 		// create new seed handler for explicit seed definitions
 		return new SeedHandlerExplicit( energy, seedConstr );
 	} else {
-		// create new seed handler using mfe computation
-		return new SeedHandlerMfe( energy, seedConstr );
+		// check if we have to allow for bulges in seed
+		if (seedConstr.getMaxUnpaired1()+seedConstr.getMaxUnpaired2()+seedConstr.getMaxUnpairedOverall() > 0) {
+			// create new seed handler using mfe computation
+			return new SeedHandlerMfe( energy, seedConstr );
+		} else {
+			// create new bulge-free seed handler
+			return new SeedHandlerNoBulge( energy, seedConstr );
+		}
 	}
 }
 

@@ -28,6 +28,7 @@ runApiTests_SOURCES =	\
 					OutputHandlerRangeOnly_test.cpp \
 					OutputHandlerInteractionList_test.cpp \
 					SeedHandlerExplicit_test.cpp \
+					SeedHandlerNoBulge_test.cpp \
 					runTests.cpp
 
 
