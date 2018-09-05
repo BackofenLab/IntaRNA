@@ -408,4 +408,6 @@ Install Directories
   * Header files              : $_includedir
 
 You can run 'make', 'make tests' and 'make install' now!
+
+======================================
 ])
