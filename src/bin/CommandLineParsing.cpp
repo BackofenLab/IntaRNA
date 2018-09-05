@@ -139,6 +139,8 @@ CommandLineParsing::CommandLineParsing()
 #if INTARNA_MULITHREADING
 	threads( 0, omp_get_max_threads(), 1),
 #endif
+	windowWidth(0,99999,0),
+	windowOverlap(0,99999,0),
 
 	energy("BV",'V'),
 	energyFile(""),
@@ -518,6 +520,19 @@ CommandLineParsing::CommandLineParsing()
 				->notifier(boost::bind(&CommandLineParsing::validate_temperature,this,_1))
 			, std::string("temperature in Celsius to setup the VRNA energy parameters"
 					" (arg in range ["+toString(temperature.min)+","+toString(temperature.max)+"])").c_str())
+		("windowWidth"
+			, value<int>(&(windowWidth.val))
+				->default_value(windowWidth.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_windowWidth,this,_1))
+			, std::string("Window-based computation: width of the window to be used; 0 disables window-based computation"
+					" (arg in range ["+toString(windowWidth.min)+","+toString(windowWidth.max)+"])").c_str())
+		("windowOverlap"
+			, value<int>(&(windowOverlap.val))
+				->default_value(windowOverlap.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_windowOverlap,this,_1))
+			, std::string("Window-based computation: overlap of the window to be used."
+					" Has to be smaller than --windowWidth and greater or equal than the maximal interaction length (see --q|tIntMaxLen)."
+					" (arg in range ["+toString(windowOverlap.min)+","+toString(windowOverlap.max)+"])").c_str())
 		;
 
 
@@ -830,6 +845,50 @@ parse(int argc, char** argv)
 			parseRegion( "qRegion", qRegionString, query, qRegion );
 			parseRegion( "tRegion", tRegionString, target, tRegion );
 
+
+			//////////////// WINDOW-BASED COMPUTATION ///////////////////
+
+			// check if window-based computation enabled
+			if (windowWidth.val > 0) {
+				// minimal window width
+				if (windowWidth.val < 10) {
+					throw error("window-based computation: --windowWidth should be at least 10 but is "+toString(windowWidth.val));
+				}
+				// ensure interaction length is restricted
+				size_t maxIntLength = 0;
+				if (qAcc.val != 'N') { // check if accessibility computation enabled
+					if (qIntLenMax.val == 0 && qAccW.val == 0) {
+						throw error("window-based computation: maximal query interaction length has to be restricted either via --qAccW or --qIntLenMax");
+					} else { // update maximum
+						maxIntLength = std::max(qIntLenMax.val, qAccW.val);
+					}
+				} else { // max interaction length of query
+					if (qIntLenMax.val == 0) {
+						throw error("window-based computation: maximal query interaction length has to be restricted via --qIntLenMax");
+					} else {
+						maxIntLength = qIntLenMax.val;
+					}
+				}
+				if (tAcc.val != 'N') {
+					if (tIntLenMax.val == 0 && tAccW.val == 0) {
+						throw error("window-based computation: maximal target interaction length has to be restricted either via --tAccW or --tIntLenMax");
+					} else { // update maximum
+						maxIntLength = maxIntLength < std::max(tAccW.val,tIntLenMax.val) ? std::max(tAccW.val,tIntLenMax.val) : maxIntLength;
+					}
+				} else {
+					if (tIntLenMax.val == 0) {
+						throw error("window-based computation: maximal target interaction length has to be restricted via --tIntLenMax");
+					} else { // update maximum
+						maxIntLength = maxIntLength < tIntLenMax.val ? tIntLenMax.val : maxIntLength;
+					}
+				}
+				if (windowOverlap.val < maxIntLength) {
+					throw error("window-based computation: --windowOverlap ("+toString(windowOverlap.val)+") has to be at least as large as the maximum of --q|tAccW or --q|tIntLenMax ("+toString(maxIntLength)+")");
+				}
+				if (windowWidth.val <= windowOverlap.val) {
+					throw error("window-based computation: --windowWidth ("+toString(windowWidth.val)+") has to exceed --windowOverlap ("+toString(windowOverlap.val)+")");
+				}
+			}
 
 			//////////////// ACCESSIBILITY CONSTRAINTS ///////////////////
 
@@ -1184,6 +1243,25 @@ getTargetSequences() const
 {
 	checkIfParsed();
 	return target;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+const size_t
+CommandLineParsing::
+getWindowWidth() const
+{
+	// check if disabled (== 0)
+	return windowWidth.val == 0 ? std::numeric_limits<size_t>::max() : windowWidth.val;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+const size_t
+CommandLineParsing::
+getWindowOverlap() const
+{
+	return windowOverlap.val;
 }
 
 ////////////////////////////////////////////////////////////////////////////

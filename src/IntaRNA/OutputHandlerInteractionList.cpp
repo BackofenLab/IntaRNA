@@ -51,17 +51,20 @@ add( const Interaction & interaction )
 		// count interaction
 		reportedInteractions++;
 		if (storage.size() < maxToStore || lessThan_StorageContainer( &interaction, *(storage.rbegin()) )) {
-			// remove last element if needed
-			if (storage.size() >= maxToStore) {
-				// delete object
-				delete (*(storage.rbegin()));
-				// remove pointer
-				storage.resize(storage.size()-1);
-			}
 			// find where to insert this interaction
 			StorageContainer::iterator insertPos = std::lower_bound( storage.begin(), storage.end(), &interaction, lessThan_StorageContainer );
-			// insert current interaction
-			storage.insert( insertPos, new Interaction(interaction) );
+			// check if interaction is NOT already part of the list
+			if ( insertPos == storage.end() || lessThan_StorageContainer( &interaction, *(insertPos) ) ) {
+				// insert current interaction
+				storage.insert( insertPos, new Interaction(interaction) );
+				// remove last element if needed
+				if (storage.size() > maxToStore) {
+					// delete object
+					delete (*(storage.rbegin()));
+					// remove pointer
+					storage.resize(storage.size()-1);
+				}
+			}
 		}
 	}
 }

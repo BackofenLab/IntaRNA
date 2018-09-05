@@ -174,7 +174,17 @@ public:
 		from = boost::lexical_cast<size_t>(stringEncoding.substr(0,splitPos));
 		to = boost::lexical_cast<size_t>(stringEncoding.substr(splitPos+1));
 	}
-
+	
+	/**
+	 * Computes an overlapping window decomposition of this IndexRange
+	 * @param windowWidth the width of a window
+	 * @param windowOverlap the amount of overlap between two windows
+	 * @return a vector of overlapping IndexRanges covering this IndexRange
+	 */
+	std::vector<IndexRange>
+	overlappingWindows(const size_t windowWidth, const size_t windowOverlap) const;
+	
+	
 };
 
 } // namespace

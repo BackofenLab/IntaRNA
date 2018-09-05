@@ -122,6 +122,23 @@ public:
 	const IndexRangeList& getTargetRanges( const InteractionEnergy & energy, const size_t sequenceNumber ) const;
 
 	/**
+	 * Access to the maximal window width of a query/target sequence range to
+	 * be used for prediction using overlapping windows to save memory.
+	 *
+	 * @return the maximal window width to be used for windows-based
+	 *         computations
+	 */
+	const size_t getWindowWidth() const;
+
+	/**
+	 * Access to the window overlap of a query/target sequence range to
+	 * be used for prediction using overlapping windows to save memory.
+	 *
+	 * @return the window overlap to be used for window-based computations
+	 */
+	const size_t getWindowOverlap() const;
+
+	/**
 	 * Returns a newly allocated Energy object according to the user defined
 	 * parameters.
 	 * @param accTarget the accessibility object of the target sequence
@@ -481,6 +498,10 @@ protected:
 	//! number of threads = number of parallel predictors running
 	NumberParameter<int> threads;
 #endif
+	//! the window width to be used for window-based computations
+	NumberParameter<int> windowWidth;
+	//! the window overlap to be used for window-based computations
+	NumberParameter<int> windowOverlap;
 
 	//! the selected energy model
 	CharParameter energy;
@@ -846,6 +867,18 @@ protected:
 	 */
 	void validate_threads( const int & value);
 #endif
+
+	/**
+	 * Validates the windowWidth argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_windowWidth( const int & value);
+
+	/**
+	 * Validates the windowOverlap argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_windowOverlap( const int & value);
 
 	////////////  GENERIC TESTS  /////////////////
 
@@ -1746,6 +1779,24 @@ void CommandLineParsing::validate_threads(const int & value)
 	validate_numberArgument("threads", threads, value);
 }
 #endif
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_windowWidth(const int & value)
+{
+	// forward check to general method
+	validate_numberArgument("windowWidth", windowWidth, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_windowOverlap(const int & value)
+{
+	// forward check to general method
+	validate_numberArgument("windowOverlap", windowOverlap, value);
+}
 
 ////////////////////////////////////////////////////////////////////////////
 

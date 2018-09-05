@@ -2,6 +2,26 @@
 180905 Martin Raden :
  * configure.ac :
    + final configuration output
++ window-based processing of long RNAs enabled (thanks to Sebastian Holler)
+ * bin/CommandLineParsing :
+   + windowWidth parameter + validator to define length of windows
+   + windowOverlap parameter + validator to define overlap of subsequent windows
+   * parse() :
+     + checks for window* parameter dependencies/interactions
+ * bin/IntaRNA :
+   + window-decomposition of ranges
+   + parallelization of window-based processing if only one query/target
+ * IntaRNA/IndexRange :
+   + overlappingWindows() : provides a vector of overlapping windows for 
+     window-based processing
+ * IntaRNA/OutputHandlerInteractionlist :
+   * add() : 
+     + check for identity before insert to avoid duplications in list
+ * tests/IndexRange :
+   + check for overlappingWindows()
+ + tests/OutputHandlerInteractionList :
+   + order test
+   + duplicated insert test
      
 version 2.2.1
 
