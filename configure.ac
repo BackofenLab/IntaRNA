@@ -284,7 +284,7 @@ AS_IF([test $want_boost = "no" || test $FOUND_BOOST != 1], [
 # check for Vienna RNA headers
 
 RNANOTFOUND=0
-AS_IF([test "x$HAVE_PKG_CONFIG" = "xyes"], [
+AS_IF([test x"$HAVE_PKG_CONFIG" = x"yes"], [
 	AC_MSG_NOTICE([check if VRNA version >= $VRNA_REQUIRED_VERSION])
 	PKG_CHECK_MODULES([VRNA], [RNAlib2 >= $VRNA_REQUIRED_VERSION], [RNANOTFOUND=0], [RNANOTFOUND=1])
 ])
@@ -384,3 +384,28 @@ AC_CONFIG_FILES([IntaRNA.pc])
 
 # generate the final Makefile etc.
 AC_OUTPUT
+
+# get absolute directory paths
+eval _bindir=$(eval printf "%s" $bindir)
+eval _libdir=$(eval printf "%s" $libdir)
+eval _includedir=$(eval printf "%s" $includedir)
+
+AC_MSG_NOTICE([
+
+======================================
+    IntaRNA $PACKAGE_VERSION
+======================================
+
+Features
+--------
+  * log coloring              : $logColoring
+  * OpenMP multi-threading    : $multithreadingEnabled
+
+Install Directories
+-------------------
+  * Executables               : $_bindir
+  * Libraries                 : $_libdir
+  * Header files              : $_includedir
+
+You can run 'make', 'make tests' and 'make install' now!
+])
