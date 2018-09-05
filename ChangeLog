@@ -22,6 +22,16 @@
  + tests/OutputHandlerInteractionList :
    + order test
    + duplicated insert test
+ * IntaRNA/PredictorMfe4d : 
+   * predict() :
+     * bugfix initialization problem : was only initializing cells not to be 
+       filled, which caused random prediction problems (issue #117)
+     - debug cell allocation information
+     - sophisticated (but buggy) check for cells not needed for computation
+   * fillHybridE() :
+     * bugfix : maxInteractionWidth check (have to use <= instead of <)
+     - cell initialization check removed (since obsolete and causing problems,
+       see issue #117)
      
 version 2.2.1
 
@@ -2152,7 +2162,7 @@ version 2.0.2
 140617 Martin Mann
  + autoconf setup
 
-140617 ********  start reimplementation of IntaRNA in CVS  ******************
+140617 ********  start reimplementation of IntaRNA  ******************
 
 
 #############################################################################
