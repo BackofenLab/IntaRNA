@@ -153,6 +153,7 @@ int main(int argc, char **argv){
 		// check which loop to parallelize
 		const bool parallelizeTargetLoop = parameters.getTargetSequences().size() > 1;
 		const bool parallelizeQueryLoop = !parallelizeTargetLoop && parameters.getQuerySequences().size() > 1;
+		const bool parallelizeWindowsLoop = !parallelizeTargetLoop && !parallelizeQueryLoop;
 
 
 		// run prediction for all pairs of sequences
@@ -222,41 +223,100 @@ int main(int argc, char **argv){
 										(parameters.reportBestPerRegion() ? std::numeric_limits<size_t>::max() : 1 )
 											* parameters.getOutputConstraint().reportMax );
 
-								// get interaction prediction handler
-								Predictor * predictor = parameters.getPredictor( *energy, bestInteractions );
-								INTARNA_CHECK_NOT_NULL(predictor,"predictor initialization failed");
-
 								// run prediction for all range combinations
-								// NOTE: RANGE COMBINATIONS CAN NOT BE PARALLELIZED UNLESS
-								// (a) predictor.predict() is threadsafe (currently not, eg. due to offset setup)
-								// (b) or for each range pair a separate predictor is created (overhead to be checked)
 								BOOST_FOREACH(const IndexRange & tRange, parameters.getTargetRanges(*energy, targetNumber)) {
 								BOOST_FOREACH(const IndexRange & qRange, parameters.getQueryRanges(*energy, queryNumber)) {
 
+									// get windows for both ranges
+									std::vector<IndexRange> queryWindows = qRange.overlappingWindows(parameters.getWindowWidth(), parameters.getWindowOverlap());
+									std::vector<IndexRange> targetWindows = tRange.overlappingWindows(parameters.getWindowWidth(), parameters.getWindowOverlap());
+
+									// iterate over all window combinations
 #if INTARNA_MULITHREADING
-									#pragma omp critical(intarna_omp_logOutput)
+									// this parallelization should only be enabled if neither the outer target-loop nor the inner query-loop are parallelized
+									# pragma omp parallel for schedule(dynamic) collapse(2) num_threads( parameters.getThreads() ) shared(queryAcc,reportedInteractions,exceptionPtrDuringOmp,exceptionInfoDuringOmp,targetAcc,targetNumber,queryNumber,queryWindows,targetWindows, bestInteractions, energy) if(parallelizeWindowsLoop)
+#endif									
+									for (int qNumWindow = 0; qNumWindow < queryWindows.size(); ++qNumWindow) {
+									for (int tNumWindow = 0; tNumWindow < targetWindows.size(); ++tNumWindow) {									
+#if INTARNA_MULITHREADING
+										#pragma omp flush (threadAborted)
+										// explicit try-catch-block due to missing OMP exception forwarding
+										if (!threadAborted) {
+											try {
+#endif										
+										
+												IndexRange qWindow = queryWindows.at(qNumWindow);
+												IndexRange tWindow = targetWindows.at(tNumWindow);
+#if INTARNA_MULITHREADING
+												#pragma omp critical(intarna_omp_logOutput)
 #endif
-									{ VLOG(1) <<"predicting interactions for"
-											<<" target "<<targetAcc->getSequence().getId()
-											<<" (range " <<(tRange+1)<<")"
-											<<" and"
-											<<" query "<<queryAcc.at(queryNumber)->getSequence().getId()
-											<<" (range " <<(qRange+1)<<")"
-											<<"..."; }
+												{ VLOG(1) <<"predicting interactions for"
+														<<" target "<<targetAcc->getSequence().getId()
+														<<" (range " <<(tWindow+1)<<")"
+														<<" and"
+														<<" query "<<queryAcc.at(queryNumber)->getSequence().getId()
+														<<" (range " <<(qWindow+1)<<")"
+#if INTARNA_MULITHREADING
+#if INTARNA_IN_DEBUG_MODE
 
-									predictor->predict(	  tRange
-														, queryAcc.at(queryNumber)->getReversedIndexRange(qRange)
-														, parameters.getOutputConstraint()
-														);
-
+														<<" in thread "<<omp_get_thread_num()
+#endif
+#endif
+														<<" ..."; }
+		
+												// get interaction prediction handler
+												Predictor * predictor = parameters.getPredictor( *energy, bestInteractions );
+												INTARNA_CHECK_NOT_NULL(predictor,"predictor initialization failed");
+		
+												// run prediction for this window combination
+												predictor->predict(	  tWindow
+																	, queryAcc.at(queryNumber)->getReversedIndexRange(qWindow)
+																	, parameters.getOutputConstraint()
+																	);
+												// garbage collection
+												INTARNA_CLEANUP(predictor);
+#if INTARNA_MULITHREADING
+											////////////////////// exception handling ///////////////////////////
+											} catch (std::exception & e) {
+												// ensure exception handling for first failed thread only
+												#pragma omp critical(intarna_omp_exception)
+												{
+													if (!threadAborted) {
+														// store exception information
+														exceptionPtrDuringOmp = std::make_exception_ptr(e);
+														exceptionInfoDuringOmp <<" #thread "<<omp_get_thread_num() <<" #target "<<targetNumber <<" #query " <<queryNumber <<" : "<<e.what();
+														// trigger abortion of all threads
+														threadAborted = true;
+														#pragma omp flush (threadAborted)
+													}
+												} // omp critical(intarna_omp_exception)
+											} catch (...) {
+												// ensure exception handling for first failed thread only
+												#pragma omp critical(intarna_omp_exception)
+												{
+													if (!threadAborted) {
+														// store exception information
+														exceptionPtrDuringOmp = std::current_exception();
+														exceptionInfoDuringOmp <<" #thread "<<omp_get_thread_num() <<" #target "<<targetNumber <<" #query " <<queryNumber;
+														// trigger abortion of all threads
+														threadAborted = true;
+														#pragma omp flush (threadAborted)
+													}
+												} // omp critical(intarna_omp_exception)
+											}
+										} // if not threadAborted
+#endif		
+									}} // window combinations
 								} // target ranges
 								} // query ranges
-
-								// update final output handler
+#if INTARNA_MULITHREADING
+								#pragma omp critical(intarna_omp_outputHandlerUpdate)
+#endif
+								{// update final output handler
 								BOOST_FOREACH( const Interaction * inter, bestInteractions) {
 									// forward all reported interactions for all regions to final output handler
 									output->add(*inter);
-								}
+								}}
 
 #if INTARNA_MULITHREADING
 								#pragma omp atomic update
@@ -264,7 +324,6 @@ int main(int argc, char **argv){
 								reportedInteractions += output->reported();
 
 								// garbage collection
-								 INTARNA_CLEANUP(predictor);
 								 INTARNA_CLEANUP(output);
 								 INTARNA_CLEANUP(energy);
 

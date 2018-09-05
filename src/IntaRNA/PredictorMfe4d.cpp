@@ -63,16 +63,11 @@ predict( const IndexRange & r1
 				, std::min( energy.size2()
 						, (r2.to==RnaSequence::lastPos?energy.size2()-1:r2.to)-r2.from+1 ) );
 
-	size_t debug_count_cells_null=0
-			, debug_count_cells_nonNull = 0
-			, debug_count_cells_inf = 0
-			, debug_cellNumber=0
-			, w1, w2;
 
-
+	// tmp vars
 	size_t maxWidthFori1i2 = 0;
-
 	bool i1blocked, i1or2blocked, skipw1w2;
+
 	// initialize 3rd and 4th dimension of the matrix
 	for (size_t i1=0; i1<hybridE.size1(); i1++) {
 		// check if i1 is blocked for interaction
@@ -87,10 +82,6 @@ predict( const IndexRange & r1
 				maxWidthFori1i2 = getMaxInteractionWidth( hybridE.size2()-i2, energy.getMaxInternalLoopSize2() );
 			}
 
-			debug_cellNumber =
-					/*w1 = */ std::min(energy.getAccessibility1().getMaxLength(), std::min( hybridE.size1()-i1, maxWidthFori1i2) )
-				*	/*w2 = */ std::min(energy.getAccessibility2().getMaxLength(), std::min( hybridE.size2()-i2, maxWidthFori1i2) );
-
 			// check if i1 and i2 are not blocked and can form a base pair
 			if ( ! i1or2blocked
 				&& energy.areComplementary( i1, i2 ))
@@ -100,68 +91,13 @@ predict( const IndexRange & r1
 					/*w1 = */ std::min(energy.getAccessibility1().getMaxLength(), std::min( hybridE.size1()-i1, maxWidthFori1i2) ),
 					/*w2 = */ std::min(energy.getAccessibility2().getMaxLength(), std::min( hybridE.size2()-i2, maxWidthFori1i2) ));
 
-				debug_count_cells_nonNull += debug_cellNumber;
-
-				// screen for cells that can be skipped from computation (decreasing window sizes)
-				for (size_t w1x = (*hybridE(i1,i2)).size1(); w1x>0; w1x--) {
-					w1 = w1x-1;
-
-				for (size_t w2x = (*hybridE(i1,i2)).size2(); w2x>0; w2x--) {
-					w2 = w2x-1;
-
-					// check if window size too large
-					skipw1w2 = false;
-
-					// check if ED penalty exceeds maximal energy gain
-					if (w1 > 0 && w2 > 0){
-						// check if all larger windows needing this site are already set to INF
-						bool largerWindowsINF = w1x==(*hybridE(i1,i2)).size1() && w2x==(*hybridE(i1,i2)).size2();
-						// check all larger windows w1 + w2p (that might need this window for computation)
-						for (size_t w2p=(*hybridE(i1,i2)).size2()-1; largerWindowsINF && w2p>w2; w2p++) {
-							// check if larger window is E_INF
-							largerWindowsINF = (std::numeric_limits<E_type>::max() < (*hybridE(i1,i2))(w1+1,w2p));
-						}
-						// check all larger windows w2 + w1p (that might need this window for computation)
-						for (size_t w1p=(*hybridE(i1,i2)).size1()-1; largerWindowsINF && w1p>w1; w1p++) {
-							// check if larger window is E_INF
-							largerWindowsINF = (std::numeric_limits<E_type>::max() < (*hybridE(i1,i2))(w1p,w2+1));
-						}
-
-						// if it holds for all w'>=w: ED1(i1+w1')+ED2(i2+w2')-outConstraint.maxE > -1*(min(w1',w2')*EmaxStacking + Einit + 2*Edangle + 2*Eend)
-						// ie. the ED values exceed the max possible energy gain of an interaction
-						skipw1w2 = skipw1w2
-								|| ( largerWindowsINF &&
-										( -1.0*(std::min(w1,w2)*minStackingEnergy + minInitEnergy + 2.0*minDangleEnergy + 2.0*minEndEnergy)
-											< (energy.getED1(i1,i1+w1) + energy.getED2(i2,i2+w2) - outConstraint.maxE) )
-									)
-									;
-					}
-
-					if (skipw1w2) {
-						// init with infinity to mark that this cell is not to be computed later on
-						(*hybridE(i1,i2))(w1,w2) = E_INF;
-						debug_count_cells_inf++;
-					}
-
-				}
-				}
 
 			} else {
 				// reduce memory consumption and avoid computation for this start index combination
 				hybridE(i1,i2) = NULL;
-				debug_count_cells_null += debug_cellNumber;
 			}
 		}
 	}
-
-#if INTARNA_MULITHREADING
-	#pragma omp critical(intarna_omp_logOutput)
-#endif
-	{ LOG(DEBUG) <<"init 4d matrix : "<<(debug_count_cells_nonNull-debug_count_cells_inf)<<" (-"<<debug_count_cells_inf <<") to be filled ("
-				<<((double)(debug_count_cells_nonNull-debug_count_cells_inf)/(double)(debug_count_cells_nonNull+debug_count_cells_null))
-				<<"%) and "<<debug_count_cells_null <<" not allocated ("
-				<<((double)(debug_count_cells_null)/(double)(debug_count_cells_nonNull+debug_count_cells_null))
-				<<"%)"; }
 
 	// initialize mfe interaction for updates
 	initOptima( outConstraint );
@@ -209,9 +145,9 @@ fillHybridE( )
 	for (w1=0; w1<energy.getAccessibility1().getMaxLength(); w1++) {
 	for (w2=0; w2<energy.getAccessibility2().getMaxLength(); w2++) {
 		// iterate over all window starts i1 (seq1) and i2 (seq2)
-		// TODO PARALLELIZE THIS DOUBLE LOOP ?!
 		for (i1=0; i1+w1<hybridE.size1(); i1++) {
 		for (i2=0; i2+w2<hybridE.size2(); i2++) {
+
 			// check if left boundary is complementary
 			if (hybridE(i1,i2) == NULL) {
 				// interaction not possible: nothing to do, since no storage reserved
@@ -224,8 +160,8 @@ fillHybridE( )
 				continue;
 			}
 			// check if interaction exceeds possible width due to max-loop-length
-			if ( getMaxInteractionWidth( 1+w1, energy.getMaxInternalLoopSize1() ) < w2
-				|| getMaxInteractionWidth( 1+w2, energy.getMaxInternalLoopSize2() ) < w1)
+			if ( getMaxInteractionWidth( 1+w1, energy.getMaxInternalLoopSize1() ) <= w2
+				|| getMaxInteractionWidth( 1+w2, energy.getMaxInternalLoopSize2() ) <= w1)
 			{
 				// ignore this entry
 				(*hybridE(i1,i2))(w1,w2) = E_INF;
@@ -242,44 +178,40 @@ fillHybridE( )
 				(*hybridE(i1,i2))(w1,w2) = E_INF;
 				continue;
 			}
-			// check if this cell is to be computed (!=E_INF)
-			if( E_isNotINF( (*hybridE(i1,i2))(w1,w2) ) ) {
 
-				// compute entry
+			// compute entry
 
-				// either interaction initiation
-				if ( w1==0 && w2==0 )  {
-					curMinE = energy.getE_init();
-				} else {
-				
-					// or only internal loop energy (nothing between i and j)
-					curMinE = energy.getE_interLeft(i1,j1,i2,j2)
-							+ (*hybridE(j1,j2))(0,0) ;
+			// either interaction initiation
+			if ( w1==0 && w2==0 )  {
+				curMinE = energy.getE_init();
+			} else {
 
-					// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
-					if (w1 > 1 && w2 > 1) {
-						for (k1=std::min(j1-1,i1+energy.getMaxInternalLoopSize1()+1); k1>i1; k1--) {
-						for (k2=std::min(j2-1,i2+energy.getMaxInternalLoopSize2()+1); k2>i2; k2--) {
-							// check if (k1,k2) are complementary
-							if (hybridE(k1,k2) != NULL && hybridE(k1,k2)->size1() > (j1-k1) && hybridE(k1,k2)->size2() > (j2-k2)) {
-								curMinE = std::min( curMinE,
-										(energy.getE_interLeft(i1,k1,i2,k2)
-												+ (*hybridE(k1,k2))(j1-k1,j2-k2))
-										);
-							}
-						}
+				// or only internal loop energy (nothing between i and j)
+				curMinE = energy.getE_interLeft(i1,j1,i2,j2)
+						+ (*hybridE(j1,j2))(0,0) ;
+
+				// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
+				if (w1 > 1 && w2 > 1) {
+					for (k1=std::min(j1-1,i1+energy.getMaxInternalLoopSize1()+1); k1>i1; k1--) {
+					for (k2=std::min(j2-1,i2+energy.getMaxInternalLoopSize2()+1); k2>i2; k2--) {
+						// check if (k1,k2) are complementary
+						if (hybridE(k1,k2) != NULL && hybridE(k1,k2)->size1() > (j1-k1) && hybridE(k1,k2)->size2() > (j2-k2)) {
+							curMinE = std::min( curMinE,
+									(energy.getE_interLeft(i1,k1,i2,k2)
+											+ (*hybridE(k1,k2))(j1-k1,j2-k2))
+									);
 						}
 					}
+					}
 				}
-
-
-				// store value
-				(*hybridE(i1,i2))(w1,w2) = curMinE;
-				// update mfe if needed
-				updateOptima( i1,j1,i2,j2 , (*hybridE(i1,i2))(w1,w2), true );
-
-				continue;
 			}
+
+
+			// store value
+			(*hybridE(i1,i2))(w1,w2) = curMinE;
+
+			// update mfe if needed
+			updateOptima( i1,j1,i2,j2 , (*hybridE(i1,i2))(w1,w2), true );
 		}
 		}
 	}
@@ -301,9 +233,6 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 
 #if INTARNA_IN_DEBUG_MODE
 	// sanity checks
-	if ( ! interaction.isValid() ) {
-		throw std::runtime_error("PredictorMfe4d::traceBack() : given interaction not valid");
-	}
 	if ( interaction.basePairs.size() != 2 ) {
 		throw std::runtime_error("PredictorMfe4d::traceBack() : given interaction does not contain boundaries only");
 	}
@@ -316,6 +245,13 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 		// update done
 		return;
 	}
+
+#if INTARNA_IN_DEBUG_MODE
+	// sanity checks
+	if ( ! interaction.isValid() ) {
+		throw std::runtime_error("PredictorMfe4d::traceBack() : given interaction not valid");
+	}
+#endif
 
 	// ensure sorting
 	interaction.sort();

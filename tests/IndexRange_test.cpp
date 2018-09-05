@@ -62,6 +62,45 @@ TEST_CASE( "IndexRange", "[IndexRange]" ) {
 		// check
 		REQUIRE( range == r2 );
 	}
-
+	
+	SECTION("check overlapping Windows") {
+		
+		// first example: starting with index 0, cutting into windows works out exactly
+		size_t windowWidth = 10;
+		size_t windowsOverlap = 3;
+		IndexRange r3 = IndexRange(0, 23);
+		IndexRange rw1 = IndexRange(0, 9);
+		IndexRange rw2 = IndexRange(7, 16);
+		IndexRange rw3 = IndexRange(14, 23);
+		std::vector<IndexRange> windows = r3.overlappingWindows(windowWidth, windowsOverlap);
+		
+		REQUIRE ( windows.size() == 3 );
+		REQUIRE ( windows[0] == rw1 );
+		REQUIRE ( windows[1] == rw2 );
+		REQUIRE ( windows[2] == rw3 );
+		
+		// second example: starting with index 123, the last window is smaller than windowWidth
+		IndexRange r4 = IndexRange(123, 151);
+		IndexRange rw4 = IndexRange(123, 132);
+		IndexRange rw5 = IndexRange(130, 139);
+		IndexRange rw6 = IndexRange(137, 146);
+		IndexRange rw7 = IndexRange(144, 151);
+		windows = r4.overlappingWindows(windowWidth, windowsOverlap);
+		
+		REQUIRE ( windows.size() == 4 );
+		REQUIRE ( windows[0] == rw4 );
+		REQUIRE ( windows[1] == rw5 );
+		REQUIRE ( windows[2] == rw6 );
+		REQUIRE ( windows[3] == rw7 );
+		
+		// third example: one window is enough for the whole IndexRange
+		IndexRange r5 = IndexRange(453, 458);
+		windows = r5.overlappingWindows(windowWidth, windowsOverlap);
+		
+		REQUIRE ( windows.size() == 1 );
+		REQUIRE ( windows[0] == r5 );
+	}
+	
+	
 }
 

@@ -67,7 +67,7 @@ public:
 	 * Identifies the base pairs of the mfe seed interaction starting at i1,i2
 	 * and writes them to the provided container
 	 *
-	 * NOTE: the right most base pair is excluded!
+	 * NOTE: the left- and right-most base pairs are excluded!
 	 *
 	 * @param interaction the container to add the base pairs too
 	 * @param i1 the start of the seed in seq1
@@ -119,6 +119,20 @@ protected:
 	const SeedConstraint & seedConstraint;
 
 
+protected:
+
+	/**
+	 * Checks whether or not a given index pair is a valid seed base pair
+	 *
+	 * @param i1 the interacting base of seq1
+	 * @param i2 the interacting base of seq2
+	 * @return true if (i1,i2) are complementary, ED(i,i) < maxED, and both i1
+	 *              and i2 are in allowed regions; false otherwise
+	 */
+	bool
+	isFeasibleSeedBasePair( const size_t i1, const size_t i2 ) const;
+
+
 };
 
 
@@ -164,6 +178,28 @@ getInteractionEnergy() const
 {
 	return energy;
 }
+
+//////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+SeedHandler::
+isFeasibleSeedBasePair( const size_t i1, const size_t i2 ) const
+{
+#if INTARNA_IN_DEBUG_MODE
+	if ( i1 >= energy.size1() ) throw std::runtime_error("SeedHandler::isFeasibleSeedBasePair: i1("+toString(i1)+") >= energy.size1("+toString(energy.size1())+")");
+	if ( i2 >= energy.size2() ) throw std::runtime_error("SeedHandler::isFeasibleSeedBasePair: i2("+toString(i2)+") >= energy.size2("+toString(energy.size2())+")");
+#endif
+
+	return		i1 < energy.size1() && i2 < energy.size2()
+			&&	energy.areComplementary(i1,i2)
+			&&	seedConstraint.getMaxED() >= energy.getED1( i1,i1 )
+			&&	seedConstraint.getMaxED() >= energy.getED2( i2,i2 )
+			&&	(seedConstraint.getRanges1().empty() || seedConstraint.getRanges1().covers(i1))
+			&&	(seedConstraint.getRanges2().empty() || seedConstraint.getRanges2().covers(i2))
+			;
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 

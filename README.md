@@ -79,6 +79,7 @@ The following topics are covered by this documentation:
   - [Energy parameters and temperature](#energy)
   - [Additional output files](#outFiles)
     - [Minimal energy profiles](#profileMinE)
+    - [Spot probability profiles](#profileSpotProb) using partition functions
     - [Minimal energy for all intermolecular index pairs](#pairMinE)
     - [Interaction probabilities for interaction spots of interest](#spotProb)
     - [Accessibility and unpaired probabilities](#accessibility)
@@ -139,6 +140,7 @@ dependencies:
     - libboost_filesystem
     - libboost_system
 - [Vienna RNA package](http://www.tbi.univie.ac.at/RNA/) version >= 2.4.8
+- `pkg-config` for detailed version checks of dependencies
 - if [cloning from github](#instgithub): GNU autotools (automake, autoconf, ..)
 
 Also used by IntaRNA, but already part of the source code distribution (and thus
@@ -406,7 +408,7 @@ and according features are supported and can be set via the `--mode` parameter.
 The tiem and space complexities are given for the prediction of two sequences
 of equal length *n*.
 
-| Features | Heuristic `--mode=H` | Exact-SE `--mode=S` | Exact `--mode=E` |
+| Features | Heuristic `--mode=H` | Exact-SE `--mode=M` | Exact `--mode=E` |
 | -------- | :------------------: | :-----------------: | :--------------: |
 | Time complexity (prediction only) | O(*n*^2) | O(*n*^4) | O(*n*^4) |
 | Space complexity | O(*n*^2) | O(*n*^2) | O(*n*^4) |
@@ -422,8 +424,10 @@ Note, due to the low run-time requirement of the heuristic prediction mode
 (`--mode=H`), heuristic IntaRNA interaction predictions are widely used to screen
 for interaction in a genome-wide scale. If you are more interested in specific
 details of an interaction site or of two relatively short RNA molecules, you 
-should investigate the exact prediction mode (`--mode=S`, or `--mode=E`
-if non-overlapping suboptimal prediction is required).
+should investigate the exact prediction mode (`--mode=M`, or `--mode=E`
+if non-overlapping suboptimal prediction is required). Note further, the exact
+mode `E` should provide the same results as mode `M` but uses dramatically more
+memory for computations.
 
 Given these features, we can emulate and extend a couple of RNA-RNA interaction
 tools using IntaRNA.
@@ -451,7 +455,7 @@ interacting RNA, such that we have to disable accessibility computation based on
 using
 ```bash
 # prediction results similar to RNAup
-IntaRNA --mode=S --noSeed --qAccW=0 --qAccL=0 --tAccW=0 --tAccL=0
+IntaRNA --mode=M --noSeed --qAccW=0 --qAccL=0 --tAccW=0 --tAccL=0
 ```
 We *add seed-constraint support to RNAup-like computations* by removing the 
 `--noSeed` flag from the above call.
@@ -934,6 +938,24 @@ abline(h=0, col="red", lty=2, lwd=2)
 
 This plot reveals two less but still stable (*E* below 0) interaction sites beside the
 mfe interaction close to the 5'-end of the molecule.
+
+
+
+<br />
+<a name="profileSpotProb" />
+
+### Spot probability profiles
+
+Similarly to (minimal energy profiles)[#profileMinE], it is also possible to
+compute position-wise probabilities how likely a position is covered by an
+interaction, i.e. its *spot probability*. To the end, we compute for each
+position $i$ the partition function $Zi$ of all interactions covering $i$.
+Given the overall partition function *Z* including all possible interactions, 
+the position-speficit spot probability for *i* is given by *Zi/Z*.
+
+Such profiles can be generated using `--out=qSpotProb:MYPROFILEFILE.csv` or 
+`--out=tSpotProb:...` for the query/target sequence respectively and independently.
+
 
 
 <br />

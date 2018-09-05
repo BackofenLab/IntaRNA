@@ -380,23 +380,23 @@ operator < ( const Interaction &i ) const
 		// i1 and i2 are equal BUT j1 smaller
 		|| (basePairs.begin()->first == i.basePairs.begin()->first // i1
 				&& basePairs.begin()->second == i.basePairs.begin()->second // i2
-				&& basePairs.end()->first < i.basePairs.end()->first) // j1
+				&& basePairs.rbegin()->first < i.basePairs.rbegin()->first) // j1
 		// i1, i2 and j1 are equal BUT j2 smaller
 		|| (basePairs.begin()->first == i.basePairs.begin()->first // i1
 				&& basePairs.begin()->second == i.basePairs.begin()->second // i2
-				&& basePairs.end()->first == i.basePairs.end()->first // j1
-				&& basePairs.end()->second < i.basePairs.end()->second) // j2
+				&& basePairs.rbegin()->first == i.basePairs.rbegin()->first // j1
+				&& basePairs.rbegin()->second < i.basePairs.rbegin()->second) // j2
 		// i1, i2, j1, j2 are equal BUT more base pairs
 		|| (basePairs.begin()->first == i.basePairs.begin()->first // i1
 				&& basePairs.begin()->second == i.basePairs.begin()->second // i2
-				&& basePairs.end()->first == i.basePairs.end()->first // j1
-				&& basePairs.end()->second == i.basePairs.end()->second // j2
+				&& basePairs.rbegin()->first == i.basePairs.rbegin()->first // j1
+				&& basePairs.rbegin()->second == i.basePairs.rbegin()->second // j2
 				&& basePairs.size() > i.basePairs.size())
 		// i1, i2, j1, j2, #bps are equal BUT seed energy smaller
 		|| (basePairs.begin()->first == i.basePairs.begin()->first // i1
 				&& basePairs.begin()->second == i.basePairs.begin()->second // i2
-				&& basePairs.end()->first == i.basePairs.end()->first // j1
-				&& basePairs.end()->second == i.basePairs.end()->second // j2
+				&& basePairs.rbegin()->first == i.basePairs.rbegin()->first // j1
+				&& basePairs.rbegin()->second == i.basePairs.rbegin()->second // j2
 				&& basePairs.size() == i.basePairs.size()
 				&& seed != NULL && i.seed != NULL && seed->energy < i.seed->energy)
 			;

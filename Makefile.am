@@ -1,6 +1,9 @@
 
 # ACLOCAL_AMFLAGS=-I m4
 
+# enable gcc output coloring if not set already
+export GCC_COLORS ?= "error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01"
+
 # sub directories to check for Makefiles
 SUBDIRS = src perl tests doc .
 
@@ -22,6 +25,7 @@ endif
 
 # global test directive # ensure all is compiled (need object files for tests)
 .PHONY: DX_PHONY tests test
+
 tests: all
 	@echo
 	@echo " => compiling and running tests ... will take a while ..."
@@ -30,4 +34,3 @@ tests: all
 	@$(MAKE) check -s -C tests
 
 test: tests
-

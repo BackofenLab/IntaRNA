@@ -51,8 +51,10 @@ extern "C" {
 #include "IntaRNA/PredictionTrackerPairMinE.h"
 #include "IntaRNA/PredictionTrackerProfileMinE.h"
 #include "IntaRNA/PredictionTrackerSpotProb.h"
+#include "IntaRNA/PredictionTrackerProfileSpotProb.h"
 
 #include "IntaRNA/SeedHandlerMfe.h"
+#include "IntaRNA/SeedHandlerNoBulge.h"
 
 #include "IntaRNA/OutputHandlerCsv.h"
 #include "IntaRNA/OutputHandlerIntaRNA1.h"
@@ -138,6 +140,8 @@ CommandLineParsing::CommandLineParsing()
 #if INTARNA_MULITHREADING
 	threads( 0, omp_get_max_threads(), 1),
 #endif
+	windowWidth(0,99999,0),
+	windowOverlap(0,99999,0),
 
 	energy("BV",'V'),
 	energyFile(""),
@@ -517,6 +521,19 @@ CommandLineParsing::CommandLineParsing()
 				->notifier(boost::bind(&CommandLineParsing::validate_temperature,this,_1))
 			, std::string("temperature in Celsius to setup the VRNA energy parameters"
 					" (arg in range ["+toString(temperature.min)+","+toString(temperature.max)+"])").c_str())
+		("windowWidth"
+			, value<int>(&(windowWidth.val))
+				->default_value(windowWidth.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_windowWidth,this,_1))
+			, std::string("Window-based computation: width of the window to be used; 0 disables window-based computation"
+					" (arg in range ["+toString(windowWidth.min)+","+toString(windowWidth.max)+"])").c_str())
+		("windowOverlap"
+			, value<int>(&(windowOverlap.val))
+				->default_value(windowOverlap.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_windowOverlap,this,_1))
+			, std::string("Window-based computation: overlap of the window to be used."
+					" Has to be smaller than --windowWidth and greater or equal than the maximal interaction length (see --q|tIntMaxLen)."
+					" (arg in range ["+toString(windowOverlap.min)+","+toString(windowOverlap.max)+"])").c_str())
 		;
 
 
@@ -533,9 +550,11 @@ CommandLineParsing::CommandLineParsing()
 					"\nUse one of the following PREFIXES (colon-separated) to generate"
 					" ADDITIONAL output:"
 					"\n 'qMinE:' (query) for each position the minimal energy of any interaction covering the position (CSV format)"
+					"\n 'qSpotProb:' (query) for each position the probability that is is covered by an interaction covering (CSV format)"
 					"\n 'qAcc:' (query) ED accessibility values ('qPu'-like format)."
 					"\n 'qPu:' (query) unpaired probabilities values (RNAplfold format)."
 					"\n 'tMinE:' (target) for each position the minimal energy of any interaction covering the position (CSV format)"
+					"\n 'tSpotProb:' (target) for each position the probability that is is covered by an interaction covering (CSV format)"
 					"\n 'tAcc:' (target) ED accessibility values ('tPu'-like format)."
 					"\n 'tPu:' (target) unpaired probabilities values (RNAplfold format)."
 					"\n 'pMinE:' (query+target) for each index pair the minimal energy of any interaction covering the pair (CSV format)"
@@ -827,6 +846,50 @@ parse(int argc, char** argv)
 			parseRegion( "qRegion", qRegionString, query, qRegion );
 			parseRegion( "tRegion", tRegionString, target, tRegion );
 
+
+			//////////////// WINDOW-BASED COMPUTATION ///////////////////
+
+			// check if window-based computation enabled
+			if (windowWidth.val > 0) {
+				// minimal window width
+				if (windowWidth.val < 10) {
+					throw error("window-based computation: --windowWidth should be at least 10 but is "+toString(windowWidth.val));
+				}
+				// ensure interaction length is restricted
+				size_t maxIntLength = 0;
+				if (qAcc.val != 'N') { // check if accessibility computation enabled
+					if (qIntLenMax.val == 0 && qAccW.val == 0) {
+						throw error("window-based computation: maximal query interaction length has to be restricted either via --qAccW or --qIntLenMax");
+					} else { // update maximum
+						maxIntLength = std::max(qIntLenMax.val, qAccW.val);
+					}
+				} else { // max interaction length of query
+					if (qIntLenMax.val == 0) {
+						throw error("window-based computation: maximal query interaction length has to be restricted via --qIntLenMax");
+					} else {
+						maxIntLength = qIntLenMax.val;
+					}
+				}
+				if (tAcc.val != 'N') {
+					if (tIntLenMax.val == 0 && tAccW.val == 0) {
+						throw error("window-based computation: maximal target interaction length has to be restricted either via --tAccW or --tIntLenMax");
+					} else { // update maximum
+						maxIntLength = maxIntLength < std::max(tAccW.val,tIntLenMax.val) ? std::max(tAccW.val,tIntLenMax.val) : maxIntLength;
+					}
+				} else {
+					if (tIntLenMax.val == 0) {
+						throw error("window-based computation: maximal target interaction length has to be restricted via --tIntLenMax");
+					} else { // update maximum
+						maxIntLength = maxIntLength < tIntLenMax.val ? tIntLenMax.val : maxIntLength;
+					}
+				}
+				if (windowOverlap.val < maxIntLength) {
+					throw error("window-based computation: --windowOverlap ("+toString(windowOverlap.val)+") has to be at least as large as the maximum of --q|tAccW or --q|tIntLenMax ("+toString(maxIntLength)+")");
+				}
+				if (windowWidth.val <= windowOverlap.val) {
+					throw error("window-based computation: --windowWidth ("+toString(windowWidth.val)+") has to exceed --windowOverlap ("+toString(windowOverlap.val)+")");
+				}
+			}
 
 			//////////////// ACCESSIBILITY CONSTRAINTS ///////////////////
 
@@ -1181,6 +1244,25 @@ getTargetSequences() const
 {
 	checkIfParsed();
 	return target;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+const size_t
+CommandLineParsing::
+getWindowWidth() const
+{
+	// check if disabled (== 0)
+	return windowWidth.val == 0 ? std::numeric_limits<size_t>::max() : windowWidth.val;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+const size_t
+CommandLineParsing::
+getWindowOverlap() const
+{
+	return windowOverlap.val;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1657,6 +1739,21 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 						, "NA") );
 	}
 
+	// check if spotProb-profile is to be generated
+	if (!outPrefix2streamName.at(OutPrefixCode::OP_tSpotProb).empty() || !outPrefix2streamName.at(OutPrefixCode::OP_qSpotProb).empty()) {
+		predTracker->addPredictionTracker(
+				new PredictionTrackerProfileSpotProb( energy
+						// add sequence-specific prefix for output file
+						, getFullFilename( outPrefix2streamName.at(OutPrefixCode::OP_tSpotProb)
+								, &(energy.getAccessibility1().getSequence())
+								, &(energy.getAccessibility2().getAccessibilityOrigin().getSequence()))
+						// add sequence-specific prefix for output file
+						, getFullFilename( outPrefix2streamName.at(OutPrefixCode::OP_qSpotProb)
+								, &(energy.getAccessibility1().getSequence())
+								, &(energy.getAccessibility2().getAccessibilityOrigin().getSequence()))
+						, "0") );
+	}
+
 	// check if minE-pairs are to be generated
 	if (!outPrefix2streamName.at(OutPrefixCode::OP_pMinE).empty()) {
 		predTracker->addPredictionTracker(
@@ -1858,8 +1955,14 @@ getSeedHandler( const InteractionEnergy & energy ) const
 		// create new seed handler for explicit seed definitions
 		return new SeedHandlerExplicit( energy, seedConstr );
 	} else {
-		// create new seed handler using mfe computation
-		return new SeedHandlerMfe( energy, seedConstr );
+		// check if we have to allow for bulges in seed
+		if (seedConstr.getMaxUnpaired1()+seedConstr.getMaxUnpaired2()+seedConstr.getMaxUnpairedOverall() > 0) {
+			// create new seed handler using mfe computation
+			return new SeedHandlerMfe( energy, seedConstr );
+		} else {
+			// create new bulge-free seed handler
+			return new SeedHandlerNoBulge( energy, seedConstr );
+		}
 	}
 }
 
