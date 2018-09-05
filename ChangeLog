@@ -40,6 +40,36 @@
      - sophisticated (but buggy) check for cells not needed for computation
  * README.md :
    * prediction mode documentation corrected
+
+180820 Martin Raden :
+ + IntaRNA/SeedHandlerNoBulge : optimized seed handler if no bulges are allowed
+   within seeds
+ + tests/SeedHandlerNoBulge_test : comparing output with SeedHandlerMfe
+ * IntaRNA/SeedHandler :
+   + isFeasibleSeedBasePair() : checks whether or not a given base pair can be
+     part of a seed (complementary, in valid region, with ED below threshold)
+ * bin/CommandLineParsing :
+   * getSeedHandler() :
+     + provides SeedHandlerNoBulge if no unpaired bases are allowed within seed
+ * IntaRNA/SeedHandlerMfe :
+   * fillSeed() :
+     + time measurement in verbose mode
+     + usage of SeedHandler::isFeasibleSeedBasePair() where appropriate
+
+180819 Martin Raden :
+ + IntaRNA/SeedHandlerNoBulge : optimized seed handler if no bulges are allowed
+   within seeds
+ + tests/SeedHandlerNoBulge_test : comparing output with SeedHandlerMfe
+ * IntaRNA/SeedHandler :
+   + isFeasibleSeedBasePair() : checks whether or not a given base pair can be
+     part of a seed (complementary, in valid region, with ED below threshold)
+ * bin/CommandLineParsing :
+   * getSeedHandler() :
+     + provides SeedHandlerNoBulge if no unpaired bases are allowed within seed
+ * IntaRNA/SeedHandlerMfe :
+   * fillSeed() :
+     + time measurement in verbose mode
+     + usage of SeedHandler::isFeasibleSeedBasePair() where appropriate
      
 version 2.2.1
 
@@ -60,36 +90,6 @@ version 2.2.1
    * "version" output extended with used VRNA and boost version
      
 version 2.2.0
-
-180819 Martin Raden :
- + IntaRNA/SeedHandlerNoBulge : optimized seed handler if no bulges are allowed
-   within seeds
- + tests/SeedHandlerNoBulge_test : comparing output with SeedHandlerMfe
- * IntaRNA/SeedHandler :
-   + isFeasibleSeedBasePair() : checks whether or not a given base pair can be
-     part of a seed (complementary, in valid region, with ED below threshold)
- * bin/CommandLineParsing :
-   * getSeedHandler() :
-     + provides SeedHandlerNoBulge if no unpaired bases are allowed within seed
- * IntaRNA/SeedHandlerMfe :
-   * fillSeed() :
-     + time measurement in verbose mode
-     + usage of SeedHandler::isFeasibleSeedBasePair() where appropriate
-
-180819 Martin Raden :
- + IntaRNA/SeedHandlerNoBulge : optimized seed handler if no bulges are allowed
-   within seeds
- + tests/SeedHandlerNoBulge_test : comparing output with SeedHandlerMfe
- * IntaRNA/SeedHandler :
-   + isFeasibleSeedBasePair() : checks whether or not a given base pair can be
-     part of a seed (complementary, in valid region, with ED below threshold)
- * bin/CommandLineParsing :
-   * getSeedHandler() :
-     + provides SeedHandlerNoBulge if no unpaired bases are allowed within seed
- * IntaRNA/SeedHandlerMfe :
-   * fillSeed() :
-     + time measurement in verbose mode
-     + usage of SeedHandler::isFeasibleSeedBasePair() where appropriate
 
 180807 Martin Raden :
  * Makefile.am :
