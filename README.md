@@ -407,7 +407,7 @@ and according features are supported and can be set via the `--mode` parameter.
 The tiem and space complexities are given for the prediction of two sequences
 of equal length *n*.
 
-| Features | Heuristic `--mode=H` | Exact-SE `--mode=S` | Exact `--mode=E` |
+| Features | Heuristic `--mode=H` | Exact-SE `--mode=M` | Exact `--mode=E` |
 | -------- | :------------------: | :-----------------: | :--------------: |
 | Time complexity (prediction only) | O(*n*^2) | O(*n*^4) | O(*n*^4) |
 | Space complexity | O(*n*^2) | O(*n*^2) | O(*n*^4) |
@@ -423,8 +423,10 @@ Note, due to the low run-time requirement of the heuristic prediction mode
 (`--mode=H`), heuristic IntaRNA interaction predictions are widely used to screen
 for interaction in a genome-wide scale. If you are more interested in specific
 details of an interaction site or of two relatively short RNA molecules, you 
-should investigate the exact prediction mode (`--mode=S`, or `--mode=E`
-if non-overlapping suboptimal prediction is required).
+should investigate the exact prediction mode (`--mode=M`, or `--mode=E`
+if non-overlapping suboptimal prediction is required). Note further, the exact
+mode `E` should provide the same results as mode `M` but uses dramatically more
+memory for computations.
 
 Given these features, we can emulate and extend a couple of RNA-RNA interaction
 tools using IntaRNA.
@@ -452,7 +454,7 @@ interacting RNA, such that we have to disable accessibility computation based on
 using
 ```bash
 # prediction results similar to RNAup
-IntaRNA --mode=S --noSeed --qAccW=0 --qAccL=0 --tAccW=0 --tAccL=0
+IntaRNA --mode=M --noSeed --qAccW=0 --qAccL=0 --tAccW=0 --tAccL=0
 ```
 We *add seed-constraint support to RNAup-like computations* by removing the 
 `--noSeed` flag from the above call.
