@@ -32,6 +32,12 @@
      * bugfix : maxInteractionWidth check (have to use <= instead of <)
      - cell initialization check removed (since obsolete and causing problems,
        see issue #117)
+ * IntaRNA/PredictorMfe4dSeed : 
+   * predict() :
+     * bugfix initialization problem : was only initializing cells not to be 
+       filled, which caused random prediction problems (issue #117)
+     - debug cell allocation information
+     - sophisticated (but buggy) check for cells not needed for computation
      
 version 2.2.1
 

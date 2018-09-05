@@ -82,12 +82,9 @@ predict( const IndexRange & r1
 	hybridE.resize( hybridEsize1, hybridEsize2 );
 	hybridE_seed.resize( hybridEsize1, hybridEsize2 );
 
-	size_t w1, w2;
-
-
 	size_t maxWidthFori1i2 = 0;
 
-	bool i1blocked, i1or2blocked, skipw1w2;
+	bool i1blocked, i1or2blocked;
 	// initialize 3rd and 4th dimension of the matrix
 	for (size_t i1=0; i1<hybridEsize1; i1++) {
 		// check if i1 is blocked for interaction
@@ -111,50 +108,6 @@ predict( const IndexRange & r1
 					/*w1 = */ std::min(energy.getAccessibility1().getMaxLength(), std::min( hybridEsize1-i1, maxWidthFori1i2) ),
 					/*w2 = */ std::min(energy.getAccessibility2().getMaxLength(), std::min( hybridEsize2-i2, maxWidthFori1i2) ));
 				hybridE_seed(i1,i2) = new E2dMatrix( hybridE(i1,i2)->size1(), hybridE(i1,i2)->size2() );
-
-				// screen for cells that can be skipped from computation (decreasing window sizes)
-				for (size_t w1x = (*hybridE(i1,i2)).size1(); w1x>0; w1x--) {
-					w1 = w1x-1;
-
-				for (size_t w2x = (*hybridE(i1,i2)).size2(); w2x>0; w2x--) {
-					w2 = w2x-1;
-
-					// check if window size too large
-					skipw1w2 = false;
-
-					// check if ED penalty exceeds maximal energy gain
-					if (w1 > 0 && w2 > 0){
-						// check if all larger windows needing this site are already set to INF
-						bool largerWindowsINF = w1x==(*hybridE(i1,i2)).size1() && w2x==(*hybridE(i1,i2)).size2();
-						// check all larger windows w1 + w2p (that might need this window for computation)
-						for (size_t w2p=(*hybridE(i1,i2)).size2()-1; largerWindowsINF && w2p>w2; w2p++) {
-							// check if larger window is E_INF
-							largerWindowsINF = (std::numeric_limits<E_type>::max() < (*hybridE(i1,i2))(w1+1,w2p));
-						}
-						// check all larger windows w2 + w1p (that might need this window for computation)
-						for (size_t w1p=(*hybridE(i1,i2)).size1()-1; largerWindowsINF && w1p>w1; w1p++) {
-							// check if larger window is E_INF
-							largerWindowsINF = (std::numeric_limits<E_type>::max() < (*hybridE(i1,i2))(w1p,w2+1));
-						}
-
-						// if it holds for all w'>=w: ED1(i1+w1')+ED2(i2+w2')-outConstraint.maxE > -1*(min(w1',w2')*EmaxStacking + Einit + 2*Edangle + 2*Eend)
-						// ie. the ED values exceed the max possible energy gain of an interaction
-						skipw1w2 = skipw1w2
-								|| ( largerWindowsINF &&
-										( -1.0*(std::min(w1,w2)*minStackingEnergy + minInitEnergy + 2.0*minDangleEnergy + 2.0*minEndEnergy) <
-											(energy.getED1(i1,i1+w1) + energy.getED2(i2,i2+w2) - outConstraint.maxE))
-									)
-									;
-					}
-
-					if (skipw1w2) {
-						// init with infinity to mark that this cell is not to be computed later on
-						(*hybridE(i1,i2))(w1,w2) = E_INF;
-						(*hybridE_seed(i1,i2))(w1,w2) = E_INF;
-					}
-
-				}
-				}
 
 			} else {
 				// reduce memory consumption and avoid computation for this start index combination
@@ -235,6 +188,7 @@ fillHybridE_seed( )
 		// TODO PARALLELIZE THIS DOUBLE LOOP ?!
 		for (i1=0; i1+w1<hybridE_seed.size1(); i1++) {
 		for (i2=0; i2+w2<hybridE_seed.size2(); i2++) {
+
 			// check if left boundary is complementary
 			if (hybridE_seed(i1,i2) == NULL) {
 				// interaction not possible: nothing to do, since no storage reserved
@@ -248,9 +202,10 @@ fillHybridE_seed( )
 			}
 			assert(hybridE(i1,i2)->size1() > w1);
 			assert(hybridE(i1,i2)->size2() > w2);
+
 			// check if no interaction without seed possible -> none with neither
 			if ( E_isINF((*hybridE(i1,i2))(w1,w2))
-					// check if seed base pairs fit not into interaction window
+					// check if seed base pairs do not fit into interaction window
 					|| w1+1 < seedHandler.getConstraint().getBasePairs()
 					|| w2+1 < seedHandler.getConstraint().getBasePairs() )
 			{
