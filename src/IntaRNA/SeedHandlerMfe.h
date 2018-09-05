@@ -75,7 +75,7 @@ public:
 	 * Identifies the base pairs of the mfe seed interaction starting at i1,i2
 	 * and writes them to the provided container
 	 *
-	 * NOTE: the right most base pair is excluded!
+	 * NOTE: the left- and right-most base pairs are excluded!
 	 *
 	 * @param interaction the container to add the base pairs too
 	 * @param i1 the start of the seed in seq1

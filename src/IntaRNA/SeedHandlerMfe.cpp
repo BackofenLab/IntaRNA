@@ -16,8 +16,8 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 	if ( i1max > energy.size1() ) throw std::runtime_error("SeedHandlerMfe::fillSeed: i1max("+toString(i1max)+") > energy.size1("+toString(energy.size1())+")");
 	if ( i2max > energy.size2() ) throw std::runtime_error("SeedHandlerMfe::fillSeed: i2max("+toString(i2max)+") > energy.size2("+toString(energy.size2())+")");
 #endif
-
-	// TODO : if (umax==0) apply local alignment/exact match search based on sequence only
+	// measure timing
+	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
 
 	// resize matrizes
 	seed.resize( i1max-i1min+1, i2max-i2min+1 );
@@ -51,14 +51,7 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 		seed(i1-offset1,i2-offset2) = SeedMatrix::value_type( E_INF, 0 );
 
 		// skip non-complementary left seed boundaries
-		if (!energy.areComplementary(i1,i2)) {
-			continue; // go to next seedE index
-		}
-		// skip left seed boundaries excluded from search
-		if (!(seedConstraint.getRanges1().empty() || seedConstraint.getRanges1().covers(i1))) {
-			continue; // go to next seedE index
-		}
-		if (!(seedConstraint.getRanges2().empty() || seedConstraint.getRanges2().covers(i2))) {
+		if (!isFeasibleSeedBasePair(i1,i2)) {
 			continue; // go to next seedE index
 		}
 
@@ -78,16 +71,18 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 				// get right seed boundaries
 				j1 = i1+bpIn+1+u1;
 				j2 = i2+bpIn+1+u2;
+				// check if right boundary is complementary
 				// check if this index range is to be considered for seed search
 				bool validSeedSite =
-						(seedConstraint.getRanges1().empty() || seedConstraint.getRanges1().covers(i1,j1))
+						isFeasibleSeedBasePair(j1,j2)
+						&& (seedConstraint.getRanges1().empty() || seedConstraint.getRanges1().covers(i1,j1))
 						&& (seedConstraint.getRanges2().empty() || seedConstraint.getRanges2().covers(i2,j2));
 
 				// init current seed energy
 				curE = E_INF;
 
 				// check if right boundary is complementary
-				if (validSeedSite && energy.areComplementary(j1,j2)) {
+				if (validSeedSite) {
 
 					// base case: only left and right base pair present
 					if (bpIn==0) {
@@ -190,6 +185,7 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 #endif
 	{ VLOG(2) <<"valid seeds = "<<seedCountNotInf <<" ("<<(seedCountNotInf/seedCount)<<"% of start index combinations)"; }
 
+	// return final number of valid seeds
 	return seedCountNotInf;
 }
 
