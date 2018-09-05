@@ -76,6 +76,21 @@ version 2.2.0
      + time measurement in verbose mode
      + usage of SeedHandler::isFeasibleSeedBasePair() where appropriate
 
+180819 Martin Raden :
+ + IntaRNA/SeedHandlerNoBulge : optimized seed handler if no bulges are allowed
+   within seeds
+ + tests/SeedHandlerNoBulge_test : comparing output with SeedHandlerMfe
+ * IntaRNA/SeedHandler :
+   + isFeasibleSeedBasePair() : checks whether or not a given base pair can be
+     part of a seed (complementary, in valid region, with ED below threshold)
+ * bin/CommandLineParsing :
+   * getSeedHandler() :
+     + provides SeedHandlerNoBulge if no unpaired bases are allowed within seed
+ * IntaRNA/SeedHandlerMfe :
+   * fillSeed() :
+     + time measurement in verbose mode
+     + usage of SeedHandler::isFeasibleSeedBasePair() where appropriate
+
 180807 Martin Raden :
  * Makefile.am :
    + set GCC_COLORS (if not already present) to enable gcc output coloring
