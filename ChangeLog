@@ -38,11 +38,13 @@
        filled, which caused random prediction problems (issue #117)
      - debug cell allocation information
      - sophisticated (but buggy) check for cells not needed for computation
+ * README.md :
+   * prediction mode documentation corrected
      
 version 2.2.1
 
 180627 Martin Raden / Milad Miladi :
- * adaption to VRNA v2.4.8
+ * adaptation to VRNA v2.4.8
 
 180328 Martin Raden :
  * IntaRNA/OutputHandlerCsv :
