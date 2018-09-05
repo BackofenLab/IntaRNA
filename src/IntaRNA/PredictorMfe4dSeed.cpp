@@ -82,11 +82,7 @@ predict( const IndexRange & r1
 	hybridE.resize( hybridEsize1, hybridEsize2 );
 	hybridE_seed.resize( hybridEsize1, hybridEsize2 );
 
-	size_t debug_count_cells_null=0
-			, debug_count_cells_nonNull = 0
-			, debug_count_cells_inf = 0
-			, debug_cellNumber=0
-			, w1, w2;
+	size_t w1, w2;
 
 
 	size_t maxWidthFori1i2 = 0;
@@ -106,10 +102,6 @@ predict( const IndexRange & r1
 				maxWidthFori1i2 = getMaxInteractionWidth( hybridEsize2-i2, energy.getMaxInternalLoopSize2() );
 			}
 
-			debug_cellNumber =
-					/*w1 = */ std::min(energy.getAccessibility1().getMaxLength(), std::min( hybridEsize1-i1, maxWidthFori1i2) )
-				*	/*w2 = */ std::min(energy.getAccessibility2().getMaxLength(), std::min( hybridEsize2-i2, maxWidthFori1i2) );
-
 			// check if i1 and i2 are not blocked and can form a base pair
 			if ( ! i1or2blocked
 				&& energy.areComplementary( i1, i2 ))
@@ -119,8 +111,6 @@ predict( const IndexRange & r1
 					/*w1 = */ std::min(energy.getAccessibility1().getMaxLength(), std::min( hybridEsize1-i1, maxWidthFori1i2) ),
 					/*w2 = */ std::min(energy.getAccessibility2().getMaxLength(), std::min( hybridEsize2-i2, maxWidthFori1i2) ));
 				hybridE_seed(i1,i2) = new E2dMatrix( hybridE(i1,i2)->size1(), hybridE(i1,i2)->size2() );
-
-				debug_count_cells_nonNull += debug_cellNumber;
 
 				// screen for cells that can be skipped from computation (decreasing window sizes)
 				for (size_t w1x = (*hybridE(i1,i2)).size1(); w1x>0; w1x--) {
@@ -161,7 +151,6 @@ predict( const IndexRange & r1
 						// init with infinity to mark that this cell is not to be computed later on
 						(*hybridE(i1,i2))(w1,w2) = E_INF;
 						(*hybridE_seed(i1,i2))(w1,w2) = E_INF;
-						debug_count_cells_inf++;
 					}
 
 				}
@@ -171,19 +160,10 @@ predict( const IndexRange & r1
 				// reduce memory consumption and avoid computation for this start index combination
 				hybridE(i1,i2) = NULL;
 				hybridE_seed(i1,i2) = NULL;
-				debug_count_cells_null += debug_cellNumber;
 			}
 		}
 	}
 
-#if INTARNA_MULITHREADING
-	#pragma omp critical(intarna_omp_logOutput)
-#endif
-	{ LOG(DEBUG) <<"init 2x 4d matrix : "<<(debug_count_cells_nonNull-debug_count_cells_inf)<<" (-"<<debug_count_cells_inf <<") to be filled ("
-				<<((double)(debug_count_cells_nonNull-debug_count_cells_inf)/(double)(debug_count_cells_nonNull+debug_count_cells_null))
-				<<"%) and "<<debug_count_cells_null <<" not allocated ("
-				<<((double)(debug_count_cells_null)/(double)(debug_count_cells_nonNull+debug_count_cells_null))
-				<<"%)"; }
 
 	// init mfe without seed condition
 	OutputConstraint tmpOutConstraint(1, outConstraint.reportOverlap, outConstraint.maxE, outConstraint.deltaE);
