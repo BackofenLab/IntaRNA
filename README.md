@@ -69,7 +69,9 @@ The following topics are covered by this documentation:
   - [OS X installation with homebrew](#instosx)
 - [Usage and Parameters](#usage)
   - [Just run ...](#defaultRun)
-  - [Prediction modes, their features and emulated tools](#predModes)
+  - [Prediction modes](#predModes)
+    - [Emulating other RNA-RNA interaction prediction tools](#predEmulateTools)
+    - [Limiting memory consumption - window-based prediction](#predWindowBased)
   - [Interaction restrictions](#interConstr)
   - [Seed constraints](#seed)
   - [Explicit seed input](#seedExplicit)
@@ -401,7 +403,7 @@ list covering also more sophisticated options, run `--fullhelp`.
 <br /><br />
 <a name="predModes" />
 
-## Prediction modes, their features and emulated tools
+## Prediction modes
 
 For the prediction of *minimum free energy interactions*, the following modes
 and according features are supported and can be set via the `--mode` parameter.
@@ -428,6 +430,12 @@ should investigate the exact prediction mode (`--mode=M`, or `--mode=E`
 if non-overlapping suboptimal prediction is required). Note further, the exact
 mode `E` should provide the same results as mode `M` but uses dramatically more
 memory for computations.
+
+
+<br /><br />
+<a name="predEmulateTools" />
+
+### Emulating other RNA-RNA interaction prediction tools
 
 Given these features, we can emulate and extend a couple of RNA-RNA interaction
 tools using IntaRNA.
@@ -461,7 +469,32 @@ We *add seed-constraint support to RNAup-like computations* by removing the
 `--noSeed` flag from the above call.
 
 
+<br /><br />
+<a name="predWindowBased" />
 
+### Limiting memory consumption - window-based prediction
+
+The memory requirement of IntaRNA grows quadratically with lengths of the input
+sequences. Thus, for very long input RNAs, the requested memory can exceed the 
+available RAM of smaller computers.
+
+This can be circumvented by using a window-based prediction where the input
+sequences are decomposed in overlapping subsequences (windows) that are 
+processed individually. That way, the maximal memory consumption is defined by
+the (shorter) window length rather the length of the input sequence, resulting
+in a user guided memory/RAM consumption.
+
+The window-based computation is enabled by setting the following parameters
+
+- `--windowWidth` : length of the windows/subsequences (value of 0 disables window-based computations)
+- `--windowOverlap` : overlap of the windows that has to be cover the maximal interaction length (see [`--q|tIntLenMax`](#interConstr))   
+
+Note, window-based computation produces a computational overhead due to 
+redundant consideration of the overlapping subsequences. Thus, the runtime is
+increased proportionally to the ratio of window overlap and length.
+
+If only one query and target are given, window-based computation can be 
+[parallelized](#multithreading), which typically remedies the computational overhead.
 
 
 
@@ -1223,14 +1256,22 @@ as shown above), since this does not produce the according output files!
 IntaRNA supports the parallelization of the target-query-combination processing. 
 The maximal number of threads to be used can be specified using the `--threads` parameter.
 If `--threads=k != 1`, than *k* predictions are processed in parallel. A value of
-0 requests the maximally available number of threads for this machine.
+`0` requests the maximally available number of threads for this machine.
 
 When using parallelization, you should have the following in mind:
 
-- The memory consumption will be (much) higher, since each thread runs an independent
+- The memory consumption will be multiplied by the number of threads, 
+  since each thread runs an independent
   prediction (with according memory consumption). Thus, ensure you have enough
   RAM available when using many threads of memory-demanding 
-  [prediction modes](#predModes).
+  [prediction modes](#predModes). You might consider [window-based prediction](#predWindowBased)
+  to limit the required RAM.
+  
+- Parallelization is enabled hierarchically, ie. only one of the following input
+  sets is processed in parallel: 
+  - target sequences (if more than one)
+  - if only one target: query sequences (if more than one)
+  - if only one target and query: [window combinations](#predWindowBased) (if enabled)
  
 The support for multi-threading can be completely disabled before compilation
 using `configure --disable-multithreading`.
