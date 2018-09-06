@@ -304,7 +304,7 @@ set `--prefix=INSTALLPATH` if you dont want to install IntaRNA globally.
 
 
 ```[bash]
-Make
+make
 make tests
 make install
 ```

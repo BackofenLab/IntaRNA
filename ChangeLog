@@ -4,11 +4,33 @@ version 2.3.0
 180906 Martin Raden :
  * bin/CommandLineParsing :
    * VRNA version information in --version output corrected
+ * README.md :
+   + window-based prediction docu
+   * minor corrections and extensions
 
 180905 Martin Raden :
  * configure.ac :
    + final configuration output
-+ window-based processing of long RNAs enabled (thanks to Sebastian Holler)
+ * IntaRNA/PredictorMfe4d : 
+   * predict() :
+     * bugfix initialization problem : was only initializing cells not to be 
+       filled, which caused random prediction problems (issue #117)
+     - debug cell allocation information
+     - sophisticated (but buggy) check for cells not needed for computation
+   * fillHybridE() :
+     * bugfix : maxInteractionWidth check (have to use <= instead of <)
+     - cell initialization check removed (since obsolete and causing problems,
+       see issue #117)
+ * IntaRNA/PredictorMfe4dSeed : 
+   * predict() :
+     * bugfix initialization problem : was only initializing cells not to be 
+       filled, which caused random prediction problems (issue #117)
+     - debug cell allocation information
+     - sophisticated (but buggy) check for cells not needed for computation
+ * README.md :
+   * prediction mode documentation corrected
+   
+180905 Martin Raden, Sebastian Holler : window-based prediction enabled
  * bin/CommandLineParsing :
    + windowWidth parameter + validator to define length of windows
    + windowOverlap parameter + validator to define overlap of subsequent windows
@@ -28,24 +50,6 @@ version 2.3.0
  + tests/OutputHandlerInteractionList :
    + order test
    + duplicated insert test
- * IntaRNA/PredictorMfe4d : 
-   * predict() :
-     * bugfix initialization problem : was only initializing cells not to be 
-       filled, which caused random prediction problems (issue #117)
-     - debug cell allocation information
-     - sophisticated (but buggy) check for cells not needed for computation
-   * fillHybridE() :
-     * bugfix : maxInteractionWidth check (have to use <= instead of <)
-     - cell initialization check removed (since obsolete and causing problems,
-       see issue #117)
- * IntaRNA/PredictorMfe4dSeed : 
-   * predict() :
-     * bugfix initialization problem : was only initializing cells not to be 
-       filled, which caused random prediction problems (issue #117)
-     - debug cell allocation information
-     - sophisticated (but buggy) check for cells not needed for computation
- * README.md :
-   * prediction mode documentation corrected
 
 180819 Martin Raden :
  + IntaRNA/SeedHandlerNoBulge : optimized seed handler if no bulges are allowed
