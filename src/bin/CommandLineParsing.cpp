@@ -532,7 +532,7 @@ CommandLineParsing::CommandLineParsing()
 				->default_value(windowOverlap.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_windowOverlap,this,_1))
 			, std::string("Window-based computation: overlap of the window to be used."
-					" Has to be smaller than --windowWidth and greater or equal than the maximal interaction length (see --q|tIntMaxLen)."
+					" Has to be smaller than --windowWidth and greater or equal than the maximal interaction length (see --q|tIntLenMax)."
 					" (arg in range ["+toString(windowOverlap.min)+","+toString(windowOverlap.max)+"])").c_str())
 		;
 
