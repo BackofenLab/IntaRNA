@@ -23,9 +23,6 @@ extern "C" {
 	#include <ViennaRNA/vrna_config.h>
 }
 
-#define _STRINGIFY(s) #s
-#define STRINGIFY(s) _STRINGIFY(s)
-
 
 #include "IntaRNA/AccessibilityConstraint.h"
 
@@ -719,7 +716,7 @@ parse(int argc, char** argv)
 					<<INTARNA_PACKAGE_STRING
 					<< "\n"
 					<<" using Vienna RNA package "
-						<<STRINGIFY(VRNA_VERSION)
+						<<(VRNA_VERSION)
 					<<" and boost "
 						<<(BOOST_VERSION / 100000)
 						<<'.'<<(BOOST_VERSION / 100 % 1000)

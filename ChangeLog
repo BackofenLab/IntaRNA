@@ -1,6 +1,10 @@
 
 version 2.3.0
 
+180906 Martin Raden :
+ * bin/CommandLineParsing :
+   * VRNA version information in --version output corrected
+
 180905 Martin Raden :
  * configure.ac :
    + final configuration output
