@@ -38,6 +38,8 @@ public:
 		end2, //!< end index of hybrid in seq2
 		hybridDP, //!< hybrid in VRNA dot-bracket notation
 		hybridDB, //!< hybrid in dot-bar notation
+		hybridDPfull, //!< hybrid in VRNA dot-bracket notation for full sequence lengths
+		hybridDBfull, //!< hybrid in dot-bar notation for full sequence lengths
 		E, //!< overall hybridization energy
 		ED1, //!< ED value of seq1
 		ED2, //!< ED value of seq2
@@ -101,6 +103,8 @@ protected:
 			colType2string[subseqDB] = "subseqDB";
 			colType2string[hybridDP] = "hybridDP";
 			colType2string[hybridDB] = "hybridDB";
+			colType2string[hybridDPfull] = "hybridDPfull";
+			colType2string[hybridDBfull] = "hybridDBfull";
 			colType2string[E] = "E";
 			colType2string[ED1] = "ED1";
 			colType2string[ED2] = "ED2";

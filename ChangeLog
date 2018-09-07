@@ -1,4 +1,15 @@
 
+180907 Martin Raden :
+ * IntaRNA/OutputHandlerCsv :
+   + 'hybridDP|Bfull' output for full sequence lengths
+ * IntaRNA/Interaction :
+   * dotBar() :
+   * dotBracket() :
+     + "fullLength" argument to trigger full-length or interaction-site-only 
+       output
+ * README.md : 
+   + 'hybridD(P|B)full' documentation
+
 version 2.3.0
 
 180906 Martin Raden :

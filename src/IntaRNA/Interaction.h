@@ -200,11 +200,14 @@ public:
 	 * needed yielding still a valid encoding (for the swapped sequences).
 	 *
 	 * @param i interaction to encode
+	 * @param fullLength whether or not full length base pair annotation is to
+	 *          be printed
+	 *
 	 * @return the dot-bracket encoding
 	 */
 	static
 	std::string
-	dotBar( const Interaction & i );
+	dotBar( const Interaction & i, const bool fullLength = false );
 
 	/**
 	 * Produces a dot-bracket encoding of the interaction in VRNA style in the
@@ -221,12 +224,14 @@ public:
 	 * @param i interaction to encode
 	 * @param symOpen the symbol to be used for base pairs in dot-bracket-1
 	 * @param symClose the symbol to be used for base pairs in dot-bracket-2
+	 * @param fullLength whether or not full length base pair annotation is to
+	 *          be printed
 	 *
 	 * @return the VRNA-styled dot-bracket encoding
 	 */
 	static
 	std::string
-	dotBracket( const Interaction & i, const char symOpen = '(', const char symClose = ')');
+	dotBracket( const Interaction & i, const char symOpen = '(', const char symClose = ')', const bool fullLength = false);
 
 
 protected:

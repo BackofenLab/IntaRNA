@@ -609,7 +609,7 @@ This information can be incorporated into IntaRNA predictions by providing
 *explicit seed information*. To this end, the `--seedTQ` parameter can be used.
 It takes a comma-separated list of seed string encodings in the format 
 `startTbpsT&startQbpsQ`, which is in the same format as the IntaRNA `hybridDB`
-output (see below), i.e. e.g. `--seedTQ='4|||.|&7||.||'` 
+output (see [below](#outModeCsv)), i.e. e.g. `--seedTQ='4|||.|&7||.||'` 
 (ensure you quote the seed encoding to avoid a shell interpretation of the pipe symbol '|') 
 to encode a seed interaction like 
 the following 
@@ -772,8 +772,10 @@ are
 - `end1` : end index of hybrid in seq1
 - `start2` : start index of hybrid in seq2
 - `end2` : end index of hybrid in seq2
-- `hybridDP` : hybrid in VRNA dot-bracket notation
-- `hybridDB` : hybrid in dot-bar notation
+- `hybridDP` : hybrid in VRNA dot-bracket notation (interaction sites only)
+- `hybridDPfull` : hybrid in VRNA dot-bracket notation (full sequence length)
+- `hybridDB` : hybrid in dot-bar notation (interactin sites only)
+- `hybridDBfull` : hybrid in dot-bar notation (full sequence length)
 - `E` : overall hybridization energy
 - `ED1` : ED value of seq1
 - `ED2` : ED value of seq2
