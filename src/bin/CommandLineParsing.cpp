@@ -48,6 +48,7 @@ extern "C" {
 #include "IntaRNA/PredictionTrackerPairMinE.h"
 #include "IntaRNA/PredictionTrackerProfileMinE.h"
 #include "IntaRNA/PredictionTrackerSpotProb.h"
+#include "IntaRNA/PredictionTrackerSpotProbAll.h"
 #include "IntaRNA/PredictionTrackerProfileSpotProb.h"
 
 #include "IntaRNA/SeedHandlerMfe.h"
@@ -554,8 +555,8 @@ CommandLineParsing::CommandLineParsing()
 					"\n 'tSpotProb:' (target) for each position the probability that is is covered by an interaction covering (CSV format)"
 					"\n 'tAcc:' (target) ED accessibility values ('tPu'-like format)."
 					"\n 'tPu:' (target) unpaired probabilities values (RNAplfold format)."
-					"\n 'pMinE:' (query+target) for each index pair the minimal energy of any interaction covering the pair (CSV format)"
-					"\n 'spotProb:' (query+target) tracks for a given set of interaction spots their probability to be covered by an interaction. Spots are encoded by comma-separated 'idx1&idx2' pairs. For each spot a probability is provided in concert with the probability that none of the spots (encoded by '0&0') is covered (CSV format). The spot encoding is followed colon-separated by the output stream/file name, eg. '--out=\"spotProb:3&76,59&2:STDERR\"'. NOTE: value has to be quoted due to '&' symbol!"
+					"\n 'pMinE:' (target+query) for each index pair the minimal energy of any interaction covering the pair (CSV format)"
+					"\n 'spotProb:' (target+query) tracks for a given set of interaction spots their probability to be covered by an interaction. If no spots are provided, probabilities for all index combinations are computed. Spots are encoded by comma-separated 'idxT&idxQ' pairs (target-query). For each spot a probability is provided in concert with the probability that none of the spots (encoded by '0&0') is covered (CSV format). The spot encoding is followed colon-separated by the output stream/file name, eg. '--out=\"spotProb:3&76,59&2:STDERR\"'. NOTE: value has to be quoted due to '&' symbol!"
 					"\nFor each, provide a file name or STDOUT/STDERR to write to the respective output stream."
 					).c_str())
 		("outMode"
@@ -1764,12 +1765,24 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 
 	// check if spotProbs are to be tracked
 	if (!outPrefix2streamName.at(OutPrefixCode::OP_spotProb).empty()) {
-		predTracker->addPredictionTracker(
-				new PredictionTrackerSpotProb( energy
-								// get encoding
-								, outSpotProbSpots
-								, outPrefix2streamName.at(OutPrefixCode::OP_spotProb) )
-							);
+		if (outSpotProbSpots.empty()) {
+			// track all spots
+			predTracker->addPredictionTracker(
+					new PredictionTrackerSpotProbAll( energy
+							// add sequence-specific prefix for output file
+							, getFullFilename( outPrefix2streamName.at(OutPrefixCode::OP_spotProb)
+									, &(energy.getAccessibility1().getSequence())
+									, &(energy.getAccessibility2().getAccessibilityOrigin().getSequence()))
+							, "0") );
+		} else {
+			// track only specific spots
+			predTracker->addPredictionTracker(
+					new PredictionTrackerSpotProb( energy
+									// get encoding
+									, outSpotProbSpots
+									, outPrefix2streamName.at(OutPrefixCode::OP_spotProb) )
+								);
+		}
 	}
 
 	// check if any tracker registered
