@@ -25,8 +25,8 @@ class PredictionTrackerPairMinE: public PredictionTracker
 public:
 
 	/**
-	 * Constructs a PredictionTracker that collected for each positions of a
-	 * sequence the minimal energy of any interaction covering this position.
+	 * Constructs a PredictionTracker that collected for index pair of two
+	 * sequences the minimal energy of any interaction covering this position.
 	 *
 	 * Note, if a filename is provided, its stream is closed on destruction of
 	 * this object!
@@ -45,8 +45,8 @@ public:
 			);
 
 	/**
-	 * Constructs an PredictionTracker that collected for each positions of a
-	 * sequence the minimal energy of any interaction covering this position.
+	 * Constructs a PredictionTracker that collected for index pair of two
+	 * sequences the minimal energy of any interaction covering this position.
 	 *
 	 * Note, the stream is NOT closed nor deleted on destruction of this object!
 	 *
@@ -63,13 +63,13 @@ public:
 			);
 
 	/**
-	 * destruction: write the profile(s) to the according streams.
+	 * destruction: write the pair information to the according stream.
 	 */
 	virtual ~PredictionTrackerPairMinE();
 
 
 	/**
-	 * Updates the profile information for each Predictor.updateOptima() call.
+	 * Updates the minE information for each Predictor.updateOptima() call.
 	 *
 	 * @param i1 the index of the first sequence interacting with i2
 	 * @param j1 the index of the first sequence interacting with j2
@@ -106,7 +106,7 @@ protected:
 	E2dMatrix pairMinE;
 
 	/**
-	 * Writes profile data to stream.
+	 * Writes minE data to stream.
 	 *
 	 * @param out the output stream to write to
 	 * @param pairMinE the minE data to write
