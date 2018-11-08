@@ -1763,26 +1763,27 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 						, "NA") );
 	}
 
-	// check if spotProbs are to be tracked
+	// check if specific spotProbs are to be tracked
 	if (!outPrefix2streamName.at(OutPrefixCode::OP_spotProb).empty()) {
-		if (outSpotProbSpots.empty()) {
-			// track all spots
-			predTracker->addPredictionTracker(
-					new PredictionTrackerSpotProbAll( energy
-							// add sequence-specific prefix for output file
-							, getFullFilename( outPrefix2streamName.at(OutPrefixCode::OP_spotProb)
-									, &(energy.getAccessibility1().getSequence())
-									, &(energy.getAccessibility2().getAccessibilityOrigin().getSequence()))
-							, "0") );
-		} else {
-			// track only specific spots
-			predTracker->addPredictionTracker(
-					new PredictionTrackerSpotProb( energy
-									// get encoding
-									, outSpotProbSpots
-									, outPrefix2streamName.at(OutPrefixCode::OP_spotProb) )
-								);
-		}
+		// track only specific spots
+		predTracker->addPredictionTracker(
+				new PredictionTrackerSpotProb( energy
+								// get encoding
+								, outSpotProbSpots
+								, outPrefix2streamName.at(OutPrefixCode::OP_spotProb) )
+							);
+	}
+
+	// check if all spotProbs are to be tracked
+	if (!outPrefix2streamName.at(OutPrefixCode::OP_spotProbAll).empty()) {
+		// track all spots
+		predTracker->addPredictionTracker(
+				new PredictionTrackerSpotProbAll( energy
+						// add sequence-specific prefix for output file
+						, getFullFilename( outPrefix2streamName.at(OutPrefixCode::OP_spotProbAll)
+								, &(energy.getAccessibility1().getSequence())
+								, &(energy.getAccessibility2().getAccessibilityOrigin().getSequence()))
+						, "0") );
 	}
 
 	// check if any tracker registered
