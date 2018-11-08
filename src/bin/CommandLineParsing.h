@@ -1704,9 +1704,10 @@ void CommandLineParsing::validate_out(const std::vector<std::string> & list) {
 			}
 			// store prefix to identify another existence
 			std::string streamName = v->substr(v->find(':')+1);
-			// handle SpotProb setup
-			if (curPrefCode == OP_spotProb) {
-				// get spotProb spots
+
+			// handle SpotProb setup if spots are defined
+			if (curPrefCode == OP_spotProb && streamName.find(':') != std::string::npos) {
+				// get spots
 				outSpotProbSpots = streamName.substr(0,streamName.find(':'));
 				// check if valid spot encoding
 				if (!boost::regex_match(outSpotProbSpots, PredictionTrackerSpotProb::regexSpotString, boost::match_perl)){

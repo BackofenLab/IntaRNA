@@ -81,8 +81,8 @@ The following topics are covered by this documentation:
   - [Energy parameters and temperature](#energy)
   - [Additional output files](#outFiles)
     - [Minimal energy profiles](#profileMinE)
-    - [Spot probability profiles](#profileSpotProb) using partition functions
     - [Minimal energy for all intermolecular index pairs](#pairMinE)
+    - [Spot probability profiles](#profileSpotProb) using partition functions
     - [Interaction probabilities for interaction spots of interest](#spotProb)
     - [Accessibility and unpaired probabilities](#accessibility)
       - [Local versus global unpaired probabilities](#accLocalGlobal)
@@ -977,23 +977,6 @@ mfe interaction close to the 5'-end of the molecule.
 
 
 <br />
-<a name="profileSpotProb" />
-
-### Spot probability profiles
-
-Similarly to (minimal energy profiles)[#profileMinE], it is also possible to
-compute position-wise probabilities how likely a position is covered by an
-interaction, i.e. its *spot probability*. To the end, we compute for each
-position $i$ the partition function $Zi$ of all interactions covering $i$.
-Given the overall partition function *Z* including all possible interactions, 
-the position-speficit spot probability for *i* is given by *Zi/Z*.
-
-Such profiles can be generated using `--out=qSpotProb:MYPROFILEFILE.csv` or 
-`--out=tSpotProb:...` for the query/target sequence respectively and independently.
-
-
-
-<br />
 <a name="pairMinE" />
 
 ### Minimal energy for all intermolecular index pairs
@@ -1024,6 +1007,26 @@ above) reveals, that the alternative stable (*E*<0) interactions all involve the
 mfe-site in the second sequence and are thus less likely to occure. 
 
 ![Minimal interaction energy index pair information](/doc/figures/pair-minE.png?raw=true "Minimal interaction energy index pair information")
+
+
+
+<br />
+<a name="profileSpotProb" />
+
+### Spot probability profiles
+
+Similarly to [minimal energy profiles](#profileMinE), it is also possible to
+compute position-wise probabilities how likely a position is covered by an
+interaction, i.e. its *spot probability*. To the end, we compute for each
+position *i* the partition function *Zi* of all interactions covering *i*.
+Given the overall partition function *Z* including all possible interactions, 
+the position-speficit spot probability for *i* is given by *Zi/Z*.
+
+Such profiles can be generated using `--out=qSpotProb:MYPROFILEFILE.csv` or 
+`--out=tSpotProb:...` for the query/target sequence respectively and independently.
+
+Note, instead of a file you can also write the profile to stream using `STDOUT` 
+or `STDERR` instead of a file name.
 
 
 
@@ -1068,6 +1071,42 @@ is not considering (in default prediction mode) all possible interactions due
 to its heuristic (see [discussion about suboptimal interactions](#subopts)).
 Nevertheless, since the Boltzmann probabilities are dominated by the low(est)
 energy interactions, we consider the probability estimates as meaningful!
+
+
+#### Spot probabilities for all intermolecular index pairs
+
+If interested in all intermolecular index pair combinations (all spots), you
+can exclude the list from the call and only specify the output file/stream by
+`--out="spotProb:MYSPOTPROBFILE.csv"`. The resulting semicolon-separated table provides the spot
+probability for each index pair combination, as shown below.
+
+```[bash]
+ --> IntaRNA --out="spotProb:STDOUT" -t AAACACCCCCGGUGGUUUGG -q AAACACCCCCGGUGGUUUGG --energy=B -m E --noSeed --out=/dev/null
+spotProb;A_1;A_2;A_3;C_4;A_5;C_6;C_7;C_8;C_9;C_10;G_11;G_12;U_13;G_14;G_15;U_16;U_17;U_18;G_19;G_20
+A_1;3.29634e-07;1.04259e-06;1.88581e-06;3.92703e-06;6.01889e-06;1.09014e-05;1.98091e-05;3.26691e-05;4.97285e-05;6.40822e-05;0.00114721;0.00220701;0.00540899;0.00237187;0.00360255;0.00701572;0.00700194;0.00417576;0;0
+A_2;1.04259e-06;3.29756e-06;6.59127e-06;1.23155e-05;2.15023e-05;3.65021e-05;6.65094e-05;0.000109528;0.000164207;0.000210854;0.00272534;0.00524301;0.00906912;0.00467934;0.00760322;0.0122582;0.0114086;0.00602621;0;0
+A_3;1.88581e-06;6.59127e-06;1.46527e-05;2.91728e-05;5.38079e-05;9.40555e-05;0.000179154;0.000297828;0.000439376;0.000558681;0.005502;0.0104376;0.0143365;0.00670991;0.0118697;0.0159918;0.0123526;0.00593264;0;0
+C_4;3.92703e-06;1.23155e-05;2.91728e-05;7.35161e-05;0.000143682;0.000297768;0.000618853;0.00101766;0.00145303;0.0017689;0.0102492;0.0153404;0.015348;0.0123563;0.0147842;0.0126304;0.00887796;0.00667471;0.00973898;0.0075106
+A_5;6.01889e-06;2.15023e-05;5.38079e-05;0.000143682;0.00027948;0.00055287;0.00115804;0.00206338;0.00313617;0.00403553;0.0127348;0.0189567;0.022699;0.0126698;0.0146316;0.0153814;0.0102196;0.00793081;0.00690787;0.00474379
+C_6;1.09014e-05;3.65021e-05;9.40555e-05;0.000297768;0.00055287;0.00127294;0.00278079;0.00507586;0.00801924;0.0102464;0.0234918;0.0277373;0.0219681;0.0173597;0.0181085;0.0126097;0.00712746;0.00444397;0.0150453;0.0139076
+C_7;1.98091e-05;6.65094e-05;0.000179154;0.000618853;0.00115804;0.00278079;0.00611847;0.0114976;0.0187521;0.0245813;0.0392287;0.0365652;0.0245582;0.0257423;0.0194922;0.00880615;0.00691222;0.00878555;0.0299224;0.0270425
+C_8;3.26691e-05;0.000109528;0.000297828;0.00101766;0.00206338;0.00507586;0.0114976;0.0224763;0.0380841;0.051392;0.0716197;0.0587535;0.0346146;0.0429812;0.0266964;0.00717352;0.00914256;0.0183812;0.0585854;0.0521578
+C_9;4.97285e-05;0.000164207;0.000439376;0.00145303;0.00313617;0.00801924;0.0187521;0.0380841;0.0671115;0.0930764;0.115935;0.0830931;0.045061;0.0572892;0.0333122;0.0068722;0.0139344;0.0357869;0.0859975;0.0736521
+C_10;6.40822e-05;0.000210854;0.000558681;0.0017689;0.00403553;0.0102464;0.0245813;0.051392;0.0930764;0.12986;0.14737;0.0865541;0.0493791;0.0589481;0.030814;0.00654186;0.0174543;0.0481296;0.085893;0.0665433
+G_11;0.00114721;0.00272534;0.005502;0.0102492;0.0127348;0.0234918;0.0392287;0.0716197;0.115935;0.14737;0.136251;0.0740332;0.0512369;0.0438958;0.0218223;0.0117975;0.0219606;0.0500723;0.0522355;0.033636
+G_12;0.00220701;0.00524301;0.0104376;0.0153404;0.0189567;0.0277373;0.0365652;0.0587535;0.0830931;0.0865541;0.0740332;0.0495326;0.0356528;0.0244903;0.0175123;0.0140905;0.0164346;0.0207754;0.0228082;0.0156495
+U_13;0.00540899;0.00906912;0.0143365;0.015348;0.022699;0.0219681;0.0245582;0.0346146;0.045061;0.0493791;0.0512369;0.0356528;0.0251168;0.0207634;0.017577;0.0111258;0.010028;0.012619;0.0218789;0.0161306
+G_14;0.00237187;0.00467934;0.00670991;0.0123563;0.0126698;0.0173597;0.0257423;0.0429812;0.0572892;0.0589481;0.0438958;0.0244903;0.0207634;0.0122356;0.00753315;0.0078345;0.00965907;0.0128517;0.0109001;0.0059406
+G_15;0.00360255;0.00760322;0.0118697;0.0147842;0.0146316;0.0181085;0.0194922;0.0266964;0.0333122;0.030814;0.0218223;0.0175123;0.017577;0.00753315;0.00840878;0.00965183;0.00775696;0.0062456;0.00442768;0.00259566
+U_16;0.00701572;0.0122582;0.0159918;0.0126304;0.0153814;0.0126097;0.00880615;0.00717352;0.0068722;0.00654186;0.0117975;0.0140905;0.0111258;0.0078345;0.00965183;0.00685222;0.00365991;0.00195865;0.00765631;0.00707759
+U_17;0.00700194;0.0114086;0.0123526;0.00887796;0.0102196;0.00712746;0.00691222;0.00914256;0.0139344;0.0174543;0.0219606;0.0164346;0.010028;0.00965907;0.00775696;0.00365991;0.00362107;0.00625881;0.0137988;0.0117224
+U_18;0.00417576;0.00602621;0.00593264;0.00667471;0.00793081;0.00444397;0.00878555;0.0183812;0.0357869;0.0481296;0.0500723;0.0207754;0.012619;0.0128517;0.0062456;0.00195865;0.00625881;0.0161844;0.0212005;0.0133051
+G_19;0;0;0;0.00973898;0.00690787;0.0150453;0.0299224;0.0585854;0.0859975;0.085893;0.0522355;0.0228082;0.0218789;0.0109001;0.00442768;0.00765631;0.0137988;0.0212005;0.0158313;0.00807077
+G_20;0;0;0;0.0075106;0.00474379;0.0139076;0.0270425;0.0521578;0.0736521;0.0665433;0.033636;0.0156495;0.0161306;0.0059406;0.00259566;0.00707759;0.0117224;0.0133051;0.00807077;0.00396313
+```
+
+This data can be visualized in heatmaps as discussed for the [minimal energy heatmap](#pairMinE).
+
 
 
 <br />
