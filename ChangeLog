@@ -1,4 +1,12 @@
 
+181108 Martin Raden :
+ + IntaRNA/PredictionTrackerSpotProbAll : exhaustively computes and prints all
+   spot probabilities (ie for all intermolecular index pairs)
+ * bin/CommandLineParsing :
+   + registration and documentation of PredictionTrackerSpotProbAll usage
+ * README.md :
+   * exhaustive spot prob calculation documented
+
 version 2.3.0
 
 180906 Martin Raden :
