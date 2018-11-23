@@ -158,6 +158,14 @@ add( const Interaction & i )
 				outTmp <<Interaction::dotBar( i );
 				break;
 
+			case hybridDPfull:
+				outTmp <<Interaction::dotBracket( i, '(', ')', true );
+				break;
+
+			case hybridDBfull:
+				outTmp <<Interaction::dotBar( i, true );
+				break;
+
 			case E:
 				outTmp <<i.energy;
 				break;

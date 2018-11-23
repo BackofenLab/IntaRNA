@@ -1,6 +1,6 @@
 
-#ifndef INTARNA_PREDICTIONTRACKERPAIRMINE_H_
-#define INTARNA_PREDICTIONTRACKERPAIRMINE_H_
+#ifndef INTARNA_PREDICTIONTRACKERSPOTPROBALL_H_
+#define INTARNA_PREDICTIONTRACKERSPOTPROBALL_H_
 
 #include "IntaRNA/PredictionTracker.h"
 #include "IntaRNA/InteractionEnergy.h"
@@ -14,19 +14,19 @@
 namespace IntaRNA {
 
 /**
- * Collects for each intermolecular index pair the minimal energy of any interaction
- * covering this pair (even if not forming a base pair).
+ * Collects for each intermolecular index pair the probability that this pair
+ * is covered by an interaction.
  *
  * The pair data is written to stream on destruction.
  */
-class PredictionTrackerPairMinE: public PredictionTracker
+class PredictionTrackerSpotProbAll: public PredictionTracker
 {
 
 public:
 
 	/**
-	 * Constructs a PredictionTracker that collected for index pair of two
-	 * sequences the minimal energy of any interaction covering this position.
+	 * Constructs a PredictionTracker that collected for each index pair of two
+	 * sequences the probability to be covered by an interaction.
 	 *
 	 * Note, if a filename is provided, its stream is closed on destruction of
 	 * this object!
@@ -38,15 +38,15 @@ public:
 	 * @param E_INF_string the output string representation of E_INF values in
 	 *        the profile output
 	 */
-	PredictionTrackerPairMinE(
+	PredictionTrackerSpotProbAll(
 				const InteractionEnergy & energy
 				, const std::string & streamName
 				, const std::string E_INF_string = "NA"
 			);
 
 	/**
-	 * Constructs a PredictionTracker that collected for index pair of two
-	 * sequences the minimal energy of any interaction covering this position.
+	 * Constructs a PredictionTracker that collected for each index pair of two
+	 * sequences the probability to be covered by an interaction.
 	 *
 	 * Note, the stream is NOT closed nor deleted on destruction of this object!
 	 *
@@ -56,20 +56,21 @@ public:
 	 * @param E_INF_string the output string representation of E_INF values in
 	 *        the profile output
 	 */
-	PredictionTrackerPairMinE(
+	PredictionTrackerSpotProbAll(
 				const InteractionEnergy & energy
 				, std::ostream * outStream
 				, const std::string E_INF_string = "NA"
 			);
 
 	/**
-	 * destruction: write the pair information to the according stream.
+	 * destruction: write the profile(s) to the according streams.
 	 */
-	virtual ~PredictionTrackerPairMinE();
+	virtual ~PredictionTrackerSpotProbAll();
 
 
 	/**
-	 * Updates the minE information for each Predictor.updateOptima() call.
+	 * Updates the partition function information for each
+	 * Predictor.updateOptima() call.
 	 *
 	 * @param i1 the index of the first sequence interacting with i2
 	 * @param j1 the index of the first sequence interacting with j2
@@ -99,24 +100,34 @@ protected:
 	//! the output string representation of E_INF values in the profile output
 	const std::string E_INF_string;
 
-	//! matrix type to hold the mfe energies and boundaries for interaction site starts
-	typedef boost::numeric::ublas::matrix<E_type> E2dMatrix;
+	//! type of partition function values
+	typedef double Z_type;
+
+	//! overall partition function
+	Z_type overallZ;
+
+	//! matrix type to hold the partition function for each index pair
+	typedef boost::numeric::ublas::matrix<Z_type> Z2dMatrix;
 
 	//! the index-pair-wise minimal energy values
-	E2dMatrix pairMinE;
+	Z2dMatrix pairZ;
+
+
 
 	/**
-	 * Writes minE data to stream.
+	 * Writes profile data to stream.
 	 *
 	 * @param out the output stream to write to
-	 * @param pairMinE the minE data to write
+	 * @param pairZ the partition function data to write
+	 * @param overallZ the overall partition function for pairZ
 	 * @param energy the energy function used
 	 * @param E_INF_string the string to be used for E_INF entries
 	 */
 	static
 	void
 	writeData( std::ostream &out
-				, const E2dMatrix & pairMinE
+				, const Z2dMatrix & pairZ
+				, const Z_type & overallZ
 				, const InteractionEnergy & energy
 				, const std::string & E_INF_string );
 
@@ -127,4 +138,4 @@ protected:
 
 } // namespace
 
-#endif /* PREDICTIONTRACKERPAIRMINE_H_ */
+#endif /* INTARNA_PREDICTIONTRACKERSPOTPROBALL_H_ */

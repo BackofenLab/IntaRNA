@@ -1,4 +1,25 @@
 
+version 2.3.1
+
+181108 Martin Raden :
+ + IntaRNA/PredictionTrackerSpotProbAll : exhaustively computes and prints all
+   spot probabilities (ie for all intermolecular index pairs)
+ * bin/CommandLineParsing :
+   + registration and documentation of PredictionTrackerSpotProbAll usage
+ * README.md :
+   * exhaustive spot prob calculation documented
+
+180907 Martin Raden :
+ * IntaRNA/OutputHandlerCsv :
+   + 'hybridDP|Bfull' output for full sequence lengths
+ * IntaRNA/Interaction :
+   * dotBar() :
+   * dotBracket() :
+     + "fullLength" argument to trigger full-length or interaction-site-only 
+       output
+ * README.md : 
+   + 'hybridD(P|B)full' documentation
+
 version 2.3.0
 
 180906 Martin Raden :

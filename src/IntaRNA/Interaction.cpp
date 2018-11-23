@@ -131,36 +131,65 @@ operator= ( const InteractionRange & range )
 
 std::string
 Interaction::
-dotBar( const Interaction & i )
+dotBar( const Interaction & i, const bool fullLength )
 {
 #if INTARNA_IN_DEBUG_MODE
 	if (!i.isValid())
 		throw std::runtime_error("Interaction::dotBar("+toString(i)+") not valid!");
 #endif
-	// compile overall dot-bracket representation
-	return	toString(i.basePairs.begin()->first +1)
-			+ dotSomething(i.basePairs.begin(), i.basePairs.end(), true, '|')
-			+"&"
-			+toString(i.basePairs.rbegin()->second +1)
-			+ dotSomething(i.basePairs.rbegin(), i.basePairs.rend(), false, '|')
-			;
+
+	// check whether to do full length output
+	if (fullLength) {
+		// compile dot-bar representation for full sequences
+		return "1"
+				+ std::string(i.basePairs.begin()->first, '.' ) // leading unpaired s1
+				+ dotSomething(i.basePairs.begin(), i.basePairs.end(), true, '|') // s1 structure
+				+ std::string(i.s1->size() - i.basePairs.rbegin()->first -1, '.' ) // trailing unpaired s1
+				+ "&"
+				+ "1"
+				+ std::string(i.basePairs.rbegin()->second, '.' ) // trailing unpaired s2
+				+ dotSomething(i.basePairs.rbegin(), i.basePairs.rend(), false, '|') // s2 structure
+				+ std::string( i.s2->size() - i.basePairs.begin()->second -1, '.' ) // leading unpaired s2
+				;
+	} else {
+		// compile dot-bar representation for interacting subsequences only
+		return	toString(i.basePairs.begin()->first +1)
+				+ dotSomething(i.basePairs.begin(), i.basePairs.end(), true, '|')
+				+"&"
+				+toString(i.basePairs.rbegin()->second +1)
+				+ dotSomething(i.basePairs.rbegin(), i.basePairs.rend(), false, '|')
+				;
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////
 
 std::string
 Interaction::
-dotBracket( const Interaction & i, const char symOpen, const char symClose )
+dotBracket( const Interaction & i, const char symOpen, const char symClose, const bool fullLength )
 {
 #if INTARNA_IN_DEBUG_MODE
 	if (!i.isValid())
 		throw std::runtime_error("Interaction::dotBracket("+toString(i)+") not valid!");
 #endif
-	// compile overall dot-bracket representation
-	return	dotSomething(i.basePairs.begin(), i.basePairs.end(), true, symOpen)
-			+"&"
-			+ dotSomething(i.basePairs.rbegin(), i.basePairs.rend(), false, symClose)
-			;
+
+	if (fullLength) {
+		// compile dot-bracket representation for full sequence lengths
+		return	std::string(i.basePairs.begin()->first, '.' ) // leading unpaired s1
+				+ dotSomething(i.basePairs.begin(), i.basePairs.end(), true, symOpen) // s1 structure
+				+ std::string(i.s1->size() - i.basePairs.rbegin()->first -1, '.' ) // trailing unpaired s1
+				+"&"
+				+ std::string(i.s2->size() - i.basePairs.rbegin()->second -1, '.' ) // leading unpaired s2
+				+ dotSomething(i.basePairs.rbegin(), i.basePairs.rend(), false, symClose) // s2 structure
+				+ std::string(i.basePairs.rbegin()->second, '.' ) // trailing unpaired s2
+				;
+	} else {
+		// compile dot-bracket representation for interacting subsequences only
+		return	dotSomething(i.basePairs.begin(), i.basePairs.end(), true, symOpen)
+				+"&"
+				+ dotSomething(i.basePairs.rbegin(), i.basePairs.rend(), false, symClose)
+				;
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////

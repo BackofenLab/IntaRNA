@@ -254,6 +254,7 @@ protected:
 		OP_qPu,
 		OP_tPu,
 		OP_spotProb,
+		OP_spotProbAll,
 		OP_UNKNOWN
 	};
 
@@ -1704,19 +1705,26 @@ void CommandLineParsing::validate_out(const std::vector<std::string> & list) {
 			}
 			// store prefix to identify another existence
 			std::string streamName = v->substr(v->find(':')+1);
+
 			// handle SpotProb setup
 			if (curPrefCode == OP_spotProb) {
-				// get spotProb spots
-				outSpotProbSpots = streamName.substr(0,streamName.find(':'));
-				// check if valid spot encoding
-				if (!boost::regex_match(outSpotProbSpots, PredictionTrackerSpotProb::regexSpotString, boost::match_perl)){
-					// check sanity of spot encodings (indexing starts with 1)
-					LOG(ERROR) <<"--out : spot encoding '"<<curPref<<"' is not valid.";
-					updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
-					break;
+				// if spots are defined
+				if (streamName.find(':') != std::string::npos) {
+					// get spots
+					outSpotProbSpots = streamName.substr(0,streamName.find(':'));
+					// check if valid spot encoding
+					if (!boost::regex_match(outSpotProbSpots, PredictionTrackerSpotProb::regexSpotString, boost::match_perl)){
+						// check sanity of spot encodings (indexing starts with 1)
+						LOG(ERROR) <<"--out : spot encoding '"<<curPref<<"' is not valid.";
+						updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+						break;
+					}
+					// get stream name (remove spot encoding prefix)
+					streamName = streamName.substr(outSpotProbSpots.size()+1);
+				} else {
+					// change PrefCode to reflect exhaustive spot prob computation
+					curPrefCode = OP_spotProbAll;
 				}
-				// get stream name (remove spot encoding prefix)
-				streamName = streamName.substr(outSpotProbSpots.size()+1);
 			}
 
 			// forward check to general method
