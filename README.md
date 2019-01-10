@@ -487,7 +487,7 @@ in a user guided memory/RAM consumption.
 The window-based computation is enabled by setting the following parameters
 
 - `--windowWidth` : length of the windows/subsequences (value of 0 disables window-based computations)
-- `--windowOverlap` : overlap of the windows that has to be cover the maximal interaction length (see [`--q|tIntLenMax`](#interConstr))   
+- `--windowOverlap` : overlap of the windows, which has to be larger than the maximal interaction length (see [`--q|tIntLenMax`](#interConstr))   
 
 Note, window-based computation produces a computational overhead due to 
 redundant consideration of the overlapping subsequences. Thus, the runtime is
@@ -936,8 +936,10 @@ definition of the `--out` argument in combination with one of the following
 argument prefixes (case insensitive) that have to be colon-separated to the
 targeted file/stream name:
 
-- `qMinE:`|`tMinE:` the query/target's minimal interaction energy profile (CSV format), respectively
-- `pMinE:` the minimal interaction energy for all pairs of query-target index pairs (CSV format)
+- `qSpotProb:`|`tSpotProb:` [query/target's spot probability profile](#profileSpotProb) (CSV format), respectively
+- `spotProb:` [all spot probabilities](#spotProb) (CSV format)
+- `qMinE:`|`tMinE:` [the query/target's minimal interaction energy profile](profileMinE) (CSV format), respectively
+- `pMinE:` [minimal interaction energy for all query-target index pairs](pairMinE) (CSV format)
 - `qAcc:`|`tAcc:` the [query/target's ED accessibility values](#accessibility) (RNAplfold-like format), respectively
 - `qPu:`|`tPu:` the [query/target's unpaired probabilities](#accessibility) (RNAplfold format), respectively
 
