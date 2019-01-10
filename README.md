@@ -591,7 +591,7 @@ by
 
 Alternatively, you can set 
 
-- `--seedTQ` : to specify [explicit seed interactions](seedExplicit)
+- `--seedTQ` : to specify [explicit seed interactions](#seedExplicit)
 
 Seed constraint usage can be globally disabled using the `--noSeed` flag.
 
