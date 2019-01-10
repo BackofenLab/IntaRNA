@@ -1,4 +1,9 @@
 
+190110 Martin Raden :
+ * CommandLineParsing :
+   * windowOverlap : default changed to 150 (was 0) to avoid the need to set for
+     default q|tAccW values
+
 version 2.3.1
 
 181108 Martin Raden :

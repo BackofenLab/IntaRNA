@@ -139,7 +139,7 @@ CommandLineParsing::CommandLineParsing()
 	threads( 0, omp_get_max_threads(), 1),
 #endif
 	windowWidth(0,99999,0),
-	windowOverlap(0,99999,0),
+	windowOverlap(0,99999,150),
 
 	energy("BV",'V'),
 	energyFile(""),
@@ -882,7 +882,7 @@ parse(int argc, char** argv)
 					}
 				}
 				if (windowOverlap.val < maxIntLength) {
-					throw error("window-based computation: --windowOverlap ("+toString(windowOverlap.val)+") has to be at least as large as the maximum of --q|tAccW or --q|tIntLenMax ("+toString(maxIntLength)+")");
+					throw error("window-based computation: --windowOverlap ("+toString(windowOverlap.val)+") has to be at least as large as the maximal interaction length, i.e. max of --q|tAccW and --q|tIntLenMax ("+toString(maxIntLength)+")");
 				}
 				if (windowWidth.val <= windowOverlap.val) {
 					throw error("window-based computation: --windowWidth ("+toString(windowWidth.val)+") has to exceed --windowOverlap ("+toString(windowOverlap.val)+")");
