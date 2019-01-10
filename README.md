@@ -389,9 +389,9 @@ IntaRNA -t myTranscriptome.fasta --tSet=101-200 -q myQuery.fasta
 ```
 
 Nucleotide encodings different from `ACGUT` are rewritten as `N` and the respective
-positions are not considered to form base pairs (and this ignored).
-Thymine `T` encodings are replaced by uracil `U`, since a `ACGU`-only 
-energy model is used.
+positions are not considered to form base pairs (and thus ignored).
+Thymine `T` encodings are replaced by uracil `U`, since we apply an RNA-only 
+energy model.
 
 For a list of general program argument run `-h` or `--help`. For a complete
 list covering also more sophisticated options, run `--fullhelp`.
