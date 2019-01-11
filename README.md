@@ -944,11 +944,8 @@ targeted file/stream name:
 - `qPu:`|`tPu:` the [query/target's unpaired probabilities](#accessibility) (RNAplfold format), respectively
 
 Note, for *multiple sequences* in FASTA input, the provided file names
-are suffixed with with `-s` and the according sequence's number (where indexing
-starts with 1) within the FASTA input to generate an individual file for each sequence.
-For `pMinE` output, if multiple query-target combinations are to be reported, the
-file name is suffixed with `-q#t#` (where `#` denotes the according sequence number
-within the input.
+are suffixed with with `-q#t#` (where `#` denotes the according sequence number
+within the input where indexing starts with 1).
 
 
 <br />
