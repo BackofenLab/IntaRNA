@@ -1,4 +1,7 @@
 
+190128 Martin Raden :
+ * bump easylogging++ version to v9.96.7
+
 190110 Martin Raden :
  * CommandLineParsing :
    * windowOverlap : default changed to 150 (was 0) to avoid the need to set for
