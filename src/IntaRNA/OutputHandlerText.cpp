@@ -308,10 +308,11 @@ add( const Interaction & i )
 				<<"  + E(dangleRight) = "<<contr.dangleRight<<'\n'
 				<<"  + E(endLeft)     = "<<contr.endLeft<<'\n'
 				<<"  + E(endRight)    = "<<contr.endRight<<'\n'
+				<<"    : E(hybrid)    = "<<(i.energy-contr.ED1-contr.ED2)<<'\n'
 				<<"  + ED(seq1)       = "<<contr.ED1<<'\n'
+				<<"    : Pu(seq1)     = "<<std::exp(-contr.ED1/energy.getRT())<<'\n'
 				<<"  + ED(seq2)       = "<<contr.ED2<<'\n'
-				<<"  + Pu(seq1)       = "<<std::exp(-contr.ED1/energy.getRT())<<'\n'
-				<<"  + Pu(seq2)       = "<<std::exp(-contr.ED2/energy.getRT())<<'\n'
+				<<"    : Pu(seq2)     = "<<std::exp(-contr.ED2/energy.getRT())<<'\n'
 				;
 
 			// print seed information if available
