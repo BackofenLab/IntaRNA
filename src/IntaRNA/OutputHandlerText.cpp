@@ -151,6 +151,8 @@ add( const Interaction & i )
 	Interaction::PairingVec::const_iterator curBP = i.basePairs.begin();
 	size_t loop1=0, loop2=0, loop=0, interactionLength = 1;
 	for (++curBP; curBP != i.basePairs.end(); ++curBP, ++leftBP) {
+		// handle duplicated BPs (might happen due to explicit seeds containing only a single bp)
+		if (*curBP == *leftBP) {continue;}
 		// handle internal loop region
 		// get specific loop lengths
 		loop1 = curBP->first - leftBP->first -1;
