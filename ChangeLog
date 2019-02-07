@@ -1,4 +1,17 @@
 
+190307 Martin Raden :
+ * IntaRNA/OutputHandlerText :
+   * detailed output reordered and extended
+     * Pu now below respective ED
+     * Pu now with ':' prefix instead of '+' (thanks to Sebastian Will)
+     + E(hybrid) information (thanks to Sebastian Will)
+ * README.md :
+   * minor fixes
+ * IntaRNA/OutputHandlerText :
+   * add() :
+     * explicit handling of duplicated base pairs (might happen due to explicit
+       seeds containing only a single base pair) (thanks to Sebastian Will)
+
 190128 Martin Raden :
  * bump easylogging++ version to v9.96.7
 
