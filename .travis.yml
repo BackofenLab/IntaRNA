@@ -22,7 +22,7 @@ before_install:
     - export CONDA_PATH=$HOME/miniconda3
     - export PATH=$CONDA_PATH/bin:$PATH
     - conda update --yes conda
-    - conda create -n build_env --yes gcc automake pkg-config viennarna==2.4.9 boost=1.61.* -c conda-forge -c bioconda
+    - conda create -n build_env --yes gcc automake pkg-config viennarna==2.4.9* boost=1.61.* -c conda-forge -c bioconda
     - source activate build_env
     - export CONDA_LIB_PATH=$CONDA_PATH/envs/build_env/lib
     - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_LIB_PATH
