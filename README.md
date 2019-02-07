@@ -111,7 +111,7 @@ Follow
 [![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat-square)](http://bioconda.github.io/recipes/intarna/README.html)
 to get detailed information or run
 ```bash
-conda install -c bioconda intarna
+conda install -c conda-forge -c bioconda intarna
 ```
 if you are using bioconda already.
 
@@ -580,7 +580,7 @@ IntaRNA supports the definition of such seed constraints and adds further
 options to even more constrain the seed selection. The list of options is given 
 by 
 
-- `--seedBP` : the number of base pairs the seed has to show
+- `--seedBP` : the number of base pairs within the seed
 - `--seedMaxUP` : the maximal overall number of unpaired bases within the seed
 - `--seedQMaxUP` : the maximal number of unpaired bases within the query's seed region
 - `--seedTMaxUP` : the maximal number of unpaired bases within the target's seed region
@@ -776,7 +776,7 @@ are
 - `hybridDPfull` : hybrid in VRNA dot-bracket notation (full sequence length)
 - `hybridDB` : hybrid in dot-bar notation (interactin sites only)
 - `hybridDBfull` : hybrid in dot-bar notation (full sequence length)
-- `E` : overall hybridization energy
+- `E` : overall interaction energy
 - `ED1` : ED value of seq1
 - `ED2` : ED value of seq2
 - `Pu1` : probability to be accessible for seq1
