@@ -43,7 +43,8 @@ script:
     - cd $TRAVIS_BUILD_DIR 
     # generate autotools's files 
     - bash autotools-init.sh 
-    - ./configure --with-boost=$CONDA_PATH --with-boost-libdir=$CONDA_LIB_PATH --with-vrna=$CONDA_PATH --prefix=$HOME/IntaRNA
+#    - ./configure --with-boost=$CONDA_PATH --with-boost-libdir=$CONDA_LIB_PATH --with-vrna=$CONDA_PATH --prefix=$HOME/IntaRNA
+    - ./configure --with-vrna=$CONDA_PATH --prefix=$HOME/IntaRNA
     # compile documentation
     # - make doxygen-doc
     # compile, test and install IntaRNA
