@@ -24,7 +24,7 @@ before_install:
     - sudo apt-add-repository ppa:j-4/vienna-rna -y
     - sudo apt-get update -q
     - sudo apt-get install vienna-rna -y
-    - sudo apt-get install vienna-rna-dev -y
+#    - sudo apt-get install vienna-rna-dev -y
 #    - wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
 #    - chmod +x miniconda.sh
 #    - "./miniconda.sh -b -p ~/miniconda3"
