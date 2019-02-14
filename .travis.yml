@@ -48,7 +48,8 @@ script:
     # compile documentation
     # - make doxygen-doc
     # compile, test and install IntaRNA
-    - make -j ${CPU_COUNT} && make tests -j ${CPU_COUNT} && make install
+#    - make -j ${CPU_COUNT} && make tests -j ${CPU_COUNT} && make install
+    - make && make tests && make install
     ##### check IntaRNA build #####
     # run IntaRNA with help output
     - $HOME/IntaRNA/bin/IntaRNA -h
