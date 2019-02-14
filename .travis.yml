@@ -18,7 +18,7 @@ addons:
     - gcc-7
     - g++-7
     - libboost-all-dev
-    - libgsl-dev
+    - libgsl0-dev
     
 before_install:
     - if [ "$CXX" = "g++" ]; then export CXX="g++-7" CC="gcc-7"; fi
