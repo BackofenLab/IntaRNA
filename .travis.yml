@@ -17,6 +17,8 @@ addons:
     packages:
     - gcc-7
     - g++-7
+#    - libboost1.55-all-dev
+    - libboost1.67-all-dev
     
 before_install:
     - if [ "$CXX" = "g++" ]; then export CXX="g++-7" CC="gcc-7"; fi
@@ -26,7 +28,7 @@ before_install:
     - export CONDA_PATH=$HOME/miniconda3
     - export PATH=$CONDA_PATH/bin:$PATH
     - conda update --yes conda
-    - conda create -n build_env --yes automake pkg-config viennarna>=2.4.8 boost -c conda-forge -c bioconda
+    - conda create -n build_env --yes automake pkg-config viennarna>=2.4.8 -c conda-forge -c bioconda
     - source activate build_env
     - conda list
     - export CONDA_LIB_PATH=$CONDA_PATH/envs/build_env/lib
