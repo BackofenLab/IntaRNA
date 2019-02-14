@@ -22,13 +22,16 @@ before_install:
     - export CONDA_PATH=$HOME/miniconda3
     - export PATH=$CONDA_PATH/bin:$PATH
     - conda update --yes conda
-    - conda create -n build_env --yes gxx automake pkg-config viennarna>=2.4.8 boost -c conda-forge -c bioconda
+    - conda create -n build_env --yes automake pkg-config viennarna>=2.4.8 boost -c conda-forge -c bioconda
     - source activate build_env
     - conda list
     - export CONDA_LIB_PATH=$CONDA_PATH/envs/build_env/lib
     - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_LIB_PATH
 
 script:
+    - echo "CXX=$CXX"
+    - which $CXX
+    - $CXX --version
     - RNAalifold --version
     ##### start IntaRNA build #####
     - cd $TRAVIS_BUILD_DIR 
@@ -38,7 +41,7 @@ script:
     # compile documentation
     # - make doxygen-doc
     # compile, test and install IntaRNA
-    - make -j 2 && make tests -j 2 && make install
+    - make -j ${CPU_COUNT} && make tests -j ${CPU_COUNT} && make install
     ##### check IntaRNA build #####
     # run IntaRNA with help output
     - $HOME/IntaRNA/bin/IntaRNA -h
