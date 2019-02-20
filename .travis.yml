@@ -14,18 +14,14 @@ addons:
   apt:
     sources:
     - ubuntu-toolchain-r-test
+    packages:
+    - libboost-all-dev
+    - libgsl0-dev
     
 before_install:
-    - wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
-    - chmod +x miniconda.sh
-    - "./miniconda.sh -b -p ~/miniconda3"
-    - export CONDA_PATH=$HOME/miniconda3
-    - export PATH=$CONDA_PATH/bin:$PATH
-    - conda update --yes conda
-    - conda create -n build_env --yes gcc automake pkg-config viennarna==2.4.9* boost=1.61.* -c conda-forge -c bioconda
-    - source activate build_env
-    - export CONDA_LIB_PATH=$CONDA_PATH/envs/build_env/lib
-    - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_LIB_PATH
+    - sudo apt-add-repository ppa:j-4/vienna-rna -y
+    - sudo apt-get update -q
+    - sudo apt-get install vienna-rna -y
 
 script:
     - RNAalifold --version
@@ -33,7 +29,7 @@ script:
     - cd $TRAVIS_BUILD_DIR 
     # generate autotools's files 
     - bash autotools-init.sh 
-    - ./configure --with-boost=$CONDA_PATH --with-boost-libdir=$CONDA_LIB_PATH --with-vrna=$CONDA_PATH --prefix=$HOME/IntaRNA
+    - ./configure --prefix=$HOME/IntaRNA
     # compile documentation
     # - make doxygen-doc
     # compile, test and install IntaRNA
