@@ -69,7 +69,7 @@ The following topics are covered by this documentation:
   - [OS X installation with homebrew](#instosx)
 - [Usage and Parameters](#usage)
   - [Just run ...](#defaultRun)
-  - [Interaction Model](#interactionModel)
+  - [Interaction models and possible patterns](#interactionModel)
     - [Single-site, unconstraint RNA-RNA interaction](#interactionModel-ssUnconstraint)
     - [Single-site, helix-based RNA-RNA interaction](#interactionModel-ssHelix)
   - [Prediction modes](#predModes)
@@ -407,7 +407,7 @@ list covering also more sophisticated options, run with `--fullhelp`.
 <br /><br />
 <a name="interactionModel" />
 
-## RNA-RNA interaction models
+## RNA-RNA interaction models and possible patterns
 
 IntaRNA supports various models how RNA-RNA interactions are represented.
 The model selection has direct consequences for the interaction patterns that
@@ -429,13 +429,14 @@ structural context of the respective subsequences, which are
 - *hairpin loop* - directly enclosed by a base pair
 - *non-hairpin loop* - subsequence enclosed by two loops forming a bulge, interior or multi-loop 
 
-The following figure shows an RNA structure depiction with context annotations
+The following figure (a) shows an RNA structure depiction with context annotations
 (abbreviated by resp. first letter) of unpaired regions that can form RNA-RNA interactions. 
+Furthermore, single-site interactions in different structural context combinations are shown.
 
-![depiction of structural context of interaction sites](doc/figures/unpaired-context.png)
+![depiction of structural context of interaction sites](doc/figures/interaction-context.svg)
 
 
-IntaRNA can predict single-site interactions within any structural context of the respective subsequences.
+IntaRNA can predict single-site interactions within any structural context of the respective subsequences (see table below).
 
 |   context       | exterior | hairpin loop | non-hairpin loop |
 | --------------- | -------- | ------------ | ---------------- |
@@ -444,10 +445,10 @@ IntaRNA can predict single-site interactions within any structural context of th
 | **non-hairpin loop** | ![yes](doc/figures/icon-yes.png) | ![yes](doc/figures/icon-yes.png) | ![yes](doc/figures/icon-yes.png) |
 
 Note, *concatenation-based approaches* as implemented in UNAfold or RNAcofold can
-*only predict exterior-exterior context* combinations (shown by (a) in the figure below) 
+*only predict exterior-exterior context* combinations (see (a) in figure from above) 
 and are thus not capable
 to investigate e.g. common loop-exterior or hairpin-hairpin 
-interaction patterns that are depicted below by (b) and (c), respectively! 
+interaction patterns that are depicted by (b) and (c) in the figure from above, respectively! 
 
 ![depiction of RNA-RNA interaction pattern](doc/figures/interaction-examples.svg)
 
