@@ -403,7 +403,55 @@ list covering also more sophisticated options, run `--fullhelp`.
 <br /><br />
 <a name="interactionModel" />
 
+<<<<<<< HEAD
 ## Interaction model
+=======
+## RNA-RNA interaction models
+
+IntaRNA supports various models how RNA-RNA interactions are represented.
+The model selection has direct consequences for the interaction patterns that
+can be predicted by IntaRNA.
+Before elaborating the supported models, first terms needed for understanding 
+and representation:
+
+We denote with a **single site** an interaction pattern of two respective RNA 
+subsequences Qi..Qk and Tj..Tl that  
+
+- form a *base pair on each end*, i.e. (Qi,Tl) and (Qk,Tj) are pairing, and
+- there are *no intra-molecular base pairs* within the two subsequences, i.e. 
+the subsequences form only inter-molecular base pairs.
+
+Given that we can classify single-site RNA-RNA interactions based on the 
+structural context of the respective subsequences, which are
+
+- *exterior* - not enclosed by any base pair
+- *hairpin loop* - directly enclosed by a base pair
+- *non-hairpin loop* - subsequence enclosed by two loops forming a bulge, interior or multi-loop 
+
+The following figure shows an RNA structure depiction with context annotations
+(abbreviated by resp. first letter) of unpaired regions that can form RNA-RNA interactions. 
+
+![depiction of structural context of interaction sites](doc/figures/unpaired-context.png)
+
+
+IntaRNA can predict single-site interactions within any structural context of the respective subsequences.
+
+|   context       | exterior | hairpin loop | non-hairpin loop |
+| --------------- | -------- | ------------ | ---------------- |
+| **exterior**    | ![yes](doc/figures/icon-yes.png) | ![yes](doc/figures/icon-yes.png) | ![yes](doc/figures/icon-yes.png) |
+| **hairpin**     | ![yes](doc/figures/icon-yes.png) | ![yes](doc/figures/icon-yes.png) | ![yes](doc/figures/icon-yes.png) |
+| **non-hairpin loop** | ![yes](doc/figures/icon-yes.png) | ![yes](doc/figures/icon-yes.png) | ![yes](doc/figures/icon-yes.png) |
+
+Note, *concatenation-based approaches* as implemented in UNAfold or RNAcofold can
+*only predict exterior-exterior context* combinations (shown by (a) in the figure below) 
+and are thus not capable
+to investigate e.g. common loop-exterior or hairpin-hairpin 
+interaction patterns that are depicted below by (b) and (c), respectively! 
+
+![depiction of RNA-RNA interaction pattern](doc/figures/interaction-examples.svg)
+
+
+>>>>>>> 764053f0d9b4cc65e15c78f2b79bf26e54fad33e
 
 <br /><br />
 <a name="interactionModel-ssUnconstraint" />
