@@ -27,7 +27,7 @@ TEST_CASE( "PredictorMfe2dLimStackHeuristcSeed", "[PredictorMfe2dLimStackHeurist
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		HelixConstraint hc(2, 4, 0, 0, 999, 0, false);
+		HelixConstraint hc(2, 4,  0, 999, 0, false);
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
 		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
 						  "");
@@ -64,7 +64,7 @@ TEST_CASE( "PredictorMfe2dLimStackHeuristcSeed", "[PredictorMfe2dLimStackHeurist
 //		ReverseAccessibility racc(acc2);
 //		InteractionEnergyBasePair energy(acc1, racc);
 //
-//		HelixConstraint hc(2, 4, 0, 0, 999, 0, false);
+//		HelixConstraint hc(2, 4,  0, 999, 0, false);
 //		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
 //		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
 //						  "");

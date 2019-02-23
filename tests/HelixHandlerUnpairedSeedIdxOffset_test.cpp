@@ -24,7 +24,7 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		HelixConstraint hC(2, 10, 2, 2, 999, 0, false);
+		HelixConstraint hC(2, 10, 2, 999, 0, false);
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
 		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
 						  "");
@@ -51,7 +51,6 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 		// get Constraints
 		REQUIRE(hhIO.getConstraint().getMinBasePairs() == 2);
 		REQUIRE(hhIO.getConstraint().getMaxBasePairs() == 10);
-		REQUIRE(hhIO.getConstraint().getMaxUnpaired() == 2);
 
 	}
 
@@ -64,7 +63,7 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		HelixConstraint hC(2, 4, 2, 2, 999, 0, false);
+		HelixConstraint hC(2, 4, 2, 999, 0, false);
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
 		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
@@ -161,7 +160,7 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		HelixConstraint hC(2, 4, 2, 2, 999, 0, false);
+		HelixConstraint hC(2, 4, 2, 999, 0, false);
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
 		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
@@ -224,7 +223,7 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		HelixConstraint hC(2, 4, 2, 2, 999, 0, false);
+		HelixConstraint hC(2, 4, 2, 999, 0, false);
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
 		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
@@ -299,7 +298,7 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		HelixConstraint hC(2, 4, 2, 2, 999, 0, false);
+		HelixConstraint hC(2, 4, 2, 999, 0, false);
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
 		SeedConstraint sC(3, 2, 1, 1, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
@@ -394,7 +393,7 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		HelixConstraint hC(2, 4, 2, 2, 999, 0, false);
+		HelixConstraint hC(2, 4, 2, 999, 0, false);
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
 		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
@@ -491,7 +490,7 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		HelixConstraint hC(2, 5, 2, 2, 999, 0, false);
+		HelixConstraint hC(2, 5, 2, 999, 0, false);
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
 		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
@@ -579,7 +578,7 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		HelixConstraint hC(2, 5, 2, 2, 999, 0, false);
+		HelixConstraint hC(2, 5, 2, 999, 0, false);
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
 	    SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
@@ -682,7 +681,7 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		HelixConstraint hC(2, 5, 2, 2, 999, 0, false);
+		HelixConstraint hC(2, 5, 2, 999, 0, false);
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
 		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
@@ -748,7 +747,7 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		HelixConstraint hC(2, 5, 2, 2, 999, 0, false);
+		HelixConstraint hC(2, 5, 2, 999, 0, false);
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
 		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
@@ -830,7 +829,7 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		HelixConstraint hC(2, 5, 2, 2, 999, 0, false);
+		HelixConstraint hC(2, 5, 2, 999, 0, false);
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
 		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
@@ -933,7 +932,7 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		HelixConstraint hC(2, 5, 2, 2, 999, 0, false);
+		HelixConstraint hC(2, 5, 2, 999, 0, false);
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
 		SeedConstraint sC(3, 1, 1, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),

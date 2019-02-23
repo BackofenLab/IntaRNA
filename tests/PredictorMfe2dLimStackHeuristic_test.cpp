@@ -27,7 +27,7 @@ TEST_CASE( "PredictorMfe2dLimStackHeuristc", "[PredictorMfe2dLimStackHeuristic]"
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		HelixConstraint hc(2, 4, 0, 0, 999, 0, false);
+		HelixConstraint hc(2, 4,  0, 999, 0, false);
 
 		OutputHandlerInteractionList out(1);
 
@@ -61,7 +61,7 @@ TEST_CASE( "PredictorMfe2dLimStackHeuristc", "[PredictorMfe2dLimStackHeuristic]"
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		HelixConstraint hc(2, 4, 0, 0, 999, 0, false);
+		HelixConstraint hc(2, 4,  0, 999, 0, false);
 
 		OutputHandlerInteractionList out(1);
 
@@ -95,7 +95,7 @@ TEST_CASE( "PredictorMfe2dLimStackHeuristc", "[PredictorMfe2dLimStackHeuristic]"
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		HelixConstraint hc(2, 4, 0, 0, 999, 0, false);
+		HelixConstraint hc(2, 4,  0, 999, 0, false);
 
 		OutputHandlerInteractionList out(1);
 
@@ -120,7 +120,7 @@ TEST_CASE( "PredictorMfe2dLimStackHeuristc", "[PredictorMfe2dLimStackHeuristic]"
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		HelixConstraint hc(2, 4, 0, 0, 999, 0, false);
+		HelixConstraint hc(2, 4,  0, 999, 0, false);
 
 		OutputHandlerInteractionList out(1);
 
@@ -154,7 +154,7 @@ TEST_CASE( "PredictorMfe2dLimStackHeuristc", "[PredictorMfe2dLimStackHeuristic]"
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		HelixConstraint hc(2, 4, 0, 2, 999, 0, false);
+		HelixConstraint hc(2, 4, 2, 999, 0, false);
 
 		OutputHandlerInteractionList out(1);
 
@@ -189,7 +189,7 @@ TEST_CASE( "PredictorMfe2dLimStackHeuristc", "[PredictorMfe2dLimStackHeuristic]"
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		HelixConstraint hc(2, 5, 0, 2, 999, 0, false);
+		HelixConstraint hc(2, 5, 2, 999, 0, false);
 
 		OutputHandlerInteractionList out(1);
 
@@ -223,7 +223,7 @@ TEST_CASE( "PredictorMfe2dLimStackHeuristc", "[PredictorMfe2dLimStackHeuristic]"
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		HelixConstraint hc(2, 4, 0, 0, 999, 0, false);
+		HelixConstraint hc(2, 4,  0, 999, 0, false);
 
 		OutputHandlerInteractionList out(1);
 

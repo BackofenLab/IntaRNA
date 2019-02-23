@@ -26,7 +26,7 @@ TEST_CASE( "HelixHandlerStackingOnly", "[HelixHandlerStackingOnly]") {
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		HelixConstraint hC(2, 10, 0, 0, 999, 0, false);
+		HelixConstraint hC(2, 10, 0, 999, 0, false);
 		HelixHandlerStackingOnly hhS(energy, hC);
 
 		REQUIRE(&hhS.getInteractionEnergy() == &energy);
@@ -44,7 +44,7 @@ TEST_CASE( "HelixHandlerStackingOnly", "[HelixHandlerStackingOnly]") {
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		HelixConstraint hC(2, 4, 0, 0, 999, 0, false);
+		HelixConstraint hC(2, 4, 0, 999, 0, false);
 		HelixHandlerStackingOnly hhS(energy, hC);
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -201,7 +201,7 @@ TEST_CASE( "HelixHandlerStackingOnly", "[HelixHandlerStackingOnly]") {
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		HelixConstraint hC(2, 4, 0, 0, 999, 0, false);
+		HelixConstraint hC(2, 4, 0, 999, 0, false);
 		HelixHandlerStackingOnly hhS(energy, hC);
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -329,7 +329,7 @@ TEST_CASE( "HelixHandlerStackingOnly", "[HelixHandlerStackingOnly]") {
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		HelixConstraint hC(2, 4, 0, 0, 999, 0, false);
+		HelixConstraint hC(2, 4, 0, 999, 0, false);
 		HelixHandlerStackingOnly hhS(energy, hC);
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -449,7 +449,7 @@ TEST_CASE( "HelixHandlerStackingOnly", "[HelixHandlerStackingOnly]") {
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		HelixConstraint hC(2, 4, 0, 0, 999, 0, false);
+		HelixConstraint hC(2, 4, 0, 999, 0, false);
 		HelixHandlerStackingOnly hhS(energy, hC);
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -500,7 +500,7 @@ TEST_CASE( "HelixHandlerStackingOnly", "[HelixHandlerStackingOnly]") {
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		HelixConstraint hC(2, 4, 0, 0, 999, 0, false);
+		HelixConstraint hC(2, 4, 0, 999, 0, false);
 		HelixHandlerStackingOnly hhS(energy, hC);
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -562,7 +562,7 @@ TEST_CASE( "HelixHandlerStackingOnly", "[HelixHandlerStackingOnly]") {
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		HelixConstraint hC(2, 10, 0, 0, 999, 0, false);
+		HelixConstraint hC(2, 10, 0, 999, 0, false);
 		HelixHandlerStackingOnly hhS(energy, hC);
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////

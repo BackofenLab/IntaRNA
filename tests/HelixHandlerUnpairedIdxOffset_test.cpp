@@ -27,7 +27,7 @@ TEST_CASE( "HelixHandlerIdxOffset for Unpaired", "[HelixHandlerIdxOffset]") {
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		HelixConstraint hC(2, 10, 2, 2, 999, 0, false);
+		HelixConstraint hC(2, 10, 2, 999, 0, false);
 		HelixHandlerIdxOffset hhIO(new HelixHandlerUnpaired(energy, hC));
 
 		// Initial offset of 0
@@ -43,7 +43,6 @@ TEST_CASE( "HelixHandlerIdxOffset for Unpaired", "[HelixHandlerIdxOffset]") {
 		// get Constraints
 		REQUIRE(hhIO.getConstraint().getMinBasePairs() == 2);
 		REQUIRE(hhIO.getConstraint().getMaxBasePairs() == 10);
-		REQUIRE(hhIO.getConstraint().getMaxUnpaired() == 2);
 
 	}
 
@@ -57,7 +56,7 @@ TEST_CASE( "HelixHandlerIdxOffset for Unpaired", "[HelixHandlerIdxOffset]") {
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		HelixConstraint hC(2, 4, 2, 2, 999, 0, false);
+		HelixConstraint hC(2, 4, 2, 999, 0, false);
 		HelixHandlerIdxOffset hhIO(new HelixHandlerUnpaired(energy, hC));
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -216,7 +215,7 @@ TEST_CASE( "HelixHandlerIdxOffset for Unpaired", "[HelixHandlerIdxOffset]") {
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		HelixConstraint hC(2, 4, 2, 2, 999, 0, false);
+		HelixConstraint hC(2, 4, 2, 999, 0, false);
 		HelixHandlerIdxOffset hhIO(new HelixHandlerUnpaired(energy, hC));
 
 		// set offsets
@@ -373,7 +372,7 @@ TEST_CASE( "HelixHandlerIdxOffset for Unpaired", "[HelixHandlerIdxOffset]") {
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		HelixConstraint hC(2, 4, 2, 2, 999, 0, false);
+		HelixConstraint hC(2, 4, 2, 999, 0, false);
 		HelixHandlerIdxOffset hhIO(new HelixHandlerUnpaired(energy, hC));
 
 		// set offsets
@@ -419,7 +418,7 @@ TEST_CASE( "HelixHandlerIdxOffset for Unpaired", "[HelixHandlerIdxOffset]") {
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		HelixConstraint hC(2, 4, 2, 2, 999, 0, false);
+		HelixConstraint hC(2, 4, 2, 999, 0, false);
 		HelixHandlerIdxOffset hhIO(new HelixHandlerUnpaired(energy, hC));
 
 		// set offsets
@@ -489,7 +488,7 @@ TEST_CASE( "HelixHandlerIdxOffset for Unpaired", "[HelixHandlerIdxOffset]") {
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		HelixConstraint hC(2, 4, 2, 1, 999, 0, false);
+		HelixConstraint hC(2, 4, 1, 999, 0, false);
 		HelixHandlerIdxOffset hhIO(new HelixHandlerUnpaired(energy, hC));
 
 		// set offsets
