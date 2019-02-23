@@ -26,14 +26,12 @@ public:
 	 * @param minBP minimal number of base pairs a helix is allowed to have (>= 2)
 	 * @param maxBP maximal number of base pairs a helix is allowed to have (>= bpMin)
 	 * @param maxIL maximal size for each internal loop during helix computation
-	 * @param maxUnpaired maximal number of unpaired bases
 	 * @param maxED maximal allowed energy for ED-values
 	 * @param maxE maximal allowed energy during helix computation
 	 * @parem noED whether or not ED values are added in the computation of helices
 	 */
 	HelixConstraint( const size_t minBP
 				, const size_t maxBP
-				, const size_t maxUnpaired
 				, const size_t maxIL
 				, const E_type maxED
 				, const E_type maxE
@@ -57,13 +55,6 @@ public:
 	 */
 	size_t
 	getMaxBasePairs() const;
-
-	/**
-	 * Provides the maximal number of unpaired bases allowed for the helix
-	 * @return the maximal number of unpaired bases allowed for the helix
-	 */
-	size_t
-	getMaxUnpaired() const;
 
 	/**
 	 * Provides the maximally allowed size of each internal loop considered in an helix
@@ -91,7 +82,7 @@ public:
 	 * @return true / false
 	 */
 	bool
-	noED() const;
+	useNoED() const;
 
 	/**
 	 * Provides the minimum interior loop length depending on the maximum allowed number of unpaired bases
@@ -130,9 +121,6 @@ protected:
 	//! the maximal number of base pairs allowed in the helix (>=maxBP)
 	size_t maxBP;
 
-	//! the maximally allowed number of unpaired bases in the helix
-	size_t maxUnpaired;
-
 	//! the maximally allowed size of internal loops in the helix
 	size_t maxIL;
 
@@ -143,7 +131,7 @@ protected:
 	E_type maxE;
 
 	//! decision variable, whether ED-values are used in the computation of helix energies or not
-	bool nED;
+	bool noED;
 };
 
 
@@ -155,7 +143,6 @@ inline
 HelixConstraint::HelixConstraint(
 		const size_t minBP_
 		, const size_t maxBP_
-		, const size_t maxUnpaired_
 		, const size_t maxIL_
 		, const E_type maxED_
 		, const E_type maxE_
@@ -163,11 +150,10 @@ HelixConstraint::HelixConstraint(
 	:
 		minBP(minBP_)
 	  , maxBP(maxBP_)
-      , maxUnpaired(maxUnpaired_)
 	  , maxIL(maxIL_)
 	  , maxED(maxED_)
 	  , maxE(maxE_)
-	  , nED(noED_)
+	  , noED(noED_)
 {
 	if (minBP < 2) throw std::runtime_error("HelixConstraint() : minimal base pair number ("+toString(minBP)+") < 2");
 }
@@ -194,15 +180,6 @@ size_t
 HelixConstraint::
 getMaxBasePairs() const {
 	return maxBP;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-inline
-size_t
-HelixConstraint::
-getMaxUnpaired() const {
-	return maxUnpaired;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -237,8 +214,8 @@ getMaxE() const {
 inline
 bool
 HelixConstraint::
-noED() const {
-	return nED;
+useNoED() const {
+	return noED;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -276,11 +253,10 @@ operator<<(std::ostream& out, const HelixConstraint& c)
 {
 	out <<"HelixConstraint( minBP="<<c.getMinBasePairs()
 			<<", maxBP="<<c.getMaxBasePairs()
-		    <<", maxUP="<<c.getMaxUnpaired()
 			<<", maxIL="<<c.getMaxIL()
 			<<", maxED="<<c.getMaxED()
 			<<", maxE="<<c.getMaxE()
-			<<", withED="<<c.noED()
+			<<", withED="<<c.useNoED()
 		    <<")";
 	return out;
 

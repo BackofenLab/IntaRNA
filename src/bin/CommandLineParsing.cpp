@@ -77,7 +77,7 @@ CommandLineParsing::CommandLineParsing()
 	stdinUsed(false),
 	opts_query("Query"),
 	opts_target("Target"),
-	opts_helix("Helix"),
+	opts_helix("Helix (only if --model=H)"),
 	opts_seed("Seed"),
 	opts_shape("SHAPE"),
 	opts_inter("Interaction"),
@@ -127,7 +127,6 @@ CommandLineParsing::CommandLineParsing()
 	// Helix Constraints
 	helixMinBP(2,4,2),
 	helixMaxBP(2,20,10),
-	helixMaxUP(0,2,0),
 	helixMaxIL(0,2,0),
 	helixMaxED(-999,+999, 999),
 	helixMaxE(-999,+999,0),
@@ -148,7 +147,7 @@ CommandLineParsing::CommandLineParsing()
 
 	temperature(0,100,37),
 
-	model( "SPL", 'S'),
+	model( "SPH", 'S'),
 	predMode( "HME", 'H'),
 #if INTARNA_MULITHREADING
 	threads( 0, omp_get_max_threads(), 1),
@@ -396,13 +395,6 @@ CommandLineParsing::CommandLineParsing()
 			, std::string("maximal number of base pairs inside a helix"
 								  " (arg in range ["+toString(helixMaxBP.min)+","+toString(helixMaxBP.max)+"])").c_str())
 
-			("helixMaxUP"
-			, value<int>(&(helixMaxUP.val))
-					->default_value(helixMaxUP.def)
-					->notifier(boost::bind(&CommandLineParsing::validate_helixMaxUP, this,_1))
-			, std::string("maximal number of unpaired bases inside a helix"
-								  " (arg in range ["+toString(helixMaxUP.min)+","+toString(helixMaxUP.max)+"])").c_str())
-
 			("helixMaxIL"
 					, value<int>(&(helixMaxIL.val))
 					 ->default_value(helixMaxIL.def)
@@ -424,7 +416,7 @@ CommandLineParsing::CommandLineParsing()
 					, std::string("maximal energy considered during helix computation"
 										  " (arg in range ["+toString(helixMaxE.min)+","+toString(helixMaxE.max)+"]).").c_str())
 
-			("noED", "if present, ED-values will be skipped in the helix computation")
+			("helixWithED", "if present, ED-values will be used within the energy evaluation of a helix")
 			;
 	opts_cmdline_short.add(opts_helix);
 
@@ -565,7 +557,7 @@ CommandLineParsing::CommandLineParsing()
 				->notifier(boost::bind(&CommandLineParsing::validate_model,this,_1))
 			, std::string("interaction model : "
 					"\n 'S' = single-site, minimum-free-energy interaction (interior loops only), "
-					"\n 'L' = single-site, helix-based, minimum-free-energy interaction (helices and interior loops only), "
+					"\n 'H' = single-site, helix-based, minimum-free-energy interaction (helices and interior loops only), "
 					"\n 'P' = single-site maximum-probability interaction (interior loops only)"
 					).c_str())
 		("energy,e"
@@ -708,7 +700,7 @@ CommandLineParsing::CommandLineParsing()
 
 	////  GENERAL OPTIONS  ////////////////////////////////////
 
-	opts_cmdline_all.add(opts_query).add(opts_target).add(opts_helix).add(opts_seed).add(opts_shape).add(opts_inter).add(opts_output).add(opts_general);
+	opts_cmdline_all.add(opts_query).add(opts_target).add(opts_seed).add(opts_shape).add(opts_inter).add(opts_helix).add(opts_output).add(opts_general);
 
 
 }
@@ -852,10 +844,7 @@ parse(int argc, char** argv)
 			}
 
 			// check for helixWithED
-			helixNoED = vm.count("helixNoED") > 0;
-			if (helixNoED) {
-				if (helixMaxED.val != helixMaxED.def) LOG(INFO) << "helix ED-values are skipped, but helixMaxED provided (will be ignored)";
-			}
+			helixNoED = vm.count("helixWithED") == 0;
 
 			// check seed setup
 			noSeedRequired = vm.count("noSeed") > 0;
@@ -1892,7 +1881,7 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 	if (noSeedRequired) {
 		// predictors without seed constraint
 		switch( model.val ) {
-		case 'L':  {
+		case 'H':  {
 			switch ( predMode.val ) {
 			case 'H' :	return new PredictorMfe2dLimStackHeuristic( energy, output, predTracker, getHelixConstraint(energy));
 			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(model.val));
@@ -1925,7 +1914,7 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 	} else {
 		// seed-constrained predictors
 		switch( model.val ) {
-		case 'L' : {
+		case 'H' : {
 			switch  ( predMode.val ) {
 				case 'H' : return new PredictorMfe2dLimStackHeuristicSeed(energy, output, predTracker, getHelixConstraint(energy), getSeedHandler(energy));
 				default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(model.val));
@@ -2048,7 +2037,6 @@ getHelixConstraint(const InteractionEnergy &energy) const
 		helixConstraint = new HelixConstraint(
 				  helixMinBP.val
 				, helixMaxBP.val
-				, helixMaxUP.val
 			    , helixMaxIL.val
 			    , helixMaxED.val
 			    , helixMaxE.val

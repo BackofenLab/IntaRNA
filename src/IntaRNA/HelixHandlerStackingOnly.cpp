@@ -131,7 +131,7 @@ fillHelix(const size_t i1min, const size_t i1max, const size_t i2min, const size
 			curE = energy.getE(i1,j1,i2,j2,getHelixE(i1-offset1, i2-offset2, curBP)) + energy.getE_init();
 
 			// if noED option is set, ED-values are skipped, remove them.
-			if (helixConstraint.noED())
+			if (helixConstraint.useNoED())
 				curE -= (energy.getED1(i1, j1) + energy.getED2(i2, j2));
 
 			// check if better than what is know so far

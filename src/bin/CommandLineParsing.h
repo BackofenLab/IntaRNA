@@ -480,15 +480,13 @@ protected:
 	NumberParameter<int> helixMinBP;
 	//! the maximal number of base pairs allowed in the helix (>helixMinBP)
 	NumberParameter<int> helixMaxBP;
-	//! max overall unpaired in helix
-	NumberParameter<int> helixMaxUP;
 	//! maximal internal loop size in the helix computation (0-2)
 	NumberParameter<int> helixMaxIL;
 	//! maximal ED-value allowed (per sequence) of a helix to be considered
 	NumberParameter<E_type> helixMaxED;
 	//! maximal energy of a helix to be considered
 	NumberParameter<E_type> helixMaxE;
-	//! when set, no ED values are added in the helix computation
+	//! when set, ED values are excluded from a helix's energy evaluation
 	bool helixNoED;
 	//! the final helix constraint to be used
 	mutable HelixConstraint * helixConstraint;
@@ -735,12 +733,6 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_helixMaxBP(const int & value);
-
-	/**
-	 * Validates the helixMaxUP argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_helixMaxUP(const int & value);
 
 	/**
 	 * Validates the helixMaxIL argument.
@@ -1522,14 +1514,6 @@ inline
 void CommandLineParsing::validate_helixMaxBP(const int &value) {
 	// forward check to general method
 	validate_numberArgument("helixMaxBP", helixMaxBP, value);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_helixMaxUP(const int &value) {
-	// forward check to general method
-	validate_numberArgument("helixMaxUP", helixMaxUP, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////
