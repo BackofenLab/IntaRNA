@@ -447,7 +447,7 @@ IntaRNA can predict single-site interactions within any structural context of th
 Note, *concatenation-based approaches* as implemented in UNAfold or RNAcofold can
 *only predict exterior-exterior context* combinations (see (a) in figure from above) 
 and are thus not capable
-to investigate e.g. common loop-exterior or hairpin-hairpin 
+to investigate e.g. common loop-exterior or kissing-hairpin-loop
 interaction patterns that are depicted by (b) and (c) in the figure from above, respectively! 
 
 ![depiction of RNA-RNA interaction pattern](doc/figures/interaction-examples.svg)
