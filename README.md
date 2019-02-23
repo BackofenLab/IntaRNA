@@ -417,9 +417,11 @@ list covering also more sophisticated options, run `--fullhelp`.
 
 This model constraints the maximum length of inter-molecular helices to a specified value.
 Like this, we want to model the idea that steric constraints do not allow inter-molecular helices to become arbitrarily long.
-For loop regions, this would require the \"unwinding\" of an increasing number of intra-molecular helices, which would impose further constraints on the inter-molecular interaction site.
+For loop regions, this would require the 'unwinding' of an increasing number of intra-molecular helices, which would impose further constraints on the inter-molecular interaction site.
 
-Therefore, we introduce a constraint on the maximum helix length, thus only allowing helices up to a specified length. 
+Therefore, we introduce a constraint on the maximum helix length, thus only allowing helices up to a specified length. The following image captures our idea of changing our interaction model from predicting long interactions (left) to a more flexible model with a maximum intermolecular helix length (right). The blue boxes represent the length-bounded helices and the red boxes represent unpaired regions (interior loops). 
+
+![helixbased](helixbased.svg)
 
 
 
@@ -800,7 +802,6 @@ are
 - `hybridDB` : hybrid in dot-bar notation (interactin sites only)
 - `hybridDBfull` : hybrid in dot-bar notation (full sequence length)
 - `E` : overall interaction energy
-- `E_ens` : ensemble energy of all considered interactions based on their partition function
 - `ED1` : ED value of seq1
 - `ED2` : ED value of seq2
 - `Pu1` : probability to be accessible for seq1
