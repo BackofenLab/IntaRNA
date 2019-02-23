@@ -15,6 +15,8 @@
 
 #include "IntaRNA/Accessibility.h"
 #include "IntaRNA/InteractionEnergy.h"
+#include "IntaRNA/HelixConstraint.h"
+#include "IntaRNA/HelixHandler.h"
 #include "IntaRNA/OutputHandler.h"
 #include "IntaRNA/Predictor.h"
 #include "IntaRNA/SeedConstraint.h"
@@ -169,6 +171,12 @@ public:
 	Predictor* getPredictor( const InteractionEnergy & energy
 			, OutputHandler & output ) const;
 
+	/**
+	 * Provides the seed constraint according to the user settings
+	 * @param energy the interaction energy handler to be used
+	 * @return the user defined seed constraints
+	 */
+	const HelixConstraint & getHelixConstraint( const InteractionEnergy & energy ) const;
 
 	/**
 	 * Provides the seed constraint according to the user settings
@@ -367,6 +375,8 @@ protected:
 	boost::program_options::options_description opts_query;
 	//! target specific options
 	boost::program_options::options_description opts_target;
+	//! helix specific options
+	boost::program_options::options_description opts_helix;
 	//! seed specific options
 	boost::program_options::options_description opts_seed;
 	//! SHAPE reactivity data specific options
@@ -464,6 +474,24 @@ protected:
 	//! optional encoding how data from tShape is converted into pairing
 	//! probabilities for according accessibility prediction
 	std::string tShapeConversion;
+
+
+	//! the minimal number of base pairs allowed in the helix (>2)
+	NumberParameter<int> helixMinBP;
+	//! the maximal number of base pairs allowed in the helix (>helixMinBP)
+	NumberParameter<int> helixMaxBP;
+	//! max overall unpaired in helix
+	NumberParameter<int> helixMaxUP;
+	//! maximal internal loop size in the helix computation (0-2)
+	NumberParameter<int> helixMaxIL;
+	//! maximal ED-value allowed (per sequence) of a helix to be considered
+	NumberParameter<E_type> helixMaxED;
+	//! maximal energy of a helix to be considered
+	NumberParameter<E_type> helixMaxE;
+	//! when set, no ED values are added in the helix computation
+	bool helixNoED;
+	//! the final helix constraint to be used
+	mutable HelixConstraint * helixConstraint;
 
 	//! whether or not a seed is to be required for an interaction or not
 	bool noSeedRequired;
@@ -694,6 +722,43 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_tIntLoopMax(const int & value);
+
+
+	/**
+	 * Validates the helixMinBP argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_helixMinBP(const int & value);
+
+	/**
+	 * Validates the helixMaxBP argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_helixMaxBP(const int & value);
+
+	/**
+	 * Validates the helixMaxUP argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_helixMaxUP(const int & value);
+
+	/**
+	 * Validates the helixMaxIL argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_helixMaxIL(const int & value);
+
+	/**
+	 * Validates the helixMaxED argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_helixMaxED(const E_type & value);
+
+	/**
+	 * Validates the helixMaxE argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_helixMaxE(const E_type & value);
 
 	/**
 	 * Validates the target's region argument.
@@ -1441,6 +1506,54 @@ void CommandLineParsing::validate_tShapeConversion( const std::string & value )
 		LOG(ERROR) <<"Target's SHAPE conversion method encoding '" <<value <<"' is not valid.";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_helixMinBP(const int &value) {
+	// forward check to general method
+	validate_numberArgument("helixMinBP", helixMinBP, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_helixMaxBP(const int &value) {
+	// forward check to general method
+	validate_numberArgument("helixMaxBP", helixMaxBP, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_helixMaxUP(const int &value) {
+	// forward check to general method
+	validate_numberArgument("helixMaxUP", helixMaxUP, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_helixMaxIL(const int & value) {
+	// forward check to general method
+	validate_numberArgument("helixMaxIL", helixMaxIL, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_helixMaxED(const E_type & value) {
+	// forward check to general method
+	validate_numberArgument("helixMaxED", helixMaxED, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_helixMaxE(const E_type & value) {
+	// forward check to general method
+	validate_numberArgument("helixMaxE", helixMaxE, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////

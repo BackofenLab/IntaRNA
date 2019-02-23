@@ -31,15 +31,19 @@ extern "C" {
 #include "IntaRNA/AccessibilityVrna.h"
 #include "IntaRNA/AccessibilityBasePair.h"
 
+#include "IntaRNA/HelixHandler.h"
+
 #include "IntaRNA/InteractionEnergyBasePair.h"
 #include "IntaRNA/InteractionEnergyVrna.h"
 
 #include "IntaRNA/PredictorMfe2dHeuristic.h"
+#include "IntaRNA/PredictorMfe2dLimStackHeuristic.h"
 #include "IntaRNA/PredictorMfe2d.h"
 #include "IntaRNA/PredictorMfe4d.h"
 #include "IntaRNA/PredictorMaxProb.h"
 
 #include "IntaRNA/PredictorMfe2dHeuristicSeed.h"
+#include "IntaRNA/PredictorMfe2dLimStackHeuristicSeed.h"
 #include "IntaRNA/PredictorMfe2dSeed.h"
 #include "IntaRNA/PredictorMfe4dSeed.h"
 
@@ -73,6 +77,7 @@ CommandLineParsing::CommandLineParsing()
 	stdinUsed(false),
 	opts_query("Query"),
 	opts_target("Target"),
+	opts_helix("Helix"),
 	opts_seed("Seed"),
 	opts_shape("SHAPE"),
 	opts_inter("Interaction"),
@@ -119,6 +124,16 @@ CommandLineParsing::CommandLineParsing()
 	tShapeMethod("Zb0.89"),
 	tShapeConversion("Os1.6i-2.29"),
 
+	// Helix Constraints
+	helixMinBP(2,4,2),
+	helixMaxBP(2,20,10),
+	helixMaxUP(0,2,0),
+	helixMaxIL(0,2,0),
+	helixMaxED(-999,+999, 999),
+	helixMaxE(-999,+999,0),
+	helixNoED(false),
+	helixConstraint(NULL),
+
 	noSeedRequired(false),
 	seedTQ(""),
 	seedBP(2,20,7),
@@ -133,7 +148,7 @@ CommandLineParsing::CommandLineParsing()
 
 	temperature(0,100,37),
 
-	pred( "SP", 'S'),
+	pred( "SPL", 'S'),
 	predMode( "HME", 'H'),
 #if INTARNA_MULITHREADING
 	threads( 0, omp_get_max_threads(), 1),
@@ -362,6 +377,56 @@ CommandLineParsing::CommandLineParsing()
 					" 0 defaults to no automatic range detection)"
 					).c_str())
 		;
+
+
+	////  HELIX OPTIONS  ///////////////////////////////////
+
+	opts_helix.add_options()
+			("helixMinBP"
+				, value<int>(&(helixMinBP.val))
+				    ->default_value(helixMinBP.def)
+				    ->notifier(boost::bind(&CommandLineParsing::validate_helixMinBP, this,_1))
+				, std::string("minimal number of base pairs inside a helix"
+							  " (arg in range ["+toString(helixMinBP.min)+","+toString(helixMinBP.max)+"])").c_str())
+
+			("helixMaxBP"
+			, value<int>(&(helixMaxBP.val))
+					->default_value(helixMaxBP.def)
+					->notifier(boost::bind(&CommandLineParsing::validate_helixMaxBP, this,_1))
+			, std::string("maximal number of base pairs inside a helix"
+								  " (arg in range ["+toString(helixMaxBP.min)+","+toString(helixMaxBP.max)+"])").c_str())
+
+			("helixMaxUP"
+			, value<int>(&(helixMaxUP.val))
+					->default_value(helixMaxUP.def)
+					->notifier(boost::bind(&CommandLineParsing::validate_helixMaxUP, this,_1))
+			, std::string("maximal number of unpaired bases inside a helix"
+								  " (arg in range ["+toString(helixMaxUP.min)+","+toString(helixMaxUP.max)+"])").c_str())
+
+			("helixMaxIL"
+					, value<int>(&(helixMaxIL.val))
+					 ->default_value(helixMaxIL.def)
+					 ->notifier(boost::bind(&CommandLineParsing::validate_helixMaxIL, this,_1))
+					, std::string("maximal size for each internal loop size in a helix"
+										  " (arg in range ["+toString(helixMaxIL.min)+","+toString(helixMaxIL.max)+"]).").c_str())
+
+			("helixMaxED"
+			, value<E_type>(&(helixMaxED.val))
+					->default_value(helixMaxED.def)
+					->notifier(boost::bind(&CommandLineParsing::validate_helixMaxED, this,_1))
+			, std::string("maximal ED-value allowed (per sequence) during helix computation"
+								  " (arg in range ["+toString(helixMaxED.min)+","+toString(helixMaxED.max)+"]).").c_str())
+
+			("helixMaxE"
+					, value<E_type>(&(helixMaxE.val))
+					 ->default_value(helixMaxE.def)
+					 ->notifier(boost::bind(&CommandLineParsing::validate_helixMaxE, this,_1))
+					, std::string("maximal energy considered during helix computation"
+										  " (arg in range ["+toString(helixMaxE.min)+","+toString(helixMaxE.max)+"]).").c_str())
+
+			("noED", "if present, ED-values will be skipped in the helix computation")
+			;
+	opts_cmdline_short.add(opts_helix);
 
 	////  SEED OPTIONS  ////////////////////////////////////
 
@@ -642,7 +707,7 @@ CommandLineParsing::CommandLineParsing()
 
 	////  GENERAL OPTIONS  ////////////////////////////////////
 
-	opts_cmdline_all.add(opts_query).add(opts_target).add(opts_seed).add(opts_shape).add(opts_inter).add(opts_output).add(opts_general);
+	opts_cmdline_all.add(opts_query).add(opts_target).add(opts_helix).add(opts_seed).add(opts_shape).add(opts_inter).add(opts_output).add(opts_general);
 
 
 }
@@ -651,6 +716,7 @@ CommandLineParsing::CommandLineParsing()
 
 CommandLineParsing::~CommandLineParsing() {
 
+	INTARNA_CLEANUP(helixConstraint);
 	 INTARNA_CLEANUP(seedConstraint);
 
 	// reset output stream
@@ -765,6 +831,31 @@ parse(int argc, char** argv)
 			validate_qAccFile( qAccFile );
 			validate_tAccFile( tAccFile );
 
+			// check helix setup
+			// check for minimal sequence length
+			for(size_t i=0; i<query.size(); i++) {
+				if (query.at(i).size() < helixMinBP.val) {
+					throw error("length of query sequence "+toString(i+1)+" is below minimal number of helix base pairs (helixMinBP="+toString(helixMinBP.val)+")");
+				}
+			}
+
+			for(size_t i=0; i<target.size(); i++) {
+				if (target.at(i).size() < helixMinBP.val) {
+					throw error("length of target sequence "+toString(i+1)+" is below minimal number of helix base pairs (helixMinBP="+toString(helixMinBP.val)+")");
+				}
+			}
+
+			// Ensure that min is smaller than max.
+			if (helixMinBP.val > helixMaxBP.val) {
+				throw error("the minimum number of base pairs (" +toString(helixMinBP.val)+") is higher than the maximum number of base pairs (" +toString(helixMaxBP.val)+")");
+			}
+
+			// check for helixWithED
+			helixNoED = vm.count("helixNoED") > 0;
+			if (helixNoED) {
+				if (helixMaxED.val != helixMaxED.def) LOG(INFO) << "helix ED-values are skipped, but helixMaxED provided (will be ignored)";
+			}
+
 			// check seed setup
 			noSeedRequired = vm.count("noSeed") > 0;
 			if (noSeedRequired) {
@@ -796,6 +887,10 @@ parse(int argc, char** argv)
 					}
 				}
 
+				// check if helixMaxBP >= seedBP
+				if (helixMaxBP.val < seedBP.val) {
+					throw error("maximum number of allowed seed base pairs ("+toString(seedBP.val)+") exceeds the maximal allowed number of helix base pairs ("+toString(helixMaxBP.val)+")");
+				}
 				// check for minimal sequence length (>=seedBP)
 				for( size_t i=0; i<query.size(); i++) {
 					if (query.at(i).size() < seedBP.val) {
@@ -1796,6 +1891,12 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 	if (noSeedRequired) {
 		// predictors without seed constraint
 		switch( pred.val ) {
+		case 'L':  {
+			switch ( predMode.val ) {
+			case 'H' :	return new PredictorMfe2dLimStackHeuristic( energy, output, predTracker, getHelixConstraint(energy));
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(pred.val));
+			}
+		} break;
 		// single-site mfe interactions (contain only interior loops)
 		case 'S' : {
 			switch ( predMode.val ) {
@@ -1823,6 +1924,12 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 	} else {
 		// seed-constrained predictors
 		switch( pred.val ) {
+		case 'L' : {
+			switch  ( predMode.val ) {
+				case 'H' : return new PredictorMfe2dLimStackHeuristicSeed(energy, output, predTracker, getHelixConstraint(energy), getSeedHandler(energy));
+				default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(pred.val));
+			}
+		} break;
 		// single-site mfe interactions (contain only interior loops)
 		case 'S' : {
 			switch ( predMode.val ) {
@@ -1927,6 +2034,27 @@ CommandLineParsing::
 updateParsingCode( const ReturnCode currentParsingCode )
 {
 	parsingCode = std::max( parsingCode, currentParsingCode );
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+const HelixConstraint &
+CommandLineParsing::
+getHelixConstraint(const InteractionEnergy &energy) const
+{
+	if (helixConstraint == NULL) {
+		// setup according to user data
+		helixConstraint = new HelixConstraint(
+				  helixMinBP.val
+				, helixMaxBP.val
+				, helixMaxUP.val
+			    , helixMaxIL.val
+			    , helixMaxED.val
+			    , helixMaxE.val
+				, helixNoED
+		);
+	}
+	return *helixConstraint;
 }
 
 ////////////////////////////////////////////////////////////////////////////
