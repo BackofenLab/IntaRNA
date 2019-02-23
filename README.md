@@ -78,6 +78,7 @@ The following topics are covered by this documentation:
   - [Interaction restrictions](#interConstr)
   - [Seed constraints](#seed)
   - [Explicit seed input](#seedExplicit)
+  - [Helix constraints](#helix)
   - [SHAPE reactivity data to enhance accessibility computation](#shape)
   - [Output modes](#outmodes)
   - [Suboptimal RNA-RNA interaction prediction and output restrictions](#subopts)
@@ -419,9 +420,9 @@ This model constraints the maximum length of inter-molecular helices to a specif
 Like this, we want to model the idea that steric constraints do not allow inter-molecular helices to become arbitrarily long.
 For loop regions, this would require the 'unwinding' of an increasing number of intra-molecular helices, which would impose further constraints on the inter-molecular interaction site.
 
-Therefore, we introduce a constraint on the maximum helix length, thus only allowing helices up to a specified length. The following image captures our idea of changing our interaction model from predicting long interactions (left) to a more flexible model with a maximum intermolecular helix length (right). The blue boxes represent the length-bounded helices and the red boxes represent unpaired regions (interior loops). 
+Therefore, we introduce a constraint on the maximum helix length, thus only allowing helices up to a specified length. The following image captures our idea of changing our interaction model from predicting long interactions (left) to a more flexible model with a maximum intermolecular helix length (right). The blue boxes represent the length-bounded helices and the red boxes represent unpaired regions (interior loops).
 
-![helixbased](helixbased.svg)
+![helixbased](./doc/figures/helixbased.svg)
 
 
 
@@ -622,7 +623,6 @@ Seed constraint usage can be globally disabled using the `--noSeed` flag.
 
 
 
-
 <br /><br />
 <a name="seedExplicit" />
 
@@ -654,6 +654,11 @@ query
 If several or alternative seeds are known, you can provide all as a
 comma-separated list and IntaRNA will consider all interactions that cover at
 least one of them.
+
+<br /><br />
+<a name="helix" />
+
+## Helix constraints
 
 
 
