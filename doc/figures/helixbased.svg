@@ -9,9 +9,9 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="7.8151932in"
-   height="1.477668in"
-   viewBox="0 0 198.50591 37.532768"
+   width="9.7056341in"
+   height="1.5104165in"
+   viewBox="0 0 246.52311 38.364579"
    version="1.1"
    id="svg4227"
    inkscape:version="0.92.4 (unknown)"
@@ -340,9 +340,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.979899"
-     inkscape:cx="339.85493"
-     inkscape:cy="34.176231"
+     inkscape:zoom="0.98994949"
+     inkscape:cx="370.99416"
+     inkscape:cy="120.2451"
      inkscape:document-units="mm"
      inkscape:current-layer="layer2"
      showgrid="false"
@@ -355,7 +355,8 @@
      fit-margin-top="0"
      fit-margin-left="0"
      fit-margin-right="0"
-     fit-margin-bottom="0" />
+     fit-margin-bottom="0"
+     showguides="false" />
   <metadata
      id="metadata4224">
     <rdf:RDF>
@@ -364,20 +365,22 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
   <g
      inkscape:groupmode="layer"
      id="layer2"
-     inkscape:label="background">
+     inkscape:label="background"
+     style="display:inline"
+     transform="translate(4.1999979e-8,0.45383647)">
     <rect
        ry="0"
        y="-0.45383647"
-       x="2.7730408e-07"
+       x="3.431538e-07"
        height="38.364578"
-       width="199.2164"
+       width="246.5231"
        id="rect957"
        style="opacity:1;vector-effect:none;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.70599997;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
   </g>
@@ -385,9 +388,10 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-2.4018931,-34.948805)">
+     transform="translate(-2.4018931,-34.494969)">
     <g
-       id="g1228">
+       id="g1228"
+       transform="translate(47.625035)">
       <g
          style="display:inline;stroke-width:1.37361288"
          id="g1896-1"
@@ -907,5 +911,38 @@
            transform="scale(-1)" />
       </g>
     </g>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:7.05555534px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="113.90562"
+       y="55.640995"
+       id="text1248"><tspan
+         sodipodi:role="line"
+         id="tspan1246"
+         x="113.90562"
+         y="55.640995"
+         style="stroke-width:0.26458332">versus</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:7.05555534px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="108.13266"
+       y="56.818996"
+       id="text1252"><tspan
+         sodipodi:role="line"
+         id="tspan1250"
+         x="108.13266"
+         y="63.061508"
+         style="stroke-width:0.26458332" /></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:7.05555534px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="113.65368"
+       y="57.142838"
+       id="text1256"><tspan
+         sodipodi:role="line"
+         id="tspan1254"
+         x="113.65368"
+         y="63.385349"
+         style="stroke-width:0.26458332" /></text>
   </g>
 </svg>

@@ -396,55 +396,14 @@ positions are not considered to form base pairs (and thus ignored).
 Thymine `T` encodings are replaced by uracil `U`, since we apply an RNA-only
 energy model.
 
-For a list of general program argument run `IntaRNA -h` or `--help`. For a complete
-list covering also more sophisticated options, run with `--fullhelp`.
-
-
-
-
+For a list of general program argument run `-h` or `--help`. For a complete
+list covering also more sophisticated options, run `--fullhelp`.
 
 
 <br /><br />
 <a name="interactionModel" />
 
-## RNA-RNA interaction models
-
-IntaRNA supports various models how RNA-RNA interactions are represented.
-The model selection has direct consequences for the interaction patterns that
-can be predicted by IntaRNA.
-Before elaborating the supported models, first terms needed for understanding 
-and representation:
-
-We denote with a **single site** an interaction pattern of two respective RNA 
-subsequences Qi..Qk and Tj..Tl that  
-
-- form a *base pair on each end*, i.e. (Qi,Tl) and (Qk,Tj) are pairing, and
-- there are *no intra-molecular base pairs* within the two subsequences, i.e. 
-the subsequences form only inter-molecular base pairs.
-
-Given that we can classify single-site RNA-RNA interactions based on the 
-structural context of the respective subsequences, which are
-
-- *exterior* - not enclosed by any base pair
-- *hairpin loop* - directly enclosed by a base pair
-- *non-hairpin loop* - subsequence enclosed by two loops forming a bulge, interior or multi-loop 
-
-The following figure shows an RNA structure depiction with context annotations
-of unpaired regions that can form RNA-RNA interactions. 
-
-![depiction of structural context of interaction sites](doc/figures/unpapired-context.png)
-
-
-IntaRNA can predict single-site interactions within any structural context of the respective subsequences.
-
-|             | exterior | hairpin loop | non-hairpin loop |
-| ----------- | -------- | ------------ | ---------------- |
-| exterior    | ![yes](doc/figures/icon-yes.png) | ![yes](doc/figures/icon-yes.png) | ![yes](doc/figures/icon-yes.png) |
-| hairpin     | ![yes](doc/figures/icon-yes.png) | ![yes](doc/figures/icon-yes.png) | ![yes](doc/figures/icon-yes.png) |
-| non-hairpin | ![yes](doc/figures/icon-yes.png) | ![yes](doc/figures/icon-yes.png) | ![yes](doc/figures/icon-yes.png) |
-
-Note, concatenation-based approaches as implemented in UNAfold or RNAcofold are 
-restricted to exterior-exterior structural context combinations! 
+## Interaction model
 
 <br /><br />
 <a name="interactionModel-ssUnconstraint" />
@@ -461,7 +420,7 @@ This model constraints the maximum length of inter-molecular helices to a specif
 Like this, we want to model the idea that steric constraints do not allow inter-molecular helices to become arbitrarily long.
 For loop regions, this would require the 'unwinding' of an increasing number of intra-molecular helices, which would impose further constraints on the inter-molecular interaction site.
 
-Therefore, we introduce a constraint on the maximum helix length, thus only allowing helices up to a specified length. The following image captures our idea of changing our interaction model from predicting long interactions (left) to a more flexible model with a maximum intermolecular helix length (right). The blue boxes represent the length-bounded helices and the red boxes represent unpaired regions (interior loops).
+Therefore, we introduce a constraint on the maximum helix length, thus only allowing helices up to a specified length. The following image captures our idea of changing our interaction model from predicting long interactions (left) to a more flexible model with a maximum intermolecular helix length (right). The blue boxes represent the lenth-bound/ helices and the red boxes represent unpaired regions (interior loops).
 
 ![helixbased](./doc/figures/helixbased.svg)
 
