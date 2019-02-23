@@ -3,6 +3,7 @@
 #define INTARNA_SEEDHANDLERIDXOFFSET_H_
 
 #include "IntaRNA/SeedHandler.h"
+#include "IntaRNA/InteractionEnergyIdxOffset.h"
 
 #include <boost/multi_array.hpp>
 
@@ -19,7 +20,7 @@ namespace IntaRNA {
  * @author Martin Mann
  *
  */
-class SeedHandlerIdxOffset
+class SeedHandlerIdxOffset : public SeedHandler
 {
 
 public:
@@ -35,6 +36,14 @@ public:
 	 * destruction of this object and the wrapped seed handler
 	 */
 	virtual ~SeedHandlerIdxOffset();
+
+	/**
+	 * Access to the underlying interaction energy function
+	 * @return the used energy function
+	 */
+	virtual
+	const InteractionEnergy&
+	getInteractionEnergy() const;
 
 	/**
 	 * Access to the currently used index offset for sequence 1
@@ -146,6 +155,15 @@ public:
 	getSeedLength2( const size_t i1, const size_t i2 ) const;
 
 
+	/**
+	 * Access to the wrapped SeedHandler instance.
+	 *
+	 * @return the internally used SeedHandler without offset
+	 */
+	virtual
+	SeedHandler&
+	getOriginalSeedHandler();
+
 
 protected:
 
@@ -161,6 +179,9 @@ protected:
 	//! offset for indices in seq2
 	size_t idxOffset2;
 
+	//! dedicated energy object to avoid
+	InteractionEnergyIdxOffset energyIdxOffset;
+
 };
 
 
@@ -175,10 +196,12 @@ inline
 SeedHandlerIdxOffset::
 SeedHandlerIdxOffset( SeedHandler * seedHandlerInstance )
 	:
-		seedHandlerOriginal( seedHandlerInstance )
+		SeedHandler(seedHandlerInstance->getInteractionEnergy(), seedHandlerInstance->getConstraint() )
+		, seedHandlerOriginal( seedHandlerInstance )
 		, seedConstraintOffset( seedHandlerOriginal->getConstraint() )
 		, idxOffset1(0)
 		, idxOffset2(0)
+		, energyIdxOffset(seedHandlerInstance->getInteractionEnergy(),idxOffset1,idxOffset2)
 {
 }
 
@@ -201,6 +224,16 @@ SeedHandlerIdxOffset::
 getConstraint() const
 {
 	return seedConstraintOffset;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+const InteractionEnergy&
+SeedHandlerIdxOffset::
+getInteractionEnergy() const
+{
+	return this->energyIdxOffset;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -291,6 +324,7 @@ setOffset1( const size_t offset )
 #endif
 	// set idx offset
 	this->idxOffset1 = offset;
+	this->energyIdxOffset.setOffset1(idxOffset1);
 	// update ranges of seed constraint
 	seedConstraintOffset.getRanges1() = seedHandlerOriginal->getConstraint().getRanges1().shift( -(int)offset, seedHandlerOriginal->getInteractionEnergy().size1()-1-offset );
 }
@@ -310,8 +344,19 @@ setOffset2( const size_t offset )
 #endif
 	// set idx offset
 	this->idxOffset2 = offset;
+	this->energyIdxOffset.setOffset2(idxOffset2);
 	// update ranges of seed constraint
 	seedConstraintOffset.getRanges2() = seedHandlerOriginal->getConstraint().getRanges2().shift( -(int)offset, seedHandlerOriginal->getInteractionEnergy().size2()-1-offset );
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+SeedHandler&
+SeedHandlerIdxOffset::
+getOriginalSeedHandler()
+{
+	return *seedHandlerOriginal;
 }
 
 ////////////////////////////////////////////////////////////////////////////
