@@ -430,7 +430,7 @@ structural context of the respective subsequences, which are
 - *non-hairpin loop* - subsequence enclosed by two loops forming a bulge, interior or multi-loop 
 
 The following figure shows an RNA structure depiction with context annotations
-of unpaired regions that can form RNA-RNA interactions. 
+(abbreviated by resp. first letter) of unpaired regions that can form RNA-RNA interactions. 
 
 ![depiction of structural context of interaction sites](doc/figures/unpaired-context.png)
 
@@ -441,11 +441,15 @@ IntaRNA can predict single-site interactions within any structural context of th
 | --------------- | -------- | ------------ | ---------------- |
 | **exterior**    | ![yes](doc/figures/icon-yes.png) | ![yes](doc/figures/icon-yes.png) | ![yes](doc/figures/icon-yes.png) |
 | **hairpin**     | ![yes](doc/figures/icon-yes.png) | ![yes](doc/figures/icon-yes.png) | ![yes](doc/figures/icon-yes.png) |
-| **non-hairpin** | ![yes](doc/figures/icon-yes.png) | ![yes](doc/figures/icon-yes.png) | ![yes](doc/figures/icon-yes.png) |
+| **non-hairpin loop** | ![yes](doc/figures/icon-yes.png) | ![yes](doc/figures/icon-yes.png) | ![yes](doc/figures/icon-yes.png) |
 
 Note, *concatenation-based approaches* as implemented in UNAfold or RNAcofold can
-*only predict exterior-exterior context* combinations and are thus not capable
-to investigate e.g. hairpin-hairpin interaction or similar patterns! 
+*only predict exterior-exterior context* combinations (shown by (a) in the figure below) 
+and are thus not capable
+to investigate e.g. common loop-exterior or hairpin-hairpin 
+interaction patterns that are depicted below by (b) and (c), respectively! 
+
+![depiction of RNA-RNA interaction pattern](doc/figures/interaction-examples.svg)
 
 
 
