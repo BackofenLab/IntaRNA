@@ -148,7 +148,7 @@ CommandLineParsing::CommandLineParsing()
 
 	temperature(0,100,37),
 
-	pred( "SPL", 'S'),
+	model( "SPL", 'S'),
 	predMode( "HME", 'H'),
 #if INTARNA_MULITHREADING
 	threads( 0, omp_get_max_threads(), 1),
@@ -559,12 +559,13 @@ CommandLineParsing::CommandLineParsing()
 		;
 	opts_cmdline_short.add(opts_inter);
 	opts_inter.add_options()
-		("pred"
-			, value<char>(&(pred.val))
-				->default_value(pred.def)
-				->notifier(boost::bind(&CommandLineParsing::validate_pred,this,_1))
-			, std::string("prediction target : "
-					"\n 'S' = single-site minimum-free-energy interaction (interior loops only), "
+		("model"
+			, value<char>(&(model.val))
+				->default_value(model.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_model,this,_1))
+			, std::string("interaction model : "
+					"\n 'S' = single-site, minimum-free-energy interaction (interior loops only), "
+					"\n 'L' = single-site, helix-based, minimum-free-energy interaction (helices and interior loops only), "
 					"\n 'P' = single-site maximum-probability interaction (interior loops only)"
 					).c_str())
 		("energy,e"
@@ -1086,7 +1087,7 @@ parse(int argc, char** argv)
 			// check if multi-threading
 			if (threads.val != 1 && getTargetSequences().size() > 1) {
 				// warn if >= 4D space prediction enabled
-				if (pred.val != 'S' || predMode.val == 'E') {
+				if (model.val != 'S' || predMode.val == 'E') {
 					LOG(WARNING) <<"Multi-threading enabled in high-mem-prediction mode : ensure you have enough memory available!";
 				}
 				if (outMode.val == '1' || outMode.val == 'O') {
@@ -1556,7 +1557,7 @@ getEnergyHandler( const Accessibility& accTarget, const ReverseAccessibility& ac
 	checkIfParsed();
 
 	// check whether to compute ES values (for multi-site predictions)
-	const bool initES = std::string("M").find(pred.val) != std::string::npos;
+	const bool initES = std::string("M").find(model.val) != std::string::npos;
 
 	switch( energy.val ) {
 	case 'B' : return new InteractionEnergyBasePair( accTarget, accQuery, tIntLoopMax.val, qIntLoopMax.val, initES );
@@ -1890,11 +1891,11 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 
 	if (noSeedRequired) {
 		// predictors without seed constraint
-		switch( pred.val ) {
+		switch( model.val ) {
 		case 'L':  {
 			switch ( predMode.val ) {
 			case 'H' :	return new PredictorMfe2dLimStackHeuristic( energy, output, predTracker, getHelixConstraint(energy));
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(pred.val));
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(model.val));
 			}
 		} break;
 		// single-site mfe interactions (contain only interior loops)
@@ -1903,31 +1904,31 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 			case 'H' :  return new PredictorMfe2dHeuristic( energy, output, predTracker );
 			case 'M' :  return new PredictorMfe2d( energy, output, predTracker );
 			case 'E' :  return new PredictorMfe4d( energy, output, predTracker );
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(pred.val));
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(model.val));
 			}
 		} break;
 		// single-site max-prob interactions (contain only interior loops)
 		case 'P' : {
 			switch ( predMode.val ) {
 			case 'E' :  return new PredictorMaxProb( energy, output, predTracker );
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(pred.val)+" : try --mode=E");
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(model.val)+" : try --mode=E");
 			}
 		} break;
 		// multi-site mfe interactions (contain interior and multi-loops loops)
 		case 'M' : {
 			switch ( predMode.val ) {
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(pred.val));
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(model.val));
 			}
 		} break;
 		default : INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented");
 		}
 	} else {
 		// seed-constrained predictors
-		switch( pred.val ) {
+		switch( model.val ) {
 		case 'L' : {
 			switch  ( predMode.val ) {
 				case 'H' : return new PredictorMfe2dLimStackHeuristicSeed(energy, output, predTracker, getHelixConstraint(energy), getSeedHandler(energy));
-				default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(pred.val));
+				default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(model.val));
 			}
 		} break;
 		// single-site mfe interactions (contain only interior loops)
@@ -1942,13 +1943,13 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 		case 'P' : {
 			switch ( predMode.val ) {
 			case 'E' :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for seed constraint (try --noSeed)"); return NULL;
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(pred.val));
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(model.val));
 			}
 		} break;
 		// multi-site mfe interactions (contain interior and multi-loops loops)
 		case 'M' : {
 			switch ( predMode.val ) {
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(pred.val));
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(model.val));
 			}
 		} break;
 		default : INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented");

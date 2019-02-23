@@ -519,8 +519,8 @@ protected:
 	//! the temperature to be used for energy computations
 	NumberParameter<T_type> temperature;
 
-	//! the prediction target (mfe-single-site, max-prob-site, ..)
-	CharParameter pred;
+	//! the interaction model to predict in (mfe-single-site, helix-based-single-site, max-prob-site, ..)
+	CharParameter model;
 	//! the prediction mode (heuristic, space-efficient, exact)
 	CharParameter predMode;
 #if INTARNA_MULITHREADING
@@ -855,7 +855,7 @@ protected:
 	 * Validates the prediction target argument.
 	 * @param value the argument value to validate
 	 */
-	void validate_pred(const char & value);
+	void validate_model(const char & value);
 
 	/**
 	 * Validates the prediction mode argument.
@@ -1672,10 +1672,10 @@ void CommandLineParsing::validate_temperature(const T_type & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_pred(const char & value)
+void CommandLineParsing::validate_model(const char & value)
 {
 	// forward check to general method
-	validate_charArgument("mode", pred, value);
+	validate_charArgument("model", model, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////
