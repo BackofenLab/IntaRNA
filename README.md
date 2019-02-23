@@ -777,6 +777,7 @@ are
 - `hybridDB` : hybrid in dot-bar notation (interactin sites only)
 - `hybridDBfull` : hybrid in dot-bar notation (full sequence length)
 - `E` : overall interaction energy
+- `E_ens` : ensemble energy of all considered interactions based on their partition function
 - `ED1` : ED value of seq1
 - `ED2` : ED value of seq2
 - `Pu1` : probability to be accessible for seq1
