@@ -6,7 +6,7 @@ seeding of interaction sites**
 
 During the last few years, several new small regulatory RNAs
 (sRNAs) have been discovered in bacteria. Most of them act as post-transcriptional
-regulators by base pairing to a target mRNA, causing translational repression
+regulators by base pairing to a target mRNA, causing translational repressionex
 or activation, or mRNA degradation. Numerous sRNAs have already been identified,
 but the number of experimentally verified targets is considerably lower.
 Consequently, computational target prediction is in great demand. Many existing
@@ -433,7 +433,7 @@ The following figure shows an RNA structure depiction with context annotations
 IntaRNA can predict single-site interactions within any structural context of the respective subsequences.
 
 |   context       | exterior | hairpin loop | non-hairpin loop |
-| --------------- | -------- | ------------ | ---------------- |
+| :-------------: | :------: | :----------: | :--------------: |
 | **exterior**    | ![yes](doc/figures/icon-yes.png) | ![yes](doc/figures/icon-yes.png) | ![yes](doc/figures/icon-yes.png) |
 | **hairpin**     | ![yes](doc/figures/icon-yes.png) | ![yes](doc/figures/icon-yes.png) | ![yes](doc/figures/icon-yes.png) |
 | **non-hairpin loop** | ![yes](doc/figures/icon-yes.png) | ![yes](doc/figures/icon-yes.png) | ![yes](doc/figures/icon-yes.png) |
