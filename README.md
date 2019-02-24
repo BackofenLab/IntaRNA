@@ -38,7 +38,7 @@ with feature requests, bug reports, or just contact messages.
 
 If you use IntaRNA, please cite our articles
 
-- [IntaRNA 2.0: enhanced and customizable prediction of RNA–RNA interactions](http://dx.doi.org/10.1093/nar/gkx279)
+- [IntaRNA 2.0: enhanced and customizable prediction of RNA-RNA interactions](http://dx.doi.org/10.1093/nar/gkx279)
   Martin Mann, Patrick R. Wright, and Rolf Backofen,
   Nucleic Acids Research, 45 (W1), W435–W439, 2017, DOI(10.1093/nar/gkx279).
 - [CopraRNA and IntaRNA: predicting small RNA targets, networks and interaction domains](http://dx.doi.org/10.1093/nar/gku359)
@@ -440,12 +440,18 @@ IntaRNA can predict single-site interactions within any structural context of th
 | **non-hairpin loop** | ![yes](doc/figures/icon-yes.png) | ![yes](doc/figures/icon-yes.png) | ![yes](doc/figures/icon-yes.png) |
 
 Note, *concatenation-based approaches* as implemented in UNAfold or RNAcofold can
-*only predict exterior-exterior context* combinations (shown by (a) in the figure below)
+*only predict exterior-exterior context* combinations (shown by (b) in the figure below)
 and are thus not capable
 to investigate e.g. common loop-exterior or kissing-hairpin-loop
-interaction patterns that are depicted by (b) and (c) in the figure from above, respectively!
+interaction patterns that are depicted by (c) and (d) in the figure from above, respectively!
 
 ![depiction of RNA-RNA interaction pattern](doc/figures/interaction-examples.svg)
+
+A detailed discussion about different prediction approaches and predictable
+interaction pattern is available in our publications
+
+- [Interactive implementations of thermodynamics-based RNA structure and RNA-RNA interaction prediction approaches for example-driven teaching.](https://doi.org/10.1371/journal.pcbi.1006341) and
+- [Structure and interaction prediction in prokaryotic RNA biology.](https://doi.org/10.1128/microbiolspec.RWR-0001-2017)
 
 
 
@@ -497,6 +503,11 @@ The blue boxes represent the lenth-bound helices and while the red boxes depict
 the interspacing unpaired regions (interior loops).
 
 ![helixbased](./doc/figures/helixbased.svg)
+
+For further details, please refer to our respective publication
+
+- [Constraint maximal inter-molecular helix lengths within RNA-RNA interaction prediction improves bacterial sRNA target prediction.](http://www.bioinf.uni-freiburg.de/Subpages/publications.html?de#Gelhausen-helixLength-2019.abstract)
+
 
 
 
@@ -757,6 +768,10 @@ pairing probabilities. The respective IntaRNA arguments are
 and `--qShapeConversion`|`--tShapeConversion`, which mimics the according
 tool arguments in the Vienna RNA package (see e.g. the
 [RNAfold manpage](https://www.tbi.univie.ac.at/RNA/RNAfold.1.html)).
+
+For further details, please refer to our respective publication
+
+- [Integration of accessibility data from structure probing into RNA-RNA interaction prediction.](https://doi.org/10.1093/bioinformatics/bty1029)
 
 
 
