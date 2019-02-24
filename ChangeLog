@@ -1,5 +1,47 @@
 
-190307 Martin Raden :
+190224 Martin Raden :
+ * renaming PredictorMfe2dLimStack* to PredictorMfe2dHelix*
+ * README.md :
+   + general interaction discussion
+   + model parameter
+   + publication links
+   + helix-based prediction + parameters
+
+190223 Martin Raden / Rick Gelhausen :
+ + integration of helix-based RNA-RNA interaction prediction
+ + IntaRNA/HelixConstraint : constraints for considered inter-molecular helices
+ + IntaRNA/HelixHandler : general interface to enumerate inter-molecular helices
+ + IntaRNA/HelixHandlerIdxOffset : allows index shifting for localized access
+ + IntaRNA/HelixHandlerStackingOnly : enumerates only canonical helices
+ + IntaRNA/HelixHandlerStackingOnlySeed : canonical helices that contain a seed
+ + IntaRNA/HelixHandlerUnpaired : enumerate helices that can contain bulges
+ + IntaRNA/HelixHandlerUnpairedSeed : (bulged) helices that contain a seed
+ + IntaRNA/PredictorMfe2dLimStackHeuristic : helix-based interaction prediction
+ + IntaRNA/PredictorMfe2dLimStackHeuristicSeed : helix-based interaction 
+   prediction that enforces the seed constraint
+ * IntaRNA/SeedHandlerIdxOffset :
+   * now subclass of SeedHandler
+   + energy access via InteractionEnergyIdxOffset member
+ * tests :
+   + HelixConstraint
+   + HelixHandlerStackingOnly 
+   + HelixHandlerIdxOffset + HelixHandlerStackingOnly 
+   + HelixHandlerStackingOnlySeed 
+   + HelixHandlerIdxOffset + HelixHandlerStackingOnlySeed 
+   + HelixHandlerUnpaired
+   + HelixHandlerIdxOffset + HelixHandlerUnpaired
+   + HelixHandlerUnpairedSeed
+   + HelixHandlerIdxOffset + HelixHandlerUnpairedSeed
+   + PredictorMfe2dLimStackHeuristic
+   + PredictorMfe2dLimStackHeuristicSeed
+   + SeedHandlerIdxOffset
+   + SeedHandlerMfe
+ * bin/CommandLineParsing :
+   * replace 'pred' with 'model' = defines underlying interaction model
+   + new model 'H' = helix-based prediction
+   + new 'Helix' parameter group
+
+190207 Martin Raden :
  * IntaRNA/OutputHandlerText :
    * detailed output reordered and extended
      * Pu now below respective ED
