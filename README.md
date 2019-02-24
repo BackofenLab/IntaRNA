@@ -469,7 +469,7 @@ accessible for inter-molecular base pairing, i.e. removing any possible intra-mo
 base pairs.
 
 The model considers inter-molecular base pair patterns that correspond to 
-(helical) stackings, bulges or interior loops that are depicted in figure (e) from above.
+(helical) stackings, bulges or interior loops, which are depicted in figure (b) from above.
 Since intra-molecular base pairs are not explicitely represented, any structural 
 context of single-site interactions is considered/possible within IntaRNA 
 predictions.
