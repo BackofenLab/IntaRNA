@@ -70,8 +70,8 @@ The following topics are covered by this documentation:
 - [Usage and Parameters](#usage)
   - [Just run ...](#defaultRun)
   - [Interaction Model](#interactionModel)
-    - [Single-site, unconstraint RNA-RNA interaction](#interactionModel-ssUnconstraint)
-    - [Single-site, helix-based RNA-RNA interaction](#interactionModel-ssHelix)
+    - [Single-site, unconstraint RNA-RNA interaction](#interactionModel-ssUnconstraintMfe)
+    - [Single-site, helix-based RNA-RNA interaction](#interactionModel-ssHelixMfe)
   - [Prediction modes](#predModes)
     - [Emulating other RNA-RNA interaction prediction tools](#predEmulateTools)
     - [Limiting memory consumption - window-based prediction](#predWindowBased)
@@ -450,21 +450,51 @@ interaction patterns that are depicted by (b) and (c) in the figure from above, 
 
 
 <br /><br />
-<a name="interactionModel-ssUnconstraint" />
+<a name="interactionModel-ssUnconstraintMfe" />
 
-### Single-site, unconstraint RNA-RNA interaction
+### Unconstraint single-site RNA-RNA interaction with minimal free energy
+
+This *default model* of IntaRNA predicts the single-site interaction `I` with 
+minimal free energy. That is, it minimizes
+```
+   arg min (  E_hybrid(I) + ED1(I) + ED2(I)  )
+      I
+```
+where `E_hybrid` represents all energy terms of intermolecular base pairs and 
+`ED` corresponds to the energy needed to make the respective subsequences
+accessible for inter-molecular base pairing, i.e. removing any possible intra-molecular
+base pairs.
+
+The model considers inter-molecular base pair patterns that correspond to 
+(helical) stackings, bulges or interior loops that are depicted in figure (e) from above.
+Since intra-molecular base pairs are not explicitely represented, any structural 
+context of single-site interactions is considered/possible within IntaRNA 
+predictions.
+
 
 
 <br /><br />
-<a name="interactionModel-ssHelix" />
+<a name="interactionModel-ssHelixMfe" />
 
-### Single-site, helix-based RNA-RNA interaction
+### Helix-based single-site RNA-RNA interaction with minimal free energy
 
-This model constraints the maximum length of inter-molecular helices to a specified value.
-Like this, we want to model the idea that steric constraints do not allow inter-molecular helices to become arbitrarily long.
-For loop regions, this would require the 'unwinding' of an increasing number of intra-molecular helices, which would impose further constraints on the inter-molecular interaction site.
+The formation of multiple base pair stackings, i.e. helix formation, requires
+a 'winding' of the respective subsequences.
+Depending on the structural context, such winding might be sterically and kinetically 
+hindered by the necessary unwinding of intra-molecular structural elements.  
 
-Therefore, we introduce a constraint on the maximum helix length, thus only allowing helices up to a specified length. The following image captures our idea of changing our interaction model from predicting long interactions (left) to a more flexible model with a maximum intermolecular helix length (right). The blue boxes represent the lenth-bound/ helices and the red boxes represent unpaired regions (interior loops).
+This model aims to incorporate such effects into the predictions of IntaRNA.
+This is done by restricting the maximum length of inter-molecular helices to a 
+specified number of (stacked) base pairs.
+That way, 'wound up' subhelices are interspaced by flexible interior loops that
+will allow for a more flexible 3D arrangement of the overall helix.
+
+The following figure depicts the effect of the maximum helix length constraints
+that only allows for helices up to a specified length. 
+That way, long interactions (left) are avoided and replaced by a more flexible 
+model composed of short inter-molecular helices (right). 
+The blue boxes represent the lenth-bound helices and while the red boxes depict
+the interspacing unpaired regions (interior loops).
 
 ![helixbased](./doc/figures/helixbased.svg)
 
