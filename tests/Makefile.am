@@ -31,8 +31,8 @@ runApiTests_SOURCES =	\
 					InteractionEnergyBasePair_test.cpp  \
 					InteractionRange_test.cpp  \
 					PredictionTrackerProfileMinE_test.cpp \
-					PredictorMfe2dLimStackHeuristic_test.cpp \
-					PredictorMfe2dLimStackHeuristicSeed_test.cpp \
+					PredictorMfe2dHelixHeuristic_test.cpp \
+					PredictorMfe2dHelixHeuristicSeed_test.cpp \
 					PredictionTrackerSpotProb_test.cpp \
 					NussinovHandler_test.cpp \
 					RnaSequence_test.cpp \

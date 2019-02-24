@@ -1,5 +1,5 @@
 
-#include "IntaRNA/PredictorMfe2dLimStackHeuristicSeed.h"
+#include "IntaRNA/PredictorMfe2dHelixHeuristicSeed.h"
 
 #include <stdexcept>
 
@@ -7,14 +7,14 @@ namespace IntaRNA {
 
 ////////////////////////////////////////////////////////////////////////////
 
-PredictorMfe2dLimStackHeuristicSeed::
-PredictorMfe2dLimStackHeuristicSeed( const InteractionEnergy & energy
+PredictorMfe2dHelixHeuristicSeed::
+PredictorMfe2dHelixHeuristicSeed( const InteractionEnergy & energy
 		, OutputHandler & output
 		, PredictionTracker * predTracker
 		, const HelixConstraint & helixConstraint
 		, SeedHandler * seedHandlerInstance )
 
-	: PredictorMfe2dLimStackHeuristic(energy,output,predTracker,helixConstraint)
+	: PredictorMfe2dHelixHeuristic(energy,output,predTracker,helixConstraint)
 		, seedHandler(seedHandlerInstance)
 
 {
@@ -24,8 +24,8 @@ PredictorMfe2dLimStackHeuristicSeed( const InteractionEnergy & energy
 
 ////////////////////////////////////////////////////////////////////////////
 
-PredictorMfe2dLimStackHeuristicSeed::
-~PredictorMfe2dLimStackHeuristicSeed()
+PredictorMfe2dHelixHeuristicSeed::
+~PredictorMfe2dHelixHeuristicSeed()
 {
 	// clean up
 }
@@ -34,7 +34,7 @@ PredictorMfe2dLimStackHeuristicSeed::
 ////////////////////////////////////////////////////////////////////////////
 
 void
-PredictorMfe2dLimStackHeuristicSeed::
+PredictorMfe2dHelixHeuristicSeed::
 predict( const IndexRange & r1
 		, const IndexRange & r2
 		, const OutputConstraint & outConstraint )
@@ -49,7 +49,7 @@ predict( const IndexRange & r1
 #if INTARNA_IN_DEBUG_MODE
 	// check indices
 	if (!(r1.isAscending() && r2.isAscending()) )
-		throw std::runtime_error("PredictorMfe2dLimStackHeuristicSeed::predict("+toString(r1)+","+toString(r2)+") is not sane");
+		throw std::runtime_error("PredictorMfe2dHelixHeuristicSeed::predict("+toString(r1)+","+toString(r2)+") is not sane");
 #endif
 
 	// set index offset
@@ -112,7 +112,7 @@ predict( const IndexRange & r1
 	// compute hybridization energies WITHOUT seed condition
 	// sets also -energy -hybridE
 	// -> no hybrid update since updateOptima overwritten
-	PredictorMfe2dLimStackHeuristic::fillHybridE();
+	PredictorMfe2dHelixHeuristic::fillHybridE();
 
 	// TODO: What is this ? Why is it here ?
 //
@@ -271,7 +271,7 @@ predict( const IndexRange & r1
 		} // helix
 
 		// update mfe if needed (call superclass update routine)
-		PredictorMfe2dLimStackHeuristic::updateOptima( i1,curCell->j1, i2,curCell->j2, curCellEtotal, false );
+		PredictorMfe2dHelixHeuristic::updateOptima( i1,curCell->j1, i2,curCell->j2, curCellEtotal, false );
 
 	} // i2
 	} // i1
@@ -286,7 +286,7 @@ predict( const IndexRange & r1
 ////////////////////////////////////////////////////////////////////////////
 
 void
-PredictorMfe2dLimStackHeuristicSeed::
+PredictorMfe2dHelixHeuristicSeed::
 traceBack( Interaction & interaction, const OutputConstraint & outConstraint )
 {
 	// check if something to trace
@@ -297,10 +297,10 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint )
 #if INTARNA_IN_DEBUG_MODE
 	// sanity checks
 	if ( ! interaction.isValid() ) {
-		throw std::runtime_error("PredictorMfe2dLimStackHeuristicSeed::traceBack() : given interaction not valid");
+		throw std::runtime_error("PredictorMfe2dHelixHeuristicSeed::traceBack() : given interaction not valid");
 	}
 	if ( interaction.basePairs.size() != 2 ) {
-		throw std::runtime_error("PredictorMfe2dLimStackHeuristicSeed::traceBack() : given interaction does not contain boundaries only");
+		throw std::runtime_error("PredictorMfe2dHelixHeuristicSeed::traceBack() : given interaction does not contain boundaries only");
 	}
 #endif
 
@@ -418,7 +418,7 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint )
 						Interaction bpsRight(*(interaction.s1), *(interaction.s2));
 						bpsRight.basePairs.push_back(energy.getBasePair(i1, i2));
 						bpsRight.basePairs.push_back(energy.getBasePair(j1, j2));
-						PredictorMfe2dLimStackHeuristic::traceBack(bpsRight, outConstraint);
+						PredictorMfe2dHelixHeuristic::traceBack(bpsRight, outConstraint);
 						// copy remaining base pairs
 						Interaction::PairingVec &bps = bpsRight.basePairs;
 						// copy all base pairs excluding the right most
@@ -465,7 +465,7 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint )
 ////////////////////////////////////////////////////////////////////////////
 
 void
-PredictorMfe2dLimStackHeuristicSeed::
+PredictorMfe2dHelixHeuristicSeed::
 getNextBest( Interaction & curBest )
 {
 

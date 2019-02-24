@@ -11,14 +11,14 @@
 #include "IntaRNA/InteractionEnergyBasePair.h"
 #include "IntaRNA/Interaction.h"
 #include "IntaRNA/ReverseAccessibility.h"
-#include "IntaRNA/PredictorMfe2dLimStackHeuristic.h"
+#include "IntaRNA/PredictorMfe2dHelixHeuristic.h"
 #include "IntaRNA/OutputHandlerInteractionList.h"
 
 using namespace IntaRNA;
 
-TEST_CASE( "PredictorMfe2dLimStackHeuristc", "[PredictorMfe2dLimStackHeuristic]") {
+TEST_CASE( "PredictorMfe2dHelixHeuristc", "[PredictorMfe2dHelixHeuristic]") {
 
-	SECTION("Predictor: Case 1", "[PredictorMfe2dLimStackHeuristic]") {
+	SECTION("Predictor: Case 1", "[PredictorMfe2dHelixHeuristic]") {
 
 		RnaSequence r1("r1", "GGGAAGG");
 		RnaSequence r2("r2", "CCAACCC");
@@ -31,7 +31,7 @@ TEST_CASE( "PredictorMfe2dLimStackHeuristc", "[PredictorMfe2dLimStackHeuristic]"
 
 		OutputHandlerInteractionList out(1);
 
-		PredictorMfe2dLimStackHeuristic pLSH(energy, out, NULL, hc);
+		PredictorMfe2dHelixHeuristic pLSH(energy, out, NULL, hc);
 
 		IndexRange idx1(0,r1.lastPos);
 		IndexRange idx2(0,r2.lastPos);
@@ -52,7 +52,7 @@ TEST_CASE( "PredictorMfe2dLimStackHeuristc", "[PredictorMfe2dLimStackHeuristic]"
 		REQUIRE(interaction->dotBracket(*interaction) == "(((..((&))..)))");
 	}
 
-	SECTION("Predictor: Case 2", "[PredictorMfe2dLimStackHeuristic]") {
+	SECTION("Predictor: Case 2", "[PredictorMfe2dHelixHeuristic]") {
 
 		RnaSequence r1("r1", "AAGGGAAGGA");
 		RnaSequence r2("r2", "ACCAACCCAA");
@@ -65,7 +65,7 @@ TEST_CASE( "PredictorMfe2dLimStackHeuristc", "[PredictorMfe2dLimStackHeuristic]"
 
 		OutputHandlerInteractionList out(1);
 
-		PredictorMfe2dLimStackHeuristic pLSH(energy, out, NULL, hc);
+		PredictorMfe2dHelixHeuristic pLSH(energy, out, NULL, hc);
 
 		IndexRange idx1(0,r1.lastPos);
 		IndexRange idx2(0,r2.lastPos);
@@ -86,7 +86,7 @@ TEST_CASE( "PredictorMfe2dLimStackHeuristc", "[PredictorMfe2dLimStackHeuristic]"
 		REQUIRE(interaction->dotBracket(*interaction) == "(((..((&))..)))");
 	}
 
-	SECTION("Predictor: Case 3 - no favorable output", "[PredictorMfe2dLimStackHeuristic]") {
+	SECTION("Predictor: Case 3 - no favorable output", "[PredictorMfe2dHelixHeuristic]") {
 
 		RnaSequence r1("r1", "AAAAAAAA");
 		RnaSequence r2("r2", "AAAAAAAA");
@@ -99,7 +99,7 @@ TEST_CASE( "PredictorMfe2dLimStackHeuristc", "[PredictorMfe2dLimStackHeuristic]"
 
 		OutputHandlerInteractionList out(1);
 
-		PredictorMfe2dLimStackHeuristic pLSH(energy, out, NULL, hc);
+		PredictorMfe2dHelixHeuristic pLSH(energy, out, NULL, hc);
 
 		IndexRange idx1(0,r1.lastPos);
 		IndexRange idx2(0,r2.lastPos);
@@ -111,7 +111,7 @@ TEST_CASE( "PredictorMfe2dLimStackHeuristc", "[PredictorMfe2dLimStackHeuristic]"
 
 	}
 
-	SECTION("Predictor: Case 4", "[PredictorMfe2dLimStackHeuristic]") {
+	SECTION("Predictor: Case 4", "[PredictorMfe2dHelixHeuristic]") {
 
 		RnaSequence r1("r1", "AAAAAAAAGGG");
 		RnaSequence r2("r2", "AAAAAACCCAA");
@@ -124,7 +124,7 @@ TEST_CASE( "PredictorMfe2dLimStackHeuristc", "[PredictorMfe2dLimStackHeuristic]"
 
 		OutputHandlerInteractionList out(1);
 
-		PredictorMfe2dLimStackHeuristic pLSH(energy, out, NULL, hc);
+		PredictorMfe2dHelixHeuristic pLSH(energy, out, NULL, hc);
 
 		IndexRange idx1(0,r1.lastPos);
 		IndexRange idx2(0,r2.lastPos);
@@ -145,7 +145,7 @@ TEST_CASE( "PredictorMfe2dLimStackHeuristc", "[PredictorMfe2dLimStackHeuristic]"
 		REQUIRE(interaction->dotBracket(*interaction) == "(((&)))");
 	}
 
-	SECTION("Predictor: Case 5 - unpaired bases allowed", "[PredictorMfe2dLimStackHeuristic]") {
+	SECTION("Predictor: Case 5 - unpaired bases allowed", "[PredictorMfe2dHelixHeuristic]") {
 
 		RnaSequence r1("r1", "GGGAGGGG");
 		RnaSequence r2("r2", "CCCCACCC");
@@ -158,7 +158,7 @@ TEST_CASE( "PredictorMfe2dLimStackHeuristc", "[PredictorMfe2dLimStackHeuristic]"
 
 		OutputHandlerInteractionList out(1);
 
-		PredictorMfe2dLimStackHeuristic pLSH(energy, out, NULL, hc);
+		PredictorMfe2dHelixHeuristic pLSH(energy, out, NULL, hc);
 
 		IndexRange idx1(0,r1.lastPos);
 		IndexRange idx2(0,r2.lastPos);
@@ -180,7 +180,7 @@ TEST_CASE( "PredictorMfe2dLimStackHeuristc", "[PredictorMfe2dLimStackHeuristic]"
 	}
 
 
-	SECTION("Predictor: Case 6 - unpaired bases allowed", "[PredictorMfe2dLimStackHeuristic]") {
+	SECTION("Predictor: Case 6 - unpaired bases allowed", "[PredictorMfe2dHelixHeuristic]") {
 
 		RnaSequence r1("r1", "GGGAAGG");
 		RnaSequence r2("r2", "CCCCC");
@@ -193,7 +193,7 @@ TEST_CASE( "PredictorMfe2dLimStackHeuristc", "[PredictorMfe2dLimStackHeuristic]"
 
 		OutputHandlerInteractionList out(1);
 
-		PredictorMfe2dLimStackHeuristic pLSH(energy, out, NULL, hc);
+		PredictorMfe2dHelixHeuristic pLSH(energy, out, NULL, hc);
 
 		IndexRange idx1(0,r1.lastPos);
 		IndexRange idx2(0,r2.lastPos);
@@ -214,7 +214,7 @@ TEST_CASE( "PredictorMfe2dLimStackHeuristc", "[PredictorMfe2dLimStackHeuristic]"
 		REQUIRE(interaction->dotBracket(*interaction) == "(((..((&)))))");
 	}
 
-	SECTION("Predictor: Case 7 - unpaired bases allowed", "[PredictorMfe2dLimStackHeuristic]") {
+	SECTION("Predictor: Case 7 - unpaired bases allowed", "[PredictorMfe2dHelixHeuristic]") {
 
 		RnaSequence r1("r1", "GGGGGG");
 		RnaSequence r2("r2", "CCCCCC");
@@ -227,7 +227,7 @@ TEST_CASE( "PredictorMfe2dLimStackHeuristc", "[PredictorMfe2dLimStackHeuristic]"
 
 		OutputHandlerInteractionList out(1);
 
-		PredictorMfe2dLimStackHeuristic pLSH(energy, out, NULL, hc);
+		PredictorMfe2dHelixHeuristic pLSH(energy, out, NULL, hc);
 
 		IndexRange idx1(0,r1.lastPos);
 		IndexRange idx2(0,r2.lastPos);

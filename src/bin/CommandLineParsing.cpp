@@ -37,13 +37,13 @@ extern "C" {
 #include "IntaRNA/InteractionEnergyVrna.h"
 
 #include "IntaRNA/PredictorMfe2dHeuristic.h"
-#include "IntaRNA/PredictorMfe2dLimStackHeuristic.h"
+#include "IntaRNA/PredictorMfe2dHelixHeuristic.h"
 #include "IntaRNA/PredictorMfe2d.h"
 #include "IntaRNA/PredictorMfe4d.h"
 #include "IntaRNA/PredictorMaxProb.h"
 
 #include "IntaRNA/PredictorMfe2dHeuristicSeed.h"
-#include "IntaRNA/PredictorMfe2dLimStackHeuristicSeed.h"
+#include "IntaRNA/PredictorMfe2dHelixHeuristicSeed.h"
 #include "IntaRNA/PredictorMfe2dSeed.h"
 #include "IntaRNA/PredictorMfe4dSeed.h"
 
@@ -1883,7 +1883,7 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 		switch( model.val ) {
 		case 'H':  {
 			switch ( predMode.val ) {
-			case 'H' :	return new PredictorMfe2dLimStackHeuristic( energy, output, predTracker, getHelixConstraint(energy));
+			case 'H' :	return new PredictorMfe2dHelixHeuristic( energy, output, predTracker, getHelixConstraint(energy));
 			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(model.val));
 			}
 		} break;
@@ -1916,7 +1916,7 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 		switch( model.val ) {
 		case 'H' : {
 			switch  ( predMode.val ) {
-				case 'H' : return new PredictorMfe2dLimStackHeuristicSeed(energy, output, predTracker, getHelixConstraint(energy), getSeedHandler(energy));
+				case 'H' : return new PredictorMfe2dHelixHeuristicSeed(energy, output, predTracker, getHelixConstraint(energy), getSeedHandler(energy));
 				default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(model.val));
 			}
 		} break;

@@ -1,8 +1,8 @@
 
-#ifndef INTARNA_PREDICTORMFE2DLIMSTACKHEURISTICSEED_H
-#define INTARNA_PREDICTORMFE2DLIMSTACKHEURISTICSEED_H
+#ifndef INTARNA_PREDICTORMFE2DHELIXHEURISTICSEED_H
+#define INTARNA_PREDICTORMFE2DHELIXHEURISTICSEED_H
 
-#include "IntaRNA/PredictorMfe2dLimStackHeuristic.h"
+#include "IntaRNA/PredictorMfe2dHelixHeuristic.h"
 #include "IntaRNA/SeedHandlerIdxOffset.h"
 
 namespace IntaRNA {
@@ -22,7 +22,7 @@ namespace IntaRNA {
  * @author Rick Gelhausen
  *
  */
-class PredictorMfe2dLimStackHeuristicSeed: public PredictorMfe2dLimStackHeuristic {
+class PredictorMfe2dHelixHeuristicSeed: public PredictorMfe2dHelixHeuristic {
 
 
 	//! matrix type to hold the mfe energies and boundaries for interaction site starts
@@ -40,14 +40,14 @@ public:
 	 *         on this->destruction.
 	 * @param seedConstraint the seed constraint to be applied
 	 */
-	PredictorMfe2dLimStackHeuristicSeed( const InteractionEnergy & energy
+	PredictorMfe2dHelixHeuristicSeed( const InteractionEnergy & energy
 			, OutputHandler & output
 			, PredictionTracker * predTracker
 		 	, const HelixConstraint & helixConstraint
 			, SeedHandler * seedHandlerInstance
 	);
 
-	virtual ~PredictorMfe2dLimStackHeuristicSeed();
+	virtual ~PredictorMfe2dHelixHeuristicSeed();
 
 	/**
 	 * Computes the mfe for the given sequence ranges (i1-j1) in the first
@@ -68,20 +68,20 @@ public:
 protected:
 
 	//! access to the interaction energy handler of the super class
-	using PredictorMfe2dLimStackHeuristic::energy;
+	using PredictorMfe2dHelixHeuristic::energy;
 
 	//! access to the output handler of the super class
-	using PredictorMfe2dLimStackHeuristic::output;
+	using PredictorMfe2dHelixHeuristic::output;
 
 	//! access to the list of reported interaction ranges of the super class
-	using PredictorMfe2dLimStackHeuristic::reportedInteractions;
+	using PredictorMfe2dHelixHeuristic::reportedInteractions;
 
 	//! energy of all interaction hybrids that end in position p (seq1) and
 	//! q (seq2)
-	using PredictorMfe2dLimStackHeuristic::hybridE;
+	using PredictorMfe2dHelixHeuristic::hybridE;
 
 	//! handler to generate and access helix information with idx offset
-	using PredictorMfe2dLimStackHeuristic::helixHandler;
+	using PredictorMfe2dHelixHeuristic::helixHandler;
 
 	//! the best hybridization energy including a seed for start i1,i2
 	E2dMatrix hybridE_seed;
@@ -142,7 +142,7 @@ protected:
 
 inline
 void
-PredictorMfe2dLimStackHeuristicSeed::
+PredictorMfe2dHelixHeuristicSeed::
 updateOptima( const size_t i1, const size_t j1
 		, const size_t i2, const size_t j2
 		, const E_type energy
@@ -154,4 +154,4 @@ updateOptima( const size_t i1, const size_t j1
 //////////////////////////////////////////////////////////////////////////
 
 } // namespace
-#endif //INTARNA_PREDICTORMFE2DLIMSTACKHEURISTICSEED_H
+#endif //INTARNA_PREDICTORMFE2DHELIXHEURISTICSEED_H

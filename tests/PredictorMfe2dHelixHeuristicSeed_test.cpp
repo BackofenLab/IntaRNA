@@ -10,15 +10,15 @@
 #include "IntaRNA/InteractionEnergyBasePair.h"
 #include "IntaRNA/Interaction.h"
 #include "IntaRNA/ReverseAccessibility.h"
-#include "IntaRNA/PredictorMfe2dLimStackHeuristicSeed.h"
+#include "IntaRNA/PredictorMfe2dHelixHeuristicSeed.h"
 #include "IntaRNA/SeedHandlerMfe.h"
 #include "IntaRNA/OutputHandlerInteractionList.h"
 
 using namespace IntaRNA;
 
-TEST_CASE( "PredictorMfe2dLimStackHeuristcSeed", "[PredictorMfe2dLimStackHeuristicSeed]") {
+TEST_CASE( "PredictorMfe2dHelixHeuristcSeed", "[PredictorMfe2dHelixHeuristicSeed]") {
 
-	SECTION("Predictor: Case 1", "[PredictorMfe2dLimStackHeuristicSeed]") {
+	SECTION("Predictor: Case 1", "[PredictorMfe2dHelixHeuristicSeed]") {
 
 		RnaSequence r1("r1", "GGGAAGG");
 		RnaSequence r2("r2", "CCAACCC");
@@ -34,7 +34,7 @@ TEST_CASE( "PredictorMfe2dLimStackHeuristcSeed", "[PredictorMfe2dLimStackHeurist
 
 		OutputHandlerInteractionList out(1);
 
-		PredictorMfe2dLimStackHeuristicSeed pLSH(energy, out, NULL, hc, new SeedHandlerMfe(energy, sC));
+		PredictorMfe2dHelixHeuristicSeed pLSH(energy, out, NULL, hc, new SeedHandlerMfe(energy, sC));
 
 		IndexRange idx1(0, r1.lastPos);
 		IndexRange idx2(0, r2.lastPos);
@@ -55,7 +55,7 @@ TEST_CASE( "PredictorMfe2dLimStackHeuristcSeed", "[PredictorMfe2dLimStackHeurist
 		REQUIRE(interaction->dotBracket(*interaction) == "(((..((&))..)))");
 	}
 
-//	SECTION("Predictor: Case 2", "[PredictorMfe2dLimStackHeuristicSeed]") {
+//	SECTION("Predictor: Case 2", "[PredictorMfe2dHelixHeuristicSeed]") {
 //
 //		RnaSequence r1("r1", "GGGAGG");
 //		RnaSequence r2("r2", "CCAACCC");
@@ -72,7 +72,7 @@ TEST_CASE( "PredictorMfe2dLimStackHeuristcSeed", "[PredictorMfe2dLimStackHeurist
 //		SeedHandlerMfe sH(energy, sC);
 //		OutputHandlerInteractionList out(1);
 //
-//		PredictorMfe2dLimStackHeuristicSeed pLSH(energy, out, NULL, hc, new SeedHandlerMfe(energy, sC));
+//		PredictorMfe2dHelixHeuristicSeed pLSH(energy, out, NULL, hc, new SeedHandlerMfe(energy, sC));
 //
 //		IndexRange idx1(0, r1.lastPos);
 //		IndexRange idx2(0, r2.lastPos);

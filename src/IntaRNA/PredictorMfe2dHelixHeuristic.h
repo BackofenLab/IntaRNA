@@ -1,6 +1,6 @@
 
-#ifndef INTARNA_PREDICTORMFE2DLIMSTACKHEURISTIC_H_
-#define INTARNA_PREDICTORMFE2DLIMSTACKHEURISTIC_H_
+#ifndef INTARNA_PREDICTORMFE2DHELIXHEURISTIC_H_
+#define INTARNA_PREDICTORMFE2DHELIXHEURISTIC_H_
 
 #include "IntaRNA/PredictorMfe2dHeuristic.h"
 #include "IntaRNA/Interaction.h"
@@ -25,7 +25,7 @@ namespace IntaRNA {
  * @author Rick Gelhausen
  *
  */
-class PredictorMfe2dLimStackHeuristic: public PredictorMfe2dHeuristic {
+class PredictorMfe2dHelixHeuristic: public PredictorMfe2dHeuristic {
 
 protected:
 
@@ -43,12 +43,12 @@ public:
 	 *         tracking is to be done; if non-NULL, the tracker gets deleted
 	 *         on this->destruction.
 	 */
-	PredictorMfe2dLimStackHeuristic( const InteractionEnergy & energy
+	PredictorMfe2dHelixHeuristic( const InteractionEnergy & energy
 			, OutputHandler & output
 			, PredictionTracker * predTracker
 			, const HelixConstraint & helixConstraint);
 
-	virtual ~PredictorMfe2dLimStackHeuristic();
+	virtual ~PredictorMfe2dHelixHeuristic();
 
 	/**
 	 * Computes the mfe for the given sequence ranges (i1-j1) in the first
@@ -119,4 +119,4 @@ protected:
 
 } // namespace
 
-#endif /* INTARNA_PREDICTORMFE2DLIMSTACKHEURISTIC_H_ */
+#endif /* INTARNA_PREDICTORMFE2DHELIXHEURISTIC_H_ */
