@@ -1,4 +1,7 @@
 
+190224 Martin Raden :
+ * renaming PredictorMfe2dLimStack* to PredictorMfe2dHelix*
+
 190223 Martin Raden / Rick Gelhausen :
  + integration of helix-based RNA-RNA interaction prediction
  + IntaRNA/HelixConstraint : constraints for considered inter-molecular helices
