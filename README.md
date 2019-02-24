@@ -428,8 +428,7 @@ structural context of the respective subsequences, which are
 The following figure shows an RNA structure depiction with context annotations
 (abbreviated by resp. first letter) of unpaired regions that can form RNA-RNA interactions.
 
-![depiction of structural context of interaction sites](doc/figures/unpaired-context.png)
-
+![depiction of RNA-RNA interaction pattern](doc/figures/interaction-context.svg)
 
 IntaRNA can predict single-site interactions within any structural context of the respective subsequences.
 
@@ -444,8 +443,6 @@ Note, *concatenation-based approaches* as implemented in UNAfold or RNAcofold ca
 and are thus not capable
 to investigate e.g. common loop-exterior or kissing-hairpin-loop
 interaction patterns that are depicted by (c) and (d) in the figure from above, respectively!
-
-![depiction of RNA-RNA interaction pattern](doc/figures/interaction-examples.svg)
 
 A detailed discussion about different prediction approaches and predictable
 interaction pattern is available in our publications
