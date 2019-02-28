@@ -1,6 +1,9 @@
 
 #include "IntaRNA/general.h"
 
+// initialize logging for binary
+INITIALIZE_EASYLOGGINGPP
+
 #include <iostream>
 #include <exception>
 
@@ -19,9 +22,6 @@
 #include "IntaRNA/OutputHandler.h"
 #include "IntaRNA/OutputHandlerIntaRNA1.h"
 #include "IntaRNA/OutputHandlerInteractionList.h"
-
-// initialize logging for binary
-INITIALIZE_EASYLOGGINGPP
 
 using namespace IntaRNA;
 
@@ -52,9 +52,9 @@ int main(int argc, char **argv){
 		// setup logging with given parameters
 		START_EASYLOGGINGPP(argc, argv);
 
+
 		// check if log file set and update all loggers before going on
-		el::Logger* logger = el::Loggers::getLogger("default");
-		if (logger != NULL && logger->configurations() != NULL && logger->configurations()->hasConfiguration(el::ConfigurationType::Filename))
+		if (el::Helpers::commandLineArgs() != NULL && el::Helpers::commandLineArgs()->hasParamWithValue(el::base::consts::kDefaultLogFileParam))
 		{
 			// default all to file
 			el::Loggers::reconfigureAllLoggers(el::ConfigurationType::ToStandardOutput, std::string("false"));

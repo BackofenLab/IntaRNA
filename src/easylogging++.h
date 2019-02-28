@@ -1,7 +1,8 @@
 //
 //  Bismillah ar-Rahmaan ar-Raheem
 //
-//  Easylogging++ v9.96.7
+//  Easylogging++ v9.96.7  ==> extended by Martin Raden (kDefaultLogFileParam now part of header to be accessible)
+//
 //  Single-header only, cross-platform logging library for C++ applications
 //
 //  Copyright (c) 2012-2018 Zuhd Web Services
@@ -739,6 +740,10 @@ static const char* kDefaultLoggerId                        =      ELPP_DEFAULT_L
 #else
 static const char* kDefaultLoggerId                        =      "default";
 #endif
+
+#if !defined(ELPP_DISABLE_LOG_FILE_FROM_ARG)
+static const char* kDefaultLogFileParam                    =      "--default-log-file";
+#endif  // !defined(ELPP_DISABLE_LOG_FILE_FROM_ARG)
 
 #if defined(ELPP_FEATURE_ALL) || defined(ELPP_FEATURE_PERFORMANCE_TRACKING)
 #ifdef ELPP_DEFAULT_PERFORMANCE_LOGGER
