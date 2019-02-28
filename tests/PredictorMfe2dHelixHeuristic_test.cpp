@@ -170,13 +170,15 @@ TEST_CASE( "PredictorMfe2dHelixHeuristc", "[PredictorMfe2dHelixHeuristic]") {
 		REQUIRE(out.reported() == 1);
 
 		const Interaction * interaction((*out.begin()));
+
+		REQUIRE(interaction->dotBracket(*interaction) == "((.((.(&)..).)))");
+
 		REQUIRE(interaction->basePairs.begin()->first == 0);
 		REQUIRE(interaction->basePairs.begin()->second == 7);
 
 		REQUIRE(interaction->basePairs.rbegin()->first == 7);
 		REQUIRE(interaction->basePairs.rbegin()->second == 0);
 
-		REQUIRE(interaction->dotBracket(*interaction) == "(((.(..(&)..).)))");
 	}
 
 
@@ -214,7 +216,7 @@ TEST_CASE( "PredictorMfe2dHelixHeuristc", "[PredictorMfe2dHelixHeuristic]") {
 		REQUIRE(interaction->dotBracket(*interaction) == "(((..((&)))))");
 	}
 
-	SECTION("Predictor: Case 7 - unpaired bases allowed", "[PredictorMfe2dHelixHeuristic]") {
+	SECTION("Predictor: Case 7 - only stacking allowed", "[PredictorMfe2dHelixHeuristic]") {
 
 		RnaSequence r1("r1", "GGGGGG");
 		RnaSequence r2("r2", "CCCCCC");
@@ -239,13 +241,13 @@ TEST_CASE( "PredictorMfe2dHelixHeuristc", "[PredictorMfe2dHelixHeuristic]") {
 		REQUIRE(out.reported() == 1);
 
 		const Interaction * interaction((*out.begin()));
+		REQUIRE(interaction->dotBracket(*interaction) == "(((((&).))))");
 		REQUIRE(interaction->basePairs.begin()->first == 1);
 		REQUIRE(interaction->basePairs.begin()->second == 5);
 
 		REQUIRE(interaction->basePairs.rbegin()->first == 5);
 		REQUIRE(interaction->basePairs.rbegin()->second == 0);
 
-		REQUIRE(interaction->dotBracket(*interaction) == "(((((&).))))");
 	}
 
 }
