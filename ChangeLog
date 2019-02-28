@@ -1,4 +1,15 @@
 
+190228 Martin Raden :
+ * easylogging++ :
+   * kDefaultLogFileParam now part of header to be accessible
+ * bin/IntaRNA :
+   * bugfix: check whether or not --default-log-file specified was always true
+     such that all log output was going to the default "/dev/null" if not 
+     specified by the user 
+ * IntaRNA/PredictorMfe2dHelixHeuristic* :
+   * bugfix: check for too small interior loops was based on individual gap
+     length instead of sum of unpaired positions
+
 190224 Martin Raden :
  * renaming PredictorMfe2dLimStack* to PredictorMfe2dHelix*
  * README.md :

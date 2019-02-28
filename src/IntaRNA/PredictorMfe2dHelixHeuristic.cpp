@@ -161,11 +161,12 @@ fillHybridE()
 			/////////// extend stacking with bulge and further interaction
 
 			// iterate over all loop sizes w1 (seq1) and w2 (seq2) (minus 1)
-			for (w1=helixHandler.getConstraint().getMinInternalLoopSize()+1; w1-1 <= energy.getMaxInternalLoopSize1() && i1+h1+w1<hybridE.size1(); w1++) {
-			for (w2=helixHandler.getConstraint().getMinInternalLoopSize()+1; w2-1 <= energy.getMaxInternalLoopSize2() && i2+h2+w2<hybridE.size2(); w2++) {
+			for (w1=1; w1-1 <= energy.getMaxInternalLoopSize1() && i1+h1+w1<hybridE.size1(); w1++) {
+			for (w2=1; w2-1 <= energy.getMaxInternalLoopSize2() && i2+h2+w2<hybridE.size2(); w2++) {
 
-				// skip stacking to ensure enumerating only bulges and interior loops
-				if (w1 == 1 && w2 == 1) {
+				// skip too small interior loops or stackings
+				// ensure bulges and interior loops exceed allowed ones within helices
+				if ( w1+w2 <= helixHandler.getConstraint().getMaxIL()+1) {
 					continue;
 				}
 
@@ -188,7 +189,7 @@ fillHybridE()
 //				LOG(DEBUG) << "Case 2: curE " << curE;
 				// check if this combination yields better energy
 				curEtotal = energy.getE(i1,rightExt->j1,i2,rightExt->j2,curE);
-				if ( curEtotal < curCellEtotal )
+				if ( !E_equal(curEtotal, curCellEtotal) && curEtotal < curCellEtotal )
 				{
 					// update current best for this left boundary
 					// copy right boundary
@@ -273,11 +274,12 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint )
 		h2 = helixHandler.getHelixLength2(i1,i2)-1; assert(h2 < hybridE.size2());
 
 		// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
-		for (size_t w1=helixHandler.getConstraint().getMinInternalLoopSize()+1; traceNotFound && w1-1 <= energy.getMaxInternalLoopSize1() && i1+h1+w1<hybridE.size1(); w1++) {
-		for (size_t w2=helixHandler.getConstraint().getMinInternalLoopSize()+1; traceNotFound && w2-1 <= energy.getMaxInternalLoopSize2() && i2+h2+w2<hybridE.size2(); w2++) {
+		for (size_t w1=1; traceNotFound && w1-1 <= energy.getMaxInternalLoopSize1() && i1+h1+w1<hybridE.size1(); w1++) {
+		for (size_t w2=1; traceNotFound && w2-1 <= energy.getMaxInternalLoopSize2() && i2+h2+w2<hybridE.size2(); w2++) {
 
-			// skip stacking
-			if (w1 == 1 && w2 == 1) {
+			// skip too small interior loops or stackings
+			// ensure bulges and interior loops exceed allowed ones within helices
+			if ( w1+w2 <= helixHandler.getConstraint().getMaxIL()+1) {
 				continue;
 			}
 
