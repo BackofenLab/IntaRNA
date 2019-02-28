@@ -39,11 +39,11 @@ fillHelixSeed(const size_t i1min, const size_t i1max, const size_t i2min, const 
 		// TODO: THIS might make the boundary conditions useless
 		// Check if a seed can fit given the left boundaries
 		// Note: If seedHandler allows unpaired positions this check is not enough, check happens in loop
-		if (std::min(helixSeed.size1()-i1+offset1, helixSeed.size2()-i2+offset2) < seedHandler->getConstraint().getBasePairs()) {
+		if (std::min(helixSeed.size1()+offset1-i1, helixSeed.size2()+offset2-i2) < seedHandler->getConstraint().getBasePairs()) {
 			continue;
 		} else {
 			// Seed fits, check how many bases are possible around
-			possibleBasePairs = std::min(std::min(helixSeed.size1()-i1+offset1, helixSeed.size2()-i2+offset2), helixConstraint.getMaxBasePairs())-seedHandler->getConstraint().getBasePairs();
+			possibleBasePairs = std::min(std::min(helixSeed.size1()+offset1-i1, helixSeed.size2()+offset2-i2), helixConstraint.getMaxBasePairs())-seedHandler->getConstraint().getBasePairs();
 		}
 
 		// Initialuze variables
@@ -58,9 +58,10 @@ fillHelixSeed(const size_t i1min, const size_t i1max, const size_t i2min, const 
 		for (size_t leadingBP=0; leadingBP <= possibleBasePairs
 								 && (i1+leadingBP-offset1) < helixSeed.size1()
 								 && (i2+leadingBP-offset2) < helixSeed.size2(); leadingBP++) {
-			// If leading base pairs exist and helixE = E_INF -> skip to the next leadingBP
-			if (leadingBP != 0 && E_isINF(getHelixE(i1-offset1,i2-offset2,leadingBP+1))) {
-				continue;
+			// check if leading based pairs are possible, otherwise stop computation
+			if (!energy.areComplementary(i1+leadingBP,i2+leadingBP))
+			{
+				break;
 			}
 
 			// the start positions for the seed
@@ -165,7 +166,7 @@ traceBackHelixSeed( Interaction & interaction
 
 	// Calculate how many base pairs are possible allongside the seed.
 	// Note: If seedHandler allows unpaired positions this check is not enough, check happens in loop
-	size_t possibleBasePairs = std::min(std::min(helixSeed.size1()-i1 +offset1, helixSeed.size2()-i2+offset2), helixConstraint.getMaxBasePairs())-seedHandler->getConstraint().getBasePairs();
+	size_t possibleBasePairs = std::min(std::min(helixSeed.size1()+offset1-i1, helixSeed.size2()+offset2-i2), helixConstraint.getMaxBasePairs())-seedHandler->getConstraint().getBasePairs();
 
 	// screen over all possible leading and trailing base pair combinations
 	for (size_t leadingBP=0; traceNotFound
@@ -173,9 +174,10 @@ traceBackHelixSeed( Interaction & interaction
 							 && i1 + leadingBP-offset1 < helixSeed.size1()
 							 && i2 + leadingBP-offset2 < helixSeed.size2(); leadingBP++) {
 
-		// If leading base pairs exist and helixE = E_INF -> skip to the next leadingBP
-		if (leadingBP != 0 && E_isINF(getHelixE(i1-offset1,i2-offset2,leadingBP+1))) {
-			continue;
+		// check if leading based pairs are possible, otherwise stop computation
+		if (!energy.areComplementary(i1+leadingBP,i2+leadingBP))
+		{
+			break;
 		}
 
 		// start positions of the seed
