@@ -41,6 +41,9 @@ If you use IntaRNA, please cite our articles
 - [IntaRNA 2.0: enhanced and customizable prediction of RNA–RNA interactions](http://dx.doi.org/10.1093/nar/gkx279)
   Martin Mann, Patrick R. Wright, and Rolf Backofen, 
   Nucleic Acids Research, 45 (W1), W435–W439, 2017, DOI(10.1093/nar/gkx279).
+- [Integration of accessibility data from structure probing into RNA–RNA interaction prediction](https://doi.org/10.1093/bioinformatics/bty1029)
+  Milad Miladi, Soheila Montaseri, Rolf Backofen, Martin Raden,
+  Bioinformatics, 2019, DOI(10.1093/bioinformatics/bty1029).
 - [CopraRNA and IntaRNA: predicting small RNA targets, networks and interaction domains](http://dx.doi.org/10.1093/nar/gku359)
   Patrick R. Wright, Jens Georg, Martin Mann, Dragos A. Sorescu, Andreas S. Richter, Steffen Lott, Robert Kleinkauf, Wolfgang R. Hess, and Rolf Backofen,
   Nucleic Acids Research, 42 (W1), W119-W123, 2014, DOI(10.1093/nar/gku359).
