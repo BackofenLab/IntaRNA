@@ -148,7 +148,13 @@ updateOptima( const size_t i1, const size_t j1
 		, const E_type energy
 		, const bool isHybridE )
 {
-	// do nothing and ignore calls from fillHybridE()
+	// temporarily disable tracker
+	PredictionTracker * curPredTracker = this->predTracker;
+	this->predTracker = NULL;
+	// update optimum information, such that we might skip this sequence pair
+	PredictorMfe2dHeuristic::updateOptima(i1,j1,i2,j2,energy,isHybridE);
+	// reenable tracker
+	this->predTracker = curPredTracker;
 }
 
 //////////////////////////////////////////////////////////////////////////
