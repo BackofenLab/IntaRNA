@@ -37,8 +37,7 @@ predict( const IndexRange & r1
 #if INTARNA_MULITHREADING
 #pragma omp critical(intarna_omp_logOutput)
 #endif
-	// TODO: Change
-	{ VLOG(2) <<"predicting mfe interactions heuristically in O(n^2) space and time..."; }
+	{ VLOG(2) <<"predicting mfe interactions based on helices heuristically in O(n^2) space and time..."; }
 	// measure timing
 	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
 
@@ -166,7 +165,7 @@ fillHybridE()
 
 				// skip too small interior loops or stackings
 				// ensure bulges and interior loops exceed allowed ones within helices
-				if ( w1+w2 <= helixHandler.getConstraint().getMaxIL()+1) {
+				if ( w1+w2-2 <= helixHandler.getConstraint().getMaxIL()) {
 					continue;
 				}
 
@@ -279,7 +278,7 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint )
 
 			// skip too small interior loops or stackings
 			// ensure bulges and interior loops exceed allowed ones within helices
-			if ( w1+w2 <= helixHandler.getConstraint().getMaxIL()+1) {
+			if ( w1+w2-2 <= helixHandler.getConstraint().getMaxIL()) {
 				continue;
 			}
 

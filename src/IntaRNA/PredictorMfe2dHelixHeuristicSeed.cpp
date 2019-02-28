@@ -42,7 +42,7 @@ predict( const IndexRange & r1
 #if INTARNA_MULITHREADING
 #pragma omp critical(intarna_omp_logOutput)
 #endif
-	{ VLOG(2) <<"predicting mfe interactions with seed and maximal helix length heuristically in O(n^2) space and time..."; }
+	{ VLOG(2) <<"predicting mfe interactions with seed based on helices heuristically in O(n^2) space and time..."; }
 	// measure timing
 	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
 
@@ -114,15 +114,13 @@ predict( const IndexRange & r1
 	// -> no hybrid update since updateOptima overwritten
 	PredictorMfe2dHelixHeuristic::fillHybridE();
 
-	// TODO: What is this ? Why is it here ?
-//
-//	// check if any interaction possible
-//	// if not no seed-containing interaction is possible neither
-//	if (this->mfeInteractions.begin()->energy >= tmpOutConstraint.maxE) {
-//		// stop computation since no favorable interaction found
-//		reportOptima(tmpOutConstraint);
-//		return;
-//	}
+	// check result of predictions without seed if any interaction possible
+	// if not no seed-containing interaction is possible neither
+	if (this->mfeInteractions.begin()->energy >= tmpOutConstraint.maxE) {
+		// stop computation since no favorable interaction found
+		reportOptima(tmpOutConstraint);
+		return;
+	}
 
 	// init mfe for later updates
 	initOptima( outConstraint );
@@ -182,7 +180,7 @@ predict( const IndexRange & r1
 
 				// skip too small interior loops or stackings
 				// ensure bulges and interior loops exceed allowed ones within helices
-				if ( w1+w2 <= helixHandler.getConstraint().getMaxIL()+1) {
+				if ( w1+w2-2 <= helixHandler.getConstraint().getMaxIL()) {
 					continue;
 				}
 
@@ -235,7 +233,7 @@ predict( const IndexRange & r1
 
 				// skip too small interior loops or stackings
 				// ensure bulges and interior loops exceed allowed ones within helices
-				if ( w1+w2 <= helixHandler.getConstraint().getMaxIL()+1) {
+				if ( w1+w2-2 <= helixHandler.getConstraint().getMaxIL()) {
 					continue;
 				}
 
@@ -353,7 +351,7 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint )
 
 				// skip too small interior loops or stackings
 				// ensure bulges and interior loops exceed allowed ones within helices
-				if ( w1+w2 <= helixHandler.getConstraint().getMaxIL()+1) {
+				if ( w1+w2-2 <= helixHandler.getConstraint().getMaxIL()) {
 					continue;
 				}
 
@@ -397,7 +395,7 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint )
 
 				// skip too small interior loops or stackings
 				// ensure bulges and interior loops exceed allowed ones within helices
-				if ( w1+w2 <= helixHandler.getConstraint().getMaxIL()+1) {
+				if ( w1+w2-2 <= helixHandler.getConstraint().getMaxIL()) {
 					continue;
 				}
 
