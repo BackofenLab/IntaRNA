@@ -117,8 +117,6 @@ fillHybridE_seed( const size_t j1, const size_t j2, const size_t i1min, const si
 
 	assert(i1min <= j1);
 	assert(i2min <= j2);
-	assert(hybridErange.r1.from <= i1min);
-	assert(hybridErange.r2.from <= i2min);
 	assert(j1==hybridErange.r1.to);
 	assert(j2==hybridErange.r2.to);
 	assert(j1<hybridE_pq.size1());

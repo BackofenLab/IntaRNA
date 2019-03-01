@@ -152,7 +152,8 @@ for ( my $s=2; $s <= $#subopts; $s++ ) {
 		my $overlapQ = min($dataMfe[$h2i{'end2'}],$dataMfeConstr[$h2i{'end2'}])-max($dataMfe[$h2i{'start2'}],$dataMfeConstr[$h2i{'start2'}]);
 		my $overlap = min($overlapT,$overlapQ) / min($dataMfe[$h2i{'end1'}]-$dataMfe[$h2i{'start1'}],$dataMfe[$h2i{'end2'}]-$dataMfe[$h2i{'start2'}]);
 		# check if overlapping at all  
-		if ($overlap > 0) {
+		if ($overlapT > 0 and $overlapQ > 0) {
+#		if ($overlap > 0) {
 #			print "\n# compatible interactions with mfe-overlap = $overlap :\n".$subopts[$s]."\n".$constraintOut[1]."\n";
 			########################################
 			# compute overall energy

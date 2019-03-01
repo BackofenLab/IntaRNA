@@ -50,6 +50,7 @@ compile
 /intaRNA-*.tar.gz
 doxygen-doc
 doxygen-doc/*
+conf3108*
 
 
 # temp dir

@@ -1,3 +1,98 @@
+################################################################################
+#
+# Change log of IntaRNA available at 
+#
+# https://github.com/BackofenLab/IntaRNA
+#
+################################################################################
+
+development version
+
+version 2.4.0
+
+190228 Martin Raden :
+ * easylogging++ :
+   * kDefaultLogFileParam now part of header to be accessible
+ * bin/IntaRNA :
+   * bugfix: check whether or not --default-log-file specified was always true
+     such that all log output was going to the default "/dev/null" if not 
+     specified by the user 
+ * IntaRNA/PredictorMfe2dHelixHeuristic* :
+   * bugfix: check for too small interior loops was based on individual gap
+     length instead of sum of unpaired positions
+ * IntaRNA/PredictorMfe2dHelixHeuristicSeed :
+   * updateOptima() :
+     + update superclass mfe information to enable early abortion
+   * predict() :
+     + check if non-seed mfe prediction is within allowed range; otherwise abort
+ * IntaRNA/PredictorMfe2dSeed :
+   * fillHybridE_seed() :
+     - bugfix: wrong assert removed
+ * tests updated
+
+190224 Martin Raden :
+ * renaming PredictorMfe2dLimStack* to PredictorMfe2dHelix*
+ * README.md :
+   + general interaction discussion
+   + model parameter
+   + publication links
+   + helix-based prediction + parameters
+
+190223 Martin Raden / Rick Gelhausen :
+ + integration of helix-based RNA-RNA interaction prediction
+ + IntaRNA/HelixConstraint : constraints for considered inter-molecular helices
+ + IntaRNA/HelixHandler : general interface to enumerate inter-molecular helices
+ + IntaRNA/HelixHandlerIdxOffset : allows index shifting for localized access
+ + IntaRNA/HelixHandlerStackingOnly : enumerates only canonical helices
+ + IntaRNA/HelixHandlerStackingOnlySeed : canonical helices that contain a seed
+ + IntaRNA/HelixHandlerUnpaired : enumerate helices that can contain bulges
+ + IntaRNA/HelixHandlerUnpairedSeed : (bulged) helices that contain a seed
+ + IntaRNA/PredictorMfe2dLimStackHeuristic : helix-based interaction prediction
+ + IntaRNA/PredictorMfe2dLimStackHeuristicSeed : helix-based interaction 
+   prediction that enforces the seed constraint
+ * IntaRNA/SeedHandlerIdxOffset :
+   * now subclass of SeedHandler
+   + energy access via InteractionEnergyIdxOffset member
+ * tests :
+   + HelixConstraint
+   + HelixHandlerStackingOnly 
+   + HelixHandlerIdxOffset + HelixHandlerStackingOnly 
+   + HelixHandlerStackingOnlySeed 
+   + HelixHandlerIdxOffset + HelixHandlerStackingOnlySeed 
+   + HelixHandlerUnpaired
+   + HelixHandlerIdxOffset + HelixHandlerUnpaired
+   + HelixHandlerUnpairedSeed
+   + HelixHandlerIdxOffset + HelixHandlerUnpairedSeed
+   + PredictorMfe2dLimStackHeuristic
+   + PredictorMfe2dLimStackHeuristicSeed
+   + SeedHandlerIdxOffset
+   + SeedHandlerMfe
+ * bin/CommandLineParsing :
+   * replace 'pred' with 'model' = defines underlying interaction model
+   + new model 'H' = helix-based prediction
+   + new 'Helix' parameter group
+
+190207 Martin Raden :
+ * IntaRNA/OutputHandlerText :
+   * detailed output reordered and extended
+     * Pu now below respective ED
+     * Pu now with ':' prefix instead of '+' (thanks to Sebastian Will)
+     + E(hybrid) information (thanks to Sebastian Will)
+   * NOTE: this causes changes in the detailed ASCII output!
+ * README.md :
+   * minor fixes
+ * IntaRNA/OutputHandlerText :
+   * add() :
+     * explicit handling of duplicated base pairs (might happen due to explicit
+       seeds containing only a single base pair) (thanks to Sebastian Will)
+
+190128 Martin Raden :
+ * bump easylogging++ version to v9.96.7
+
+190110 Martin Raden :
+ * CommandLineParsing :
+   * windowOverlap : default changed to 150 (was 0) to avoid the need to set for
+     default q|tAccW values
 
 version 2.3.1
 

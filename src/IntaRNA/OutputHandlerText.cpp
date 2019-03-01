@@ -151,6 +151,8 @@ add( const Interaction & i )
 	Interaction::PairingVec::const_iterator curBP = i.basePairs.begin();
 	size_t loop1=0, loop2=0, loop=0, interactionLength = 1;
 	for (++curBP; curBP != i.basePairs.end(); ++curBP, ++leftBP) {
+		// handle duplicated BPs (might happen due to explicit seeds containing only a single bp)
+		if (*curBP == *leftBP) {continue;}
 		// handle internal loop region
 		// get specific loop lengths
 		loop1 = curBP->first - leftBP->first -1;
@@ -308,10 +310,11 @@ add( const Interaction & i )
 				<<"  + E(dangleRight) = "<<contr.dangleRight<<'\n'
 				<<"  + E(endLeft)     = "<<contr.endLeft<<'\n'
 				<<"  + E(endRight)    = "<<contr.endRight<<'\n'
+				<<"    : E(hybrid)    = "<<(i.energy-contr.ED1-contr.ED2)<<'\n'
 				<<"  + ED(seq1)       = "<<contr.ED1<<'\n'
+				<<"    : Pu(seq1)     = "<<std::exp(-contr.ED1/energy.getRT())<<'\n'
 				<<"  + ED(seq2)       = "<<contr.ED2<<'\n'
-				<<"  + Pu(seq1)       = "<<std::exp(-contr.ED1/energy.getRT())<<'\n'
-				<<"  + Pu(seq2)       = "<<std::exp(-contr.ED2/energy.getRT())<<'\n'
+				<<"    : Pu(seq2)     = "<<std::exp(-contr.ED2/energy.getRT())<<'\n'
 				;
 
 			// print seed information if available
