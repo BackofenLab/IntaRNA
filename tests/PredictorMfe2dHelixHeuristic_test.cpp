@@ -173,7 +173,7 @@ TEST_CASE( "PredictorMfe2dHelixHeuristc", "[PredictorMfe2dHelixHeuristic]") {
 
 		REQUIRE(interaction->dotBracket(*interaction) == "((.((.(&)..).)))");
 
-		REQUIRE(interaction->basePairs.begin()->first == 0);
+		REQUIRE(interaction->basePairs.begin()->first == 1);
 		REQUIRE(interaction->basePairs.begin()->second == 7);
 
 		REQUIRE(interaction->basePairs.rbegin()->first == 7);
