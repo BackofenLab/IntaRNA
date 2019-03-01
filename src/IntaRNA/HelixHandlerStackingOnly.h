@@ -11,10 +11,11 @@
 namespace IntaRNA {
 
 /**
- * Handler to provide helix interaction information
- * Simple Version without allowing unpaired regions
+ * Handler to provide helix interactions that are based on stacked base pairs
+ * only
+ *
+ * @author Rick Gelhausen
  */
-
 class HelixHandlerStackingOnly : public HelixHandler {
 
 public:

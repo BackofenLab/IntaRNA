@@ -13,7 +13,10 @@
 namespace IntaRNA {
 
 /**
- * Handler to provide helix interaction information
+ * Handler to provide helix interaction information that allows for minor
+ * interior loops with a constraint maximal number of unpaired bases (per loop)
+ *
+ * @author Rick Gelhausen
  */
 class HelixHandlerUnpaired : public HelixHandler {
 
