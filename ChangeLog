@@ -1,3 +1,14 @@
+################################################################################
+#
+# Change log of IntaRNA available at 
+#
+# https://github.com/BackofenLab/IntaRNA
+#
+################################################################################
+
+development version
+
+version 2.4.0
 
 190228 Martin Raden :
  * easylogging++ :
@@ -9,6 +20,15 @@
  * IntaRNA/PredictorMfe2dHelixHeuristic* :
    * bugfix: check for too small interior loops was based on individual gap
      length instead of sum of unpaired positions
+ * IntaRNA/PredictorMfe2dHelixHeuristicSeed :
+   * updateOptima() :
+     + update superclass mfe information to enable early abortion
+   * predict() :
+     + check if non-seed mfe prediction is within allowed range; otherwise abort
+ * IntaRNA/PredictorMfe2dSeed :
+   * fillHybridE_seed() :
+     - bugfix: wrong assert removed
+ * tests updated
 
 190224 Martin Raden :
  * renaming PredictorMfe2dLimStack* to PredictorMfe2dHelix*
@@ -58,6 +78,7 @@
      * Pu now below respective ED
      * Pu now with ':' prefix instead of '+' (thanks to Sebastian Will)
      + E(hybrid) information (thanks to Sebastian Will)
+   * NOTE: this causes changes in the detailed ASCII output!
  * README.md :
    * minor fixes
  * IntaRNA/OutputHandlerText :
