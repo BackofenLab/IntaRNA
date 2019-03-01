@@ -24,6 +24,8 @@ before_install:
     - sudo apt-get install vienna-rna -y
 
 script:
+    - $CXX --version
+    - which $CXX
     - RNAalifold --version
     ##### start IntaRNA build #####
     - cd $TRAVIS_BUILD_DIR 
