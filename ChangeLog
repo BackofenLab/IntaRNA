@@ -13,6 +13,8 @@ development version
    are now integer-encoded values in dcal/mol (instead of kcal/mol) as done
    within the VRNA package. this avoids floating point operation issues of the
    traceback routines.
+   NOTE: this change will have minor impact on the reported interactions and
+   their energies! Thus, results will not equal 2.* predictions!
  + IntaRNA::E_kcal_type = float to represent input/output energies in kcal/mol
  + IntaRNA::Z_type = float to represent partition functions, temperature and
    probabilities
@@ -33,6 +35,14 @@ development version
      * energy check extended to be conform to Interaction::compareEnergy()
  * IntaRNA/PredictorsMfe2d*Seed :
    * early abortion check corrected
+ * IntaRNA/AccessibilityBasePair :
+   + VLOG time logging
+ * IntaRNA/Accessibility :
+   * decomposeByMinPu() :
+     + bugfix: explicit minPu==0 handling
+ * bin/CommandLineParsing :
+   * get*Ranges() :
+     + additional Accessibility argument to avoid recomputation (what a mess..)
    
 version 2.4.0
 
