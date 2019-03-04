@@ -19,7 +19,21 @@ development version
  + type conversion routines for E_kcal_type, E_type, Z_type
  * 'outMaxE' value now exclusive concerning interaction reporting (all reporeted
    interactions have a lower energy)
-
+ * IntaRNA/InteractionEnergyVrna :
+   * replacing deprecated 'ViennaRNA::E_Stem(..)' with 'ViennaRNA::vrna_E_ext_stem(..)'
+   + Evrna_2_E() to convert VRNA energy values to E_type
+ * IntaRNA/NussinovHandler :
+   + takes basePairEnergy for minimization (was maximization with hard coded +1 per bp)
+ * IntaRNA/PredictorMaxProb :
+   + updateOptima(energy) : was missing
+ * IntaRNA/PredictorMfe :
+   * updateOptima() :
+     * now using Interaction::compareEnergy() instead of explicit energy comparison
+   * reportOptima() :
+     * energy check extended to be conform to Interaction::compareEnergy()
+ * IntaRNA/PredictorsMfe2d*Seed :
+   * early abortion check corrected
+   
 version 2.4.0
 
 190228 Martin Raden :
