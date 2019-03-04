@@ -1,0 +1,25 @@
+
+ --> Q=CCCCCCCNNNNNNGGGGGUUUUUUU
+
+ --> T=GGGGGGGNNNNNNAAAAAAAUUUCCCC
+
+ --> ../src/bin/IntaRNA -q $Q -t $T -n 2  --outmode=C --outcsvcols="id1,start1,end1,id2,start2,end2,subseqDP,hybridDP,E,ED1,ED2"                                                                                                                                 id1;start1;end1;id2;start2;end2;subseqDP;hybridDP;E;ED1;ED2
+# INFO : Sequence 'query' contains ambiguous nucleotide encodings. These positions are ignored for interaction computation.
+# INFO : Sequence 'target' contains ambiguous IUPAC nucleotide encodings. These positions are ignored for interaction computation and replaced by 'N'.
+target;1;7;query;1;7;GGGGGGG&CCCCCCC;(((((((&)))))));-0.55842;6.37677;9.96481
+target;14;20;query;19;25;AAAAAAA&UUUUUUU;(((((((&)))))));-0.5018;0.00446485;1.91063e-05
+
+ --> ../src/bin/IntaRNA -q $Q -t $T -n 2  --outmode=C --outcsvcols="id1,start1,end1,id2,start2,end2,subseqDP,hybridDP,E,ED1,ED2" > tmp.out
+
+ --> cat tmp.out | perl IntaRNAlink.pl -q=$Q -t=$T
+id1;start1;end1;id2;start2;end2;subseqDP;hybridDP;E;ED1;ED2
+target;1;7;query;1;7;GGGGGGG&CCCCCCC;(((((((&)))))));-0.55842;6.37677;9.96481
+target;14;20;query;19;25;AAAAAAA&UUUUUUU;(((((((&)))))));-0.5018;0.00446485;1.91063e-05
+target;1:14;7:20;query;1:19;7:25;GGGGGGG&CCCCCCC:AAAAAAA&UUUUUUU;(((((((&))))))):(((((((&)))))));-7.3962839563;0;10.01
+
+ --> cat tmp.out | perl IntaRNAlink.pl -q=$Q -t=$T -m
+id1;start1;end1;id2;start2;end2;subseqDP;hybridDP;E;ED1;ED2
+target;1;7;query;1;7;GGGGGGG&CCCCCCC;(((((((&)))))));-0.55842;6.37677;9.96481
+target;14;20;query;19;25;AAAAAAA&UUUUUUU;(((((((&)))))));-0.5018;0.00446485;1.91063e-05
+target;1:14;7:20;query;1:19;7:25;GGGGGGG&CCCCCCC:AAAAAAA&UUUUUUU;(((((((&))))))):(((((((&)))))));-7.44145485;0;9.96481:1.91063e-05
+
