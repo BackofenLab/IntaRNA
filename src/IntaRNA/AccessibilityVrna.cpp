@@ -250,9 +250,9 @@ callbackForStorage(FLT_OR_DBL   *pr,
 	if (type & (VRNA_PROBS_WINDOW_UP | VRNA_ANY_LOOP)) {
 
 		// access the storage data
-		std::pair< AccessibilityVrna*, double > storageRT = *((std::pair< AccessibilityVrna*, double >*)data);
+		std::pair< AccessibilityVrna*, FLT_OR_DBL > storageRT = *((std::pair< AccessibilityVrna*, FLT_OR_DBL >*)data);
 		// direct data access for computation
-	    const double RT = storageRT.second;
+	    const FLT_OR_DBL RT = storageRT.second;
 	    EdMatrix & edValues = storageRT.first->edValues;
 	    const AccessibilityConstraint & accConstr = storageRT.first->getAccConstraint();
 
@@ -261,7 +261,7 @@ callbackForStorage(FLT_OR_DBL   *pr,
 	    const bool rightEndBlocked = accConstr.isMarkedBlocked(j-1);
 	    for (int l = std::min(j,std::min(pr_size,std::min(max,(int)storageRT.first->getMaxLength()))); l>=1; l--) {
 			// get unpaired probability
-			double prob_unpaired = pr[l];
+			FLT_OR_DBL prob_unpaired = pr[l];
 //			TODO: check for [0,1] range and correct if needed (print WARNING)
 			// get left interval boundary index
 			int i = j - l + 1;
@@ -362,7 +362,7 @@ fillByRNAplfold( const VrnaHandler &vrnaHandler
 
     // provide access to this object to be filled by the callback
     // and the normalized temperature for the Boltzmann weight computation
-    std::pair< AccessibilityVrna*, double > storageRT(this, E_2_Ekcal(Z_2_E(vrnaHandler.getRT())));
+    std::pair< AccessibilityVrna*, FLT_OR_DBL > storageRT(this, (FLT_OR_DBL)vrnaHandler.getRT());
 
 	// call folding and unpaired prob calculation
     vrna_probs_window( fold_compound, plFoldW, VRNA_PROBS_WINDOW_UP, &callbackForStorage, (void*)(&storageRT));
