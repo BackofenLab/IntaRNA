@@ -224,8 +224,8 @@ int main(int argc, char **argv){
 											* parameters.getOutputConstraint().reportMax );
 
 								// run prediction for all range combinations
-								BOOST_FOREACH(const IndexRange & tRange, parameters.getTargetRanges(*energy, targetNumber)) {
-								BOOST_FOREACH(const IndexRange & qRange, parameters.getQueryRanges(*energy, queryNumber)) {
+								BOOST_FOREACH(const IndexRange & tRange, parameters.getTargetRanges(*energy, targetNumber, *targetAcc)) {
+								BOOST_FOREACH(const IndexRange & qRange, parameters.getQueryRanges(*energy, queryNumber, queryAcc.at(queryNumber)->getAccessibilityOrigin())) {
 
 									// get windows for both ranges
 									std::vector<IndexRange> queryWindows = qRange.overlappingWindows(parameters.getWindowWidth(), parameters.getWindowOverlap());

@@ -2098,7 +2098,7 @@ getSeedHandler( const InteractionEnergy & energy ) const
 
 const IndexRangeList&
 CommandLineParsing::
-getQueryRanges( const InteractionEnergy & energy, const size_t sequenceNumber ) const
+getQueryRanges( const InteractionEnergy & energy, const size_t sequenceNumber, const Accessibility & acc ) const
 {
 	checkIfParsed();
 #if INTARNA_IN_DEBUG_MODE
@@ -2113,7 +2113,7 @@ getQueryRanges( const InteractionEnergy & energy, const size_t sequenceNumber ) 
 		// check if computation is needed
 		if (qRegion.at(sequenceNumber).begin()->to - qRegion.at(sequenceNumber).begin()->from +1 > qRegionLenMax.val) {
 			// compute highly accessible regions using ED-window-size = seedBP and minRangeLength = seedBP
-			qRegion.at(sequenceNumber) = getQueryAccessibility( sequenceNumber )->decomposeByMaxED( qRegionLenMax.val, seedBP.val, seedBP.val);
+			qRegion.at(sequenceNumber) = acc.decomposeByMaxED( qRegionLenMax.val, seedBP.val, seedBP.val);
 			// inform user
 			VLOG(1) <<"detected accessible regions for query '"<<getQuerySequences().at(sequenceNumber).getId()<<"' : "<<qRegion.at(sequenceNumber);
 		}
@@ -2121,7 +2121,7 @@ getQueryRanges( const InteractionEnergy & energy, const size_t sequenceNumber ) 
 
 	// decompose ranges based in minimal unpaired probability value per position
 	// since all ranges covering a position will have a lower unpaired probability
-	getQueryAccessibility( sequenceNumber )->decomposeByMinPu( qRegion.at(sequenceNumber), outMinPu.val, energy.getRT() );
+	acc.decomposeByMinPu( qRegion.at(sequenceNumber), outMinPu.val, energy.getRT() );
 
 	return qRegion.at(sequenceNumber);
 }
@@ -2130,7 +2130,7 @@ getQueryRanges( const InteractionEnergy & energy, const size_t sequenceNumber ) 
 
 const IndexRangeList&
 CommandLineParsing::
-getTargetRanges( const InteractionEnergy & energy, const size_t sequenceNumber ) const
+getTargetRanges( const InteractionEnergy & energy, const size_t sequenceNumber, const Accessibility & acc ) const
 {
 	checkIfParsed();
 #if INTARNA_IN_DEBUG_MODE
@@ -2145,7 +2145,7 @@ getTargetRanges( const InteractionEnergy & energy, const size_t sequenceNumber )
 		// check if computation is needed
 		if (tRegion.at(sequenceNumber).begin()->to - tRegion.at(sequenceNumber).begin()->from +1 > tRegionLenMax.val) {
 			// compute highly accessible regions using ED-window-size = seedBP and minRangeLength = seedBP
-			tRegion.at(sequenceNumber) = getTargetAccessibility( sequenceNumber )->decomposeByMaxED( tRegionLenMax.val, seedBP.val, seedBP.val);
+			tRegion.at(sequenceNumber) = acc.decomposeByMaxED( tRegionLenMax.val, seedBP.val, seedBP.val);
 			// inform user
 			VLOG(1) <<"detected accessible regions for target '"<<getTargetSequences().at(sequenceNumber).getId()<<"' : "<<tRegion.at(sequenceNumber);
 		}
@@ -2153,7 +2153,7 @@ getTargetRanges( const InteractionEnergy & energy, const size_t sequenceNumber )
 
 	// decompose ranges based in minimal unpaired probability value per position
 	// since all ranges covering a position will have a lower unpaired probability
-	getTargetAccessibility( sequenceNumber )->decomposeByMinPu( tRegion.at(sequenceNumber), outMinPu.val, energy.getRT() );
+	acc.decomposeByMinPu( tRegion.at(sequenceNumber), outMinPu.val, energy.getRT() );
 
 
 	return tRegion.at(sequenceNumber);

@@ -109,9 +109,10 @@ public:
 	 * @param energy the energy handler later used for prediction (needed for region postprocessing)
 	 * @param sequenceNumber the number of the sequence within the vector
 	 *         returned by getQuerySequences()
+	 * @param acc the accessibility object for the sequence of the given number
 	 * @return the range list for the according sequence.
 	 */
-	const IndexRangeList& getQueryRanges( const InteractionEnergy & energy, const size_t sequenceNumber ) const;
+	const IndexRangeList& getQueryRanges( const InteractionEnergy & energy, const size_t sequenceNumber, const Accessibility & acc ) const;
 
 	/**
 	 * Access to the ranges to screen for interactions for the target with the
@@ -119,9 +120,10 @@ public:
 	 * @param energy the energy handler later used for prediction (needed for region postprocessing)
 	 * @param sequenceNumber the number of the sequence within the vector
 	 *         returned by getTargetSequences()
+	 * @param acc the accessibility object for the sequence of the given number
 	 * @return the range list for the according sequence.
 	 */
-	const IndexRangeList& getTargetRanges( const InteractionEnergy & energy, const size_t sequenceNumber ) const;
+	const IndexRangeList& getTargetRanges( const InteractionEnergy & energy, const size_t sequenceNumber, const Accessibility & acc ) const;
 
 	/**
 	 * Access to the maximal window width of a query/target sequence range to
