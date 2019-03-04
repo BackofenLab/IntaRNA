@@ -198,6 +198,11 @@ void
 Accessibility::
 decomposeByMinPu( IndexRangeList & ranges, const Z_type minPu, const Z_type RT ) const
 {
+	// check if there is an upper bound given; if not stop working
+	if (minPu < Z_type(0) || Z_equal(minPu,Z_type(0))) {
+		return;
+	}
+
 	// the range list to fill
 	IndexRangeList out;
 

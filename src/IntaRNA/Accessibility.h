@@ -142,12 +142,13 @@ public:
 
 	/**
 	 * Decomposes a given range list into subranges that contain only positions
-	 * where the position-wise unpaired probability is above a given threshold,
+	 * where the position-wise unpaired probability is above
+	 * or equal to a given threshold,
 	 * since any interaction site enclosing this positions has a lower
 	 * probability.
 	 *
 	 * @param ranges INOUT the list of ranges to decompose
-	 * @param minPu the minimal unpaired probability threshold
+	 * @param minPu the minimal unpaired probability threshold (inclusive)
 	 * @param RT the relative temperature to be used for Boltzmann weight computation
 	 */
 	void
