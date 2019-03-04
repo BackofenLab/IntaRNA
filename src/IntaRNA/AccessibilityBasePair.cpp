@@ -18,6 +18,9 @@ AccessibilityBasePair::AccessibilityBasePair(const RnaSequence& seq,
       basePairWeight( _RT == 0.0 ? 0.0 : std::exp(E_2_Z(-bpEnergy) / _RT) ),
       minLoopLength(minLoopLen)
 {
+	// time logging
+	TIMED_FUNC_IF(timerObj, VLOG_IS_ON(9));
+
 	if (accConstr_ != NULL && !accConstr_->isEmpty()) {
 		INTARNA_NOT_IMPLEMENTED("AccessibilityBasePair: accessibility constraints not supported");
 	}
