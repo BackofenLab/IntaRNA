@@ -20,7 +20,6 @@ TEST_CASE( "SeedHandlerExplicit", "[SeedHandlerExplicit]" ) {
 	ReverseAccessibility rAcc(acc);
 	InteractionEnergyBasePair energy( acc, rAcc );
 
-
 	SECTION( "test SeedData construction" ) {
 
 		SeedHandlerExplicit::SeedData seedEmpty("1||&3||", energy);
@@ -40,7 +39,7 @@ TEST_CASE( "SeedHandlerExplicit", "[SeedHandlerExplicit]" ) {
 		REQUIRE( seedEmpty.start2 == 0 );
 		REQUIRE( seedEmpty.dotBar1 == "||" );
 		REQUIRE( seedEmpty.dotBar2 == "||" );
-		REQUIRE( E_equal( seedEmpty.energy, -1 ) );
+		REQUIRE( E_equal( seedEmpty.energy, energy.getE_basePair() ) );
 		REQUIRE( seedEmpty.isValid() );
 
 		// valid input
@@ -49,7 +48,7 @@ TEST_CASE( "SeedHandlerExplicit", "[SeedHandlerExplicit]" ) {
 		REQUIRE( seedEmpty.start2 == 4 );
 		REQUIRE( seedEmpty.dotBar1 == "|..|" );
 		REQUIRE( seedEmpty.dotBar2 == "|..|" );
-		REQUIRE( E_equal( seedEmpty.energy, -1 ) );
+		REQUIRE( E_equal( seedEmpty.energy, energy.getE_basePair() ) );
 		REQUIRE( seedEmpty.isValid() );
 
 		// invalid out of bounds

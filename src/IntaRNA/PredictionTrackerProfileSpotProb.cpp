@@ -10,16 +10,16 @@ PredictionTrackerProfileSpotProb(
 		const InteractionEnergy & energy
 		, const std::string & seq1streamName
 		, const std::string & seq2streamName
-		, const std::string E_INF_string
+		, const std::string NA_string
 	)
  :	PredictionTracker()
 	, energy(energy)
 	, deleteStreamsOnDestruction(true)
 	, seq1stream(NULL)
 	, seq2stream(NULL)
-	, E_INF_string(E_INF_string)
-	, seq1Z( seq1streamName.empty() ? 0 : energy.size1(), E_INF ) // init E_INF
-	, seq2Z( seq2streamName.empty() ? 0 : energy.size2(), E_INF ) // init E_INF
+	, NA_string(NA_string)
+	, seq1Z( seq1streamName.empty() ? 0 : energy.size1(), Z_INF ) // init Z_INF
+	, seq2Z( seq2streamName.empty() ? 0 : energy.size2(), Z_INF ) // init Z_INF
 	, overallZ( 0.0 )
 {
 	// open streams
@@ -48,16 +48,16 @@ PredictionTrackerProfileSpotProb(
 		const InteractionEnergy & energy
 		, std::ostream * seq1stream
 		, std::ostream * seq2stream
-		, const std::string E_INF_string
+		, const std::string NA_string
 	)
  :	PredictionTracker()
 	, energy(energy)
 	, deleteStreamsOnDestruction(false)
 	, seq1stream(seq1stream)
 	, seq2stream(seq2stream)
-	, E_INF_string(E_INF_string)
-	, seq1Z( seq1stream==NULL ? 0 : energy.size1(), E_INF ) // init E_INF
-	, seq2Z( seq2stream==NULL ? 0 : energy.size2(), E_INF ) // init E_INF
+	, NA_string(NA_string)
+	, seq1Z( seq1stream==NULL ? 0 : energy.size1(), Z_INF ) // init Z_INF
+	, seq2Z( seq2stream==NULL ? 0 : energy.size2(), Z_INF ) // init Z_INF
 	, overallZ( 0.0 )
 {
 }
@@ -74,7 +74,7 @@ PredictionTrackerProfileSpotProb::
 					, seq1Z.end()
 					, overallZ
 					, energy.getAccessibility1().getSequence()
-					, E_INF_string );
+					, NA_string );
 	}
 	if (seq2stream != NULL) {
 		writeProfile( *seq2stream
@@ -82,7 +82,7 @@ PredictionTrackerProfileSpotProb::
 					, seq2Z.end()
 					, overallZ
 					, energy.getAccessibility2().getAccessibilityOrigin().getSequence()
-					, E_INF_string );
+					, NA_string );
 	}
 
 	// clean up if file pointers were created in constructor
@@ -110,7 +110,7 @@ updateOptimumCalled( const size_t i1, const size_t j1
 							,j2 == RnaSequence::lastPos ? energy.size2()-1 : j2);
 
 	// get Boltzmann weight of this interaction energy
-	const E_type bwE = energy.getBoltzmannWeight( curE );
+	const Z_type bwE = energy.getBoltzmannWeight( curE );
 
 	// update overall partition function
 	overallZ += bwE;
@@ -137,7 +137,7 @@ PredictionTrackerProfileSpotProb::
 updateProfile(	  ZProfile & profile
 				, const size_t i
 				, const size_t j
-				, const E_type boltzmannWeight)
+				, const Z_type boltzmannWeight)
 {
 	// update if the profile is not empty (is to be filled)
 	if (! profile.empty()) {

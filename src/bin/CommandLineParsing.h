@@ -199,7 +199,7 @@ public:
 	 * Access to the set folding temperature in Celsius.
 	 * @return the chosen temperature in Celsius
 	 */
-	T_type getTemperature() const;
+	Z_type getTemperature() const;
 
 	/**
 	 * The constraints to be applied to the interaction output generation
@@ -504,9 +504,9 @@ protected:
 	//! max unpaired in target's seed
 	NumberParameter<int> seedTMaxUP;
 	//! max energy of a seed to be considered
-	NumberParameter<E_type> seedMaxE;
+	NumberParameter<E_kcal_type> seedMaxE;
 	//! minimal unpaired probability (per sequence) of a seed to be considered
-	NumberParameter<E_type> seedMinPu;
+	NumberParameter<Z_type> seedMinPu;
 	//! intervals in query for seed search
 	std::string seedQRange;
 	//! intervals in target for seed search
@@ -515,7 +515,7 @@ protected:
 	mutable SeedConstraint * seedConstraint;
 
 	//! the temperature to be used for energy computations
-	NumberParameter<T_type> temperature;
+	NumberParameter<Z_type> temperature;
 
 	//! the interaction model to predict in (mfe-single-site, helix-based-single-site, max-prob-site, ..)
 	CharParameter model;
@@ -549,11 +549,11 @@ protected:
 	//! whether or not reported interactions can to be overlapping
 	CharParameter outOverlap;
 	//! deltaE to mfe allowed to report an interaction
-	NumberParameter<double> outDeltaE;
+	NumberParameter<E_kcal_type> outDeltaE;
 	//! max E allowed to report an interaction
-	NumberParameter<double> outMaxE;
+	NumberParameter<E_kcal_type> outMaxE;
 	//! min unpaired prob of an interacting subsequence allowed
-	NumberParameter<double> outMinPu;
+	NumberParameter<Z_type> outMinPu;
 	//! the CSV column selection
 	std::string outCsvCols;
 	//! the CSV column selection
@@ -817,13 +817,13 @@ protected:
 	 * Validates the seedMaxE argument.
 	 * @param value the argument value to validate
 	 */
-	void validate_seedMaxE(const E_type & value);
+	void validate_seedMaxE(const E_kcal_type & value);
 
 	/**
 	 * Validates the seedMinPu argument.
 	 * @param value the argument value to validate
 	 */
-	void validate_seedMinPu(const E_type & value);
+	void validate_seedMinPu(const Z_type & value);
 
 	/**
 	 * Validates the seedQRange argument.
@@ -841,7 +841,7 @@ protected:
 	 * Validates the temperature argument.
 	 * @param value the argument value to validate
 	 */
-	void validate_temperature(const T_type & value);
+	void validate_temperature(const Z_type & value);
 
 	/**
 	 * Validates the prediction target argument.
@@ -898,19 +898,19 @@ protected:
 	 * Validates the outDeltaE argument.
 	 * @param value the argument value to validate
 	 */
-	void validate_outDeltaE(const double & value);
+	void validate_outDeltaE(const E_kcal_type & value);
 
 	/**
 	 * Validates the outMaxE argument.
 	 * @param value the argument value to validate
 	 */
-	void validate_outMaxE(const double & value);
+	void validate_outMaxE(const E_kcal_type & value);
 
 	/**
 	 * Validates the outMinPu argument.
 	 * @param value the argument value to validate
 	 */
-	void validate_outMinPu(const double & value);
+	void validate_outMinPu(const Z_type & value);
 
 	/**
 	 * Validates the outCsvCols argument.
@@ -1606,7 +1606,7 @@ void CommandLineParsing::validate_seedTMaxUP(const int & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_seedMaxE(const E_type & value) {
+void CommandLineParsing::validate_seedMaxE(const E_kcal_type & value) {
 	// forward check to general method
 	validate_numberArgument("seedMaxE", seedMaxE, value);
 }
@@ -1614,7 +1614,7 @@ void CommandLineParsing::validate_seedMaxE(const E_type & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_seedMinPu(const E_type & value) {
+void CommandLineParsing::validate_seedMinPu(const Z_type & value) {
 	// forward check to general method
 	validate_numberArgument("seedMinPu", seedMinPu, value);
 }
@@ -1648,7 +1648,7 @@ void CommandLineParsing::validate_seedTRange(const std::string & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_temperature(const T_type & value) {
+void CommandLineParsing::validate_temperature(const Z_type & value) {
 	// forward check to general method
 	validate_numberArgument("temperature", temperature, value);
 }
@@ -1853,7 +1853,7 @@ void CommandLineParsing::validate_outOverlap(const char & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_outDeltaE(const double & value) {
+void CommandLineParsing::validate_outDeltaE(const E_kcal_type & value) {
 	// forward check to general method
 	validate_numberArgument("outDeltaE", outDeltaE, value);
 }
@@ -1861,7 +1861,7 @@ void CommandLineParsing::validate_outDeltaE(const double & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_outMaxE(const double & value) {
+void CommandLineParsing::validate_outMaxE(const E_kcal_type & value) {
 	// forward check to general method
 	validate_numberArgument("outMaxE", outMaxE, value);
 }
@@ -1869,7 +1869,7 @@ void CommandLineParsing::validate_outMaxE(const double & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_outMinPu(const double & value) {
+void CommandLineParsing::validate_outMinPu(const Z_type & value) {
 	// forward check to general method
 	validate_numberArgument("outMinPu", outMinPu, value);
 }

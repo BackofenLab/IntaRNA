@@ -22,7 +22,6 @@ libIntaRNA_adir = $(includedir)/IntaRNA
 # the list of header files that belong to the library (to be installed later)
 libIntaRNA_a_HEADERS =    \
 					intarna_config.h \
-					general.h \
 					Accessibility.h \
 					AccessibilityConstraint.h \
 					AccessibilityDisabled.h \
@@ -76,12 +75,13 @@ libIntaRNA_a_HEADERS =    \
 					SeedHandlerIdxOffset.h \
 					SeedHandlerMfe.h \
 					SeedHandlerNoBulge.h \
-					VrnaHandler.h
+					VrnaHandler.h \
+					general.h
+
 
 # the sources to add to the library and to add to the source distribution
 libIntaRNA_a_SOURCES =    \
                     $(libmylib_a_HEADERS) \
-					general.cpp \
 					Accessibility.cpp \
 					AccessibilityConstraint.cpp \
 					AccessibilityFromStream.cpp \
@@ -129,14 +129,15 @@ libIntaRNA_a_SOURCES =    \
 					SeedHandlerExplicit.cpp \
 					SeedHandlerMfe.cpp \
 					SeedHandlerNoBulge.cpp \
-					VrnaHandler.cpp
+					VrnaHandler.cpp \
+					general.cpp
 
 
-# generated intaRNA sources 
+# generated intaRNA sources
 nodist_libIntaRNA_a_SOURCES = 	\
 					../config.h \
 					intarna_config.h
-						
+
 ################################################################
 # pkg-config
 ################################################################
@@ -147,4 +148,3 @@ pkgconfig_DATA = $(top_srcdir)/IntaRNA.pc
 endif
 
 ###############################################################################
-

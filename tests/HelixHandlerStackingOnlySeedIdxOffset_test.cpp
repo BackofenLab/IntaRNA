@@ -56,17 +56,17 @@ TEST_CASE( "HelixHandlerIdxOffset for StackingOnlySeed", "[HelixHandlerIdxOffset
 								   energy.size2() - hhIO.getOffset2() - 1) == 9);
 
 		// (0,0)
-		REQUIRE(hhIO.getHelixSeedE(0, 0) == -3);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(0, 0)) == -3);
 		REQUIRE(hhIO.getHelixSeedLength1(0, 0) == 4);
 		REQUIRE(hhIO.getHelixSeedLength2(0, 0) == 4);
 
 		// (0,1)
-		REQUIRE(hhIO.getHelixSeedE(0, 1) == -3);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(0, 1)) == -3);
 		REQUIRE(hhIO.getHelixSeedLength1(0, 1) == 4);
 		REQUIRE(hhIO.getHelixSeedLength2(0, 1) == 4);
 
 		// (0,2)
-		REQUIRE(hhIO.getHelixSeedE(0, 2) == -2);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(0, 2)) == -2);
 		REQUIRE(hhIO.getHelixSeedLength1(0, 2) == 3);
 		REQUIRE(hhIO.getHelixSeedLength2(0, 2) == 3);
 
@@ -76,12 +76,12 @@ TEST_CASE( "HelixHandlerIdxOffset for StackingOnlySeed", "[HelixHandlerIdxOffset
 		REQUIRE(hhIO.getHelixSeedLength2(0, 3) == 0);
 
 		// (1,1)
-		REQUIRE(hhIO.getHelixSeedE(1, 1) == -3);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(1, 1)) == -3);
 		REQUIRE(hhIO.getHelixSeedLength1(1, 1) == 4);
 		REQUIRE(hhIO.getHelixSeedLength2(1, 1) == 4);
 
 		// (2,2)
-		REQUIRE(hhIO.getHelixSeedE(2, 2) == -2);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(2, 2)) == -2);
 		REQUIRE(hhIO.getHelixSeedLength1(2, 2) == 3);
 		REQUIRE(hhIO.getHelixSeedLength2(2, 2) == 3);
 
@@ -228,7 +228,7 @@ TEST_CASE( "HelixHandlerIdxOffset for StackingOnlySeed", "[HelixHandlerIdxOffset
 		REQUIRE(hhIO.getHelixSeedLength2(1, 0) == 0);
 
 		// (1,3)
-		REQUIRE(hhIO.getHelixSeedE(1, 1) == -2);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(1, 1)) == -2);
 		REQUIRE(hhIO.getHelixSeedLength1(1, 1) == 3);
 		REQUIRE(hhIO.getHelixSeedLength2(1, 1) == 3);
 
@@ -294,17 +294,17 @@ TEST_CASE( "HelixHandlerIdxOffset for StackingOnlySeed", "[HelixHandlerIdxOffset
 								   energy.size2() - hhIO.getOffset2() - 1) == 4);
 
 		// (0,0)
-		REQUIRE(hhIO.getHelixSeedE(0, 0) == -3);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(0, 0)) == -3);
 		REQUIRE(hhIO.getHelixSeedLength1(0, 0) == 5);
 		REQUIRE(hhIO.getHelixSeedLength2(0, 0) == 5);
 
 		// (0,2)
-		REQUIRE(hhIO.getHelixSeedE(1, 0) == -2);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(1, 0)) == -2);
 		REQUIRE(hhIO.getHelixSeedLength1(1, 0) == 4);
 		REQUIRE(hhIO.getHelixSeedLength2(1, 0) == 4);
 
 		// (1,3)
-		REQUIRE(hhIO.getHelixSeedE(1, 1) == -2);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(1, 1)) == -2);
 		REQUIRE(hhIO.getHelixSeedLength1(1, 1) == 4);
 		REQUIRE(hhIO.getHelixSeedLength2(1, 1) == 4);
 
@@ -390,17 +390,17 @@ TEST_CASE( "HelixHandlerIdxOffset for StackingOnlySeed", "[HelixHandlerIdxOffset
 								   energy.size2() - hhIO.getOffset2() - 1) == 9);
 
 		// (0,0)
-		REQUIRE(hhIO.getHelixSeedE(0, 0) == -3);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(0, 0)) == -3);
 		REQUIRE(hhIO.getHelixSeedLength1(0, 0) == 4);
 		REQUIRE(hhIO.getHelixSeedLength2(0, 0) == 4);
 
 		// (0,1)
-		REQUIRE(hhIO.getHelixSeedE(0, 1) == -3);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(0, 1)) == -3);
 		REQUIRE(hhIO.getHelixSeedLength1(0, 1) == 4);
 		REQUIRE(hhIO.getHelixSeedLength2(0, 1) == 4);
 
 		// (0,2)
-		REQUIRE(hhIO.getHelixSeedE(0, 2) == -2);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(0, 2)) == -2);
 		REQUIRE(hhIO.getHelixSeedLength1(0, 2) == 3);
 		REQUIRE(hhIO.getHelixSeedLength2(0, 2) == 3);
 
@@ -410,12 +410,12 @@ TEST_CASE( "HelixHandlerIdxOffset for StackingOnlySeed", "[HelixHandlerIdxOffset
 		REQUIRE(hhIO.getHelixSeedLength2(0, 3) == 0);
 
 		// (1,1)
-		REQUIRE(hhIO.getHelixSeedE(1, 1) == -3);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(1, 1)) == -3);
 		REQUIRE(hhIO.getHelixSeedLength1(1, 1) == 4);
 		REQUIRE(hhIO.getHelixSeedLength2(1, 1) == 4);
 
 		// (2,2)
-		REQUIRE(hhIO.getHelixSeedE(2, 2) == -2);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(2, 2)) == -2);
 		REQUIRE(hhIO.getHelixSeedLength1(2, 2) == 3);
 		REQUIRE(hhIO.getHelixSeedLength2(2, 2) == 3);
 

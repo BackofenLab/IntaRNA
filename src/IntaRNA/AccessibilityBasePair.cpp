@@ -10,12 +10,12 @@ namespace IntaRNA {
 
 AccessibilityBasePair::AccessibilityBasePair(const RnaSequence& seq,
     const size_t maxLength, const AccessibilityConstraint * const accConstr_,
-    const E_type bpEnergy, const E_type _RT, const size_t minLoopLen) :
+    const E_type bpEnergy, const Z_type _RT, const size_t minLoopLen) :
       Accessibility(seq, maxLength, accConstr_),
       logPu(seq.size(), seq.size()),
       basePairEnergy(bpEnergy),
       RT(_RT),
-      basePairWeight( _RT == 0.0 ? 0.0 : std::exp(-bpEnergy / _RT) ),
+      basePairWeight( _RT == 0.0 ? 0.0 : std::exp(E_2_Z(-bpEnergy) / _RT) ),
       minLoopLength(minLoopLen)
 {
 	if (accConstr_ != NULL && !accConstr_->isEmpty()) {
@@ -26,10 +26,10 @@ AccessibilityBasePair::AccessibilityBasePair(const RnaSequence& seq,
 	}
   const size_t N = seq.size();
   // create temporary matrices for ED computation
-  NussinovHandler::E2dMatrix Q(N, N);
-  NussinovHandler::E2dMatrix Qb(N, N);
-  NussinovHandler::P2dMatrix Pbp(N, N);
-  NussinovHandler::P2dMatrix Pu(N, N);
+  NussinovHandler::Z2dMatrix Q(N, N);
+  NussinovHandler::Z2dMatrix Qb(N, N);
+  NussinovHandler::Z2dMatrix Pbp(N, N);
+  NussinovHandler::Z2dMatrix Pu(N, N);
 
   logPu.resize(N, N);
 
@@ -45,7 +45,7 @@ AccessibilityBasePair::AccessibilityBasePair(const RnaSequence& seq,
   // compute ED values
   for (size_t i = 0u; i < N; ++i) {
     for (size_t j = i; j < N; ++j) {
-      logPu(i, j) = -RT * std::log(NussinovHandler::getPu(i, j, seq, basePairWeight, minLoopLength, Q, Qb, Pbp, Pu));
+      logPu(i, j) = Z_2_E( -RT * std::log(NussinovHandler::getPu(i, j, seq, basePairWeight, minLoopLength, Q, Qb, Pbp, Pu)) );
     }
   }
 }

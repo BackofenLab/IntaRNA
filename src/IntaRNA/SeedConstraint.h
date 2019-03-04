@@ -377,7 +377,8 @@ operator<<(std::ostream& out, const SeedConstraint& c)
 			<<", up="<<c.getMaxUnpairedOverall()
 			<<", up1="<<c.getMaxUnpaired1()
 			<<", up2="<<c.getMaxUnpaired2()
-			<<", E="<<c.getMaxE()
+			<<", E="<<E_2_Ekcal(c.getMaxE())
+			<<", ED="<<E_2_Ekcal(c.getMaxED())
 			<<")";
 	return out;
 }

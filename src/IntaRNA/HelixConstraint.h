@@ -254,9 +254,9 @@ operator<<(std::ostream& out, const HelixConstraint& c)
 	out <<"HelixConstraint( minBP="<<c.getMinBasePairs()
 			<<", maxBP="<<c.getMaxBasePairs()
 			<<", maxIL="<<c.getMaxIL()
-			<<", maxED="<<c.getMaxED()
-			<<", maxE="<<c.getMaxE()
-			<<", withED="<<c.useNoED()
+			<<", maxED="<<E_2_Ekcal(c.getMaxED())
+			<<", maxE="<<E_2_Ekcal(c.getMaxE())
+			<<", withED="<<(c.useNoED()?"false":"true")
 		    <<")";
 	return out;
 

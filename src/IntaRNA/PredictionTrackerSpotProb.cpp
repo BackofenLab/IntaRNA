@@ -98,7 +98,7 @@ PredictionTrackerSpotProb::
 	// probability of interactions covering no tracked spot
 	(*outStream) <<"spot;probability\n";
 	// handle division by zero if nothing was reported
-	if (E_equal(overallZ,0.0)) {
+	if (Z_equal(overallZ,0.0)) {
 		overallZ = 1.0;
 	}
 	// probability of interactions covering no tracked spot
@@ -133,7 +133,7 @@ updateOptimumCalled( const size_t i1, const size_t j1
 							,j2 == RnaSequence::lastPos ? energy.size2()-1 : j2);
 
 	// get Boltzmann weight of this interaction
-	const E_type curBW = energy.getBoltzmannWeight( curE );
+	const Z_type curBW = energy.getBoltzmannWeight( curE );
 	// update overall Z
 	overallZ += curBW;
 	// update spot information

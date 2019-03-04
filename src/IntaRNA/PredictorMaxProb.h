@@ -21,12 +21,12 @@ class PredictorMaxProb: public Predictor {
 protected:
 
 	//! matrix type to cover the energies for different interaction site widths
-	typedef boost::numeric::ublas::matrix<E_type> E2dMatrix;
+	typedef boost::numeric::ublas::matrix<Z_type> Z2dMatrix;
 
 	//! full 4D DP-matrix for computation to hold all start position combinations
 	//! first index = start positions (i1,i2) of (seq1,seq2)
 	//! second index = interaction window sizes (w1,w2) or NULL if (i1,i2) not complementary
-	typedef boost::numeric::ublas::matrix< E2dMatrix* > E4dMatrix;
+	typedef boost::numeric::ublas::matrix< Z2dMatrix* > Z4dMatrix;
 
 
 public:
@@ -75,10 +75,10 @@ protected:
 	//! hybridZ(i1,i2)->(w1,w2), with interaction start i1 (seq1) and i2 (seq2) and
 	//! ineraction end j1=i1+w1 and j2=j2+w2
 	//! NOTE: hybridZ(i1,i2)==NULL if not complementary(seq1[i1],seq2[i2])
-	E4dMatrix hybridZ;
+	Z4dMatrix hybridZ;
 
 	//! the overall partition function = sum or all hybridZ entries
-	double Z;
+	Z_type Z;
 
 	//! interaction boundaries with maximal probability
 	InteractionRange maxProbInteraction;
@@ -121,9 +121,27 @@ protected:
 	void
 	updateOptima( const size_t i1, const size_t j1
 			, const size_t i2, const size_t j2
-			, const E_type Z
+			, const Z_type Z
 			, const bool isHybridZ );
 
+
+	/**
+	 * obsolete .. not used but needed for current interface
+	 *
+	 * @param i1 the index of the first sequence interacting with i2
+	 * @param j1 the index of the first sequence interacting with j2
+	 * @param i2 the index of the second sequence interacting with i1
+	 * @param j2 the index of the second sequence interacting with j1
+	 * @param energy the energy of the interaction site
+	 * @param isHybridE whether or not the given energy is only the
+	 *        hybridization energy (init+loops) or the total interaction energy
+	 */
+	virtual
+	void
+	updateOptima( const size_t i1, const size_t j1
+				, const size_t i2, const size_t j2
+				, const E_type energy
+				, const bool isHybridE );
 
 
 	/**

@@ -118,7 +118,7 @@ public:
 	 */
 	virtual
 	E_type
-	getE( const E_type Z ) const;
+	getE( const Z_type Z ) const;
 
 	/**
 	 * Provides details about the energy contributions for the given interaction
@@ -394,7 +394,7 @@ public:
 	 * @return the dangling end probability for the left side of the interaction
 	 */
 	virtual
-	E_type
+	Z_type
 	getPr_danglingLeft( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const;
 
 	/**
@@ -410,7 +410,7 @@ public:
 	 * @return the dangling end probability for the right side of the interaction
 	 */
 	virtual
-	E_type
+	Z_type
 	getPr_danglingRight( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const;
 
 	/**
@@ -453,7 +453,7 @@ public:
 	 * Access to the normalized temperature for Boltzmann weight computation
 	 */
 	virtual
-	E_type
+	Z_type
 	getRT() const = 0;
 
 
@@ -493,7 +493,7 @@ public:
 	 * @return the Boltzmann weight, i.e. exp( - energy / RT );
 	 */
 	virtual
-	E_type
+	Z_type
 	getBoltzmannWeight( const E_type energy ) const ;
 
 
@@ -696,12 +696,12 @@ getAccessibility2() const
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-E_type
+Z_type
 InteractionEnergy::
 getBoltzmannWeight( const E_type e ) const
 {
 	// TODO can be optimized when using exp-energies from VRNA
-	return std::exp( - e / getRT() );
+	return std::exp( - E_2_Z(e) / getRT() );
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -782,19 +782,19 @@ isAccessible2( const size_t i ) const
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-E_type
+Z_type
 InteractionEnergy::
 getPr_danglingLeft( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const
 {
 	// initial probabilities
-	E_type probDangle1 = 1.0, probDangle2 = 1.0;
+	Z_type probDangle1 = 1.0, probDangle2 = 1.0;
 
 	// if dangle1 possible
 	if (i1>0)  {
 		// Pr( i1-1 is unpaired | i1..j1 unpaired )
 		probDangle1 =
-			std::max( (E_type)0.0
-					, std::min( (E_type)1.0
+			std::max( (Z_type)0.0
+					, std::min( (Z_type)1.0
 							, getBoltzmannWeight( getED1(i1-1,j1)-getED1(i1,j1) )
 							)
 					)
@@ -804,8 +804,8 @@ getPr_danglingLeft( const size_t i1, const size_t j1, const size_t i2, const siz
 	if (i2>0)  {
 		// Pr( i2-1 is unpaired | i2..j2 unpaired )
 		probDangle2 =
-			std::max( (E_type)0.0
-					, std::min( (E_type)1.0
+			std::max( (Z_type)0.0
+					, std::min( (Z_type)1.0
 							, getBoltzmannWeight( getED2(i2-1,j2)-getED2(i2,j2) )
 							)
 					)
@@ -819,19 +819,19 @@ getPr_danglingLeft( const size_t i1, const size_t j1, const size_t i2, const siz
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-E_type
+Z_type
 InteractionEnergy::
 getPr_danglingRight( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const
 {
 	// initial probabilities
-	E_type probDangle1 = 1.0, probDangle2 = 1.0;
+	Z_type probDangle1 = 1.0, probDangle2 = 1.0;
 
 	// if dangle1 possible
 	if (j1+1<size1())  {
 		// Pr( j1+1 is unpaired | i1..j1 unpaired )
 		probDangle1 =
-			std::max( (E_type)0.0
-					, std::min( (E_type)1.0
+			std::max( (Z_type)0.0
+					, std::min( (Z_type)1.0
 							, getBoltzmannWeight( getED1(i1,j1+1)-getED1(i1,j1) )
 							)
 					)
@@ -841,8 +841,8 @@ getPr_danglingRight( const size_t i1, const size_t j1, const size_t i2, const si
 	if (j2+1<size2())  {
 		// Pr( j2+1 is unpaired | i2..j2 unpaired )
 		probDangle2 =
-			std::max( (E_type)0.0
-					, std::min( (E_type)1.0
+			std::max( (Z_type)0.0
+					, std::min( (Z_type)1.0
 							, getBoltzmannWeight( getED2(i2,j2+1)-getED2(i2,j2) )
 							)
 					)
@@ -871,8 +871,8 @@ getE( const size_t i1, const size_t j1
 				+ getED2( i2, j2 )
 				// dangling end penalty
 				// weighted by the probability that ends are unpaired
-				+ (getE_danglingLeft( i1, i2 )*getPr_danglingLeft(i1,j1,i2,j2))
-				+ (getE_danglingRight( j1, j2 )*getPr_danglingRight(i1,j1,i2,j2))
+				+ Z_2_E(E_2_Z(getE_danglingLeft( i1, i2 ))*getPr_danglingLeft(i1,j1,i2,j2))
+				+ Z_2_E(E_2_Z(getE_danglingRight( j1, j2 ))*getPr_danglingRight(i1,j1,i2,j2))
 				// helix closure penalty
 				+ getE_endLeft( i1, i2 )
 				+ getE_endRight( j1, j2 )
@@ -888,10 +888,11 @@ getE( const size_t i1, const size_t j1
 inline
 E_type
 InteractionEnergy::
-getE( const E_type Z ) const
+getE( const Z_type Z ) const
 {
 	// convert partition function to ensemble energy
-	return - getRT() * std::log( Z );
+	// convert to E_type
+	return Z_2_E( - getRT() * std::log( Z ) );
 }
 
 

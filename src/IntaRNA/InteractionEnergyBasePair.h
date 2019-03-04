@@ -45,8 +45,8 @@ public:
 					, const size_t maxInternalLoopSize1 = 16
 					, const size_t maxInternalLoopSize2 = 16
 					, const bool initES = false
-          , const E_type RT = 1
-          , const E_type bpEnergy = -1
+          , const Z_type RT = Z_type(1.0)
+          , const E_type bpEnergy = Ekcal_2_E(-1.0)
           , const size_t minLoopLength = 3
 				);
 
@@ -110,7 +110,7 @@ public:
 	 * @param j2 the end of the gap in seq2, ie the first base paired in the
 	 *           interaction site to the right of the gap
 	 *
-	 * @return 0.0
+	 * @return 0
 	 */
 	virtual
 	E_type
@@ -120,7 +120,7 @@ public:
 	 * Provides the energy contribution/penalty for closing an intermolecular
 	 * multiloop on the left of a multi-site gap.
 	 *
-	 * @return 0.0
+	 * @return 0
 	 */
 	virtual
 	E_type
@@ -194,13 +194,11 @@ public:
 	 * @param i1 the index of the first sequence interacting with i2
 	 * @param i2 the index of the second sequence interacting with i1
 	 *
-	 * @return 0.0
+	 * @return 0
 	 */
 	virtual
 	E_type
-	getE_endLeft( const size_t i1, const size_t i2 ) const {
-		return 0.0;
-	}
+	getE_endLeft( const size_t i1, const size_t i2 ) const;
 
 	/**
 	 * Provides the penalty for closing an interaction with the given
@@ -209,13 +207,11 @@ public:
 	 * @param j1 the index of the first sequence interacting with j2
 	 * @param j2 the index of the second sequence interacting with j1
 	 *
-	 * @return 0.0
+	 * @return 0
 	 */
 	virtual
 	E_type
-	getE_endRight( const size_t j1, const size_t j2 ) const {
-		return 0.0;
-	}
+	getE_endRight( const size_t j1, const size_t j2 ) const;
 
 	/**
 	 * Returns always RT=1 due to the lack of reasonable values for this energy
@@ -223,11 +219,9 @@ public:
 	 * @return 1.0
 	 */
 	virtual
-	E_type
-	getRT() const {
-		return 1.0;
-	}
-
+	Z_type
+	getRT() const;
+	
 	/**
 	 * Provides the best energy gain via stacking possible for this energy
 	 * model
@@ -253,9 +247,16 @@ public:
 	 */
 	virtual
 	E_type
-	getBestE_end() const {
-		return 0;
-	}
+	getBestE_end() const;
+
+	/**
+	 * Provides the (constant) energy contribution of a base pair (sequence independent)
+	 * for this energy model.
+	 *
+	 * @return the (constant) base pair energy contribution
+	 */
+	E_type
+	getE_basePair() const;
 
 
 private:
@@ -263,9 +264,9 @@ private:
 	//! energy of an individual base pair
   const E_type basePairEnergy;
 	//! temperature constant for normalization
-  const E_type RT;
+  const Z_type RT;
   //! Boltzmann Energy weight
-  const E_type basePairWeight;
+  const Z_type basePairWeight;
   //! minimum length of loops within intramolecular structures (for ES values etc.)
   const size_t minLoopLength;
 
@@ -296,7 +297,7 @@ InteractionEnergyBasePair::InteractionEnergyBasePair(
 		, const size_t maxInternalLoopSize1
 		, const size_t maxInternalLoopSize2
 		, const bool initES
-    , const E_type _RT
+    , const Z_type _RT
     , const E_type bpEnergy
     , const size_t minLoopLen
 	)
@@ -305,7 +306,7 @@ InteractionEnergyBasePair::InteractionEnergyBasePair(
   RT(_RT),
   basePairEnergy(bpEnergy),
   minLoopLength(minLoopLen),
-  basePairWeight(std::exp(-bpEnergy / _RT)),
+  basePairWeight(std::exp(E_2_Z(-bpEnergy) / _RT)),
   logQ1(),
   logQ2()
 {
@@ -361,7 +362,7 @@ E_type
 InteractionEnergyBasePair::
 getE_multiUnpaired( const size_t numUnpaired ) const
 {
-	return 0.0;
+	return E_type(0);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -371,7 +372,7 @@ E_type
 InteractionEnergyBasePair::
 getE_multiHelix( const size_t j1, const size_t j2 ) const
 {
-	return 0.0;
+	return E_type(0);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -381,7 +382,7 @@ E_type
 InteractionEnergyBasePair::
 getE_multiClosing() const
 {
-	return 0.0;
+	return E_type(0);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -391,7 +392,7 @@ E_type
 InteractionEnergyBasePair::
 getE_init() const
 {
-	return -1.0;
+	return basePairEnergy;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -418,7 +419,7 @@ InteractionEnergyBasePair::
 getE_danglingLeft( const size_t i1, const size_t i2 ) const
 {
 	// no dangling end contribution
-	return (E_type)0;
+	return E_type(0);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -429,7 +430,7 @@ InteractionEnergyBasePair::
 getE_danglingRight( const size_t j1, const size_t j2 ) const
 {
 	// no dangling end contribution
-	return (E_type)0;
+	return E_type(0);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -449,7 +450,52 @@ E_type
 InteractionEnergyBasePair::
 getBestE_dangling() const
 {
-	return (E_type)0.0;
+	return E_type(0);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+InteractionEnergyBasePair::
+getE_endLeft( const size_t i1, const size_t i2 ) const {
+	return E_type(0);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+InteractionEnergyBasePair::
+getE_endRight( const size_t j1, const size_t j2 ) const {
+	return E_type(0);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+InteractionEnergyBasePair::
+getBestE_end() const {
+	return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+InteractionEnergyBasePair::
+getE_basePair() const {
+	return basePairEnergy;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+Z_type
+InteractionEnergyBasePair::
+getRT() const {
+	return this->RT;
 }
 
 ////////////////////////////////////////////////////////////////////////////

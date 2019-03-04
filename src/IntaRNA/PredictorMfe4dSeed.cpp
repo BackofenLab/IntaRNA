@@ -130,7 +130,7 @@ predict( const IndexRange & r1
 
 	// check if any interaction possible
 	// if not no seed-containing interaction is possible neither
-	if (!(this->mfeInteractions.begin()->energy < tmpOutConstraint.maxE)) {
+	if (this->mfeInteractions.begin()->energy > tmpOutConstraint.maxE || E_equal(this->mfeInteractions.begin()->energy,tmpOutConstraint.maxE)) {
 		// stop computation since no favorable interaction found
 		reportOptima(tmpOutConstraint);
 		return;

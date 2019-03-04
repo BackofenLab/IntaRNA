@@ -1065,11 +1065,16 @@ targeted file/stream name:
 - `qMinE:`|`tMinE:` [the query/target's minimal interaction energy profile](profileMinE) (CSV format), respectively
 - `pMinE:` [minimal interaction energy for all query-target index pairs](pairMinE) (CSV format)
 - `qAcc:`|`tAcc:` the [query/target's ED accessibility values](#accessibility) (RNAplfold-like format), respectively
-- `qPu:`|`tPu:` the [query/target's unpaired probabilities](#accessibility) (RNAplfold format), respectively
+- `qPu:`|`tPu:` the [query/target's unpaired probabilities](#accessibility) (RNAplfold format; rounded!!), respectively
 
 Note, for *multiple sequences* in FASTA input, the provided file names
 are suffixed with with `-q#t#` (where `#` denotes the according sequence number
 within the input where indexing starts with 1).
+
+Note further, `qPu:`|`tPu:` will report unpaired probability values based on rounded accessibility (ED) values.
+Thus, these values will most likely differ from values eg. produced by RNAplfold.
+We therefore strongly recommend to store `qAcc:`|`tAcc:` values when you want to use them
+as input for subsequent IntaRNA calls!
 
 
 <br />

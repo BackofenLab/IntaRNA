@@ -35,18 +35,18 @@ TEST_CASE("AccessibilityBasePair", "[AccessibilityBasePair]") {
 //    }
 //    std::cout <<"########\n";
 
-    REQUIRE( std::abs( acc.getED(0, 6) - 4.52824 ) < 1e-4 );
-    REQUIRE( std::abs( acc.getED(0, 12) - 5.8415) < 1e-4 );
-    REQUIRE( std::abs( acc.getED(1, 3) - 2.37302 ) < 1e-4 );
-    REQUIRE( std::abs( acc.getED(1, 5) - 2.75135 ) < 1e-4 );
-    REQUIRE( std::abs( acc.getED(3, 4) - 0.519897 ) < 1e-4 );
-    REQUIRE( std::abs( acc.getED(4, 7) - 1.978 ) < 1e-4 );
-    REQUIRE( std::abs( acc.getED(4, 12) - 5.8415) < 1e-4 );
-    REQUIRE( std::abs( acc.getED(5, 5) - 0.0) < 1e-4 );
-    REQUIRE( std::abs( acc.getED(5, 10) - 3.62722 ) < 1e-4 );
-    REQUIRE( std::abs( acc.getED(6, 6) - 0.131359 ) < 1e-4 );
-    REQUIRE( std::abs( acc.getED(10, 11) - 0.559891 ) < 1e-4 );
-    REQUIRE( std::abs( acc.getED(11, 12) - 0.191058 ) < 1e-4 );
+    REQUIRE( E_equal( acc.getED(0, 6), 452 ) );
+    REQUIRE( E_equal( acc.getED(0, 12), 584 ) );
+    REQUIRE( E_equal( acc.getED(1, 3), 237 ) );
+    REQUIRE( E_equal( acc.getED(1, 5), 275 ) );
+    REQUIRE( E_equal( acc.getED(3, 4), 51 ) );
+    REQUIRE( E_equal( acc.getED(4, 7), 197 ) );
+    REQUIRE( E_equal( acc.getED(4, 12), 584 ) );
+    REQUIRE( E_equal( acc.getED(5, 5), 0) );
+    REQUIRE( E_equal( acc.getED(5, 10), 362 ) );
+    REQUIRE( E_equal( acc.getED(6, 6), 13 ) );
+    REQUIRE( E_equal( acc.getED(10, 11), 55 ) );
+    REQUIRE( E_equal( acc.getED(11, 12), 19 ) );
 
   }
 }

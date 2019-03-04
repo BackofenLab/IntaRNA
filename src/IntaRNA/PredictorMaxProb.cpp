@@ -96,7 +96,7 @@ predict( const IndexRange & r1
 			&& energy.areComplementary( i1, i2 ))
 		{
 			// create new 2d matrix for different interaction site widths
-			hybridZ(i1,i2) = new E2dMatrix(
+			hybridZ(i1,i2) = new Z2dMatrix(
 				/*w1 = */ std::min(energy.getAccessibility1().getMaxLength(), std::min( hybridZ.size1()-i1, maxWidthFori1i2) ),
 				/*w2 = */ std::min(energy.getAccessibility2().getMaxLength(), std::min( hybridZ.size2()-i2, maxWidthFori1i2) ));
 
@@ -132,8 +132,8 @@ PredictorMaxProb::
 clear()
 {
 	// delete 3rd and 4th dimension of the matrix
-	for (E4dMatrix::iterator1 iRows = hybridZ.begin1(); iRows != hybridZ.end1(); iRows++) {
-		for (E4dMatrix::iterator2 ijEntry = iRows.begin(); ijEntry != iRows.end(); ijEntry++) {
+	for (Z4dMatrix::iterator1 iRows = hybridZ.begin1(); iRows != hybridZ.end1(); iRows++) {
+		for (Z4dMatrix::iterator2 ijEntry = iRows.begin(); ijEntry != iRows.end(); ijEntry++) {
 			// delete 2d matrix for current ij
 			 INTARNA_CLEANUP(*ijEntry);
 		}
@@ -159,7 +159,7 @@ fillHybridZ()
 	Z = 0.0;
 
 	// current Z value
-	E_type curZ = 0.0;
+	Z_type curZ = 0.0;
 	// iterate increasingly over all window sizes w1 (seq1) and w2 (seq2)
 	for (w1=0; w1<energy.getAccessibility1().getMaxLength(); w1++) {
 	for (w2=0; w2<energy.getAccessibility2().getMaxLength(); w2++) {
@@ -256,7 +256,19 @@ void
 PredictorMaxProb::
 updateOptima( const size_t i1, const size_t j1
 		, const size_t i2, const size_t j2
-		, const E_type interZ
+		, const E_type E
+		, const bool isHybridE )
+{
+	INTARNA_NOT_IMPLEMENTED("this function should not be called ..");
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void
+PredictorMaxProb::
+updateOptima( const size_t i1, const size_t j1
+		, const size_t i2, const size_t j2
+		, const Z_type interZ
 		, const bool isHybridZ )
 {
 //		{ LOG(DEBUG) <<"Z( "<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" ) = "
@@ -264,7 +276,8 @@ updateOptima( const size_t i1, const size_t j1
 //						<<" = " <<(eH + eE + eD); }
 
 	// add Boltzmann weights of all penalties
-	E_type curZ = isHybridZ ? interZ * energy.getBoltzmannWeight( energy.getE(i1,j1,i2,j2,0.0) ) : interZ;
+	Z_type curZ = isHybridZ ? interZ * energy.getBoltzmannWeight( energy.getE(i1,j1,i2,j2,0.0) ) : interZ;
+	E_type curE = energy.getE(curZ);
 
 	// report call if needed
 	if (predTracker != NULL) {
@@ -273,15 +286,15 @@ updateOptima( const size_t i1, const size_t j1
 										, j1 + energy.getOffset1()
 										, i2 + energy.getOffset2()
 										, j2 + energy.getOffset2()
-										, energy.getE(curZ) );
+										, curE );
 	}
 
 	// update overall partition function
 	Z += (double)curZ;
 
-	if (curZ > maxProbInteraction.energy) {
+	if (curE < maxProbInteraction.energy) {
 		// store new global min
-		maxProbInteraction.energy = curZ;
+		maxProbInteraction.energy = curE;
 		// store interaction boundaries
 		// left
 		maxProbInteraction.r1.from = i1+energy.getOffset1();
@@ -307,12 +320,6 @@ reportOptima( const OutputConstraint & outConstraint )
 	if (outConstraint.reportMax > 1) {
 		INTARNA_NOT_IMPLEMENTED("PredictorMaxProb::reportOptima(reportMax > 1)");
 	}
-
-	// maximal probability is
-	// double maxProb = (double)maxProbInteraction.getEnergy() / Z;
-
-	// convert the partition function into an ensemble energy
-	maxProbInteraction.energy = energy.getE( maxProbInteraction.energy );
 
 	// push to output handler
 	output.add( maxProbInteraction );

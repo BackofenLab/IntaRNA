@@ -45,7 +45,7 @@ initOptima( const OutputConstraint & outConstraint )
 
 	// init all interactions to be filled
 	for (InteractionList::iterator i = mfeInteractions.begin(); i!= mfeInteractions.end(); i++) {
-		// initialize global E minimum : should be below 0.0
+		// initialize global E minimum : reported interactions have to have energy below that value
 		i->energy = outConstraint.maxE;
 		// ensure it holds only the boundary
 		if (i->basePairs.size()!=2) {
@@ -108,7 +108,7 @@ updateOptima( const size_t i1, const size_t j1
 	}
 
 	if (mfeInteractions.size() == 1) {
-		if (curE < mfeInteractions.begin()->energy) {
+		if ( Interaction::compareEnergy( curE, *(mfeInteractions.begin()) ) ) {
 //			LOG(DEBUG) <<"PredictorMfe::updateOptima() : new mfe ( "
 //				<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" ) = " <<interE <<" : "<<curE;
 			// store new global min
@@ -122,7 +122,7 @@ updateOptima( const size_t i1, const size_t j1
 	} else {
 
 		// check if within range of already known suboptimals (< E(worst==last))
-		if (curE < mfeInteractions.rbegin()->energy) {
+		if ( Interaction::compareEnergy( curE, *(mfeInteractions.rbegin()) ) ) {
 
 			// identify sorted insertion position (iterator to position AFTER insertion)
 			InteractionList::iterator toInsert = --(mfeInteractions.end());
@@ -177,7 +177,7 @@ reportOptima( const OutputConstraint & outConstraint )
 	// number of reported interactions
 	size_t reported = 0;
 	// get maximal report energy = mfe + deltaE + precisionEpsilon
-	const E_type maxE = std::min(outConstraint.maxE, (E_type)(mfeInteractions.begin()->energy + outConstraint.deltaE + E_precisionEpsilon));
+	const E_type maxE = std::min(outConstraint.maxE, (E_type)(mfeInteractions.begin()->energy + outConstraint.deltaE));
 
 	// clear reported interaction ranges
 	reportedInteractions.first.clear();
@@ -187,7 +187,7 @@ reportOptima( const OutputConstraint & outConstraint )
 	if (outConstraint.reportOverlap!=OutputConstraint::ReportOverlap::OVERLAP_BOTH) {
 		// check if mfe is worth reporting
 		Interaction curBest = *mfeInteractions.begin();
-		while( curBest.energy < maxE && reported < outConstraint.reportMax ) {
+		while( curBest.energy < maxE && !E_equal(curBest.energy,maxE) && reported < outConstraint.reportMax ) {
 			// report current best
 			// fill interaction with according base pairs
 			traceBack( curBest, outConstraint );
@@ -231,7 +231,7 @@ reportOptima( const OutputConstraint & outConstraint )
 				&& i!= mfeInteractions.end(); i++)
 		{
 			// check if interaction is within allowed energy range
-			if (i->energy < maxE) {
+			if (i->energy < maxE && !E_equal(i->energy,maxE)) {
 
 				// fill mfe interaction with according base pairs
 				traceBack( *i, outConstraint );

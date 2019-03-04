@@ -25,7 +25,7 @@ protected:
 	vrna_md_t model;
 
 	//! the RT constant used for the current setup
-	E_type RT;
+	Z_type RT;
 
 public:
 
@@ -37,7 +37,7 @@ public:
 	 *        parameter setup or NULL if defaults are to be used
 	 */
 	VrnaHandler(
-			double temperature = 37.0,
+			Z_type temperature = 37.0,
 			const std::string * const vrnaParamFile = NULL );
 
 	/**
@@ -64,7 +64,7 @@ public:
 	 * Provides RT for the current setup
 	 * @return R*temperature
 	 */
-	double
+	Z_type
 	getRT() const;
 
 	/**
@@ -72,8 +72,8 @@ public:
 	 * @return R*temperature
 	 */
 	static
-	double
-	getRT( const double temperature );
+	Z_type
+	getRT( const Z_type temperature );
 
 
 
@@ -84,7 +84,7 @@ public:
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-double
+Z_type
 VrnaHandler::
 getRT() const
 {

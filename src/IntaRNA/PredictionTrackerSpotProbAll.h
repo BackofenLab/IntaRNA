@@ -35,13 +35,13 @@ public:
 	 * @param streamName the stream name where the data
 	 *        is to be written to. use STDOUT/STDERR for the respective stream.
 	 *        Otherwise, an according file is created (has to be non-empty)
-	 * @param E_INF_string the output string representation of E_INF values in
-	 *        the profile output
+	 * @param NA_string the output string representation if a value is not available
+	 *        for profile output
 	 */
 	PredictionTrackerSpotProbAll(
 				const InteractionEnergy & energy
 				, const std::string & streamName
-				, const std::string E_INF_string = "NA"
+				, const std::string NA_string = "NA"
 			);
 
 	/**
@@ -53,13 +53,13 @@ public:
 	 * @param energy the energy function used
 	 * @param outStream the stream where the data
 	 *        is to be written to (has to be non-null)
-	 * @param E_INF_string the output string representation of E_INF values in
-	 *        the profile output
+	 * @param NA_string the output string representation if a value is not available
+	 *        for profile output
 	 */
 	PredictionTrackerSpotProbAll(
 				const InteractionEnergy & energy
 				, std::ostream * outStream
-				, const std::string E_INF_string = "NA"
+				, const std::string NA_string = "NA"
 			);
 
 	/**
@@ -97,11 +97,8 @@ protected:
 	//! the stream to write the minE-data to
 	std::ostream * outStream;
 
-	//! the output string representation of E_INF values in the profile output
-	const std::string E_INF_string;
-
-	//! type of partition function values
-	typedef double Z_type;
+	//! the output string representation if a value is not available for output
+	const std::string NA_string;
 
 	//! overall partition function
 	Z_type overallZ;
@@ -121,7 +118,7 @@ protected:
 	 * @param pairZ the partition function data to write
 	 * @param overallZ the overall partition function for pairZ
 	 * @param energy the energy function used
-	 * @param E_INF_string the string to be used for E_INF entries
+	 * @param NA_string the string to be used for missing entries
 	 */
 	static
 	void
@@ -129,7 +126,7 @@ protected:
 				, const Z2dMatrix & pairZ
 				, const Z_type & overallZ
 				, const InteractionEnergy & energy
-				, const std::string & E_INF_string );
+				, const std::string & NA_string );
 
 
 };

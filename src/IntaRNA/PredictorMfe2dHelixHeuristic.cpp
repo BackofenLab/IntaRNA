@@ -144,7 +144,7 @@ fillHybridE()
 //			LOG(DEBUG) << "Case 1: curE " << curE;
 			// check if this combination yields better energy
 			curEtotal = energy.getE(i1, i1+h1, i2, i2+h2, curE);
-			if ( curEtotal < curCellEtotal )
+			if ( !E_equal(curEtotal,curCellEtotal) && curEtotal < curCellEtotal )
 			{
 				// TODO: Check this "right" boundary
 				// update current best for this left boundary

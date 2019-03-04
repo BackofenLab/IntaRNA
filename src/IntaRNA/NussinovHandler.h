@@ -15,11 +15,8 @@ namespace IntaRNA {
 class NussinovHandler {
 public:
 
-  //! Probability triangular type
-  typedef double P_type;
-
   //! Probability triangular matrix
-  typedef boost::numeric::ublas::triangular_matrix<P_type, boost::numeric::ublas::upper> P2dMatrix;
+  typedef boost::numeric::ublas::triangular_matrix<Z_type, boost::numeric::ublas::upper> Z2dMatrix;
 
   //! Energy triangular matrix
   typedef boost::numeric::ublas::triangular_matrix<E_type, boost::numeric::ublas::upper> E2dMatrix;
@@ -38,9 +35,9 @@ public:
    * @param Qb Lookup table for Qb
    * @returns the partition function value
    */
-  static E_type getQ(const size_t from, const size_t to, const RnaSequence &seq,
-      const E_type basePairWeight, const size_t minLoopLength,
-      E2dMatrix &Q, E2dMatrix &Qb);
+  static Z_type getQ(const size_t from, const size_t to, const RnaSequence &seq,
+      const Z_type basePairWeight, const size_t minLoopLength,
+      Z2dMatrix &Q, Z2dMatrix &Qb);
 
   /***
    * Get the base partition function Qb between the indices (from, to)
@@ -53,9 +50,9 @@ public:
    * @param Qb Lookup table for Qb
    * @returns the partition function value
    */
-  static E_type getQb(const size_t from, const size_t to, const RnaSequence &seq,
-      const E_type basePairWeight, const size_t minLoopLength,
-      E2dMatrix &Q, E2dMatrix &Qb);
+  static Z_type getQb(const size_t from, const size_t to, const RnaSequence &seq,
+      const Z_type basePairWeight, const size_t minLoopLength,
+      Z2dMatrix &Q, Z2dMatrix &Qb);
 
   /***
    * Get the base-pair probbility between the indices (from, to)
@@ -69,9 +66,9 @@ public:
    * @param Pbp Lookup table for base-pair probabilities
    * @returns the probability value
    */
-  static P_type getPbp(const size_t from, const size_t to, const RnaSequence &seq,
-      const E_type basePairWeight, const size_t minLoopLength,
-      E2dMatrix &Q, E2dMatrix &Qb, P2dMatrix &Ppb);
+  static Z_type getPbp(const size_t from, const size_t to, const RnaSequence &seq,
+      const Z_type basePairWeight, const size_t minLoopLength,
+      Z2dMatrix &Q, Z2dMatrix &Qb, Z2dMatrix &Ppb);
 
   /***
    * Get the unpaired probbility between the indices (from, to)
@@ -86,9 +83,9 @@ public:
    * @param Pu Lookup table for unpaired probabilities
    * @returns the probability value
    */
-  static P_type getPu(const size_t from, const size_t to, const RnaSequence &seq,
-      const E_type basePairWeight, const size_t minLoopLength,
-      E2dMatrix &Q, E2dMatrix &Qb, P2dMatrix &Ppb, P2dMatrix &Pu);
+  static Z_type getPu(const size_t from, const size_t to, const RnaSequence &seq,
+      const Z_type basePairWeight, const size_t minLoopLength,
+      Z2dMatrix &Q, Z2dMatrix &Qb, Z2dMatrix &Ppb, Z2dMatrix &Pu);
 
 
   /***
@@ -99,7 +96,7 @@ public:
    * @param minLoopLength The minimum length of loops
    */
   static std::string dotBracket(const size_t from, const size_t to,
-      const RnaSequence &seq, const size_t minLoopLength);
+      const RnaSequence &seq, const size_t minLoopLength, const E_type basePairEnergy = Ekcal_2_E(-1.0));
 
   /***
    * Store all the basepairs in pairs, given a traceback.

@@ -66,61 +66,105 @@
 ////////////////  GLOBAL TYPEDEFS  //////////////////////
 
 #include <cmath>
+#include <limits>
 
 namespace IntaRNA {
 
-	//! type for energy values (energy + accessibility [ED])
-	typedef float E_type;
+	//! type for energy values in kcal/mol units for in-/output only
+	typedef float E_kcal_type;
 
-	//! type for temperature values
-	typedef E_type T_type;
+	//! type for energy values (energy + accessibility [ED]) (internally)
+	typedef int E_type;
+	const E_type E_INF = (std::numeric_limits<E_type>::max() / 2) + 1;
+	const E_type E_MAX = E_INF / 2;
+
+	//! type for probabilities, RT and Boltzmann values
+	typedef float Z_type;
+	const Z_type Z_INF = std::numeric_limits<Z_type>::infinity();
 
 } // namespace
+
+#ifdef IntaRNA_precisionEpsilon
+	#error IntaRNA_precisionEpsilon already defined
+#endif
+	//! the delta difference range to consider two floating point values equivalent
+    //! using sqrt(representable positive value closest to zero)
+#define IntaRNA_precisionEpsilon std::sqrt(std::numeric_limits<float>::min())
+
+#ifdef E_2_Ekcal
+  #error E_2_Ekcal already defined
+#endif
+  //! convert internal energy type to energy value in kcal/mol units
+#define E_2_Ekcal( e ) ( static_cast<E_kcal_type>(e) / 100.0 )
+
+#ifdef Ekcal_2_E
+  #error Ekcal_2_E already defined
+#endif
+  //! convert energy in kcal/mol units to internal energy type
+#define Ekcal_2_E( e ) ( static_cast<E_type>(e * 100) )
+
+#ifdef E_2_Z
+  #error E_2_Z already defined
+#endif
+  //! convert E_type to Z_type
+#define E_2_Z( e ) ( static_cast<Z_type>(e) / 100.0 )
+
+#ifdef Z_2_E
+  #error Z_2_E already defined
+#endif
+  //! convert Z_type to E_type
+#define Z_2_E( e ) ( static_cast<E_type>(e * 100) )
 
 #ifdef E_precisionEpsilon
 	#error E_precisionEpsilon already defined
 #endif
-	//! the delta difference range to consider two energies equivalent
-    //! using sqrt(representable positive value closest to zero)
-#define E_precisionEpsilon std::sqrt(std::numeric_limits<E_type>::min())
 
 #ifdef E_equal
 	#error E_equal already defined
 #endif
-	//! check if two energies are equal according to some epsilon
-#define E_equal( e1, e2 ) ( std::abs((e1)-(e2)) < E_precisionEpsilon)
-// another option from http://en.cppreference.com/w/cpp/types/numeric_limits/epsilon
-//#define E_equal_ULP 2
-//#define E_equal( e1, e2 ) ( \
-//	/* the machine epsilon has to be scaled to the magnitude of the values used */ \
-//	/* and multiplied by the desired precision in ULPs (units in the last place) */ \
-//	std::abs(e1-e2) < std::numeric_limits<T>::epsilon() * std::abs(e1+e2) * E_equal_ULP \
-//	/* unless the result is subnormal */ \
-//	|| std::abs(e1-e2) < std::numeric_limits<T>::min() \
-//)
+	//! check if two energies are equal
+#define E_equal( e1, e2 ) ( e1 == e2 )
 
 #ifdef E_isNotINF
 	#error E_isNotINF already defined
 #endif
 	//! check if a given energy is NOT set to E_INF
-#define E_isNotINF( e ) ( std::numeric_limits<E_type>::max() >= e )
+#define E_isNotINF( e ) ( E_INF > e )
 
 #ifdef E_isINF
 	#error E_isINF already defined
 #endif
 	//! check if a given energy is set to E_INF
-#define E_isINF( e ) (  std::numeric_limits<E_type>::max() < e )
+#define E_isINF( e ) ( E_INF <= e )
 
 
-////////////////  GLOBAL CONSTANTS  /////////////////////
 
-#include <limits>
+#ifdef Z_equal
+	#error Z_equal already defined
+#endif
+	//! check if two energies are equal according to some epsilon
+#define Z_equal( e1, e2 ) ( std::abs((e1)-(e2)) < IntaRNA_precisionEpsilon)
+// another option from http://en.cppreference.com/w/cpp/types/numeric_limits/epsilon
+//#define Z_equal_ULP 2
+//#define Z_equal( e1, e2 ) ( \
+//	/* the machine epsilon has to be scaled to the magnitude of the values used */ \
+//	/* and multiplied by the desired precision in ULPs (units in the last place) */ \
+//	std::abs(e1-e2) < std::numeric_limits<T>::epsilon() * std::abs(e1+e2) * Z_equal_ULP \
+//	/* unless the result is subnormal */ \
+//	|| std::abs(e1-e2) < std::numeric_limits<T>::min() \
+//)
 
-namespace IntaRNA {
+#ifdef Z_isNotINF
+	#error Z_isNotINF already defined
+#endif
+	//! check if a given energy is NOT set to Z_INF
+#define Z_isNotINF( e ) ( std::numeric_limits<Z_type>::max() >= e )
 
-	const E_type E_INF = std::numeric_limits<E_type>::infinity();
-
-} // namespace
+#ifdef Z_isINF
+	#error Z_isINF already defined
+#endif
+	//! check if a given energy is set to Z_INF
+#define Z_isINF( e ) (  std::numeric_limits<Z_type>::max() < e )
 
 
 ////////////////  UTILITY FUNCTION  /////////////////////

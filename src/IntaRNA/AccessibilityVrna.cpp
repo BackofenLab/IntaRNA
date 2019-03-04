@@ -132,7 +132,7 @@ calc_ensemble_free_energy( const int start_unfold, const int end_unfold, vrna_ex
 	// memory cleanup
 	free_pf_arrays();
 
-	return (E_type)energy;
+	return Ekcal_2_E(energy);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -227,7 +227,7 @@ fillByConstraints( const VrnaHandler &vrnaHandler
 				edValues(i,j) = ED_UPPER_BOUND;
 			} else {
 				// compute ED value = E(unstructured in [i,j]) - E_all
-				edValues(i,j) = std::max<E_type>(0.,(calc_ensemble_free_energy(i,j, partFoldParams) - E_all));
+				edValues(i,j) = std::max<E_type>(E_type(0),(calc_ensemble_free_energy(i,j, partFoldParams) - E_all));
 			}
 
 		}
@@ -272,7 +272,7 @@ callbackForStorage(FLT_OR_DBL   *pr,
 				edValues(i-1,j-1) = ED_UPPER_BOUND;
 			} else {
 				// compute ED value = E(unstructured in [i,j]) - E_all
-				edValues(i-1,j-1) = std::max<E_type>( 0., -RT*std::log(prob_unpaired));
+				edValues(i-1,j-1) = std::max<E_type>( 0., Z_2_E( -RT*Z_type(std::log(prob_unpaired) )));
 			}
 	    }
 
@@ -362,7 +362,7 @@ fillByRNAplfold( const VrnaHandler &vrnaHandler
 
     // provide access to this object to be filled by the callback
     // and the normalized temperature for the Boltzmann weight computation
-    std::pair< AccessibilityVrna*, double > storageRT(this, vrnaHandler.getRT());
+    std::pair< AccessibilityVrna*, double > storageRT(this, E_2_Ekcal(Z_2_E(vrnaHandler.getRT())));
 
 	// call folding and unpaired prob calculation
     vrna_probs_window( fold_compound, plFoldW, VRNA_PROBS_WINDOW_UP, &callbackForStorage, (void*)(&storageRT));
@@ -417,7 +417,7 @@ fillByRNAup( const VrnaHandler &vrnaHandler
 	sequence[seqLength] = structure[seqLength] = '\0';
 
 	// get used RT from vienna package
-	const double RT = vrnaHandler.getRT();
+	const double RT = E_2_Ekcal(Z_2_E(vrnaHandler.getRT()));
 
 	// copy folding constraint
 	// get mfe for this sequence (for scaling reasons)
@@ -458,7 +458,7 @@ fillByRNAup( const VrnaHandler &vrnaHandler
 					edValues(i-1,j-1) = ED_UPPER_BOUND;
 				} else {
 					// compute ED value = E(unstructured in [i,j]) - E_all
-					edValues(i-1,j-1) = std::max<E_type>( 0., -RT*std::log(prob_unpaired));
+					edValues(i-1,j-1) = std::max<E_type>( 0., Z_2_E( -RT*Z_type(std::log(prob_unpaired) )));
 				}
 			}
 		}

@@ -80,7 +80,6 @@ predict( const IndexRange & r1
 	size_t i1,i2,w1,w2;
 
 	// init hybridE matrix
-	bool isValidCell = true;
 	for (i1=0; i1<hybridE.size1(); i1++) {
 	for (i2=0; i2<hybridE.size2(); i2++) {
 
@@ -112,7 +111,7 @@ predict( const IndexRange & r1
 
 	// check if any interaction possible
 	// if not no seed-containing interaction is possible neither
-	if (!(this->mfeInteractions.begin()->energy < tmpOutConstraint.maxE)) {
+	if (this->mfeInteractions.begin()->energy > tmpOutConstraint.maxE || E_equal(this->mfeInteractions.begin()->energy,tmpOutConstraint.maxE)) {
 		// stop computation since no favorable interaction found
 		reportOptima(tmpOutConstraint);
 		return;

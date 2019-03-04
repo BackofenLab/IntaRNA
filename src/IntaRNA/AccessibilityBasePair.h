@@ -37,11 +37,11 @@ public:
    * @param minLoopLength the minimum loop length
    */
   AccessibilityBasePair(
-      const RnaSequence& seq, 
+      const RnaSequence& seq,
       const size_t maxLength,
       const AccessibilityConstraint * const accConstr,
-      const E_type basePairEnergy = -1, 
-      const E_type RT = 1,
+      const E_type basePairEnergy = Ekcal_2_E(-1.0),
+      const Z_type RT = 1,
       const size_t minLoopLength = 3);
 
   /***
@@ -55,7 +55,7 @@ public:
    * @param from The start index of the region
    * @param to The end index of the region
    *
-   * @return The ED Value 
+   * @return The ED Value
    *
    * @throw std::runtime_error in case it does not hold 0 <= from <= to < seq.length
    */
@@ -66,9 +66,9 @@ protected:
 	//! energy of an individual base pair
 	const E_type basePairEnergy;
 	//! temperature constant for normalization
-	const E_type RT;
+	const Z_type RT;
   //! Boltzmann Energy weight
-  const E_type basePairWeight;
+  const Z_type basePairWeight;
   //! minimum length of loops
   const size_t minLoopLength;
 
@@ -81,4 +81,4 @@ protected:
 
 }  // namespace IntaRNA
 
-#endif /* INTARNA_ACCESSIBILITYBASEPAIR_H_ */ 
+#endif /* INTARNA_ACCESSIBILITYBASEPAIR_H_ */

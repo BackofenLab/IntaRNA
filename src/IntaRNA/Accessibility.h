@@ -98,7 +98,7 @@ public:
 	 *        ED to Pu :  Pu = exp( -ED/RT )
 	 */
 	void
-	writeRNAplfold_Pu_text( std::ostream& out, const E_type RT ) const;
+	writeRNAplfold_Pu_text( std::ostream& out, const Z_type RT ) const;
 
 	/**
 	 * Writes the ED values in RNAplfold style to stream.
@@ -151,7 +151,7 @@ public:
 	 * @param RT the relative temperature to be used for Boltzmann weight computation
 	 */
 	void
-	decomposeByMinPu( IndexRangeList & ranges, const double minPu, const E_type RT ) const;
+	decomposeByMinPu( IndexRangeList & ranges, const Z_type minPu, const Z_type RT ) const;
 
 protected:
 
@@ -186,7 +186,7 @@ protected:
 	 * @param writeProbs (true) write unpaired probabilities; (false) write ED
 	 */
 	void
-	writeRNAplfold_text( std::ostream& out, const E_type RT, const bool writeProbs ) const;
+	writeRNAplfold_text( std::ostream& out, const Z_type RT, const bool writeProbs ) const;
 
 };
 
@@ -276,7 +276,7 @@ writeRNAplfold_ED_text( std::ostream& out ) const
 inline
 void
 Accessibility::
-writeRNAplfold_Pu_text( std::ostream& out, const E_type RT ) const
+writeRNAplfold_Pu_text( std::ostream& out, const Z_type RT ) const
 {
 	writeRNAplfold_text( out, RT, true );
 }

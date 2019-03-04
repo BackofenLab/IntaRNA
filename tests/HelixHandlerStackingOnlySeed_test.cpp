@@ -46,17 +46,17 @@ TEST_CASE( "HelixHandlerStackingOnlySeed", "[HelixHandlerStackingOnly]" ) {
 		REQUIRE(hhS.fillHelixSeed( 0,energy.size1()-1, 0,energy.size2()-1 ) == 9);
 
 		// (0,0)
-		REQUIRE(hhS.getHelixSeedE(0,0) == -3);
+		REQUIRE(E_2_Ekcal(hhS.getHelixSeedE(0,0)) == -3);
 		REQUIRE(hhS.getHelixSeedLength1(0,0) == 4);
 		REQUIRE(hhS.getHelixSeedLength2(0,0) == 4);
 
 		// (0,1)
-		REQUIRE(hhS.getHelixSeedE(0,1) == -3);
+		REQUIRE(E_2_Ekcal(hhS.getHelixSeedE(0,1)) == -3);
 		REQUIRE(hhS.getHelixSeedLength1(0,1) == 4);
 		REQUIRE(hhS.getHelixSeedLength2(0,1) == 4);
 
 		// (0,2)
-		REQUIRE(hhS.getHelixSeedE(0,2) == -2);
+		REQUIRE(E_2_Ekcal(hhS.getHelixSeedE(0,2)) == -2);
 		REQUIRE(hhS.getHelixSeedLength1(0,2) == 3);
 		REQUIRE(hhS.getHelixSeedLength2(0,2) == 3);
 
@@ -66,12 +66,12 @@ TEST_CASE( "HelixHandlerStackingOnlySeed", "[HelixHandlerStackingOnly]" ) {
 		REQUIRE(hhS.getHelixSeedLength2(0,3) == 0);
 
 		// (1,1)
-		REQUIRE(hhS.getHelixSeedE(1,1) == -3);
+		REQUIRE(E_2_Ekcal(hhS.getHelixSeedE(1,1)) == -3);
 		REQUIRE(hhS.getHelixSeedLength1(1,1) == 4);
 		REQUIRE(hhS.getHelixSeedLength2(1,1) == 4);
 
 		// (2,2)
-		REQUIRE(hhS.getHelixSeedE(2,2) == -2);
+		REQUIRE(E_2_Ekcal(hhS.getHelixSeedE(2,2)) == -2);
 		REQUIRE(hhS.getHelixSeedLength1(2,2) == 3);
 		REQUIRE(hhS.getHelixSeedLength2(2,2) == 3);
 
@@ -199,7 +199,7 @@ TEST_CASE( "HelixHandlerStackingOnlySeed", "[HelixHandlerStackingOnly]" ) {
 		REQUIRE(hhS.getHelixSeedLength2(1, 0) == 0);
 
 		// (1,3)
-		REQUIRE(hhS.getHelixSeedE(1, 1) == -2);
+		REQUIRE(E_2_Ekcal(hhS.getHelixSeedE(1, 1)) == -2);
 		REQUIRE(hhS.getHelixSeedLength1(1, 1) == 3);
 		REQUIRE(hhS.getHelixSeedLength2(1, 1) == 3);
 
@@ -256,17 +256,17 @@ TEST_CASE( "HelixHandlerStackingOnlySeed", "[HelixHandlerStackingOnly]" ) {
 		REQUIRE(hhS.fillHelixSeed(0, energy.size1() - 1, 0, energy.size2() - 1) == 4);
 
 		// (0,0)
-		REQUIRE(hhS.getHelixSeedE(0, 0) == -3);
+		REQUIRE(E_2_Ekcal(hhS.getHelixSeedE(0, 0)) == -3);
 		REQUIRE(hhS.getHelixSeedLength1(0, 0) == 5);
 		REQUIRE(hhS.getHelixSeedLength2(0, 0) == 5);
 
 		// (0,2)
-		REQUIRE(hhS.getHelixSeedE(1, 0) == -2);
+		REQUIRE(E_2_Ekcal(hhS.getHelixSeedE(1, 0)) == -2);
 		REQUIRE(hhS.getHelixSeedLength1(1, 0) == 4);
 		REQUIRE(hhS.getHelixSeedLength2(1, 0) == 4);
 
 		// (1,3)
-		REQUIRE(hhS.getHelixSeedE(1, 1) == -2);
+		REQUIRE(E_2_Ekcal(hhS.getHelixSeedE(1, 1)) == -2);
 		REQUIRE(hhS.getHelixSeedLength1(1, 1) == 4);
 		REQUIRE(hhS.getHelixSeedLength2(1, 1) == 4);
 

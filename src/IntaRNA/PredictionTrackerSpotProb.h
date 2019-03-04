@@ -95,7 +95,7 @@ protected:
 		//! index in seq2
 		size_t idx2;
 		//! partition function of all interactions covering the spot
-		E_type Z;
+		Z_type Z;
 
 		/* default construction
 		 */
@@ -149,10 +149,10 @@ protected:
 	std::vector<Spot> spots;
 
 	//! partition function of all interaction not covering a tracked spot
-	E_type noSpotZ;
+	Z_type noSpotZ;
 
 	//! overall partition function of all reported interactions
-	E_type overallZ;
+	Z_type overallZ;
 
 protected:
 

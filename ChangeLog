@@ -8,6 +8,18 @@
 
 development version
 
+190304 Martin Raden + Frank Gelhausen :
+ * API change: E_type now int (was float); all internally used energy values
+   are now integer-encoded values in dcal/mol (instead of kcal/mol) as done
+   within the VRNA package. this avoids floating point operation issues of the
+   traceback routines.
+ + IntaRNA::E_kcal_type = float to represent input/output energies in kcal/mol
+ + IntaRNA::Z_type = float to represent partition functions, temperature and
+   probabilities
+ + type conversion routines for E_kcal_type, E_type, Z_type
+ * 'outMaxE' value now exclusive concerning interaction reporting (all reporeted
+   interactions have a lower energy)
+
 version 2.4.0
 
 190228 Martin Raden :

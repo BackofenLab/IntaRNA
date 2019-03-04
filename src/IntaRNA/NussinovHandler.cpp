@@ -5,10 +5,10 @@ namespace IntaRNA {
 
 void
 NussinovHandler::getBasePairs(
-    const size_t from, 
+    const size_t from,
     const size_t to,
-    const IdxMatrix &traceback, 
-    Interaction::PairingVec &pairs) 
+    const IdxMatrix &traceback,
+    Interaction::PairingVec &pairs)
 {
   if (from >= to) {
     return ;
@@ -30,7 +30,7 @@ NussinovHandler::getBasePairs(
 
 std::string
 NussinovHandler::dotBracket(const size_t from, const size_t to,
-    const RnaSequence &seq, const size_t minLoopLength) 
+    const RnaSequence &seq, const size_t minLoopLength, const E_type basePairEnergy)
 {
   const size_t len = to - from + 1, offset = from;
   NussinovHandler::E2dMatrix nussinov(len + 1, len + 1);
@@ -46,8 +46,8 @@ NussinovHandler::dotBracket(const size_t from, const size_t to,
       traceback(i, j) = j;
       for (size_t k = i; k + minLoopLength < j; ++k) {
         if (RnaSequence::areComplementary(seq, seq, offset + k, offset + j)) {
-          const E_type val = ((i + 1 <= k)  ? nussinov(i , k - 1) : 0) + ((k + 2 <= j) ? nussinov(k + 1, j - 1) : 0) + 1;
-          if (val > nussinov(i, j)) {
+          const E_type val = ((i + 1 <= k)  ? nussinov(i , k - 1) : 0) + ((k + 2 <= j) ? nussinov(k + 1, j - 1) : 0) + basePairEnergy;
+          if (val < nussinov(i, j)) {
             nussinov(i, j) = val;
             traceback(i, j) = k;
           }
@@ -67,14 +67,14 @@ NussinovHandler::dotBracket(const size_t from, const size_t to,
   return result;
 }
 
-E_type
+Z_type
 NussinovHandler::getQ(const size_t i, const size_t j, const RnaSequence &seq,
-    const E_type bpWeight, const size_t minLoopLength,
-    NussinovHandler::E2dMatrix &Q, NussinovHandler::E2dMatrix &Qb) {
+    const Z_type bpWeight, const size_t minLoopLength,
+    NussinovHandler::Z2dMatrix &Q, NussinovHandler::Z2dMatrix &Qb) {
   if (i > j || j >= seq.size()) {
     return 1.0;
   }
-  E_type &ret = Q(i, j);
+  Z_type &ret = Q(i, j);
   // If value is already computed, return it
   if (ret > -0.5) {
     return ret;
@@ -89,17 +89,17 @@ NussinovHandler::getQ(const size_t i, const size_t j, const RnaSequence &seq,
 }
 
 
-E_type
+Z_type
 NussinovHandler::getQb(const size_t i, const size_t j, const RnaSequence &seq,
-    const E_type bpWeight, const size_t minLoopLength,
-    NussinovHandler::E2dMatrix &Q, NussinovHandler::E2dMatrix &Qb) {
+    const Z_type bpWeight, const size_t minLoopLength,
+    NussinovHandler::Z2dMatrix &Q, NussinovHandler::Z2dMatrix &Qb) {
   if (j >= seq.size()) {
     return 1.0;
   }
   if (i + minLoopLength >= j) {
     return 0.0;
   }
-  E_type &ret = Qb(i, j);
+  Z_type &ret = Qb(i, j);
   // If value is already computed, return it
   if (ret > -0.5) {
     return ret;
@@ -114,15 +114,15 @@ NussinovHandler::getQb(const size_t i, const size_t j, const RnaSequence &seq,
 }
 
 
-NussinovHandler::P_type
+Z_type
 NussinovHandler::getPbp(const size_t i, const size_t j, const RnaSequence &seq,
-    const E_type bpWeight, const size_t minLoopLength,
-    NussinovHandler::E2dMatrix &Q, NussinovHandler::E2dMatrix &Qb,
-    NussinovHandler::P2dMatrix &Ppb) {
+    const Z_type bpWeight, const size_t minLoopLength,
+    NussinovHandler::Z2dMatrix &Q, NussinovHandler::Z2dMatrix &Qb,
+    NussinovHandler::Z2dMatrix &Ppb) {
   if (j >= seq.size() || i + minLoopLength >= j) {
     return 0.0;
   }
-  P_type &ret = Ppb(i, j);
+  Z_type &ret = Ppb(i, j);
   // If value is already computed, return it
   if (ret > -0.5) {
     return ret;
@@ -148,15 +148,15 @@ NussinovHandler::getPbp(const size_t i, const size_t j, const RnaSequence &seq,
 }
 
 
-NussinovHandler::P_type
+Z_type
 NussinovHandler::getPu(const size_t i, const size_t j, const RnaSequence &seq,
-    const E_type bpWeight, const size_t minLoopLength,
-    NussinovHandler::E2dMatrix &Q, NussinovHandler::E2dMatrix &Qb,
-    NussinovHandler::P2dMatrix &Pbp, NussinovHandler::P2dMatrix &Pu) {
+    const Z_type bpWeight, const size_t minLoopLength,
+    NussinovHandler::Z2dMatrix &Q, NussinovHandler::Z2dMatrix &Qb,
+    NussinovHandler::Z2dMatrix &Pbp, NussinovHandler::Z2dMatrix &Pu) {
   if (i > j || j >= seq.size()) {
     return 0.0;
   }
-  P_type &ret = Pu(i, j);
+  Z_type &ret = Pu(i, j);
   // If value is already computed, return it
   if (ret > -0.5) {
     return ret;

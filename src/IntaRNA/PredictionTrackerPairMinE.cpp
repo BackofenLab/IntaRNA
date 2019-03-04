@@ -135,7 +135,7 @@ writeData( std::ostream &out
 				out<<E_INF_string;
 			} else {
 				// print energy
-				out <<pairMinE(i,j);
+				out <<E_2_Ekcal(pairMinE(i,j));
 			}
 		}
 		// line end
@@ -146,4 +146,3 @@ writeData( std::ostream &out
 //////////////////////////////////////////////////////////////////////
 
 } // namespace
-

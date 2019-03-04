@@ -48,7 +48,7 @@ operator<<(std::ostream& out, const Accessibility& acc)
 
 void
 Accessibility::
-writeRNAplfold_text( std::ostream& out, const E_type RT, const bool writeProbs ) const
+writeRNAplfold_text( std::ostream& out, const Z_type RT, const bool writeProbs ) const
 {
 	// store current flags
 	std::ios_base::fmtflags oldFlags = out.flags();
@@ -85,7 +85,7 @@ writeRNAplfold_text( std::ostream& out, const E_type RT, const bool writeProbs )
 					out <<0 <<'\t';
 				} else {
 					// compute unpaired probability
-					double value = ( std::exp( - getED(j+1-l, j) / RT ) );
+					double value = ( std::exp( - E_2_Z(getED(j+1-l, j)) / RT ) );
 					// check for nan result of conversion
 					if ( value != value ) {
 						out <<0 <<'\t';
@@ -95,8 +95,8 @@ writeRNAplfold_text( std::ostream& out, const E_type RT, const bool writeProbs )
 					}
 				}
 			} else {
-				// write ED value (ensure not printing infinity)
-				out <<std::min<E_type>( std::numeric_limits<E_type>::max(), getED(j+1-l, j) ) <<'\t';
+				// write ED value in kcal/mol (ensure not printing infinity)
+				out <<E_2_Ekcal(std::min<E_type>( E_MAX, getED(j+1-l, j) )) <<'\t';
 			}
 		}
 		// print NA for remaining entries
@@ -196,13 +196,13 @@ decomposeByMaxED( const size_t maxRangeLength, const size_t winSize, const size_
 
 void
 Accessibility::
-decomposeByMinPu( IndexRangeList & ranges, const double minPu, const E_type RT ) const
+decomposeByMinPu( IndexRangeList & ranges, const Z_type minPu, const Z_type RT ) const
 {
 	// the range list to fill
 	IndexRangeList out;
 
 	// compute the maximal energy penalty according to the minimal unpaired probability
-	const E_type maxED = - RT * std::log( minPu );
+	const E_type maxED = Z_2_E( - RT * std::log( minPu ) );
 
 	// decompose each range individually
 	for (auto range = ranges.begin(); range != ranges.end(); range++) {

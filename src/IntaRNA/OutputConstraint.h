@@ -37,7 +37,7 @@ public:
 	//! defines whether and where overlapping interaction sites are allowed for reporting
 	const ReportOverlap reportOverlap;
 
-	//! the maximal energy of a reported interaction (<= 0.0)
+	//! upper bound (exclusive) for the energy of a reported interaction (E(interaction) < maxE)
 	const E_type maxE;
 
 	//! the maximal energy difference to the mfe of a reported interaction
@@ -52,7 +52,7 @@ public:
 	 *            reported to the output handler
 	 * @param reportOverlap defines whether and where overlapping interaction
 	 *            sites are allowed for reporting
-	 * @param maxE maximal energy of a reported interaction (<= 0.0)
+	 * @param maxE upper bound (exclusive) for the energy of a reported interaction (E(interaction) < maxE)
 	 * @param deltaE maximal energy difference of a reported interaction to mfe
 	 */
 	OutputConstraint(	  const size_t reportMax = 1

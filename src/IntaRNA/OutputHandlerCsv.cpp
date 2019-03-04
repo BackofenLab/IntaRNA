@@ -167,64 +167,64 @@ add( const Interaction & i )
 				break;
 
 			case E:
-				outTmp <<i.energy;
+				outTmp <<E_2_Ekcal(i.energy);
 				break;
 
 			case ED1:
-				outTmp <<contr.ED1;
+				outTmp <<E_2_Ekcal(contr.ED1);
 				break;
 
 			case ED2:
-				outTmp <<contr.ED2;
+				outTmp <<E_2_Ekcal(contr.ED2);
 				break;
 
 			case Pu1:
-				outTmp <<std::exp( - contr.ED1 / energy.getRT() );
+				outTmp <<E_2_Ekcal(Z_2_E(std::exp( - E_2_Z(contr.ED1) / energy.getRT() )));
 				break;
 
 			case Pu2:
-				outTmp <<std::exp( - contr.ED2 / energy.getRT() );
+				outTmp <<E_2_Ekcal(Z_2_E(std::exp( - E_2_Z(contr.ED2 / energy.getRT() ))));
 				break;
 
 			case E_init:
-				outTmp <<contr.init;
+				outTmp <<E_2_Ekcal(contr.init);
 				break;
 
 			case E_loops:
-				outTmp <<contr.loops;
+				outTmp <<E_2_Ekcal(contr.loops);
 				break;
 
 			case E_dangleL:
-				outTmp <<contr.dangleLeft;
+				outTmp <<E_2_Ekcal(contr.dangleLeft);
 				break;
 
 			case E_dangleR:
-				outTmp <<contr.dangleRight;
+				outTmp <<E_2_Ekcal(contr.dangleRight);
 				break;
 
 			case E_endL:
-				outTmp <<contr.endLeft;
+				outTmp <<E_2_Ekcal(contr.endLeft);
 				break;
 
 			case E_endR:
-				outTmp <<contr.endRight;
+				outTmp <<E_2_Ekcal(contr.endRight);
 				break;
 
 			case E_hybrid:
-				outTmp <<(i.energy - contr.ED1 - contr.ED2);
+				outTmp <<E_2_Ekcal(i.energy - contr.ED1 - contr.ED2);
 				break;
 
 			case E_norm:
-				outTmp <<(i.energy / std::log( energy.size1() * energy.size2() ) );
+				outTmp <<E_2_Ekcal(i.energy) / std::log( energy.size1() * energy.size2() );
 				break;
 
 			case E_hybridNorm:
-				outTmp <<( (i.energy - contr.ED1 - contr.ED2) / std::log( energy.size1() * energy.size2() ) );
+				outTmp <<E_2_Ekcal(i.energy - contr.ED1 - contr.ED2) / std::log( energy.size1() * energy.size2() );
 				break;
 
 			case seedStart1:
 				if (i.seed == NULL) {
-					outTmp <<std::numeric_limits<E_type>::signaling_NaN();
+					outTmp <<std::numeric_limits<E_kcal_type>::signaling_NaN();
 				} else {
 					outTmp <<(i.seed->bp_i.first+1);
 				}
@@ -232,7 +232,7 @@ add( const Interaction & i )
 
 			case seedEnd1:
 				if (i.seed == NULL) {
-					outTmp <<std::numeric_limits<E_type>::signaling_NaN();
+					outTmp <<std::numeric_limits<E_kcal_type>::signaling_NaN();
 				} else {
 					outTmp <<(i.seed->bp_j.first+1);
 				}
@@ -240,7 +240,7 @@ add( const Interaction & i )
 
 			case seedStart2:
 				if (i.seed == NULL) {
-					outTmp <<std::numeric_limits<E_type>::signaling_NaN();
+					outTmp <<std::numeric_limits<E_kcal_type>::signaling_NaN();
 				} else {
 					outTmp <<(i.seed->bp_j.second+1);
 				}
@@ -248,7 +248,7 @@ add( const Interaction & i )
 
 			case seedEnd2:
 				if (i.seed == NULL) {
-					outTmp <<std::numeric_limits<E_type>::signaling_NaN();
+					outTmp <<std::numeric_limits<E_kcal_type>::signaling_NaN();
 				} else {
 					outTmp <<(i.seed->bp_i.second+1);
 				}
@@ -256,41 +256,41 @@ add( const Interaction & i )
 
 			case seedE:
 				if (i.seed == NULL) {
-					outTmp <<std::numeric_limits<E_type>::signaling_NaN();
+					outTmp <<std::numeric_limits<E_kcal_type>::signaling_NaN();
 				} else {
-					outTmp <<i.seed->energy;
+					outTmp <<E_2_Ekcal(i.seed->energy);
 				}
 				break;
 
 			case seedED1:
 				if (i.seed == NULL) {
-					outTmp <<std::numeric_limits<E_type>::signaling_NaN();
+					outTmp <<std::numeric_limits<E_kcal_type>::signaling_NaN();
 				} else {
-					outTmp <<energy.getED1( i.seed->bp_i.first, i.seed->bp_j.first );
+					outTmp <<E_2_Ekcal(energy.getED1( i.seed->bp_i.first, i.seed->bp_j.first ));
 				}
 				break;
 
 			case seedED2:
 				if (i.seed == NULL) {
-					outTmp <<std::numeric_limits<E_type>::signaling_NaN();
+					outTmp <<std::numeric_limits<E_kcal_type>::signaling_NaN();
 				} else {
-					outTmp <<energy.getAccessibility2().getAccessibilityOrigin().getED( i.seed->bp_j.second, i.seed->bp_i.second );
+					outTmp <<E_2_Ekcal(energy.getAccessibility2().getAccessibilityOrigin().getED( i.seed->bp_j.second, i.seed->bp_i.second ));
 				}
 				break;
 
 			case seedPu1:
 				if (i.seed == NULL) {
-					outTmp <<std::numeric_limits<E_type>::signaling_NaN();
+					outTmp <<std::numeric_limits<E_kcal_type>::signaling_NaN();
 				} else {
-					outTmp <<std::exp( - energy.getED1( i.seed->bp_i.first, i.seed->bp_j.first ) / energy.getRT() );
+					outTmp <<E_2_Ekcal(Z_2_E(std::exp( - E_2_Z(energy.getED1( i.seed->bp_i.first, i.seed->bp_j.first )) / energy.getRT() )));
 				}
 				break;
 
 			case seedPu2:
 				if (i.seed == NULL) {
-					outTmp <<std::numeric_limits<E_type>::signaling_NaN();
+					outTmp <<std::numeric_limits<E_kcal_type>::signaling_NaN();
 				} else {
-					outTmp <<std::exp( - energy.getAccessibility2().getAccessibilityOrigin().getED( i.seed->bp_j.second, i.seed->bp_i.second ) / energy.getRT() );
+					outTmp <<E_2_Ekcal(Z_2_E(std::exp( - E_2_Z(energy.getAccessibility2().getAccessibilityOrigin().getED( i.seed->bp_j.second, i.seed->bp_i.second )) / energy.getRT() )));
 				}
 				break;
 
@@ -311,4 +311,3 @@ add( const Interaction & i )
 ////////////////////////////////////////////////////////////////////////
 
 } // namespace
-
