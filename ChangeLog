@@ -43,6 +43,9 @@ development version
  * bin/CommandLineParsing :
    * get*Ranges() :
      + additional Accessibility argument to avoid recomputation (what a mess..)
+ * IntaRNA/PredictorMfe2d :
+   * initHybridE() : 
+     - E_MAX since it was masking global variable with wrong value
    
 version 2.4.0
 
