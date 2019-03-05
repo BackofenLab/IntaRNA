@@ -94,8 +94,6 @@ protected:
 	//! access to the list of reported interaction ranges of the super class
 	using PredictorMfe::reportedInteractions;
 
-	// TODO provide all data structures as arguments to make predict() call threadsafe
-
 	//! energy of all interaction hybrids starting in i1,i2
 	E2dMatrix hybridE;
 
@@ -103,6 +101,7 @@ protected:
 
 	/**
 	 * Computes all entries of the hybridE matrix
+	 * and reports all valid interactions via updateOptima()
 	 */
 	virtual
 	void

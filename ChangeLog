@@ -8,6 +8,29 @@
 
 development version
 
+190305 Martin Raden :
+ * IntaRNA/PredictorMfe2d :
+   * fillHybridE() : 
+     + explicit initialization (formerly done via initHybridE)
+     * now virtual and to be overwritten by subclasses
+   - initHybridE() : obsolete
+   - hybridErange : obsolete
+ * IntaRNA/PredictorMfe2dSeed : runtime optimization
+   + fillHybridE() : overwrites super class function and fills both matrices
+     in one go to avoid recomputation of loop energies etc.
+   - updateOptima() : obsolete
+   - hybridErange : obsolete
+   - fillHybridE_seed() : now part of fillHybridE()
+ * IntaRNA/PredictorMfe2dHeuristic :
+   * predict() :
+     - matrix initialization now implicit in fillHybridE()
+   * fillHybridE() :
+     + explicit base pairing checks and field initialization
+ * IntaRNA/PredictorMfe2dHeuristicSeed :
+   + fillHybridE() : overwrites super class function and fills both matrices
+     in one go to avoid recomputation of loop energies etc.
+
+
 190304 Martin Raden + Frank Gelhausen :
  * API change: E_type now int (was float); all internally used energy values
    are now integer-encoded values in dcal/mol (instead of kcal/mol) as done

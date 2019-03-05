@@ -85,14 +85,9 @@ protected:
 	//! access to the output handler of the super class
 	using PredictorMfe2d::output;
 
-	// TODO provide all data structures as arguments to make predict() call threadsafe
-
 	//! energy of all interaction hybrids that end in position p (seq1) and
 	//! q (seq2) and do not necessarily contain a seed interaction
 	using PredictorMfe2d::hybridE_pq;
-
-	//! the current range of computed entries within hybridE_pq set by initHybridE()
-	using PredictorMfe2d::hybridErange;
 
 	//! the seed handler (with idx offset)
 	SeedHandlerIdxOffset seedHandler;
@@ -105,36 +100,22 @@ protected:
 protected:
 
 	/**
-	 * does nothing but to ignore the calls from fillHybridE()
-	 *
-	 * @param i1 the index of the first sequence interacting with i2
-	 * @param j1 the index of the first sequence interacting with j2
-	 * @param i2 the index of the second sequence interacting with i1
-	 * @param j2 the index of the second sequence interacting with j1
-	 * @param energy ignored
-	 * @param isHybridE ignored
-	 */
-	virtual
-	void
-	updateOptima( const size_t i1, const size_t j1
-			, const size_t i2, const size_t j2
-			, const E_type energy
-			, const bool isHybridE );
-
-	/**
-	 * Computes all entries of the hybridE_seed matrix for interactions ending in
-	 * p=j1 and q=j2 and report all valid interactions to updateOptima()
+	 * Computes all entries of both hybridE matrices for interactions ending in
+	 * p=j1 and q=j2 and reports all valid interactions via updateOptima()
 	 *
 	 * @param j1 end of the interaction within seq 1
 	 * @param j2 end of the interaction within seq 2
-	 * @param i1min smallest value for i1
-	 * @param i2min smallest value for i2
 	 * @param outConstraint constrains the interactions reported to the output handler
+	 * @param i1init smallest value for i1
+	 * @param i2init smallest value for i2
 	 *
 	 */
+	virtual
 	void
-	fillHybridE_seed( const size_t j1, const size_t j2, const size_t i1min, const size_t i2min
-			, const OutputConstraint & outConstraint );
+	fillHybridE( const size_t j1, const size_t j2
+				, const OutputConstraint & outConstraint
+				, const size_t i1init, const size_t i2init
+				);
 
 	/**
 	 * Fills a given interaction (boundaries given) with the according
@@ -164,19 +145,6 @@ protected:
 
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-
-inline
-void
-PredictorMfe2dSeed::
-updateOptima( const size_t i1, const size_t j1
-		, const size_t i2, const size_t j2
-		, const E_type energy
-		, const bool isHybridE )
-{
-	// do nothing and ignore calls from fillHybridE()
-}
-
 //////////////////////////////////////////////////////////////////////////
 
 } // namespace

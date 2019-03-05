@@ -72,153 +72,168 @@ predict( const IndexRange & r1
 		return;
 	}
 
-	// resize matrix
+	// resize matrices
 	hybridE.resize( hybridEsize1, hybridEsize2 );
 	hybridE_seed.resize( hybridE.size1(), hybridE.size2() );
-
-	// temp vars
-	size_t i1,i2,w1,w2;
-
-	// init hybridE matrix
-	for (i1=0; i1<hybridE.size1(); i1++) {
-	for (i2=0; i2<hybridE.size2(); i2++) {
-
-		// check if positions can form interaction
-		if (	energy.isAccessible1(i1)
-				&& energy.isAccessible2(i2)
-				&& energy.areComplementary(i1,i2) )
-		{
-			// set to interaction initiation with according boundary
-			hybridE(i1,i2) = BestInteraction(energy.getE_init(), i1, i2);
-		} else {
-			// set to infinity, ie not used
-			hybridE(i1,i2) = BestInteraction(E_INF, RnaSequence::lastPos, RnaSequence::lastPos);
-		}
-		// init seed data
-		hybridE_seed(i1,i2) = BestInteraction(E_INF, RnaSequence::lastPos, RnaSequence::lastPos);
-
-	} // i2
-	} // i1
-
-	// init mfe without seed condition
-	OutputConstraint tmpOutConstraint(1, outConstraint.reportOverlap, outConstraint.maxE, outConstraint.deltaE);
-	initOptima( tmpOutConstraint );
-
-	// compute hybridization energies WITHOUT seed condition
-	// sets also -energy -hybridE
-	// -> no tracker update since updateOptima overwritten
-	PredictorMfe2dHeuristic::fillHybridE();
-
-	// check if any interaction possible
-	// if not no seed-containing interaction is possible neither
-	if (this->mfeInteractions.begin()->energy > tmpOutConstraint.maxE || E_equal(this->mfeInteractions.begin()->energy,tmpOutConstraint.maxE)) {
-		// stop computation since no favorable interaction found
-		reportOptima(tmpOutConstraint);
-		return;
-	}
 
 	// reinit mfe for later updates with final information
 	initOptima( outConstraint );
 
-	// compute entries
-	// current minimal value
-	E_type curE = E_INF, curEtotal = E_INF, curCellEtotal = E_INF;
-	BestInteraction * curCell = NULL;
-	const BestInteraction * rightExt = NULL;
-
-	// iterate (decreasingly) over all left interaction starts
-	for (i1=hybridE_seed.size1(); i1-- > 0;) {
-	for (i2=hybridE_seed.size2(); i2-- > 0;) {
-
-		// check if left side can pair
-		if (E_isINF(hybridE(i1,i2).E)) {
-			continue;
-		}
-		// direct cell access
-		curCell = &(hybridE_seed(i1,i2));
-		// reset temporary variables
-		curEtotal = E_INF;
-		// current best total energy value
-		// NOTE: by setting to E_INF instead of getE(curCell->E) we ignore the
-		// single intermolecular bp case to avoid the effect of extremely low
-		// EDs of single positions
-		curCellEtotal = E_INF;
-
-		///////////////////////////////////////////////////////////////////
-		// check all extensions of interactions CONTAINING a seed already
-		///////////////////////////////////////////////////////////////////
-
-		// TODO PARALLELIZE THIS DOUBLE LOOP ?!
-		// iterate over all loop sizes w1 (seq1) and w2 (seq2)
-		for (w1=1; w1-1 <= energy.getMaxInternalLoopSize1() && i1+w1<hybridE_seed.size1(); w1++) {
-		for (w2=1; w2-1 <= energy.getMaxInternalLoopSize2() && i2+w2<hybridE_seed.size2(); w2++) {
-			// direct cell access to right side end of loop (seed has to be to the right of it)
-			rightExt = &(hybridE_seed(i1+w1,i2+w2));
-			// check if right side of loop can pair
-			if (E_isINF(rightExt->E)) {
-				continue;
-			}
-			// check if interaction length is within boundary
-			if ( (rightExt->j1 +1 -i1) > energy.getAccessibility1().getMaxLength()
-				|| (rightExt->j2 +1 -i2) > energy.getAccessibility2().getMaxLength() )
-			{
-				continue;
-			}
-			// compute energy for this loop sizes
-			curE = energy.getE_interLeft(i1,i1+w1,i2,i2+w2) + rightExt->E;
-			// check if this combination yields better energy
-			curEtotal = energy.getE(i1,rightExt->j1,i2,rightExt->j2,curE);
-			if ( curEtotal < curCellEtotal )
-			{
-				// update current best for this left boundary
-				// copy right boundary
-				*curCell = *rightExt;
-				// set new energy
-				curCell->E = curE;
-				// store overall energy
-				curCellEtotal = curEtotal;
-			}
-		} // w2
-		} // w1
-
-		///////////////////////////////////////////////////////////////////
-		// check if seed is starting here
-		///////////////////////////////////////////////////////////////////
-
-		// check if seed is possible for this left boundary
-		if ( E_isNotINF( seedHandler.getSeedE(i1,i2) ) ) {
-			// get right extension
-			w1 = seedHandler.getSeedLength1(i1,i2)-1; assert(i1+w1 < hybridE.size1());
-			w2 = seedHandler.getSeedLength2(i1,i2)-1; assert(i2+w2 < hybridE.size2());
-			rightExt = &(hybridE(i1+w1,i2+w2));
-			// get energy of seed interaction with best right extension
-			curE = seedHandler.getSeedE(i1,i2) + rightExt->E;
-			// check if this combination yields better energy
-			curEtotal = energy.getE(i1,rightExt->j1,i2,rightExt->j2,curE);
-			if ( curEtotal < curCellEtotal )
-			{
-				// update current best for this left boundary
-				// copy right boundary
-				*curCell = *rightExt;
-				// set new energy
-				curCell->E = curE;
-				// store total energy
-				curCellEtotal = curEtotal;
-			}
-		}
-
-		// update mfe if needed (call superclass update routine)
-		PredictorMfe2dHeuristic::updateOptima( i1,curCell->j1, i2,curCell->j2, curCellEtotal, false );
-
-	} // i2
-	} // i1
-
+	// fill matrices and update optima
+	fillHybridE();
 
 	// report mfe interaction
 	reportOptima( outConstraint );
 
 }
 
+
+////////////////////////////////////////////////////////////////////////////
+
+void
+PredictorMfe2dHeuristicSeed::
+fillHybridE()
+{
+	// compute entries
+	// current minimal value
+	E_type curE = E_INF, curEtotal = E_INF, curCellEtotal = E_INF;
+	E_type curEseedtotal = E_INF, curCellSeedEtotal = E_INF;
+	E_type curEloop = E_INF;
+	size_t i1,i2,w1,w2;
+	BestInteraction * curCell = NULL, *curCellSeed = NULL;
+	const BestInteraction * rightExt = NULL;
+	// iterate (decreasingly) over all left interaction starts
+	for (i1=hybridE.size1(); i1-- > 0;) {
+		for (i2=hybridE.size2(); i2-- > 0;) {
+			// direct cell access
+			curCell = &(hybridE(i1,i2));
+			curCellSeed = &(hybridE_seed(i1,i2));
+			// init as invalid boundary
+			*curCell = BestInteraction(E_INF, RnaSequence::lastPos, RnaSequence::lastPos);
+			*curCellSeed = BestInteraction(E_INF, RnaSequence::lastPos, RnaSequence::lastPos);
+
+			// check if positions can form interaction
+			if (	energy.isAccessible1(i1)
+					&& energy.isAccessible2(i2)
+					&& energy.areComplementary(i1,i2) )
+			{
+				// set to interaction initiation with according boundary
+				*curCell = BestInteraction(energy.getE_init(), i1, i2);
+
+				// current best total energy value (covers to far E_init only)
+				curCellEtotal = energy.getE(i1,curCell->j1,i2,curCell->j2,curCell->E);
+				// no base case with seed so far
+				curEseedtotal = E_INF;
+				curCellSeedEtotal = E_INF;
+
+				///////////////////////////////////////////////////////////////////
+				// check if seed is starting here
+				///////////////////////////////////////////////////////////////////
+
+				// check if seed is possible for this left boundary
+				if ( E_isNotINF( seedHandler.getSeedE(i1,i2) ) ) {
+					// get right extension
+					w1 = seedHandler.getSeedLength1(i1,i2)-1; assert(i1+w1 < hybridE.size1());
+					w2 = seedHandler.getSeedLength2(i1,i2)-1; assert(i2+w2 < hybridE.size2());
+					rightExt = &(hybridE(i1+w1,i2+w2));
+					// get energy of seed interaction with best right extension
+					curE = seedHandler.getSeedE(i1,i2) + rightExt->E;
+					// check if this combination yields better energy
+					curEseedtotal = energy.getE(i1,rightExt->j1,i2,rightExt->j2,curE);
+					if ( curEseedtotal < curCellSeedEtotal )
+					{
+						// update current best for this left boundary
+						// copy right boundary
+						*curCellSeed = *rightExt;
+						// set new energy
+						curCellSeed->E = curE;
+						// store total energy
+						curCellSeedEtotal = curEseedtotal;
+					}
+				}
+
+
+				// iterate over all loop sizes w1 (seq1) and w2 (seq2) (minus 1)
+				for (w1=1; w1-1 <= energy.getMaxInternalLoopSize1() && i1+w1<hybridE.size1(); w1++) {
+				for (w2=1; w2-1 <= energy.getMaxInternalLoopSize2() && i2+w2<hybridE.size2(); w2++) {
+
+					// reset loop energy
+					curEloop = E_INF;
+
+					//////////////////////////////////////////////////////////
+					// update hybridE without seed constraint
+					//////////////////////////////////////////////////////////
+
+					// direct cell access (const)
+					rightExt = &(hybridE(i1+w1,i2+w2));
+
+					// check if right side can pair
+					// check if interaction length is within boundary
+					if ( E_isNotINF(rightExt->E)
+						&& (rightExt->j1 +1 -i1) <= energy.getAccessibility1().getMaxLength()
+						&& (rightExt->j2 +1 -i2) <= energy.getAccessibility2().getMaxLength() )
+					{
+						// compute energy for this loop sizes
+						curEloop = energy.getE_interLeft(i1,i1+w1,i2,i2+w2);
+						curE = curEloop + rightExt->E;
+						// check if this combination yields better energy
+						curEtotal = energy.getE(i1,rightExt->j1,i2,rightExt->j2,curE);
+						if ( curEtotal < curCellEtotal )
+						{
+							// update current best for this left boundary
+							// copy right boundary
+							*curCell = *rightExt;
+							// set new energy
+							curCell->E = curE;
+							// store total energy to avoid recomputation
+							curCellEtotal = curEtotal;
+						}
+					}
+
+					//////////////////////////////////////////////////////////
+					// update hybridE including seed constraint
+					//////////////////////////////////////////////////////////
+
+					// direct cell access to right side end of loop (seed has to be to the right of it)
+					rightExt = &(hybridE_seed(i1+w1,i2+w2));
+					// check if right side of loop can pair
+					// check if interaction length is within boundary
+					if (E_isNotINF(rightExt->E)
+						&& (rightExt->j1 +1 -i1) <= energy.getAccessibility1().getMaxLength()
+						&& (rightExt->j2 +1 -i2) <= energy.getAccessibility2().getMaxLength() )
+					{
+						// compute loop energy if not already known
+						if (E_isINF(curEloop)) {
+							curEloop = energy.getE_interLeft(i1,i1+w1,i2,i2+w2);
+						}
+						// compute energy for this loop sizes
+						curE = curEloop + rightExt->E;
+						// check if this combination yields better energy
+						curEseedtotal = energy.getE(i1,rightExt->j1,i2,rightExt->j2,curE);
+						if ( curEseedtotal < curCellSeedEtotal )
+						{
+							// update current best for this left boundary
+							// copy right boundary
+							*curCellSeed = *rightExt;
+							// set new energy
+							curCellSeed->E = curE;
+							// store overall energy
+							curCellSeedEtotal = curEseedtotal;
+						}
+					}
+
+				} // w2
+				} // w1
+
+				// update mfe if needed
+				updateOptima( i1,curCellSeed->j1, i2,curCellSeed->j2, curCellSeedEtotal, false );
+
+			} // valid base pair
+
+		} // i2
+	} // i1
+
+}
 
 ////////////////////////////////////////////////////////////////////////////
 

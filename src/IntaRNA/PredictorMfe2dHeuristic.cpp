@@ -60,28 +60,6 @@ predict( const IndexRange & r1
 				, std::min( energy.size2()
 						, (r2.to==RnaSequence::lastPos?energy.size2()-1:r2.to)-r2.from+1 ) );
 
-	// temp vars
-	size_t i1,i2,w1,w2;
-
-	// init matrix
-	for (i1=0; i1<hybridE.size1(); i1++) {
-	for (i2=0; i2<hybridE.size2(); i2++) {
-
-		// check if positions can form interaction
-		if (	energy.isAccessible1(i1)
-				&& energy.isAccessible2(i2)
-				&& energy.areComplementary(i1,i2) )
-		{
-			// set to interaction initiation with according boundary
-			hybridE(i1,i2) = BestInteraction(energy.getE_init(), i1, i2);
-		} else {
-			// set to infinity, ie not used
-			hybridE(i1,i2) = BestInteraction(E_INF, RnaSequence::lastPos, RnaSequence::lastPos);
-		}
-
-	} // i2
-	} // i1
-
 	// init mfe for later updates
 	initOptima( outConstraint );
 
@@ -108,55 +86,64 @@ fillHybridE()
 	const BestInteraction * rightExt = NULL;
 	// iterate (decreasingly) over all left interaction starts
 	for (i1=hybridE.size1(); i1-- > 0;) {
-	for (i2=hybridE.size2(); i2-- > 0;) {
-		// direct cell access
-		curCell = &(hybridE(i1,i2));
-		// check if left side can pair
-		if (E_isINF(curCell->E)) {
-			continue;
-		}
+		for (i2=hybridE.size2(); i2-- > 0;) {
+			// direct cell access
+			curCell = &(hybridE(i1,i2));
 
-		// current best total energy value (covers to far E_init only)
-		curCellEtotal = energy.getE(i1,curCell->j1,i2,curCell->j2,curCell->E);
-
-		// TODO PARALLELIZE THIS DOUBLE LOOP ?!
-		// iterate over all loop sizes w1 (seq1) and w2 (seq2) (minus 1)
-		for (w1=1; w1-1 <= energy.getMaxInternalLoopSize1() && i1+w1<hybridE.size1(); w1++) {
-		for (w2=1; w2-1 <= energy.getMaxInternalLoopSize2() && i2+w2<hybridE.size2(); w2++) {
-			// direct cell access (const)
-			rightExt = &(hybridE(i1+w1,i2+w2));
-			// check if right side can pair
-			if (E_isINF(rightExt->E)) {
-				continue;
-			}
-			// check if interaction length is within boundary
-			if ( (rightExt->j1 +1 -i1) > energy.getAccessibility1().getMaxLength()
-				|| (rightExt->j2 +1 -i2) > energy.getAccessibility2().getMaxLength() )
+			// check if positions can form interaction
+			if (	energy.isAccessible1(i1)
+					&& energy.isAccessible2(i2)
+					&& energy.areComplementary(i1,i2) )
 			{
-				continue;
+				// set to interaction initiation with according boundary
+				*curCell = BestInteraction(energy.getE_init(), i1, i2);
+
+				// current best total energy value (covers to far E_init only)
+				curCellEtotal = energy.getE(i1,curCell->j1,i2,curCell->j2,curCell->E);
+
+				// iterate over all loop sizes w1 (seq1) and w2 (seq2) (minus 1)
+				for (w1=1; w1-1 <= energy.getMaxInternalLoopSize1() && i1+w1<hybridE.size1(); w1++) {
+				for (w2=1; w2-1 <= energy.getMaxInternalLoopSize2() && i2+w2<hybridE.size2(); w2++) {
+					// direct cell access (const)
+					rightExt = &(hybridE(i1+w1,i2+w2));
+					// check if right side can pair
+					if (E_isINF(rightExt->E)) {
+						continue;
+					}
+					// check if interaction length is within boundary
+					if ( (rightExt->j1 +1 -i1) > energy.getAccessibility1().getMaxLength()
+						|| (rightExt->j2 +1 -i2) > energy.getAccessibility2().getMaxLength() )
+					{
+						continue;
+					}
+					// compute energy for this loop sizes
+					curE = energy.getE_interLeft(i1,i1+w1,i2,i2+w2) + rightExt->E;
+					// check if this combination yields better energy
+					curEtotal = energy.getE(i1,rightExt->j1,i2,rightExt->j2,curE);
+					if ( curEtotal < curCellEtotal )
+					{
+						// update current best for this left boundary
+						// copy right boundary
+						*curCell = *rightExt;
+						// set new energy
+						curCell->E = curE;
+						// store total energy to avoid recomputation
+						curCellEtotal = curEtotal;
+					}
+
+				} // w2
+				} // w1
+
+				// update mfe if needed
+				updateOptima( i1,curCell->j1, i2,curCell->j2, curCellEtotal, false );
+
+			} // valid base pair
+			else {
+				// init as invalid boundary
+				*curCell = BestInteraction(E_INF, RnaSequence::lastPos, RnaSequence::lastPos);
 			}
-			// compute energy for this loop sizes
-			curE = energy.getE_interLeft(i1,i1+w1,i2,i2+w2) + rightExt->E;
-			// check if this combination yields better energy
-			curEtotal = energy.getE(i1,rightExt->j1,i2,rightExt->j2,curE);
-			if ( curEtotal < curCellEtotal )
-			{
-				// update current best for this left boundary
-				// copy right boundary
-				*curCell = *rightExt;
-				// set new energy
-				curCell->E = curE;
-				// store total energy to avoid recomputation
-				curCellEtotal = curEtotal;
-			}
 
-		} // w2
-		} // w1
-
-		// update mfe if needed
-		updateOptima( i1,curCell->j1, i2,curCell->j2, curCellEtotal, false );
-
-	} // i2
+		} // i2
 	} // i1
 
 }

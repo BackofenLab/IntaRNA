@@ -65,32 +65,11 @@ protected:
 	//! access to the output handler of the super class
 	using PredictorMfe::output;
 
-	// TODO provide all data structures as arguments to make predict() call threadsafe
-
 	//! energy of all interaction hybrids that end in position p (seq1) and
 	//! q (seq2)
 	E2dMatrix hybridE_pq;
 
-	//! the current range of computed entries within hybridE_pq set by initHybridE()
-	InteractionRange hybridErange;
-
 protected:
-
-	/**
-	 * Initializes the hybridE_pq table for the computation for interactions
-	 * ending in p=j1 and q=j2
-	 *
-	 * @param j1 end of the interaction within seq 1
-	 * @param j2 end of the interaction within seq 2
-	 * @param outConstraint constrains the interactions reported to the output handler
-	 * @param i1init smallest value for i1
-	 * @param i2init smallest value for i2
-	 */
-	void
-	initHybridE( const size_t j1, const size_t j2
-				, const OutputConstraint & outConstraint
-				, const size_t i1init, const size_t i2init
-				);
 
 	/**
 	 * Computes all entries of the hybridE matrix for interactions ending in
@@ -103,6 +82,7 @@ protected:
 	 * @param i2init smallest value for i2
 	 *
 	 */
+	virtual
 	void
 	fillHybridE( const size_t j1, const size_t j2
 				, const OutputConstraint & outConstraint

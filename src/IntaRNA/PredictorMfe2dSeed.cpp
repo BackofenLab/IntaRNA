@@ -94,8 +94,8 @@ predict( const IndexRange & r1, const IndexRange & r2
 			if (!energy.areComplementary( j1, j2 ))
 				continue;
 
-			// compute hybridE_pq_seed and update mfe via PredictorMfe2d::updateOptima()
-			fillHybridE_seed( j1, j2, 0, 0, outConstraint );
+			// compute both hybridE_pq and hybridE_pq_seed and update mfe
+			fillHybridE( j1, j2, outConstraint, 0, 0 );
 		}
 	}
 
@@ -108,82 +108,108 @@ predict( const IndexRange & r1, const IndexRange & r2
 
 void
 PredictorMfe2dSeed::
-fillHybridE_seed( const size_t j1, const size_t j2, const size_t i1min, const size_t i2min
-		, const OutputConstraint & outConstraint )
+fillHybridE( const size_t j1, const size_t j2
+		, const OutputConstraint & outConstraint
+		, const size_t i1min, const size_t i2min )
 {
 
-	// compute hybridE_pq
-	fillHybridE( j1, j2, outConstraint, i1min, i2min );
-
-	assert(i1min <= j1);
-	assert(i2min <= j2);
-	assert(j1==hybridErange.r1.to);
-	assert(j2==hybridErange.r2.to);
+#if INTARNA_IN_DEBUG_MODE
+	if (i1min > j1)
+		throw std::runtime_error("PredictorMfe2d::initHybridE() : i1init > j1 : "+toString(i1min)+" > "+toString(j1));
+	if (i2min > j2)
+		throw std::runtime_error("PredictorMfe2d::initHybridE() : i2init > j2 : "+toString(i2min)+" > "+toString(j2));
 	assert(j1<hybridE_pq.size1());
 	assert(j2<hybridE_pq.size2());
+#endif
 
-	// check if it is possible to have a seed ending on the right at (j1,j2)
+	// get minimal start indices heeding max interaction length
+	const size_t i1start = std::max(i1min,j1-std::min(j1,energy.getAccessibility1().getMaxLength()+1));
+	const size_t i2start = std::max(i2min,j2-std::min(j2,energy.getAccessibility2().getMaxLength()+1));
+
+
+	// check if it is possible to have a seed within the range
 	if (std::min(j1-i1min,j2-i2min)+1 < seedHandler.getConstraint().getBasePairs()) {
 		// no seed possible, abort table computation
 		return;
 	}
 
 	// global vars to avoid reallocation
-	size_t i1,i2,k1,k2,j1c,j2c;
+	size_t i1,i2,k1,k2,j1c,j2c, w1,w2;
 
-	// get i1/i2 index boundaries for computation
-	const IndexRange i1range( std::max(hybridErange.r1.from,i1min), j1+1-seedHandler.getConstraint().getBasePairs() );
-	const IndexRange i2range( std::max(hybridErange.r2.from,i2min), j2+1-seedHandler.getConstraint().getBasePairs() );
-
-	//////////  COMPUTE HYBRIDIZATION ENERGIES (WITH SEED)  ////////////
+	//////////  COMPUTE HYBRIDIZATION ENERGIES (WIHTOUT AND WITH SEED)  ////////////
 
 	// current minimal value
-	E_type curMinE = E_INF;
+	E_type curEloop = E_INF;
 	// iterate over all window starts i1 (seq1) and i2 (seq2)
-	// TODO PARALLELIZE THIS DOUBLE LOOP ?!
-	for (i1=1+i1range.to; i1-- > i1range.from; ) {
+	for (i1=1+j1; i1-- > i1start; ) {
+		// w1 = interaction width in seq1
+		w1 = j1-i1+1;
 		// screen for left boundaries i2 in seq2
-		for (i2=1+i2range.to; i2-- > i2range.from; ) {
+		for (i2=1+j2; i2-- > i2start; ) {
 
-			// compute entry
-			curMinE = E_INF;
+			// init: mark as invalid boundary
+			hybridE_pq(i1,i2) = E_INF;
+			hybridE_pq_seed(i1,i2) = E_INF;
 
 			// check if this cell is to be computed (!=E_INF)
-			if( E_isNotINF( hybridE_pq(i1,i2) ) ) {
+			if( energy.isAccessible1(i1)
+				&& energy.isAccessible2(i2)
+				&& energy.areComplementary(i1,i2))
+			{
 
-				// base case = incorporate mfe seed starting at (i1,i2)
-				//             + interaction on right side up to (p,q)
-				if ( E_isNotINF( seedHandler.getSeedE(i1,i2) ) ) {
-					// decode right mfe boundary
-					k1 = i1+seedHandler.getSeedLength1(i1,i2)-1;
-					k2 = i2+seedHandler.getSeedLength2(i1,i2)-1;
-					// compute overall energy of seed+upToPQ
-					if ( k1 <= j1 && k2 <= j2 && E_isNotINF(hybridE_pq(k1,k2))) {
-						curMinE = seedHandler.getSeedE(i1,i2) + hybridE_pq(k1,k2);
+				// reference access to cell value
+				E_type &curMinE = hybridE_pq(i1,i2);
+				E_type &curMinEseed = hybridE_pq_seed(i1,i2);
+
+				// either interaction initiation
+				if ( i1==j1 && i2==j2 )  {
+					// single base pair
+					curMinE = energy.getE_init();
+				} else { // or more complex stuff
+
+					// no-seed base case:
+					// test full-width internal loop energy (nothing between i and j)
+					// will be E_INF if loop is too large
+					curMinE = energy.getE_interLeft(i1,j1,i2,j2) + hybridE_pq(j1,j2);
+
+					// seed base case = incorporate mfe seed starting at (i1,i2)
+					//             + interaction on right side up to (p,q)
+					if ( E_isNotINF( seedHandler.getSeedE(i1,i2) ) ) {
+						// decode right mfe boundary
+						k1 = i1+seedHandler.getSeedLength1(i1,i2)-1;
+						k2 = i2+seedHandler.getSeedLength2(i1,i2)-1;
+						// compute overall energy of seed+upToPQ
+						if ( k1 <= j1 && k2 <= j2 && E_isNotINF(hybridE_pq(k1,k2))) {
+							curMinEseed = seedHandler.getSeedE(i1,i2) + hybridE_pq(k1,k2);
+						}
+					}
+
+					// w2 = interaction width in seq2
+					w2 = j2-i2+1;
+					// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
+					if (w1 > 2 && w2 > 2) {
+						for (k1=std::min(j1-1,i1+energy.getMaxInternalLoopSize1()+1); k1>i1; k1--) {
+						for (k2=std::min(j2-1,i2+energy.getMaxInternalLoopSize2()+1); k2>i2; k2--) {
+							// check if (k1,k2) are valid left boundary
+							if ( E_isNotINF( hybridE_pq(k1,k2) ) ) {
+								// get loop energy
+								curEloop = energy.getE_interLeft(i1,k1,i2,k2);
+								// update minimal value
+								curMinE = std::min( curMinE, (curEloop + hybridE_pq(k1,k2) ) );
+								// check if (k1,k2) are valid left boundaries including a seed
+								if ( E_isNotINF( hybridE_pq_seed(k1,k2) ) ) {
+									curMinEseed = std::min( curMinEseed, (curEloop + hybridE_pq_seed(k1,k2) ) );
+								}
+							}
+						}
+						}
 					}
 				}
 
-				// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
-				// where k1..j1 contains a seed
-				for (k1=std::min(i1range.to,i1+energy.getMaxInternalLoopSize1()+1); k1>i1; k1--) {
-				for (k2=std::min(i2range.to,i2+energy.getMaxInternalLoopSize2()+1); k2>i2; k2--) {
-					// check if (k1,k2) are valid left boundaries including a seed
-					if ( E_isNotINF( hybridE_pq_seed(k1,k2) ) ) {
-						curMinE = std::min( curMinE,
-								(energy.getE_interLeft(i1,k1,i2,k2)
-										+ hybridE_pq_seed(k1,k2) )
-							);
-					}
-				}
-				}
-				// update mfe if needed (call super class)
-				if (E_isNotINF(curMinE)) {
-					PredictorMfe2d::updateOptima( i1,j1,i2,j2, curMinE, true );
-				}
-			}
+				// update mfe if needed
+				updateOptima( i1,j1,i2,j2, curMinEseed, true );
 
-			// store value
-			hybridE_pq_seed(i1,i2) = curMinE;
+			} // complementary base pair
 		}
 	}
 
@@ -244,7 +270,7 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 
 
 	// refill submatrices of mfe interaction
-	fillHybridE_seed( j1, j2, i1, i2, outConstraint );
+	fillHybridE( j1, j2, outConstraint, i1, i2 );
 
 	// the currently traced value for i1-j1, i2-j2
 	E_type curE = hybridE_pq_seed(i1,i2);
