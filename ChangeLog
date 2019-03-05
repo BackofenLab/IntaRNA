@@ -32,6 +32,17 @@ development version
  * IntaRNA/SeedHandler :
    * isFeasibleSeedBasePair() :
      + check for accessibility constraints
+ * IntaRNA/HelixConstraint :
+   + checkFullE & evalFullE() : whether or not to use full helix energy for 
+     constraint checks or loop terms only
+   - useNoED : replaced by checkFullE
+ * IntaRNA/HelixHandler* :
+   * adaptation to HelixConstraint::evalFullE()
+ * bin/CommandLineParsing :
+   + helixFullE : replaces helixNoED
+   - helixNoED : replaced by helixFullE
+ * README.md :
+   + helixFullE documentation 
 
 190304 Martin Raden + Frank Gelhausen :
  * API change: E_type now int (was float); all internally used energy values

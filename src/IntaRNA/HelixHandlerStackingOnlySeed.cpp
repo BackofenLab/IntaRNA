@@ -104,7 +104,7 @@ fillHelixSeed(const size_t i1min, const size_t i1max, const size_t i2min, const 
 				// energy value
 				curE_withED = energy.getE(i1, j1, i2, j2, curE) + energy.getE_init();
 
-				if (helixConstraint.useNoED())
+				if (!helixConstraint.evalFullE())
 					curE_withED -= (energy.getED1(i1, j1) + energy.getED2(i2, j2));
 
 				// Check whether new combination is better and fullfils the minBP constraints

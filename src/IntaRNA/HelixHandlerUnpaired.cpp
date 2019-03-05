@@ -153,7 +153,7 @@ fillHelix(const size_t i1min, const size_t i1max, const size_t i2min, const size
 			curE = energy.getE(i1, j1, i2, j2, getHelixE(i1 - offset1, i2 - offset2, curBP)) + energy.getE_init();
 
 			// skip if ED boundary exceeded and ED value computation is disabled
-			if (helixConstraint.useNoED())
+			if (!helixConstraint.evalFullE())
 			{
 				curE -= (energy.getED1(i1,j1) + energy.getED2(i2,j2));
 			}

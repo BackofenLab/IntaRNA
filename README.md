@@ -751,6 +751,13 @@ least one of them.
 ## Helix constraints
 
 
+TODO @Rick
+
+- `--helixFullE` if present, the overall helix energy (including E_init, ED,
+  dangling end contributions, etc.) is used for energy checks (`--helixMaxE`).
+  Otherwise, only the loop-terms are considered.
+
+
 
 <br /><br />
 <a name="shape" />

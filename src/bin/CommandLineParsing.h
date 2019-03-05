@@ -488,8 +488,8 @@ protected:
 	NumberParameter<E_type> helixMaxED;
 	//! maximal energy of a helix to be considered
 	NumberParameter<E_type> helixMaxE;
-	//! when set, ED values are excluded from a helix's energy evaluation
-	bool helixNoED;
+	//! when set, full helix energy is to be used for energy checks
+	bool helixFullE;
 	//! the final helix constraint to be used
 	mutable HelixConstraint * helixConstraint;
 

@@ -132,7 +132,7 @@ fillHelixSeed(const size_t i1min, const size_t i1max, const size_t i2min, const 
 				curE_withED = energy.getE(i1,j1,i2,j2, curE) + energy.getE_init();
 
 				// If no ED-values are wanted, remove them
-				if (helixConstraint.useNoED())
+				if (!helixConstraint.evalFullE())
 					curE_withED -= (energy.getED1(i1,j1) + energy.getED2(i2, j2));
 
 				if ((curE_withED < bestE_withED || E_equal(curE_withED, bestE_withED))

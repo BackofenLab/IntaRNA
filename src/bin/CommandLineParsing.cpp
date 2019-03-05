@@ -130,7 +130,7 @@ CommandLineParsing::CommandLineParsing()
 	helixMaxIL(0,2,0),
 	helixMaxED(-999,+999, 999),
 	helixMaxE(-999,+999,0),
-	helixNoED(false),
+	helixFullE(false),
 	helixConstraint(NULL),
 
 	noSeedRequired(false),
@@ -416,7 +416,7 @@ CommandLineParsing::CommandLineParsing()
 					, std::string("maximal energy considered during helix computation"
 										  " (arg in range ["+toString(helixMaxE.min)+","+toString(helixMaxE.max)+"]).").c_str())
 
-			("helixWithED", "if present, ED-values will be used within the energy evaluation of a helix")
+			("helixFullE", "if present, the overall energy of a helix (including E_init, ED, dangling ends, ..) will be used for helixMaxE checks; otherwise only loop-terms are considered.")
 			;
 	opts_cmdline_short.add(opts_helix);
 
@@ -844,7 +844,7 @@ parse(int argc, char** argv)
 			}
 
 			// check for helixWithED
-			helixNoED = vm.count("helixWithED") == 0;
+			helixFullE = vm.count("helixFullE") == 0;
 
 			// check seed setup
 			noSeedRequired = vm.count("noSeed") > 0;
