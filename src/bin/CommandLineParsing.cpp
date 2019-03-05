@@ -2038,9 +2038,9 @@ getHelixConstraint(const InteractionEnergy &energy) const
 				  helixMinBP.val
 				, helixMaxBP.val
 			    , helixMaxIL.val
-			    , E_2_Ekcal(helixMaxED.val)
-			    , E_2_Ekcal(helixMaxE.val)
-				, helixNoED
+			    , Ekcal_2_E(helixMaxED.val)
+			    , Ekcal_2_E(helixMaxE.val)
+				, helixFullE
 		);
 	}
 	return *helixConstraint;
@@ -2059,7 +2059,7 @@ getSeedConstraint( const InteractionEnergy & energy ) const
 							, seedMaxUP.val
 							, seedTMaxUP.val<0 ? seedMaxUP.val : seedTMaxUP.val
 							, seedQMaxUP.val<0 ? seedMaxUP.val : seedQMaxUP.val
-							, seedMaxE.val
+							, Ekcal_2_E(seedMaxE.val)
 							, (seedMinPu.val>0 ? std::min<E_type>(Accessibility::ED_UPPER_BOUND, energy.getE( seedMinPu.val )) : Accessibility::ED_UPPER_BOUND) // transform unpaired prob to ED value
 							// shift ranges to start counting with 0
 							, IndexRangeList( seedTRange ).shift(-1,energy.size1()-1)
