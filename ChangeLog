@@ -29,7 +29,9 @@ development version
  * IntaRNA/PredictorMfe2dHeuristicSeed :
    + fillHybridE() : overwrites super class function and fills both matrices
      in one go to avoid recomputation of loop energies etc.
-
+ * IntaRNA/SeedHandler :
+   * isFeasibleSeedBasePair() :
+     + check for accessibility constraints
 
 190304 Martin Raden + Frank Gelhausen :
  * API change: E_type now int (was float); all internally used energy values

@@ -192,6 +192,8 @@ isFeasibleSeedBasePair( const size_t i1, const size_t i2 ) const
 #endif
 
 	return		i1 < energy.size1() && i2 < energy.size2()
+			&&	energy.isAccessible1(i1)
+			&&	energy.isAccessible2(i2)
 			&&	energy.areComplementary(i1,i2)
 			&&	seedConstraint.getMaxED() >= energy.getED1( i1,i1 )
 			&&	seedConstraint.getMaxED() >= energy.getED2( i2,i2 )
