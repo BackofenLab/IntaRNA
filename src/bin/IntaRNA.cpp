@@ -38,7 +38,7 @@ int main(int argc, char **argv){
 
 		// set overall logging style
 		el::Loggers::reconfigureAllLoggers(el::ConfigurationType::Format, std::string("# %level : %msg"));
-		// TODO setup log file
+		// default log file setup
 		el::Loggers::reconfigureAllLoggers(el::ConfigurationType::ToFile, std::string("false"));
 		el::Loggers::reconfigureAllLoggers(el::ConfigurationType::ToStandardOutput, std::string("true"));
 		// set additional logging flags
@@ -364,7 +364,7 @@ int main(int argc, char **argv){
 					parameters.writeTargetAccessibility( *targetAcc );
 
 					// garbage collection
-					 INTARNA_CLEANUP(targetAcc);
+					INTARNA_CLEANUP(targetAcc);
 
 #if INTARNA_MULITHREADING
 				////////////////////// exception handling ///////////////////////////
@@ -405,9 +405,9 @@ int main(int argc, char **argv){
 			Accessibility* queryAccOrig = &(const_cast<Accessibility&>(queryAcc[queryNumber]->getAccessibilityOrigin()) );
 			// write accessibility to file if needed
 			parameters.writeQueryAccessibility( *queryAccOrig );
-			 INTARNA_CLEANUP( queryAccOrig );
+			INTARNA_CLEANUP( queryAccOrig );
 			// cleanup (now broken) reverse accessibility object
-			 INTARNA_CLEANUP(queryAcc[queryNumber]);
+			INTARNA_CLEANUP(queryAcc[queryNumber]);
 		}
 
 #if INTARNA_MULITHREADING
