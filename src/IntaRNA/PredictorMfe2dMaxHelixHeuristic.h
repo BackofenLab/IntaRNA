@@ -1,6 +1,6 @@
 
-#ifndef INTARNA_PREDICTORMFE2DHELIXHEURISTIC_H_
-#define INTARNA_PREDICTORMFE2DHELIXHEURISTIC_H_
+#ifndef INTARNA_PREDICTORMFE2DMAXHELIXHEURISTIC_H_
+#define INTARNA_PREDICTORMFE2DMAXHELIXHEURISTIC_H_
 
 #include "IntaRNA/PredictorMfe2dHeuristic.h"
 #include "IntaRNA/Interaction.h"
@@ -18,14 +18,14 @@ namespace IntaRNA {
  * interaction with boundaries j1,j2 is considered in the recursion instead of
  * all possible interaction ranges.
  *
- * Helices (continues stackings of base pairs) are restricted to a given length.
+ * Only maximal helices up to a given length are combined.
  *
  * This yields a quadratic time and space complexity.
  *
  * @author Rick Gelhausen
  *
  */
-class PredictorMfe2dHelixHeuristic: public PredictorMfe2dHeuristic {
+class PredictorMfe2dMaxHelixHeuristic: public PredictorMfe2dHeuristic {
 
 protected:
 
@@ -43,12 +43,12 @@ public:
 	 *         tracking is to be done; if non-NULL, the tracker gets deleted
 	 *         on this->destruction.
 	 */
-	PredictorMfe2dHelixHeuristic( const InteractionEnergy & energy
+	PredictorMfe2dMaxHelixHeuristic( const InteractionEnergy & energy
 			, OutputHandler & output
 			, PredictionTracker * predTracker
 			, const HelixConstraint & helixConstraint);
 
-	virtual ~PredictorMfe2dHelixHeuristic();
+	virtual ~PredictorMfe2dMaxHelixHeuristic();
 
 	/**
 	 * Computes the mfe for the given sequence ranges (i1-j1) in the first
@@ -119,4 +119,4 @@ protected:
 
 } // namespace
 
-#endif /* INTARNA_PREDICTORMFE2DHELIXHEURISTIC_H_ */
+#endif /* INTARNA_PREDICTORMFE2DMAXHELIXHEURISTIC_H_ */

@@ -465,7 +465,7 @@ interaction pattern is available in our publications
 
 ### Unconstraint single-site RNA-RNA interaction with minimal free energy
 
-This *default model* of IntaRNA predicts the single-site interaction `I` with 
+This *default model* of IntaRNA (`--model=S`) predicts the single-site interaction `I` with 
 minimal free energy. That is, it minimizes
 ```
    arg min (  E_hybrid(I) + ED1(I) + ED2(I)  )
@@ -487,14 +487,14 @@ predictions.
 <br /><br />
 <a name="interactionModel-ssHelixMfe" />
 
-### Helix-based single-site RNA-RNA interaction with minimal free energy
+### Helix-based single-site RNA-RNA interaction with minimal free energy 
 
 The formation of multiple base pair stackings, i.e. helix formation, requires
 a 'winding' of the respective subsequences.
 Depending on the structural context, such winding might be sterically and kinetically 
 hindered by the necessary unwinding of intra-molecular structural elements.  
 
-This model aims to incorporate such effects into the predictions of IntaRNA.
+This model (`--model=L`) aims to incorporate such effects into the predictions of IntaRNA.
 This is done by restricting the maximum length of inter-molecular helices to a 
 specified number of (stacked) base pairs.
 That way, 'wound up' subhelices are interspaced by flexible interior loops that
@@ -508,6 +508,9 @@ The blue boxes represent the lenth-bound helices and while the red boxes depict
 the interspacing unpaired regions (interior loops).
 
 ![helixbased](./doc/figures/helixbased.svg)
+
+Note, the model implements a heuristic, which only considers helices with maximum
+lengths.
 
 For further details, please refer to our respective publication
 

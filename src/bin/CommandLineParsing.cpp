@@ -37,13 +37,13 @@ extern "C" {
 #include "IntaRNA/InteractionEnergyVrna.h"
 
 #include "IntaRNA/PredictorMfe2dHeuristic.h"
-#include "IntaRNA/PredictorMfe2dHelixHeuristic.h"
+#include "IntaRNA/PredictorMfe2dMaxHelixHeuristic.h"
 #include "IntaRNA/PredictorMfe2d.h"
 #include "IntaRNA/PredictorMfe4d.h"
 #include "IntaRNA/PredictorMaxProb.h"
 
 #include "IntaRNA/PredictorMfe2dHeuristicSeed.h"
-#include "IntaRNA/PredictorMfe2dHelixHeuristicSeed.h"
+#include "IntaRNA/PredictorMfe2dMaxHelixHeuristicSeed.h"
 #include "IntaRNA/PredictorMfe2dSeed.h"
 #include "IntaRNA/PredictorMfe4dSeed.h"
 
@@ -147,7 +147,7 @@ CommandLineParsing::CommandLineParsing()
 
 	temperature(0,100,37),
 
-	model( "SPH", 'S'),
+	model( "SPL", 'S'),
 	predMode( "HME", 'H'),
 #if INTARNA_MULITHREADING
 	threads( 0, omp_get_max_threads(), 1),
@@ -557,7 +557,7 @@ CommandLineParsing::CommandLineParsing()
 				->notifier(boost::bind(&CommandLineParsing::validate_model,this,_1))
 			, std::string("interaction model : "
 					"\n 'S' = single-site, minimum-free-energy interaction (interior loops only), "
-					"\n 'H' = single-site, helix-based, minimum-free-energy interaction (helices and interior loops only), "
+					"\n 'L' = single-site, max-length helix-based, minimum-free-energy interaction (maximal helices and interior loops only), "
 					"\n 'P' = single-site maximum-probability interaction (interior loops only)"
 					).c_str())
 		("energy,e"
@@ -1881,10 +1881,10 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 	if (noSeedRequired) {
 		// predictors without seed constraint
 		switch( model.val ) {
-		case 'H':  {
+		case 'L':  {
 			switch ( predMode.val ) {
-			case 'H' :	return new PredictorMfe2dHelixHeuristic( energy, output, predTracker, getHelixConstraint(energy));
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(model.val));
+			case 'H' :	return new PredictorMfe2dMaxHelixHeuristic( energy, output, predTracker, getHelixConstraint(energy));
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for model "+toString(model.val));
 			}
 		} break;
 		// single-site mfe interactions (contain only interior loops)
@@ -1893,20 +1893,20 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 			case 'H' :  return new PredictorMfe2dHeuristic( energy, output, predTracker );
 			case 'M' :  return new PredictorMfe2d( energy, output, predTracker );
 			case 'E' :  return new PredictorMfe4d( energy, output, predTracker );
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(model.val));
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for model "+toString(model.val));
 			}
 		} break;
 		// single-site max-prob interactions (contain only interior loops)
 		case 'P' : {
 			switch ( predMode.val ) {
 			case 'E' :  return new PredictorMaxProb( energy, output, predTracker );
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(model.val)+" : try --mode=E");
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for model "+toString(model.val));
 			}
 		} break;
 		// multi-site mfe interactions (contain interior and multi-loops loops)
 		case 'M' : {
 			switch ( predMode.val ) {
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(model.val));
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for model "+toString(model.val));
 			}
 		} break;
 		default : INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented");
@@ -1914,10 +1914,10 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 	} else {
 		// seed-constrained predictors
 		switch( model.val ) {
-		case 'H' : {
+		case 'L' : {
 			switch  ( predMode.val ) {
-				case 'H' : return new PredictorMfe2dHelixHeuristicSeed(energy, output, predTracker, getHelixConstraint(energy), getSeedHandler(energy));
-				default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(model.val));
+				case 'H' : return new PredictorMfe2dMaxHelixHeuristicSeed(energy, output, predTracker, getHelixConstraint(energy), getSeedHandler(energy));
+				default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for model "+toString(model.val));
 			}
 		} break;
 		// single-site mfe interactions (contain only interior loops)
@@ -1932,13 +1932,13 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 		case 'P' : {
 			switch ( predMode.val ) {
 			case 'E' :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for seed constraint (try --noSeed)"); return NULL;
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(model.val));
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for model "+toString(model.val));
 			}
 		} break;
 		// multi-site mfe interactions (contain interior and multi-loops loops)
 		case 'M' : {
 			switch ( predMode.val ) {
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(model.val));
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for model "+toString(model.val));
 			}
 		} break;
 		default : INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented");

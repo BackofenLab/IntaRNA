@@ -38,11 +38,20 @@ development version
    - useNoED : replaced by checkFullE
  * IntaRNA/HelixHandler* :
    * adaptation to HelixConstraint::evalFullE()
+ * renaming PredictorMfe2dHelix* to PredictorMfe2dMaxHelix*, since only maximal
+   helices are considered for interaction prediction
+ + IntaRNA/HelixHandlerNoBulgeMax : computes for each base pair the canonical 
+   helix extension to the right with minimal energy (according the given 
+   HelixConstraint) and stores this energy along with the respective helix
+   length
+ + tests/HelixHandlerNoBulgeMax : copy of HelixHandlerStackingOnly test
  * bin/CommandLineParsing :
    + helixFullE : replaces helixNoED
    - helixNoED : replaced by helixFullE
+   * model : renamed 'H' to 'L' since only using longest (maximal) helices
  * README.md :
    + helixFullE documentation 
+   * model docu updated
 
 190304 Martin Raden + Frank Gelhausen :
  * API change: E_type now int (was float); all internally used energy values

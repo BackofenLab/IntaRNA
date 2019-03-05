@@ -1,8 +1,8 @@
 
-#ifndef INTARNA_PREDICTORMFE2DHELIXHEURISTICSEED_H
-#define INTARNA_PREDICTORMFE2DHELIXHEURISTICSEED_H
+#ifndef INTARNA_PREDICTORMFE2DMAXHELIXHEURISTICSEED_H
+#define INTARNA_PREDICTORMFE2DMAXHELIXHEURISTICSEED_H
 
-#include "IntaRNA/PredictorMfe2dHelixHeuristic.h"
+#include "IntaRNA/PredictorMfe2dMaxHelixHeuristic.h"
 #include "IntaRNA/SeedHandlerIdxOffset.h"
 
 namespace IntaRNA {
@@ -17,12 +17,14 @@ namespace IntaRNA {
  * interaction with boundaries j1,j2 is considered in the recursion instead of
  * all possible interaction ranges.
  *
+ * Only maximal helices up to a given length are combined.
+ *
  * This yields a quadratic time and space complexity.
  *
  * @author Rick Gelhausen
  *
  */
-class PredictorMfe2dHelixHeuristicSeed: public PredictorMfe2dHelixHeuristic {
+class PredictorMfe2dMaxHelixHeuristicSeed: public PredictorMfe2dMaxHelixHeuristic {
 
 
 	//! matrix type to hold the mfe energies and boundaries for interaction site starts
@@ -40,14 +42,14 @@ public:
 	 *         on this->destruction.
 	 * @param seedConstraint the seed constraint to be applied
 	 */
-	PredictorMfe2dHelixHeuristicSeed( const InteractionEnergy & energy
+	PredictorMfe2dMaxHelixHeuristicSeed( const InteractionEnergy & energy
 			, OutputHandler & output
 			, PredictionTracker * predTracker
 		 	, const HelixConstraint & helixConstraint
 			, SeedHandler * seedHandlerInstance
 	);
 
-	virtual ~PredictorMfe2dHelixHeuristicSeed();
+	virtual ~PredictorMfe2dMaxHelixHeuristicSeed();
 
 	/**
 	 * Computes the mfe for the given sequence ranges (i1-j1) in the first
@@ -68,20 +70,20 @@ public:
 protected:
 
 	//! access to the interaction energy handler of the super class
-	using PredictorMfe2dHelixHeuristic::energy;
+	using PredictorMfe2dMaxHelixHeuristic::energy;
 
 	//! access to the output handler of the super class
-	using PredictorMfe2dHelixHeuristic::output;
+	using PredictorMfe2dMaxHelixHeuristic::output;
 
 	//! access to the list of reported interaction ranges of the super class
-	using PredictorMfe2dHelixHeuristic::reportedInteractions;
+	using PredictorMfe2dMaxHelixHeuristic::reportedInteractions;
 
 	//! energy of all interaction hybrids that end in position p (seq1) and
 	//! q (seq2)
-	using PredictorMfe2dHelixHeuristic::hybridE;
+	using PredictorMfe2dMaxHelixHeuristic::hybridE;
 
 	//! handler to generate and access helix information with idx offset
-	using PredictorMfe2dHelixHeuristic::helixHandler;
+	using PredictorMfe2dMaxHelixHeuristic::helixHandler;
 
 	//! the best hybridization energy including a seed for start i1,i2
 	E2dMatrix hybridE_seed;
@@ -142,7 +144,7 @@ protected:
 
 inline
 void
-PredictorMfe2dHelixHeuristicSeed::
+PredictorMfe2dMaxHelixHeuristicSeed::
 updateOptima( const size_t i1, const size_t j1
 		, const size_t i2, const size_t j2
 		, const E_type energy
@@ -160,4 +162,4 @@ updateOptima( const size_t i1, const size_t j1
 //////////////////////////////////////////////////////////////////////////
 
 } // namespace
-#endif //INTARNA_PREDICTORMFE2DHELIXHEURISTICSEED_H
+#endif //INTARNA_PREDICTORMFE2DMAXHELIXHEURISTICSEED_H
