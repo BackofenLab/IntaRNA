@@ -323,7 +323,7 @@ add( const Interaction & i )
 					<<"\n"
 					<<"seed seq1   = "<<(i.seed->bp_i.first +1)<<" -- "<<(i.seed->bp_j.first +1) <<'\n'
 					<<"seed seq2   = "<<(i.seed->bp_j.second +1)<<" -- "<<(i.seed->bp_i.second +1) <<'\n'
-					<<"seed energy = "<<(i.seed->energy)<<" kcal/mol\n"
+					<<"seed energy = "<<E_2_Ekcal(i.seed->energy)<<" kcal/mol\n"
 					<<"seed ED1    = "<<E_2_Ekcal(energy.getED1( i.seed->bp_i.first, i.seed->bp_j.first ))<<" kcal/mol\n"
 					<<"seed ED2    = "<<E_2_Ekcal(energy.getAccessibility2().getAccessibilityOrigin().getED( i.seed->bp_j.second, i.seed->bp_i.second ))<<" kcal/mol\n"
 					<<"seed Pu1    = "<<E_2_Ekcal(Z_2_E(std::exp(-E_2_Z(energy.getED1( i.seed->bp_i.first, i.seed->bp_j.first ))/energy.getRT())))<<'\n'
