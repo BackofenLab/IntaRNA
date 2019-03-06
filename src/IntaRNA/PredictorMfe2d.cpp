@@ -101,9 +101,9 @@ fillHybridE( const size_t j1, const size_t j2
 {
 #if INTARNA_IN_DEBUG_MODE
 	if (i1init > j1)
-		throw std::runtime_error("PredictorMfe2d::initHybridE() : i1init > j1 : "+toString(i1init)+" > "+toString(j1));
+		throw std::runtime_error("PredictorMfe2d::fillHybridE() : i1init > j1 : "+toString(i1init)+" > "+toString(j1));
 	if (i2init > j2)
-		throw std::runtime_error("PredictorMfe2d::initHybridE() : i2init > j2 : "+toString(i2init)+" > "+toString(j2));
+		throw std::runtime_error("PredictorMfe2d::fillHybridE() : i2init > j2 : "+toString(i2init)+" > "+toString(j2));
 #endif
 
 	// get minimal start indices heeding max interaction length
