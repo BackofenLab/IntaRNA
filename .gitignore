@@ -69,3 +69,4 @@ tests/logs/*
 /t.fasta
 /t2.fasta
 /IntaRNA.pc
+/IntaRNA.exe.stackdump
