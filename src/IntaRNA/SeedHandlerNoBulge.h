@@ -107,19 +107,34 @@ public:
 	getSeedLength2( const size_t i1, const size_t i2 ) const;
 
 	/**
-	 * Might replace the input variables i1 and i2 to values to
-	 * - the first seed (if one of the indices is out of seq length bounds)
+	 * Replace the input variables i1 and i2 to values to within the given range
+	 * that correspond to
+	 *
+	 * - the first seed (if the given index pair is no valid seed start or one
+	 *   of the indices is out of range bounds)
 	 * - the next seed according to some seed order
-	 * if applicable and return whether or not the input variables have been
-	 * updated.
+	 *
+	 * The indices are not updated if the last seed within the range is given
+	 * or no seed within the range could be found.
+	 * It returns whether or not the input variables have been updated.
+	 *
+	 * Note, if changed, only the seed left-most base pair is within the range
+	 * but the full seed indices might exceed i1max or i2max.
 	 *
 	 * @param i1 seq1 seed index to be changed
 	 * @param i2 seq2 seed index to be changed
+	 * @param i1min first position within seq1 (inclusive)
+	 * @param i1max last position within seq1 (inclusive)
+	 * @param i2min first position within seq2 (inclusive)
+	 * @param i2max last position within seq2 (inclusive)
 	 * @return true if the input variables have been changed; false otherwise
 	 */
 	virtual
 	bool
-	updateToNextSeed( size_t & i1, size_t & i2 ) const;
+	updateToNextSeed( size_t & i1, size_t & i2
+			, const size_t i1min = 0, const size_t i1max = RnaSequence::lastPos
+			, const size_t i2min = 0, const size_t i2max = RnaSequence::lastPos
+			) const;
 
 
 protected:

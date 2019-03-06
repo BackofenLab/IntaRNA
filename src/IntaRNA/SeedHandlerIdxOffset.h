@@ -27,10 +27,12 @@ public:
 
 	/**
 	 * Construction
-	 * @param energy the energy function to be used for seed prediction (already offset)
 	 * @param seedHandler the seed handler to be wrapped
+	 * @param deleteOnDestruction whether or not the seedHandler is to be deleted
+	 *        within the destructor
 	 */
-	SeedHandlerIdxOffset( SeedHandler * seedHandler );
+	SeedHandlerIdxOffset( SeedHandler * seedHandler
+				, const bool deleteOnDestruction=true );
 
 	/**
 	 * destruction of this object and the wrapped seed handler
@@ -165,25 +167,43 @@ public:
 	getOriginalSeedHandler();
 
 	/**
-	 * Might replace the input variables i1 and i2 to values to
-	 * - the first seed (if one of the indices is out of seq length bounds)
+	 * Replace the input variables i1 and i2 to values to within the given range
+	 * that correspond to
+	 *
+	 * - the first seed (if the given index pair is no valid seed start or one
+	 *   of the indices is out of range bounds)
 	 * - the next seed according to some seed order
-	 * if applicable and return whether or not the input variables have been
-	 * updated.
+	 *
+	 * The indices are not updated if the last seed within the range is given
+	 * or no seed within the range could be found.
+	 * It returns whether or not the input variables have been updated.
+	 *
+	 * Note, if changed, only the seed left-most base pair is within the range
+	 * but the full seed indices might exceed i1max or i2max.
 	 *
 	 * @param i1 seq1 seed index to be changed
 	 * @param i2 seq2 seed index to be changed
+	 * @param i1min first position within seq1 (inclusive)
+	 * @param i1max last position within seq1 (inclusive)
+	 * @param i2min first position within seq2 (inclusive)
+	 * @param i2max last position within seq2 (inclusive)
 	 * @return true if the input variables have been changed; false otherwise
 	 */
 	virtual
 	bool
-	updateToNextSeed( size_t & i1, size_t & i2 ) const;
+	updateToNextSeed( size_t & i1, size_t & i2
+			, const size_t i1min = 0, const size_t i1max = RnaSequence::lastPos
+			, const size_t i2min = 0, const size_t i2max = RnaSequence::lastPos
+			) const;
 
 
 protected:
 
 	//! the index shifted seed handler
 	SeedHandler * seedHandlerOriginal;
+
+	//! whether or not the original seed handler is to be destroyed
+	const bool deleteOnDestruction;
 
 	//! the index shifted seed constraint
 	SeedConstraint seedConstraintOffset;
@@ -209,10 +229,11 @@ protected:
 
 inline
 SeedHandlerIdxOffset::
-SeedHandlerIdxOffset( SeedHandler * seedHandlerInstance )
+SeedHandlerIdxOffset( SeedHandler * seedHandlerInstance, const bool deleteOnDestruction )
 	:
 		SeedHandler(seedHandlerInstance->getInteractionEnergy(), seedHandlerInstance->getConstraint() )
 		, seedHandlerOriginal( seedHandlerInstance )
+		, deleteOnDestruction( deleteOnDestruction )
 		, seedConstraintOffset( seedHandlerOriginal->getConstraint() )
 		, idxOffset1(0)
 		, idxOffset2(0)
@@ -225,7 +246,7 @@ SeedHandlerIdxOffset( SeedHandler * seedHandlerInstance )
 inline
 SeedHandlerIdxOffset::~SeedHandlerIdxOffset()
 {
-	if (seedHandlerOriginal != NULL) {
+	if (deleteOnDestruction && seedHandlerOriginal != NULL) {
 		delete seedHandlerOriginal;
 		seedHandlerOriginal = NULL;
 	}
@@ -379,15 +400,17 @@ getOriginalSeedHandler()
 inline
 bool
 SeedHandlerIdxOffset::
-updateToNextSeed( size_t & i1_out, size_t & i2_out ) const
+updateToNextSeed( size_t & i1_out, size_t & i2_out
+		, const size_t i1min, const size_t i1max
+		, const size_t i2min, const size_t i2max
+		) const
 {
 	size_t i1 = i1_out+idxOffset1, i2 = i2_out+idxOffset2;
-	bool changed = seedHandlerOriginal->updateToNextSeed( i1, i2 );
-	// ensure new seed is within range
-	while( changed && (i1 < idxOffset1 || i2 < idxOffset2) ) {
-		changed = seedHandlerOriginal->updateToNextSeed( i1, i2 );
-	}
-	if (changed) {
+
+	if (seedHandlerOriginal->updateToNextSeed( i1, i2
+			, i1min+idxOffset1,(i1max<energy.size1()?i1max+idxOffset1:i1max)
+			, i2min+idxOffset2,(i2max<energy.size2()?i2max+idxOffset2:i2max) ))
+	{
 		i1_out = i1-idxOffset1;
 		i2_out = i2-idxOffset2;
 		return true;

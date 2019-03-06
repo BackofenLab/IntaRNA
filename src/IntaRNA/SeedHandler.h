@@ -110,20 +110,34 @@ public:
 
 
 	/**
-	 * Might replace the input variables i1 and i2 to values to
+	 * Replace the input variables i1 and i2 to values to within the given range
+	 * that correspond to
+	 *
 	 * - the first seed (if the given index pair is no valid seed start or one
-	 *   of the indices is out of sequence length bounds)
+	 *   of the indices is out of range bounds)
 	 * - the next seed according to some seed order
-	 * if applicable and return whether or not the input variables have been
-	 * updated.
+	 *
+	 * The indices are not updated if the last seed within the range is given
+	 * or no seed within the range could be found.
+	 * It returns whether or not the input variables have been updated.
+	 *
+	 * Note, if changed, only the seed left-most base pair is within the range
+	 * but the full seed indices might exceed i1max or i2max.
 	 *
 	 * @param i1 seq1 seed index to be changed
 	 * @param i2 seq2 seed index to be changed
+	 * @param i1min first position within seq1 (inclusive)
+	 * @param i1max last position within seq1 (inclusive)
+	 * @param i2min first position within seq2 (inclusive)
+	 * @param i2max last position within seq2 (inclusive)
 	 * @return true if the input variables have been changed; false otherwise
 	 */
 	virtual
 	bool
-	updateToNextSeed( size_t & i1, size_t & i2 ) const;
+	updateToNextSeed( size_t & i1, size_t & i2
+			, const size_t i1min = 0, const size_t i1max = RnaSequence::lastPos
+			, const size_t i2min = 0, const size_t i2max = RnaSequence::lastPos
+			) const;
 
 protected:
 
@@ -222,32 +236,42 @@ isFeasibleSeedBasePair( const size_t i1, const size_t i2 ) const
 inline
 bool
 SeedHandler::
-updateToNextSeed( size_t & i1_out, size_t & i2_out ) const
+updateToNextSeed( size_t & i1_out, size_t & i2_out
+		, const size_t i1min, const size_t i1max
+		, const size_t i2min, const size_t i2max
+		) const
 {
 	size_t i1=i1_out, i2=i2_out;
+	// find true max value
+	const size_t i1maxVal = std::min(energy.size1()-1,i1max)
+				, i2maxVal = std::min(energy.size2()-1,i2max);
 	// find first seed if out of bound or no valid seed boundary
-	if ( i1 > energy.size1() || i2 > energy.size2() || E_isINF(getSeedE(i1,i2)) ) {
-		i1 = 0;
-		i2 = 0;
+	if ( i1 < i1min || i1 > i1maxVal
+		|| i2 < i2min || i2 > i2maxVal
+		|| E_isINF(getSeedE(i1,i2)) )
+	{
+		// first potential seed position
+		i1 = i1min;
+		i2 = i2min;
 	} else {
-	// update seed
-		if (++i1 >= energy.size1()) {
-			i1 = 0;
+		// update to next potential seed position
+		if (++i1 >= i1maxVal) {
+			i1 = i1min;
 			i2++;
 		}
 	}
 
-	// find next valid seed start
-	while( i2 < energy.size2() && E_isINF(getSeedE(i1,i2))) {
-		// update seed bound
-		if (++i1 == energy.size1()) {
-			i1 = 0;
+	// find next valid seed start within range
+	while( i2 < i2maxVal && E_isINF(getSeedE(i1,i2))) {
+		// update seed position within range
+		if (++i1 == i1maxVal) {
+			i1 = i1min;
 			i2++;
 		}
 	}
 
-	// check if we found a valid seed
-	if (i1 < energy.size1() && i2< energy.size2()) {
+	// check if we found a valid seed in the range
+	if (i1 < i1maxVal && i2< i2maxVal) {
 		i1_out = i1;
 		i2_out = i2;
 		return true;

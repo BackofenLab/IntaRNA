@@ -143,7 +143,7 @@ TEST_CASE( "SeedHandlerExplicit", "[SeedHandlerExplicit]" ) {
 		REQUIRE_FALSE( sh.updateToNextSeed(i1,i2) );
 
 		// check seed init
-		size_t i1=20, i2=0;
+		i1=20; i2=0;
 		REQUIRE( sh.updateToNextSeed(i1,i2) );
 		isSeed13 = (i1 == 0 && i2 == 2);
 		isSeed21 = (i1 == 1 && i2 == 4);
@@ -151,7 +151,7 @@ TEST_CASE( "SeedHandlerExplicit", "[SeedHandlerExplicit]" ) {
 		REQUIRE( isInputSeed );
 
 		// check seed init
-		size_t i1=0, i2=20;
+		i1=0; i2=20;
 		REQUIRE( sh.updateToNextSeed(i1,i2) );
 		isSeed13 = (i1 == 0 && i2 == 2);
 		isSeed21 = (i1 == 1 && i2 == 4);
@@ -159,12 +159,22 @@ TEST_CASE( "SeedHandlerExplicit", "[SeedHandlerExplicit]" ) {
 		REQUIRE( isInputSeed );
 
 		// check seed init
-		size_t i1=20, i2=20;
+		i1=20; i2=20;
 		REQUIRE( sh.updateToNextSeed(i1,i2) );
 		isSeed13 = (i1 == 0 && i2 == 2);
 		isSeed21 = (i1 == 1 && i2 == 4);
 		isInputSeed = isSeed13 || isSeed21;
 		REQUIRE( isInputSeed );
+
+		//////////////////  seeds of subregion  ///////////////////////////
+
+		i1=0; i2=0;
+		REQUIRE_FALSE( sh.updateToNextSeed(i1,i2,3,5,0,5) );
+		REQUIRE_FALSE( sh.updateToNextSeed(i1,i2,0,5,0,1) );
+
+		i1=0; i2=0;
+		REQUIRE( sh.updateToNextSeed(i1,i2,0,0,2,2) );
+		REQUIRE_FALSE( sh.updateToNextSeed(i1,i2,0,0,2,2) );
 
 	}
 

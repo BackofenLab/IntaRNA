@@ -24,6 +24,13 @@ development version
  * IntaRNA/SeedHandlerExplicit :
  * IntaRNA/SeedHandlerNoBulge :
    + updateToNextSeed() : specialized seed iteration functionality
+ * IntaRNA/SeedHandlerIdxOffset :
+   + deleteOnDestruction : whether or not the original seedhandler is to be 
+     deleted within the destructor
+   * destructor() :
+     + check for deleteOnDestruction
+   * constructor( +deleteOnDestruction = true ) :
+     + deleteOnDestruction init
 
 190305 Martin Raden :
  * IntaRNA/PredictorMfe2d :
