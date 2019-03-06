@@ -8,6 +8,12 @@
 
 development version
 
+190306 Martin Raden :
+ * README.md :
+   + helix constraints documented
+ * IntaRNA/HelixHandlerUnpaired :
+   * adaptation to HelixConstraint::evalFullE() semantics
+
 190305 Martin Raden :
  * IntaRNA/PredictorMfe2d :
    * fillHybridE() : 

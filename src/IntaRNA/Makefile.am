@@ -90,7 +90,6 @@ libIntaRNA_a_SOURCES =    \
 					HelixHandler.cpp \
 					HelixHandlerNoBulgeMax.cpp \
 				    HelixHandlerUnpaired.cpp \
-				    HelixHandlerUnpairedSeed.cpp \
 					IndexRange.cpp \
 					IndexRangeList.cpp \
 					Interaction.cpp \
