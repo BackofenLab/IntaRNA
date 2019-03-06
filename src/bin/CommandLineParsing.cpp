@@ -77,7 +77,7 @@ CommandLineParsing::CommandLineParsing()
 	stdinUsed(false),
 	opts_query("Query"),
 	opts_target("Target"),
-	opts_helix("Helix (only if --model=H)"),
+	opts_helix("Helix (only if --model=L)"),
 	opts_seed("Seed"),
 	opts_shape("SHAPE"),
 	opts_inter("Interaction"),
