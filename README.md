@@ -39,13 +39,16 @@ with feature requests, bug reports, or just contact messages.
 If you use IntaRNA, please cite our respective articles
 
 #### Method
+
 - [IntaRNA 2.0: enhanced and customizable prediction of RNA-RNA interactions](https://doi.org/10.1093/nar/gkx279)
   Martin Mann, Patrick R. Wright, and Rolf Backofen,
   Nucleic Acids Research, 45 (W1), W435–W439, 2017, DOI:[10.1093/nar/gkx279](https://doi.org/10.1093/nar/gkx279).
 - [IntaRNA: efficient prediction of bacterial sRNA targets incorporating target site accessibility and seed regions](https://doi.org/10.1093/bioinformatics/btn544)
   Anke Busch, Andreas S. Richter, and Rolf Backofen,
   Bioinformatics, 24 no. 24 pp. 2849-56, 2008, DOI:[10.1093/bioinformatics/btn544](https://doi.org/10.1093/bioinformatics/btn544).
+  
 #### Features and Application
+
 - [Integration of accessibility data from structure probing into RNA–RNA interaction prediction](https://doi.org/10.1093/bioinformatics/bty1029)
   Milad Miladi, Soheila Montaseri, Rolf Backofen, Martin Raden,
   Bioinformatics, 2019, DOI:[10.1093/bioinformatics/bty1029](https://doi.org/10.1093/bioinformatics/bty1029).
@@ -246,6 +249,9 @@ Cygwin with the following packages:
 and follow either [install from github](#instgithub) or
 [install from package](#instsource).
 
+*Note*, the source code comes without any waranties or what-so-ever 
+(see licence information)!
+
 ### ... using pre-compiled binaries
 
 For some releases, we also provide precompiled binary packages for Microsoft Windows at the
@@ -257,7 +263,7 @@ want to use them:
 - [run IntaRNA](#usage)
 
 *Note*, these binaries come without any waranties, support or what-so-ever!
-They are just an offer due to according user requests.
+They are just an offer due to user requests.
 
 If you do not want to work within the IntaRNA directory or don't want to provide
 the full installation path with every IntaRNA call, you should add the installation
@@ -446,8 +452,8 @@ IntaRNA can predict single-site interactions within any structural context of th
 | **hairpin**     | ![yes](doc/figures/icon-yes.png) | ![yes](doc/figures/icon-yes.png) | ![yes](doc/figures/icon-yes.png) |
 | **non-hairpin loop** | ![yes](doc/figures/icon-yes.png) | ![yes](doc/figures/icon-yes.png) | ![yes](doc/figures/icon-yes.png) |
 
-Note, *concatenation-based approaches* as implemented in UNAfold or RNAcofold can
-*only predict exterior-exterior context* combinations (shown by (b) in the figure below)
+Note, *concatenation-based approaches* as implemented in UNAfold, NUPACK or RNAcofold can
+*only predict exterior-exterior context* combinations (shown by (b) in the figure above)
 and are thus not capable
 to investigate e.g. common loop-exterior or kissing-hairpin-loop
 interaction patterns that are depicted by (c) and (d) in the figure from above, respectively!
@@ -494,7 +500,8 @@ a 'winding' of the respective subsequences.
 Depending on the structural context, such winding might be sterically and kinetically 
 hindered by the necessary unwinding of intra-molecular structural elements.  
 
-This model (`--model=L`) aims to incorporate such effects into the predictions of IntaRNA.
+The helix-based prediction model aims to incorporate such 
+effects into the predictions of IntaRNA.
 This is done by restricting the maximum length of inter-molecular helices to a 
 specified number of (stacked) base pairs.
 That way, 'wound up' subhelices are interspaced by flexible interior loops that
@@ -509,10 +516,14 @@ the interspacing unpaired regions (interior loops).
 
 ![helixbased](./doc/figures/helixbased.svg)
 
-Note, the model implements a heuristic, which only considers helices with maximum
-lengths.
+Note, IntaRNA's helix-based model `--model=L` implements a heuristic, which 
+only considers for each intermolecular base pair the most stable helix extending
+to the right. This results in reduced runtimes while keeping or even improving
+the prediction quality in genome wide screens. IntaRNA offers various 
+[helix constraints](#helix) to guide which helices are considered for interaction 
+prediction.
 
-For further details, please refer to our respective publication
+For further details on the model and the underlying algorithm, please refer to our respective publication
 
 - [Constraint maximal inter-molecular helix lengths within RNA-RNA interaction prediction improves bacterial sRNA target prediction.](http://www.bioinf.uni-freiburg.de/Subpages/publications.html?de#Gelhausen-helixLength-2019.abstract)
 
@@ -753,13 +764,25 @@ least one of them.
 
 ## Helix constraints
 
+For [helix-based interaction models](#interactionModel-ssHelixMfe), 
+IntaRNA provides various constraints
+for the helices considered for interaction prediction: 
 
-TODO @Rick
-
+- `--helixMinBP` : minimal number of base pairs inside a helix (min|default=2)
+- `--helixMaxBP` : maximal number of base pairs inside a helix
+- `--helixMaxE` : maximal energy of each helix; any helix with higher
+  energy is not considered for interaction prediction. Note, this constraint is
+  useful to restrict the prediction to more stable interactions.
+  See also `--helixFullE`.
 - `--helixFullE` if present, the overall helix energy (including E_init, ED,
   dangling end contributions, etc.) is used for energy checks (`--helixMaxE`).
   Otherwise, only the loop-terms are considered.
-
+- `--helixMaxED` : maximal ED-value (per helix subsequence); thus, one can
+  constrain prediction to helices in accessible regions.
+- `--helixMaxIL` : maximal size for each internal loop size in a helix; that way
+  you can relax the helix definition and allow for a given number of unpaired bases
+  between consecutive base pairs within a helix. Note, increasing this value reduces
+  the impact of the helix-based model for prediction.
 
 
 <br /><br />
