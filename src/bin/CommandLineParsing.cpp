@@ -844,7 +844,7 @@ parse(int argc, char** argv)
 			}
 
 			// check for helixWithED
-			helixFullE = vm.count("helixFullE") == 0;
+			helixFullE = vm.count("helixFullE") > 0;
 
 			// check seed setup
 			noSeedRequired = vm.count("noSeed") > 0;
