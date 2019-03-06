@@ -85,8 +85,6 @@ TEST_CASE( "PredictorMfe2dHelixHeuristcSeed", "[PredictorMfe2dHelixBlockHeuristi
 
 		const Interaction *interaction((*out.begin()));
 
-		LOG(DEBUG) <<"interaction = "<<toString(*interaction);
-
 		REQUIRE(interaction->basePairs.begin()->first == 0);
 		REQUIRE(interaction->basePairs.begin()->second == 6);
 

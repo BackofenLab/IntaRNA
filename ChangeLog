@@ -18,6 +18,12 @@ development version
    - helixNoED : replaced by helixFullE
    * model : renamed 'L' to 'B' since only using blocks of stable helices
  * renaming Predictor*MaxHelix* to Predictor*HelixBlock*
+ * IntaRNA/SeedHandler :
+   + updateToNextSeed() : generic seed iteration functionality
+ * IntaRNA/SeedHandlerIdxOffset :
+ * IntaRNA/SeedHandlerExplicit :
+ * IntaRNA/SeedHandlerNoBulge :
+   + updateToNextSeed() : specialized seed iteration functionality
 
 190305 Martin Raden :
  * IntaRNA/PredictorMfe2d :

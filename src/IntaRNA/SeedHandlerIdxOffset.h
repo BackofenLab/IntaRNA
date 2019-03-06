@@ -164,6 +164,21 @@ public:
 	SeedHandler&
 	getOriginalSeedHandler();
 
+	/**
+	 * Might replace the input variables i1 and i2 to values to
+	 * - the first seed (if one of the indices is out of seq length bounds)
+	 * - the next seed according to some seed order
+	 * if applicable and return whether or not the input variables have been
+	 * updated.
+	 *
+	 * @param i1 seq1 seed index to be changed
+	 * @param i2 seq2 seed index to be changed
+	 * @return true if the input variables have been changed; false otherwise
+	 */
+	virtual
+	bool
+	updateToNextSeed( size_t & i1, size_t & i2 ) const;
+
 
 protected:
 
@@ -360,6 +375,27 @@ getOriginalSeedHandler()
 }
 
 ////////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+SeedHandlerIdxOffset::
+updateToNextSeed( size_t & i1_out, size_t & i2_out ) const
+{
+	size_t i1 = i1_out+idxOffset1, i2 = i2_out+idxOffset2;
+	bool changed = seedHandlerOriginal->updateToNextSeed( i1, i2 );
+	// ensure new seed is within range
+	while( changed && (i1 < idxOffset1 || i2 < idxOffset2) ) {
+		changed = seedHandlerOriginal->updateToNextSeed( i1, i2 );
+	}
+	if (changed) {
+		i1_out = i1-idxOffset1;
+		i2_out = i2-idxOffset2;
+		return true;
+	}
+	return false;
+}
+
+//////////////////////////////////////////////////////////////////////////
 
 } // namespace
 

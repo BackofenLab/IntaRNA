@@ -106,6 +106,21 @@ public:
 	size_t
 	getSeedLength2( const size_t i1, const size_t i2 ) const;
 
+	/**
+	 * Might replace the input variables i1 and i2 to values to
+	 * - the first seed (if one of the indices is out of seq length bounds)
+	 * - the next seed according to some seed order
+	 * if applicable and return whether or not the input variables have been
+	 * updated.
+	 *
+	 * @param i1 seq1 seed index to be changed
+	 * @param i2 seq2 seed index to be changed
+	 * @return true if the input variables have been changed; false otherwise
+	 */
+	virtual
+	bool
+	updateToNextSeed( size_t & i1, size_t & i2 ) const;
+
 
 protected:
 

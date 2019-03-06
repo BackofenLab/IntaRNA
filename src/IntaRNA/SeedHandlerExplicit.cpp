@@ -362,4 +362,41 @@ isValid() const
 
 //////////////////////////////////////////////////////////////////////////
 
+bool
+SeedHandlerExplicit::
+updateToNextSeed( size_t & i1_out, size_t & i2_out ) const
+{
+	// ensure we do have any seed
+	if (seedForLeftEnd.empty()) {
+		return false;
+	}
+
+	size_t i1 = i1_out, i2 = i2_out;
+
+	// check if we have to provide first seed (out of bound or no seed start)
+	if (i1 > energy.size1() || i2 > energy.size1() || E_isINF(getSeedE(i1,i2))) {
+		// copy start information of first seed
+		i1_out = seedForLeftEnd.begin()->first.first;
+		i2_out = seedForLeftEnd.begin()->first.second;
+		return true;
+	}
+
+	// find current seed
+	auto curSeedData = seedForLeftEnd.find( Interaction::BasePair(i1,i2) );
+	assert( curSeedData != seedForLeftEnd.end() );
+	// get next seed
+	curSeedData++;
+	// ensure we have a valid new seed
+	if (curSeedData != seedForLeftEnd.end()) {
+		// copy data
+		i1_out = curSeedData->first.first;
+		i2_out = curSeedData->first.second;
+		return true;
+	}
+
+	return false;
+}
+
+//////////////////////////////////////////////////////////////////////////
+
 } /* namespace IntaRNA */

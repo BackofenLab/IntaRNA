@@ -108,4 +108,64 @@ TEST_CASE( "SeedHandlerExplicit", "[SeedHandlerExplicit]" ) {
 
 	}
 
+	SECTION( "test seed enumeration" ) {
+
+		RnaSequence r1("r1", "GGGGGG");  // 1GGGGGG6
+		RnaSequence r2("r2", "CCCCCG");  // 6GCCCCC1
+		AccessibilityDisabled acc1(r1, 0, NULL);
+		AccessibilityDisabled acc2(r2, 0, NULL);
+		ReverseAccessibility racc(acc2);
+		InteractionEnergyBasePair energy(acc1, racc);
+
+		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
+		SeedConstraint sC(3,0,0,0,0
+				, AccessibilityDisabled::ED_UPPER_BOUND
+				, IndexRangeList("")
+				, IndexRangeList("")
+				, "1||&3||,2|.|&1||");
+
+		// create instance (triggers parsing)
+		SeedHandlerExplicit sh( energy, sC );
+
+		// check parsing number
+		REQUIRE( sh.fillSeed(0,5,0,5) == 2 );
+
+		// check seed iteration
+		size_t i1=0, i2=0;
+		REQUIRE( sh.updateToNextSeed(i1,i2) );
+		bool isSeed13 = (i1 == 0 && i2 == 2);
+		bool isSeed21 = (i1 == 1 && i2 == 4);
+		bool isInputSeed = isSeed13 || isSeed21;
+		REQUIRE( isInputSeed );
+		REQUIRE( sh.updateToNextSeed(i1,i2) );
+		bool isTheOtherSeed = (isSeed13 && (i1 == 1 && i2 == 4) ) || (isSeed21 && (i1 == 0 && i2 == 2) );
+		REQUIRE( isTheOtherSeed );
+		REQUIRE_FALSE( sh.updateToNextSeed(i1,i2) );
+
+		// check seed init
+		size_t i1=20, i2=0;
+		REQUIRE( sh.updateToNextSeed(i1,i2) );
+		isSeed13 = (i1 == 0 && i2 == 2);
+		isSeed21 = (i1 == 1 && i2 == 4);
+		isInputSeed = isSeed13 || isSeed21;
+		REQUIRE( isInputSeed );
+
+		// check seed init
+		size_t i1=0, i2=20;
+		REQUIRE( sh.updateToNextSeed(i1,i2) );
+		isSeed13 = (i1 == 0 && i2 == 2);
+		isSeed21 = (i1 == 1 && i2 == 4);
+		isInputSeed = isSeed13 || isSeed21;
+		REQUIRE( isInputSeed );
+
+		// check seed init
+		size_t i1=20, i2=20;
+		REQUIRE( sh.updateToNextSeed(i1,i2) );
+		isSeed13 = (i1 == 0 && i2 == 2);
+		isSeed21 = (i1 == 1 && i2 == 4);
+		isInputSeed = isSeed13 || isSeed21;
+		REQUIRE( isInputSeed );
+
+	}
+
 }

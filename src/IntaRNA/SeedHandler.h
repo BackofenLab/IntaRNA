@@ -109,6 +109,21 @@ public:
 	getSeedLength2( const size_t i1, const size_t i2 ) const = 0;
 
 
+	/**
+	 * Might replace the input variables i1 and i2 to values to
+	 * - the first seed (if the given index pair is no valid seed start or one
+	 *   of the indices is out of sequence length bounds)
+	 * - the next seed according to some seed order
+	 * if applicable and return whether or not the input variables have been
+	 * updated.
+	 *
+	 * @param i1 seq1 seed index to be changed
+	 * @param i2 seq2 seed index to be changed
+	 * @return true if the input variables have been changed; false otherwise
+	 */
+	virtual
+	bool
+	updateToNextSeed( size_t & i1, size_t & i2 ) const;
 
 protected:
 
@@ -202,6 +217,44 @@ isFeasibleSeedBasePair( const size_t i1, const size_t i2 ) const
 			;
 }
 
+//////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+SeedHandler::
+updateToNextSeed( size_t & i1_out, size_t & i2_out ) const
+{
+	size_t i1=i1_out, i2=i2_out;
+	// find first seed if out of bound or no valid seed boundary
+	if ( i1 > energy.size1() || i2 > energy.size2() || E_isINF(getSeedE(i1,i2)) ) {
+		i1 = 0;
+		i2 = 0;
+	} else {
+	// update seed
+		if (++i1 >= energy.size1()) {
+			i1 = 0;
+			i2++;
+		}
+	}
+
+	// find next valid seed start
+	while( i2 < energy.size2() && E_isINF(getSeedE(i1,i2))) {
+		// update seed bound
+		if (++i1 == energy.size1()) {
+			i1 = 0;
+			i2++;
+		}
+	}
+
+	// check if we found a valid seed
+	if (i1 < energy.size1() && i2< energy.size2()) {
+		i1_out = i1;
+		i2_out = i2;
+		return true;
+	}
+	// no valid next seed found
+	return false;
+}
 
 //////////////////////////////////////////////////////////////////////////
 
