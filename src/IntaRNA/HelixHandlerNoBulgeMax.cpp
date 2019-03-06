@@ -98,6 +98,7 @@ fillHelix(const size_t i1min, const size_t i1max, const size_t i2min, const size
 					validHelix = validHelix
 							&& energy.getED1(i1, i1+l-1) <= helixConstraint.getMaxED()
 							&& energy.getED2(i2, i2+l-1) <= helixConstraint.getMaxED();
+
 					// check how to evaluate energy
 					if (helixConstraint.evalFullE()) {
 						// get additional energy terms
@@ -223,7 +224,6 @@ fillHelixSeed(const size_t i1min, const size_t i1max, const size_t i2min, const 
 		E_type leadingE = E_type(0);
 		size_t leadingL = 0;
 
-
 		// screen over all possible leading and trailing base pair combinations
 		for (size_t leadingBP=0; leadingBP <= possibleBasePairs
 								 && (i1+leadingBP) <= i1max
@@ -260,7 +260,7 @@ fillHelixSeed(const size_t i1min, const size_t i1max, const size_t i2min, const 
 
 			// Run over all trailing base pairs
 			for (size_t trailingBP=0; trailingBP <= possibleBasePairs - leadingBP
-									  && (seedEnd1+trailingBP) <= i2max
+									  && (seedEnd1+trailingBP) <= i1max
 									  && (seedEnd2+trailingBP) <= i2max; trailingBP++) {
 
 				j1 = seedEnd1+trailingBP;
