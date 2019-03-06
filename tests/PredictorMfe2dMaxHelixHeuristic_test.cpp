@@ -7,18 +7,18 @@
 #include "IntaRNA/RnaSequence.h"
 #include "IntaRNA/AccessibilityDisabled.h"
 #include "IntaRNA/HelixConstraint.h"
-#include "IntaRNA/HelixHandlerStackingOnly.h"
+#include "IntaRNA/HelixHandlerNoBulgeMax.h"
 #include "IntaRNA/InteractionEnergyBasePair.h"
 #include "IntaRNA/Interaction.h"
 #include "IntaRNA/ReverseAccessibility.h"
-#include "IntaRNA/PredictorMfe2dHelixHeuristic.h"
+#include "IntaRNA/PredictorMfe2dMaxHelixHeuristic.h"
 #include "IntaRNA/OutputHandlerInteractionList.h"
 
 using namespace IntaRNA;
 
-TEST_CASE( "PredictorMfe2dHelixHeuristc", "[PredictorMfe2dHelixHeuristic]") {
+TEST_CASE( "PredictorMfe2dHelixHeuristc", "[PredictorMfe2dMaxHelixHeuristic]") {
 
-	SECTION("Predictor: Case 1", "[PredictorMfe2dHelixHeuristic]") {
+	SECTION("Predictor: Case 1", "[PredictorMfe2dMaxHelixHeuristic]") {
 
 		RnaSequence r1("r1", "GGGAAGG");
 		RnaSequence r2("r2", "CCAACCC");
@@ -31,7 +31,7 @@ TEST_CASE( "PredictorMfe2dHelixHeuristc", "[PredictorMfe2dHelixHeuristic]") {
 
 		OutputHandlerInteractionList out(1);
 
-		PredictorMfe2dHelixHeuristic pLSH(energy, out, NULL, hc);
+		PredictorMfe2dMaxHelixHeuristic pLSH(energy, out, NULL, hc);
 
 		IndexRange idx1(0,r1.lastPos);
 		IndexRange idx2(0,r2.lastPos);
@@ -52,7 +52,7 @@ TEST_CASE( "PredictorMfe2dHelixHeuristc", "[PredictorMfe2dHelixHeuristic]") {
 		REQUIRE(interaction->dotBracket(*interaction) == "(((..((&))..)))");
 	}
 
-	SECTION("Predictor: Case 2", "[PredictorMfe2dHelixHeuristic]") {
+	SECTION("Predictor: Case 2", "[PredictorMfe2dMaxHelixHeuristic]") {
 
 		RnaSequence r1("r1", "AAGGGAAGGA");
 		RnaSequence r2("r2", "ACCAACCCAA");
@@ -65,7 +65,7 @@ TEST_CASE( "PredictorMfe2dHelixHeuristc", "[PredictorMfe2dHelixHeuristic]") {
 
 		OutputHandlerInteractionList out(1);
 
-		PredictorMfe2dHelixHeuristic pLSH(energy, out, NULL, hc);
+		PredictorMfe2dMaxHelixHeuristic pLSH(energy, out, NULL, hc);
 
 		IndexRange idx1(0,r1.lastPos);
 		IndexRange idx2(0,r2.lastPos);
@@ -86,7 +86,7 @@ TEST_CASE( "PredictorMfe2dHelixHeuristc", "[PredictorMfe2dHelixHeuristic]") {
 		REQUIRE(interaction->dotBracket(*interaction) == "(((..((&))..)))");
 	}
 
-	SECTION("Predictor: Case 3 - no favorable output", "[PredictorMfe2dHelixHeuristic]") {
+	SECTION("Predictor: Case 3 - no favorable output", "[PredictorMfe2dMaxHelixHeuristic]") {
 
 		RnaSequence r1("r1", "AAAAAAAA");
 		RnaSequence r2("r2", "AAAAAAAA");
@@ -99,7 +99,7 @@ TEST_CASE( "PredictorMfe2dHelixHeuristc", "[PredictorMfe2dHelixHeuristic]") {
 
 		OutputHandlerInteractionList out(1);
 
-		PredictorMfe2dHelixHeuristic pLSH(energy, out, NULL, hc);
+		PredictorMfe2dMaxHelixHeuristic pLSH(energy, out, NULL, hc);
 
 		IndexRange idx1(0,r1.lastPos);
 		IndexRange idx2(0,r2.lastPos);
@@ -111,7 +111,7 @@ TEST_CASE( "PredictorMfe2dHelixHeuristc", "[PredictorMfe2dHelixHeuristic]") {
 
 	}
 
-	SECTION("Predictor: Case 4", "[PredictorMfe2dHelixHeuristic]") {
+	SECTION("Predictor: Case 4", "[PredictorMfe2dMaxHelixHeuristic]") {
 
 		RnaSequence r1("r1", "AAAAAAAAGGG");
 		RnaSequence r2("r2", "AAAAAACCCAA");
@@ -124,7 +124,7 @@ TEST_CASE( "PredictorMfe2dHelixHeuristc", "[PredictorMfe2dHelixHeuristic]") {
 
 		OutputHandlerInteractionList out(1);
 
-		PredictorMfe2dHelixHeuristic pLSH(energy, out, NULL, hc);
+		PredictorMfe2dMaxHelixHeuristic pLSH(energy, out, NULL, hc);
 
 		IndexRange idx1(0,r1.lastPos);
 		IndexRange idx2(0,r2.lastPos);
@@ -145,7 +145,7 @@ TEST_CASE( "PredictorMfe2dHelixHeuristc", "[PredictorMfe2dHelixHeuristic]") {
 		REQUIRE(interaction->dotBracket(*interaction) == "(((&)))");
 	}
 
-	SECTION("Predictor: Case 5 - unpaired bases allowed", "[PredictorMfe2dHelixHeuristic]") {
+	SECTION("Predictor: Case 5 - unpaired bases allowed", "[PredictorMfe2dMaxHelixHeuristic]") {
 
 		RnaSequence r1("r1", "GGGAGGGG");
 		RnaSequence r2("r2", "CCCCACCC");
@@ -158,7 +158,7 @@ TEST_CASE( "PredictorMfe2dHelixHeuristc", "[PredictorMfe2dHelixHeuristic]") {
 
 		OutputHandlerInteractionList out(1);
 
-		PredictorMfe2dHelixHeuristic pLSH(energy, out, NULL, hc);
+		PredictorMfe2dMaxHelixHeuristic pLSH(energy, out, NULL, hc);
 
 		IndexRange idx1(0,r1.lastPos);
 		IndexRange idx2(0,r2.lastPos);
@@ -182,7 +182,7 @@ TEST_CASE( "PredictorMfe2dHelixHeuristc", "[PredictorMfe2dHelixHeuristic]") {
 	}
 
 
-	SECTION("Predictor: Case 6 - unpaired bases allowed", "[PredictorMfe2dHelixHeuristic]") {
+	SECTION("Predictor: Case 6 - unpaired bases allowed", "[PredictorMfe2dMaxHelixHeuristic]") {
 
 		RnaSequence r1("r1", "GGGAAGG");
 		RnaSequence r2("r2", "CCCCC");
@@ -195,7 +195,7 @@ TEST_CASE( "PredictorMfe2dHelixHeuristc", "[PredictorMfe2dHelixHeuristic]") {
 
 		OutputHandlerInteractionList out(1);
 
-		PredictorMfe2dHelixHeuristic pLSH(energy, out, NULL, hc);
+		PredictorMfe2dMaxHelixHeuristic pLSH(energy, out, NULL, hc);
 
 		IndexRange idx1(0,r1.lastPos);
 		IndexRange idx2(0,r2.lastPos);
@@ -216,7 +216,7 @@ TEST_CASE( "PredictorMfe2dHelixHeuristc", "[PredictorMfe2dHelixHeuristic]") {
 		REQUIRE(interaction->dotBracket(*interaction) == "(((..((&)))))");
 	}
 
-	SECTION("Predictor: Case 7 - only stacking allowed", "[PredictorMfe2dHelixHeuristic]") {
+	SECTION("Predictor: Case 7 - only stacking allowed", "[PredictorMfe2dMaxHelixHeuristic]") {
 
 		RnaSequence r1("r1", "GGGGGG");
 		RnaSequence r2("r2", "CCCCCC");
@@ -229,7 +229,7 @@ TEST_CASE( "PredictorMfe2dHelixHeuristc", "[PredictorMfe2dHelixHeuristic]") {
 
 		OutputHandlerInteractionList out(1);
 
-		PredictorMfe2dHelixHeuristic pLSH(energy, out, NULL, hc);
+		PredictorMfe2dMaxHelixHeuristic pLSH(energy, out, NULL, hc);
 
 		IndexRange idx1(0,r1.lastPos);
 		IndexRange idx2(0,r2.lastPos);

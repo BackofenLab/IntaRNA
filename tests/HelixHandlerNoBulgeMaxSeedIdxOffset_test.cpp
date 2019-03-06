@@ -7,7 +7,7 @@
 #include "IntaRNA/RnaSequence.h"
 #include "IntaRNA/AccessibilityDisabled.h"
 #include "IntaRNA/HelixConstraint.h"
-#include "IntaRNA/HelixHandlerStackingOnly.h"
+#include "IntaRNA/HelixHandlerNoBulgeMax.h"
 #include "IntaRNA/HelixHandlerIdxOffset.h"
 #include "IntaRNA/InteractionEnergyBasePair.h"
 #include "IntaRNA/SeedHandlerMfe.h"
@@ -15,7 +15,7 @@
 
 using namespace IntaRNA;
 
-TEST_CASE( "HelixHandlerIdxOffset for StackingOnlySeed", "[HelixHandlerIdxOffset]") {
+TEST_CASE( "HelixHandlerIdxOffset for NoBulgeMaxSeed", "[HelixHandlerIdxOffset]") {
 
 	SECTION("HelixSeed with Offset: Case 1 - offset 1", "[HelixHandlerIdxOffset]") {
 
@@ -32,7 +32,7 @@ TEST_CASE( "HelixHandlerIdxOffset for StackingOnlySeed", "[HelixHandlerIdxOffset
 		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
 						  "");
 
-		HelixHandler *hhS = new HelixHandlerStackingOnly(energy, hC);
+		HelixHandler *hhS = new HelixHandlerNoBulgeMax(energy, hC);
 		SeedHandler *sH = new SeedHandlerMfe(energy, sC);
 
 		hhS->setSeedHandler(*sH);
@@ -130,7 +130,7 @@ TEST_CASE( "HelixHandlerIdxOffset for StackingOnlySeed", "[HelixHandlerIdxOffset
 		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
 						  "");
 
-		HelixHandler *hhS = new HelixHandlerStackingOnly(energy, hC);
+		HelixHandler *hhS = new HelixHandlerNoBulgeMax(energy, hC);
 		SeedHandler *sH = new SeedHandlerMfe(energy, sC);
 
 		hhS->setSeedHandler(*sH);
@@ -194,7 +194,7 @@ TEST_CASE( "HelixHandlerIdxOffset for StackingOnlySeed", "[HelixHandlerIdxOffset
 		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
 						  "");
 
-		HelixHandler *hhS = new HelixHandlerStackingOnly(energy, hC);
+		HelixHandler *hhS = new HelixHandlerNoBulgeMax(energy, hC);
 		SeedHandler *sH = new SeedHandlerMfe(energy, sC);
 
 		hhS->setSeedHandler(*sH);
@@ -255,7 +255,7 @@ TEST_CASE( "HelixHandlerIdxOffset for StackingOnlySeed", "[HelixHandlerIdxOffset
 		REQUIRE(interaction.basePairs.rbegin()->second == 2);
 	}
 
-	SECTION("HelixSeed: Case 4 - unpaired allowed in seed", "[HelixHandlerStackingOnly]") {
+	SECTION("HelixSeed: Case 4 - unpaired allowed in seed", "[HelixHandlerNoBulgeMax]") {
 
 		RnaSequence r1("r1", "AGGAGG");
 		RnaSequence r2("r2", "CCACCA");
@@ -270,7 +270,7 @@ TEST_CASE( "HelixHandlerIdxOffset for StackingOnlySeed", "[HelixHandlerIdxOffset
 		SeedConstraint sC(3, 2, 1, 1, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
 						  "");
 
-		HelixHandler *hhS = new HelixHandlerStackingOnly(energy, hC);
+		HelixHandler *hhS = new HelixHandlerNoBulgeMax(energy, hC);
 		SeedHandler *sH = new SeedHandlerMfe(energy, sC);
 
 		hhS->setSeedHandler(*sH);
@@ -366,7 +366,7 @@ TEST_CASE( "HelixHandlerIdxOffset for StackingOnlySeed", "[HelixHandlerIdxOffset
 		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
 						  "");
 
-		HelixHandler *hhS = new HelixHandlerStackingOnly(energy, hC);
+		HelixHandler *hhS = new HelixHandlerNoBulgeMax(energy, hC);
 		SeedHandler *sH = new SeedHandlerMfe(energy, sC);
 
 		hhS->setSeedHandler(*sH);

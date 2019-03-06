@@ -30,7 +30,7 @@ libIntaRNA_a_HEADERS =    \
 					AccessibilityBasePair.h \
 					HelixHandler.h \
 					HelixHandlerIdxOffset.h \
-					HelixHandlerStackingOnly.h \
+					HelixHandlerNoBulgeMax.h \
 					HelixHandlerUnpaired.h \
 					IndexRange.h \
 					IndexRangeList.h \
@@ -63,8 +63,8 @@ libIntaRNA_a_HEADERS =    \
 					PredictorMfe2dSeed.h \
 					PredictorMfe2dHeuristic.h \
 					PredictorMfe2dHeuristicSeed.h \
-					PredictorMfe2dHelixHeuristic.h \
-					PredictorMfe2dHelixHeuristicSeed.h \
+					PredictorMfe2dMaxHelixHeuristic.h \
+					PredictorMfe2dMaxHelixHeuristicSeed.h \
 					PredictorMfe4d.h \
 					PredictorMfe4dSeed.h \
 					ReverseAccessibility.h \
@@ -88,8 +88,7 @@ libIntaRNA_a_SOURCES =    \
 					AccessibilityVrna.cpp \
 					AccessibilityBasePair.cpp \
 					HelixHandler.cpp \
-					HelixHandlerStackingOnly.cpp \
-					HelixHandlerStackingOnlySeed.cpp \
+					HelixHandlerNoBulgeMax.cpp \
 				    HelixHandlerUnpaired.cpp \
 				    HelixHandlerUnpairedSeed.cpp \
 					IndexRange.cpp \
@@ -119,8 +118,8 @@ libIntaRNA_a_SOURCES =    \
 					PredictorMfe2dSeed.cpp \
 					PredictorMfe2dHeuristic.cpp \
 					PredictorMfe2dHeuristicSeed.cpp \
-					PredictorMfe2dHelixHeuristic.cpp \
-					PredictorMfe2dHelixHeuristicSeed.cpp \
+					PredictorMfe2dMaxHelixHeuristic.cpp \
+					PredictorMfe2dMaxHelixHeuristicSeed.cpp \
 					PredictorMfe4d.cpp \
 					PredictorMfe4dSeed.cpp \
 					ReverseAccessibility.cpp \

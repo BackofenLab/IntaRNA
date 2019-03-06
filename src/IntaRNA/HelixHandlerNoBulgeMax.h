@@ -1,38 +1,38 @@
 
-#ifndef INTARNA_HELIXHANDLERSTACKINGONLY_H_
-#define INTARNA_HELIXHANDLERSTACKINGONLY_H_
+#ifndef INTARNA_HELIXHANDLERNOBULGEMAX_H_
+#define INTARNA_HELIXHANDLERNOBULGEMAX_H_
 
 #include "IntaRNA/InteractionEnergy.h"
 #include "IntaRNA/HelixConstraint.h"
 #include "IntaRNA/HelixHandler.h"
 
-#include <boost/numeric/ublas/matrix.hpp>
+#include <boost/unordered_map.hpp>
 
 namespace IntaRNA {
 
 /**
- * Handler to provide helix interactions that are based on stacked base pairs
- * only
+ * Handler to provide maximal canonical helix information that is based on
+ * stacked base pairs only.
  *
- * @author Rick Gelhausen
+ * @author Martin Raden
  */
-class HelixHandlerStackingOnly : public HelixHandler {
+class HelixHandlerNoBulgeMax : public HelixHandler {
+
 
 public:
 
-	//! 3D matrix type to hold the mfe energies for helix interactions
-	//! of the ranges i1..(i1+bp-1) and i2..(i2+bp-1) with
-	//! i1,i2 = start indices of the helix in seq1/2 respectively
-	//! bp = the number of base pairs within this helix
-	typedef boost::multi_array<E_type, 3> HelixRecMatrix;
+	//! type used to store helix information (energy and length)
+	typedef std::pair<E_type, size_t> HelixData;
 
-	//! defines the helix data (( i1, i2, bp )) to access elements of the HelixRecMatrix
-	typedef boost::array<HelixRecMatrix::index, 3> HelixIndex;
+	//! container type for sparse helix information for a given left-most
+	//! base pair (i1,i2)
+	//! it holds both the energy (first) as well as the length of the helix
+	typedef boost::unordered_map< Interaction::BasePair, HelixData > HelixHash;
 
-	//! matrix to store the helix information for each helix left side (i1, i2)
-	//! it holds both the energy (first) as well as the length of the helix using
-	//! the length combination of encodeHelixLength()
-	typedef boost::numeric::ublas::matrix< std::pair<E_type, size_t> > HelixMatrix;
+protected:
+
+	//! shortening typedef
+	typedef HelixHash::key_type BP;
 
 public:
 
@@ -40,7 +40,7 @@ public:
 	 * Constructor
 	 * @param energy the energy function to be used
 	 */
-	HelixHandlerStackingOnly(
+	HelixHandlerNoBulgeMax(
 			const InteractionEnergy & energy
 			, const HelixConstraint & helixConstraint
 			, SeedHandler * const seedHandler = NULL
@@ -49,7 +49,7 @@ public:
 	/**
 	 * destructor
 	 */
-	virtual ~HelixHandlerStackingOnly();
+	virtual ~HelixHandlerNoBulgeMax();
 
 	/**
 	 * Access to the underlying helix constraint
@@ -185,55 +185,6 @@ public:
 	void setSeedHandler(SeedHandler & seedHandler);
 
 protected:
-	/**
-	 * Provides the helix energy during the recursion
-	 *
-	 * @param i1 the helix left end in seq 1 (index including offset)
-	 * @param i2 the helix left end in seq 2 (index including offset)
-	 * @param bp the number of base pairs
-	 *
-	 * @return the energy of the according helix
-	 */
-	E_type
-	getHelixE(const size_t i1, const size_t i2, const size_t bp);
-
-	/**
-	 * Fills the helix energy during the recursion
-	 *
-	 * @param i1 the helix left end in seq 1 (index including offset)
-	 * @param i2 the helix left end in seq 2 (index including offset)
-	 * @param bp the number of base pairs
-	 * @param E the energy value to be set
-	 */
-	void
-	setHelixE( const size_t i1, const size_t i2, const size_t bp, const E_type E );
-
-	/**
-	 * Encodes the seed lengths into one number
-	 * @param l1 the length of the seed in seq1
-	 * @param l2 the length of the seed in seq2
-	 * @return the combined encoding = (l1 + l2*(max_l1+1))
-	 */
-	size_t
-	encodeHelixLength( const size_t l1, const size_t l2 ) const;
-
-	/**
-	 * Decodes the length of the seed within sequence 1 from an encoding
-	 * generated with encodeSeedLength()
-	 * @param code the lengths encoding
-	 * @return the length of the seed in seq1
-	 */
-	size_t
-	decodeHelixLength1( const size_t code ) const;
-
-	/**
-	 * Decodes the length of the seed within sequence 2 from an encoding
-	 * generated with encodeSeedLength()
-	 * @param code the lengths encoding
-	 * @return the length of the seed in seq2
-	 */
-	size_t
-	decodeHelixLength2( const size_t code ) const;
 
 	/**
 	 * Encodes the seed lengths into one number
@@ -262,19 +213,6 @@ protected:
 	size_t
 	decodeHelixSeedLength2( const size_t code ) const;
 
-	/**
-	 * Fills a given interaction with the according
-	 * hybridizing base pairs of the provided helix interaction
-	 *
-	 * @param interaction IN/OUT the interaction to fill
-	 * @param i1 the helix left end in seq 1 (index including offset)
-	 * @param i2 the helix left end in seq 2 (index including offset)
-	 * @param bp the number of base pairs
-	 */
-	void
-	traceBackHelix( Interaction & interaction
-			, const size_t i1, const size_t i2, const size_t bp);
-
 protected:
 
 	//! the used energy function
@@ -283,23 +221,11 @@ protected:
 	//! the helix constraint to be applied
 	const HelixConstraint & helixConstraint;
 
-	//! the recurstion data for the cimputation of a helix interaction
-	//! bp = the number of base pairs
-	//! i1..(i1+bp-1) and i2..(i2+bp-1)
-	//! using the indexing [i1][i2][bp]
-	HelixRecMatrix helixE_rec;
-
 	//! the helix mfe information for helix starting at (i1, i2)
-	HelixMatrix helix;
+	HelixHash helix;
 
 	//! the helix mfe information for helix with seed starting at (i1, i2)
-	HelixMatrix helixSeed;
-
-	//! offset for seq1 indices for the current matrices
-	size_t offset1;
-
-	//! offset for seq2 indices for the current matrices
-	size_t offset2;
+	HelixHash helixSeed;
 
 	// seedHandler used in helixSeed computation
 	SeedHandler * seedHandler;
@@ -310,7 +236,7 @@ protected:
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-HelixHandlerStackingOnly::HelixHandlerStackingOnly(
+HelixHandlerNoBulgeMax::HelixHandlerNoBulgeMax(
 		const InteractionEnergy & energy
 		, const HelixConstraint & helixConstraint
 		, SeedHandler * const seedHandler
@@ -320,8 +246,6 @@ HelixHandlerStackingOnly::HelixHandlerStackingOnly(
 		, helixConstraint(helixConstraint)
 		, helix()
 		, helixSeed()
-		, offset1(0)
-		, offset2(0)
 {
 	if (seedHandler != NULL) {
 		setSeedHandler( *seedHandler );
@@ -331,7 +255,7 @@ HelixHandlerStackingOnly::HelixHandlerStackingOnly(
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-HelixHandlerStackingOnly::~HelixHandlerStackingOnly()
+HelixHandlerNoBulgeMax::~HelixHandlerNoBulgeMax()
 {
 }
 
@@ -339,7 +263,7 @@ HelixHandlerStackingOnly::~HelixHandlerStackingOnly()
 
 inline
 const InteractionEnergy&
-HelixHandlerStackingOnly::
+HelixHandlerNoBulgeMax::
 getInteractionEnergy() const
 {
 	return energy;
@@ -349,7 +273,7 @@ getInteractionEnergy() const
 
 inline
 const HelixConstraint&
-HelixHandlerStackingOnly::
+HelixHandlerNoBulgeMax::
 getConstraint() const
 {
 	return helixConstraint;
@@ -358,150 +282,86 @@ getConstraint() const
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void
-HelixHandlerStackingOnly::
-traceBackHelix(Interaction &interaction
-		, const size_t i1
-		, const size_t i2
-)
-{
-#if INTARNA_IN_DEBUG_MODE
-	if ( i1 < offset1 ) throw std::runtime_error("HelixHandlerStackingOnly::traceBackHelix(i1="+toString(i1)+") is out of range (>"+toString(offset1)+")");
-	if ( i1-offset1 >= helix.size1() ) throw std::runtime_error("HelixHandlerStackingOnly::traceBackHelix(i1="+toString(i1)+") is out of range (<"+toString(helix.size1()+offset1)+")");
-	if ( i2 < offset2 ) throw std::runtime_error("HelixHandlerStackingOnly::traceBackHelix(i2="+toString(i2)+") is out of range (>"+toString(offset2)+")");
-	if ( i2-offset2 >= helix.size2() ) throw std::runtime_error("HelixHandlerStackingOnly::traceBackHelix(i2="+toString(i2)+") is out of range (<"+toString(helix.size2()+offset2)+")");
-	if ( E_isINF( getHelixE(i1,i2) ) ) throw std::runtime_error("HelixHandlerStackingOnly::traceBackHelix(i1="+toString(i1)+",i2="+toString(i2)+") no helix known (E_INF)");
-	if ( i1+getHelixLength1(i1,i2)-1-offset1 >= helix.size1() ) throw std::runtime_error("HelixHandlerStackingOnly::traceBackHelix(i1="+toString(i1)+") helix length ("+toString(getHelixLength1(i1,i2))+") exceeds of range (<"+toString(helix.size1()+offset1)+")");
-	if ( i2+getHelixLength2(i1,i2)-1-offset2 >= helix.size2() ) throw std::runtime_error("HelixHandlerStackingOnly::traceBackHelix(i2="+toString(i2)+") helix length ("+toString(getHelixLength2(i1,i2))+") exceeds of range (<"+toString(helix.size2()+offset2)+")");
-#endif
-	// get number of base pairs for best helix
-	const size_t bestBP = getHelixLength1(i1,i2);
-
-	// trace back the according helix
-	traceBackHelix( interaction, i1-offset1, i2-offset2, bestBP);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
 E_type
-HelixHandlerStackingOnly::
+HelixHandlerNoBulgeMax::
 getHelixE(const size_t i1, const size_t i2) const
 {
-	return helix(i1-offset1, i2-offset2).first;
+	// try to locate helix information
+	HelixHash::const_iterator data = helix.find(BP(i1,i2));
+	// return respective value
+	return (data==helix.end()) ? E_INF : data->second.first;
 }
 
 ////////////////////////////////////////////////////////////////////////////
 
 inline
 E_type
-HelixHandlerStackingOnly::
+HelixHandlerNoBulgeMax::
 getHelixSeedE(const size_t i1, const size_t i2) const
 {
-	return helixSeed(i1-offset1, i2-offset2).first;
-}
-
-////////////////////////////////////////////////////////////////////////////
-inline
-E_type
-HelixHandlerStackingOnly::
-getHelixE(const size_t i1, const size_t i2, const size_t bp)
-{
-	// if no base pair is given return 0 in order to simplify helixHandlerSeed computation.
-	if (bp <= 1) {
-		return 0;
-	} else {
-		return helixE_rec(
-				HelixIndex({{(HelixRecMatrix::index) i1, (HelixRecMatrix::index) i2, (HelixRecMatrix::index) bp}}));
-	}
-}
-
-////////////////////////////////////////////////////////////////////////////
-inline
-void
-HelixHandlerStackingOnly::
-setHelixE(const size_t i1, const size_t i2, const size_t bp, const E_type E)
-{
-	helixE_rec(HelixIndex({{ (HelixRecMatrix::index) i1
-								   , (HelixRecMatrix::index) i2
-								   , (HelixRecMatrix::index) bp}})) = E;
+	// try to locate helix information
+	HelixHash::const_iterator data = helixSeed.find(BP(i1,i2));
+	// return respective value
+	return (data==helixSeed.end()) ? E_INF : data->second.first;
 }
 
 ////////////////////////////////////////////////////////////////////////////
 
 inline
 size_t
-HelixHandlerStackingOnly::
+HelixHandlerNoBulgeMax::
 getHelixLength1(const size_t i1, const size_t i2) const
 {
-	return decodeHelixLength1(helix(i1-offset1, i2-offset2).second);
+	// try to locate helix information
+	HelixHash::const_iterator data = helix.find(BP(i1,i2));
+	// return respective value
+	return (data==helix.end()) ? 0 : data->second.second;
 }
 
 ////////////////////////////////////////////////////////////////////////////
 
 inline
 size_t
-HelixHandlerStackingOnly::
+HelixHandlerNoBulgeMax::
 getHelixLength2(const size_t i1, const size_t i2) const
 {
-	return decodeHelixLength2(helix(i1-offset1, i2-offset2).second);
+	// try to locate helix information
+	HelixHash::const_iterator data = helix.find(BP(i1,i2));
+	// return respective value
+	return (data==helix.end()) ? 0 : data->second.second;
 }
 
 ////////////////////////////////////////////////////////////////////////////
 
 inline
 size_t
-HelixHandlerStackingOnly::
+HelixHandlerNoBulgeMax::
 getHelixSeedLength1(const size_t i1, const size_t i2) const
 {
-	return decodeHelixSeedLength1(helixSeed(i1-offset1, i2-offset2).second);
+	// try to locate helix information
+	HelixHash::const_iterator data = helixSeed.find(BP(i1,i2));
+	// return respective value
+	return (data==helixSeed.end()) ? 0 : decodeHelixSeedLength1(data->second.second);
 }
 
 ////////////////////////////////////////////////////////////////////////////
 
 inline
 size_t
-HelixHandlerStackingOnly::
+HelixHandlerNoBulgeMax::
 getHelixSeedLength2(const size_t i1, const size_t i2) const
 {
-	return decodeHelixSeedLength2(helixSeed(i1-offset1, i2-offset2).second);
+	// try to locate helix information
+	HelixHash::const_iterator data = helixSeed.find(BP(i1,i2));
+	// return respective value
+	return (data==helixSeed.end()) ? 0 : decodeHelixSeedLength2(data->second.second);
 }
 
 ///////////////////////////////////////////////////////////////////////////
 
 inline
 size_t
-HelixHandlerStackingOnly::
-encodeHelixLength( const size_t l1, const size_t l2 ) const
-{
-	return l1 + l2*(helixConstraint.getMaxLength1()+1);
-}
-
-//////////////////////////////////////////////////////////////////////////
-
-inline
-size_t
-HelixHandlerStackingOnly::
-decodeHelixLength1( const size_t code ) const
-{
-	return code % (helixConstraint.getMaxLength1()+1);
-}
-
-//////////////////////////////////////////////////////////////////////////
-
-inline
-size_t
-HelixHandlerStackingOnly::
-decodeHelixLength2( const size_t code ) const
-{
-	return code / (helixConstraint.getMaxLength1()+1);
-}
-
-///////////////////////////////////////////////////////////////////////////
-
-inline
-size_t
-HelixHandlerStackingOnly::
+HelixHandlerNoBulgeMax::
 encodeHelixSeedLength( const size_t l1, const size_t l2 ) const
 {
 	return l1 + l2*(helixConstraint.getMaxLength1() + seedHandler->getConstraint().getMaxLength1()+1);
@@ -511,7 +371,7 @@ encodeHelixSeedLength( const size_t l1, const size_t l2 ) const
 
 inline
 size_t
-HelixHandlerStackingOnly::
+HelixHandlerNoBulgeMax::
 decodeHelixSeedLength1( const size_t code ) const
 {
 	return code % (helixConstraint.getMaxLength1() + seedHandler->getConstraint().getMaxLength1()+1);
@@ -521,7 +381,7 @@ decodeHelixSeedLength1( const size_t code ) const
 
 inline
 size_t
-HelixHandlerStackingOnly::
+HelixHandlerNoBulgeMax::
 decodeHelixSeedLength2( const size_t code ) const
 {
 	return code / (helixConstraint.getMaxLength1() + seedHandler->getConstraint().getMaxLength1()+1);
@@ -531,11 +391,11 @@ decodeHelixSeedLength2( const size_t code ) const
 
 inline
 void
-HelixHandlerStackingOnly::setSeedHandler(SeedHandler & seedHandler) {
+HelixHandlerNoBulgeMax::setSeedHandler(SeedHandler & seedHandler) {
 	this->seedHandler = &seedHandler;
 }
 
 //////////////////////////////////////////////////////////////////////////
 
 } // namespace
-#endif /* HELIXHANDLERSTACKINGONLY_H_ */
+#endif /* HELIXHANDLERNOBULGEMAX_H_ */

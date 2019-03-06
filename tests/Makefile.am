@@ -17,10 +17,10 @@ runApiTests_SOURCES =	\
 					AccessibilityFromStream_test.cpp \
 					AccessibilityBasePair_test.cpp \
 					HelixConstraint_test.cpp \
-					HelixHandlerStackingOnly_test.cpp \
-					HelixHandlerStackingOnlyIdxOffset_test.cpp \
-					HelixHandlerStackingOnlySeed_test.cpp \
-					HelixHandlerStackingOnlySeedIdxOffset_test.cpp \
+					HelixHandlerNoBulgeMax_test.cpp \
+					HelixHandlerNoBulgeMaxSeed_test.cpp \
+					HelixHandlerNoBulgeMaxIdxOffset_test.cpp \
+					HelixHandlerNoBulgeMaxSeedIdxOffset_test.cpp \
 					HelixHandlerUnpaired_test.cpp \
 					HelixHandlerUnpairedIdxOffset_test.cpp \
 					HelixHandlerUnpairedSeed_test.cpp \
@@ -31,9 +31,9 @@ runApiTests_SOURCES =	\
 					InteractionEnergyBasePair_test.cpp  \
 					InteractionRange_test.cpp  \
 					PredictionTrackerProfileMinE_test.cpp \
-					PredictorMfe2dHelixHeuristic_test.cpp \
-					PredictorMfe2dHelixHeuristicSeed_test.cpp \
 					PredictionTrackerSpotProb_test.cpp \
+					PredictorMfe2dMaxHelixHeuristic_test.cpp \
+					PredictorMfe2dMaxHelixHeuristicSeed_test.cpp \
 					NussinovHandler_test.cpp \
 					RnaSequence_test.cpp \
 					OutputHandlerRangeOnly_test.cpp \

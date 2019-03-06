@@ -7,7 +7,7 @@
 #include "IntaRNA/RnaSequence.h"
 #include "IntaRNA/AccessibilityDisabled.h"
 #include "IntaRNA/HelixConstraint.h"
-#include "IntaRNA/HelixHandlerStackingOnly.h"
+#include "IntaRNA/HelixHandlerNoBulgeMax.h"
 #include "IntaRNA/HelixHandlerIdxOffset.h"
 #include "IntaRNA/InteractionEnergyBasePair.h"
 #include "IntaRNA/Interaction.h"
@@ -16,7 +16,7 @@
 
 using namespace IntaRNA;
 
-TEST_CASE( "HelixHandlerIdxOffset for StackingOnly", "[HelixHandlerIdxOffset]") {
+TEST_CASE( "HelixHandlerIdxOffset for NoBulgeMax", "[HelixHandlerIdxOffset]") {
 
 	SECTION("getter", "[HelixHandlerIdxOffset]") {
 
@@ -28,7 +28,7 @@ TEST_CASE( "HelixHandlerIdxOffset for StackingOnly", "[HelixHandlerIdxOffset]") 
 		InteractionEnergyBasePair energy(acc1, racc);
 
 		HelixConstraint hC(2, 10, 0, 999, 0, false);
-		HelixHandlerIdxOffset hhIO(new HelixHandlerStackingOnly(energy, hC));
+		HelixHandlerIdxOffset hhIO(new HelixHandlerNoBulgeMax(energy, hC));
 
 		// Initial offset of 0
 		REQUIRE(hhIO.getOffset1() == 0);
@@ -56,7 +56,7 @@ TEST_CASE( "HelixHandlerIdxOffset for StackingOnly", "[HelixHandlerIdxOffset]") 
 		InteractionEnergyBasePair energy(acc1, racc);
 
 		HelixConstraint hC(2,4, 0, 999, 0, false);
-		HelixHandlerIdxOffset hhIO(new HelixHandlerStackingOnly(energy, hC));
+		HelixHandlerIdxOffset hhIO(new HelixHandlerNoBulgeMax(energy, hC));
 
 		// Set the offsets
 		hhIO.setOffset1(1);
@@ -123,7 +123,7 @@ TEST_CASE( "HelixHandlerIdxOffset for StackingOnly", "[HelixHandlerIdxOffset]") 
 		InteractionEnergyBasePair energy(acc1, racc);
 
 		HelixConstraint hC(2,4, 0, 999, 0, false);
-		HelixHandlerIdxOffset hhIO(new HelixHandlerStackingOnly(energy, hC));
+		HelixHandlerIdxOffset hhIO(new HelixHandlerNoBulgeMax(energy, hC));
 
 		// Set the offsets
 		hhIO.setOffset1(1);
@@ -276,7 +276,7 @@ TEST_CASE( "HelixHandlerIdxOffset for StackingOnly", "[HelixHandlerIdxOffset]") 
 		InteractionEnergyBasePair energy(acc1, racc);
 
 		HelixConstraint hC(2,4, 0, 999, 0, false);
-		HelixHandlerIdxOffset hhIO(new HelixHandlerStackingOnly(energy, hC));
+		HelixHandlerIdxOffset hhIO(new HelixHandlerNoBulgeMax(energy, hC));
 
 		// Set the offsets
 		hhIO.setOffset1(1);
@@ -319,12 +319,12 @@ TEST_CASE( "HelixHandlerIdxOffset for StackingOnly", "[HelixHandlerIdxOffset]") 
 
 		// Case (0,0)
 		Interaction interaction(r1,r2);
-		REQUIRE_THROWS_WITH(hhIO.traceBackHelix(interaction, 0, 0), "HelixHandlerStackingOnly::traceBackHelix(i1=1,i2=1) no helix known (E_INF)");
+		REQUIRE_THROWS_WITH(hhIO.traceBackHelix(interaction, 0, 0), "HelixHandlerNoBulgeMax::traceBackHelix(i1=1,i2=1) no helix known (E_INF)");
 
 
 		// Case (2,1)
 		interaction.clear();
-		REQUIRE_THROWS_WITH(hhIO.traceBackHelix(interaction, 2, 1), "HelixHandlerStackingOnly::traceBackHelix(i1=3,i2=2) no helix known (E_INF)");
+		REQUIRE_THROWS_WITH(hhIO.traceBackHelix(interaction, 2, 1), "HelixHandlerNoBulgeMax::traceBackHelix(i1=3,i2=2) no helix known (E_INF)");
 
 #endif
 
@@ -340,7 +340,7 @@ TEST_CASE( "HelixHandlerIdxOffset for StackingOnly", "[HelixHandlerIdxOffset]") 
 		InteractionEnergyBasePair energy(acc1, racc);
 
 		HelixConstraint hC(2,4, 0, 999, 0, false);
-		HelixHandlerIdxOffset hhIO(new HelixHandlerStackingOnly(energy, hC));
+		HelixHandlerIdxOffset hhIO(new HelixHandlerNoBulgeMax(energy, hC));
 
 		// Set the offsets
 		hhIO.setOffset1(2);
@@ -451,7 +451,7 @@ TEST_CASE( "HelixHandlerIdxOffset for StackingOnly", "[HelixHandlerIdxOffset]") 
 
 		interaction.clear();
 
-		REQUIRE_THROWS_WITH(hhIO.traceBackHelix(interaction, 2, 1), "HelixHandlerStackingOnly::traceBackHelix(i1=4,i2=3) no helix known (E_INF)");
+		REQUIRE_THROWS_WITH(hhIO.traceBackHelix(interaction, 2, 1), "HelixHandlerNoBulgeMax::traceBackHelix(i1=4,i2=3) no helix known (E_INF)");
 
 #endif
 	}
@@ -466,7 +466,7 @@ TEST_CASE( "HelixHandlerIdxOffset for StackingOnly", "[HelixHandlerIdxOffset]") 
 		InteractionEnergyBasePair energy(acc1, racc);
 
 		HelixConstraint hC(2,4, 0, 999, 0, false);
-		HelixHandlerIdxOffset hhIO(new HelixHandlerStackingOnly(energy, hC));
+		HelixHandlerIdxOffset hhIO(new HelixHandlerNoBulgeMax(energy, hC));
 
 		// Set the offsets
 		hhIO.setOffset1(1);
@@ -557,7 +557,7 @@ TEST_CASE( "HelixHandlerIdxOffset for StackingOnly", "[HelixHandlerIdxOffset]") 
 		//////////////////////
 
 		interaction.clear();
-		REQUIRE_THROWS_WITH(hhIO.traceBackHelix(interaction, 3, 2), "HelixHandlerStackingOnly::traceBackHelix(i1=4,i2=4) no helix known (E_INF)");
+		REQUIRE_THROWS_WITH(hhIO.traceBackHelix(interaction, 3, 2), "HelixHandlerNoBulgeMax::traceBackHelix(i1=4,i2=4) no helix known (E_INF)");
 
 #endif
 	}

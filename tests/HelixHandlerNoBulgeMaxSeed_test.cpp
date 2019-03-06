@@ -6,15 +6,15 @@
 #include "IntaRNA/RnaSequence.h"
 #include "IntaRNA/AccessibilityDisabled.h"
 #include "IntaRNA/HelixConstraint.h"
-#include "IntaRNA/HelixHandlerStackingOnly.h"
+#include "IntaRNA/HelixHandlerNoBulgeMax.h"
 #include "IntaRNA/InteractionEnergyBasePair.h"
 #include "IntaRNA/SeedHandlerMfe.h"
 
 using namespace IntaRNA;
 
-TEST_CASE( "HelixHandlerStackingOnlySeed", "[HelixHandlerStackingOnly]" ) {
+TEST_CASE( "HelixHandlerNoBulgeMaxSeed", "[HelixHandlerNoBulgeMax]" ) {
 
-	SECTION("HelixSeed: Case 1 - all complementary", "[HelixHandlerStackingOnly]") {
+	SECTION("HelixSeed: Case 1 - all complementary", "[HelixHandlerNoBulgeMax]") {
 
 		RnaSequence r1("r1", "GGGGG");
 		RnaSequence r2("r2", "CCCCC");
@@ -33,7 +33,7 @@ TEST_CASE( "HelixHandlerStackingOnlySeed", "[HelixHandlerStackingOnly]" ) {
 				, "");
 
 		SeedHandlerMfe sH(energy, sC);
-		HelixHandlerStackingOnly hhS(energy, hC);
+		HelixHandlerNoBulgeMax hhS(energy, hC);
 
 		sH.fillSeed(0, energy.size1()-1, 0,energy.size2()-1);
 		hhS.setSeedHandler(sH);
@@ -105,7 +105,7 @@ TEST_CASE( "HelixHandlerStackingOnlySeed", "[HelixHandlerStackingOnly]" ) {
 		REQUIRE(interaction.basePairs.size() == 0);
 	}
 
-	SECTION("HelixSeed: Case 2 - 'A' disrupting complementarity", "[HelixHandlerStackingOnly]") {
+	SECTION("HelixSeed: Case 2 - 'A' disrupting complementarity", "[HelixHandlerNoBulgeMax]") {
 
 		RnaSequence r1("r1", "GGAGG");
 		RnaSequence r2("r2", "CCACC");
@@ -121,7 +121,7 @@ TEST_CASE( "HelixHandlerStackingOnlySeed", "[HelixHandlerStackingOnly]" ) {
 						  "");
 
 		SeedHandlerMfe sH(energy, sC);
-		HelixHandlerStackingOnly hhS(energy, hC);
+		HelixHandlerNoBulgeMax hhS(energy, hC);
 
 		sH.fillSeed(0, energy.size1()-1, 0,energy.size2()-1);
 		hhS.setSeedHandler(sH);
@@ -159,7 +159,7 @@ TEST_CASE( "HelixHandlerStackingOnlySeed", "[HelixHandlerStackingOnly]" ) {
 		REQUIRE(interaction.basePairs.size() == 0);
 	}
 
-	SECTION("HelixSeed: Case 3 - only seed possible", "[HelixHandlerStackingOnly]") {
+	SECTION("HelixSeed: Case 3 - only seed possible", "[HelixHandlerNoBulgeMax]") {
 
 		RnaSequence r1("r1", "AGGGA");
 		RnaSequence r2("r2", "ACCCA");
@@ -175,7 +175,7 @@ TEST_CASE( "HelixHandlerStackingOnlySeed", "[HelixHandlerStackingOnly]" ) {
 						  "");
 
 		SeedHandlerMfe sH(energy, sC);
-		HelixHandlerStackingOnly hhS(energy, hC);
+		HelixHandlerNoBulgeMax hhS(energy, hC);
 
 		sH.fillSeed(0, energy.size1()-1, 0,energy.size2()-1);
 		hhS.setSeedHandler(sH);
@@ -226,7 +226,7 @@ TEST_CASE( "HelixHandlerStackingOnlySeed", "[HelixHandlerStackingOnly]" ) {
 		REQUIRE(interaction.basePairs.rbegin()->second == 2);
 	}
 
-	SECTION("HelixSeed: Case4 - unpaired allowed in seed", "[HelixHandlerStackingOnly]") {
+	SECTION("HelixSeed: Case4 - unpaired allowed in seed", "[HelixHandlerNoBulgeMax]") {
 
 		RnaSequence r1("r1", "GGAGG");
 		RnaSequence r2("r2", "CCACC");
@@ -242,7 +242,7 @@ TEST_CASE( "HelixHandlerStackingOnlySeed", "[HelixHandlerStackingOnly]" ) {
 						  "");
 
 		SeedHandlerMfe sH(energy, sC);
-		HelixHandlerStackingOnly hhS(energy, hC);
+		HelixHandlerNoBulgeMax hhS(energy, hC);
 
 		sH.fillSeed(0, energy.size1()-1, 0,energy.size2()-1);
 		hhS.setSeedHandler(sH);

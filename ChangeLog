@@ -44,7 +44,12 @@ development version
    helix extension to the right with minimal energy (according the given 
    HelixConstraint) and stores this energy along with the respective helix
    length
- + tests/HelixHandlerNoBulgeMax : copy of HelixHandlerStackingOnly test
+ - IntaRNA/HelixHandlerStackingOnly : replaced by HelixHandlerNoBulgeMax
+ * IntaRNA/HelixHandler :
+   * getHelixHandler() :
+     * HelixHandlerStackingOnly replaced by HelixHandlerNoBulgeMax
+ + tests/HelixHandlerNoBulgeMax* : renamed HelixHandlerStackingOnly tests
+ - tests/HelixHandlerStackingOnly* : renamed
  * bin/CommandLineParsing :
    + helixFullE : replaces helixNoED
    - helixNoED : replaced by helixFullE

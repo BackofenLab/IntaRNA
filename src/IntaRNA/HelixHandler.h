@@ -87,8 +87,7 @@ public:
 	 * Identifies the base pairs of the mfe helix interaction starting at i1,i2
 	 * and writes them to the provided container
 	 *
-	 * TODO; Not true at the moment
-	 * NOTE: the right most base pair is excluded!
+	 * NOTE: the left- and right-most base pair is excluded!
 	 *
 	 * @param interaction the container to add the base pairs too
 	 * @param i1 the start of the helix in seq1
@@ -99,8 +98,11 @@ public:
 	traceBackHelix( Interaction & interaction, const size_t i1, const size_t i2) = 0;
 
 	/**
-	 * Identifies the base pairs of the mfe helix interaction, constaining a seed, starting at i1,i2
+	 * Identifies the base pairs of the mfe helix interaction,
+	 * containing a seed, starting at i1,i2
 	 * and writes them to the provided container
+	 *
+	 * NOTE: the left- and right-most base pair is excluded!
 	 *
 	 * @param interaction the container to add the base pairs too
 	 * @param i1 the start of the helix in seq1
@@ -124,7 +126,7 @@ public:
 	 * Access to the mfe of any helix with left-most base pair (i1,i2)
 	 * @param i1 the left most interacting base of seq1
 	 * @param i2 the left most interaction base of seq2
-	 * @return the mfe of any heli starting at (i1,i2) or E_INF if none possible
+	 * @return the mfe of any helix starting at (i1,i2) or E_INF if none possible
 	 */
 	virtual
 	E_type

@@ -10,15 +10,15 @@
 #include "IntaRNA/InteractionEnergyBasePair.h"
 #include "IntaRNA/Interaction.h"
 #include "IntaRNA/ReverseAccessibility.h"
-#include "IntaRNA/PredictorMfe2dHelixHeuristicSeed.h"
+#include "IntaRNA/PredictorMfe2dMaxHelixHeuristicSeed.h"
 #include "IntaRNA/SeedHandlerMfe.h"
 #include "IntaRNA/OutputHandlerInteractionList.h"
 
 using namespace IntaRNA;
 
-TEST_CASE( "PredictorMfe2dHelixHeuristcSeed", "[PredictorMfe2dHelixHeuristicSeed]") {
+TEST_CASE( "PredictorMfe2dHelixHeuristcSeed", "[PredictorMfe2dMaxHelixHeuristicSeed]") {
 
-	SECTION("Predictor: Case 1", "[PredictorMfe2dHelixHeuristicSeed]") {
+	SECTION("Predictor: Case 1", "[PredictorMfe2dMaxHelixHeuristicSeed]") {
 
 		RnaSequence r1("r1", "GGGAAGG");
 		RnaSequence r2("r2", "CCAACCC");
@@ -34,7 +34,7 @@ TEST_CASE( "PredictorMfe2dHelixHeuristcSeed", "[PredictorMfe2dHelixHeuristicSeed
 
 		OutputHandlerInteractionList out(1);
 
-		PredictorMfe2dHelixHeuristicSeed pLSH(energy, out, NULL, hc, new SeedHandlerMfe(energy, sC));
+		PredictorMfe2dMaxHelixHeuristicSeed pLSH(energy, out, NULL, hc, new SeedHandlerMfe(energy, sC));
 
 		IndexRange idx1(0, r1.lastPos);
 		IndexRange idx2(0, r2.lastPos);
@@ -55,7 +55,7 @@ TEST_CASE( "PredictorMfe2dHelixHeuristcSeed", "[PredictorMfe2dHelixHeuristicSeed
 		REQUIRE(interaction->dotBracket(*interaction) == "(((..((&))..)))");
 	}
 
-//	SECTION("Predictor: Case 2", "[PredictorMfe2dHelixHeuristicSeed]") {
+//	SECTION("Predictor: Case 2", "[PredictorMfe2dMaxHelixHeuristicSeed]") {
 //
 //		RnaSequence r1("r1", "GGGAGG");
 //		RnaSequence r2("r2", "CCAACCC");
@@ -72,7 +72,7 @@ TEST_CASE( "PredictorMfe2dHelixHeuristcSeed", "[PredictorMfe2dHelixHeuristicSeed
 //		SeedHandlerMfe sH(energy, sC);
 //		OutputHandlerInteractionList out(1);
 //
-//		PredictorMfe2dHelixHeuristicSeed pLSH(energy, out, NULL, hc, new SeedHandlerMfe(energy, sC));
+//		PredictorMfe2dMaxHelixHeuristicSeed pLSH(energy, out, NULL, hc, new SeedHandlerMfe(energy, sC));
 //
 //		IndexRange idx1(0, r1.lastPos);
 //		IndexRange idx2(0, r2.lastPos);
