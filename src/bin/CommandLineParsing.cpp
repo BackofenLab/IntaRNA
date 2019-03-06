@@ -37,13 +37,13 @@ extern "C" {
 #include "IntaRNA/InteractionEnergyVrna.h"
 
 #include "IntaRNA/PredictorMfe2dHeuristic.h"
-#include "IntaRNA/PredictorMfe2dMaxHelixHeuristic.h"
+#include "IntaRNA/PredictorMfe2dHelixBlockHeuristic.h"
 #include "IntaRNA/PredictorMfe2d.h"
 #include "IntaRNA/PredictorMfe4d.h"
 #include "IntaRNA/PredictorMaxProb.h"
 
 #include "IntaRNA/PredictorMfe2dHeuristicSeed.h"
-#include "IntaRNA/PredictorMfe2dMaxHelixHeuristicSeed.h"
+#include "IntaRNA/PredictorMfe2dHelixBlockHeuristicSeed.h"
 #include "IntaRNA/PredictorMfe2dSeed.h"
 #include "IntaRNA/PredictorMfe4dSeed.h"
 
@@ -77,7 +77,7 @@ CommandLineParsing::CommandLineParsing()
 	stdinUsed(false),
 	opts_query("Query"),
 	opts_target("Target"),
-	opts_helix("Helix (only if --model=L)"),
+	opts_helix("Helix (only if --model=B)"),
 	opts_seed("Seed"),
 	opts_shape("SHAPE"),
 	opts_inter("Interaction"),
@@ -147,7 +147,7 @@ CommandLineParsing::CommandLineParsing()
 
 	temperature(0,100,37),
 
-	model( "SPL", 'S'),
+	model( "SPB", 'S'),
 	predMode( "HME", 'H'),
 #if INTARNA_MULITHREADING
 	threads( 0, omp_get_max_threads(), 1),
@@ -557,7 +557,7 @@ CommandLineParsing::CommandLineParsing()
 				->notifier(boost::bind(&CommandLineParsing::validate_model,this,_1))
 			, std::string("interaction model : "
 					"\n 'S' = single-site, minimum-free-energy interaction (interior loops only), "
-					"\n 'L' = single-site, max-length helix-based, minimum-free-energy interaction (maximal helices and interior loops only), "
+					"\n 'B' = single-site, helix-block-based, minimum-free-energy interaction (blocks of stable helices and interior loops only), "
 					"\n 'P' = single-site maximum-probability interaction (interior loops only)"
 					).c_str())
 		("energy,e"
@@ -1881,9 +1881,9 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 	if (noSeedRequired) {
 		// predictors without seed constraint
 		switch( model.val ) {
-		case 'L':  {
+		case 'B':  {
 			switch ( predMode.val ) {
-			case 'H' :	return new PredictorMfe2dMaxHelixHeuristic( energy, output, predTracker, getHelixConstraint(energy));
+			case 'H' :	return new PredictorMfe2dHelixBlockHeuristic( energy, output, predTracker, getHelixConstraint(energy));
 			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for model "+toString(model.val));
 			}
 		} break;
@@ -1914,9 +1914,9 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 	} else {
 		// seed-constrained predictors
 		switch( model.val ) {
-		case 'L' : {
+		case 'B' : {
 			switch  ( predMode.val ) {
-				case 'H' : return new PredictorMfe2dMaxHelixHeuristicSeed(energy, output, predTracker, getHelixConstraint(energy), getSeedHandler(energy));
+				case 'H' : return new PredictorMfe2dHelixBlockHeuristicSeed(energy, output, predTracker, getHelixConstraint(energy), getSeedHandler(energy));
 				default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for model "+toString(model.val));
 			}
 		} break;

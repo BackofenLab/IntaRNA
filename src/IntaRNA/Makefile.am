@@ -63,8 +63,8 @@ libIntaRNA_a_HEADERS =    \
 					PredictorMfe2dSeed.h \
 					PredictorMfe2dHeuristic.h \
 					PredictorMfe2dHeuristicSeed.h \
-					PredictorMfe2dMaxHelixHeuristic.h \
-					PredictorMfe2dMaxHelixHeuristicSeed.h \
+					PredictorMfe2dHelixBlockHeuristic.h \
+					PredictorMfe2dHelixBlockHeuristicSeed.h \
 					PredictorMfe4d.h \
 					PredictorMfe4dSeed.h \
 					ReverseAccessibility.h \
@@ -117,8 +117,8 @@ libIntaRNA_a_SOURCES =    \
 					PredictorMfe2dSeed.cpp \
 					PredictorMfe2dHeuristic.cpp \
 					PredictorMfe2dHeuristicSeed.cpp \
-					PredictorMfe2dMaxHelixHeuristic.cpp \
-					PredictorMfe2dMaxHelixHeuristicSeed.cpp \
+					PredictorMfe2dHelixBlockHeuristic.cpp \
+					PredictorMfe2dHelixBlockHeuristicSeed.cpp \
 					PredictorMfe4d.cpp \
 					PredictorMfe4dSeed.cpp \
 					ReverseAccessibility.cpp \

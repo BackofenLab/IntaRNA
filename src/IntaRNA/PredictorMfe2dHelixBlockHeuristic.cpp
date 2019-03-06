@@ -1,12 +1,12 @@
 
-#include "IntaRNA/PredictorMfe2dMaxHelixHeuristic.h"
+#include "IntaRNA/PredictorMfe2dHelixBlockHeuristic.h"
 
 namespace IntaRNA {
 
 ////////////////////////////////////////////////////////////////////////////
 
-PredictorMfe2dMaxHelixHeuristic::
-PredictorMfe2dMaxHelixHeuristic( const InteractionEnergy & energy
+PredictorMfe2dHelixBlockHeuristic::
+PredictorMfe2dHelixBlockHeuristic( const InteractionEnergy & energy
 		, OutputHandler & output
 		, PredictionTracker * predTracker
 		, const HelixConstraint & helixConstraint
@@ -19,8 +19,8 @@ PredictorMfe2dMaxHelixHeuristic( const InteractionEnergy & energy
 
 ////////////////////////////////////////////////////////////////////////////
 
-PredictorMfe2dMaxHelixHeuristic::
-~PredictorMfe2dMaxHelixHeuristic()
+PredictorMfe2dHelixBlockHeuristic::
+~PredictorMfe2dHelixBlockHeuristic()
 {
 	// clean up
 }
@@ -28,7 +28,7 @@ PredictorMfe2dMaxHelixHeuristic::
 ////////////////////////////////////////////////////////////////////////////
 
 void
-PredictorMfe2dMaxHelixHeuristic::
+PredictorMfe2dHelixBlockHeuristic::
 predict( const IndexRange & r1
 		, const IndexRange & r2
 		, const OutputConstraint & outConstraint
@@ -44,7 +44,7 @@ predict( const IndexRange & r1
 #if INTARNA_IN_DEBUG_MODE
 	// check indices
 	if (!(r1.isAscending() && r2.isAscending()) )
-		throw std::runtime_error("PredictorMfe2dMaxHelixHeuristic::predict("+toString(r1)+","+toString(r2)+") is not sane");
+		throw std::runtime_error("PredictorMfe2dHelixBlockHeuristic::predict("+toString(r1)+","+toString(r2)+") is not sane");
 #endif
 
 	// set index offset
@@ -108,7 +108,7 @@ predict( const IndexRange & r1
 ////////////////////////////////////////////////////////////////////////////
 
 void
-PredictorMfe2dMaxHelixHeuristic::
+PredictorMfe2dHelixBlockHeuristic::
 fillHybridE()
 {
 	// compute entries
@@ -213,7 +213,7 @@ fillHybridE()
 ////////////////////////////////////////////////////////////////////////////
 
 void
-PredictorMfe2dMaxHelixHeuristic::
+PredictorMfe2dHelixBlockHeuristic::
 traceBack( Interaction & interaction, const OutputConstraint & outConstraint )
 {
 
@@ -225,10 +225,10 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint )
 #if INTARNA_IN_DEBUG_MODE
 	// sanity checks
 	if ( ! interaction.isValid() ) {
-		throw std::runtime_error("PredictorMfe2dMaxHelixHeuristic::traceBack() : given interaction not valid");
+		throw std::runtime_error("PredictorMfe2dHelixBlockHeuristic::traceBack() : given interaction not valid");
 	}
 	if ( interaction.basePairs.size() != 2 ) {
-		throw std::runtime_error("PredictorMfe2dMaxHelixHeuristic::traceBack() : given interaction does not contain boundaries only");
+		throw std::runtime_error("PredictorMfe2dHelixBlockHeuristic::traceBack() : given interaction does not contain boundaries only");
 	}
 #endif
 
@@ -347,7 +347,7 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint )
 ////////////////////////////////////////////////////////////////////////////
 
 void
-PredictorMfe2dMaxHelixHeuristic::
+PredictorMfe2dHelixBlockHeuristic::
 getNextBest( Interaction & curBest )
 {
 

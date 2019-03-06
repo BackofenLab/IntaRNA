@@ -32,8 +32,8 @@ runApiTests_SOURCES =	\
 					InteractionRange_test.cpp  \
 					PredictionTrackerProfileMinE_test.cpp \
 					PredictionTrackerSpotProb_test.cpp \
-					PredictorMfe2dMaxHelixHeuristic_test.cpp \
-					PredictorMfe2dMaxHelixHeuristicSeed_test.cpp \
+					PredictorMfe2dHelixBlockHeuristic_test.cpp \
+					PredictorMfe2dHelixBlockHeuristicSeed_test.cpp \
 					NussinovHandler_test.cpp \
 					RnaSequence_test.cpp \
 					OutputHandlerRangeOnly_test.cpp \

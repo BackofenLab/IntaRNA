@@ -13,6 +13,11 @@ development version
    + helix constraints documented
  * IntaRNA/HelixHandlerUnpaired :
    * adaptation to HelixConstraint::evalFullE() semantics
+ * bin/CommandLineParsing :
+   + helixFullE : replaces helixNoED
+   - helixNoED : replaced by helixFullE
+   * model : renamed 'L' to 'B' since only using blocks of stable helices
+ * renaming Predictor*MaxHelix* to Predictor*HelixBlock*
 
 190305 Martin Raden :
  * IntaRNA/PredictorMfe2d :
@@ -59,7 +64,7 @@ development version
  * bin/CommandLineParsing :
    + helixFullE : replaces helixNoED
    - helixNoED : replaced by helixFullE
-   * model : renamed 'H' to 'L' since only using longest (maximal) helices
+   * model : renamed 'H' to 'L' since only using blocks of stable helices
  * README.md :
    + helixFullE documentation 
    * model docu updated

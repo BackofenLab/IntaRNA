@@ -516,8 +516,8 @@ the interspacing unpaired regions (interior loops).
 
 ![helixbased](./doc/figures/helixbased.svg)
 
-Note, IntaRNA's helix-based model `--model=L` implements a heuristic, which 
-only considers for each intermolecular base pair the most stable helix extending
+Note, IntaRNA's helix-block-based model `--model=B` implements a heuristic, which 
+only considers for each intermolecular base pair the most stable helix (block) extending
 to the right. This results in reduced runtimes while keeping or even improving
 the prediction quality in genome wide screens. IntaRNA offers various 
 [helix constraints](#helix) to guide which helices are considered for interaction 

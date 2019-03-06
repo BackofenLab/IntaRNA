@@ -1,5 +1,5 @@
 
-#include "IntaRNA/PredictorMfe2dMaxHelixHeuristicSeed.h"
+#include "IntaRNA/PredictorMfe2dHelixBlockHeuristicSeed.h"
 
 #include <stdexcept>
 
@@ -7,14 +7,14 @@ namespace IntaRNA {
 
 ////////////////////////////////////////////////////////////////////////////
 
-PredictorMfe2dMaxHelixHeuristicSeed::
-PredictorMfe2dMaxHelixHeuristicSeed( const InteractionEnergy & energy
+PredictorMfe2dHelixBlockHeuristicSeed::
+PredictorMfe2dHelixBlockHeuristicSeed( const InteractionEnergy & energy
 		, OutputHandler & output
 		, PredictionTracker * predTracker
 		, const HelixConstraint & helixConstraint
 		, SeedHandler * seedHandlerInstance )
 
-	: PredictorMfe2dMaxHelixHeuristic(energy,output,predTracker,helixConstraint)
+	: PredictorMfe2dHelixBlockHeuristic(energy,output,predTracker,helixConstraint)
 		, seedHandler(seedHandlerInstance)
 
 {
@@ -24,8 +24,8 @@ PredictorMfe2dMaxHelixHeuristicSeed( const InteractionEnergy & energy
 
 ////////////////////////////////////////////////////////////////////////////
 
-PredictorMfe2dMaxHelixHeuristicSeed::
-~PredictorMfe2dMaxHelixHeuristicSeed()
+PredictorMfe2dHelixBlockHeuristicSeed::
+~PredictorMfe2dHelixBlockHeuristicSeed()
 {
 	// clean up
 }
@@ -34,7 +34,7 @@ PredictorMfe2dMaxHelixHeuristicSeed::
 ////////////////////////////////////////////////////////////////////////////
 
 void
-PredictorMfe2dMaxHelixHeuristicSeed::
+PredictorMfe2dHelixBlockHeuristicSeed::
 predict( const IndexRange & r1
 		, const IndexRange & r2
 		, const OutputConstraint & outConstraint )
@@ -49,7 +49,7 @@ predict( const IndexRange & r1
 #if INTARNA_IN_DEBUG_MODE
 	// check indices
 	if (!(r1.isAscending() && r2.isAscending()) )
-		throw std::runtime_error("PredictorMfe2dMaxHelixHeuristicSeed::predict("+toString(r1)+","+toString(r2)+") is not sane");
+		throw std::runtime_error("PredictorMfe2dHelixBlockHeuristicSeed::predict("+toString(r1)+","+toString(r2)+") is not sane");
 #endif
 
 	// set index offset
@@ -112,7 +112,7 @@ predict( const IndexRange & r1
 	// compute hybridization energies WITHOUT seed condition
 	// sets also -energy -hybridE
 	// -> no hybrid update since updateOptima overwritten
-	PredictorMfe2dMaxHelixHeuristic::fillHybridE();
+	PredictorMfe2dHelixBlockHeuristic::fillHybridE();
 
 	// check result of predictions without seed if any interaction possible
 	// if not no seed-containing interaction is possible neither
@@ -271,7 +271,7 @@ predict( const IndexRange & r1
 		} // helix
 
 		// update mfe if needed (call superclass update routine)
-		PredictorMfe2dMaxHelixHeuristic::updateOptima( i1,curCell->j1, i2,curCell->j2, curCellEtotal, false );
+		PredictorMfe2dHelixBlockHeuristic::updateOptima( i1,curCell->j1, i2,curCell->j2, curCellEtotal, false );
 
 	} // i2
 	} // i1
@@ -286,7 +286,7 @@ predict( const IndexRange & r1
 ////////////////////////////////////////////////////////////////////////////
 
 void
-PredictorMfe2dMaxHelixHeuristicSeed::
+PredictorMfe2dHelixBlockHeuristicSeed::
 traceBack( Interaction & interaction, const OutputConstraint & outConstraint )
 {
 	// check if something to trace
@@ -297,10 +297,10 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint )
 #if INTARNA_IN_DEBUG_MODE
 	// sanity checks
 	if ( ! interaction.isValid() ) {
-		throw std::runtime_error("PredictorMfe2dMaxHelixHeuristicSeed::traceBack() : given interaction not valid");
+		throw std::runtime_error("PredictorMfe2dHelixBlockHeuristicSeed::traceBack() : given interaction not valid");
 	}
 	if ( interaction.basePairs.size() != 2 ) {
-		throw std::runtime_error("PredictorMfe2dMaxHelixHeuristicSeed::traceBack() : given interaction does not contain boundaries only");
+		throw std::runtime_error("PredictorMfe2dHelixBlockHeuristicSeed::traceBack() : given interaction does not contain boundaries only");
 	}
 #endif
 
@@ -420,7 +420,7 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint )
 						Interaction bpsRight(*(interaction.s1), *(interaction.s2));
 						bpsRight.basePairs.push_back(energy.getBasePair(i1, i2));
 						bpsRight.basePairs.push_back(energy.getBasePair(j1, j2));
-						PredictorMfe2dMaxHelixHeuristic::traceBack(bpsRight, outConstraint);
+						PredictorMfe2dHelixBlockHeuristic::traceBack(bpsRight, outConstraint);
 						// copy remaining base pairs
 						Interaction::PairingVec &bps = bpsRight.basePairs;
 						// copy all base pairs excluding the right most
@@ -467,7 +467,7 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint )
 ////////////////////////////////////////////////////////////////////////////
 
 void
-PredictorMfe2dMaxHelixHeuristicSeed::
+PredictorMfe2dHelixBlockHeuristicSeed::
 getNextBest( Interaction & curBest )
 {
 
