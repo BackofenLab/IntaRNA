@@ -141,6 +141,7 @@ CommandLineParsing::CommandLineParsing()
 	seedTMaxUP(-1,20,-1),
 	seedMaxE(-999,+999,0),
 	seedMinPu(0,1,0),
+	seedMaxEhybrid(-999,+999,999),
 	seedNoGU(false),
 	seedQRange(""),
 	seedTRange(""),
@@ -464,6 +465,12 @@ CommandLineParsing::CommandLineParsing()
 				->notifier(boost::bind(&CommandLineParsing::validate_seedMaxE,this,_1))
 			, std::string("maximal energy a seed region may have"
 					" (arg in range ["+toString(seedMaxE.min)+","+toString(seedMaxE.max)+"]).").c_str())
+		("seedMaxEhybrid"
+			, value<E_kcal_type>(&(seedMaxEhybrid.val))
+				->default_value(seedMaxEhybrid.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_seedMaxEhybrid,this,_1))
+			, std::string("maximal hybridization energy (including E_init) a seed region may have"
+					" (arg in range ["+toString(seedMaxEhybrid.min)+","+toString(seedMaxEhybrid.max)+"]).").c_str())
 		("seedMinPu"
 			, value<Z_type>(&(seedMinPu.val))
 				->default_value(seedMinPu.def)
@@ -859,6 +866,7 @@ parse(int argc, char** argv)
 				if (seedQMaxUP.val != seedQMaxUP.def) LOG(INFO) <<"no seed constraint wanted, but seedQMaxUP provided (will be ignored)";
 				if (seedTMaxUP.val != seedTMaxUP.def) LOG(INFO) <<"no seed constraint wanted, but seedTMaxUP provided (will be ignored)";
 				if (seedMaxE.val != seedMaxE.def) LOG(INFO) <<"no seed constraint wanted, but seedMaxE provided (will be ignored)";
+				if (seedMaxEhybrid.val != seedMaxEhybrid.def) LOG(INFO) <<"no seed constraint wanted, but seedMaxEhybrid provided (will be ignored)";
 				if (seedMinPu.val != seedMinPu.def) LOG(INFO) <<"no seed constraint wanted, but seedMinPu provided (will be ignored)";
 				if (!seedQRange.empty()) LOG(INFO) <<"no seed constraint wanted, but seedQRange provided (will be ignored)";
 				if (!seedTRange.empty()) LOG(INFO) <<"no seed constraint wanted, but seedTRange provided (will be ignored)";
@@ -908,6 +916,7 @@ parse(int argc, char** argv)
 					if (seedQMaxUP.val != seedQMaxUP.def) LOG(INFO) <<"explicit seeds defined, but seedQMaxUP provided (will be ignored)";
 					if (seedTMaxUP.val != seedTMaxUP.def) LOG(INFO) <<"explicit seeds defined, but seedTMaxUP provided (will be ignored)";
 					if (seedMaxE.val != seedMaxE.def) LOG(INFO) <<"explicit seeds defined, but seedMaxE provided (will be ignored)";
+					if (seedMaxEhybrid.val != seedMaxEhybrid.def) LOG(INFO) <<"explicit seeds defined, but seedMaxEhybrid provided (will be ignored)";
 					if (seedMinPu.val != seedMinPu.def) LOG(INFO) <<"explicit seeds defined, but seedMinPu provided (will be ignored)";
 					if (!seedQRange.empty()) LOG(INFO) <<"explicit seeds defined, but seedQRange provided (will be ignored)";
 					if (!seedTRange.empty()) LOG(INFO) <<"explicit seeds defined, but seedTRange provided (will be ignored)";
@@ -2066,6 +2075,7 @@ getSeedConstraint( const InteractionEnergy & energy ) const
 							, seedQMaxUP.val<0 ? seedMaxUP.val : seedQMaxUP.val
 							, Ekcal_2_E(seedMaxE.val)
 							, (seedMinPu.val>0 ? std::min<E_type>(Accessibility::ED_UPPER_BOUND, energy.getE( seedMinPu.val )) : Accessibility::ED_UPPER_BOUND) // transform unpaired prob to ED value
+							, Ekcal_2_E(seedMaxEhybrid.val)
 							// shift ranges to start counting with 0
 							, IndexRangeList( seedTRange ).shift(-1,energy.size1()-1)
 							, IndexRangeList( seedQRange ).shift(-1,energy.size2()-1).reverse(energy.size2())

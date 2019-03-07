@@ -27,6 +27,7 @@ TEST_CASE( "SeedHandlerMfe with offset", "[SeedHandlerIdxOffset]") {
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
 		SeedConstraint sC(3,0,0,0,0
 				, AccessibilityDisabled::ED_UPPER_BOUND
+				, 0
 				, IndexRangeList("")
 				, IndexRangeList("")
 				, ""

@@ -29,7 +29,7 @@ TEST_CASE( "PredictorMfe2dHelixHeuristcSeed", "[PredictorMfe2dHelixBlockHeuristi
 
 		HelixConstraint hc(2, 4,  0, 999, 0, false);
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
-		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
+		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, 0, IndexRangeList(""), IndexRangeList(""),
 						  "", false );
 
 		OutputHandlerInteractionList out(1);
@@ -66,7 +66,7 @@ TEST_CASE( "PredictorMfe2dHelixHeuristcSeed", "[PredictorMfe2dHelixBlockHeuristi
 
 		HelixConstraint hc(2, 4,  0, 999, 0, false);
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
-		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
+		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, 0, IndexRangeList(""), IndexRangeList(""),
 						  "", false );
 
 		SeedHandlerMfe sH(energy, sC);

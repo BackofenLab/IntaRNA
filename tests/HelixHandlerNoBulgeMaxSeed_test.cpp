@@ -27,7 +27,7 @@ TEST_CASE( "HelixHandlerNoBulgeMaxSeed", "[HelixHandlerNoBulgeMax]" ) {
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
 		SeedConstraint sC(3,0,0,0,0
-				, AccessibilityDisabled::ED_UPPER_BOUND
+				, AccessibilityDisabled::ED_UPPER_BOUND, 0
 				, IndexRangeList("")
 				, IndexRangeList("")
 				, "", false );
@@ -117,7 +117,7 @@ TEST_CASE( "HelixHandlerNoBulgeMaxSeed", "[HelixHandlerNoBulgeMax]" ) {
 		HelixConstraint hC(2, 4,  0, 999, 0, false);
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ / seedNoGU
-		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
+		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, 0, IndexRangeList(""), IndexRangeList(""),
 						  "", false);
 
 		SeedHandlerMfe sH(energy, sC);
@@ -171,7 +171,7 @@ TEST_CASE( "HelixHandlerNoBulgeMaxSeed", "[HelixHandlerNoBulgeMax]" ) {
 		HelixConstraint hC(2, 4,  0, 999, 0, false);
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ / seedNoGU
-		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
+		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, 0, IndexRangeList(""), IndexRangeList(""),
 						  "", false);
 
 		SeedHandlerMfe sH(energy, sC);
@@ -238,7 +238,7 @@ TEST_CASE( "HelixHandlerNoBulgeMaxSeed", "[HelixHandlerNoBulgeMax]" ) {
 		HelixConstraint hC(2, 4,  0, 999, 0, false);
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ / seedNoGU
-		SeedConstraint sC(3, 2, 1, 1, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
+		SeedConstraint sC(3, 2, 1, 1, 0, AccessibilityDisabled::ED_UPPER_BOUND, 0, IndexRangeList(""), IndexRangeList(""),
 						  "", false);
 
 		SeedHandlerMfe sH(energy, sC);

@@ -12,6 +12,8 @@ development version
  * IntaRNA/SeedConstraint :
    + bpGUallowed : whether or not GU base pairs are allowed within seeds
    + isGUallowed() : returns bpGUallowed
+   + maxEhybrid : maximal hybridization energy
+   + getMaxEhybrid()
  * IntaRNA/RnaSequence :
    + bpGUcodes : base pair codes for GU and UG
    + isGU() : tests whether or not two positions can form a GU base pair
@@ -28,8 +30,10 @@ development version
      helices (to make interface analogously to seed constraints)
    - helixMaxED : replaced by helixMinPu
    + seedNoGU : if present, GU base pairs are not allowed within seeds
+   + seedMaxEhybrid : maximal hybridization energy (excl.) for seeds
  * README.md :
    + seedNoGU
+   + seedMaxEhybrid
    + helixMinPu
    - helixMaxED
    * figure links corrected (to be working within github pages) 

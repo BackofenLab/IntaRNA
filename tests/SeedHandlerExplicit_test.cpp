@@ -119,7 +119,7 @@ TEST_CASE( "SeedHandlerExplicit", "[SeedHandlerExplicit]" ) {
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
 		SeedConstraint sC(3,0,0,0,0
-				, AccessibilityDisabled::ED_UPPER_BOUND
+				, AccessibilityDisabled::ED_UPPER_BOUND, 0
 				, IndexRangeList("")
 				, IndexRangeList("")
 				, "1||&3||,2|.|&1||"

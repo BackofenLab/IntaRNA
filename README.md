@@ -714,7 +714,8 @@ by
 - `--seedMaxUP` : the maximal overall number of unpaired bases within the seed
 - `--seedQMaxUP` : the maximal number of unpaired bases within the query's seed region
 - `--seedTMaxUP` : the maximal number of unpaired bases within the target's seed region
-- `--seedMaxE` : the maximal overall energy of the seed (to exclude weak seed interactions)
+- `--seedMaxE` : the maximal overall energy of the seed (to exclude unlikely seed interactions)
+- `--seedMaxEhybrid` : the maximal hybridization energy (including E_init) of the seed (to exclude weak seed hybridizations likely to fall off again)
 - `--seedMinPu` : the minimal unpaired probability of each seed region in query and target
 - `--seedQRange` : a list of index intervals where a seed in the query is allowed
 - `--seedTRange` : a list of index intervals where a seed in the target is allowed

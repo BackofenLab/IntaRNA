@@ -509,6 +509,8 @@ protected:
 	NumberParameter<E_kcal_type> seedMaxE;
 	//! minimal unpaired probability (per sequence) of a seed to be considered
 	NumberParameter<Z_type> seedMinPu;
+	//! max hybridization energy of a seed to be considered
+	NumberParameter<E_kcal_type> seedMaxEhybrid;
 	//! whether or not GU base pairs are allowed within seeds
 	bool seedNoGU;
 	//! intervals in query for seed search
@@ -822,6 +824,12 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_seedMaxE(const E_kcal_type & value);
+
+	/**
+	 * Validates the seedMaxEhybrid argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_seedMaxEhybrid(const E_kcal_type & value);
 
 	/**
 	 * Validates the seedMinPu argument.
@@ -1613,6 +1621,14 @@ inline
 void CommandLineParsing::validate_seedMaxE(const E_kcal_type & value) {
 	// forward check to general method
 	validate_numberArgument("seedMaxE", seedMaxE, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_seedMaxEhybrid(const E_kcal_type & value) {
+	// forward check to general method
+	validate_numberArgument("seedMaxEhybrid", seedMaxEhybrid, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////

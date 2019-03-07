@@ -259,30 +259,26 @@ storeSeed( const size_t j1, const size_t j2, const StackingEnergyList & bpE )
 {
 	const size_t seedBP = seedConstraint.getBasePairs();
 	E_type seedEhybrid = 0;
-//	bool stored = false;
-//	std::stringstream tmp;
-//	for(auto e=bpE.begin(); e!=bpE.end(); e++) { tmp <<" + "<<*e; }
 
 	// check if EDs of full seed are within boundaries
-	if (seedConstraint.getMaxED() >= energy.getED1(j1+1-seedBP, j1)
-			&& seedConstraint.getMaxED() >= energy.getED2(j2+1-seedBP, j2) )
+	if ( energy.getED1(j1+1-seedBP, j1) < seedConstraint.getMaxED()
+		&& energy.getED2(j2+1-seedBP, j2) < seedConstraint.getMaxED() )
 	{
 		// compute seed energy
 		for(auto e=bpE.begin(); e!=bpE.end(); e++) { seedEhybrid += *e; } // (left) stacking energies
+		// check hybridization energy bound (incl E_init)
+		if ( (seedEhybrid+energy.getE_init()) >= seedConstraint.getMaxEhybrid()) {
+			return;
+		}
+
 		E_type seedEfull = energy.getE(j1+1-seedBP, j1, j2+1-seedBP, j2, seedEhybrid) + energy.getE_init(); // ED values etc.
 
-		// store seed hybridization energy if overall E is below or equal to threshold
-		if( seedEfull <= seedConstraint.getMaxE() ) {
-//	if (E_isNotINF(getSeedE(j1+1-seedBP,j2+1-seedBP))) {
-//		LOG(DEBUG)<<" seed duplicate for j "<<j1<<"-"<<j2<<" : ";
-//		LOG(DEBUG)<<getSeedE(j1+1-seedBP,j2+1-seedBP) <<" <- "<<seedEhybrid<<" = "<<tmp.str();
-//	}
-//	stored = true;
+		// store seed hybridization energy if overall E is below to threshold
+		if( seedEfull < seedConstraint.getMaxE() ) {
 			seedForLeftEnd[ SeedHash::key_type(j1+1-seedBP,j2+1-seedBP) ] = seedEhybrid ;
 		}
 	}
 
-//	LOG(DEBUG)<<"storing "<<(j1+1-seedBP)<<"-"<<(j2+1-seedBP) <<" = "<<seedEhybrid <<" -> "<<(stored?"true":"false") <<" = "<<tmp.str();
 
 }
 

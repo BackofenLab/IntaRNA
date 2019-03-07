@@ -136,8 +136,8 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 					j2 = i2+bpIn+1+u2;
 
 					// skip if ED boundary exceeded
-					if (energy.getED1(i1,j1) > seedConstraint.getMaxED()
-							|| energy.getED2(i2,j2) > seedConstraint.getMaxED() )
+					if (energy.getED1(i1,j1) >= seedConstraint.getMaxED()
+							|| energy.getED2(i2,j2) >= seedConstraint.getMaxED() )
 					{
 						continue;
 					}
@@ -157,7 +157,10 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 				// reduce bestE to hybridization energy only (init+loops)
 				if (E_isNotINF( bestE )) {
 					// overwrite all seeds with too high energy -> infeasible start interactions
-					if (bestE > seedConstraint.getMaxE()) {
+					if (bestE >= seedConstraint.getMaxE()
+							// check hybridization energy bound (incl E_init)
+						|| (getSeedE( i1-offset1, i2-offset2, bpIn, u1best, u2best ) + energy.getE_init()) >= seedConstraint.getMaxEhybrid())
+					{
 						bestE = E_INF;
 					} else {
 						// get seed's hybridization loop energies only
