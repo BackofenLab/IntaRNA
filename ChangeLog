@@ -8,6 +8,12 @@
 
 development version
 
+190307 Martin Raden :
+ * CommandLineParsing :
+   - helixMinPu : minimal unpaired probability (per sequence) of considered
+     helices (to make interface analogously to seed constraints)
+   - helixMaxED : replaced by helixMinPu
+
 190306 Martin Raden :
  * README.md :
    + helix constraints documented

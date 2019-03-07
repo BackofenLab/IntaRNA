@@ -484,10 +484,10 @@ protected:
 	NumberParameter<int> helixMaxBP;
 	//! maximal internal loop size in the helix computation (0-2)
 	NumberParameter<int> helixMaxIL;
-	//! maximal ED-value allowed (per sequence) of a helix to be considered
-	NumberParameter<E_type> helixMaxED;
+	//! minimal unpaired probability (per sequence) of a helix to be considered
+	NumberParameter<Z_type> helixMinPu;
 	//! maximal energy of a helix to be considered
-	NumberParameter<E_type> helixMaxE;
+	NumberParameter<E_kcal_type> helixMaxE;
 	//! when set, full helix energy is to be used for energy checks
 	bool helixFullE;
 	//! the final helix constraint to be used
@@ -743,16 +743,16 @@ protected:
 	void validate_helixMaxIL(const int & value);
 
 	/**
-	 * Validates the helixMaxED argument.
+	 * Validates the helixMinPu argument.
 	 * @param value the argument value to validate
 	 */
-	void validate_helixMaxED(const E_type & value);
+	void validate_helixMinPu(const Z_type & value);
 
 	/**
 	 * Validates the helixMaxE argument.
 	 * @param value the argument value to validate
 	 */
-	void validate_helixMaxE(const E_type & value);
+	void validate_helixMaxE(const E_kcal_type & value);
 
 	/**
 	 * Validates the target's region argument.
@@ -1529,15 +1529,15 @@ void CommandLineParsing::validate_helixMaxIL(const int & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_helixMaxED(const E_type & value) {
+void CommandLineParsing::validate_helixMinPu(const Z_type & value) {
 	// forward check to general method
-	validate_numberArgument("helixMaxED", helixMaxED, value);
+	validate_numberArgument("helixMinPu", helixMinPu, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_helixMaxE(const E_type & value) {
+void CommandLineParsing::validate_helixMaxE(const E_kcal_type & value) {
 	// forward check to general method
 	validate_numberArgument("helixMaxE", helixMaxE, value);
 }

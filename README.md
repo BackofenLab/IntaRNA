@@ -777,7 +777,7 @@ for the helices considered for interaction prediction:
 - `--helixFullE` if present, the overall helix energy (including E_init, ED,
   dangling end contributions, etc.) is used for energy checks (`--helixMaxE`).
   Otherwise, only the loop-terms are considered.
-- `--helixMaxED` : maximal ED-value (per helix subsequence); thus, one can
+- `--helixMinPu` : minimal unpaired probability (per helix subsequence); thus, one can
   constrain prediction to helices in accessible regions.
 - `--helixMaxIL` : maximal size for each internal loop size in a helix; that way
   you can relax the helix definition and allow for a given number of unpaired bases

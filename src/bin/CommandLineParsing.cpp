@@ -128,7 +128,7 @@ CommandLineParsing::CommandLineParsing()
 	helixMinBP(2,4,2),
 	helixMaxBP(2,20,10),
 	helixMaxIL(0,2,0),
-	helixMaxED(-999,+999, 999),
+	helixMinPu(0,1,0),
 	helixMaxE(-999,+999,0),
 	helixFullE(false),
 	helixConstraint(NULL),
@@ -402,18 +402,18 @@ CommandLineParsing::CommandLineParsing()
 					, std::string("maximal size for each internal loop size in a helix"
 										  " (arg in range ["+toString(helixMaxIL.min)+","+toString(helixMaxIL.max)+"]).").c_str())
 
-			("helixMaxED"
-			, value<E_type>(&(helixMaxED.val))
-					->default_value(helixMaxED.def)
-					->notifier(boost::bind(&CommandLineParsing::validate_helixMaxED, this,_1))
-			, std::string("maximal ED-value allowed (per sequence) during helix computation"
-								  " (arg in range ["+toString(helixMaxED.min)+","+toString(helixMaxED.max)+"]).").c_str())
+			("helixMinPu"
+			, value<Z_type>(&(helixMinPu.val))
+					->default_value(helixMinPu.def)
+					->notifier(boost::bind(&CommandLineParsing::validate_helixMinPu, this,_1))
+			, std::string("minimal unpaired probability (per sequence) of considered helices"
+								  " (arg in range ["+toString(helixMinPu.min)+","+toString(helixMinPu.max)+"]).").c_str())
 
 			("helixMaxE"
-					, value<E_type>(&(helixMaxE.val))
+					, value<E_kcal_type>(&(helixMaxE.val))
 					 ->default_value(helixMaxE.def)
 					 ->notifier(boost::bind(&CommandLineParsing::validate_helixMaxE, this,_1))
-					, std::string("maximal energy considered during helix computation"
+					, std::string("maximal energy (excluding) a helix may have"
 										  " (arg in range ["+toString(helixMaxE.min)+","+toString(helixMaxE.max)+"]).").c_str())
 
 			("helixFullE", "if present, the overall energy of a helix (including E_init, ED, dangling ends, ..) will be used for helixMaxE checks; otherwise only loop-terms are considered.")
@@ -2038,7 +2038,7 @@ getHelixConstraint(const InteractionEnergy &energy) const
 				  helixMinBP.val
 				, helixMaxBP.val
 			    , helixMaxIL.val
-			    , Ekcal_2_E(helixMaxED.val)
+			    , ( (helixMinPu.val > Z_type(0)) ? std::min<E_type>(Accessibility::ED_UPPER_BOUND, energy.getE(helixMinPu.val)) : Accessibility::ED_UPPER_BOUND )
 			    , Ekcal_2_E(helixMaxE.val)
 				, helixFullE
 		);
