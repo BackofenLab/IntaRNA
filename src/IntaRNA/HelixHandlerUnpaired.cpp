@@ -276,10 +276,26 @@ size_t
 HelixHandlerUnpaired::
 fillHelixSeed(const size_t i1min, const size_t i1max, const size_t i2min, const size_t i2max)
 {
+#if INTARNA_IN_DEBUG_MODE
+	if ( i1min > i1max ) throw std::runtime_error("HelixHandlerUnpaired::fillHelixSeed: i1min("+toString(i1min)+") > i1max("+toString(i1max)+")");
+	if ( i2min > i2max ) throw std::runtime_error("HelixHandlerUnpaired::fillHelixSeed: i2min("+toString(i2min)+") > i2max("+toString(i2max)+")");
+	if ( i1max > energy.size1() ) throw std::runtime_error("HelixHandlerUnpaired::fillHelixSeed: i1max("+toString(i1max)+") > energy.size1("+toString(energy.size1())+")");
+	if ( i2max > energy.size2() ) throw std::runtime_error("HelixHandlerUnpaired::fillHelixSeed: i2max("+toString(i2max)+") > energy.size2("+toString(energy.size2())+")");
+	if ( helixConstraint.getMinBasePairs() > helixConstraint.getMaxBasePairs() )
+		throw std::runtime_error("HelixHandlerUnpaired::fillHelixSeed: bpMin("+toString(helixConstraint.getMinBasePairs()) +") > bpMax("+toString(helixConstraint.getMaxBasePairs())+")");
+	if ( seedHandler == NULL ) throw std::runtime_error("HelixHandlerUnpaired::fillHelixSeed() no SeedHandler available");
+#endif
+
 	// measure timing
 	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
 
-	helixSeed.resize( i1max-i1min+1, i2max-i2min+1 );
+	// check if we can abort since no seed fits into any allowed helix
+	if (seedHandler->getConstraint().getBasePairs() > helixConstraint.getMaxBasePairs()) {
+		return 0;
+	}
+
+	// resize matrix for filling
+	helixSeed.resize( i1max-i1min+1, i2max-i2min+1, false );
 
 	// store index offset due to restricted matrix size generation
 	offset1 = i1min;
@@ -462,6 +478,10 @@ traceBackHelixSeed( Interaction & interaction
 		, const size_t i1_
 		, const size_t i2_)
 {
+	// check if we can abort since no seed fits into any allowed helix
+	if (seedHandler->getConstraint().getBasePairs() > helixConstraint.getMaxBasePairs()) {
+		return;
+	}
 
 	size_t i1 = i1_
 	, i2 = i2_

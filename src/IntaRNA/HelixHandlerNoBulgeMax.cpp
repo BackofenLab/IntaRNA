@@ -21,7 +21,6 @@ fillHelix(const size_t i1min, const size_t i1max, const size_t i2min, const size
 	// measure timing
 	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
 
-	// TODO replace with hash
 	// reset storage of maximal helix information
 	helix.clear();
 
@@ -163,7 +162,7 @@ traceBackHelix(Interaction &interaction
 	}
 }
 
-/////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
 size_t
 HelixHandlerNoBulgeMax::
@@ -185,111 +184,116 @@ fillHelixSeed(const size_t i1min, const size_t i1max, const size_t i2min, const 
 	// clear data structure
 	helixSeed.clear();
 
+	// check if we can abort since no seed fits into any allowed helix
+	if (seedHandler->getConstraint().getBasePairs() > helixConstraint.getMaxBasePairs()) {
+		return helixSeed.size();
+	}
+
+	const size_t i1maxVal = std::min( i1max, energy.size1()-1 );
+	const size_t i2maxVal = std::min( i2max, energy.size2()-1 );
+
 	// temporary variables
-	size_t i1, i2,j1,j2, seedStart1, seedStart2, seedEnd1, seedEnd2, bestL1, bestL2, possibleBasePairs;
+	size_t i1, i2,j1,j2, seedEnd1, seedEnd2, bestL1, bestL2;
 
-	E_type bestE, curE, bestEfullDelta, curEfullDelta;
+	E_type seedE, bestE, curE, bestEfullDelta, curEfullDelta;
 
-	// fill for all start indices
-	// in decreasing index order
-	for (i1=i1max+1; i1-- > i1min;) {
-	for (i2=i2max+1; i2-- > i2min;) {
+	size_t seedStart1 = RnaSequence::lastPos, seedStart2 = RnaSequence::lastPos;
 
-		// skip non-complementary left helix boundaries
-		if (!(energy.isAccessible1(i1)
-			&& energy.isAccessible2(i2)
-			&& energy.areComplementary(i1, i2)))
-		{
-			continue; // go to next helixSeedE index
-		}
+	std::vector<E_type> trailingE(helixConstraint.getMaxBasePairs()+1 - seedHandler->getConstraint().getBasePairs(), E_type(0));
 
-		// Check if a seed can fit given the left boundaries
-		// Note: If seedHandler allows unpaired positions this check is not enough, check happens in loop
-		if (std::min(i1max+1-i1, i2max+1-i2) < seedHandler->getConstraint().getBasePairs()) {
+	// iterate all seeds
+	while ( seedHandler->updateToNextSeed( seedStart1, seedStart2, i1min, i1maxVal, i2min, i2maxVal ) ) {
+
+		// the end positions of the seed
+		seedEnd1 = seedStart1+seedHandler->getSeedLength1(seedStart1, seedStart2)-1;
+		seedEnd2 = seedStart2+seedHandler->getSeedLength2(seedStart1, seedStart2)-1;
+
+		// check if seed fits into the range
+		if ( seedEnd1 > i1maxVal || seedEnd2 > i2maxVal ) {
+			// does not fit -> check next
 			continue;
-		} else {
-			// Seed fits, check how many bases are possible around
-			possibleBasePairs = std::min(std::min(i1max+1-i1, i2max+1-i2), helixConstraint.getMaxBasePairs())-seedHandler->getConstraint().getBasePairs();
 		}
 
-		// Initialuze variables
-		curEfullDelta = E_type(0);
-		curE = E_INF;
-		bestEfullDelta = E_type(0);
-		bestE = E_INF;
-		bestL1 = 0;
-		bestL2 = 0;
+		i1 = seedStart1;
+		i2 = seedStart2;
+		j1 = seedEnd1;
+		j2 = seedEnd2;
+		seedE = seedHandler->getSeedE(seedStart1, seedStart2);
 
-		// stores energy of leading base pairs to avoid recomputation
-		E_type leadingE = E_type(0);
+		// min ( remaining bp without seed and leadingBP, minimal distance to range boundary )
+		size_t trailingBPmax = std::min( helixConstraint.getMaxBasePairs() - seedHandler->getConstraint().getBasePairs(),
+										std::min(i1maxVal-seedEnd1, i2maxVal-seedEnd2) );
+
+		// stores energy of trailing base pairs to avoid recomputation
+		// leadingE provides loop sum for all canonical trailing base pairs
+		size_t trailingL = 1;
+		for (; trailingL <= trailingBPmax; trailingL++) {
+			j1 = seedEnd1+trailingL;
+			j2 = seedEnd2+trailingL;
+			// check if trailing based pairs are possible, otherwise stop computation
+			if (!(energy.isAccessible1(j1)
+					&& energy.isAccessible2(j2)
+					&& energy.areComplementary(j1,j2)))
+			{
+				break;
+			}
+			// compute loop term sum
+			trailingE[trailingL] = energy.getE_interLeft( j1 -1, j1, j2 -1, j2) + trailingE[trailingL-1];
+		}
+		trailingL--;
+
+		E_type leadingE = 0;
 		size_t leadingL = 0;
 
-		// screen over all possible leading and trailing base pair combinations
-		for (size_t leadingBP=0; leadingBP <= possibleBasePairs
-								 && (i1+leadingBP) <= i1max
-								 && (i2+leadingBP) <= i2max; leadingBP++)
-		{
-			// the start positions for the seed
-			seedStart1 = i1+leadingBP;
-			seedStart2 = i2+leadingBP;
+		// Run over all leading base pairs
+		// min ( remaining bp without seed, minimal distance to range boundary )
+		const size_t leadingBPmax = std::min( helixConstraint.getMaxBasePairs() - seedHandler->getConstraint().getBasePairs()
+											, std::min(seedStart1-i1min,seedStart2-i2min) );
+		for (size_t leadingBP=0; leadingBP <= leadingBPmax; leadingBP++) {
+
+			// the start position of the interaction
+			i1 =  seedStart1 - leadingBP;
+			i2 =  seedStart2 - leadingBP;
 
 			// check if leading based pairs are possible, otherwise stop computation
-			if (!(energy.isAccessible1(seedStart1)
-				&& energy.isAccessible2(seedStart2)
-				&& energy.areComplementary(seedStart1,seedStart2)))
+			if (leadingBP > 0
+					&&!(energy.isAccessible1(i1)
+						&& energy.isAccessible2(i2)
+						&& energy.areComplementary(i2,i2)))
 			{
 				break;
 			}
 
-			// If no seed is possible here, skip to next leading base pair number
-			if (E_isINF(seedHandler->getSeedE(seedStart1, seedStart2))) {
-				continue;
+			// Initialize variables
+			curEfullDelta = E_type(0);
+			curE = E_INF;
+			bestEfullDelta = E_type(0);
+			bestE = E_INF;
+			bestL1 = 0;
+			bestL2 = 0;
+
+			// update leadingE to cover all (missing) leading base pair loop terms
+			for (; leadingL < leadingBP; leadingL++ ) {
+				leadingE += energy.getE_interLeft(seedStart1-leadingL, seedStart1-leadingL+1, seedStart2-leadingL, seedStart2-leadingL+1);
 			}
 
-			// the end positions of the seed
-			seedEnd1 = seedStart1+seedHandler->getSeedLength1(seedStart1, seedStart2)-1;
-			seedEnd2 = seedStart2+seedHandler->getSeedLength2(seedStart1, seedStart2)-1;
+			// screen over all possible leading and trailing base pair combinations
+			trailingBPmax = std::min( trailingL, helixConstraint.getMaxBasePairs() - seedHandler->getConstraint().getBasePairs() - leadingBP );
+			for (size_t trailingBP=0; trailingBP <= trailingBPmax; trailingBP++)
+			{
+				j1 = seedEnd1 + trailingBP;
+				j2 = seedEnd2 + trailingBP;
 
-			// update leadingE to cover all (missing) leading base pairs
-			for (; leadingL < leadingBP; leadingL++) {
-				leadingE += energy.getE_interLeft(i1+leadingL, i1+leadingL+1, i2+leadingL, i2+leadingL+1);
-			}
-
-			E_type trailingE = E_type(0);
-			size_t trailingL = 0;
-
-			// Run over all trailing base pairs
-			for (size_t trailingBP=0; trailingBP <= possibleBasePairs - leadingBP
-									  && (seedEnd1+trailingBP) <= i1max
-									  && (seedEnd2+trailingBP) <= i2max; trailingBP++) {
-
-				j1 = seedEnd1+trailingBP;
-				j2 = seedEnd2+trailingBP;
-
-				// check if trailing based pairs are possible, otherwise extension computation
-				if (trailingBP>0
-					&& !(energy.isAccessible1(j1)
-						&& energy.isAccessible2(j2)
-						&& energy.areComplementary(j1,j2)))
-				{
-					break;
-				}
-
-				// ensure that ED-values are within the boundaries (default 999)
+				// ensure that ED-values are within the boundaries
 				if (energy.getED1(i1, j1) > helixConstraint.getMaxED()
 					|| energy.getED2(i2, j2) > helixConstraint.getMaxED()) {
 					continue;
 				}
 
-				// update trailingE to cover all (missing) trailing base pairs
-				for (; trailingL < trailingBP; trailingL++ ) {
-					trailingE += energy.getE_interLeft(seedEnd1+trailingL-1, seedEnd1+trailingL, seedEnd2+trailingL-1, seedEnd2+trailingL);
-				}
-
 				// energy value without dangling ends and E_init
 				curE = leadingE +
-					   seedHandler->getSeedE(seedStart1, seedStart2) +
-					   trailingE;
+					   seedE +
+					   trailingE.at(trailingBP);
 
 				// check how to evaluate energy terms
 				if (helixConstraint.evalFullE()) {
@@ -311,17 +315,35 @@ fillHelixSeed(const size_t i1min, const size_t i1max, const size_t i2min, const 
 				}
 
 			} // trailingBP
+
+			// check if valid helix found
+			if (E_isNotINF( bestE )) {
+				bool storeBestE = true;
+				// check if something is known for left boundary for another seed
+				auto curVal = helixSeed.find(BP(i1,i2));
+				// check if current value for left boundary is present and better
+				if ( curVal != helixSeed.end() ) {
+					if (helixConstraint.evalFullE()) {
+						E_type storedEfull = curVal->second.first;
+						// check overall energy
+						storeBestE = (bestE+bestEfullDelta)
+										< (energy.getE( i1, i1+decodeHelixSeedLength1(curVal->second.second)-1,
+												i2, i2+decodeHelixSeedLength2(curVal->second.second)-1, curVal->second.first )
+											+ energy.getE_init());
+					} else {
+						// check energy
+						storeBestE = bestE < curVal->second.first;
+					}
+				}
+				// final check if better that something that is already stored
+				if (storeBestE) {
+					// store best (mfe) helix for left boundary i1, i2
+					helixSeed[BP(i1,i2)] = HelixData(bestE, encodeHelixSeedLength(bestL1,bestL2));
+				}
+			}
 		} // leadingBP
 
-		// check if valid helix found
-		if (E_isNotINF( bestE )) {
-			// store best (mfe) helix for left boundary i1, i2
-			helixSeed[BP(i1,i2)] = HelixData(bestE, encodeHelixSeedLength(bestL1,bestL2));
-		}
-
-
-	} // i2
-	} // i1
+	} // all seedStarts
 
 #if INTARNA_MULITHREADING
 #pragma omp critical(intarna_omp_logOutput)

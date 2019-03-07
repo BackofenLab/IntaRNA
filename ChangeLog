@@ -20,6 +20,9 @@ development version
  * IntaRNA/SeedHandler :
    * isFeasibleSeedBasePair() :
      + check if GU base pair are allowed or not
+ * IntaRNA/HelixHandlerNoBulgeMax :
+   * fillHelixSeed() : 
+     * now based on seed iteration to speed up
  * CommandLineParsing :
    + helixMinPu : minimal unpaired probability (per sequence) of considered
      helices (to make interface analogously to seed constraints)
