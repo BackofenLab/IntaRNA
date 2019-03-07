@@ -1093,15 +1093,15 @@ definition of the `--out` argument in combination with one of the following
 argument prefixes (case insensitive) that have to be colon-separated to the
 targeted file/stream name:
 
-- `qSpotProb:`|`tSpotProb:` [query/target's spot probability profile](#profileSpotProb) (CSV format), respectively
+- `qSpotProb:`/`tSpotProb:` [query/target's spot probability profile](#profileSpotProb) (CSV format), respectively
 - `spotProb:` [all spot probabilities](#spotProb) (CSV format)
-- `qMinE:`|`tMinE:` [the query/target's minimal interaction energy profile](profileMinE) (CSV format), respectively
+- `qMinE:`/`tMinE:` [the query/target's minimal interaction energy profile](profileMinE) (CSV format), respectively
 - `pMinE:` [minimal interaction energy for all query-target index pairs](pairMinE) (CSV format)
-- `qAcc:`|`tAcc:` the [query/target's ED accessibility values](#accessibility) (RNAplfold-like format), respectively
-- `qPu:`|`tPu:` the [query/target's unpaired probabilities](#accessibility) (RNAplfold format; rounded!!), respectively
+- `qAcc:`/`tAcc:` the [query/target's ED accessibility values](#accessibility) (RNAplfold-like format), respectively
+- `qPu:`/`tPu:` the [query/target's unpaired probabilities](#accessibility) (RNAplfold format; rounded!!), respectively
 
 Note, for *multiple sequences* in FASTA input, the provided file names
-are suffixed with with `-q#t#` (where `#` denotes the according sequence number
+are suffixed with `-q#t#` (where `#` denotes the according sequence number
 within the input where indexing starts with 1).
 
 Note further, `qPu:`|`tPu:` will report unpaired probability values based on rounded accessibility (ED) values.
@@ -1130,7 +1130,7 @@ plot( d[,1], d[,3], xlab="sequence index", ylab="minimal energy", type="l", col=
 abline(h=0, col="red", lty=2, lwd=2)
 ```
 
-![Minimal interaction energy profile of an RNA](/doc/figures/profile-minE.png?raw=true "Minimal interaction energy profile of an RNA")
+![Minimal interaction energy profile of an RNA](./doc/figures/profile-minE.png?raw=true "Minimal interaction energy profile of an RNA")
 
 This plot reveals two less but still stable (*E* below 0) interaction sites beside the
 mfe interaction close to the 5'-end of the molecule.
@@ -1167,7 +1167,7 @@ The following plot (for the [minimal energy profile](#profileMinE) example from
 above) reveals, that the alternative stable (*E*<0) interactions all involve the
 mfe-site in the second sequence and are thus less likely to occure.
 
-![Minimal interaction energy index pair information](/doc/figures/pair-minE.png?raw=true "Minimal interaction energy index pair information")
+![Minimal interaction energy index pair information](./doc/figures/pair-minE.png?raw=true "Minimal interaction energy index pair information")
 
 
 
@@ -1322,9 +1322,9 @@ i.e. the maximal number of positions enclosed by a base pair
 (0 sets it to the whole sequence length). Both can be defined
 independently while respecting `AccL <= AccW`.
 ```bash
-# using global accessibilities for query and target
+# using global accessibilities for target and query
 IntaRNA [..] --qAccW=0 --qAccL=0 --tAccW=0 --qAccL=0
-# using local accessibilities for target and global for query
+# using global accessibilities for query and local ones for target
 IntaRNA [..] --qAccW=0 --qAccL=0 --tAccW=150 --qAccL=100
 ```
 
