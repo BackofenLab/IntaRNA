@@ -36,6 +36,7 @@ public:
 	 * @param ranges1 the index ranges of seq1 to be searched for seeds
 	 * @param ranges2reversed the index reversed ranges of seq2 to be searched for seeds
 	 * @param explicitSeeds the encodings of explicit seed interactions to be used
+	 * @param noGUallowed whether or not GU base pairs are allowed within seeds
 	 */
 	SeedConstraint(  const size_t bp
 				, const size_t maxUnpairedOverall
@@ -46,6 +47,7 @@ public:
 				, const IndexRangeList & ranges1
 				, const IndexRangeList & ranges2reversed
 				, const std::string & explicitSeeds
+				, const bool noGUallowed
 				);
 
 	virtual ~SeedConstraint();
@@ -118,6 +120,13 @@ public:
 	 */
 	size_t
 	getMaxLength2() const;
+
+	/**
+	 * Whether or not GU base pairs are allowed within seeds
+	 * @return true if GU base pairs are allowed; false otherwise
+	 */
+	bool
+	isGUallowed() const;
 
 	/**
 	 * Index ranges in seq1 to be searched for seeds or empty if all indices
@@ -202,6 +211,9 @@ protected:
 	//! the string encoding of the explicit seed interactions to be used
 	std::string explicitSeeds;
 
+	//! whether or not GU base pairs are allowed within seeds
+	bool noGUallowed;
+
 };
 
 
@@ -220,6 +232,7 @@ SeedConstraint::SeedConstraint(
 		, const IndexRangeList & ranges1
 		, const IndexRangeList & ranges2reversed
 		, const std::string & explicitSeeds
+		, const bool noGUallowed
 		)
  :
 	  bp(bp_)
@@ -231,6 +244,7 @@ SeedConstraint::SeedConstraint(
 	, ranges1(ranges1)
 	, ranges2(ranges2reversed)
 	, explicitSeeds(explicitSeeds)
+	, noGUallowed(noGUallowed)
 {
 	if (bp < 2) throw std::runtime_error("SeedConstraint() : base pair number ("+toString(bp)+") < 2");
 }
@@ -370,6 +384,15 @@ getExplicitSeeds() {
 /////////////////////////////////////////////////////////////////////////////
 
 inline
+bool
+SeedConstraint::
+isGUallowed() const {
+	return !noGUallowed;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+inline
 std::ostream&
 operator<<(std::ostream& out, const SeedConstraint& c)
 {
@@ -379,6 +402,7 @@ operator<<(std::ostream& out, const SeedConstraint& c)
 			<<", up2="<<c.getMaxUnpaired2()
 			<<", E="<<E_2_Ekcal(c.getMaxE())
 			<<", ED="<<E_2_Ekcal(c.getMaxED())
+			<<", noGU="<<(c.isGUallowed() ? "false":"true")
 			<<")";
 	return out;
 }

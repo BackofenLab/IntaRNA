@@ -29,7 +29,8 @@ TEST_CASE( "SeedHandlerMfe with offset", "[SeedHandlerIdxOffset]") {
 				, AccessibilityDisabled::ED_UPPER_BOUND
 				, IndexRangeList("")
 				, IndexRangeList("")
-				, "");
+				, ""
+				, false );
 
 		SeedHandlerNoBulge shOrig(energy, sC);
 		SeedHandlerIdxOffset shIO( &shOrig, false );

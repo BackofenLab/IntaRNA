@@ -226,6 +226,7 @@ isFeasibleSeedBasePair( const size_t i1, const size_t i2 ) const
 			&&	energy.areComplementary(i1,i2)
 			&&	seedConstraint.getMaxED() >= energy.getED1( i1,i1 )
 			&&	seedConstraint.getMaxED() >= energy.getED2( i2,i2 )
+			&&  (seedConstraint.isGUallowed() || (!energy.isGU( i1, i2 ))) // check for GU bp constraint
 			&&	(seedConstraint.getRanges1().empty() || seedConstraint.getRanges1().covers(i1))
 			&&	(seedConstraint.getRanges2().empty() || seedConstraint.getRanges2().covers(i2))
 			;

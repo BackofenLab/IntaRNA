@@ -308,16 +308,6 @@ TEST_CASE( "HelixHandlerNoBulgeMax", "[HelixHandlerNoBulgeMax]") {
 		REQUIRE(interaction.basePairs.rbegin()->first == 1);
 		REQUIRE(interaction.basePairs.rbegin()->second == 3);
 
-		// Exceptions are only thrown in debug mode
-#if INTARNA_IN_DEBUG_MODE
-
-		// Case (2,1)
-		//////////////////////
-		interaction.clear();
-
-		REQUIRE_THROWS_WITH(hh.traceBackHelix(interaction, 2, 1), "HelixHandlerNoBulgeMax::traceBackHelix(i1=2,i2=1) no helix known (E_INF)");
-
-#endif
 	}
 
 	SECTION("Helix: Case 3 - A 'wall' of A's disrupts the possible helices", "[HelixHandlerNoBulgeMax]") {
@@ -428,16 +418,6 @@ TEST_CASE( "HelixHandlerNoBulgeMax", "[HelixHandlerNoBulgeMax]") {
 
 		REQUIRE(interaction.basePairs.size() == 0);
 
-		// Exceptions are only thrown in debug mode
-#if INTARNA_IN_DEBUG_MODE
-
-		// Case (2,1) - Not Possible
-		//////////////////////
-
-		interaction.clear();
-		REQUIRE_THROWS_WITH(hh.traceBackHelix(interaction, 2, 1), "HelixHandlerNoBulgeMax::traceBackHelix(i1=2,i2=1) no helix known (E_INF)");
-
-#endif
 	}
 
 	SECTION("Helix: Case 4 - No interaction possible", "[HelixHandlerNoBulgeMax]") {
@@ -469,26 +449,6 @@ TEST_CASE( "HelixHandlerNoBulgeMax", "[HelixHandlerNoBulgeMax]") {
 		REQUIRE(hh.getHelixLength1(0, 3) == 0);
 		REQUIRE(hh.getHelixLength2(0, 3) == hh.getHelixLength1(0, 3));
 
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////
-		////////////////////////////////////////////   TRACEBACK   ///////////////////////////////////////////////
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// Exceptions are only thrown in debug mode
-#if INTARNA_IN_DEBUG_MODE
-
-		// Case (0,0)
-		//////////////////////
-		Interaction interaction(r1,r2);
-
-		REQUIRE_THROWS_WITH(hh.traceBackHelix(interaction, 0, 0), "HelixHandlerNoBulgeMax::traceBackHelix(i1=0,i2=0) no helix known (E_INF)");
-
-
-		// Case (1,3)
-		//////////////////////
-		interaction.clear();
-
-		REQUIRE_THROWS_WITH(hh.traceBackHelix(interaction, 1, 3), "HelixHandlerNoBulgeMax::traceBackHelix(i1=1,i2=3) no helix known (E_INF)");
-
-#endif
 	}
 
 	SECTION("Helix: Case 5 - Example from LimStackHeuristic test", "[HelixHandlerNoBulgeMax]") {
@@ -622,15 +582,5 @@ TEST_CASE( "HelixHandlerNoBulgeMax", "[HelixHandlerNoBulgeMax]") {
 		REQUIRE(interaction.basePairs.rbegin()->first == 3);
 		REQUIRE(interaction.basePairs.rbegin()->second == 11);
 
-		// Exceptions are only thrown in debug mode
-#if INTARNA_IN_DEBUG_MODE
-
-		// Case (5,5)
-		//////////////////////
-		interaction.clear();
-
-		REQUIRE_THROWS_WITH(hh.traceBackHelix(interaction, 5, 5), "HelixHandlerNoBulgeMax::traceBackHelix(i1=5,i2=5) no helix known (E_INF)");
-
-#endif
 	}
 }

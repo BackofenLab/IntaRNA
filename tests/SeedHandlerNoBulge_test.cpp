@@ -32,8 +32,7 @@ TEST_CASE( "SeedHandlerNoBulge", "[SeedHandlerNoBulge]" ) {
 //	LOG(DEBUG) <<"r2 : "<<rAcc2.getSequence();
 
 	// seed constraint for 3 bp
-	SeedConstraint sConstr(3,0,0,0,0,10,IndexRangeList(),IndexRangeList(),"");
-
+	SeedConstraint sConstr(3,0,0,0,0,10,IndexRangeList(),IndexRangeList(),"", false);
 
 	SECTION( "compare with SeedHandlerMfe output" ) {
 
@@ -54,6 +53,27 @@ TEST_CASE( "SeedHandlerNoBulge", "[SeedHandlerNoBulge]" ) {
 					REQUIRE( E_equal( shMfe.getSeedE(i1,i2), shNoBulge.getSeedE(i1,i2) ) );
 				}
 			}
+		}
+
+	}
+
+	SECTION( "no GU bp" ) {
+
+		RnaSequence rna1("test1","GGGGGUUUU");
+		AccessibilityDisabled acc1(rna1,rna1.size(),NULL);
+		ReverseAccessibility rAcc2(acc1); // reverse reverse
+		InteractionEnergyBasePair energy( acc1, rAcc2 );
+
+		{
+			// should find some seed
+			SeedHandlerNoBulge shMfe(energy,sConstr);
+			REQUIRE( shMfe.fillSeed(0,energy.size1()-1,0,energy.size2()-1) > 0 );
+		}
+		{
+			// should find no seed
+			SeedConstraint sConstrNoGU(3,0,0,0,0,10,IndexRangeList(),IndexRangeList(),"", true);
+			SeedHandlerNoBulge shMfe(energy,sConstrNoGU);
+			REQUIRE( shMfe.fillSeed(0,energy.size1()-1,0,energy.size2()-1) == 0 );
 		}
 
 	}

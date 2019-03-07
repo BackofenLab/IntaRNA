@@ -142,6 +142,16 @@ public:
 	areComplementary( const size_t i1, const size_t i2 ) const;
 
 	/**
+	 * Checks whether or not two positions can form a GU base pair
+	 * @param i1 index in first sequence
+	 * @param i2 index in second sequence
+	 * @return true if seq1(i1) can form a GU base pair with seq2(i2)
+	 */
+	virtual
+	bool
+	isGU( const size_t i1, const size_t i2 ) const;
+
+	/**
 	 * Length of sequence 1
 	 * @return length of sequence 1
 	 */
@@ -635,6 +645,16 @@ InteractionEnergy::
 areComplementary( const size_t i1, const size_t i2 ) const
 {
 	return RnaSequence::areComplementary( accS1.getSequence(), accS2.getSequence(), i1, i2);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+InteractionEnergy::
+isGU( const size_t i1, const size_t i2 ) const
+{
+	return RnaSequence::isGU( accS1.getSequence(), accS2.getSequence(), i1, i2);
 }
 
 ////////////////////////////////////////////////////////////////////////////

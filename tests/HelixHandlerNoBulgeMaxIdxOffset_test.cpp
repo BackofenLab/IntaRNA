@@ -311,22 +311,6 @@ TEST_CASE( "HelixHandlerIdxOffset for NoBulgeMax", "[HelixHandlerIdxOffset]") {
 		REQUIRE(hhIO.getHelixLength1(1, 1) == 0);
 		REQUIRE(hhIO.getHelixLength2(1, 1) == hhIO.getHelixLength1(1, 1));
 
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////
-		////////////////////////////////////////////   TRACEBACK   ///////////////////////////////////////////////
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-#if INTARNA_IN_DEBUG_MODE
-
-		// Case (0,0)
-		Interaction interaction(r1,r2);
-		REQUIRE_THROWS_WITH(hhIO.traceBackHelix(interaction, 0, 0), "HelixHandlerNoBulgeMax::traceBackHelix(i1=1,i2=1) no helix known (E_INF)");
-
-
-		// Case (2,1)
-		interaction.clear();
-		REQUIRE_THROWS_WITH(hhIO.traceBackHelix(interaction, 2, 1), "HelixHandlerNoBulgeMax::traceBackHelix(i1=3,i2=2) no helix known (E_INF)");
-
-#endif
 
 	}
 
@@ -443,17 +427,6 @@ TEST_CASE( "HelixHandlerIdxOffset for NoBulgeMax", "[HelixHandlerIdxOffset]") {
 
 		REQUIRE(interaction.basePairs.size() == 0);
 
-		// Exceptions are only thrown in debug mode
-#if INTARNA_IN_DEBUG_MODE
-
-		// Case (2,1) - Not Possible
-		//////////////////////
-
-		interaction.clear();
-
-		REQUIRE_THROWS_WITH(hhIO.traceBackHelix(interaction, 2, 1), "HelixHandlerNoBulgeMax::traceBackHelix(i1=4,i2=3) no helix known (E_INF)");
-
-#endif
 	}
 
 	SECTION("Helix with Offset: Case 4 - uneven offset", "[HelixHandlerIdxOffset]") {
@@ -551,14 +524,5 @@ TEST_CASE( "HelixHandlerIdxOffset for NoBulgeMax", "[HelixHandlerIdxOffset]") {
 
 		REQUIRE(interaction.basePairs.size() == 0);
 
-		// Exceptions are only thrown in debug mode
-#if INTARNA_IN_DEBUG_MODE
-		// Case (3,2) - Not Possible
-		//////////////////////
-
-		interaction.clear();
-		REQUIRE_THROWS_WITH(hhIO.traceBackHelix(interaction, 3, 2), "HelixHandlerNoBulgeMax::traceBackHelix(i1=4,i2=4) no helix known (E_INF)");
-
-#endif
 	}
 }

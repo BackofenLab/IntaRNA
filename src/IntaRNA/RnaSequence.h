@@ -218,6 +218,20 @@ public:
 	areComplementary( const RnaSequence & s1, const RnaSequence & s2,
 					const size_t p1, const size_t p2 );
 
+	/**
+	 * Whether or not two positions of two RNAs are forming a GU base pair
+	 * @param s1 first RNA
+	 * @param s2 second RNA
+	 * @param p1 position within s1
+	 * @param p2 position within s2
+	 * @return true if (s1[p1]=G and s2[p2]==U) or (s1[p1]=U and s2[p2]==G);
+	 *         false otherwise
+	 */
+	static
+	bool
+	isGU( const RnaSequence & s1, const RnaSequence & s2,
+					const size_t p1, const size_t p2 );
+
 protected:
 
 	/////////////////////  DATA MEMBERS  //////////////////////////////
@@ -225,6 +239,9 @@ protected:
 
 	//! the locale to use for integer encoding
 	static std::locale codeLocale;
+
+	//! codes for G and U to check for GU base pairs
+	static int bpGUcodes[];
 
 	//! ID of this sequence
 	std::string id;
@@ -462,6 +479,32 @@ areComplementary( const RnaSequence & s1, const RnaSequence & s2,
 
 	// check via VRNA util
 	return BP_pair[s1.seqCode.at(p1)][s2.seqCode.at(p2)] > 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+RnaSequence::
+isGU( const RnaSequence & s1, const RnaSequence & s2,
+					const size_t p1, const size_t p2 )
+{
+#if INTARNA_IN_DEBUG_MODE
+	// check if valid positions
+	if (p1>=s1.size() || p2>=s2.size())
+		throw std::runtime_error("RnaSequence::areComplementary : index positions p1/p2 ("
+				+ toString(p1)+"/"+toString(p2)
+				+ ") are out of bounds s1/s2 ("
+				+ toString(s1.size())+"/"+toString(s2.size())
+				+")"
+				);
+#endif
+
+	// get bp code
+	int bpCode = BP_pair[s1.seqCode.at(p1)][s2.seqCode.at(p2)];
+
+	// check if GU pair
+	return bpCode == bpGUcodes[0] || bpCode == bpGUcodes[1] ;
 }
 
 /////////////////////////////////////////////////////////////////////////////

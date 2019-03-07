@@ -141,6 +141,7 @@ CommandLineParsing::CommandLineParsing()
 	seedTMaxUP(-1,20,-1),
 	seedMaxE(-999,+999,0),
 	seedMinPu(0,1,0),
+	seedNoGU(false),
 	seedQRange(""),
 	seedTRange(""),
 	seedConstraint(NULL),
@@ -477,6 +478,7 @@ CommandLineParsing::CommandLineParsing()
 			, value<std::string>(&(seedTRange))
 				->notifier(boost::bind(&CommandLineParsing::validate_seedTRange,this,_1))
 			, std::string("interval(s) in the target to search for seeds in format 'from1-to1,from2-to2,...' (Note, only for single target)").c_str())
+	    ("seedNoGU", "if present, no GU base pairs are allowed within seeds")
 		;
 
 	////  SHAPE OPTIONS  ////////////////////////
@@ -848,6 +850,7 @@ parse(int argc, char** argv)
 
 			// check seed setup
 			noSeedRequired = vm.count("noSeed") > 0;
+			seedNoGU = vm.count("seedNoGU") > 0;
 			if (noSeedRequired) {
 				// input sanity check : maybe seed constraints defined -> warn
 				if (!seedTQ.empty()) LOG(INFO) <<"no seed constraint wanted, but explicit seedTQ provided (will be ignored)";
@@ -859,6 +862,7 @@ parse(int argc, char** argv)
 				if (seedMinPu.val != seedMinPu.def) LOG(INFO) <<"no seed constraint wanted, but seedMinPu provided (will be ignored)";
 				if (!seedQRange.empty()) LOG(INFO) <<"no seed constraint wanted, but seedQRange provided (will be ignored)";
 				if (!seedTRange.empty()) LOG(INFO) <<"no seed constraint wanted, but seedTRange provided (will be ignored)";
+				if (seedNoGU) LOG(INFO) <<"no seed constraint wanted, but seedNoGU provided (will be ignored)";
 			} else {
 				// check query search ranges
 				if (!seedQRange.empty()) {
@@ -907,6 +911,7 @@ parse(int argc, char** argv)
 					if (seedMinPu.val != seedMinPu.def) LOG(INFO) <<"explicit seeds defined, but seedMinPu provided (will be ignored)";
 					if (!seedQRange.empty()) LOG(INFO) <<"explicit seeds defined, but seedQRange provided (will be ignored)";
 					if (!seedTRange.empty()) LOG(INFO) <<"explicit seeds defined, but seedTRange provided (will be ignored)";
+					if (seedNoGU) LOG(INFO) <<"explicit seeds defined, but seedNoGU provided (will be ignored)";
 				}
 			}
 
@@ -2065,6 +2070,7 @@ getSeedConstraint( const InteractionEnergy & energy ) const
 							, IndexRangeList( seedTRange ).shift(-1,energy.size1()-1)
 							, IndexRangeList( seedQRange ).shift(-1,energy.size2()-1).reverse(energy.size2())
 							, seedTQ
+							, seedNoGU
 						);
 	}
 	return *seedConstraint;

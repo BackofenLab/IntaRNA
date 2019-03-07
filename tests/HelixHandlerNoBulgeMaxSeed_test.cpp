@@ -30,7 +30,7 @@ TEST_CASE( "HelixHandlerNoBulgeMaxSeed", "[HelixHandlerNoBulgeMax]" ) {
 				, AccessibilityDisabled::ED_UPPER_BOUND
 				, IndexRangeList("")
 				, IndexRangeList("")
-				, "");
+				, "", false );
 
 		SeedHandlerMfe sH(energy, sC);
 		HelixHandlerNoBulgeMax hhS(energy, hC);
@@ -116,9 +116,9 @@ TEST_CASE( "HelixHandlerNoBulgeMaxSeed", "[HelixHandlerNoBulgeMax]" ) {
 
 		HelixConstraint hC(2, 4,  0, 999, 0, false);
 
-		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
+		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ / seedNoGU
 		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
-						  "");
+						  "", false);
 
 		SeedHandlerMfe sH(energy, sC);
 		HelixHandlerNoBulgeMax hhS(energy, hC);
@@ -170,9 +170,9 @@ TEST_CASE( "HelixHandlerNoBulgeMaxSeed", "[HelixHandlerNoBulgeMax]" ) {
 
 		HelixConstraint hC(2, 4,  0, 999, 0, false);
 
-		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
+		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ / seedNoGU
 		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
-						  "");
+						  "", false);
 
 		SeedHandlerMfe sH(energy, sC);
 		HelixHandlerNoBulgeMax hhS(energy, hC);
@@ -237,9 +237,9 @@ TEST_CASE( "HelixHandlerNoBulgeMaxSeed", "[HelixHandlerNoBulgeMax]" ) {
 
 		HelixConstraint hC(2, 4,  0, 999, 0, false);
 
-		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
+		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ / seedNoGU
 		SeedConstraint sC(3, 2, 1, 1, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
-						  "");
+						  "", false);
 
 		SeedHandlerMfe sH(energy, sC);
 		HelixHandlerNoBulgeMax hhS(energy, hC);

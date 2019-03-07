@@ -27,7 +27,9 @@ TEST_CASE( "SeedHandlerMfe", "[SeedHandlerMfe]") {
 				, AccessibilityDisabled::ED_UPPER_BOUND
 				, IndexRangeList("")
 				, IndexRangeList("")
-				, "");
+				, ""
+				, false
+				);
 
 		SeedHandlerMfe sHM(energy, sC);
 

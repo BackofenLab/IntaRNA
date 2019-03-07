@@ -509,6 +509,8 @@ protected:
 	NumberParameter<E_kcal_type> seedMaxE;
 	//! minimal unpaired probability (per sequence) of a seed to be considered
 	NumberParameter<Z_type> seedMinPu;
+	//! whether or not GU base pairs are allowed within seeds
+	bool seedNoGU;
 	//! intervals in query for seed search
 	std::string seedQRange;
 	//! intervals in target for seed search

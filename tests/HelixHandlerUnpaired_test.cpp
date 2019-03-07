@@ -546,25 +546,6 @@ TEST_CASE( "HelixHandlerUnpaired", "[HelixHandlerUnpaired]") {
 		REQUIRE(hhU.getHelixLength1(0, 3) == 0);
 		REQUIRE(hhU.getHelixLength2(0, 3) == hhU.getHelixLength1(0, 3));
 
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////
-		////////////////////////////////////////////   TRACEBACK   ///////////////////////////////////////////////
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-		// Exceptions are only thrown in debug mode
-#if INTARNA_IN_DEBUG_MODE
-
-		// Case (0,0)
-		//////////////////////
-		Interaction interaction(r1,r2);
-
-		REQUIRE_THROWS_WITH(hhU.traceBackHelix(interaction, 0, 0), "HelixHandlerUnpaired::traceBackHelix(i1=0,i2=0) no helix known (E_INF)");
-
-		// Case (1,3)
-		//////////////////////
-		interaction.clear();
-
-		REQUIRE_THROWS_WITH(hhU.traceBackHelix(interaction, 1, 3), "HelixHandlerUnpaired::traceBackHelix(i1=1,i2=3) no helix known (E_INF)");
-#endif
 
 	}
 

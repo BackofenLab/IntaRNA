@@ -122,7 +122,8 @@ TEST_CASE( "SeedHandlerExplicit", "[SeedHandlerExplicit]" ) {
 				, AccessibilityDisabled::ED_UPPER_BOUND
 				, IndexRangeList("")
 				, IndexRangeList("")
-				, "1||&3||,2|.|&1||");
+				, "1||&3||,2|.|&1||"
+				, false);
 
 		// create instance (triggers parsing)
 		SeedHandlerExplicit sh( energy, sC );

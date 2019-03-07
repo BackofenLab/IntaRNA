@@ -73,10 +73,7 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 				j2 = i2+bpIn+1+u2;
 				// check if right boundary is complementary
 				// check if this index range is to be considered for seed search
-				bool validSeedSite =
-						isFeasibleSeedBasePair(j1,j2)
-						&& (seedConstraint.getRanges1().empty() || seedConstraint.getRanges1().covers(i1,j1))
-						&& (seedConstraint.getRanges2().empty() || seedConstraint.getRanges2().covers(i2,j2));
+				bool validSeedSite = isFeasibleSeedBasePair(j1,j2);
 
 				// init current seed energy
 				curE = E_INF;
@@ -100,7 +97,7 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 							k2 = i2+u2p+1;
 							// check if split pair is complementary
 							// and recursed entry is < E_INF
-							if (! (energy.areComplementary(k1,k2) && E_isNotINF( getSeedE( k1-offset1, k2-offset2, bpIn-1, u1-u1p, u2-u2p ) ) ) ) {
+							if (! (isFeasibleSeedBasePair(k1,k2) && E_isNotINF( getSeedE( k1-offset1, k2-offset2, bpIn-1, u1-u1p, u2-u2p ) ) ) ) {
 								continue; // not complementary -> skip
 							}
 

@@ -718,6 +718,7 @@ by
 - `--seedMinPu` : the minimal unpaired probability of each seed region in query and target
 - `--seedQRange` : a list of index intervals where a seed in the query is allowed
 - `--seedTRange` : a list of index intervals where a seed in the target is allowed
+- `--seedNoGU` : if present, no GU base pairs are allowed within seeds
 
 Alternatively, you can set
 

@@ -9,10 +9,26 @@
 development version
 
 190307 Martin Raden :
+ * IntaRNA/SeedConstraint :
+   + noGUallowed : whether or not GU base pairs are allowed within seeds
+ * IntaRNA/RnaSequence :
+   + bpGUcodes : base pair codes for GU and UG
+   + isGU() : tests whether or not two positions can form a GU base pair
+ * IntaRNA/InteractionEnergy :
+   + isGU() : tests whether or not two positions can form a GU base pair
+ * IntaRNA/SeedHandler :
+   * isFeasibleSeedBasePair() :
+     + check if GU base pair are allowed or not
  * CommandLineParsing :
-   - helixMinPu : minimal unpaired probability (per sequence) of considered
+   + helixMinPu : minimal unpaired probability (per sequence) of considered
      helices (to make interface analogously to seed constraints)
    - helixMaxED : replaced by helixMinPu
+   + seedNoGU : if present, GU base pairs are not allowed within seeds
+ * README.md :
+   + seedNoGU
+   + helixMinPu
+   - helixMaxED
+   * figure links corrected (to be working within github pages) 
 
 190306 Martin Raden :
  * README.md :

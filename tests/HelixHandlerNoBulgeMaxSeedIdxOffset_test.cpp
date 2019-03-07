@@ -28,9 +28,9 @@ TEST_CASE( "HelixHandlerIdxOffset for NoBulgeMaxSeed", "[HelixHandlerIdxOffset]"
 
 		HelixConstraint hC(2, 4,  0, 999, 0, false);
 
-		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
+		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ / seedNoGU
 		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
-						  "");
+						  "", false);
 
 		HelixHandler *hhS = new HelixHandlerNoBulgeMax(energy, hC);
 		SeedHandler *sH = new SeedHandlerMfe(energy, sC);
@@ -126,9 +126,9 @@ TEST_CASE( "HelixHandlerIdxOffset for NoBulgeMaxSeed", "[HelixHandlerIdxOffset]"
 
 		HelixConstraint hC(2, 4,  0, 999, 0, false);
 
-		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
+		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ / seedNoGU
 		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
-						  "");
+						  "", false);
 
 		HelixHandler *hhS = new HelixHandlerNoBulgeMax(energy, hC);
 		SeedHandler *sH = new SeedHandlerMfe(energy, sC);
@@ -190,9 +190,9 @@ TEST_CASE( "HelixHandlerIdxOffset for NoBulgeMaxSeed", "[HelixHandlerIdxOffset]"
 
 		HelixConstraint hC(2, 4,  0, 999, 0, false);
 
-		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
+		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ / seedNoGU
 		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
-						  "");
+						  "", false);
 
 		HelixHandler *hhS = new HelixHandlerNoBulgeMax(energy, hC);
 		SeedHandler *sH = new SeedHandlerMfe(energy, sC);
@@ -266,9 +266,9 @@ TEST_CASE( "HelixHandlerIdxOffset for NoBulgeMaxSeed", "[HelixHandlerIdxOffset]"
 
 		HelixConstraint hC(2, 4,  0, 999, 0, false);
 
-		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
+		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ / seedNoGU
 		SeedConstraint sC(3, 2, 1, 1, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
-						  "");
+						  "", false);
 
 		HelixHandler *hhS = new HelixHandlerNoBulgeMax(energy, hC);
 		SeedHandler *sH = new SeedHandlerMfe(energy, sC);
@@ -362,9 +362,9 @@ TEST_CASE( "HelixHandlerIdxOffset for NoBulgeMaxSeed", "[HelixHandlerIdxOffset]"
 
 		HelixConstraint hC(2, 4,  0, 999, 0, false);
 
-		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
+		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ / seedNoGU
 		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
-						  "");
+						  "", false);
 
 		HelixHandler *hhS = new HelixHandlerNoBulgeMax(energy, hC);
 		SeedHandler *sH = new SeedHandlerMfe(energy, sC);
