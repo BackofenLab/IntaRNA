@@ -212,7 +212,7 @@ protected:
 	std::string explicitSeeds;
 
 	//! whether or not GU base pairs are allowed within seeds
-	bool noGUallowed;
+	bool bpGUallowed;
 
 };
 
@@ -244,7 +244,7 @@ SeedConstraint::SeedConstraint(
 	, ranges1(ranges1)
 	, ranges2(ranges2reversed)
 	, explicitSeeds(explicitSeeds)
-	, noGUallowed(noGUallowed)
+	, bpGUallowed(!noGUallowed)
 {
 	if (bp < 2) throw std::runtime_error("SeedConstraint() : base pair number ("+toString(bp)+") < 2");
 }
@@ -387,7 +387,7 @@ inline
 bool
 SeedConstraint::
 isGUallowed() const {
-	return !noGUallowed;
+	return bpGUallowed;
 }
 
 /////////////////////////////////////////////////////////////////////////////

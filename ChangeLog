@@ -10,7 +10,8 @@ development version
 
 190307 Martin Raden :
  * IntaRNA/SeedConstraint :
-   + noGUallowed : whether or not GU base pairs are allowed within seeds
+   + bpGUallowed : whether or not GU base pairs are allowed within seeds
+   + isGUallowed() : returns bpGUallowed
  * IntaRNA/RnaSequence :
    + bpGUcodes : base pair codes for GU and UG
    + isGU() : tests whether or not two positions can form a GU base pair
