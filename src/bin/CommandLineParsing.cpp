@@ -764,7 +764,7 @@ parse(int argc, char** argv)
 
 		// check if we have to parse parameters from file
 		if (vm.count("parameterFile") > 0 ) {
-			const std::string paramFileName = boost::any_cast<std::string>(vm.at("parameterFile").value());
+			const std::string paramFileName = vm.at("parameterFile").as<std::string>();
 			validate_configFileName(paramFileName);
 			if (parsingCode == ReturnCode::KEEP_GOING) {
 				// open file handle
@@ -791,7 +791,7 @@ parse(int argc, char** argv)
 
 	// if parsing was successful, check for help request
 	if (parsingCode == ReturnCode::KEEP_GOING) {
-		if (vm.count("help")) {
+		if ( vm.count("help") > 0 ) {
 			std::cout
 				<<"\nIntaRNA predicts RNA-RNA interactions.\n"
 				<<"\nThe following basic program arguments are supported:\n"
@@ -802,7 +802,7 @@ parse(int argc, char** argv)
 			parsingCode = ReturnCode::STOP_ALL_FINE;
 			return parsingCode;
 		}
-		if (vm.count("fullhelp")) {
+		if ( vm.count("fullhelp") > 0 ) {
 			std::cout
 				<<"\nIntaRNA predicts RNA-RNA interactions.\n"
 				<<"\nThe following program arguments are supported:\n"
@@ -811,7 +811,7 @@ parse(int argc, char** argv)
 			parsingCode = ReturnCode::STOP_ALL_FINE;
 			return parsingCode;
 		}
-		if (vm.count("version")) {
+		if ( vm.count("version") > 0 ) {
 			std::cout
 					<<INTARNA_PACKAGE_STRING
 					<< "\n"
