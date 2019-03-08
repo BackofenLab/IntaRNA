@@ -16,8 +16,11 @@ development version
    * bool flags now set via boost not via explicit count check
    + bool flags can now be explicitly set with value , eg --noSeed=false, eg
      to overwrite arguments from config file  
+ + doc/figures/freepik-*.zip : original icon downloads from freepik.com
+ + doc/figures/icon-up.* : up arrow to be used for overview navigation
  * README.md :
    + parameterFile docu
+   + direct links to overview (table of content) after each subsection
 
 190307 Martin Raden :
  * IntaRNA/SeedConstraint :
@@ -191,6 +194,8 @@ version 2.4.0
    + model parameter
    + publication links
    + helix-based prediction + parameters
+ + doc/figures/icon-no.*
+ + doc/figures/icon-yes.*
 
 190223 Martin Raden / Rick Gelhausen :
  + integration of helix-based RNA-RNA interaction prediction
