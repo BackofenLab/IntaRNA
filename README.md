@@ -1624,7 +1624,10 @@ flags are used within the IntaRNA configuration:
 
 ### Attributions
 
-- ![yes](doc/figures/icon-yes.39.png)![no](doc/figures/icon-no.39.png) [Designed by Freepik](https://www.freepik.com/free-vector/icons-collection_1638275.htm)
-- ![up](doc/figures/icon-up.38.png) [Designed by Freepik](https://www.freepik.com/free-vector/colored-arrows_794372.htm)
+[![yes](doc/figures/icon-yes.39.png)](https://www.freepik.com/free-vector/icons-collection_1638275.htm)
+[![no](doc/figures/icon-no.39.png)](https://www.freepik.com/free-vector/icons-collection_1638275.htm)
+[![up](doc/figures/icon-up.38.png)](https://www.freepik.com/free-vector/colored-arrows_794372.htm)
+Designed by Freepik
+
 
 
