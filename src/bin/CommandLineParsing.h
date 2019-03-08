@@ -573,6 +573,8 @@ protected:
 
 	//! (optional) file name for log output
 	std::string logFileName;
+	//! (optional) file name for input parameter configuration file
+	std::string configFileName;
 
 	//! the vienna energy parameter handler initialized by #parse()
 	mutable VrnaHandler vrnaHandler;
@@ -949,6 +951,12 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_windowOverlap( const int & value);
+
+	/**
+	 * Validates the configFileName argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_configFileName( const std::string & value);
 
 	////////////  GENERIC TESTS  /////////////////
 
@@ -1921,6 +1929,16 @@ void CommandLineParsing::validate_windowOverlap(const int & value)
 {
 	// forward check to general method
 	validate_numberArgument("windowOverlap", windowOverlap, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_configFileName( const std::string & value )
+{
+	if (!validateFile( value )) {
+		LOG(ERROR) <<"Can not access/read parameter file '" <<value <<"'";
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////

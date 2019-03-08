@@ -174,6 +174,7 @@ CommandLineParsing::CommandLineParsing()
 	outSpotProbSpots(""),
 
 	logFileName(""),
+	configFileName(""),
 
 	vrnaHandler()
 
@@ -418,7 +419,9 @@ CommandLineParsing::CommandLineParsing()
 					, std::string("maximal energy (excluding) a helix may have"
 										  " (arg in range ["+toString(helixMaxE.min)+","+toString(helixMaxE.max)+"]).").c_str())
 
-			("helixFullE", "if present, the overall energy of a helix (including E_init, ED, dangling ends, ..) will be used for helixMaxE checks; otherwise only loop-terms are considered.")
+			("helixFullE"
+					, value<bool>(&helixFullE)
+					,"if present, the overall energy of a helix (including E_init, ED, dangling ends, ..) will be used for helixMaxE checks; otherwise only loop-terms are considered.")
 			;
 	opts_cmdline_short.add(opts_helix);
 
@@ -426,7 +429,7 @@ CommandLineParsing::CommandLineParsing()
 
 
 	opts_seed.add_options()
-	    ("noSeed", "if present, no seed is enforced within the predicted interactions")
+	    ("noSeed", value<bool>(&noSeedRequired), "if present, no seed is enforced within the predicted interactions")
 
 		("seedTQ"
 			, value<std::string>(&(seedTQ))
@@ -485,7 +488,7 @@ CommandLineParsing::CommandLineParsing()
 			, value<std::string>(&(seedTRange))
 				->notifier(boost::bind(&CommandLineParsing::validate_seedTRange,this,_1))
 			, std::string("interval(s) in the target to search for seeds in format 'from1-to1,from2-to2,...' (Note, only for single target)").c_str())
-	    ("seedNoGU", "if present, no GU base pairs are allowed within seeds")
+	    ("seedNoGU", value<bool>(&seedNoGU), "if present, no GU base pairs are allowed within seeds")
 		;
 
 	////  SHAPE OPTIONS  ////////////////////////
@@ -682,10 +685,12 @@ CommandLineParsing::CommandLineParsing()
 					+ boost::replace_all_copy(OutputHandlerCsv::list2string(OutputHandlerCsv::string2list("")), ",", ", ")+"."
 					+ "\nDefault = '"+outCsvCols+"'."
 					).c_str())
-	    ("outPerRegion", "output : if given, best interactions are reported independently"
+	    ("outPerRegion"
+	    		, value<bool>(&outPerRegion)
+	    		, "output : if given, best interactions are reported independently"
 	    		" for all region combinations; otherwise only the best for each query-target combination")
 	    ("verbose,v", "verbose output") // handled via easylogging++
-	    ("default-log-file", value<std::string>(&(logFileName)), "name of file to be used for log output (INFO, WARNING, VERBOSE, DEBUG)")
+	    ("default-log-file", value<std::string>(&(logFileName)), "file to be used for log output (INFO, WARNING, VERBOSE, DEBUG)")
 	    ;
 
 	////  GENERAL OPTIONS  ////////////////////////////////////
@@ -702,6 +707,8 @@ CommandLineParsing::CommandLineParsing()
 					" (arg in range ["+toString(threads.min)+","+toString(threads.max)+"])").c_str())
 #endif
 	    ("version", "print version")
+	    ("parameterFile", value<std::string>(&(configFileName))
+			, "file from where to read additional command line arguments")
 	    ("help,h", "show the help page for basic parameters")
 	    ("fullhelp", "show the extended help page for all available parameters")
 	    ;
@@ -750,9 +757,33 @@ parse(int argc, char** argv)
 				| command_line_style::style_t::short_allow_next
 				| command_line_style::style_t::case_insensitive
 				;
+		// parse and store
 		store( parse_command_line(argc, argv, opts_cmdline_all, parseStyle), vm);
 		// parsing fine so far
 		parsingCode = ReturnCode::KEEP_GOING;
+
+		// check if we have to parse parameters from file
+		if (vm.count("parameterFile") > 0 ) {
+			const std::string paramFileName = boost::any_cast<std::string>(vm.at("parameterFile").value());
+			validate_configFileName(paramFileName);
+			if (parsingCode == ReturnCode::KEEP_GOING) {
+				// open file handle
+				std::ifstream paramfile(paramFileName);
+				try {
+					if(!paramfile.good()){
+						LOG(ERROR) <<"Parsing of 'parameterFile' : could not open file  '"<<paramFileName<<"'";
+						updateParsingCode( ReturnCode::STOP_PARSING_ERROR );
+					} else {
+						store( parse_config_file(paramfile, opts_cmdline_all), vm);
+					}
+				} catch (std::exception & ex) {
+					LOG(ERROR) <<"error while parsing of 'parameterFile="<<paramFileName<<"' : "<<ex.what();
+					updateParsingCode( ReturnCode::STOP_PARSING_ERROR );
+				}
+				// close stream
+				paramfile.close();
+			}
+		}
 	} catch (error& e) {
 		LOG(ERROR) <<e.what() << " : run with '--help' for allowed arguments";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
@@ -823,7 +854,6 @@ parse(int argc, char** argv)
 					throw error("could not open output file --out='"+toString(outPrefix2streamName.at(OutPrefixCode::OP_EMPTY))+ "' for writing");
 				}
 			}
-			outPerRegion = vm.count("outPerRegion") > 0;
 
 			// parse the sequences
 			parseSequences("query",queryArg,query,qSet);
@@ -852,12 +882,7 @@ parse(int argc, char** argv)
 				throw error("the minimum number of base pairs (" +toString(helixMinBP.val)+") is higher than the maximum number of base pairs (" +toString(helixMaxBP.val)+")");
 			}
 
-			// check for helixWithED
-			helixFullE = vm.count("helixFullE") > 0;
-
 			// check seed setup
-			noSeedRequired = vm.count("noSeed") > 0;
-			seedNoGU = vm.count("seedNoGU") > 0;
 			if (noSeedRequired) {
 				// input sanity check : maybe seed constraints defined -> warn
 				if (!seedTQ.empty()) LOG(INFO) <<"no seed constraint wanted, but explicit seedTQ provided (will be ignored)";
@@ -1240,7 +1265,7 @@ validateFile( const std::string & filename )
 	// check if it is a file
 	if ( !boost::filesystem::is_regular_file( filename ) )
 	{
-		LOG(ERROR) <<"'"<<filename<<"' : Is no file!";
+		LOG(ERROR) <<"'"<<filename<<"' : is no file!";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 		return false;
 	}

@@ -8,6 +8,17 @@
 
 development version
 
+190308 Martin Raden :
+ * bin/CommandLineParsing :
+   + --parameterFile argument (specify additional parameters via config file);
+     command line arguments take precedence over config file parameters
+   + configFileName : file from where to read parameters from
+   * bool flags now set via boost not via explicit count check
+   + bool flags can now be explicitly set with value , eg --noSeed=false, eg
+     to overwrite arguments from config file  
+ * README.md :
+   + parameterFile docu
+
 190307 Martin Raden :
  * IntaRNA/SeedConstraint :
    + bpGUallowed : whether or not GU base pairs are allowed within seeds

@@ -80,6 +80,7 @@ The following topics are covered by this documentation:
   - [OS X installation with homebrew](#instosx)
 - [Usage and Parameters](#usage)
   - [Just run ...](#defaultRun)
+    - [Load arguments from file](#parameterFile)
   - [Interaction Model](#interactionModel)
     - [Single-site, unconstraint RNA-RNA interaction](#interactionModel-ssUnconstraintMfe)
     - [Single-site, helix-based RNA-RNA interaction](#interactionModel-ssHelixMfe)
@@ -412,6 +413,44 @@ energy model.
 
 For a list of general program argument run `-h` or `--help`. For a complete
 list covering also more sophisticated options, run `--fullhelp`.
+
+
+
+<br />
+<a name="parameterFile" />
+
+### Load arguments from file
+
+If you are using IntaRNA with similar command line arguments (parameters), you 
+might want to reduce the call via the definition of a *parameter file*. To this 
+end prepare a file that defines the common parameters in a the following form
+
+```[python]
+#################################################################
+# my parameter.cfg file to simulate RNAup predictions
+#################################################################
+# slow but exact predictions
+mode   = M
+# no seed constraint
+noSeed = true
+# full global accessibility computation
+qAccW  = 0
+qAccL  = 0
+tAccW  = 0
+tAccL  = 0
+``` 
+
+where you use the long parameter names without the leading `--`.
+Boolean arguments (like `--noSeed`) have to be set to `true`|`1` or `false`|`0`
+to be enabled or disabled, respectively. Given this, 
+you only have to pass the file name via `--parameterFile=...` and IntaRNA will
+parse the additional parameters from your file.
+
+*Note:* parameters specified via the command line take precedence over arguments
+from a parameter file. Thus, you can (silently) overwrite parameters that
+you have specified within the file.
+
+
 
 
 <br /><br />
@@ -1065,7 +1104,7 @@ The energy model used can be specified using the `--energy` parameters using
 If Vienna RNA package is used for energy computation (`--energy=V`), per default
 the default parameter set of the linked Vienna RNA package is used (e.g. the
 set `Turner04` for VRNA 2.3.0). If you want to use a different parameter set, you
-can provide an according parameter file via `--energVRNA=MyParamFile`. The
+can provide an according parameter file via `--energyVRNA=MyParamFile`. The
 following example exemplifies the use of the old `Turner99` parameter set as
 used by IntaRNA v1.*.
 ```bash
@@ -1076,8 +1115,8 @@ IntaRNA --energyVRNA=/usr/local/share/Vienna/rna_turner1999.par --seedMaxE=999
 To increase prediction quality and to reduce the computational complexity, the
 number of unpaired bases between intermolecular base pairs is restricted
 (similar to internal loop length restrictions in the Zuker algorithm). The
-upper bound can be set independent for the query and target sequence via
-`--qIntLoopMax` and `--tIntLoopMax`, respectively, and default to 16.
+upper bound can be set independently for the query and target sequence via
+`--qIntLoopMax` and `--tIntLoopMax`, respectively, and defaults to 16.
 
 
 
