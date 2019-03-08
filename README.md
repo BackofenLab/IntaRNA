@@ -130,7 +130,7 @@ conda install -c conda-forge -c bioconda intarna
 ```
 if you are using bioconda already.
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 <br /><br />
 <a name="instdocker" />
 
@@ -142,7 +142,7 @@ An [IntaRNA docker container](https://quay.io/repository/biocontainers/intarna)
 you with an encapsulated IntaRNA installation.
 
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 <br /><br />
 <a name="deps" />
 
@@ -170,7 +170,7 @@ not needed to be installed separately):
 
 
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 <br /><br />
 <a name="instgithub" />
 
@@ -192,7 +192,7 @@ Afterwards, you can continue as if you would have downloaded an
 [IntaRNA package distribution](#instsource).
 
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 <br /><br />
 <a name="instsource" />
 
@@ -230,7 +230,7 @@ In that case your boost libraries are most likely installed to a non-standard
 directory that you have to specify either using `--with-boost` or just the
 library directory via `--with-boost-libdir`.
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 <br /><br />
 <a name="instwin" />
 
@@ -279,7 +279,7 @@ directory to your [`Path` System variable](http://www.computerhope.com/issues/ch
 
 
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 <br /><br />
 <a name="instosx" />
 
@@ -335,7 +335,7 @@ make install
 ```
 
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
 
 <br /><br /><br /><br />
@@ -363,7 +363,7 @@ For ad hoc usage you can use the
 
 
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 <br /><br />
 <a name="defaultRun" />
 
@@ -425,7 +425,7 @@ list covering also more sophisticated options, run `--fullhelp`.
 
 
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 <br />
 <a name="parameterFile" />
 
@@ -463,7 +463,7 @@ you have specified within the file.
 
 
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 <br /><br />
 <a name="interactionModel" />
 
@@ -516,7 +516,7 @@ interaction pattern is available in our publications
 
 
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 <br /><br />
 <a name="interactionModel-ssUnconstraintMfe" />
 
@@ -541,7 +541,7 @@ predictions.
 
 
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 <br /><br />
 <a name="interactionModel-ssHelixMfe" />
 
@@ -582,7 +582,7 @@ For further details on the model and the underlying algorithm, please refer to o
 
 
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 <br /><br />
 <a name="predModes" />
 
@@ -615,7 +615,7 @@ mode `E` should provide the same results as mode `M` but uses dramatically more
 memory for computations.
 
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 <br /><br />
 <a name="predEmulateTools" />
 
@@ -653,7 +653,7 @@ We *add seed-constraint support to RNAup-like computations* by removing the
 `--noSeed` flag from the above call.
 
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 <br /><br />
 <a name="predWindowBased" />
 
@@ -683,7 +683,7 @@ If only one query and target are given, window-based computation can be
 
 
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 <br /><br />
 <a name="interConstr" />
 
@@ -745,7 +745,7 @@ length (by setting both to 0).
 
 
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 <br /><br />
 <a name="seed" />
 
@@ -786,7 +786,7 @@ Seed constraint usage can be globally disabled using the `--noSeed` flag.
 
 
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 <br /><br />
 <a name="seedExplicit" />
 
@@ -819,7 +819,7 @@ If several or alternative seeds are known, you can provide all as a
 comma-separated list and IntaRNA will consider all interactions that cover at
 least one of them.
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 <br /><br />
 <a name="helix" />
 
@@ -846,7 +846,7 @@ for the helices considered for interaction prediction:
   the impact of the helix-based model for prediction.
 
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
 <br /><br />
 <a name="shape" />
@@ -877,7 +877,7 @@ For further details, please refer to our respective publication
 
 
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
 <br /><br />
 <a name="outmodes" />
@@ -902,7 +902,7 @@ If you are not interested in any logging output, redirect it to nirvana via
 given on standard output streams.
 
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
 <a name="outModeNormal" />
 
@@ -913,7 +913,7 @@ interaction together with its overall interaction energy.
 For an example see the [Just run ...](#defaultRun) section.
 
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
 <a name="outModeDetailed" />
 
@@ -964,7 +964,7 @@ Position annotations start indexing with 1 at the 5'-end of each RNA.
 `ED` values are the energy penalties for reduced [accessibility](#accessibility)
 and `Pu` denote unpaired probabilities of the respective interacting subsequences.
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
 <a name="outModeCsv" />
 
@@ -1055,7 +1055,7 @@ Pu1;Pu2;subseqDB;hybridDB
 0.00133686;0.0013368;1AAACACCCCCGGUG&4CACCCCCGGUGGUUU;1|||||||...||||&4||||...||||.|||
 ```
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
 <a name="outModeV1" />
 
@@ -1068,7 +1068,7 @@ If your scripts/whatever is tuned to the old IntaRNA v1.* output, you can use
 
 Note, for for IntaRNA v1.* output, currently *no multi-threading computation* is available!
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
 <br /><br />
 <a name="subopts" />
@@ -1102,7 +1102,7 @@ Furthermore, it is possible to *restrict (sub)optimal enumeration* using
 
 
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
 <br /><br />
 <a name="energy" />
@@ -1155,7 +1155,7 @@ upper bound can be set independently for the query and target sequence via
 
 
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
 <br /><br />
 <a name="outFiles" />
@@ -1184,7 +1184,7 @@ Thus, these values will most likely differ from values eg. produced by RNAplfold
 We therefore strongly recommend to store `qAcc:`|`tAcc:` values when you want to use them
 as input for subsequent IntaRNA calls!
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
 <br />
 <a name="profileMinE" />
@@ -1212,7 +1212,7 @@ This plot reveals two less but still stable (*E* below 0) interaction sites besi
 mfe interaction close to the 5'-end of the molecule.
 
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
 <br />
 <a name="pairMinE" />
@@ -1247,7 +1247,7 @@ mfe-site in the second sequence and are thus less likely to occure.
 ![Minimal interaction energy index pair information](./doc/figures/pair-minE.png)
 
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
 <br />
 <a name="profileSpotProb" />
@@ -1268,7 +1268,7 @@ Note, instead of a file you can also write the profile to stream using `STDOUT`
 or `STDERR` instead of a file name.
 
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
 <br />
 <a name="spotProb" />
@@ -1312,7 +1312,7 @@ to its heuristic (see [discussion about suboptimal interactions](#subopts)).
 Nevertheless, since the Boltzmann probabilities are dominated by the low(est)
 energy interactions, we consider the probability estimates as meaningful!
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
 #### Spot probabilities for all intermolecular index pairs
 
@@ -1349,7 +1349,7 @@ G_20;0;0;0;0.0075106;0.00474379;0.0139076;0.0270425;0.0521578;0.0736521;0.066543
 This data can be visualized in heatmaps as discussed for the [minimal energy heatmap](#pairMinE).
 
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
 <br />
 <a name="accessibility" />
@@ -1373,7 +1373,7 @@ Accessibility incorporation can be disabled for query or target sequences using
 A setup of `--qAcc=C` or `--tAcc=C` (default) enables accessibility computation
 using the Vienna RNA package routines for query or target sequences, respectively.
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
 <a name="accLocalGlobal" />
 
@@ -1410,7 +1410,7 @@ IntaRNA [..] --qAccW=0 --qAccL=0 --tAccW=0 --qAccL=0
 IntaRNA [..] --qAccW=0 --qAccL=0 --tAccW=150 --qAccL=100
 ```
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
 <a name="accConstraints" />
 
@@ -1459,7 +1459,7 @@ IntaRNA [..] --qAccConstr="..bb..xxp.bb" --tAccConstr="b:3-4,11-12,x:7-8,p:9-9"
 ```
 
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
 <a name="accFromFile" />
 
@@ -1533,7 +1533,7 @@ as shown above), since this does not produce the according output files!
 
 
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
 <br /><br />
 <a name="multithreading" />
@@ -1568,7 +1568,7 @@ using `configure --disable-multithreading`.
 
 
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
 <br /><br /><br /><br />
 <a name="lib" />
@@ -1620,7 +1620,7 @@ flags are used within the IntaRNA configuration:
     CXXFLAGS=" -DELPP_FEATURE_PERFORMANCE_TRACKING -DELPP_NO_DEFAULT_LOG_FILE "
 ```
 
-[![up](doc/figures/icon-up.38.png) back to overview](#overview)
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
 ### Attributions
 
