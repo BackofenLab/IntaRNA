@@ -47,15 +47,44 @@ public:
 		NOT_PARSED_YET = 999
 	};
 
+	enum Personality {
+		IntaRNA,		// default
+		IntaRNAhelix,  	// helix-based predictions
+		IntaRNAduplex,	// RNAhybrid/RNAduplex-like
+		IntaRNAup		// RNAup-like
+	};
+
+
+	/**
+	 * Identifies the requested personality from the given call arguments
+	 */
+	static
+	std::string
+	getPersonalityName( Personality p ) {
+		switch(p) {
+		case IntaRNA : return "IntaRNA";
+		case IntaRNAhelix : return "IntaRNAhelix";
+		case IntaRNAduplex : return "IntaRNAduplex";
+		case IntaRNAup : return "IntaRNAup";
+		default : return "unknown";
+		}
+	}
+
+	/**
+	 * Identifies the requested personality from the given call arguments
+	 */
+	static
+	Personality
+	getPersonality( int argc, char** argv );
 
 public:
 
 	/**
 	 * Constructs a commandline argument parser for IntaRNA.
 	 *
-	 * @param logStream the stream to write validation log messages to
+	 * @param personality the Personality for which to provide and parse parameters
 	 */
-	CommandLineParsing();
+	CommandLineParsing( const Personality personality );
 	virtual ~CommandLineParsing();
 
 	/**
@@ -368,6 +397,11 @@ protected:
 		}
 
 	};
+
+	//! what is the requested personality for which we parse the parameters
+	Personality personality;
+	//! might hold the personality string after parsing if given via parameter
+	std::string personalityParamValue;
 
 	//! whether or not STDIN was already requested by one of the following
 	//! arguments
@@ -1149,6 +1183,7 @@ protected:
 	getFullFilename( const std::string & fileName
 					, const RnaSequence * target
 					, const RnaSequence * query ) const;
+
 
 };
 

@@ -8,6 +8,31 @@
 
 development version
 
+190312 Martin Raden :
+ * IntaRNA/Accessibility* :
+   + verbose output how accessibility is computed
+ * bin/CommandLineParsing :
+   + Personality + get/Name() : enum of IntaRNA's known multiple personalities
+   + getPersonality() : checks how IntaRNA was called to react accordingly...
+   + personality argument and member
+   * construction() :
+     + takes now Personality instead of callName
+     + default setup based on selected personality
+ * Makefile.am :
+   + revealing personalities IntaRNAup, IntaRNAduplex and IntaRNAhelix as links 
+     in install directory
+ * README.md :
+   + multiple personalities and their use cases
+
+190311 Martin Raden :
+ * configure.ac :
+   + AC_PROG_LN_S : check for symboling linking
+ * Makefile.am :
+   + create IntaRNA alias as link to setup alternative defaults and behavior 
+ * bin/CommandLineParsing :
+   * construction( callName ) : takes argv[0] (== name of the called binary) to
+     setup default arguments and behavior of the respective IntaRNA alias
+
 190310 Martin Raden :
  + IntaRNA/PredictorMfeEns : base class for ensemble-based predictors
    + overallZhybrid : overall hybridization partition function since last 

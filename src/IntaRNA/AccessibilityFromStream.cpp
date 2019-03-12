@@ -21,6 +21,11 @@ AccessibilityFromStream(
 	, edValues()
 	, availMaxLength( Accessibility::getMaxLength() )
 {
+#if INTARNA_MULITHREADING
+	#pragma omp critical(intarna_omp_logOutput)
+#endif
+	{ VLOG(2) <<"reading accessibility from input..."; }
+
 	if (accConstraint != NULL && !accConstraint->isEmpty()) {
 		INTARNA_NOT_IMPLEMENTED("AccessibilityFromStream: accessibility constraints not supported for direct accessibility input");
 	}

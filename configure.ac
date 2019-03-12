@@ -38,6 +38,7 @@ OLD_CFLAGS=$CFLAGS
 # Checks for programs.
 AC_PROG_CXX
 AC_PROG_CC
+AC_PROG_LN_S
 AC_PROG_RANLIB
 # reset compiler flags to initial flags
 CXXFLAGS=$OLD_CXXFLAGS

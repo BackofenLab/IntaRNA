@@ -72,8 +72,10 @@ const std::string CommandLineParsing::outCsvCols_default = "id1,start1,end1,id2,
 
 ////////////////////////////////////////////////////////////////////////////
 
-CommandLineParsing::CommandLineParsing()
+CommandLineParsing::CommandLineParsing( const Personality personality  )
 	:
+	personality( personality ),
+	personalityParamValue(""),
 	stdinUsed(false),
 	opts_query("Query"),
 	opts_target("Target"),
@@ -92,7 +94,7 @@ CommandLineParsing::CommandLineParsing()
 	query(),
 	qSet(),
 	qSetString(""),
-	qAcc("NCPE",'C'),
+	qAcc("NCPE", personality == IntaRNAduplex ? 'N' : 'C'),
 	qAccW( 0, 99999, 150),
 	qAccL( 0, 99999, 100),
 	qAccConstr(""),
@@ -110,7 +112,7 @@ CommandLineParsing::CommandLineParsing()
 	target(),
 	tSet(),
 	tSetString(""),
-	tAcc("NCPE",'C'),
+	tAcc("NCPE", personality == IntaRNAduplex ? 'N' : 'C'),
 	tAccW( 0, 99999, 150),
 	tAccL( 0, 99999, 100),
 	tAccConstr(""),
@@ -149,8 +151,8 @@ CommandLineParsing::CommandLineParsing()
 
 	temperature(0,100,37),
 
-	model( "SPB", 'S'),
-	predMode( "HME", 'H'),
+	model( "SPB", personality == IntaRNAhelix ? 'B' : 'S'),
+	predMode( "HME", personality == IntaRNAup ? 'M' : 'H'),
 #if INTARNA_MULITHREADING
 	threads( 0, omp_get_max_threads(), 1),
 #endif
@@ -165,7 +167,7 @@ CommandLineParsing::CommandLineParsing()
 	outStream(&(std::cout)),
 	outMode( "NDC1O", 'N' ),
 	outNumber( 0, 1000, 1),
-	outOverlap( "NTQB", 'Q' ),
+	outOverlap( "NTQB", personality == IntaRNAup ? 'B' : 'Q' ),
 	outDeltaE( 0.0, 100.0, 100.0),
 	outMaxE( -999.0, +999.0, 0.0),
 	outMinPu( 0.0, 1.0, 0.0),
@@ -179,6 +181,9 @@ CommandLineParsing::CommandLineParsing()
 	vrnaHandler()
 
 {
+	// report the used personality
+	VLOG(1) <<"I am "<<getPersonalityName(personality)<<" right now ..";
+
 	using namespace boost::program_options;
 
 	////  REMAINING INITIALIZATIONS  /////////////////////////////////
@@ -421,6 +426,8 @@ CommandLineParsing::CommandLineParsing()
 
 			("helixFullE"
 					, value<bool>(&helixFullE)
+						->default_value(helixFullE)
+						->implicit_value(true)
 					,"if present, the overall energy of a helix (including E_init, ED, dangling ends, ..) will be used for helixMaxE checks; otherwise only loop-terms are considered.")
 			;
 	opts_cmdline_short.add(opts_helix);
@@ -429,7 +436,10 @@ CommandLineParsing::CommandLineParsing()
 
 
 	opts_seed.add_options()
-	    ("noSeed", value<bool>(&noSeedRequired), "if present, no seed is enforced within the predicted interactions")
+	    ("noSeed", value<bool>(&noSeedRequired)
+						->default_value(noSeedRequired)
+						->implicit_value(true)
+	    		, "if present, no seed is enforced within the predicted interactions")
 
 		("seedTQ"
 			, value<std::string>(&(seedTQ))
@@ -488,7 +498,10 @@ CommandLineParsing::CommandLineParsing()
 			, value<std::string>(&(seedTRange))
 				->notifier(boost::bind(&CommandLineParsing::validate_seedTRange,this,_1))
 			, std::string("interval(s) in the target to search for seeds in format 'from1-to1,from2-to2,...' (Note, only for single target)").c_str())
-	    ("seedNoGU", value<bool>(&seedNoGU), "if present, no GU base pairs are allowed within seeds")
+	    ("seedNoGU", value<bool>(&seedNoGU)
+						->default_value(seedNoGU)
+						->implicit_value(true)
+	    		, "if present, no GU base pairs are allowed within seeds")
 		;
 
 	////  SHAPE OPTIONS  ////////////////////////
@@ -687,6 +700,8 @@ CommandLineParsing::CommandLineParsing()
 					).c_str())
 	    ("outPerRegion"
 	    		, value<bool>(&outPerRegion)
+						->default_value(outPerRegion)
+						->implicit_value(true)
 	    		, "output : if given, best interactions are reported independently"
 	    		" for all region combinations; otherwise only the best for each query-target combination")
 	    ("verbose,v", "verbose output") // handled via easylogging++
@@ -707,6 +722,8 @@ CommandLineParsing::CommandLineParsing()
 					" (arg in range ["+toString(threads.min)+","+toString(threads.max)+"])").c_str())
 #endif
 	    ("version", "print version")
+	    ("personality", value<std::string>(&(personalityParamValue))
+			, "IntaRNA personality to be used, which defines default values, available program arguments and tool behavior")
 	    ("parameterFile", value<std::string>(&(configFileName))
 			, "file from where to read additional command line arguments")
 	    ("help,h", "show the help page for basic parameters")
@@ -799,6 +816,15 @@ parse(int argc, char** argv)
 				<< "\n"
 				<< "Run --fullhelp for the extended list of parameters\n"
 				<< "\n";
+			if (personality != IntaRNA) {
+				std::cout
+					<<"\n############################################################################\n"
+					<<"\nNote, you are using the '"
+					<<getPersonalityName(personality)
+					<<"' personality, which alters some default values!\n"
+					<<"\n############################################################################\n"
+					<< "\n";
+			}
 			parsingCode = ReturnCode::STOP_ALL_FINE;
 			return parsingCode;
 		}
@@ -808,6 +834,15 @@ parse(int argc, char** argv)
 				<<"\nThe following program arguments are supported:\n"
 				<< opts_cmdline_all
 				<< "\n";
+			if (personality != IntaRNA) {
+				std::cout
+					<<"\n############################################################################\n"
+					<<"\nNote, you are using the '"
+					<<getPersonalityName(personality)
+					<<"' personality, which alters some default values!\n"
+					<<"\n############################################################################\n"
+					<< "\n";
+			}
 			parsingCode = ReturnCode::STOP_ALL_FINE;
 			return parsingCode;
 		}
@@ -2225,6 +2260,63 @@ writeAccessibility( const Accessibility& acc, const std::string & fileOrStream, 
 	// clean up
 	deleteOutputStream( out );
 }
+
+////////////////////////////////////////////////////////////////////////////
+
+CommandLineParsing::Personality
+CommandLineParsing::
+getPersonality( int argc, char ** argv )
+{
+	// default : check via call name
+	std::string value(argv[0]);
+	// strip path if present
+	size_t cutPos = value.find_last_of("/\\");
+	if (cutPos != std::string::npos) {
+		value = value.substr(cutPos+1);
+	}
+
+	// check if respective parameter provided
+	// --> overwrites default from call name
+	const boost::regex paramNameRegex("^--personality.*", boost::regex::icase);
+	const boost::regex paramRegex("^--personality=\\S+$", boost::regex::icase);
+	bool setViaParameter = false;
+	for (int i=1; i<argc; i++) {
+		std::string argi(argv[i]);
+		// found parameter
+		if (boost::regex_match(argi,paramNameRegex, boost::match_perl)) {
+			if (boost::regex_match(argi,paramRegex, boost::match_perl)) {
+				// cut off argument
+				value = argi.substr( argi.find('=')+1 );
+				setViaParameter = true;
+			} else {
+				// handle missing value
+				throw std::runtime_error("--personality provided without argument (no spaces allowed!)");
+			}
+			break;
+		}
+
+	}
+
+	// parse personality
+	if (boost::regex_match(value,boost::regex("IntaRNAup"), boost::match_perl)) {
+		return Personality::IntaRNAup;
+	}
+	if (boost::regex_match(value,boost::regex("IntaRNAduplex"), boost::match_perl)) {
+		return Personality::IntaRNAduplex;
+	}
+	if (boost::regex_match(value,boost::regex("IntaRNAhelix"), boost::match_perl)) {
+		return Personality::IntaRNAhelix;
+	}
+
+	if (setViaParameter) {
+		// handle wrong value
+		throw std::runtime_error("Personality '"+value+"' does not share in my head ...");
+	}
+
+	// default behaviour
+	return Personality::IntaRNA;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////
 

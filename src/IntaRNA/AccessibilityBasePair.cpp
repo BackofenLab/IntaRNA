@@ -18,6 +18,11 @@ AccessibilityBasePair::AccessibilityBasePair(const RnaSequence& seq,
       basePairWeight( _RT == 0.0 ? 0.0 : std::exp(E_2_Z(-bpEnergy) / _RT) ),
       minLoopLength(minLoopLen)
 {
+#if INTARNA_MULITHREADING
+	#pragma omp critical(intarna_omp_logOutput)
+#endif
+	{ VLOG(2) <<"computing accessibility via Nussinov-like recursions..."; }
+
 	// time logging
 	TIMED_FUNC_IF(timerObj, VLOG_IS_ON(9));
 

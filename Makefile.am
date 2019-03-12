@@ -7,6 +7,13 @@ export GCC_COLORS ?= "error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:
 # sub directories to check for Makefiles
 SUBDIRS = src perl tests doc .
 
+# create versioned binaries and tool links (to activate respective alias)
+install-exec-hook:
+	cd $(DESTDIR)$(bindir); \
+	$(LN_S) -f IntaRNA$(EXEEXT) IntaRNAhelix$(EXEEXT); \
+	$(LN_S) -f IntaRNA$(EXEEXT) IntaRNAduplex$(EXEEXT); \
+	$(LN_S) -f IntaRNA$(EXEEXT) IntaRNAup$(EXEEXT);
+
 ################################################################
 # doxygen
 ################################################################

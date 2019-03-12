@@ -83,7 +83,12 @@ The following topics are covered by this documentation:
     - [Load arguments from file](#parameterFile)
   - [Interaction Model](#interactionModel)
     - [Single-site, unconstraint RNA-RNA interaction](#interactionModel-ssUnconstraintMfe)
-    - [Single-site, helix-based RNA-RNA interaction](#interactionModel-ssHelixMfe)
+    - [Single-site, helix-based RNA-RNA interaction](#interactionModel-ssHelixBlockMfe)
+  - [IntaRNA's multiple personalities](#personality)
+    - [IntaRNA - default](#IntaRNA)
+    - [IntaRNAhelix - helix-based predictions](#IntaRNAhelix)
+    - [IntaRNAup - RNAup-like predictions](#IntaRNAup)
+    - [IntaRNAduplex - RNAduplex-like predictions](#IntaRNAduplex)
   - [Prediction modes](#predModes)
     - [Emulating other RNA-RNA interaction prediction tools](#predEmulateTools)
     - [Limiting memory consumption - window-based prediction](#predWindowBased)
@@ -460,6 +465,9 @@ parse the additional parameters from your file.
 from a parameter file. Thus, you can (silently) overwrite parameters that
 you have specified within the file.
 
+*Note further:* parameter parsing from parameter file is (in contrast to the
+command line parsing) case sensitive!
+
 
 
 
@@ -539,11 +547,14 @@ Since intra-molecular base pairs are not explicitely represented, any structural
 context of single-site interactions is considered/possible within IntaRNA 
 predictions.
 
+This model is used e.g. by the [IntaRNA](#IntaRNA) and [IntaRNAup](#IntaRNAup)
+personalities. 
+
 
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
 <br /><br />
-<a name="interactionModel-ssHelixMfe" />
+<a name="interactionModel-ssHelixBlockMfe" />
 
 ### Helix-based single-site RNA-RNA interaction with minimal free energy 
 
@@ -575,10 +586,130 @@ the prediction quality in genome wide screens. IntaRNA offers various
 [helix constraints](#helix) to guide which helices are considered for interaction 
 prediction.
 
+This model is used by the [IntaRNAhelix](#IntaRNAhelix) personality. 
+
 For further details on the model and the underlying algorithm, please refer to our respective publication
 
 - [Constraint maximal inter-molecular helix lengths within RNA-RNA interaction prediction improves bacterial sRNA target prediction.](http://www.bioinf.uni-freiburg.de/Subpages/publications.html?de#Gelhausen-helixLength-2019.abstract)
 
+
+
+
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
+<br /><br />
+<a name="personality" />
+
+## IntaRNA's multiple personalities
+
+IntaRNA comes as a powerful tool for RNA-RNA interaction prediction supporting
+various [interaction models](#interactionModel), [prediction modi](#predModes) 
+and constraints. Thus, it is hard for a non-expert user to find and setup the 
+best parameter set for the task at hand.
+
+To provide a better guide how to use IntaRNA, we provide different preset parameter
+combinations, where each defines one of IntaRNA's multiple *personalities*.
+In the following, we list available personalities and respective use cases.
+
+Each personality can be enabled by either replacing `IntaRNA` with the respective
+personality when calling or by setting the input parameter `--personality=...`.
+
+Thus, depending on how you call IntaRNA, it will react differently.. :smile:
+
+
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
+
+### IntaRNA
+
+The standard personality of IntaRNA implements the prediction approach of
+[(Busch et al., 2008)](https://doi.org/10.1093/bioinformatics/btn544)
+with the extension from 
+[(Mann et al., 2017)](https://doi.org/10.1093/nar/gkx279). Thus it uses a fast
+heuristic [prediction mode](#predModes) in combination with local 
+[accessibility](#accLocalGlobal) estimates. It predicts minimum free energy
+RNA-RNA interactions for single-site unconstraint 
+[interaction models](#interactionModel-ssUnconstraintMfe).
+
+Thus, IntaRNA provides (typically) optimal predictions on a single inter-molecular
+base pair level. Output is per default restricted to the interaction site and
+base pairs, since intra-molecular structure is implicitely considered via the
+accessibility penalties represented by the ED terms of the energy calculation
+(see detailed output).
+
+
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
+
+### IntaRNAhelix
+
+**IntaRNAhelix** provides helix-based RNA-RNA interaction prediction described
+in [(Gelhausen et al., 2019)](http://www.bioinf.uni-freiburg.de/Subpages/publications.html?de#Gelhausen-helixLength-2019.abstract).
+It therefore enables per default 
+
+- the [helix-based single-site interaction model](#interactionModel-ssHelixBlockMfe)
+
+All other parameters are kept from the normal IntaRNA personality, such that
+IntaRNAhelix predicts per default interactions heuristically based on optimal 
+helix blocks, which is faster than the normal mode but applies more constraints.
+Thus, you should use IntaRNAhelix if you want to focus predictions on stable
+subinteractions (helices) and need to do it fast.
+
+
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
+
+### IntaRNAup
+
+**RNAup** was the first accessibility-based RNA-RNA interaction prediction approach
+and it implements methods to identify the optimal minimum free energy interaction
+for unconstraint, single-site [interaction models](#interactionModel-ssUnconstraintMfe).
+IntaRNA also implements analogous methods when exact [prediction modes](#predModes)
+are used, and thus can provide [RNAup-like predictions](#predEmulateTools).
+
+**IntaRNAup** therefore 
+
+- uses exact [prediction mode](#predModes) and 
+- reports suboptimal interactions that can [overlap in both RNAs](#subopts).
+
+In contrast to RNAup, it also
+
+- enforces [seed constraints](#seed),
+- uses local [accessibility](#accLocalGlobal) values, and
+- does not [constrain interaction length](#interConstr) to subsequences of length 25.
+
+If needed, you can disables these features.
+
+Compared to the normal IntaRNA personality it
+
+Thus, IntaRNAup produces RNAup-like predictions with the extensive output 
+and constraint options of IntaRNA.
+Since exact computations are computationally much more demanding, IntaRNAup is
+much slower than IntaRNA. 
+Therefore, you should use IntaRNAup if you want to investigate the details of a
+single or few interactions unbiased by the heuristics applied in normal IntaRNA.
+If you are using long RNAs, you should constraint predictions to the [regions of
+interest](#interConstr). 
+
+
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
+
+### IntaRNAduplex
+
+**TargetScan**, **RNAhybrid** and **RNAduplex** are approaches that predict the 
+RNA-RNA interaction with
+minimal free energy without consideration whether or not the interacting
+subsequences are accessible. Furthermore, no seed constraint is taken into account.
+
+**IntaRNAduplex** provides analogous predictions by
+
+- disabling [accessibility](#accessibility) consideration.
+
+In constrast to other approaches, it
+
+- uses a fast heuristic [prediction mode](#predModes), and
+- enforces [seed constraints](#seed).
+
+Thus, IntaRNAduplex is useful if you are not interested in the structuredness
+of the interacting molecules, either since they are very short or very long.
+The latter makes accessibility prediction difficult, since it is not only governed
+by thermodynamics.
 
 
 
@@ -590,7 +721,7 @@ For further details on the model and the underlying algorithm, please refer to o
 
 For the prediction of *minimum free energy interactions*, the following modes
 and according features are supported and can be set via the `--mode` parameter.
-The tiem and space complexities are given for the prediction of two sequences
+The time and space complexities are given for the prediction of two sequences
 of equal length *n*.
 
 | Features | Heuristic `--mode=H` | Exact-SE `--mode=M` | Exact `--mode=E` |
@@ -624,7 +755,7 @@ memory for computations.
 Given these features, we can emulate and extend a couple of RNA-RNA interaction
 tools using IntaRNA.
 
-**TargetScan** and **RNAhybrid** are approaches that predict the interaction hybrid with
+**TargetScan**, **RNAhybrid** and **RNAduplex** are approaches that predict the interaction hybrid with
 minimal interaction energy without consideration whether or not the interacting
 subsequences are probably involved involved in intramolecular base pairings. Furthermore,
 no seed constraint is taken into account.
@@ -637,20 +768,25 @@ IntaRNA [..] --noSeed --qAcc=N --tAcc=N
 ```
 We *add seed-constraint support to TargetScan/RNAhybrid-like computations* by removing the
 `--noSeed` flag from the above call.
+See [IntaRNAup personality](#IntaRNAup) for additional information.
+
 
 **RNAup** was one of the first RNA-RNA interaction prediction approaches that took the
 accessibility of the interacting subsequences into account while not considering the seed feature.
 IntaRNA's exact prediction mode is eventually an alternative implementation when disabling
 seed constraint incorporation. Furthermore, the unpaired probabilities used by RNAup to score
 the accessibility of subregions are covering the respective overall structural ensemble for each
-interacting RNA, such that we have to disable accessibility computation based on local folding (RNAplfold)
-using
+interacting RNA, such that we have to disable accessibility computation based on local folding (RNAplfold).
+Finally, RNAup only predicts interactions for subsequences of length 25.
+All this can be setup using
 ```bash
-# prediction results similar to RNAup
-IntaRNA --mode=M --noSeed --qAccW=0 --qAccL=0 --tAccW=0 --tAccL=0
+# prediction results similar to 'RNAup -b' (incorporating accessibility of both RNAs)
+IntaRNA --mode=M --noSeed --qAccW=0 --qAccL=0 --qIntLenMax=25 --tAccW=0 --tAccL=0 --tIntLenMax=25
 ```
 We *add seed-constraint support to RNAup-like computations* by removing the
-`--noSeed` flag from the above call.
+`--noSeed` flag from the above call. 
+See [IntaRNAup personality](#IntaRNAup) for additional information.
+
 
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
@@ -825,7 +961,7 @@ least one of them.
 
 ## Helix constraints
 
-For [helix-based interaction models](#interactionModel-ssHelixMfe), 
+For [helix-based interaction models](#interactionModel-ssHelixBlockMfe), 
 IntaRNA provides various constraints
 for the helices considered for interaction prediction: 
 

@@ -65,7 +65,7 @@ int main(int argc, char **argv){
 		}
 
 		// parse command line parameters
-		CommandLineParsing parameters;
+		CommandLineParsing parameters( CommandLineParsing::getPersonality(argc,argv) );
 		{
 			VLOG(1) <<"parsing arguments"<<"...";
 			int retCode = parameters.parse( argc, argv );
