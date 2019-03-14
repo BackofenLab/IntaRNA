@@ -80,6 +80,7 @@ The following topics are covered by this documentation:
   - [OS X installation with homebrew](#instosx)
 - [Usage and Parameters](#usage)
 - [Just run ...](#defaultRun)
+  - [Multi-threading and parallelized computation](#multithreading)
   - [Load arguments from file](#parameterFile)
 - [General things you should know](#generalInformation)
   - [Interaction Model](#interactionModel)
@@ -112,7 +113,6 @@ The following topics are covered by this documentation:
       - [Local versus global unpaired probabilities](#accLocalGlobal)
       - [Constrain regions to be accessible or blocked](#accConstraints)
       - [Read/write accessibility from/to file or stream](#accFromFile)
-  - [Multi-threading and parallelized computation](#multithreading)
 - [Library for integration in external tools](#lib)
 
 
@@ -377,7 +377,7 @@ For ad hoc usage you can use the
 <br /><br />
 <a name="defaultRun" />
 
-## Just run ...
+# Just run ...
 
 If you just want to start and are fine with the default parameters set,
 you only have to provide two RNA sequences,
@@ -434,12 +434,45 @@ For a list of general program argument run `-h` or `--help`. For a complete
 list covering also more sophisticated options, run `--fullhelp`.
 
 
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
+
+<br /><br />
+<a name="multithreading" />
+
+## Multi-threading and parallelized computation
+
+IntaRNA supports the parallelization of the target-query-combination processing.
+The maximal number of threads to be used can be specified using the `--threads` parameter.
+If `--threads=k != 1`, than *k* predictions are processed in parallel. A value of
+`0` requests the maximally available number of threads for this machine.
+
+When using parallelization, you should have the following in mind:
+
+- The memory consumption will be multiplied by the number of threads,
+  since each thread runs an independent
+  prediction (with according memory consumption). Thus, ensure you have enough
+  RAM available when using many threads of memory-demanding
+  [prediction modes](#predModes). You might consider [window-based prediction](#predWindowBased)
+  to limit the required RAM.
+
+- Parallelization is enabled hierarchically, ie. only one of the following input
+  sets is processed in parallel:
+  - target sequences (if more than one)
+  - if only one target: query sequences (if more than one)
+  - if only one target and query: [window combinations](#predWindowBased) (if enabled)
+
+The support for multi-threading can be completely disabled before compilation
+using `configure --disable-multithreading`.
+
+
+
+
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
 <br />
 <a name="parameterFile" />
 
-### Load arguments from file
+## Load arguments from file
 
 If you are using IntaRNA with similar command line arguments (parameters), you 
 might want to reduce the call via the definition of a *parameter file*. To this 
@@ -1711,39 +1744,6 @@ such that you can use the use case examples from above also for multi-sequence
 FASTA input.
 Note, this is not supported for a piped setup (e.g. via `--out=tAcc:STDOUT`
 as shown above), since this does not produce the according output files!
-
-
-
-[![up](doc/figures/icon-up.28.png) back to overview](#overview)
-
-<br /><br />
-<a name="multithreading" />
-
-## Multi-threading and parallelized computation
-
-IntaRNA supports the parallelization of the target-query-combination processing.
-The maximal number of threads to be used can be specified using the `--threads` parameter.
-If `--threads=k != 1`, than *k* predictions are processed in parallel. A value of
-`0` requests the maximally available number of threads for this machine.
-
-When using parallelization, you should have the following in mind:
-
-- The memory consumption will be multiplied by the number of threads,
-  since each thread runs an independent
-  prediction (with according memory consumption). Thus, ensure you have enough
-  RAM available when using many threads of memory-demanding
-  [prediction modes](#predModes). You might consider [window-based prediction](#predWindowBased)
-  to limit the required RAM.
-
-- Parallelization is enabled hierarchically, ie. only one of the following input
-  sets is processed in parallel:
-  - target sequences (if more than one)
-  - if only one target: query sequences (if more than one)
-  - if only one target and query: [window combinations](#predWindowBased) (if enabled)
-
-The support for multi-threading can be completely disabled before compilation
-using `configure --disable-multithreading`.
-
 
 
 
