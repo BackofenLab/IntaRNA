@@ -11,7 +11,54 @@
 #include <algorithm>
 #include <stdexcept>
 
+
+
+
 namespace IntaRNA {
+
+////////////////////////////////////////////////////////////////////////////
+
+std::ostream&
+operator<<(std::ostream& out, const Interaction::BasePair& bp)
+{
+	out <<"("<<bp.first<<"-"<<bp.second<<")";
+	return out;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+std::ostream&
+operator<<(std::ostream& out, const Interaction& i)
+{
+	for (int p=0; p<i.basePairs.size(); p++) {
+		out <<(p==0?"":",") <<i.basePairs.at(p);
+	}
+	return out;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+Interaction::Seed::
+Seed()
+	: bp_i(Interaction::BasePair(RnaSequence::lastPos, RnaSequence::lastPos))
+	, bp_j(Interaction::BasePair(RnaSequence::lastPos, RnaSequence::lastPos))
+	, energy(E_INF)
+{
+
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+Interaction::Seed::
+Seed( const Interaction::BasePair & bp_i
+		, const Interaction::BasePair & bp_j
+		, const E_type energy )
+	: bp_i(bp_i)
+	, bp_j(bp_j)
+	, energy(energy)
+{
+
+}
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -47,13 +94,46 @@ setSeedRange( const BasePair bp_left, const BasePair bp_right, const E_type ener
 	// check if container available
 	if (seed == NULL) {
 		// create new seed information
-		seed = new Seed();
+		seed = new SeedSet();
 	}
 	// set seed data
-	seed->bp_i = bp_left;
-	seed->bp_j = bp_right;
-	seed->energy = energy;
+	seed->insert( Seed(bp_left, bp_right, energy) );
+}
 
+////////////////////////////////////////////////////////////////////////////
+
+IndexRangeList
+Interaction::
+getSeedRanges1() const
+{
+	IndexRangeList ranges( true );
+
+	// copy all seed ranges for seq1
+	if (seed != NULL) {
+		for ( const auto & s : (*seed) ) {
+			ranges.insert( IndexRange(s.bp_i.first,s.bp_j.first) );
+		}
+	}
+
+	return ranges;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+IndexRangeList
+Interaction::
+getSeedRanges2() const
+{
+	IndexRangeList ranges( true );
+
+	// copy all reversed seed ranges for seq2
+	if (seed != NULL) {
+		for ( const auto & s : (*seed) ) {
+			ranges.insert( IndexRange(s.bp_j.second,s.bp_i.second) );
+		}
+	}
+
+	return ranges;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -83,12 +163,12 @@ operator= ( const Interaction & toCopy )
 	// copy seed data
 	if (toCopy.seed != NULL) {
 		// create seed info if not existing
-		if (seed == NULL) { seed = new Seed(); }
+		if (seed == NULL) { seed = new SeedSet(); }
 		// copy data
 		*seed = *(toCopy.seed);
 	} else {
 		// remove seed information if present
-		 INTARNA_CLEANUP(seed);
+		INTARNA_CLEANUP(seed);
 	}
 
 	return *this;
@@ -108,7 +188,7 @@ operator= ( const InteractionRange & range )
 	basePairs.clear();
 
 	// undo seed information
-	 INTARNA_CLEANUP(seed);
+	INTARNA_CLEANUP(seed);
 
 	// copy sequence handles
 	s1 = range.s1;

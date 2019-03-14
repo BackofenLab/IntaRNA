@@ -19,13 +19,17 @@ OutputHandlerCsv::OutputHandlerCsv(
 		  std::ostream & out
 		, const InteractionEnergy & energy
 		, const ColTypeList colOrder
+		, const OutputConstraint & outConstraint
 		, const std::string& colSep
 		, const bool printHeader
+		, const std::string& listSep
 		)
  :	out(out)
 	, energy(energy)
 	, colOrder(colOrder)
+	, outConstraint(outConstraint)
 	, colSep(colSep)
+	, listSep(listSep)
 {
 	// init mapping of coltypes to string
 	initColType2string();
@@ -226,7 +230,17 @@ add( const Interaction & i )
 				if (i.seed == NULL) {
 					outTmp <<std::numeric_limits<E_kcal_type>::signaling_NaN();
 				} else {
-					outTmp <<(i.seed->bp_i.first+1);
+					if (!outConstraint.bestSeedOnly) {
+						// generate list
+						outTmp << std::accumulate( std::next( i.seed->begin() )
+										, i.seed->end()
+										, toString( i.seed->begin()->bp_i.first +1 ) // start with first element
+										, [&](std::string a, Interaction::Seed s) {
+											 return std::move(a) + listSep + toString( s.bp_i.first +1 ); // extend list
+										 });
+					} else {
+						outTmp <<i.seed->begin()->bp_i.first +1;
+					}
 				}
 				break;
 
@@ -234,7 +248,17 @@ add( const Interaction & i )
 				if (i.seed == NULL) {
 					outTmp <<std::numeric_limits<E_kcal_type>::signaling_NaN();
 				} else {
-					outTmp <<(i.seed->bp_j.first+1);
+					if (!outConstraint.bestSeedOnly) {
+						// generate list
+						outTmp << std::accumulate( std::next( i.seed->begin() )
+										, i.seed->end()
+										, toString( i.seed->begin()->bp_j.first +1 ) // start with first element
+										, [&](std::string a, Interaction::Seed s) {
+											 return std::move(a) + listSep + toString( s.bp_j.first +1 ); // extend list
+										 });
+					} else {
+						outTmp <<i.seed->begin()->bp_j.first +1;
+					}
 				}
 				break;
 
@@ -242,7 +266,17 @@ add( const Interaction & i )
 				if (i.seed == NULL) {
 					outTmp <<std::numeric_limits<E_kcal_type>::signaling_NaN();
 				} else {
-					outTmp <<(i.seed->bp_j.second+1);
+					if (!outConstraint.bestSeedOnly) {
+						// generate list
+						outTmp << std::accumulate( std::next( i.seed->begin() )
+										, i.seed->end()
+										, toString( i.seed->begin()->bp_j.second +1 ) // start with first element
+										, [&](std::string a, Interaction::Seed s) {
+											 return std::move(a) + listSep + toString( s.bp_j.second +1 ); // extend list
+										 });
+					} else {
+						outTmp <<i.seed->begin()->bp_j.second +1;
+					}
 				}
 				break;
 
@@ -250,7 +284,17 @@ add( const Interaction & i )
 				if (i.seed == NULL) {
 					outTmp <<std::numeric_limits<E_kcal_type>::signaling_NaN();
 				} else {
-					outTmp <<(i.seed->bp_i.second+1);
+					if (!outConstraint.bestSeedOnly) {
+						// generate list
+						outTmp << std::accumulate( std::next( i.seed->begin() )
+										, i.seed->end()
+										, toString( i.seed->begin()->bp_i.second +1 ) // start with first element
+										, [&](std::string a, Interaction::Seed s) {
+											 return std::move(a) + listSep + toString( s.bp_i.second +1 ); // extend list
+										 });
+					} else {
+						outTmp <<i.seed->begin()->bp_i.second +1;
+					}
 				}
 				break;
 
@@ -258,7 +302,15 @@ add( const Interaction & i )
 				if (i.seed == NULL) {
 					outTmp <<std::numeric_limits<E_kcal_type>::signaling_NaN();
 				} else {
-					outTmp <<E_2_Ekcal(i.seed->energy);
+					outTmp << E_2_Ekcal(i.seed->begin()->energy);
+					if (!outConstraint.bestSeedOnly) {
+						// generate list
+						// print via std::for_each instead of std::accumulate due to rounding issues of boost::lexical_cast or std::to_string
+						// since sometimes (float(int)/100.0) gives strings with 10E-5 deviations of expected value
+						std::for_each( ++(i.seed->begin()), i.seed->end(), [&]( const Interaction::Seed & s) {
+									 outTmp << listSep << E_2_Ekcal(s.energy);
+									});
+					}
 				}
 				break;
 
@@ -266,7 +318,13 @@ add( const Interaction & i )
 				if (i.seed == NULL) {
 					outTmp <<std::numeric_limits<E_kcal_type>::signaling_NaN();
 				} else {
-					outTmp <<E_2_Ekcal(energy.getED1( i.seed->bp_i.first, i.seed->bp_j.first ));
+					outTmp << E_2_Ekcal(energy.getED1( i.seed->begin()->bp_i.first, i.seed->begin()->bp_j.first ));
+					if (!outConstraint.bestSeedOnly) {
+						// generate list
+						std::for_each( ++(i.seed->begin()), i.seed->end(), [&]( const Interaction::Seed & s) {
+									 outTmp << listSep << E_2_Ekcal(energy.getED1( s.bp_i.first, s.bp_j.first ));
+									});
+					}
 				}
 				break;
 
@@ -274,7 +332,13 @@ add( const Interaction & i )
 				if (i.seed == NULL) {
 					outTmp <<std::numeric_limits<E_kcal_type>::signaling_NaN();
 				} else {
-					outTmp <<E_2_Ekcal(energy.getAccessibility2().getAccessibilityOrigin().getED( i.seed->bp_j.second, i.seed->bp_i.second ));
+					outTmp << E_2_Ekcal(energy.getAccessibility2().getAccessibilityOrigin().getED( i.seed->begin()->bp_j.second, i.seed->begin()->bp_i.second ));
+					if (!outConstraint.bestSeedOnly) {
+						// generate list
+						std::for_each( ++(i.seed->begin()), i.seed->end(), [&]( const Interaction::Seed & s) {
+							outTmp << listSep << E_2_Ekcal(energy.getAccessibility2().getAccessibilityOrigin().getED( s.bp_j.second, s.bp_i.second ));
+						});
+					}
 				}
 				break;
 
@@ -282,7 +346,17 @@ add( const Interaction & i )
 				if (i.seed == NULL) {
 					outTmp <<std::numeric_limits<E_kcal_type>::signaling_NaN();
 				} else {
-					outTmp <<E_2_Ekcal(Z_2_E(std::exp( - E_2_Z(energy.getED1( i.seed->bp_i.first, i.seed->bp_j.first )) / energy.getRT() )));
+					if (!outConstraint.bestSeedOnly) {
+						// generate list
+						outTmp << std::accumulate( std::next( i.seed->begin() )
+										, i.seed->end()
+										, toString( energy.getBoltzmannWeight( energy.getED1( i.seed->begin()->bp_i.first, i.seed->begin()->bp_j.first )) ) // start with first element
+										, [&](std::string a, Interaction::Seed s) {
+											 return std::move(a) + listSep + toString( energy.getBoltzmannWeight( energy.getED1( s.bp_i.first, s.bp_j.first ) ) ); // extend list
+										 });
+					} else {
+						outTmp <<energy.getBoltzmannWeight( energy.getED1( i.seed->begin()->bp_i.first, i.seed->begin()->bp_j.first ));
+					}
 				}
 				break;
 
@@ -290,7 +364,17 @@ add( const Interaction & i )
 				if (i.seed == NULL) {
 					outTmp <<std::numeric_limits<E_kcal_type>::signaling_NaN();
 				} else {
-					outTmp <<E_2_Ekcal(Z_2_E(std::exp( - E_2_Z(energy.getAccessibility2().getAccessibilityOrigin().getED( i.seed->bp_j.second, i.seed->bp_i.second )) / energy.getRT() )));
+					if (!outConstraint.bestSeedOnly) {
+						// generate list
+						outTmp << std::accumulate( std::next( i.seed->begin() )
+										, i.seed->end()
+										, toString( energy.getBoltzmannWeight( energy.getAccessibility2().getAccessibilityOrigin().getED( i.seed->begin()->bp_j.second, i.seed->begin()->bp_i.second )) ) // start with first element
+										, [&](std::string a, Interaction::Seed s) {
+											 return std::move(a) + listSep + toString( energy.getBoltzmannWeight( energy.getAccessibility2().getAccessibilityOrigin().getED( s.bp_j.second, s.bp_i.second ) ) ); // extend list
+										 });
+					} else {
+						outTmp <<energy.getBoltzmannWeight( energy.getAccessibility2().getAccessibilityOrigin().getED( i.seed->begin()->bp_j.second, i.seed->begin()->bp_i.second ));
+					}
 				}
 				break;
 

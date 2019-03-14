@@ -131,7 +131,7 @@ fillHybridE()
 				///////////////////////////////////////////////////////////////////
 
 				// check if seed is possible for this left boundary
-				if ( E_isNotINF( seedHandler.getSeedE(i1,i2) ) ) {
+				if ( seedHandler.isSeedBound(i1,i2) ) {
 					// get right extension
 					w1 = seedHandler.getSeedLength1(i1,i2)-1; assert(i1+w1 < hybridE.size1());
 					w2 = seedHandler.getSeedLength2(i1,i2)-1; assert(i2+w2 < hybridE.size2());
@@ -318,7 +318,7 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 		}
 		// has to be interaction with seed on the left starting at (i1,i2)..seed..(k1,k2)..rest..(j1,j2)
 		if (traceNotFound) {
-			assert(E_isNotINF(seedHandler.getSeedE(i1,i2)));
+			assert( seedHandler.isSeedBound(i1,i2));
 			k1 = i1+seedHandler.getSeedLength1(i1,i2)-1; assert(k1<hybridE.size1());
 			k2 = i2+seedHandler.getSeedLength2(i1,i2)-1; assert(k2<hybridE.size2());
 			curCell = &(hybridE(k1,k2)); assert( E_equal( curE, (seedHandler.getSeedE(i1,i2)+curCell->E) ));
@@ -371,6 +371,9 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 		// set last to j1-j2
 		(*bps.rbegin()) = energy.getBasePair( j1, j2 );
 	}
+
+	// add all seeds that are subsets of the interaction
+	seedHandler.addSeeds( interaction );
 
 }
 

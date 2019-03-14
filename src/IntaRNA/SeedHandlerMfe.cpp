@@ -199,7 +199,7 @@ traceBackSeed( Interaction & interaction
 		, const size_t bpInbetween
 		, const size_t u1_
 		, const size_t u2_
-		)
+		) const
 {
 
 	// get boundaries

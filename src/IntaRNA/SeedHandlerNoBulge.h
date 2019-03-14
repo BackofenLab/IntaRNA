@@ -73,7 +73,7 @@ public:
 	 */
 	virtual
 	void
-	traceBackSeed( Interaction & interaction, const size_t i1, const size_t i2);
+	traceBackSeed( Interaction & interaction, const size_t i1, const size_t i2) const;
 
 
 	/**
@@ -85,6 +85,18 @@ public:
 	virtual
 	E_type
 	getSeedE( const size_t i1, const size_t i2 ) const;
+
+	/**
+	 * Checks whether or not a given base pair is the left-most base pair of
+	 * any seed
+	 * @param i1 the interacting base of seq1
+	 * @param i2 the interacting base of seq2
+	 * @return true if (i1,i2) is the left most base pair of some seed; false
+	 *         otherwise
+	 */
+	virtual
+	bool
+	isSeedBound( const size_t i1, const size_t i2 ) const;
 
 	/**
 	 * Access to the length in seq1 of the mfe seed with left-most base pair (i1,i2)
@@ -192,10 +204,10 @@ SeedHandlerNoBulge::
 traceBackSeed( Interaction & interaction
 		, const size_t i1
 		, const size_t i2
-		)
+		) const
 {
 #if INTARNA_IN_DEBUG_MODE
-	if ( E_isINF( getSeedE(i1,i2) ) ) throw std::runtime_error("SeedHandlerNoBulge::traceBackSeed(i1="+toString(i1)+",i2="+toString(i2)+") no seed known (E_INF)");
+	if ( !( isSeedBound(i1,i2) ) ) throw std::runtime_error("SeedHandlerNoBulge::traceBackSeed(i1="+toString(i1)+",i2="+toString(i2)+") no seed known");
 #endif
 
 	// get number of base pairs within the seed
@@ -225,12 +237,23 @@ getSeedE( const size_t i1, const size_t i2 ) const
 //////////////////////////////////////////////////////////////////////////
 
 inline
+bool
+SeedHandlerNoBulge::
+isSeedBound( const size_t i1, const size_t i2 ) const
+{
+	// search for seed entry in hash
+	return seedForLeftEnd.find( SeedHash::key_type(i1,i2) ) != seedForLeftEnd.end();
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+inline
 size_t
 SeedHandlerNoBulge::
 getSeedLength1( const size_t i1, const size_t i2 ) const
 {
 #if INTARNA_IN_DEBUG_MODE
-	if ( E_isINF( getSeedE(i1,i2) ) ) throw std::runtime_error("SeedHandlerNoBulge::getSeedLength1(i1="+toString(i1)+",i2="+toString(i2)+") no seed known (E_INF)");
+	if ( !( isSeedBound(i1,i2) ) ) throw std::runtime_error("SeedHandlerNoBulge::getSeedLength1(i1="+toString(i1)+",i2="+toString(i2)+") no seed known");
 #endif
 	// check if
 	return getConstraint().getBasePairs();
@@ -244,7 +267,7 @@ SeedHandlerNoBulge::
 getSeedLength2( const size_t i1, const size_t i2 ) const
 {
 #if INTARNA_IN_DEBUG_MODE
-	if ( E_isINF( getSeedE(i1,i2) ) ) throw std::runtime_error("SeedHandlerNoBulge::getSeedLength2(i1="+toString(i1)+",i2="+toString(i2)+") no seed known (E_INF)");
+	if ( !( isSeedBound(i1,i2) ) ) throw std::runtime_error("SeedHandlerNoBulge::getSeedLength2(i1="+toString(i1)+",i2="+toString(i2)+") no seed known");
 #endif
 	// check if
 	return getConstraint().getBasePairs();

@@ -61,7 +61,7 @@ public:
 	 */
 	virtual
 	void
-	traceBackSeed( Interaction & interaction, const size_t i1, const size_t i2);
+	traceBackSeed( Interaction & interaction, const size_t i1, const size_t i2) const;
 
 
 	/**
@@ -73,6 +73,18 @@ public:
 	virtual
 	E_type
 	getSeedE( const size_t i1, const size_t i2 ) const;
+
+	/**
+	 * Checks whether or not a given base pair is the left-most base pair of
+	 * any seed
+	 * @param i1 the interacting base of seq1
+	 * @param i2 the interacting base of seq2
+	 * @return true if (i1,i2) is the left most base pair of some seed; false
+	 *         otherwise
+	 */
+	virtual
+	bool
+	isSeedBound( const size_t i1, const size_t i2 ) const;
 
 	/**
 	 * Access to the length in seq1 of the seed with left-most base pair (i1,i2)
@@ -106,6 +118,16 @@ public:
 	static
 	std::string
 	checkSeedEncoding( const std::string & seed );
+
+	/**
+	 * parses the given explicit seed encoding for the maximal number of
+	 * base pairs within a seed
+	 * @param seedEncoding the explicit seed encoding to parse
+	 * @return the maximal number of base pairs among all encoded seeds
+	 */
+	static
+	size_t
+	getSeedMaxBP( const std::string & seedEncoding );
 
 	/**
 	 * Replace the input variables i1 and i2 to values to within the given range

@@ -594,6 +594,8 @@ protected:
 	NumberParameter<E_kcal_type> outMaxE;
 	//! min unpaired prob of an interacting subsequence allowed
 	NumberParameter<Z_type> outMinPu;
+	//! whether or not only the best seed is to be reported
+	bool outBestSeedOnly;
 	//! the CSV column selection
 	std::string outCsvCols;
 	//! the CSV column selection

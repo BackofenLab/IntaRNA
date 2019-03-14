@@ -79,6 +79,29 @@ SeedHandlerExplicit::
 
 /////////////////////////////////////////////////////////////////////////////
 
+size_t
+SeedHandlerExplicit::
+getSeedMaxBP( const std::string & seedEncoding )
+{
+	size_t maxBP = 0;
+	if (!seedEncoding.empty()) {
+#if INTARNA_IN_DEBUG_MODE
+		if (!checkSeedEncoding(seedEncoding).empty()) throw std::runtime_error("SeedHandlerExplicit::getSeedMaxBP() : no valid seed encoding : "+checkSeedEncoding(seedEncoding));
+#endif
+		size_t curBP = 0;
+		for( const char & c : seedEncoding ) {
+			switch(c){
+			case ',' :
+			case '&' : maxBP = std::max( maxBP, curBP ); curBP = 0; break;
+			case '|' : curBP++;
+			}
+		}
+	}
+	return maxBP;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
 std::string
 SeedHandlerExplicit::
 checkSeedEncoding( const std::string & seed )
@@ -113,8 +136,8 @@ checkSeedEncoding( const std::string & seed )
 	// check balancing of base pair number
 	int openBps = 0;
 	bool behindAmp = true;
-	for (size_t i=seed.size()-1; i>0; i--) {
-		switch (seed.at(i)) {
+	for (const char si : seed ) {
+		switch (si) {
 		case '|' : openBps += (behindAmp ? +1 : -1); break;
 		case '&' : behindAmp = false; break;
 		default: break;
@@ -127,9 +150,6 @@ checkSeedEncoding( const std::string & seed )
 	// all good
 	return "";
 }
-
-
-/////////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -163,7 +183,7 @@ SeedHandlerExplicit::
 traceBackSeed( Interaction & interaction
 		, const size_t i1
 		, const size_t i2
-		)
+		) const
 {
 	// copy according seed data if any
 	// try to access seed information
@@ -212,6 +232,16 @@ getSeedE( const size_t i1, const size_t i2 ) const
 
 //////////////////////////////////////////////////////////////////////////
 
+inline
+bool
+SeedHandlerExplicit::
+isSeedBound( const size_t i1, const size_t i2 ) const
+{
+	// search for seed entry in hash
+	return seedForLeftEnd.find( Interaction::BasePair(i1,i2) ) != seedForLeftEnd.end();
+}
+
+//////////////////////////////////////////////////////////////////////////
 
 size_t
 SeedHandlerExplicit::

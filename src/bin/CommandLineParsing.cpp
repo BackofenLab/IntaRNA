@@ -171,6 +171,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	outDeltaE( 0.0, 100.0, 100.0),
 	outMaxE( -999.0, +999.0, 0.0),
 	outMinPu( 0.0, 1.0, 0.0),
+	outBestSeedOnly(false),
 	outCsvCols(outCsvCols_default),
 	outPerRegion(false),
 	outSpotProbSpots(""),
@@ -689,13 +690,18 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 				->notifier(boost::bind(&CommandLineParsing::validate_outDeltaE,this,_1))
 			, std::string("suboptimal output : only interactions with E <= (minE+deltaE) are reported"
 					" (arg in range ["+toString(outDeltaE.min)+","+toString(outDeltaE.max)+"])").c_str())
+	    ("outBestSeedOnly"
+			, value<bool>(&(outBestSeedOnly))
+				->default_value(outBestSeedOnly)
+				->implicit_value(true)
+			, std::string("if given, only the energetically best putative seed is reported").c_str())
 		("outCsvCols"
 			, value<std::string>(&(outCsvCols))
 				->default_value(outCsvCols,"see text")
 				->notifier(boost::bind(&CommandLineParsing::validate_outCsvCols,this,_1))
 			, std::string("output : comma separated list of CSV column IDs to print if outMode=CSV."
 					" An empty argument (using '') prints all possible columns from the following available ID list: "
-					+ boost::replace_all_copy(OutputHandlerCsv::list2string(OutputHandlerCsv::string2list("")), ",", ", ")+"."
+					+ OutputHandlerCsv::list2string(OutputHandlerCsv::string2list(""),", ")+"."
 					+ "\nDefault = '"+outCsvCols+"'."
 					).c_str())
 	    ("outPerRegion"
@@ -935,7 +941,7 @@ parse(int argc, char** argv)
 				// check query search ranges
 				if (!seedQRange.empty()) {
 					if (query.size()!=1) {
-						throw error("seedQRange given but not only one query sequence provided");
+						throw error("seedQRange given but more than one query sequence provided");
 					} else {
 						validate_indexRangeList("seedQRange",seedQRange, 1, query.begin()->size());
 					}
@@ -943,30 +949,33 @@ parse(int argc, char** argv)
 				// check target search ranges
 				if (!seedTRange.empty()) {
 					if (target.size()!=1) {
-						throw error("seedTRange given but not only one target sequence provided");
+						throw error("seedTRange given but more than one target sequence provided");
 					} else {
 						validate_indexRangeList("seedTRange",seedTRange, 1, target.begin()->size());
 					}
 				}
 
 				// check if helixMaxBP >= seedBP
-				if (helixMaxBP.val < seedBP.val) {
-					throw error("maximum number of allowed seed base pairs ("+toString(seedBP.val)+") exceeds the maximal allowed number of helix base pairs ("+toString(helixMaxBP.val)+")");
-				}
-				// check for minimal sequence length (>=seedBP)
-				for( size_t i=0; i<query.size(); i++) {
-					if (query.at(i).size() < seedBP.val) {
-						throw error("length of query sequence "+toString(i+1)+" is below minimal number of seed base pairs (seedBP="+toString(seedBP.val)+")");
-					}
-				}
-				for( size_t i=0; i<target.size(); i++) {
-					if (target.at(i).size() < seedBP.val) {
-						throw error("length of target sequence "+toString(i+1)+" is below minimal number of seed base pairs (seedBP="+toString(seedBP.val)+")");
-					}
+				if (helixMaxBP.val < ( seedTQ.empty() ? seedBP.val : SeedHandlerExplicit::getSeedMaxBP(seedTQ) ) ) {
+					throw error("maximum number of seed base pairs ("
+							+toString(( seedTQ.empty() ? seedBP.val : SeedHandlerExplicit::getSeedMaxBP(seedTQ) ))
+							+") exceeds the maximally allowed number of helix base pairs ("+toString(helixMaxBP.val)+")");
 				}
 
 				// check for explicit seed constraints
-				if (!seedTQ.empty()) {
+				if (seedTQ.empty()) {
+					// check for minimal sequence length (>=seedBP)
+					for( size_t i=0; i<query.size(); i++) {
+						if (query.at(i).size() < seedBP.val) {
+							throw error("length of query sequence "+toString(i+1)+" is below minimal number of seed base pairs (seedBP="+toString(seedBP.val)+")");
+						}
+					}
+					for( size_t i=0; i<target.size(); i++) {
+						if (target.at(i).size() < seedBP.val) {
+							throw error("length of target sequence "+toString(i+1)+" is below minimal number of seed base pairs (seedBP="+toString(seedBP.val)+")");
+						}
+					}
+				} else {
 					if (target.size()>1 || query.size() > 1) {
 						throw error("explicit seed definition only for single query/target available");
 					}
@@ -1652,6 +1661,7 @@ getOutputConstraint()  const
 			, overlap
 			, Ekcal_2_E(outMaxE.val)
 			, Ekcal_2_E(outDeltaE.val)
+			, outBestSeedOnly
 			);
 }
 
@@ -2077,11 +2087,11 @@ getOutputHandler( const InteractionEnergy & energy ) const
 {
 	switch (outMode.val) {
 	case 'N' :
-		return new OutputHandlerText( getOutputStream(), energy, 10, false );
+		return new OutputHandlerText( getOutputStream(), energy, 10, false, getOutputConstraint() );
 	case 'D' :
-		return new OutputHandlerText( getOutputStream(), energy, 10, true );
+		return new OutputHandlerText( getOutputStream(), energy, 10, true, getOutputConstraint() );
 	case 'C' :
-		return new OutputHandlerCsv( getOutputStream(), energy, OutputHandlerCsv::string2list( outCsvCols ));
+		return new OutputHandlerCsv( getOutputStream(), energy, OutputHandlerCsv::string2list( outCsvCols ), getOutputConstraint() );
 	case '1' :
 		return new OutputHandlerIntaRNA1( getOutputStream(), energy, false );
 	case 'O' :

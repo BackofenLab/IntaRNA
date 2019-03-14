@@ -368,7 +368,7 @@ fillHelixSeed(const size_t i1min, const size_t i1max, const size_t i2min, const 
 			}
 
 			// If no seed is possible here, skip to next leading base pair number
-			if (E_isINF(seedHandler->getSeedE(seedStart1, seedStart2))) {
+			if (!(seedHandler->isSeedBound(seedStart1, seedStart2))) {
 				continue;
 			}
 
@@ -530,7 +530,7 @@ traceBackHelixSeed( Interaction & interaction
 		}
 
 		// Check whether seed is possible for this starting position
-		if (E_isINF(seedHandler->getSeedE(seedStart1, seedStart2))) {
+		if (!(seedHandler->isSeedBound(seedStart1, seedStart2))) {
 			continue;
 		}
 

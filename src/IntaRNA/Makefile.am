@@ -125,6 +125,7 @@ libIntaRNA_a_SOURCES =    \
 					PredictorMfeEns.cpp \
 					ReverseAccessibility.cpp \
 					RnaSequence.cpp \
+					SeedHandler.cpp \
 					SeedHandlerExplicit.cpp \
 					SeedHandlerMfe.cpp \
 					SeedHandlerNoBulge.cpp \

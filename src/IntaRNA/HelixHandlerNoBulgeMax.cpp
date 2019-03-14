@@ -415,7 +415,7 @@ traceBackHelixSeed( Interaction & interaction
 		seedStart2 = i2 + leadingBP;
 
 		// Check whether seed is possible for this starting position
-		if (E_isINF(seedHandler->getSeedE(seedStart1, seedStart2))) {
+		if ( !(seedHandler->isSeedBound(seedStart1, seedStart2)) ) {
 			continue;
 		}
 

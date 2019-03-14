@@ -11,9 +11,7 @@
 namespace IntaRNA {
 
 /**
- * Sorted list of non-overlapping ascending ranges.
- *
- * TODO add support for overlapping ranges
+ * Sorted list of ascending ranges that can be constrained to be non-overlapping
  *
  * @author Martin Mann
  *
@@ -45,7 +43,7 @@ public:
 	/**
 	 * empty construction
 	 */
-	IndexRangeList();
+	IndexRangeList( const bool allowOverlap = false );
 
 	/**
 	 * String encoding based construction
@@ -209,6 +207,12 @@ public:
 	void clear();
 
 	/**
+	 * Whether or not index ranges are allowed to overlap
+	 * @return true if ranges are allowed to overlap; false otherwise
+	 */
+	bool isAllowingOverlap() const;
+
+	/**
 	 * updates the range list data from a valid string encoding (matching regex)
 	 * @param stringEncoding the interval list string encoding
 	 * @throws std::runtime_error if stringEncoding does not match regex
@@ -234,7 +238,7 @@ public:
 	 * (newIdx = seqLength-1-oldIdx)
 	 */
 	IndexRangeList &
-	reverse( const size_t seqLength );
+	reverseInplace( const size_t seqLength );
 
 	/**
 	 * Reverses all indices for the given sequence length, i.e.
@@ -261,20 +265,25 @@ public:
 		return this->list != r.list;
 	}
 
+
+	/**
+	 * Prints the boundaries of the list's ranges to stream
+	 * @param out the ostream to write to
+	 * @param l the IndexRangeList object to add
+	 * @return the altered stream out
+	 */
+	friend std::ostream& operator<<(std::ostream& out, const IndexRangeList& l);
+
+
 protected:
+
+	//! whether or not overlapping ranges are allowed
+	bool allowOverlap;
 
 	//! the list of indices
 	List list;
 
 };
-
-/**
- * Prints the boundaries of the list's ranges to stream
- * @param out the ostream to write to
- * @param l the IndexRangeList object to add
- * @return the altered stream out
- */
-std::ostream& operator<<(std::ostream& out, const IndexRangeList& l);
 
 
 
@@ -283,9 +292,9 @@ std::ostream& operator<<(std::ostream& out, const IndexRangeList& l);
 //////////////////////////////////////////////////////////////////////
 
 inline
-IndexRangeList::IndexRangeList()
-:
-list()
+IndexRangeList::IndexRangeList( const bool allowOverlap )
+: allowOverlap(allowOverlap)
+, list()
 {
 }
 
@@ -293,8 +302,8 @@ list()
 
 inline
 IndexRangeList::IndexRangeList( const std::string & stringEncoding )
-:
-list()
+: allowOverlap(false)
+, list()
 {
 	fromString(stringEncoding);
 }
@@ -303,8 +312,8 @@ list()
 
 inline
 IndexRangeList::IndexRangeList( const IndexRangeList & toCopy )
-:
-list(toCopy.list)
+: allowOverlap(toCopy.allowOverlap)
+, list(toCopy.list)
 {
 }
 
@@ -335,7 +344,7 @@ reverse( const size_t seqLength ) const
 	// create copy
 	IndexRangeList tmp(*this);
 	// reverse and return copy
-	return tmp.reverse( seqLength );
+	return tmp.reverseInplace( seqLength );
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -387,6 +396,11 @@ IndexRangeList::const_reverse_iterator IndexRangeList::rend() const { return lis
 
 inline
 bool IndexRangeList::empty() const { return list.empty(); }
+
+//////////////////////////////////////////////////////////////////////
+
+inline
+bool IndexRangeList::isAllowingOverlap() const { return allowOverlap; }
 
 //////////////////////////////////////////////////////////////////////
 

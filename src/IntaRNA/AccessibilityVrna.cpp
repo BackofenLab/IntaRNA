@@ -365,7 +365,11 @@ fillByRNAplfold( const VrnaHandler &vrnaHandler
     std::pair< AccessibilityVrna*, FLT_OR_DBL > storageRT(this, (FLT_OR_DBL)vrnaHandler.getRT());
 
 	// call folding and unpaired prob calculation
-    vrna_probs_window( fold_compound, plFoldW, VRNA_PROBS_WINDOW_UP, &callbackForStorage, (void*)(&storageRT));
+    int retVal = vrna_probs_window( fold_compound, plFoldW, VRNA_PROBS_WINDOW_UP, &callbackForStorage, (void*)(&storageRT));
+    // check if computations went fine
+    if (retVal == 0) {
+    	throw std::runtime_error("AccessibilityVrna::fillByRNAplfold() : vrna_probs_window() returned 0 status ...");
+    }
 
 
     // garbage collection

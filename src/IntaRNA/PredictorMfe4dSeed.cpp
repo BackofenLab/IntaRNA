@@ -224,7 +224,7 @@ fillHybridE_seed( )
 			// base case = incorporate mfe seed starting at (i1,i2)
 			//             + interaction on right side up to (j1,j2)
 			// -> check if widths are wide enough to contain a seed
-			if ( E_isNotINF( seedHandler.getSeedE(i1,i2) ) ) {
+			if ( seedHandler.isSeedBound(i1,i2) ) {
 				// decode right mfe boundary
 				k1 = i1+seedHandler.getSeedLength1(i1,i2)-1;
 				k2 = i2+seedHandler.getSeedLength2(i1,i2)-1;
@@ -327,7 +327,7 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 		if (seedNotTraced) {
 
 			// check base case == seed only
-			if ( E_isNotINF( seedHandler.getSeedE(i1,i2) ) ) {
+			if ( seedHandler.isSeedBound(i1,i2) ) {
 
 				// right boundary of seed
 				k1 = i1 + seedHandler.getSeedLength1(i1,i2) -1;
@@ -417,6 +417,9 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 		// set last to j1-j2
 		(*bps.rbegin()) = energy.getBasePair( j1, j2 );
 	}
+
+	// add all seeds that are subsets of the interaction
+	seedHandler.addSeeds( interaction );
 
 }
 

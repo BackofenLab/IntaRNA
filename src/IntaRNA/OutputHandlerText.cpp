@@ -3,6 +3,8 @@
 
 #include <sstream>
 #include <iomanip>
+#include <numeric>
+#include <algorithm>
 
 #if INTARNA_MULITHREADING
 	#include <omp.h>
@@ -17,13 +19,15 @@ OutputHandlerText(
 		std::ostream & out,
 		const InteractionEnergy & energy,
 		const size_t flankingLength_,
-		const bool detailedOutput
+		const bool detailedOutput,
+		const OutputConstraint & outConstraint
 		)
  :
 	out(out)
 	, energy(energy)
 	, flankingLength(flankingLength_)
 	, detailedOutput(detailedOutput)
+	, outConstraint(outConstraint)
 {
 	if (flankingLength < 10) {
 		throw std::runtime_error("OutputHandlerText::OutputHandlerText : flankingLength ("+toString(flankingLength_)+") has to be at least 9");
@@ -79,6 +83,8 @@ add( const Interaction & i )
 	const size_t i2 = i.basePairs.begin()->second;
 	const size_t j2 = i.basePairs.rbegin()->second;
 
+	const IndexRangeList seedRanges1 = i.getSeedRanges1();
+
 	// decompose printing into several rows
 	std::ostringstream s1Unbound;
 	std::ostringstream s1Bound;
@@ -133,13 +139,14 @@ add( const Interaction & i )
 
 	// interaction start left
 	Interaction::PairingVec::const_iterator leftBP = i.basePairs.begin();
-	char nt1 = i.s1->asString().at(leftBP->first);
-	char nt2 = i.s2->asString().at(leftBP->second);
 	// print start
 	s1Unbound.width(1);	 s1Unbound <<std::left <<' ';
 	s1Bound.width(1);	 s1Bound   <<std::left <<i.s1->asString().at(leftBP->first);
 	pairing.width(1);	 pairing   <<std::left;
-	if ((nt1=='G' && nt2=='U') || (nt1=='U' && nt2=='G')) {
+	if (detailedOutput && seedRanges1.covers(leftBP->first)) {
+		pairing   <<'+';
+	} else
+	if (energy.isGU(leftBP->first, leftBP->second)) {
 		pairing   <<':';
 	} else {
 		pairing   <<'|';
@@ -182,17 +189,18 @@ add( const Interaction & i )
 		interactionLength += loop;
 
 		// print current base pair (right end of internal loop)
-		nt1 = i.s1->asString().at(curBP->first);
-		nt2 = i.s2->asString().at(curBP->second);
 		s1Unbound.width(1);	 s1Unbound <<' ';
-		s1Bound.width(1);	 s1Bound   <<nt1;
+		s1Bound.width(1);	 s1Bound   <<i.s1->asString().at(curBP->first);
 		pairing.width(1);
-		if ((nt1=='G' && nt2=='U') || (nt1=='U' && nt2=='G')) {
+		if (detailedOutput && seedRanges1.covers(curBP->first)) {
+			pairing   <<'+';
+		} else
+		if (energy.isGU(curBP->first, curBP->second)) {
 			pairing   <<':';
 		} else {
 			pairing   <<'|';
 		}
-		s2Bound.width(1);	 s2Bound   <<nt2;
+		s2Bound.width(1);	 s2Bound   <<i.s2->asString().at(curBP->second);
 		s2Unbound.width(1);	 s2Unbound <<' ';
 		interactionLength++;
 	}
@@ -319,15 +327,57 @@ add( const Interaction & i )
 
 			// print seed information if available
 			if (i.seed != NULL) {
+				const std::string listSep = " | ";
+				const auto s1 = i.seed->begin();
+				// print via std::for_each instead of std::accumulate due to rounding issues of boost::lexical_cast or std::to_string
+				// since sometimes (float(int)/100.0) gives strings with 10-5 deviations of expected value
 				outTmp
-					<<"\n"
-					<<"seed seq1   = "<<(i.seed->bp_i.first +1)<<" -- "<<(i.seed->bp_j.first +1) <<'\n'
-					<<"seed seq2   = "<<(i.seed->bp_j.second +1)<<" -- "<<(i.seed->bp_i.second +1) <<'\n'
-					<<"seed energy = "<<E_2_Ekcal(i.seed->energy)<<" kcal/mol\n"
-					<<"seed ED1    = "<<E_2_Ekcal(energy.getED1( i.seed->bp_i.first, i.seed->bp_j.first ))<<" kcal/mol\n"
-					<<"seed ED2    = "<<E_2_Ekcal(energy.getAccessibility2().getAccessibilityOrigin().getED( i.seed->bp_j.second, i.seed->bp_i.second ))<<" kcal/mol\n"
-					<<"seed Pu1    = "<<E_2_Ekcal(Z_2_E(std::exp(-E_2_Z(energy.getED1( i.seed->bp_i.first, i.seed->bp_j.first ))/energy.getRT())))<<'\n'
-					<<"seed Pu2    = "<<E_2_Ekcal(Z_2_E(std::exp(-E_2_Z(energy.getAccessibility2().getAccessibilityOrigin().getED( i.seed->bp_j.second, i.seed->bp_i.second ))/energy.getRT())))<<'\n'
+					<<"\nseed seq1   = "<<(s1->bp_i.first +1)<<" -- "<<(s1->bp_j.first +1);
+				if (!outConstraint.bestSeedOnly)
+					std::for_each( ++(i.seed->begin()), i.seed->end(), [&]( const Interaction::Seed & s) {
+								 outTmp << listSep <<(s.bp_i.first +1)<<" -- "<<(s.bp_j.first +1);
+								});
+				outTmp
+					<<"\nseed seq2   = "<<(s1->bp_j.second +1)<<" -- "<<(s1->bp_i.second +1);
+				if (!outConstraint.bestSeedOnly)
+					std::for_each( ++(i.seed->begin()), i.seed->end(), [&]( const Interaction::Seed & s) {
+								 outTmp << listSep <<(s.bp_j.second +1)<<" -- "<<(s.bp_i.second +1);
+								});
+				outTmp
+					<<"\nseed energy = "<<E_2_Ekcal(s1->energy);
+				if (!outConstraint.bestSeedOnly)
+					std::for_each( ++(i.seed->begin()), i.seed->end(), [&]( const Interaction::Seed & s) {
+								 outTmp << listSep << E_2_Ekcal(s.energy);
+								});
+				outTmp
+//						<<" kcal/mol"
+					<<"\nseed ED1    = "<<E_2_Ekcal(energy.getED1( s1->bp_i.first, s1->bp_j.first ));
+				if (!outConstraint.bestSeedOnly)
+					std::for_each( ++(i.seed->begin()), i.seed->end(), [&]( const Interaction::Seed & s) {
+								 outTmp << listSep << E_2_Ekcal(energy.getED1( s.bp_i.first, s.bp_j.first ));
+								});
+				outTmp
+//						<<" kcal/mol"
+					<<"\nseed ED2    = "<<E_2_Ekcal(energy.getAccessibility2().getAccessibilityOrigin().getED( s1->bp_j.second, s1->bp_i.second ));
+				if (!outConstraint.bestSeedOnly)
+					std::for_each( ++(i.seed->begin()), i.seed->end(), [&]( const Interaction::Seed & s) {
+								 outTmp << listSep << E_2_Ekcal(energy.getAccessibility2().getAccessibilityOrigin().getED( s.bp_j.second, s.bp_i.second ));
+								});
+				outTmp
+//						<<" kcal/mol"
+					<<"\nseed Pu1    = "<<energy.getBoltzmannWeight(energy.getED1( s1->bp_i.first, s1->bp_j.first ));
+				if (!outConstraint.bestSeedOnly)
+					std::for_each( ++(i.seed->begin()), i.seed->end(), [&]( const Interaction::Seed & s) {
+								 outTmp << listSep <<energy.getBoltzmannWeight(energy.getED1( s.bp_i.first, s.bp_j.first ));
+								});
+				outTmp
+					<<"\nseed Pu2    = " <<energy.getBoltzmannWeight(energy.getAccessibility2().getAccessibilityOrigin().getED( s1->bp_j.second, s1->bp_i.second ));
+				if (!outConstraint.bestSeedOnly)
+					std::for_each( ++(i.seed->begin()), i.seed->end(), [&]( const Interaction::Seed & s) {
+								 outTmp << listSep <<energy.getBoltzmannWeight(energy.getAccessibility2().getAccessibilityOrigin().getED( s.bp_j.second, s.bp_i.second ));
+								});
+				outTmp
+					<<'\n'
 					;
 			} // seed
 		} // detailed
@@ -342,14 +392,6 @@ add( const Interaction & i )
 
 }
 
-
-////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////
 

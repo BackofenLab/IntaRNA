@@ -114,7 +114,7 @@ public:
 	 */
 	virtual
 	void
-	traceBackSeed( Interaction & interaction, const size_t i1, const size_t i2);
+	traceBackSeed( Interaction & interaction, const size_t i1, const size_t i2) const;
 
 
 	/**
@@ -129,6 +129,18 @@ public:
 	virtual
 	E_type
 	getSeedE( const size_t i1, const size_t i2 ) const;
+
+	/**
+	 * Checks whether or not a given base pair is the left-most base pair of
+	 * any seed
+	 * @param i1 the interacting base of seq1
+	 * @param i2 the interacting base of seq2
+	 * @return true if (i1,i2) is the left most base pair of some seed; false
+	 *         otherwise
+	 */
+	virtual
+	bool
+	isSeedBound( const size_t i1, const size_t i2 ) const;
 
 	/**
 	 * Access to the length in seq1 of the mfe seed with left-most base pair (i1,i2)
@@ -290,7 +302,7 @@ SeedHandlerIdxOffset::
 traceBackSeed( Interaction & interaction
 		, const size_t i1
 		, const size_t i2
-		)
+		) const
 {
 	seedHandlerOriginal->traceBackSeed( interaction, i1+idxOffset1, i2+idxOffset2 );
 }
@@ -303,6 +315,16 @@ SeedHandlerIdxOffset::
 getSeedE( const size_t i1, const size_t i2 ) const
 {
 	return seedHandlerOriginal->getSeedE( i1+idxOffset1, i2+idxOffset2 );
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+SeedHandlerIdxOffset::
+isSeedBound( const size_t i1, const size_t i2 ) const
+{
+	return seedHandlerOriginal->isSeedBound( i1+idxOffset1, i2+idxOffset2 );
 }
 
 //////////////////////////////////////////////////////////////////////////

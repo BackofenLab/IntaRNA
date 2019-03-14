@@ -4,11 +4,13 @@
 
 #include "IntaRNA/general.h"
 
+#include "IntaRNA/OutputConstraint.h"
 #include "IntaRNA/OutputHandler.h"
 #include "IntaRNA/InteractionEnergy.h"
 
 #include <list>
 #include <map>
+#include <numeric>
 
 #include <boost/algorithm/string.hpp>
 
@@ -145,14 +147,19 @@ public:
 	 * @param out the stream to write to
 	 * @param energy the interaction energy object used for computation
 	 * @param colOrder the order and list of columns to be printed
+	 * @param outConstraint the output constraint applied to predictions (can be NULL)
 	 * @param colSep the column separator to be used in CSV output
 	 * @param printHeader whether or not to print header information = col names
+	 * @param listSep if multiple entries have to be printed per column, this
+	 *        separator is used between values
 	 */
 	OutputHandlerCsv( std::ostream & out
 						, const InteractionEnergy & energy
 						, const ColTypeList colOrder
+						, const OutputConstraint & outConstraint = OutputConstraint()
 						, const std::string& colSep = ";"
 						, const bool printHeader = false
+						, const std::string& listSep = ":"
 						);
 
 	/**
@@ -184,11 +191,12 @@ public:
 	/**
 	 * Converts a list of Coltypes to their string representation.
 	 * @param colTypes the list to convert
+	 * @param sep the separator to use
 	 * @return the string representation of the list
 	 */
 	static
 	std::string
-	list2string( const ColTypeList & colTypes );
+	list2string( const ColTypeList & colTypes, const std::string & sep );
 
 	/**
 	 * Converts string representation of a list of Coltypes to the respective
@@ -224,8 +232,14 @@ protected:
 	//! the sequence of columns to be reported
 	const std::list< ColType > colOrder;
 
+	//! the output constraint applied to predictions
+	const OutputConstraint outConstraint;
+
 	//! the column separator to be used
 	std::string colSep;
+
+	//! the list separator to be used within single columns
+	std::string listSep;
 
 
 
@@ -258,19 +272,21 @@ add( const InteractionRange & range )
 inline
 std::string
 OutputHandlerCsv::
-list2string( const ColTypeList & colTypes )
+list2string( const ColTypeList & colTypes, const std::string & sep )
 {
 	// init string encodings
 	initColType2string();
-	// convert list
-	std::stringstream ret;
-	for (auto it = colTypes.begin(); it!=colTypes.end(); it++) {
-		if (it!=colTypes.begin())
-			ret <<',';
-		ret <<colType2string[*it];
-	}
-	// return compiled string
-	return ret.str();
+
+	// lamda function to add next column to list
+	auto addCol = [&](std::string a, ColType b) {
+					 return std::move(a) + sep + colType2string[b];
+				 };
+
+	// generate full list
+	return std::accumulate(std::next(colTypes.begin())
+						, colTypes.end()
+						, colType2string[*(colTypes.begin())] // start with first element
+						, addCol);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -328,18 +344,8 @@ std::string
 OutputHandlerCsv::
 getHeader( const OutputHandlerCsv::ColTypeList & colList, const std::string& colSep )
 {
-	// init string encodings
-	initColType2string();
-
-	// generate header via stream
-	std::stringstream header;
-	for (auto col = colList.begin(); col != colList.end(); col++) {
-		header	<<(col==colList.begin()?"":colSep)
-				<<colType2string[*col];
-	}
-	header <<'\n';
 	// return string
-	return header.str();
+	return list2string( colList, colSep ) + "\n";
 }
 
 //////////////////////////////////////////////////////////////////////////

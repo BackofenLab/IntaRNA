@@ -2,6 +2,7 @@
 #ifndef INTARNA_OUTPUTHANDLERTEXT_H_
 #define INTARNA_OUTPUTHANDLERTEXT_H_
 
+#include "IntaRNA/OutputConstraint.h"
 #include "IntaRNA/OutputHandler.h"
 #include "IntaRNA/InteractionEnergy.h"
 
@@ -27,11 +28,14 @@ public:
 	 *        interaction to be printed in the output
 	 * @param detailedOutput if (true) detailed output is provided; normal
 	 *        reduced output otherwise
+	 * @param outConstraint the output constraint applied to predictions (can be NULL)
 	 */
 	OutputHandlerText( std::ostream & out
 				, const InteractionEnergy & energy
 				, const size_t flankingLength = 10
-				, const bool detailedOutput = false );
+				, const bool detailedOutput = false
+				, const OutputConstraint & outConstraint = OutputConstraint()
+				);
 
 	/**
 	 * destruction, enforces a flush on the output stream.
@@ -75,6 +79,9 @@ protected:
 
 	//! whether or not detailed output has to be provided
 	const bool detailedOutput;
+
+	//! the output constraint applied to predictors
+	const OutputConstraint outConstraint;
 
 };
 

@@ -79,24 +79,27 @@ The following topics are covered by this documentation:
   - [Microsoft Windows installation](#instwin)
   - [OS X installation with homebrew](#instosx)
 - [Usage and Parameters](#usage)
-  - [Just run ...](#defaultRun)
-    - [Load arguments from file](#parameterFile)
+- [Just run ...](#defaultRun)
+  - [Load arguments from file](#parameterFile)
+- [General things you should know](#generalInformation)
   - [Interaction Model](#interactionModel)
     - [Single-site, unconstraint RNA-RNA interaction](#interactionModel-ssUnconstraintMfe)
     - [Single-site, helix-based RNA-RNA interaction](#interactionModel-ssHelixBlockMfe)
+  - [Prediction modes](#predModes)
+    - [Emulating other RNA-RNA interaction prediction tools](#predEmulateTools)
+    - [Limiting memory consumption - window-based prediction](#predWindowBased)
   - [IntaRNA's multiple personalities](#personality)
     - [IntaRNA - default](#IntaRNA)
     - [IntaRNAhelix - helix-based predictions](#IntaRNAhelix)
     - [IntaRNAup - RNAup-like predictions](#IntaRNAup)
     - [IntaRNAduplex - RNAduplex-like predictions](#IntaRNAduplex)
-  - [Prediction modes](#predModes)
-    - [Emulating other RNA-RNA interaction prediction tools](#predEmulateTools)
-    - [Limiting memory consumption - window-based prediction](#predWindowBased)
+- [How to constrain predicted interactions](#constraintSetup)
   - [Interaction restrictions](#interConstr)
   - [Seed constraints](#seed)
   - [Explicit seed input](#seedExplicit)
   - [Helix constraints](#helix)
   - [SHAPE reactivity data to enhance accessibility computation](#shape)
+- [Output Setup](#outputSetup)
   - [Output modes](#outmodes)
   - [Suboptimal RNA-RNA interaction prediction and output restrictions](#subopts)
   - [Energy parameters and temperature](#energy)
@@ -349,7 +352,9 @@ make install
 # Usage and parameters
 
 IntaRNA comes with a vast variety of ways to tune or enhance *YOUR* RNA-RNA prediction.
-To this end, different [prediction modes](#predModes) are implemented that allow
+To this end, different [prediction modes](#predModes) and 
+[interaction models](#interactionModel) 
+are implemented that allow
 to balance predication quality and runtime requirement. Furthermore, it is
 possible to define
 [interaction restrictions](#interConstr),
@@ -472,6 +477,13 @@ command line parsing) case sensitive!
 
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
+<br /><br />
+<a name="generalInformation" />
+
+# General things you should know
+
+
+
 <br /><br />
 <a name="interactionModel" />
 
@@ -597,6 +609,112 @@ For further details on the model and the underlying algorithm, please refer to o
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
 <br /><br />
+<a name="predModes" />
+
+## Prediction modes
+
+For the prediction of *minimum free energy interactions*, the following modes
+and according features are supported and can be set via the `--mode` parameter.
+The time and space complexities are given for the prediction of two sequences
+of equal length *n*.
+
+| Features | Heuristic `--mode=H` | Exact-SE `--mode=M` | Exact `--mode=E` |
+| -------- | :------------------: | :-----------------: | :--------------: |
+| Time complexity (prediction only) | O(*n*^2) | O(*n*^4) | O(*n*^4) |
+| Space complexity | O(*n*^2) | O(*n*^2) | O(*n*^4) |
+| [Seed constraint](#seed) | x | x | x |
+| [Explicit seeds](#seedExplicit) | x | x | x |
+| [SHAPE reactivity constraint](#shape) | x | x | x |
+| No [seed constraint](#seed) | x | x | x |
+| Minimum free energy interaction | not guaranteed | x | x |
+| Overlapping [suboptimal interactions](#subopts) | x | x | x |
+| Non-overlapping [suboptimal interactions](#subopts) | x | - | x |
+
+Note, due to the low run-time requirement of the heuristic prediction mode
+(`--mode=H`), heuristic IntaRNA interaction predictions are widely used to screen
+for interaction in a genome-wide scale. If you are more interested in specific
+details of an interaction site or of two relatively short RNA molecules, you
+should investigate the exact prediction mode (`--mode=M`, or `--mode=E`
+if non-overlapping suboptimal prediction is required). Note further, the exact
+mode `E` should provide the same results as mode `M` but uses dramatically more
+memory for computations.
+
+
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
+<br /><br />
+<a name="predEmulateTools" />
+
+### Emulating other RNA-RNA interaction prediction tools
+
+Given these features, we can emulate and extend a couple of RNA-RNA interaction
+tools using IntaRNA.
+
+**TargetScan**, **RNAhybrid** and **RNAduplex** are approaches that predict the interaction hybrid with
+minimal interaction energy without consideration whether or not the interacting
+subsequences are probably involved involved in intramolecular base pairings. Furthermore,
+no seed constraint is taken into account.
+This prediction result can be emulated (depending on the used prediction mode)
+by running IntaRNA when disabling both the seed constraint
+as well as the accessibility integration using
+```bash
+# prediction results similar to TargetScan/RNAhybrid
+IntaRNA [..] --noSeed --qAcc=N --tAcc=N
+```
+We *add seed-constraint support to TargetScan/RNAhybrid-like computations* by removing the
+`--noSeed` flag from the above call.
+See [IntaRNAup personality](#IntaRNAup) for additional information.
+
+
+**RNAup** was one of the first RNA-RNA interaction prediction approaches that took the
+accessibility of the interacting subsequences into account while not considering the seed feature.
+IntaRNA's exact prediction mode is eventually an alternative implementation when disabling
+seed constraint incorporation. Furthermore, the unpaired probabilities used by RNAup to score
+the accessibility of subregions are covering the respective overall structural ensemble for each
+interacting RNA, such that we have to disable accessibility computation based on local folding (RNAplfold).
+Finally, RNAup only predicts interactions for subsequences of length 25.
+All this can be setup using
+```bash
+# prediction results similar to 'RNAup -b' (incorporating accessibility of both RNAs)
+IntaRNA --mode=M --noSeed --qAccW=0 --qAccL=0 --qIntLenMax=25 --tAccW=0 --tAccL=0 --tIntLenMax=25
+```
+We *add seed-constraint support to RNAup-like computations* by removing the
+`--noSeed` flag from the above call. 
+See [IntaRNAup personality](#IntaRNAup) for additional information.
+
+
+
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
+<br /><br />
+<a name="predWindowBased" />
+
+### Limiting memory consumption - window-based prediction
+
+The memory requirement of IntaRNA grows quadratically with lengths of the input
+sequences. Thus, for very long input RNAs, the requested memory can exceed the
+available RAM of smaller computers.
+
+This can be circumvented by using a window-based prediction where the input
+sequences are decomposed in overlapping subsequences (windows) that are
+processed individually. That way, the maximal memory consumption is defined by
+the (shorter) window length rather the length of the input sequence, resulting
+in a user guided memory/RAM consumption.
+
+The window-based computation is enabled by setting the following parameters
+
+- `--windowWidth` : length of the windows/subsequences (value of 0 disables window-based computations)
+- `--windowOverlap` : overlap of the windows, which has to be larger than the maximal interaction length (see [`--q|tIntLenMax`](#interConstr))   
+
+Note, window-based computation produces a computational overhead due to
+redundant consideration of the overlapping subsequences. Thus, the runtime is
+increased proportionally to the ratio of window overlap and length.
+
+If only one query and target are given, window-based computation can be
+[parallelized](#multithreading), which typically remedies the computational overhead.
+
+
+
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
+<br /><br />
 <a name="personality" />
 
 ## IntaRNA's multiple personalities
@@ -715,111 +833,13 @@ by thermodynamics.
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
 <br /><br />
-<a name="predModes" />
+<a name="constraintSetup" />
 
-## Prediction modes
-
-For the prediction of *minimum free energy interactions*, the following modes
-and according features are supported and can be set via the `--mode` parameter.
-The time and space complexities are given for the prediction of two sequences
-of equal length *n*.
-
-| Features | Heuristic `--mode=H` | Exact-SE `--mode=M` | Exact `--mode=E` |
-| -------- | :------------------: | :-----------------: | :--------------: |
-| Time complexity (prediction only) | O(*n*^2) | O(*n*^4) | O(*n*^4) |
-| Space complexity | O(*n*^2) | O(*n*^2) | O(*n*^4) |
-| [Seed constraint](#seed) | x | x | x |
-| [Explicit seeds](#seedExplicit) | x | x | x |
-| [SHAPE reactivity constraint](#shape) | x | x | x |
-| No [seed constraint](#seed) | x | x | x |
-| Minimum free energy interaction | not guaranteed | x | x |
-| Overlapping [suboptimal interactions](#subopts) | x | x | x |
-| Non-overlapping [suboptimal interactions](#subopts) | x | - | x |
-
-Note, due to the low run-time requirement of the heuristic prediction mode
-(`--mode=H`), heuristic IntaRNA interaction predictions are widely used to screen
-for interaction in a genome-wide scale. If you are more interested in specific
-details of an interaction site or of two relatively short RNA molecules, you
-should investigate the exact prediction mode (`--mode=M`, or `--mode=E`
-if non-overlapping suboptimal prediction is required). Note further, the exact
-mode `E` should provide the same results as mode `M` but uses dramatically more
-memory for computations.
-
-
-[![up](doc/figures/icon-up.28.png) back to overview](#overview)
-<br /><br />
-<a name="predEmulateTools" />
-
-### Emulating other RNA-RNA interaction prediction tools
-
-Given these features, we can emulate and extend a couple of RNA-RNA interaction
-tools using IntaRNA.
-
-**TargetScan**, **RNAhybrid** and **RNAduplex** are approaches that predict the interaction hybrid with
-minimal interaction energy without consideration whether or not the interacting
-subsequences are probably involved involved in intramolecular base pairings. Furthermore,
-no seed constraint is taken into account.
-This prediction result can be emulated (depending on the used prediction mode)
-by running IntaRNA when disabling both the seed constraint
-as well as the accessibility integration using
-```bash
-# prediction results similar to TargetScan/RNAhybrid
-IntaRNA [..] --noSeed --qAcc=N --tAcc=N
-```
-We *add seed-constraint support to TargetScan/RNAhybrid-like computations* by removing the
-`--noSeed` flag from the above call.
-See [IntaRNAup personality](#IntaRNAup) for additional information.
-
-
-**RNAup** was one of the first RNA-RNA interaction prediction approaches that took the
-accessibility of the interacting subsequences into account while not considering the seed feature.
-IntaRNA's exact prediction mode is eventually an alternative implementation when disabling
-seed constraint incorporation. Furthermore, the unpaired probabilities used by RNAup to score
-the accessibility of subregions are covering the respective overall structural ensemble for each
-interacting RNA, such that we have to disable accessibility computation based on local folding (RNAplfold).
-Finally, RNAup only predicts interactions for subsequences of length 25.
-All this can be setup using
-```bash
-# prediction results similar to 'RNAup -b' (incorporating accessibility of both RNAs)
-IntaRNA --mode=M --noSeed --qAccW=0 --qAccL=0 --qIntLenMax=25 --tAccW=0 --tAccL=0 --tIntLenMax=25
-```
-We *add seed-constraint support to RNAup-like computations* by removing the
-`--noSeed` flag from the above call. 
-See [IntaRNAup personality](#IntaRNAup) for additional information.
+# How to constrain predicted interactions
 
 
 
-[![up](doc/figures/icon-up.28.png) back to overview](#overview)
-<br /><br />
-<a name="predWindowBased" />
 
-### Limiting memory consumption - window-based prediction
-
-The memory requirement of IntaRNA grows quadratically with lengths of the input
-sequences. Thus, for very long input RNAs, the requested memory can exceed the
-available RAM of smaller computers.
-
-This can be circumvented by using a window-based prediction where the input
-sequences are decomposed in overlapping subsequences (windows) that are
-processed individually. That way, the maximal memory consumption is defined by
-the (shorter) window length rather the length of the input sequence, resulting
-in a user guided memory/RAM consumption.
-
-The window-based computation is enabled by setting the following parameters
-
-- `--windowWidth` : length of the windows/subsequences (value of 0 disables window-based computations)
-- `--windowOverlap` : overlap of the windows, which has to be larger than the maximal interaction length (see [`--q|tIntLenMax`](#interConstr))   
-
-Note, window-based computation produces a computational overhead due to
-redundant consideration of the overlapping subsequences. Thus, the runtime is
-increased proportionally to the ratio of window overlap and length.
-
-If only one query and target are given, window-based computation can be
-[parallelized](#multithreading), which typically remedies the computational overhead.
-
-
-
-[![up](doc/figures/icon-up.28.png) back to overview](#overview)
 <br /><br />
 <a name="interConstr" />
 
@@ -1015,6 +1035,14 @@ For further details, please refer to our respective publication
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
+
+
+<br /><br />
+<a name="outputSetup" />
+
+# Output setup
+
+
 <br /><br />
 <a name="outmodes" />
 
@@ -1061,12 +1089,13 @@ various interaction details will be provided. An example is given below.
 ```bash
 # call: IntaRNA -t AAACACCCCCGGUGGUUUGG -q AAACACCCCCGGUGGUUUGG --outMode=D --seedBP=4
 
+
 target
              5      12
              |      |
       5'-AAAC   C    UGGUUUGG-3'
              ACC CCGG
-             ||| ||||
+             ||| ++++
              UGG GGCC
       3'-GGUU   U    CCCACAAA-5'
              |      |
@@ -1076,29 +1105,40 @@ query
 interaction seq1   = 5 -- 12
 interaction seq2   = 9 -- 16
 
-interaction energy = -2.78924 kcal/mol
+interaction energy = -2.79 kcal/mol
   = E(init)        = 4.1
   + E(loops)       = -13.9
-  + E(dangleLeft)  = -0.458042
-  + E(dangleRight) = -0.967473
+  + E(dangleLeft)  = -0.46
+  + E(dangleRight) = -0.96
   + E(endLeft)     = 0.5
   + E(endRight)    = 0
-  + ED(seq1)       = 3.91068
-  + ED(seq2)       = 4.0256
-  + Pu(seq1)       = 0.00175516
-  + Pu(seq2)       = 0.00145659
+    : E(hybrid)    = -10.72
+  + ED(seq1)       = 3.91
+    : Pu(seq1)     = 0
+  + ED(seq2)       = 4.02
+    : Pu(seq2)     = 0
 
 seed seq1   = 9 -- 12
 seed seq2   = 9 -- 12
-seed energy = -1.4098 kcal/mol
-seed ED1    = 2.66437 kcal/mol
-seed ED2    = 2.66437 kcal/mol
-seed Pu1    = 0.0132596
-seed Pu2    = 0.0132596
+seed energy = -1.42
+seed ED1    = 2.66
+seed ED2    = 2.66
+seed Pu1    = 0.0133541
+seed Pu2    = 0.0133541
 ```
 Position annotations start indexing with 1 at the 5'-end of each RNA.
 `ED` values are the energy penalties for reduced [accessibility](#accessibility)
 and `Pu` denote unpaired probabilities of the respective interacting subsequences.
+Base pairs that are part of putative seed interactions are represented by
+`+` symbols within the interaction chart. Note, an interaction can contain more
+than one putative seed and all respective base pairs are highlighted. 
+In addition, the seed information (given at the end of the output) will provide
+information for all possible seeds sorted by increasing energy (ie. the most
+stable and thus most likely seed is always given left most).
+If you are only interested in the most stable seed, you should add
+`--outBestSeedOnly` to the call.
+
+
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
@@ -1154,15 +1194,20 @@ are
 - `E_hybrid` : energy of hybridization only = E - ED1 - ED2
 - `E_norm` : length normalized energy = E / ln(length(seq1)*length(seq2))
 - `E_hybridNorm` : length normalized energy of hybridization only = E_hybrid / ln(length(seq1)*length(seq2))
-- `seedStart1` : start index of the seed in seq1
-- `seedEnd1` : end index of the seed in seq1
-- `seedStart2` : start index of the seed in seq2
-- `seedEnd2` : end index of the seed in seq2
-- `seedE` : overall hybridization energy of the seed only (excluding rest)
-- `seedED1` : ED value of seq1 of the seed only (excluding rest)
-- `seedED2` : ED value of seq2 of the seed only (excluding rest)
-- `seedPu1` : probability of seed region to be accessible for seq1
-- `seedPu2` : probability of seed region to be accessible for seq2
+- `seedStart1` : start index of the seed in seq1 (* see below)
+- `seedEnd1` : end index of the seed in seq1 (* see below)
+- `seedStart2` : start index of the seed in seq2 (* see below)
+- `seedEnd2` : end index of the seed in seq2 (* see below)
+- `seedE` : overall hybridization energy of the seed only (excluding rest) (* see below)
+- `seedED1` : ED value of seq1 of the seed only (excluding rest) (* see below)
+- `seedED2` : ED value of seq2 of the seed only (excluding rest) (* see below)
+- `seedPu1` : probability of seed region to be accessible for seq1 (* see below)
+- `seedPu2` : probability of seed region to be accessible for seq2 (* see below)
+
+(*) Note, since an interaction can cover more than one seed, all `seed*` columns
+might contain multiple entries separated by ':' symbols. In order to print only
+the most stable (lowest seed energy) seed information add `--outBestSeedOnly`
+to the call. 
 
 Using `--outCsvCols ''`, all available columns are added to the output.
 

@@ -8,6 +8,87 @@
 
 development version
 
+190313 Martin Raden :
+ * IntaRNA/IndexRangeList :
+   + allowOverlapping member
+   + isAllowingOverlap() 
+   * constructor( + allowOverlapping )
+   + reverseInplace() : renamed non-const reverse method to make intention clear
+   - reverse() : replaced by reverseInplace()
+   * ostream operator now friend function
+   * covers() :
+   * overlaps() :
+   * insert() :
+     + support for non-overlapping ranges added
+ * IntaRNA/Interaction : 
+   * Seed :
+     + constructor() to enable default and explicit initialization
+     + < operator to enable automated (energy-based) sorting
+   + SeedSet : (energy-sorted) set of seeds
+   * seed member now SeedSet* (was Seed*) to support storage of multiple seeds
+   + getSeedRanges*() : provides an (overlapping) IndexRangeList of all seeds
+     stored within the interaction for the respective sequence
+   * ostream operator( BasePair ) now friend function
+ * IntaRNA/SeedHandler :
+   * traceBackSeed() now const function
+   + isSeedBound() : to check whether or not base pair marks a left-side seed
+     boundary
+   + addSeeds() : adds all seeds that overlap with base pairs of a given
+     interaction to its internal seed list
+ * IntaRNA/SeedHandler* :
+   + isSeedBound() 
+   * traceBackSeed() const
+ * IntaRNA/SeedHandlerExplicit :
+   + getSeedMaxBP() : provides the maximal number of base pairs within one of
+     the explicit seed encoded by the provided string
+ * IntaRNA/SeedHandlerMfe :
+   * getSeedE() const
+ * IntaRNA/Predictor*Seed :
+   + using SeedHandler::isSeedBound()
+   + calling seedHandler.addSeeds(interaction) for each interaction
+ * IntaRNA/HelixHandler* :
+   + using SeedHandler::isSeedBound()
+ * IntaRNA/OutputConstraint :
+   + bestSeedOnly : whether or not only the mfe seed is to be printed
+   * constructor( + bestSeedOnly )
+ * IntaRNA/OutputHandler* :
+   * adaptation to Interaction.seed change (SeedSet instead of Seed object)
+ * IntaRNA/OutputHandlerCsv :
+ * IntaRNA/OutputHandlerText :
+   + outConstraint : output constraint also used for predictors
+   * constructor( + outputConstraint )
+   * add() :
+     + support for multi seed output
+     + support for mfe seed output based on OutConstraint::bestSeedOnly
+ * IntaRNA/OutputHandlerCsv :
+   + listSep : separator of multi value entries within one CSV column
+   * constructor( + listSep )
+   * list2string() : 
+     + sep argument to explicitly specify separator to be used
+   * getHeader() : now based on list2string()
+ * IntaRNA/OutputHandlerText :
+   * add() :
+     + seed base pairs now represented by '+' (in detailed output mode)
+     * GU base pair check via InteractionEnergy::isGU()
+ * tests : adaptation to changes
+ * tests/SeedHandlerNoBulge :
+   + test isSeedBound()
+ + tests/runApiTests.cpp : renamed runTests.cpp
+ - tests/runTests.cpp : replaced by runApiTests.cpp
+ * IntaRNA/AccessibilityVrna :
+   * fillByRNAplfold() :
+     + throws error if vrna_probs_window() reports problems (zero return value)
+ * bin/CommandLineParsing :
+   + mode : renamed predMode
+   - predMode : replaced by mode
+   + outBestSeedOnly : whether or not to print only mfe seed information
+   * check if helixMaxBP >= seedBP now handle explicit seed input
+   * check for minimal sequence length based on seed now only if seeds computed
+ * README.md :
+   + outBestSeedOnly parameter 
+   + '+' seed bps in detailed text output
+   * restructuring of section order + new main sections defined
+
 190312 Martin Raden :
  * IntaRNA/Accessibility* :
    + verbose output how accessibility is computed

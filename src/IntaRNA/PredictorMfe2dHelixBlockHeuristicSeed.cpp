@@ -462,6 +462,9 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint )
 		// set last to j1-j2
 		(*bps.rbegin()) = energy.getBasePair( j1, j2 );
 	}
+
+	// add all seeds that are subsets of the interaction
+	seedHandler.addSeeds( interaction );
 }
 
 ////////////////////////////////////////////////////////////////////////////

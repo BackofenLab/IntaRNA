@@ -48,9 +48,11 @@ TEST_CASE( "SeedHandlerNoBulge", "[SeedHandlerNoBulge]" ) {
 			for (size_t i2=0; i2<energy.size2(); i2++) {
 				if (E_isINF(sh.getSeedE(i1,i2))) {
 					REQUIRE( E_isINF(shMfe.getSeedE(i1,i2)) );
+					REQUIRE( ! shMfe.isSeedBound(i1,i2)) ;
 				} else {
 //					LOG(DEBUG) <<"seed at "<<i1<<"-"<<i2;
 					REQUIRE( E_equal( sh.getSeedE(i1,i2), shMfe.getSeedE(i1,i2) ) );
+					REQUIRE( shMfe.isSeedBound(i1,i2)) ;
 				}
 			}
 		}

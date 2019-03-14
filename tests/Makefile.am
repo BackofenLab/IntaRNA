@@ -42,8 +42,7 @@ runApiTests_SOURCES =	\
 					SeedHandlerNoBulge_test.cpp \
 					SeedHandlerMfe_test.cpp \
 					SeedHandlerIdxOffset_test.cpp \
-					runTests.cpp
-
+					runApiTests.cpp
 
 # add IntaRNA lib for linking
 LIBS= 	-L$(top_builddir)/src/IntaRNA -lIntaRNA \

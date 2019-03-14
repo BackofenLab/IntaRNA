@@ -87,6 +87,8 @@ TEST_CASE( "IndexRangeList", "[IndexRangeList]" ) {
 
 	SECTION("check insert()") {
 
+		rangeList.clear();
+
 		IndexRange r5_10(5,10);
 
 		IndexRangeList::iterator it = rangeList.insert(r5_10);
@@ -189,7 +191,7 @@ TEST_CASE( "IndexRangeList", "[IndexRangeList]" ) {
 		rangeList.insert(IndexRange(4,8));
 		rangeList.insert(IndexRange(10,10));
 
-		rangeList.reverse(11);
+		rangeList.reverseInplace(11);
 		REQUIRE( toString(rangeList) == "0-0,2-6,8-9" );
 
 	}

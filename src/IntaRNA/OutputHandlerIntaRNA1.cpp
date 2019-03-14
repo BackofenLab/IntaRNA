@@ -209,10 +209,10 @@ add( const Interaction & i )
 				// print interaction details
 			outTmp	<<'\n'
 				<<"positions(target)     : "<<(i.basePairs.begin()->first +1)<<" -- "<<(i.basePairs.rbegin()->first +1) <<'\n'
-				<<"positions seed(target): "<<(i.seed!=NULL?toString(i.seed->bp_i.first +1):"?")<<" -- "<<(i.seed!=NULL?toString(i.seed->bp_j.first +1):"?") <<'\n'
+				<<"positions seed(target): "<<(i.seed!=NULL?toString(i.seed->begin()->bp_i.first +1):"?")<<" -- "<<(i.seed!=NULL?toString(i.seed->begin()->bp_j.first +1):"?") <<'\n'
 				<<"positions with dangle(target): "<<(i.basePairs.begin()->first +1)<<" -- "<<(i.basePairs.rbegin()->first +1) <<'\n'
 				<<"positions(ncRNA)      : "<<(i.basePairs.rbegin()->second +1)<<" -- "<<(i.basePairs.begin()->second +1) <<'\n'
-				<<"positions seed(ncRNA) : "<<(i.seed!=NULL?toString(i.seed->bp_j.second +1):"?")<<" -- "<<(i.seed!=NULL?toString(i.seed->bp_i.second +1):"?") <<'\n'
+				<<"positions seed(ncRNA) : "<<(i.seed!=NULL?toString(i.seed->begin()->bp_j.second +1):"?")<<" -- "<<(i.seed!=NULL?toString(i.seed->begin()->bp_i.second +1):"?") <<'\n'
 				<<"positions with dangle(ncRNA): "<<(i.basePairs.rbegin()->second +1)<<" -- "<<(i.basePairs.begin()->second +1) <<'\n'
 				<<"ED target need: "<<E_2_Ekcal(contr.ED1) <<" kcal/mol"<<'\n'
 				<<"ED ncRNA  need: "<<E_2_Ekcal(contr.ED2) <<" kcal/mol"<<'\n'
