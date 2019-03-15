@@ -118,5 +118,69 @@ addSeeds( Interaction & i ) const
 
 //////////////////////////////////////////////////////////////////////////
 
+bool
+SeedHandler::
+areLoopOverlapping( const size_t i1, const size_t i2
+				, const size_t k1, const size_t k2 ) const
+{
+	// check if valid seeds
+	if (isSeedBound(i1,i2) && isSeedBound(k1,k2)) {
+		// check for identity
+		if (i1 == k1 && i2 == k2 ) {
+			return true;
+		}
+		// ensure order x < y
+		size_t x1=i1, x2=i2, y1=k1, y2=k2;
+		if (i1 > k1) {
+			x1=k1; x2=k2; y1=i1; y2=i2;
+		}
+		// ensure order of seq2 indices; otherwise not overlapping
+		if (x2 >= y2) {
+			return false;
+		}
+		// check if ranges are overlapping at all
+		if ( ((x1+getSeedLength1(x1,x2)-1) <= y1)
+			|| ((x2+getSeedLength2(x1,x2)-1) <= y2) )
+		{
+			return false;
+		}
+		// trace seed base pairs of seedX (excluding first)
+		Interaction xBP( energy.getAccessibility1().getSequence(), energy.getAccessibility2().getAccessibilityOrigin().getSequence() );
+		traceBackSeed( xBP, x1, x2 );
+		xBP.basePairs.push_back( energy.getBasePair( x1 + getSeedLength1(x1,x2) - 1, x2 + getSeedLength2(x1,x2)-1) );
+		// check if first base pair of seedY is enclosed base pair of seedX
+		auto bpX = std::find( xBP.basePairs.begin(), xBP.basePairs.end(), energy.getBasePair(y1,y2) );
+		if ( bpX == xBP.basePairs.end())
+		{
+			return false;
+		}
+		size_t overlap = 1;
+		// collect all base pairs of seedY
+		Interaction yBP( *(xBP.s1), *(xBP.s2) ); // use seq info of xBP
+		yBP.basePairs.push_back( energy.getBasePair(y1,y2) );
+		traceBackSeed( yBP, y1, y2 );
+		yBP.basePairs.push_back( energy.getBasePair( y1 + getSeedLength1(y1,y2) - 1, y2 + getSeedLength2(y1,y2)-1) );
+		// check if all subsequent bps of  are equal
+		auto bpY = yBP.basePairs.begin();
+		while( (++bpX) != xBP.basePairs.end()
+				// ensure there is still a bp in seedY to compare to
+				&& (++bpY) != yBP.basePairs.end()
+				// and that the base pairs are equal
+				&& *bpX == *bpY )
+		{
+			overlap++;
+		}
+		// ensure seedX was fully processed
+		// and seeds are overlapping in at least 2 base pairs, ie. the last
+		// loop of seedX
+		return bpX == xBP.basePairs.end() && overlap > 1;
+	}
+	// not valid
+	return false;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+
 } // namespace
 

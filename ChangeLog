@@ -23,11 +23,27 @@ development version
      + energyAdd
  * IntaRNA/InteractionEnergy* :
    * constructor( + energyAdd )
+ * SeedHandler :
+   + areLoopOverlapping() : tests whether or not the last x and the first x
+     loops of two seeds are formed by identical base pairs
+ - IntaRNA/OutputHandlerRangeOnly : obsolete
+ * OutputHandler* :
+   * add( + outConstraint )
+   - add( InteractionRange ) : obsolete
+ * IntaRNA/OutputHandlerText :
+ * IntaRNA/OutputHandlerCsv :
+   - outConstraint : now provided as argument to add()
+   * constructor( - outConstraint )
+ - IntaRNA/OutputHandlerRangeOnly : obsolete
+ * IntaRNA/PredictorMfe :
+ * IntaRNA/PredictorMaxProb :
+   * adaptation to OutputHandler::add() change
  * bin/CommandLineParsing :
    + calling decomposeByMaxED() only if outMinPu > 0
    + energyAdd parameter + validate*() to shift energy spectrum
    * getInteractionEnergy() : 
      + set energyAdd
+ * BOOST_FOREACH replaced by c++11 for loop syntax
 
 190313 Martin Raden :
  * IntaRNA/IndexRangeList :

@@ -162,6 +162,23 @@ public:
 	void
 	addSeeds( Interaction & i ) const;
 
+	/**
+	 * Checks whether or not two seeds are loop overlapping, ie. given i1 < k1, the
+	 * last x (>1) base pairs of seed(i1,i2) are equal to the first x base pairs of
+	 * seed(k1,k2), or vice versa if k1 < i1.
+	 *
+	 * @param i1 the left most interacting base of seq1 of seedA
+	 * @param i2 the left most interacting base of seq2 of seedA
+	 * @param k1 the left most interacting base of seq1 of seedB
+	 * @param k2 the left most interacting base of seq2 of seedB
+	 * @return true if seedA and seedB exist and they are loop overlapping;
+	 *         false otherwise
+	 */
+	virtual
+	bool
+	areLoopOverlapping( const size_t i1, const size_t i2
+					, const size_t k1, const size_t k2 ) const;
+
 protected:
 
 	//! the used energy function
