@@ -248,7 +248,8 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 					" '"+toString(AccessibilityConstraint::dotBracket_blocked)+"' blocked."
 					" Note, blocked positions are excluded from interaction prediction and constrained to be unpaired!"
 					"\n OR an index range based encoding that is prefixed by the according constraint letter and a colon,"
-					" e.g. 'b:3-4,33-40,p:1-2,12-20'"
+					" e.g. 'b:3-4,33-40,p:1-2,12-20'.\n"
+					"You might also want to check --energyAdd to correct the computed energies."
 					).c_str())
 		("qAccFile"
 			, value<std::string>(&(qAccFile))
@@ -343,7 +344,8 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 					" '"+toString(AccessibilityConstraint::dotBracket_blocked)+"' blocked."
 					" Note, blocked positions are excluded from interaction prediction and constrained to be unpaired!"
 					"\n OR an index range based encoding that is prefixed by the according constraint letter and a colon,"
-					" e.g. 'b:3-4,33-40,p:1-2,12-20'"
+					" e.g. 'b:3-4,33-40,p:1-2,12-20'.\n"
+					"You might also want to check --energyAdd to correct the computed energies."
 					).c_str())
 		("tAccFile"
 			, value<std::string>(&(tAccFile))

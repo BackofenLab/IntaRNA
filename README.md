@@ -1365,7 +1365,10 @@ number of unpaired bases between intermolecular base pairs is restricted
 upper bound can be set independently for the query and target sequence via
 `--qIntLoopMax` and `--tIntLoopMax`, respectively, and defaults to 16.
 
-
+Note, you can shift the energy spectrum using `--energyAdd=..`. The given value
+is always added when the overall energy of an interaction is computed. That way,
+you can correct for conditional predictions based on given 
+[accessibility constraints](#accConstraints).
 
 
 
@@ -1671,6 +1674,13 @@ IntaRNA [..] --qAccConstr="...bbbb....." --tAccConstr="b:4-7"
 # example 2
 IntaRNA [..] --qAccConstr="..bb..xxp.bb" --tAccConstr="b:3-4,11-12,x:7-8,p:9-9"
 ```
+
+When constraining the accessibility computation, all predictions are conditional
+predictions for the given accessibility constraints. 
+If you are still interested in non-conditional results/energies, you will have to
+correct the energy computation by providing a respective energy shift to be
+applied. By setting `--energyAdd=..`, all energy evaluations will add your given
+term and thus IntaRNA will use and provide corrected energy terms.
 
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
