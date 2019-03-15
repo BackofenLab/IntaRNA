@@ -41,21 +41,13 @@ public:
 	 * stream.
 	 *
 	 * @param interaction the interaction to output
+	 * @param outConstraint the output constraint applied to find the reported
+	 *        interaction
 	 */
 	virtual
 	void
-	add( const Interaction & interaction );
-
-	/**
-	 * Handles a given RNA-RNA interaction range as a
-	 * RNA-RNA interaction with two base pairs and writes it in simple
-	 * text format to the output stream.
-	 *
-	 * @param range the interaction range to add
-	 */
-	virtual
-	void
-	add( const InteractionRange & range );
+	add( const Interaction & interaction
+		, const OutputConstraint & outConstraint );
 
 	/**
 	 * Defines whether or not a leading separator is to be printed before any

@@ -192,7 +192,7 @@ reportOptima( const OutputConstraint & outConstraint )
 			// fill interaction with according base pairs
 			traceBack( curBest, outConstraint );
 			// report mfe interaction
-			output.add( curBest );
+			output.add( curBest, outConstraint );
 
 			// store ranges to ensure non-overlapping of next best solution
 			switch( outConstraint.reportOverlap ) {
@@ -236,7 +236,7 @@ reportOptima( const OutputConstraint & outConstraint )
 				// fill mfe interaction with according base pairs
 				traceBack( *i, outConstraint );
 				// report mfe interaction
-				output.add( *i );
+				output.add( *i, outConstraint );
 				// count
 				reported++;
 			}
@@ -251,7 +251,7 @@ reportOptima( const OutputConstraint & outConstraint )
 		mfeInteractions.begin()->clear();
 		mfeInteractions.begin()->energy = 0.0;
 		// report mfe interaction
-		output.add( *(mfeInteractions.begin()) );
+		output.add( *(mfeInteractions.begin()), outConstraint );
 	}
 
 }

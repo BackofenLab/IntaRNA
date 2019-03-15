@@ -224,8 +224,8 @@ int main(int argc, char **argv){
 											* parameters.getOutputConstraint().reportMax );
 
 								// run prediction for all range combinations
-								BOOST_FOREACH(const IndexRange & tRange, parameters.getTargetRanges(*energy, targetNumber, *targetAcc)) {
-								BOOST_FOREACH(const IndexRange & qRange, parameters.getQueryRanges(*energy, queryNumber, queryAcc.at(queryNumber)->getAccessibilityOrigin())) {
+								for(const IndexRange & tRange : parameters.getTargetRanges(*energy, targetNumber, *targetAcc)) {
+								for(const IndexRange & qRange : parameters.getQueryRanges(*energy, queryNumber, queryAcc.at(queryNumber)->getAccessibilityOrigin())) {
 
 									// get windows for both ranges
 									std::vector<IndexRange> queryWindows = qRange.overlappingWindows(parameters.getWindowWidth(), parameters.getWindowOverlap());
@@ -313,9 +313,9 @@ int main(int argc, char **argv){
 								#pragma omp critical(intarna_omp_outputHandlerUpdate)
 #endif
 								{// update final output handler
-								BOOST_FOREACH( const Interaction * inter, bestInteractions) {
+								for( const Interaction * inter : bestInteractions) {
 									// forward all reported interactions for all regions to final output handler
-									output->add(*inter);
+									output->add(*inter, parameters.getOutputConstraint());
 								}}
 
 #if INTARNA_MULITHREADING

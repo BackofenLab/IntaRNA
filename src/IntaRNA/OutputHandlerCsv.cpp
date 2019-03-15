@@ -19,7 +19,6 @@ OutputHandlerCsv::OutputHandlerCsv(
 		  std::ostream & out
 		, const InteractionEnergy & energy
 		, const ColTypeList colOrder
-		, const OutputConstraint & outConstraint
 		, const std::string& colSep
 		, const bool printHeader
 		, const std::string& listSep
@@ -27,7 +26,6 @@ OutputHandlerCsv::OutputHandlerCsv(
  :	out(out)
 	, energy(energy)
 	, colOrder(colOrder)
-	, outConstraint(outConstraint)
 	, colSep(colSep)
 	, listSep(listSep)
 {
@@ -63,7 +61,7 @@ OutputHandlerCsv::~OutputHandlerCsv()
 
 void
 OutputHandlerCsv::
-add( const Interaction & i )
+add( const Interaction & i, const OutputConstraint & outConstraint )
 {
 #if INTARNA_IN_DEBUG_MODE
 	// debug checks

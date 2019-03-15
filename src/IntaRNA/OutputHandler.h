@@ -5,6 +5,7 @@
 #include "IntaRNA/general.h"
 #include "IntaRNA/Interaction.h"
 #include "IntaRNA/InteractionRange.h"
+#include "IntaRNA/OutputConstraint.h"
 #include <string>
 
 namespace IntaRNA {
@@ -39,23 +40,13 @@ public:
 	 * independent.
 	 *
 	 * @param interaction the interaction to add
+	 * @param outConstraint the output constraint applied to find the reported
+	 *        interaction
 	 */
 	virtual
 	void
-	add( const Interaction & interaction ) = 0;
-
-	/**
-	 * Adds a given RNA-RNA interaction range to the storage/output.
-	 *
-	 * NOTE: the given interaction object and its source object might be deleted
-	 * later on. Thus, a deep copy is needed in order to make them completely
-	 * independent.
-	 *
-	 * @param range the interaction range to add
-	 */
-	virtual
-	void
-	add( const InteractionRange & range ) = 0;
+	add( const Interaction & interaction
+		, const OutputConstraint & outConstraint ) = 0;
 
 	/**
 	 * Returns the number of reported interactions.

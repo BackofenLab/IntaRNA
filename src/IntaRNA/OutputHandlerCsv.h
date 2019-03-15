@@ -149,7 +149,6 @@ public:
 	 * @param out the stream to write to
 	 * @param energy the interaction energy object used for computation
 	 * @param colOrder the order and list of columns to be printed
-	 * @param outConstraint the output constraint applied to predictions (can be NULL)
 	 * @param colSep the column separator to be used in CSV output
 	 * @param printHeader whether or not to print header information = col names
 	 * @param listSep if multiple entries have to be printed per column, this
@@ -158,7 +157,6 @@ public:
 	OutputHandlerCsv( std::ostream & out
 						, const InteractionEnergy & energy
 						, const ColTypeList colOrder
-						, const OutputConstraint & outConstraint = OutputConstraint()
 						, const std::string& colSep = ";"
 						, const bool printHeader = false
 						, const std::string& listSep = ":"
@@ -174,21 +172,13 @@ public:
 	 * stream.
 	 *
 	 * @param interaction the interaction to output
+	 * @param outConstraint the output constraint applied to find the reported
+	 *        interaction
 	 */
 	virtual
 	void
-	add( const Interaction & interaction );
-
-	/**
-	 * Handles a given RNA-RNA interaction range as a
-	 * RNA-RNA interaction with two base pairs and writes it in simple
-	 * text format to the output stream.
-	 *
-	 * @param range the interaction range to add
-	 */
-	virtual
-	void
-	add( const InteractionRange & range );
+	add( const Interaction & interaction
+		, const OutputConstraint & outConstraint );
 
 	/**
 	 * Converts a list of Coltypes to their string representation.
@@ -234,9 +224,6 @@ protected:
 	//! the sequence of columns to be reported
 	const std::list< ColType > colOrder;
 
-	//! the output constraint applied to predictions
-	const OutputConstraint outConstraint;
-
 	//! the column separator to be used
 	std::string colSep;
 
@@ -256,17 +243,6 @@ OutputHandlerCsv::
 getColType2string()
 {
 	return colType2string;
-}
-
-//////////////////////////////////////////////////////////////////////////
-
-inline
-void
-OutputHandlerCsv::
-add( const InteractionRange & range )
-{
-	// forward to interaction reporting
-	add( Interaction(range) );
 }
 
 //////////////////////////////////////////////////////////////////////////

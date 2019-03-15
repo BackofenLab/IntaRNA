@@ -28,13 +28,11 @@ public:
 	 *        interaction to be printed in the output
 	 * @param detailedOutput if (true) detailed output is provided; normal
 	 *        reduced output otherwise
-	 * @param outConstraint the output constraint applied to predictions (can be NULL)
 	 */
 	OutputHandlerText( std::ostream & out
 				, const InteractionEnergy & energy
 				, const size_t flankingLength = 10
 				, const bool detailedOutput = false
-				, const OutputConstraint & outConstraint = OutputConstraint()
 				);
 
 	/**
@@ -47,21 +45,13 @@ public:
 	 * stream.
 	 *
 	 * @param interaction the interaction to output
+	 * @param outConstraint the output constraint applied to find the reported
+	 *        interaction
 	 */
 	virtual
 	void
-	add( const Interaction & interaction );
-
-	/**
-	 * Handles a given RNA-RNA interaction range as a
-	 * RNA-RNA interaction with two base pairs and writes it in simple
-	 * text format to the output stream.
-	 *
-	 * @param range the interaction range to add
-	 */
-	virtual
-	void
-	add( const InteractionRange & range );
+	add( const Interaction & interaction
+		, const OutputConstraint & outConstraint );
 
 protected:
 
@@ -80,22 +70,8 @@ protected:
 	//! whether or not detailed output has to be provided
 	const bool detailedOutput;
 
-	//! the output constraint applied to predictors
-	const OutputConstraint outConstraint;
-
 };
 
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void
-OutputHandlerText::
-add( const InteractionRange & range )
-{
-	// forward to interaction reporting
-	add( Interaction(range) );
-}
 
 ////////////////////////////////////////////////////////////////////////////
 

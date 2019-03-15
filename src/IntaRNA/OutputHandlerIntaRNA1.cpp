@@ -39,7 +39,7 @@ OutputHandlerIntaRNA1::
 
 void
 OutputHandlerIntaRNA1::
-add( const Interaction & i )
+add( const Interaction & i, const OutputConstraint & outConstraint )
 {
 #if INTARNA_IN_DEBUG_MODE
 	// debug checks
@@ -238,15 +238,6 @@ add( const Interaction & i )
 
 }
 
-
-////////////////////////////////////////////////////////////////////////////
-
-void
-OutputHandlerIntaRNA1::
-add( const InteractionRange & range )
-{
-	add( Interaction(range) );
-}
 
 ////////////////////////////////////////////////////////////////////////////
 

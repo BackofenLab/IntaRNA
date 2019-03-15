@@ -322,7 +322,7 @@ reportOptima( const OutputConstraint & outConstraint )
 	}
 
 	// push to output handler
-	output.add( maxProbInteraction );
+	output.add( maxProbInteraction, outConstraint );
 
 }
 

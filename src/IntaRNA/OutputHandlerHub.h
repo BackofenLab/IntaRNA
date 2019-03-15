@@ -52,20 +52,13 @@ public:
 	 * instances.
 	 *
 	 * @param interaction the interaction to add
+	 * @param outConstraint the output constraint applied to find the reported
+	 *        interaction
 	 */
 	virtual
 	void
-	add( const Interaction & interaction );
-
-	/**
-	 * Forwards a given RNA-RNA interaction range to all registered
-	 * OutputHandler instances.
-	 *
-	 * @param range the interaction range to add
-	 */
-	virtual
-	void
-	add( const InteractionRange & range );
+	add( const Interaction & interaction
+		, const OutputConstraint & outConstraint );
 
 	/**
 	 * Returns the maximal number of reported interactions among all handlers
@@ -188,24 +181,11 @@ addOutputHandler( OutputHandler * handler )
 inline
 void
 OutputHandlerHub::
-add( const Interaction & inter )
+add( const Interaction & inter, const OutputConstraint & outConstraint )
 {
 	// forward to all in list
 	for (auto it=outList.begin(); it!=outList.end(); it++) {
-		(*it)->add(inter);
-	}
-}
-
-/////////////////////////////////////////////////////////////////////////
-
-inline
-void
-OutputHandlerHub::
-add( const InteractionRange & range )
-{
-	// forward to all in list
-	for (auto it=outList.begin(); it!=outList.end(); it++) {
-		(*it)->add(range);
+		(*it)->add(inter,outConstraint);
 	}
 }
 

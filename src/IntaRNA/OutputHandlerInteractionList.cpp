@@ -31,7 +31,7 @@ OutputHandlerInteractionList::
 
 void
 OutputHandlerInteractionList::
-add( const Interaction & interaction )
+add( const Interaction & interaction, const OutputConstraint & outConstraint )
 {
 	if (interaction.isEmpty()) {
 #if INTARNA_MULITHREADING
@@ -67,15 +67,6 @@ add( const Interaction & interaction )
 			}
 		}
 	}
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-void
-OutputHandlerInteractionList::
-add( const InteractionRange & range )
-{
-	INTARNA_NOT_IMPLEMENTED("OutputHandlerInteractionList::add( const InteractionRange & range )");
 }
 
 /////////////////////////////////////////////////////////////////////////////

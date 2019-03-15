@@ -22,6 +22,8 @@ TEST_CASE( "OutputHandlerInteractionList", "[OutputHandlerInteractionList]" ) {
 
 	RnaSequence r("test","AACCGGUU");
 
+	OutputConstraint oc;
+
 	SECTION("sorting") {
 
 		Interaction i1(r,r);
@@ -33,7 +35,7 @@ TEST_CASE( "OutputHandlerInteractionList", "[OutputHandlerInteractionList]" ) {
 		OutputHandlerInteractionList out(2);
 		REQUIRE( out.empty() );
 
-		out.add(i1);
+		out.add(i1,oc);
 		REQUIRE( ! out.empty() );
 		auto outIt = out.begin();
 		REQUIRE( equalInteraction( **outIt, i1) );
@@ -45,7 +47,7 @@ TEST_CASE( "OutputHandlerInteractionList", "[OutputHandlerInteractionList]" ) {
 		REQUIRE( i2.isValid() );
 
 		// insert (should be new first element)
-		out.add(i2);
+		out.add(i2,oc);
 		REQUIRE( ! out.empty() );
 		outIt = out.begin();
 		REQUIRE( equalInteraction( **outIt, i2) );
@@ -69,7 +71,7 @@ TEST_CASE( "OutputHandlerInteractionList", "[OutputHandlerInteractionList]" ) {
 		OutputHandlerInteractionList out(2);
 		REQUIRE( out.empty() );
 
-		out.add(i);
+		out.add(i,oc);
 		REQUIRE( ! out.empty() );
 		auto outIt = out.begin();
 		REQUIRE( equalInteraction( **outIt, i) );
@@ -77,7 +79,7 @@ TEST_CASE( "OutputHandlerInteractionList", "[OutputHandlerInteractionList]" ) {
 		REQUIRE( outIt == out.end() );
 
 		// insert a second time (should cause no insertion)
-		out.add(i);
+		out.add(i,oc);
 		REQUIRE( ! out.empty() );
 		outIt = out.begin();
 		REQUIRE( equalInteraction( **outIt, i) );

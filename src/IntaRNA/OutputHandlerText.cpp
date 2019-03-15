@@ -19,15 +19,13 @@ OutputHandlerText(
 		std::ostream & out,
 		const InteractionEnergy & energy,
 		const size_t flankingLength_,
-		const bool detailedOutput,
-		const OutputConstraint & outConstraint
+		const bool detailedOutput
 		)
  :
 	out(out)
 	, energy(energy)
 	, flankingLength(flankingLength_)
 	, detailedOutput(detailedOutput)
-	, outConstraint(outConstraint)
 {
 	if (flankingLength < 10) {
 		throw std::runtime_error("OutputHandlerText::OutputHandlerText : flankingLength ("+toString(flankingLength_)+") has to be at least 9");
@@ -65,7 +63,7 @@ OutputHandlerText::
 
 void
 OutputHandlerText::
-add( const Interaction & i )
+add( const Interaction & i, const OutputConstraint & outConstraint )
 {
 #if INTARNA_IN_DEBUG_MODE
 	// debug checks

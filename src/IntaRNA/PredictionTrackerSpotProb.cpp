@@ -104,7 +104,7 @@ PredictionTrackerSpotProb::
 	// probability of interactions covering no tracked spot
 	(*outStream) <<"0&0;"<<(noSpotZ / overallZ)<<'\n';
 	// probabilities of tracked spots
-	BOOST_FOREACH( Spot & s, spots) {
+	for( Spot & s : spots) {
 		(*outStream) <<(s.idx1+1)<<'&'<<(s.idx2+1)<<';'<<(s.Z/overallZ)<<'\n';
 	}
 	outStream->flush();
@@ -140,7 +140,7 @@ updateOptimumCalled( const size_t i1, const size_t j1
 	bool noSpotCovered = true;
 
 	// update final output handler
-	BOOST_FOREACH( Spot & s, spots) {
+	for( Spot & s : spots) {
 		// check if covered
 		if ( bp_l.first <= s.idx1 && s.idx1 <= bp_r.first
 			&& bp_r.second <= s.idx2 && s.idx2 <= bp_l.second)

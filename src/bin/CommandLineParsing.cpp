@@ -1369,7 +1369,7 @@ parseRegion( const std::string & argName, const std::string & value, const RnaSe
 		// ensure range list size sufficient
 		rangeList.resize( sequences.size() );
 		size_t s=0;
-		BOOST_FOREACH( IndexRangeList & r, rangeList ) {
+		for( IndexRangeList & r : rangeList ) {
 			// clear old data if any
 			r.clear();
 			assert(sequences.at(s).size()>0);
@@ -2097,11 +2097,11 @@ getOutputHandler( const InteractionEnergy & energy ) const
 {
 	switch (outMode.val) {
 	case 'N' :
-		return new OutputHandlerText( getOutputStream(), energy, 10, false, getOutputConstraint() );
+		return new OutputHandlerText( getOutputStream(), energy, 10, false );
 	case 'D' :
-		return new OutputHandlerText( getOutputStream(), energy, 10, true, getOutputConstraint() );
+		return new OutputHandlerText( getOutputStream(), energy, 10, true );
 	case 'C' :
-		return new OutputHandlerCsv( getOutputStream(), energy, OutputHandlerCsv::string2list( outCsvCols ), getOutputConstraint() );
+		return new OutputHandlerCsv( getOutputStream(), energy, OutputHandlerCsv::string2list( outCsvCols ) );
 	case '1' :
 		return new OutputHandlerIntaRNA1( getOutputStream(), energy, false );
 	case 'O' :
