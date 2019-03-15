@@ -2205,9 +2205,11 @@ getQueryRanges( const InteractionEnergy & energy, const size_t sequenceNumber, c
 		}
 	}
 
-	// decompose ranges based in minimal unpaired probability value per position
-	// since all ranges covering a position will have a lower unpaired probability
-	acc.decomposeByMinPu( qRegion.at(sequenceNumber), outMinPu.val, energy.getRT() );
+	if (outMinPu.val > Z_type(0) && !Z_equal(outMinPu.val, Z_type(0))) {
+		// decompose ranges based in minimal unpaired probability value per position
+		// since all ranges covering a position will have a lower unpaired probability
+		acc.decomposeByMaxED( qRegion.at(sequenceNumber), energy.getE( outMinPu.val ) );
+	}
 
 	return qRegion.at(sequenceNumber);
 }
@@ -2237,10 +2239,11 @@ getTargetRanges( const InteractionEnergy & energy, const size_t sequenceNumber, 
 		}
 	}
 
-	// decompose ranges based in minimal unpaired probability value per position
-	// since all ranges covering a position will have a lower unpaired probability
-	acc.decomposeByMinPu( tRegion.at(sequenceNumber), outMinPu.val, energy.getRT() );
-
+	if (outMinPu.val > Z_type(0) && !Z_equal(outMinPu.val, Z_type(0))) {
+		// decompose ranges based in minimal unpaired probability value per position
+		// since all ranges covering a position will have a lower unpaired probability
+		acc.decomposeByMaxED( tRegion.at(sequenceNumber), energy.getE( outMinPu.val ) );
+	}
 
 	return tRegion.at(sequenceNumber);
 }

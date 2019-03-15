@@ -196,18 +196,15 @@ decomposeByMaxED( const size_t maxRangeLength, const size_t winSize, const size_
 
 void
 Accessibility::
-decomposeByMinPu( IndexRangeList & ranges, const Z_type minPu, const Z_type RT ) const
+decomposeByMaxED( IndexRangeList & ranges, const E_type maxED ) const
 {
 	// check if there is an upper bound given; if not stop working
-	if (minPu < Z_type(0) || Z_equal(minPu,Z_type(0))) {
+	if (maxED >= ED_UPPER_BOUND) {
 		return;
 	}
 
 	// the range list to fill
 	IndexRangeList out;
-
-	// compute the maximal energy penalty according to the minimal unpaired probability
-	const E_type maxED = Z_2_E( - RT * std::log( minPu ) );
 
 	// decompose each range individually
 	for (auto range = ranges.begin(); range != ranges.end(); range++) {

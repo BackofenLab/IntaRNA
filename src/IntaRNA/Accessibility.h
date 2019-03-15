@@ -142,17 +142,15 @@ public:
 
 	/**
 	 * Decomposes a given range list into subranges that contain only positions
-	 * where the position-wise unpaired probability is above
+	 * where the position-wise ED value is below
 	 * or equal to a given threshold,
-	 * since any interaction site enclosing this positions has a lower
-	 * probability.
+	 * since any interaction site enclosing this positions has a higher ED.
 	 *
 	 * @param ranges INOUT the list of ranges to decompose
-	 * @param minPu the minimal unpaired probability threshold (inclusive)
-	 * @param RT the relative temperature to be used for Boltzmann weight computation
+	 * @param maxED the maximal ED threshold (inclusive)
 	 */
 	void
-	decomposeByMinPu( IndexRangeList & ranges, const Z_type minPu, const Z_type RT ) const;
+	decomposeByMaxED( IndexRangeList & ranges, const E_type maxED ) const;
 
 protected:
 

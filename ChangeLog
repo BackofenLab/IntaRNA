@@ -8,6 +8,13 @@
 
 development version
 
+190315 Martin Raden :
+ * IntaRNA/Accessibility :
+   + decomposeByMaxED() : replaces decomposeByMinPu()
+   - decomposeByMinPu() : renamed to decomposeByMaxED()
+ * bin/CommandLineParsing :
+   + calling decomposeByMaxED() only if outMinPu > 0
+
 190313 Martin Raden :
  * IntaRNA/IndexRangeList :
    + allowOverlapping member
