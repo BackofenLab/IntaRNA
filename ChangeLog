@@ -12,8 +12,22 @@ development version
  * IntaRNA/Accessibility :
    + decomposeByMaxED() : replaces decomposeByMinPu()
    - decomposeByMinPu() : renamed to decomposeByMaxED()
+ * IntaRNA/InteractionEnergy :
+   + energyAdd + get*() : shift of the energy spectrum to be applied in getE()
+   * constructor( + energyAdd )
+   * getE() :
+     + energyAdd
+   * EnergyContributions :
+     + energyAdd member
+   * getE_contributions() :
+     + energyAdd
+ * IntaRNA/InteractionEnergy* :
+   * constructor( + energyAdd )
  * bin/CommandLineParsing :
    + calling decomposeByMaxED() only if outMinPu > 0
+   + energyAdd parameter + validate*() to shift energy spectrum
+   * getInteractionEnergy() : 
+     + set energyAdd
 
 190313 Martin Raden :
  * IntaRNA/IndexRangeList :

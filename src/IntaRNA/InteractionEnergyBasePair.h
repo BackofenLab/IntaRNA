@@ -37,17 +37,22 @@ public:
 	 *          (j1,j2) : (j2-i2+1) <= maxInternalLoopSize
 	 * @param initES whether or not to compute and initialize ES values
 	 * @param RT The energy constant corresponding to temperature
-   * @param bpEnergy The energy of the basepair
-   * @param minLoopLength The minimum loop length
+	 * @param bpEnergy The energy of the basepair
+     * @param minLoopLength The minimum loop length
+	 * @param energyAdd when computing the overall energy via getE(), this term
+	 *          is always added; thus it defines a shift of the energy spectrum
+	 *          as e.g. needed when computing predictions with accessibility
+	 *          constraints
 	 */
 	InteractionEnergyBasePair( const Accessibility & accS1
 					, const ReverseAccessibility & accS2
 					, const size_t maxInternalLoopSize1 = 16
 					, const size_t maxInternalLoopSize2 = 16
 					, const bool initES = false
-          , const Z_type RT = Z_type(1.0)
-          , const E_type bpEnergy = Ekcal_2_E(-1.0)
-          , const size_t minLoopLength = 3
+					, const Z_type RT = Z_type(1.0)
+					, const E_type bpEnergy = Ekcal_2_E(-1.0)
+					, const size_t minLoopLength = 3
+					, const E_type energyAdd = Ekcal_2_E(0.0)
 				);
 
 	virtual ~InteractionEnergyBasePair();
@@ -300,9 +305,10 @@ InteractionEnergyBasePair::InteractionEnergyBasePair(
     , const Z_type _RT
     , const E_type bpEnergy
     , const size_t minLoopLen
-	)
+    , const E_type energyAdd
+    )
  :
-	InteractionEnergy(accS1, accS2, maxInternalLoopSize1, maxInternalLoopSize2),
+	InteractionEnergy(accS1, accS2, maxInternalLoopSize1, maxInternalLoopSize2, energyAdd),
   RT(_RT),
   basePairEnergy(bpEnergy),
   minLoopLength(minLoopLen),

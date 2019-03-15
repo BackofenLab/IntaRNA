@@ -55,6 +55,8 @@ public:
 		E_type endLeft;
 		//! the energy penalty for the right end of the interaction
 		E_type endRight;
+		//! the energy shift requested by the user
+		E_type energyAdd;
 	};
 
 
@@ -73,12 +75,16 @@ public:
 	 *          between two intermolecular base pairs in sequence 2, ie it holds
 	 *          for an intermolecular loop closed by base pairs (i1,i2) and
 	 *          (j1,j2) : (j2-i2) <= (1+maxInternalLoopSize2)
-	 *
+	 * @param energyAdd when computing the overall energy via getE(), this term
+	 *          is always added; thus it defines a shift of the energy spectrum
+	 *          as e.g. needed when computing predictions with accessibility
+	 *          constraints
 	 */
 	InteractionEnergy( const Accessibility & accS1
 			, const ReverseAccessibility & accS2
 			, const size_t maxInternalLoopSize1
 			, const size_t maxInternalLoopSize2
+			, const E_type energyAdd
 			);
 
 	/**
@@ -535,6 +541,15 @@ public:
 	size_t
 	getIndex2( const Interaction::BasePair & bp ) const;
 
+	/**
+	 * Provides the energy shift used
+	 * @return the energy contribution always added to compute the overall
+	 *         energy
+	 */
+	virtual
+	E_type
+	getEnergyAdd() const;
+
 
 protected:
 
@@ -551,6 +566,9 @@ protected:
 	//! maximally allowed unpaired range between two base pairs in sequence S2
 	//! forming an intermolecular internal loop
 	const size_t maxInternalLoopSize2;
+
+	//! user defined shift of the energy spectrum
+	const E_type energyAdd;
 
 	/**
 	 * Checks whether or not the given indices are valid index region within the
@@ -603,13 +621,14 @@ InteractionEnergy::InteractionEnergy( const Accessibility & accS1
 				, const ReverseAccessibility & accS2
 				, const size_t maxInternalLoopSize1
 				, const size_t maxInternalLoopSize2
+				, const E_type energyAdd
 		)
   :
 	accS1(accS1)
 	, accS2(accS2)
 	, maxInternalLoopSize1(maxInternalLoopSize1)
 	, maxInternalLoopSize2(maxInternalLoopSize2)
-
+	, energyAdd(energyAdd)
 {
 }
 
@@ -711,6 +730,16 @@ InteractionEnergy::
 getAccessibility2() const
 {
 	return accS2;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+InteractionEnergy::
+getEnergyAdd() const
+{
+	return energyAdd;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -896,6 +925,7 @@ getE( const size_t i1, const size_t j1
 				// helix closure penalty
 				+ getE_endLeft( i1, i2 )
 				+ getE_endRight( j1, j2 )
+				+ getEnergyAdd()
 				;
 	} else {
 		// hybridE is infinite, thus overall energy is infinity as well

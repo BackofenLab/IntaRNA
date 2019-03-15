@@ -324,6 +324,11 @@ add( const Interaction & i )
 				<<"  + ED(seq2)       = "<<E_2_Ekcal(contr.ED2)<<'\n'
 				<<"    : Pu(seq2)     = "<<E_2_Ekcal(Z_2_E(std::exp(-E_2_Z(contr.ED2)/energy.getRT())))<<'\n'
 				;
+			if (!E_equal(contr.energyAdd,E_type(0))) {
+				outTmp
+				<<"  + E(add)         = "<<E_2_Ekcal(contr.energyAdd)<<'\n'
+				;
+			}
 
 			// print seed information if available
 			if (i.seed != NULL) {

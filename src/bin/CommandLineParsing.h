@@ -575,6 +575,9 @@ protected:
 	//! the provided energy parameter file of the VRNA package
 	std::string energyFile;
 
+	//! the energy shift to be applied
+	NumberParameter<E_kcal_type> energyAdd;
+
 	//! where to write the output to and for each in what format
 //	std::string out;
 	std::vector< std::string > out;
@@ -916,6 +919,12 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_energyFile(const std::string & value);
+
+	/**
+	 * Validates the energy shift argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_energyAdd(const E_kcal_type & value);
 
 	/**
 	 * Validates the out argument.
@@ -1757,6 +1766,14 @@ validate_energyFile(const std::string & value)
 		LOG(ERROR) <<"provided VRNA energy parameter file '" <<value <<"' could not be processed.";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_energyAdd(const E_kcal_type & value) {
+	// forward check to general method
+	validate_numberArgument("energyAdd", energyAdd, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////

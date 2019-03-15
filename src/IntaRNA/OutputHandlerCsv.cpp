@@ -226,6 +226,10 @@ add( const Interaction & i )
 				outTmp <<E_2_Ekcal(i.energy - contr.ED1 - contr.ED2) / std::log( energy.size1() * energy.size2() );
 				break;
 
+			case E_add:
+				outTmp <<E_2_Ekcal(contr.energyAdd);
+				break;
+
 			case seedStart1:
 				if (i.seed == NULL) {
 					outTmp <<std::numeric_limits<E_kcal_type>::signaling_NaN();

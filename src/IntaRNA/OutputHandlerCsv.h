@@ -56,6 +56,7 @@ public:
 		E_hybrid, //!< energy of hybridization only = E - ED1 - ED2
 		E_norm, //!< length normalized energy = E/ln(length(seq1)*length(seq2))
 		E_hybridNorm, //!< length normalized energy of hybridization only = E_hybrid / ln(length(seq1)*length(seq2))
+		E_add, //!< user provided energy shift
 		seedStart1, //!< start index of the seed in seq1
 		seedEnd1, //!< end index of the seed in seq1
 		seedStart2, //!< start index of the seed in seq2
@@ -121,6 +122,7 @@ protected:
 			colType2string[E_hybrid] = "E_hybrid";
 			colType2string[E_norm] = "E_norm";
 			colType2string[E_hybridNorm] = "E_hybridNorm";
+			colType2string[E_add] = "E_add";
 			colType2string[seedStart1] = "seedStart1";
 			colType2string[seedEnd1] = "seedEnd1";
 			colType2string[seedStart2] = "seedStart2";

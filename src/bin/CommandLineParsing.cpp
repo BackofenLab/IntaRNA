@@ -161,6 +161,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 
 	energy("BV",'V'),
 	energyFile(""),
+	energyAdd(-999,+999,0),
 
 	out(),
 	outPrefix2streamName(),
@@ -597,6 +598,13 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 			, value<std::string>(&energyFile)
 				->notifier(boost::bind(&CommandLineParsing::validate_energyFile,this,_1))
 			, std::string("energy parameter file of VRNA package to be used. If not provided, the default parameter set of the linked Vienna RNA package is used.").c_str())
+		("energyAdd"
+			, value<E_kcal_type>(&(energyAdd.val))
+				->default_value(energyAdd.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_energyAdd,this,_1))
+			, std::string("energy computation :"
+					" if provided, this term is added to compute the overall energy of an interaction."
+					" This is useful to incorporate the energy shift of applied accessibility constraints.").c_str())
 		("temperature"
 			, value<Z_type>(&(temperature.val))
 				->default_value(temperature.def)
@@ -1632,8 +1640,8 @@ getEnergyHandler( const Accessibility& accTarget, const ReverseAccessibility& ac
 	const bool initES = std::string("M").find(model.val) != std::string::npos;
 
 	switch( energy.val ) {
-	case 'B' : return new InteractionEnergyBasePair( accTarget, accQuery, tIntLoopMax.val, qIntLoopMax.val, initES );
-	case 'V' : return new InteractionEnergyVrna( accTarget, accQuery, vrnaHandler, tIntLoopMax.val, qIntLoopMax.val, initES );
+	case 'B' : return new InteractionEnergyBasePair( accTarget, accQuery, tIntLoopMax.val, qIntLoopMax.val, initES, Ekcal_2_E(energyAdd.val) );
+	case 'V' : return new InteractionEnergyVrna( accTarget, accQuery, vrnaHandler, tIntLoopMax.val, qIntLoopMax.val, initES, Ekcal_2_E(energyAdd.val) );
 	default :
 		INTARNA_NOT_IMPLEMENTED("CommandLineParsing::getEnergyHandler : energy = '"+toString(energy.val)+"' is not supported");
 	}

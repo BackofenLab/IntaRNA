@@ -24,9 +24,10 @@ InteractionEnergyVrna::InteractionEnergyVrna(
 		, const size_t maxInternalLoopSize1
 		, const size_t maxInternalLoopSize2
 		, const bool initES
+		, const E_type energyAdd
 	)
  :
-	InteractionEnergy(accS1, accS2, maxInternalLoopSize1, maxInternalLoopSize2)
+	InteractionEnergy(accS1, accS2, maxInternalLoopSize1, maxInternalLoopSize2, energyAdd)
 // get final VRNA folding parameters
 	, foldModel( vrnaHandler.getModel() )
 	, foldParams( vrna_params( &foldModel ) )

@@ -30,6 +30,7 @@ getE_contributions( const Interaction & interaction ) const
 	contr.dangleRight = (getE_danglingRight( j1, j2 )*getPr_danglingRight(i1,j1,i2,j2));
 	contr.endLeft = getE_endLeft( i1, i2 );
 	contr.endRight = getE_endRight( j1, j2 );
+	contr.energyAdd = getEnergyAdd();
 	// compute loop energy
 	contr.loops = interaction.energy
 					- contr.init
@@ -39,6 +40,7 @@ getE_contributions( const Interaction & interaction ) const
 					- contr.dangleRight
 					- contr.endLeft
 					- contr.endRight
+					- contr.energyAdd
 					;
 
 	// final contribution distribution

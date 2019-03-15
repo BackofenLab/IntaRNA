@@ -55,6 +55,10 @@ public:
 	 *          for an intermolecular loop closed by base pairs (i1,i2) and
 	 *          (j1,j2) : (j2-i2+1) <= maxInternalLoopSize
 	 * @param initES whether or not ES values are to be computed
+	 * @param energyAdd when computing the overall energy via getE(), this term
+	 *          is always added; thus it defines a shift of the energy spectrum
+	 *          as e.g. needed when computing predictions with accessibility
+	 *          constraints
 	 *
 	 */
 	InteractionEnergyVrna( const Accessibility & accS1
@@ -63,6 +67,7 @@ public:
 					, const size_t maxInternalLoopSize1 = 16
 					, const size_t maxInternalLoopSize2 = 16
 					, const bool initES = false
+					, const E_type energyAdd = Ekcal_2_E(0.0)
 				);
 
 	virtual ~InteractionEnergyVrna();
