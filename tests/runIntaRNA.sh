@@ -31,34 +31,39 @@ function calltest {
 
     resultfile=$datadir/$name.testout
     reference_resultsfile=$datadir/$name.testresult
+    
+    difftmp=testDiff.tmp
 
     shift 2
     
     testCall="$INTARNABINPATH/src/bin/IntaRNA --parameterFile=$datadir/$name.parameter"
 
-    echo "============================================================"
-    echo TEST $name
+    echo " IntaRNA TEST $name"
 	#	echo CALL $testCall
     #echo
     
     $testCall 2>&1 > $resultfile
 
 	if [ -e "$reference_resultsfile" ] ; then
-	    if diff "$resultfile" "$reference_resultsfile" "${diffopts}"; then
-	        echo "==================== OK"
-	    else
+	    if ! diff "$resultfile" "$reference_resultsfile" "${diffopts}" > $difftmp; then
+	        #	        echo "==================== OK"
+	    #else
 	        DIFFERENCES=true
+		    echo "============================================================"
+		    cat $difftmp
 	        echo "==================== DIFFERENT"
 	    fi
+	    rm -f $difftmp
 	else
+	    echo "============================================================"
 	    echo "WARNING: file '$reference_resultsfile' does not exist!"
 	    echo "==================== NO_REFERENCE"
-	            DIFFERENCES=true
-	        fi
+		DIFFERENCES=true
 	
-	        if $GENERATE_OUTPUT ; then
-	            echo "Write new reference '$reference_resultsfile'."
-	    \cp $resultfile "$reference_resultsfile"
+        if $GENERATE_OUTPUT ; then
+            echo "Write new reference '$reference_resultsfile'."
+    		\cp $resultfile "$reference_resultsfile"
+        fi
 	fi
 
 }
