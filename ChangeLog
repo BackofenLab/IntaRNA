@@ -13,6 +13,14 @@ development version
  + tests/data :
    + noLP-exact 
    + noLP-exact-seed
+ * IntaRNA/Predictor* :
+   * predict() :
+     + "outNoLP not implemented" warnings where needed
+ * bin/CommandLineParsing :
+   * getSeedHandler() :
+     + "outNoLP not implemented" warning for SeedHandlerMfe
+ * README.md :
+   + outNoLP
 
 190318 Martin Raden :
  * IntaRNA/OutputConstraint :

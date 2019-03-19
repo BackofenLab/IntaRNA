@@ -50,6 +50,10 @@ predict( const IndexRange & r1
 #endif
 
 
+	if (outConstraint.noLP) {
+		INTARNA_NOT_IMPLEMENTED("outNoLP not yet implemented for PredictorMfe2dHeuristicSeed");
+	}
+
 
 	// set index offset
 	energy.setOffset1(r1.from);

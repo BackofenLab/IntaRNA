@@ -888,6 +888,11 @@ interaction should have a negative energy (<0) to be energetically favorable.
 This report barrier can be altered using `--outMaxE`. For suboptimal interaction
 restriction, please refer to [suboptimal interaction prediction](#subopts) section.
 
+Another stability constraint is `--outNoLP`, which forbids lonely, i.e. non-stacked,
+inter-molecular base pairs. These are typically not contributing much to the
+overall stability and can lead to instable subinteractions when e.g. enclosed
+by two large interior loops.
+
 If you are only interested in predictions for highly accessible regions, i.e.
 with a high probability to be unpaired, you can use the `--outMinPu` parameter.
 If given, each individual position of the interacting subsequences has to have
@@ -1370,6 +1375,10 @@ is always added when the overall energy of an interaction is computed. That way,
 you can correct for conditional predictions based on given 
 [accessibility constraints](#accConstraints).
 
+If lonely (non-stacked) inter-molecular base pairs are of no interest, since they
+can lead to instable subinteraction when enclosed by two large interior loops,
+one can disable their prediction using `--outNoLP`. 
+
 
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
@@ -1588,7 +1597,8 @@ Accessibility incorporation can be disabled for query or target sequences using
 `--qAcc=N` or `--tAcc=N`, respectively.
 
 A setup of `--qAcc=C` or `--tAcc=C` (default) enables accessibility computation
-using the Vienna RNA package routines for query or target sequences, respectively.
+using the selected [energy model](#energy) for query or target sequences, respectively.
+
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
 

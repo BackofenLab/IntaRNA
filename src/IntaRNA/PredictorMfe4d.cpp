@@ -50,6 +50,10 @@ predict( const IndexRange & r1
 		throw std::runtime_error("PredictorMfe4d::predict("+toString(r1)+","+toString(r2)+") is not sane");
 #endif
 
+	if (outConstraint.noLP) {
+		INTARNA_NOT_IMPLEMENTED("outNoLP not yet implemented for PredictorMfe4d");
+	}
+
 	// clear data
 	clear();
 
