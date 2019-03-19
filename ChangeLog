@@ -8,6 +8,39 @@
 
 development version
 
+190319 Martin Raden :
+ + tests/runIntaRNA.sh : runs tests using the IntaRNA binary
+ + tests/data :
+   + noLP-exact 
+   + noLP-exact-seed
+
+190318 Martin Raden :
+ * IntaRNA/OutputConstraint :
+   + noLP : whether or not lonely (non-stacked) interaction bps are allowed
+   * constructor( + noLP )
+ * IntaRNA/InteractionRange :
+   * energy init = E_INF (was signaling_NaN())
+ * IntaRNA/Interaction :
+   * energy init = E_INF (was signaling_NaN())
+   * IntaRNA/Interaction::Seed :
+     + operator == ()
+   + operator == ()
+     + check for second base pair
+ * IntaRNA/PredictorMfe :
+   * updateOptima() :
+   * reportOptima() :
+     * bugfix of degenerate energy handling + simplification
+ * IntaRNA/PredictorMfe2d :
+ * IntaRNA/PredictorMfe2dSeed :
+   + support for OutConstraint::noLP
+   * fillHybridE( + callUpdateOptima ) : updating optima now optional
+   * traceBack() :
+     * bugfix : call of fillHybridE( callUpdateOptima = false ) to avoid 
+       redundant updateOptima() calls
+   + support for OutConstraint::noLP
+ * bin/CommandLineParsing :
+   + outNoLP : whether or not lonely (non-stacked) interaction bps are allowed
+
 190315 Martin Raden :
  * IntaRNA/Accessibility :
    + decomposeByMaxED() : replaces decomposeByMinPu()

@@ -173,6 +173,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	outMaxE( -999.0, +999.0, 0.0),
 	outMinPu( 0.0, 1.0, 0.0),
 	outBestSeedOnly(false),
+	outNoLP(false),
 	outCsvCols(outCsvCols_default),
 	outPerRegion(false),
 	outSpotProbSpots(""),
@@ -705,6 +706,11 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 				->default_value(outBestSeedOnly)
 				->implicit_value(true)
 			, std::string("if given, only the energetically best putative seed is reported").c_str())
+	    ("outNoLP"
+			, value<bool>(&(outNoLP))
+				->default_value(outNoLP)
+				->implicit_value(true)
+			, std::string("if given, no lonely (non-stacked) inter-molecular base pairs are allowed in predictions").c_str())
 		("outCsvCols"
 			, value<std::string>(&(outCsvCols))
 				->default_value(outCsvCols,"see text")
@@ -1672,6 +1678,7 @@ getOutputConstraint()  const
 			, Ekcal_2_E(outMaxE.val)
 			, Ekcal_2_E(outDeltaE.val)
 			, outBestSeedOnly
+			, outNoLP
 			);
 }
 

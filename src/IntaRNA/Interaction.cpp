@@ -209,6 +209,20 @@ operator= ( const InteractionRange & range )
 
 ////////////////////////////////////////////////////////////////////////////
 
+bool
+Interaction::
+operator == ( const Interaction &i ) const
+{
+	return 	   s1 == i.s1
+			&& s2 == i.s2
+			&& E_equal( energy, i.energy )
+			&& basePairs == i.basePairs
+			&& (seed == i.seed || *seed == *(i.seed))
+			;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
 std::string
 Interaction::
 dotBar( const Interaction & i, const bool fullLength )

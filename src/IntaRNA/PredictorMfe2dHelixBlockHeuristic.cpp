@@ -225,10 +225,10 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint )
 #if INTARNA_IN_DEBUG_MODE
 	// sanity checks
 	if ( ! interaction.isValid() ) {
-		throw std::runtime_error("PredictorMfe2dHelixBlockHeuristic::traceBack() : given interaction not valid");
+		throw std::runtime_error("PredictorMfe2dHelixBlockHeuristic::traceBack() : given interaction not valid : "+toString(interaction));
 	}
 	if ( interaction.basePairs.size() != 2 ) {
-		throw std::runtime_error("PredictorMfe2dHelixBlockHeuristic::traceBack() : given interaction does not contain boundaries only");
+		throw std::runtime_error("PredictorMfe2dHelixBlockHeuristic::traceBack() : given interaction does not contain boundaries only : "+toString(interaction));
 	}
 #endif
 

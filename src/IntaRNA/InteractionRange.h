@@ -47,7 +47,7 @@ public:
 				, const RnaSequence & rna2
 				, const IndexRange & r1 = IndexRange(0,RnaSequence::lastPos)
 				, const IndexRange & r2 = IndexRange(RnaSequence::lastPos,0)
-				, const E_type energy = std::numeric_limits<E_type>::signaling_NaN() )
+				, const E_type energy = E_INF )
 		: s1(&rna1)
 		, s2(&rna2)
 		, r1(r1.from, (r1.to > rna1.size()?rna1.size()-1:r1.to))
@@ -64,7 +64,7 @@ public:
 	 * Construction of an interaction range given two index ranges
 	 */
 	InteractionRange( const Interaction& interaction )
-		: s1(NULL), s2(NULL), r1(), r2(), energy(std::numeric_limits<E_type>::signaling_NaN())
+		: s1(NULL), s2(NULL), r1(), r2(), energy(E_INF)
 	{
 		// copy data
 		this->operator =(interaction);

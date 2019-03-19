@@ -66,7 +66,22 @@ public:
 		 */
 		const bool
 		operator <  ( const Seed &s ) const {
-			return ( energy < s.energy || (E_equal(energy,s.energy && bp_i.first < s.bp_i.first)) );
+			return ( energy < s.energy
+						|| (E_equal(energy,s.energy && bp_i.first < s.bp_i.first))
+						);
+		}
+
+		/**
+		 * equality check
+		 * @param s the seed to compare to
+		 * @return true if this seed equals s
+		 */
+		const bool
+		operator ==  ( const Seed &s ) const {
+			return E_equal(energy, s.energy )
+					&& bp_i == s.bp_i
+					&& bp_j == s.bp_j
+					;
 		}
 
 	};
@@ -201,7 +216,6 @@ public:
 	Interaction &
 	operator= ( const InteractionRange & range );
 
-
 	/**
 	 * Checks whether or not this interaction is considered better (smaller)
 	 * than another interaction of the same sequences
@@ -212,7 +226,12 @@ public:
 	 */
 	bool operator < ( const Interaction &i ) const;
 
-
+	/**
+	 * Checks whether or not this interaction equals another
+	 * @param i the interaction to compare to (for the same sequences!)
+	 * @return (equal sequence pointers) && (same energy) && (same positions)
+	 */
+	bool operator == ( const Interaction &i ) const;
 
 	/**
 	 * Compares if an interaction has larger energy that a given value
@@ -312,7 +331,7 @@ Interaction::Interaction( const RnaSequence & s1, const RnaSequence & s2 )
 	s1(&s1)
 	, s2(&s2)
 	, basePairs()
-	, energy( std::numeric_limits<E_type>::signaling_NaN() )
+	, energy( E_INF )
 	, seed( NULL )
 {
 }
@@ -343,7 +362,7 @@ Interaction::Interaction( const InteractionRange & range )
 	s1(NULL)
 	, s2(NULL)
 	, basePairs()
-	, energy( std::numeric_limits<E_type>::signaling_NaN() )
+	, energy( E_INF )
 	, seed( NULL )
 {
 	// init data
@@ -389,7 +408,7 @@ clear()
 	// clear interaction base pairing information
 	basePairs.clear();
 	// clear energy
-	energy = std::numeric_limits<E_type>::signaling_NaN();
+	energy = E_INF;
 	// undo seed information
 	INTARNA_CLEANUP(seed);
 

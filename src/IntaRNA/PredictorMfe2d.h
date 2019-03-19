@@ -80,6 +80,7 @@ protected:
 	 * @param outConstraint constrains the interactions reported to the output handler
 	 * @param i1init smallest value for i1
 	 * @param i2init smallest value for i2
+	 * @param callUpdateOptima whether or not updateOptima() is to be called
 	 *
 	 */
 	virtual
@@ -87,6 +88,7 @@ protected:
 	fillHybridE( const size_t j1, const size_t j2
 				, const OutputConstraint & outConstraint
 				, const size_t i1init, const size_t i2init
+				, const bool callUpdateOptima
 				);
 
 	/**

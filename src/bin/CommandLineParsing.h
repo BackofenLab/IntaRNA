@@ -599,6 +599,8 @@ protected:
 	NumberParameter<Z_type> outMinPu;
 	//! whether or not only the best seed is to be reported
 	bool outBestSeedOnly;
+	//! whether or not only lonely (non-stacked) inter-molecular base pairs are allowed
+	bool outNoLP;
 	//! the CSV column selection
 	std::string outCsvCols;
 	//! the CSV column selection
