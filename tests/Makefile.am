@@ -3,8 +3,10 @@
 AUTOMAKE_OPTIONS = serial-tests
 
 # list of tests to run
-TESTS = runApiTests
+TESTS = runApiTests runIntaRNA.sh
 
+TESTS_ENVIRONMENT = \
+	export INTARNABINPATH=$(abs_top_builddir);
 
 # the program to build
 check_PROGRAMS = runApiTests 
