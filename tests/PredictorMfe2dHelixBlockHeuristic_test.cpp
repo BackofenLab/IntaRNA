@@ -16,7 +16,7 @@
 
 using namespace IntaRNA;
 
-TEST_CASE( "PredictorMfe2dHelixHeuristc", "[PredictorMfe2dHelixBlockHeuristic]") {
+TEST_CASE( "PredictorMfe2dHelixBlockHeuristic", "[PredictorMfe2dHelixBlockHeuristic]") {
 
 	SECTION("Predictor: Case 1", "[PredictorMfe2dHelixBlockHeuristic]") {
 
@@ -103,7 +103,10 @@ TEST_CASE( "PredictorMfe2dHelixHeuristc", "[PredictorMfe2dHelixBlockHeuristic]")
 
 		IndexRange idx1(0,r1.lastPos);
 		IndexRange idx2(0,r2.lastPos);
-		OutputConstraint outC(1,OutputConstraint::OVERLAP_SEQ2,0,100);
+		OutputConstraint outC(1,OutputConstraint::OVERLAP_SEQ2
+				,Ekcal_2_E(0) // maxE
+				,Ekcal_2_E(1.0) // deltaE
+				);
 
 		pLSH.predict(idx1,idx2,outC);
 
@@ -128,7 +131,10 @@ TEST_CASE( "PredictorMfe2dHelixHeuristc", "[PredictorMfe2dHelixBlockHeuristic]")
 
 		IndexRange idx1(0,r1.lastPos);
 		IndexRange idx2(0,r2.lastPos);
-		OutputConstraint outC(1,OutputConstraint::OVERLAP_SEQ2,0,100);
+		OutputConstraint outC(1,OutputConstraint::OVERLAP_SEQ2
+				,Ekcal_2_E(0) // maxE
+				,Ekcal_2_E(1.0) // deltaE
+				);
 
 		pLSH.predict(idx1,idx2,outC);
 
@@ -162,7 +168,11 @@ TEST_CASE( "PredictorMfe2dHelixHeuristc", "[PredictorMfe2dHelixBlockHeuristic]")
 
 		IndexRange idx1(0,r1.lastPos);
 		IndexRange idx2(0,r2.lastPos);
-		OutputConstraint outC(1,OutputConstraint::OVERLAP_SEQ2,0,100);
+		OutputConstraint outC(1
+				,OutputConstraint::OVERLAP_SEQ2
+				,Ekcal_2_E(0) // maxE
+				,Ekcal_2_E(1.0) // deltaE
+				);
 
 		pLSH.predict(idx1,idx2,outC);
 
@@ -171,10 +181,10 @@ TEST_CASE( "PredictorMfe2dHelixHeuristc", "[PredictorMfe2dHelixBlockHeuristic]")
 
 		const Interaction * interaction((*out.begin()));
 
-		REQUIRE(interaction->dotBracket(*interaction) == "((.((.(&)..).)))");
+		REQUIRE(interaction->dotBracket(*interaction) == "(((.(..(&).)).))");
 
-		REQUIRE(interaction->basePairs.begin()->first == 1);
-		REQUIRE(interaction->basePairs.begin()->second == 7);
+		REQUIRE(interaction->basePairs.begin()->first == 0);
+		REQUIRE(interaction->basePairs.begin()->second == 6);
 
 		REQUIRE(interaction->basePairs.rbegin()->first == 7);
 		REQUIRE(interaction->basePairs.rbegin()->second == 0);
@@ -199,7 +209,10 @@ TEST_CASE( "PredictorMfe2dHelixHeuristc", "[PredictorMfe2dHelixBlockHeuristic]")
 
 		IndexRange idx1(0,r1.lastPos);
 		IndexRange idx2(0,r2.lastPos);
-		OutputConstraint outC(1,OutputConstraint::OVERLAP_SEQ2,0,100);
+		OutputConstraint outC(1,OutputConstraint::OVERLAP_SEQ2
+				,Ekcal_2_E(0) // maxE
+				,Ekcal_2_E(1.0) // deltaE
+				);
 
 		pLSH.predict(idx1,idx2,outC);
 
@@ -233,7 +246,10 @@ TEST_CASE( "PredictorMfe2dHelixHeuristc", "[PredictorMfe2dHelixBlockHeuristic]")
 
 		IndexRange idx1(0,r1.lastPos);
 		IndexRange idx2(0,r2.lastPos);
-		OutputConstraint outC(1,OutputConstraint::OVERLAP_SEQ2,0,100);
+		OutputConstraint outC(1,OutputConstraint::OVERLAP_SEQ2
+				,Ekcal_2_E(0) // maxE
+				,Ekcal_2_E(1.0) // deltaE
+				);
 
 		pLSH.predict(idx1,idx2,outC);
 
@@ -241,9 +257,9 @@ TEST_CASE( "PredictorMfe2dHelixHeuristc", "[PredictorMfe2dHelixBlockHeuristic]")
 		REQUIRE(out.reported() == 1);
 
 		const Interaction * interaction((*out.begin()));
-		REQUIRE(interaction->dotBracket(*interaction) == "(((((&).))))");
-		REQUIRE(interaction->basePairs.begin()->first == 1);
-		REQUIRE(interaction->basePairs.begin()->second == 5);
+		REQUIRE(interaction->dotBracket(*interaction) == "((((.(&)))))");
+		REQUIRE(interaction->basePairs.begin()->first == 0);
+		REQUIRE(interaction->basePairs.begin()->second == 4);
 
 		REQUIRE(interaction->basePairs.rbegin()->first == 5);
 		REQUIRE(interaction->basePairs.rbegin()->second == 0);

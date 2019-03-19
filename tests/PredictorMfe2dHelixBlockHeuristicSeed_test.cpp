@@ -16,7 +16,7 @@
 
 using namespace IntaRNA;
 
-TEST_CASE( "PredictorMfe2dHelixHeuristcSeed", "[PredictorMfe2dHelixBlockHeuristicSeed]") {
+TEST_CASE( "PredictorMfe2dHelixBlockHeuristicSeed", "[PredictorMfe2dHelixBlockHeuristicSeed]") {
 
 	SECTION("Predictor: Case 1", "[PredictorMfe2dHelixBlockHeuristicSeed]") {
 
