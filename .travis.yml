@@ -21,7 +21,7 @@ script:
     # generate autotools's files 
     - bash autotools-init.sh 
     # run configure
-    - ./configure --prefix=$HOME/IntaRNA --with-vrna=$HOME/miniconda/envs/build-IntaRNA --with-boost=$HOME/miniconda/envs/build-IntaRNA
+    - ./configure --prefix=$HOME/IntaRNA --with-vrna=$HOME/miniconda/envs/build-IntaRNA --with-boost=no
     # compile documentation
     # - make doxygen-doc
     # compile, test and install IntaRNA
