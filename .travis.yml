@@ -21,22 +21,22 @@ install:
   - export CONDA_PATH=$HOME/miniconda3
   - export PATH=$CONDA_PATH/bin:$PATH
   - conda update --yes conda
-  - conda create -n build-IntaRNA --yes -c bioconda boost-cpp viennarna pkgconfig
-  - conda activate build-IntaRNA
+  - conda create -n build-IntaRNA --yes -c gcc_linux-64 gxx_linux-64 bioconda boost-cpp viennarna pkgconfig
 
 script:
-    - $CXX --version
-    - which $CXX
-    - RNAalifold --version
+#    - bash $CXX --version
+ #   - which $CXX
+  #  - RNAalifold --version
     ##### start IntaRNA build #####
-    - cd $TRAVIS_BUILD_DIR 
+    - cd $TRAVIS_BUILD_DIR
+    - bash ./build-IntaRNA-on-Travis.sh 
     # generate autotools's files 
-    - bash autotools-init.sh 
-    - ./configure --prefix=$HOME/IntaRNA --with-vrna=${CONDA_PATH}
+#    - bash autotools-init.sh 
+#    - ./configure --prefix=$HOME/IntaRNA --with-vrna=${CONDA_PATH}
     # compile documentation
     # - make doxygen-doc
     # compile, test and install IntaRNA
-    - make -j 2 && make tests -j 2 && make install
+#    - make -j 2 && make tests -j 2 && make install
     ##### check IntaRNA build #####
     # run IntaRNA with help output
     - $HOME/IntaRNA/bin/IntaRNA -h
