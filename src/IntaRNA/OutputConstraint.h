@@ -68,7 +68,7 @@ public:
 						, const E_type maxE = 0.0
 						, const E_type deltaE = E_INF
 						, const bool bestSeedOnly = false
-						, const bool noLP = true );
+						, const bool noLP = false );
 
 	//! destruction
 	virtual ~OutputConstraint();

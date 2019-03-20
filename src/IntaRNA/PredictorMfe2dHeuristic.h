@@ -102,10 +102,11 @@ protected:
 	/**
 	 * Computes all entries of the hybridE matrix
 	 * and reports all valid interactions via updateOptima()
+	 * @param outConstraint constrains the interactions reported to the output handler
 	 */
 	virtual
 	void
-	fillHybridE();
+	fillHybridE( const OutputConstraint & outConstraint );
 
 	/**
 	 * Fills a given interaction (boundaries given) with the according

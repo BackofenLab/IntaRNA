@@ -48,8 +48,8 @@ predict( const IndexRange & r1
 #endif
 
 
-	if (outConstraint.noLP) {
-		INTARNA_NOT_IMPLEMENTED("outNoLP not yet implemented for PredictorMfe2dHelixBlockHeuristic");
+	if (outConstraint.noLP && helixHandler.getConstraint().getMaxIL() > 0) {
+		INTARNA_NOT_IMPLEMENTED("outNoLP not yet implemented for helices with bulges and interior loops");
 	}
 
 	// set index offset

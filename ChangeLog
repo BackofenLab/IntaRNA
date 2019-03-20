@@ -8,6 +8,12 @@
 
 development version
 
+190320 Martin Raden :
+ * IntaRNA/PredictorMfe2dHeuristic* :
+   + outNoLP support
+ * tests/data :
+   + tests with and without noLP
+
 190319 Martin Raden :
  + tests/runIntaRNA.sh : runs tests using the IntaRNA binary
  + tests/data :

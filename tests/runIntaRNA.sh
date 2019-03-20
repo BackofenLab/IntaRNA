@@ -9,8 +9,14 @@ fi
 
 # list of all test names (parameter and output file in data subfolder) 
 IntaRNA_tests="\
-				noLP-exact \
-				noLP-exact-seed \
+				energyB-accN-exact \
+				energyB-accN-exact-seed \
+				energyB-accN-heuristic \
+				energyB-accN-heuristic-seed \
+				energyB-accN-noLP-exact \
+				energyB-accN-noLP-exact-seed \
+				energyB-accN-noLP-heuristic \
+				energyB-accN-noLP-heuristic-seed \
 				"
 
 DIFFERENCES=false

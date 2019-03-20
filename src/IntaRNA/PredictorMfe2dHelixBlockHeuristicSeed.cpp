@@ -52,8 +52,8 @@ predict( const IndexRange & r1
 		throw std::runtime_error("PredictorMfe2dHelixBlockHeuristicSeed::predict("+toString(r1)+","+toString(r2)+") is not sane");
 #endif
 
-	if (outConstraint.noLP) {
-		INTARNA_NOT_IMPLEMENTED("outNoLP not yet implemented for PredictorMfe2dHelixBlockHeuristicSeed");
+	if (outConstraint.noLP && helixHandler.getConstraint().getMaxIL() > 0) {
+		INTARNA_NOT_IMPLEMENTED("outNoLP not yet implemented for helices with bulges and interior loops");
 	}
 
 	// set index offset
