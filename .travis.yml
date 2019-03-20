@@ -31,14 +31,14 @@ script:
   #  - RNAalifold --version
     ##### start IntaRNA build #####
     - cd $TRAVIS_BUILD_DIR
-    - bash -l -c ./build-IntaRNA-on-Travis.sh 
+    - bash -l ./build-IntaRNA-on-Travis.sh 
     # generate autotools's files 
 #    - bash autotools-init.sh 
 #    - ./configure --prefix=$HOME/IntaRNA --with-vrna=${CONDA_PATH}
     # compile documentation
     # - make doxygen-doc
     # compile, test and install IntaRNA
-    - make -j 2 && make tests -j 2 && make install
+#    - make -j 2 && make tests -j 2 && make install
     ##### check IntaRNA build #####
     # run IntaRNA with help output
     - $HOME/IntaRNA/bin/IntaRNA -h
