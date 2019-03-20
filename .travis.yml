@@ -19,7 +19,8 @@ install:
   - conda info -a
 
   # Replace dep1 dep2 ... with your dependencies
-  - conda create -q -n build-IntaRNA python=$TRAVIS_PYTHON_VERSION gcc_linux-64 gxx_linux-64 boost-cpp viennarna pkgconfig
+  - conda create -q -n build-IntaRNA python=$TRAVIS_PYTHON_VERSION 
+  # -c bioconda gcc_linux-64 gxx_linux-64 boost-cpp viennarna pkgconfig
   - source activate build-IntaRNA
 
 #language: cpp
