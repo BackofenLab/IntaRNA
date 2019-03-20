@@ -1,12 +1,12 @@
 dist: trusty
 
-language: python
-python:
+language: minimal
+#python:
   # We don't actually use the Travis Python, but this keeps it organized.
-  - "2.7"
+  #- "2.7"
 
 install:
-  - sudo apt-get update
+#  - sudo apt-get update
   # We do this conditionally because it saves us some downloading if the
   # version is the same.
   - wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
@@ -49,15 +49,15 @@ install:
 #  - conda activate build-IntaRNA
 
 script:
-    - $CXX --version
-    - which $CXX
+#    - $CXX --version
+#    - which $CXX
   #  - RNAalifold --version
     ##### start IntaRNA build #####
     - cd $TRAVIS_BUILD_DIR
 #    - bash -l ./build-IntaRNA-on-Travis.sh 
     # generate autotools's files 
     - bash autotools-init.sh 
-    - ./configure --prefix=$HOME/IntaRNA --with-vrna=${CONDA_PATH}
+    - ./configure --prefix=$HOME/IntaRNA --with-vrna=$HOME/miniconda/envs/build-IntaRNA
     # compile documentation
     # - make doxygen-doc
     # compile, test and install IntaRNA
