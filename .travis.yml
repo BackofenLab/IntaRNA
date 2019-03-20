@@ -1,6 +1,27 @@
 dist: trusty
 
-language: minimal
+language: python
+python:
+  # We don't actually use the Travis Python, but this keeps it organized.
+  - "2.7"
+
+install:
+  - sudo apt-get update
+  # We do this conditionally because it saves us some downloading if the
+  # version is the same.
+  - wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -q conda
+  # Useful for debugging any issues with conda
+  - conda info -a
+
+  # Replace dep1 dep2 ... with your dependencies
+  - conda create -q -n build-IntaRNA python=$TRAVIS_PYTHON_VERSION gcc_linux-64 gxx_linux-64 boost-cpp viennarna pkgconfig
+  - source activate build-IntaRNA
+
 #language: cpp
 
 #compiler:
@@ -14,18 +35,18 @@ language: minimal
 #    sources:
 #    - ubuntu-toolchain-r-test
     
-install:
-  # install conda to install build requirements
-  - wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
-  - chmod +x miniconda.sh
-  - "./miniconda.sh -b"
-  - export CONDA_PATH=$HOME/miniconda3
-  - export PATH=$CONDA_PATH/bin:$PATH
-  - conda update --yes conda
-  - conda create -n build-IntaRNA --yes -c bioconda gcc_linux-64 gxx_linux-64 boost-cpp viennarna pkgconfig
-  - cat /home/travis/.bashrc
-  - bash -l -c "conda init bash"
-  - cat /home/travis/.bashrc
+#install:
+#  # install conda to install build requirements
+#  - wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+#  - chmod +x miniconda.sh
+#  - "./miniconda.sh -b"
+#  - export CONDA_PATH=$HOME/miniconda3
+#  - export PATH=$CONDA_PATH/bin:$PATH
+#  - conda update --yes conda
+#  - conda create -n build-IntaRNA --yes -c bioconda gcc_linux-64 gxx_linux-64 boost-cpp viennarna pkgconfig
+#  - cat /home/travis/.bashrc
+#  - bash -l -c "conda init bash"
+#  - cat /home/travis/.bashrc
 #  - conda activate build-IntaRNA
 
 script:
@@ -34,14 +55,14 @@ script:
   #  - RNAalifold --version
     ##### start IntaRNA build #####
     - cd $TRAVIS_BUILD_DIR
-    - bash -l ./build-IntaRNA-on-Travis.sh 
+#    - bash -l ./build-IntaRNA-on-Travis.sh 
     # generate autotools's files 
-#    - bash autotools-init.sh 
-#    - ./configure --prefix=$HOME/IntaRNA --with-vrna=${CONDA_PATH}
+    - bash autotools-init.sh 
+    - ./configure --prefix=$HOME/IntaRNA --with-vrna=${CONDA_PATH}
     # compile documentation
     # - make doxygen-doc
     # compile, test and install IntaRNA
-#    - make -j 2 && make tests -j 2 && make install
+    - make -j 2 && make tests -j 2 && make install
     ##### check IntaRNA build #####
     # run IntaRNA with help output
     - $HOME/IntaRNA/bin/IntaRNA -h
