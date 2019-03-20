@@ -12,14 +12,8 @@ addons:
   apt:
     sources:
     - ubuntu-toolchain-r-test
-    packages:
-    - gcc-7
-    - g++-7
-    - libboost-all-dev
-    - libgsl0-dev
     
 install:
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-7" CC="gcc-7"; fi
   # install conda to install build requirements
   - wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
   - chmod +x miniconda.sh
@@ -27,12 +21,13 @@ install:
   - export CONDA_PATH=$HOME/miniconda3
   - export PATH=$CONDA_PATH/bin:$PATH
   - conda update --yes conda
-  - conda install --yes -c bioconda 'python<=3.5' viennarna
+  - conda create -n build-IntaRNA --yes -c bioconda boost-cpp viennarna pkgconfig
+  - conda activate build-IntaRNA
 
 script:
-#    - $CXX --version
-#    - which $CXX
-#    - RNAalifold --version
+    - $CXX --version
+    - which $CXX
+    - RNAalifold --version
     ##### start IntaRNA build #####
     - cd $TRAVIS_BUILD_DIR 
     # generate autotools's files 
