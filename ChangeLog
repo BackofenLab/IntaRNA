@@ -13,6 +13,9 @@ development version
    + outNoLP support
  * tests/data :
    + tests with and without noLP
+ * .travis.yml : 
+   - viennarna not available via ppa anymore
+   + build IntaRNA via conda
 
 190319 Martin Raden :
  + tests/runIntaRNA.sh : runs tests using the IntaRNA binary
