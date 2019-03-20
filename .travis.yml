@@ -1,17 +1,18 @@
 dist: trusty
 
-language: cpp
+language: minimal
+#language: cpp
 
-compiler:
-    - gcc
+#compiler:
+#    - gcc
 
-cache:
-  apt: true
+#cache:
+#  apt: true
 
-addons:
-  apt:
-    sources:
-    - ubuntu-toolchain-r-test
+#addons:
+#  apt:
+#    sources:
+#    - ubuntu-toolchain-r-test
     
 install:
   # install conda to install build requirements
@@ -22,12 +23,14 @@ install:
   - export PATH=$CONDA_PATH/bin:$PATH
   - conda update --yes conda
   - conda create -n build-IntaRNA --yes -c bioconda gcc_linux-64 gxx_linux-64 boost-cpp viennarna pkgconfig
+  - cat /home/travis/.bashrc
   - bash -l -c "conda init bash"
+  - cat /home/travis/.bashrc
 #  - conda activate build-IntaRNA
 
 script:
-#    - $CXX --version
-#    - which $CXX
+    - $CXX --version
+    - which $CXX
   #  - RNAalifold --version
     ##### start IntaRNA build #####
     - cd $TRAVIS_BUILD_DIR

@@ -4,7 +4,12 @@ $CXX --version
 
 which $CXX
 
-conda activate build-IntaRNA
+echo "#### activating build-IntaRNA"
+
+#conda activate build-IntaRNA
+source ${CONDA_PATH}/bin/activate build-IntaRNA
+
+echo "#### build-IntaRNA activated"
 
 $CXX --version
 
