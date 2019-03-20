@@ -1,11 +1,9 @@
 
-conda activate build-IntaRNA
-
 $CXX --version
 
 which $CXX
 
-autotools-init.sh 
+bash autotools-init.sh 
 
 ./configure --prefix=$HOME/IntaRNA --with-vrna=${CONDA_PATH}
 

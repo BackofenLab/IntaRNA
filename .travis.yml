@@ -29,7 +29,7 @@ script:
   #  - RNAalifold --version
     ##### start IntaRNA build #####
     - cd $TRAVIS_BUILD_DIR
-    - bash ./build-IntaRNA-on-Travis.sh 
+    - bash "conda activate build-IntaRNA; ./build-IntaRNA-on-Travis.sh" 
     # generate autotools's files 
 #    - bash autotools-init.sh 
 #    - ./configure --prefix=$HOME/IntaRNA --with-vrna=${CONDA_PATH}
