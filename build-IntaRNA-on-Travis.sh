@@ -6,7 +6,11 @@ which $CXX
 
 conda activate build-IntaRNA
 
-bash autotools-init.sh 
+$CXX --version
+
+which $CXX
+
+source autotools-init.sh 
 
 ./configure --prefix=$HOME/IntaRNA --with-vrna=${CONDA_PATH}
 
