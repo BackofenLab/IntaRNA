@@ -1,4 +1,7 @@
 
+# ensure parallel test build and run
+AUTOMAKE_OPTIONS = parallel-tests
+
 # setup environment needed for the tests
 AM_TESTS_ENVIRONMENT = export INTARNABINPATH=$(abs_top_builddir);
 

@@ -16,6 +16,8 @@ development version
  * .travis.yml : 
    - viennarna not available via ppa anymore
    + build IntaRNA via conda
+ * tests/Makefile.am :
+   * switch to parallel test harness to define shell script test driver
 
 190319 Martin Raden :
  + tests/runIntaRNA.sh : runs tests using the IntaRNA binary
