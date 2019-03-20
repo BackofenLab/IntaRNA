@@ -1,7 +1,10 @@
+#!/usr/bin/env bash
 
 $CXX --version
 
 which $CXX
+
+conda activate build-IntaRNA
 
 bash autotools-init.sh 
 
