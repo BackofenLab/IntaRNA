@@ -21,7 +21,7 @@ install:
   - export CONDA_PATH=$HOME/miniconda3
   - export PATH=$CONDA_PATH/bin:$PATH
   - conda update --yes conda
-  - conda create -n build-IntaRNA --yes -c gcc_linux-64 gxx_linux-64 bioconda boost-cpp viennarna pkgconfig
+  - conda create -n build-IntaRNA --yes -c bioconda gcc_linux-64 gxx_linux-64 boost-cpp viennarna pkgconfig
 
 script:
 #    - bash $CXX --version
