@@ -2,14 +2,11 @@
 # ensure serial test build and run
 AUTOMAKE_OPTIONS = serial-tests
 
-# list of tests to run
-TESTS = runApiTests runIntaRNA.sh
+TESTS_ENVIRONMENT = \
+	export INTARNABINPATH=$(abs_top_builddir);
 
 # the script needed for tests
 dist_check_SCRIPTS = runIntaRNA.sh
-
-TESTS_ENVIRONMENT = \
-	export INTARNABINPATH=$(abs_top_builddir);
 
 # the program to build
 check_PROGRAMS = runApiTests 
@@ -57,3 +54,9 @@ LIBS= 	-L$(top_builddir)/src/IntaRNA -lIntaRNA \
 runApiTests_CXXFLAGS =	-I$(top_builddir)/src \
 						@AM_CXXFLAGS@ @CXXFLAGS@ \
 						-DELPP_NO_LOG_TO_FILE
+
+
+# list of tests to run
+TESTS = runApiTests$(EXEEXT) $(dist_check_SCRIPTS)
+
+						
