@@ -1,0 +1,11 @@
+id1;start1;end1;id2;start2;end2;subseqDP;hybridDP;E
+target;1;2;query;1;2;CC&GG;((&));-2
+target;1;5;query;1;2;CCAAC&GG;(...(&));-2
+target;1;7;query;1;2;CCAACAC&GG;(.....(&));-2
+target;1;8;query;1;2;CCAACACC&GG;(......(&));-2
+target;2;5;query;1;2;CAAC&GG;(..(&));-2
+target;2;7;query;1;2;CAACAC&GG;(....(&));-2
+target;2;8;query;1;2;CAACACC&GG;(.....(&));-2
+target;5;7;query;1;2;CAC&GG;(.(&));-2
+target;5;8;query;1;2;CACC&GG;(..(&));-2
+target;7;8;query;1;2;CC&GG;((&));-2

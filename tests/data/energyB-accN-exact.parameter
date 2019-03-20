@@ -1,0 +1,12 @@
+mode = M
+noSeed = true
+energy=B 
+tAcc=N
+qAcc=N
+target=CCAACACC
+query=GG
+outMode=C
+outNumber=20
+outOverlap=B
+outDeltaE=0
+outNoLP=false
