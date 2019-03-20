@@ -22,7 +22,7 @@ install:
   - export PATH=$CONDA_PATH/bin:$PATH
   - conda update --yes conda
   - conda create -n build-IntaRNA --yes -c bioconda gcc_linux-64 gxx_linux-64 boost-cpp viennarna pkgconfig
-  - bash -c "conda init bash"
+  - bash -l -c "conda init bash"
 #  - conda activate build-IntaRNA
 
 script:
@@ -31,7 +31,7 @@ script:
   #  - RNAalifold --version
     ##### start IntaRNA build #####
     - cd $TRAVIS_BUILD_DIR
-    - bash ./build-IntaRNA-on-Travis.sh 
+    - bash -l -c ./build-IntaRNA-on-Travis.sh 
     # generate autotools's files 
 #    - bash autotools-init.sh 
 #    - ./configure --prefix=$HOME/IntaRNA --with-vrna=${CONDA_PATH}
