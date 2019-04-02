@@ -14,6 +14,7 @@ target prediction programs neglect the accessibility of target sites and the
 existence of a seed, while other approaches are either specialized to certain
 types of RNAs or too slow for genome-wide searches.
 
+IntaRNA, developed by 
 [Prof. Backofen's bioinformatics group at Freiburg University](http://www.bioinf.uni-freiburg.de),
 is a general and fast approach to the
 prediction of RNA-RNA interactions incorporating both the accessibility of
@@ -22,7 +23,6 @@ as well as the existence of a user-definable seed interaction. We successfully a
 IntaRNA to the prediction of bacterial sRNA targets and determined the exact
 locations of the interactions with a higher accuracy than competing programs.
 
-IntaRNA, developed by
 For testing or ad hoc use of IntaRNA, you can use its webinterface at the
 
 **==> [Freiburg RNA tools IntaRNA webserver](http://rna.informatik.uni-freiburg.de/IntaRNA/) <==**
