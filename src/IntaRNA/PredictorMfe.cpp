@@ -75,6 +75,11 @@ updateOptima( const size_t i1, const size_t j1
 {
 //	LOG(DEBUG) <<"PredictorMfe::updateOptima( "<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" , E = " <<interE<<" isHybridE="<<(isHybridE?"true":"false");
 
+	// ignore invalid reports
+	if (E_isINF(interE) || interE >= E_MAX) {
+		return;
+	}
+
 	// check if nothing to be done
 	if (mfeInteractions.size() == 0) {
 		// report call if needed

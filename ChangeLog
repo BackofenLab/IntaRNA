@@ -8,6 +8,11 @@
 
 development version
 
+190403 Martin Raden :
+ * IntaRNA/PredictorMfe :
+   * updateOptima() :
+     + bugfix: explicit handling of energies >= E_MAX
+
 190320 Martin Raden :
  * IntaRNA/PredictorMfe2dHeuristic* :
    + outNoLP support
