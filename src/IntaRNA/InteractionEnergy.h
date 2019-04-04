@@ -911,8 +911,11 @@ getE( const size_t i1, const size_t j1
 		, const size_t i2, const size_t j2
 		, const E_type hybridE ) const
 {
-	// check if hybridization energy is not infinite
-	if ( E_isNotINF(hybridE) ) {
+	// check if hybridization energy and EDs are not infinite
+	if ( E_isNotINF(hybridE)
+			&& (getED1( i1, j1 ) < Accessibility::ED_UPPER_BOUND)
+			&& (getED2( i2, j2 ) < Accessibility::ED_UPPER_BOUND))
+	{
 		// compute overall interaction energy
 		return hybridE
 				// accessibility penalty
