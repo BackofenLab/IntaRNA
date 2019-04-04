@@ -8,6 +8,11 @@
 
 development version
 
+190404 Martin Raden :
+ * IntaRNA/InteractionEnergy :
+   * getE() :
+     + additional sanity checks to avoid energy range overflows
+
 190403 Martin Raden :
  * IntaRNA/PredictorMfe :
    * updateOptima() :
