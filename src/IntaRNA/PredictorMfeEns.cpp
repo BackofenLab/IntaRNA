@@ -64,8 +64,6 @@ updateZ( const size_t i1, const size_t j1
 		// remove ED, dangling end contributions, etc. before adding
 		overallZhybrid += ( partZ / energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, E_type(0))) );
 	}
-	// update ensemble mfe
-	updateOptima(i1,j1,i2,j2, energy.getE( partZ ), isHybridZ);
 }
 
 ////////////////////////////////////////////////////////////////////////////

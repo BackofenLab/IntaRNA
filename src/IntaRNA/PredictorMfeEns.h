@@ -75,8 +75,7 @@ protected:
 	initZ( const OutputConstraint & outConstraint );
 
 	/**
-	 * Updates the overall hybridization partition function
-	 * and the mfe information.
+	 * Updates the overall hybridization partition function.
 	 *
 	 * Note: if called multiple time for the same boundaries then the
 	 * reported partition functions have to represent disjoint interaction sets!
