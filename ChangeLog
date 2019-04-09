@@ -395,7 +395,13 @@ development version
  * IntaRNA/PredictorMfe2d :
    * initHybridE() : 
      - E_MAX since it was masking global variable with wrong value
-   
+
+version 2.4.1
+
+190409 Martin Raden :
+ * IntaRNA/Makefile :
+   + add missing HelixConstraint.h (thanks to A. R. Garcia and M. Fuchs)
+
 version 2.4.0
 
 190228 Martin Raden :
