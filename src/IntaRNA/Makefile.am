@@ -29,6 +29,7 @@ libIntaRNA_a_HEADERS =    \
 					AccessibilityFromStream.h \
 					AccessibilityVrna.h \
 					AccessibilityBasePair.h \
+					HelixConstraint.h \
 					HelixHandler.h \
 					HelixHandlerIdxOffset.h \
 					HelixHandlerStackingOnly.h \
