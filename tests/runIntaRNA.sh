@@ -51,7 +51,7 @@ function calltest {
     $testCall 2>&1 > $resultfile
 
 	if [ -e "$reference_resultsfile" ] ; then
-	    if ! diff "$resultfile" "$reference_resultsfile" "${diffopts}" > $difftmp; then
+	    if ! diff "$reference_resultsfile" "$resultfile" "${diffopts}" > $difftmp; then
 	        #	        echo "==================== OK"
 	    #else
 	        DIFFERENCES=true
