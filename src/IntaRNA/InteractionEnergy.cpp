@@ -26,8 +26,8 @@ getE_contributions( const Interaction & interaction ) const
 	contr.init = getE_init();
 	contr.ED1 = getED1( i1, j1 );
 	contr.ED2 = getED2( i2, j2 );
-	contr.dangleLeft = (getE_danglingLeft( i1, i2 )*getPr_danglingLeft(i1,j1,i2,j2));
-	contr.dangleRight = (getE_danglingRight( j1, j2 )*getPr_danglingRight(i1,j1,i2,j2));
+	contr.dangleLeft =  energyWithDangles ? Z_2_E((E_2_Z(getE_danglingLeft( i1, i2 ))*getPr_danglingLeft(i1,j1,i2,j2))) : E_type(0);
+	contr.dangleRight = energyWithDangles ? Z_2_E((E_2_Z(getE_danglingRight( j1, j2 ))*getPr_danglingRight(i1,j1,i2,j2))) : E_type(0);
 	contr.endLeft = getE_endLeft( i1, i2 );
 	contr.endRight = getE_endRight( j1, j2 );
 	contr.energyAdd = getEnergyAdd();

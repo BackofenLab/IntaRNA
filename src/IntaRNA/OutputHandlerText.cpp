@@ -318,9 +318,9 @@ add( const Interaction & i, const OutputConstraint & outConstraint )
 				<<"  + E(endRight)    = "<<E_2_Ekcal(contr.endRight)<<'\n'
 				<<"    : E(hybrid)    = "<<E_2_Ekcal((i.energy-contr.ED1-contr.ED2))<<'\n'
 				<<"  + ED(seq1)       = "<<E_2_Ekcal(contr.ED1)<<'\n'
-				<<"    : Pu(seq1)     = "<<E_2_Ekcal(Z_2_E(std::exp(-E_2_Z(contr.ED1)/energy.getRT())))<<'\n'
+				<<"    : Pu(seq1)     = "<<(E_equal(contr.ED2,0) ? 1 : E_2_Ekcal(Z_2_E(std::exp(-E_2_Z(contr.ED1)/energy.getRT()))))<<'\n'
 				<<"  + ED(seq2)       = "<<E_2_Ekcal(contr.ED2)<<'\n'
-				<<"    : Pu(seq2)     = "<<E_2_Ekcal(Z_2_E(std::exp(-E_2_Z(contr.ED2)/energy.getRT())))<<'\n'
+				<<"    : Pu(seq2)     = "<<(E_equal(contr.ED2,0) ? 1 : E_2_Ekcal(Z_2_E(std::exp(-E_2_Z(contr.ED2)/energy.getRT()))))<<'\n'
 				;
 			if (!E_equal(contr.energyAdd,E_type(0))) {
 				outTmp
@@ -368,16 +368,16 @@ add( const Interaction & i, const OutputConstraint & outConstraint )
 								});
 				outTmp
 //						<<" kcal/mol"
-					<<"\nseed Pu1    = "<<energy.getBoltzmannWeight(energy.getED1( s1->bp_i.first, s1->bp_j.first ));
+					<<"\nseed Pu1    = "<<(E_equal(energy.getED1( s1->bp_i.first, s1->bp_j.first ),0) ? 1 : energy.getBoltzmannWeight(energy.getED1( s1->bp_i.first, s1->bp_j.first )));
 				if (!outConstraint.bestSeedOnly)
 					std::for_each( ++(i.seed->begin()), i.seed->end(), [&]( const Interaction::Seed & s) {
-								 outTmp << listSep <<energy.getBoltzmannWeight(energy.getED1( s.bp_i.first, s.bp_j.first ));
+								 outTmp << listSep <<(E_equal(energy.getED1( s.bp_i.first, s.bp_j.first ),0) ? 1 : energy.getBoltzmannWeight(energy.getED1( s.bp_i.first, s.bp_j.first )));
 								});
 				outTmp
-					<<"\nseed Pu2    = " <<energy.getBoltzmannWeight(energy.getAccessibility2().getAccessibilityOrigin().getED( s1->bp_j.second, s1->bp_i.second ));
+					<<"\nseed Pu2    = " <<(E_equal(energy.getAccessibility2().getAccessibilityOrigin().getED( s1->bp_j.second, s1->bp_i.second ),0) ? 1 : energy.getBoltzmannWeight(energy.getAccessibility2().getAccessibilityOrigin().getED( s1->bp_j.second, s1->bp_i.second )));
 				if (!outConstraint.bestSeedOnly)
 					std::for_each( ++(i.seed->begin()), i.seed->end(), [&]( const Interaction::Seed & s) {
-								 outTmp << listSep <<energy.getBoltzmannWeight(energy.getAccessibility2().getAccessibilityOrigin().getED( s.bp_j.second, s.bp_i.second ));
+								 outTmp << listSep <<(E_equal(energy.getAccessibility2().getAccessibilityOrigin().getED( s.bp_j.second, s.bp_i.second ),0) ? 1 : energy.getBoltzmannWeight(energy.getAccessibility2().getAccessibilityOrigin().getED( s.bp_j.second, s.bp_i.second )));
 								});
 				outTmp
 					<<'\n'

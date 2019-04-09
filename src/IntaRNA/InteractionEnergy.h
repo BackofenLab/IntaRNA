@@ -79,12 +79,15 @@ public:
 	 *          is always added; thus it defines a shift of the energy spectrum
 	 *          as e.g. needed when computing predictions with accessibility
 	 *          constraints
+	 * @param energyWithDangle whether or not danling end energy contributions
+	 *          are taken into account for the overall energy computation
 	 */
 	InteractionEnergy( const Accessibility & accS1
 			, const ReverseAccessibility & accS2
 			, const size_t maxInternalLoopSize1
 			, const size_t maxInternalLoopSize2
 			, const E_type energyAdd
+			, const bool energyWithDangle
 			);
 
 	/**
@@ -570,6 +573,9 @@ protected:
 	//! user defined shift of the energy spectrum
 	const E_type energyAdd;
 
+	//! whether or not dangling end energy contributions are to be added
+	const bool energyWithDangles;
+
 	/**
 	 * Checks whether or not the given indices are valid index region within the
 	 * sequence for an intermolecular loop and do not violate the maximal
@@ -622,6 +628,7 @@ InteractionEnergy::InteractionEnergy( const Accessibility & accS1
 				, const size_t maxInternalLoopSize1
 				, const size_t maxInternalLoopSize2
 				, const E_type energyAdd
+				, const bool energyWithDangles
 		)
   :
 	accS1(accS1)
@@ -629,6 +636,7 @@ InteractionEnergy::InteractionEnergy( const Accessibility & accS1
 	, maxInternalLoopSize1(maxInternalLoopSize1)
 	, maxInternalLoopSize2(maxInternalLoopSize2)
 	, energyAdd(energyAdd)
+	, energyWithDangles(energyWithDangles)
 {
 }
 
@@ -923,8 +931,8 @@ getE( const size_t i1, const size_t j1
 				+ getED2( i2, j2 )
 				// dangling end penalty
 				// weighted by the probability that ends are unpaired
-				+ Z_2_E(E_2_Z(getE_danglingLeft( i1, i2 ))*getPr_danglingLeft(i1,j1,i2,j2))
-				+ Z_2_E(E_2_Z(getE_danglingRight( j1, j2 ))*getPr_danglingRight(i1,j1,i2,j2))
+				+ (energyWithDangles ? Z_2_E(E_2_Z(getE_danglingLeft( i1, i2 ))*getPr_danglingLeft(i1,j1,i2,j2)) : E_type(0))
+				+ (energyWithDangles ? Z_2_E(E_2_Z(getE_danglingRight( j1, j2 ))*getPr_danglingRight(i1,j1,i2,j2)) : E_type(0))
 				// helix closure penalty
 				+ getE_endLeft( i1, i2 )
 				+ getE_endRight( j1, j2 )
@@ -971,9 +979,12 @@ getE_multi(  const size_t i1, const size_t j1
 			// intramolecular structure contributions
 			  (ES_mode != ES_multi_2only ? getES1(i1,j1) : 0)
 			+ (ES_mode != ES_multi_1only ? getES2(i2,j2) : 0)
-			// dangling end treatments (including helix closure penalty)
-			+ getE_danglingRight(i1,i2)
-			+ getE_danglingLeft(j1,j2)
+			// dangling end treatments of helix ends
+			+ (energyWithDangles ? getE_danglingRight(i1,i2) : E_type(0))
+			+ (energyWithDangles ? getE_danglingLeft(j1,j2) : E_type(0))
+			// helix closure penalties
+			+ getE_endRight(i1,i2)
+			+ getE_endLeft(j1,j2)
 			// multiloop unpaired contributions
 			+ getE_multiUnpaired(
 					(ES_mode == ES_multi_2only ? j1-i1-1 : 0 )

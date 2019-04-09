@@ -8,6 +8,24 @@
 
 development version
 
+190409 Martin Raden :
+ * IntaRNA/InteractionEnergy :
+   + energyWithDangles : whether or not dangling end contributions are to be 
+     considered for the overall energy computation
+   * getE() :
+   * getE_contributions() :
+   * getE_multi() :
+     + consideration of energyWithDangles
+   * getE_multi() :
+     + bugfix: helix end terms were missing
+ * IntaRNA/InteractionEnergy* :
+   * constructor() :
+     + energyWithDangles handling
+ * bin/CommandLineParsing :
+   + energyNoDangles : whether or not dangling end terms are considered
+   * getEnergyHandler() :
+     * bugfix : InteractionEnergyBP constructor call
+
 190404 Martin Raden :
  * IntaRNA/InteractionEnergy :
    * getE() :

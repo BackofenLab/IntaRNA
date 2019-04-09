@@ -1377,7 +1377,12 @@ you can correct for conditional predictions based on given
 
 If lonely (non-stacked) inter-molecular base pairs are of no interest, since they
 can lead to instable subinteraction when enclosed by two large interior loops,
-one can disable their prediction using `--outNoLP`. 
+one can disable their prediction using `--outNoLP`.
+
+For some applications it is needed to ignore dangling end energy contributions
+that reflect minor stabilizing (stacking) contributions of unpaired bases 
+adjacent to a helix-closing base pair.
+They can be ignored via `--energyNoDangles`.
 
 
 

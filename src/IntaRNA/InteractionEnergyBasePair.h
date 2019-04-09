@@ -43,6 +43,8 @@ public:
 	 *          is always added; thus it defines a shift of the energy spectrum
 	 *          as e.g. needed when computing predictions with accessibility
 	 *          constraints
+	 * @param energyWithDangles whether or not dangling end contributions are
+	 *          considered within overall energies
 	 */
 	InteractionEnergyBasePair( const Accessibility & accS1
 					, const ReverseAccessibility & accS2
@@ -53,6 +55,7 @@ public:
 					, const E_type bpEnergy = Ekcal_2_E(-1.0)
 					, const size_t minLoopLength = 3
 					, const E_type energyAdd = Ekcal_2_E(0.0)
+					, const bool energyWithDangles = true
 				);
 
 	virtual ~InteractionEnergyBasePair();
@@ -306,9 +309,12 @@ InteractionEnergyBasePair::InteractionEnergyBasePair(
     , const E_type bpEnergy
     , const size_t minLoopLen
     , const E_type energyAdd
+    , const bool energyWithDangles
     )
  :
-	InteractionEnergy(accS1, accS2, maxInternalLoopSize1, maxInternalLoopSize2, energyAdd),
+	InteractionEnergy(accS1, accS2
+			, maxInternalLoopSize1, maxInternalLoopSize2
+			, energyAdd, energyWithDangles ),
   RT(_RT),
   basePairEnergy(bpEnergy),
   minLoopLength(minLoopLen),

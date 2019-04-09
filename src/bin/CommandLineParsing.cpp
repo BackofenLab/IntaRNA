@@ -162,6 +162,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	energy("BV",'V'),
 	energyFile(""),
 	energyAdd(-999,+999,0),
+	energyNoDangles(false),
 
 	out(),
 	outPrefix2streamName(),
@@ -433,7 +434,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 					, value<bool>(&helixFullE)
 						->default_value(helixFullE)
 						->implicit_value(true)
-					,"if present, the overall energy of a helix (including E_init, ED, dangling ends, ..) will be used for helixMaxE checks; otherwise only loop-terms are considered.")
+					,"if given (or true), the overall energy of a helix (including E_init, ED, dangling ends, ..) will be used for helixMaxE checks; otherwise only loop-terms are considered.")
 			;
 	opts_cmdline_short.add(opts_helix);
 
@@ -444,7 +445,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	    ("noSeed", value<bool>(&noSeedRequired)
 						->default_value(noSeedRequired)
 						->implicit_value(true)
-	    		, "if present, no seed is enforced within the predicted interactions")
+	    		, "if given (or true), no seed is enforced within the predicted interactions")
 
 		("seedTQ"
 			, value<std::string>(&(seedTQ))
@@ -506,7 +507,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	    ("seedNoGU", value<bool>(&seedNoGU)
 						->default_value(seedNoGU)
 						->implicit_value(true)
-	    		, "if present, no GU base pairs are allowed within seeds")
+	    		, "if given (or true), no GU base pairs are allowed within seeds")
 		;
 
 	////  SHAPE OPTIONS  ////////////////////////
@@ -601,6 +602,11 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 			, value<std::string>(&energyFile)
 				->notifier(boost::bind(&CommandLineParsing::validate_energyFile,this,_1))
 			, std::string("energy parameter file of VRNA package to be used. If not provided, the default parameter set of the linked Vienna RNA package is used.").c_str())
+		("energyNoDangles"
+				, value<bool>(&(energyNoDangles))
+					->default_value(energyNoDangles)
+					->implicit_value(true)
+				, std::string("if given (or true), no dangling end contributions are considered within the overall interaction energy").c_str())
 		("energyAdd"
 			, value<E_kcal_type>(&(energyAdd.val))
 				->default_value(energyAdd.def)
@@ -705,12 +711,12 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 			, value<bool>(&(outBestSeedOnly))
 				->default_value(outBestSeedOnly)
 				->implicit_value(true)
-			, std::string("if given, only the energetically best putative seed is reported").c_str())
+			, std::string("if given (or true), only the energetically best putative seed is reported").c_str())
 	    ("outNoLP"
 			, value<bool>(&(outNoLP))
 				->default_value(outNoLP)
 				->implicit_value(true)
-			, std::string("if given, no lonely (non-stacked) inter-molecular base pairs are allowed in predictions").c_str())
+			, std::string("if given (or true), no lonely (non-stacked) inter-molecular base pairs are allowed in predictions").c_str())
 		("outCsvCols"
 			, value<std::string>(&(outCsvCols))
 				->default_value(outCsvCols,"see text")
@@ -724,7 +730,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	    		, value<bool>(&outPerRegion)
 						->default_value(outPerRegion)
 						->implicit_value(true)
-	    		, "output : if given, best interactions are reported independently"
+	    		, "output : if given (or true), best interactions are reported independently"
 	    		" for all region combinations; otherwise only the best for each query-target combination")
 	    ("verbose,v", "verbose output") // handled via easylogging++
 	    ("default-log-file", value<std::string>(&(logFileName)), "file to be used for log output (INFO, WARNING, VERBOSE, DEBUG)")
@@ -1648,8 +1654,11 @@ getEnergyHandler( const Accessibility& accTarget, const ReverseAccessibility& ac
 	const bool initES = std::string("M").find(model.val) != std::string::npos;
 
 	switch( energy.val ) {
-	case 'B' : return new InteractionEnergyBasePair( accTarget, accQuery, tIntLoopMax.val, qIntLoopMax.val, initES, Ekcal_2_E(energyAdd.val) );
-	case 'V' : return new InteractionEnergyVrna( accTarget, accQuery, vrnaHandler, tIntLoopMax.val, qIntLoopMax.val, initES, Ekcal_2_E(energyAdd.val) );
+	case 'B' : return new InteractionEnergyBasePair( accTarget, accQuery
+						, tIntLoopMax.val, qIntLoopMax.val
+						, initES, Z_type(1.0), Ekcal_2_E(-1), 3
+						, Ekcal_2_E(energyAdd.val), !energyNoDangles );
+	case 'V' : return new InteractionEnergyVrna( accTarget, accQuery, vrnaHandler, tIntLoopMax.val, qIntLoopMax.val, initES, Ekcal_2_E(energyAdd.val), !energyNoDangles );
 	default :
 		INTARNA_NOT_IMPLEMENTED("CommandLineParsing::getEnergyHandler : energy = '"+toString(energy.val)+"' is not supported");
 	}

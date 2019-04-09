@@ -181,11 +181,11 @@ add( const Interaction & i, const OutputConstraint & outConstraint )
 				break;
 
 			case Pu1:
-				outTmp <<E_2_Ekcal(Z_2_E(std::exp( - E_2_Z(contr.ED1) / energy.getRT() )));
+				outTmp <<(E_equal(contr.ED1,0) ? 1 : E_2_Ekcal(Z_2_E(std::exp( - E_2_Z(contr.ED1) / energy.getRT() ))));
 				break;
 
 			case Pu2:
-				outTmp <<E_2_Ekcal(Z_2_E(std::exp( - E_2_Z(contr.ED2 / energy.getRT() ))));
+				outTmp <<(E_equal(contr.ED2,0) ? 1 : E_2_Ekcal(Z_2_E(std::exp( - E_2_Z(contr.ED2 / energy.getRT() )))));
 				break;
 
 			case E_init:

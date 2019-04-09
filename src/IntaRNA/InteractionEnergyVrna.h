@@ -59,7 +59,8 @@ public:
 	 *          is always added; thus it defines a shift of the energy spectrum
 	 *          as e.g. needed when computing predictions with accessibility
 	 *          constraints
-	 *
+	 * @param energyWithDangles whether or not dangling end contributions are
+	 *          considered within overall energies
 	 */
 	InteractionEnergyVrna( const Accessibility & accS1
 					, const ReverseAccessibility & accS2
@@ -68,6 +69,7 @@ public:
 					, const size_t maxInternalLoopSize2 = 16
 					, const bool initES = false
 					, const E_type energyAdd = Ekcal_2_E(0.0)
+					, const bool energyWithDangles = true
 				);
 
 	virtual ~InteractionEnergyVrna();

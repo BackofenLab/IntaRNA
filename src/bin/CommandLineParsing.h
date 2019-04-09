@@ -577,6 +577,8 @@ protected:
 
 	//! the energy shift to be applied
 	NumberParameter<E_kcal_type> energyAdd;
+	//! whether or not the overall energy covers dangling end contributions
+	bool energyNoDangles;
 
 	//! where to write the output to and for each in what format
 //	std::string out;
