@@ -8,6 +8,10 @@
 
 development version
 
+190411 Martin Raden :
+ * bin/CommandLineParsing :
+   + link to github pages for further documentation
+
 190409 Martin Raden :
  * IntaRNA/InteractionEnergy :
    + energyWithDangles : whether or not dangling end contributions are to be 

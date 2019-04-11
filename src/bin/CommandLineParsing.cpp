@@ -853,6 +853,11 @@ parse(int argc, char** argv)
 					<<"\n############################################################################\n"
 					<< "\n";
 			}
+			std::cout
+				<<"You can find more detailed documentation of IntaRNA on \n"
+				<<"\n  https://backofenlab.github.io/IntaRNA/\n"
+				<<std::endl
+				;
 			parsingCode = ReturnCode::STOP_ALL_FINE;
 			return parsingCode;
 		}
