@@ -8,6 +8,11 @@
 
 development version
 
+190412 Martin Raden :
+ * IntaRNA/Interaction :
+   * dotBracket() :
+     * bugfix: full string generation produced wrong tails
+
 190411 Martin Raden :
  * bin/CommandLineParsing :
    + link to github pages for further documentation
