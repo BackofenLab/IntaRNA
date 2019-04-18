@@ -59,6 +59,7 @@ libIntaRNA_a_HEADERS =    \
 					Predictor.h \
 					PredictorMaxProb.h \
 					PredictorMfe.h \
+					PredictorMfeSeedOnly.h \
 					PredictorMfe2d.h \
 					PredictorMfe2dSeed.h \
 					PredictorMfe2dHeuristic.h \
@@ -113,6 +114,7 @@ libIntaRNA_a_SOURCES =    \
 					PredictionTrackerProfileSpotProb.cpp \
 					PredictorMaxProb.cpp \
 					PredictorMfe.cpp \
+					PredictorMfeSeedOnly.cpp \
 					PredictorMfe2d.cpp \
 					PredictorMfe2dSeed.cpp \
 					PredictorMfe2dHeuristic.cpp \

@@ -42,6 +42,7 @@ extern "C" {
 #include "IntaRNA/PredictorMfe4d.h"
 #include "IntaRNA/PredictorMaxProb.h"
 
+#include "IntaRNA/PredictorMfeSeedOnly.h"
 #include "IntaRNA/PredictorMfe2dHeuristicSeed.h"
 #include "IntaRNA/PredictorMfe2dHelixBlockHeuristicSeed.h"
 #include "IntaRNA/PredictorMfe2dSeed.h"
@@ -152,7 +153,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	temperature(0,100,37),
 
 	model( "SPB", 'S'),
-	mode( "HME", 'H'),
+	mode( "HMES", 'H'),
 #if INTARNA_MULITHREADING
 	threads( 0, omp_get_max_threads(), 1),
 #endif
@@ -205,6 +206,10 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		// RNAup-like
 		mode = 'M'; VLOG(1) <<" --mode=" <<mode.def;
 		outOverlap = 'B'; VLOG(1) <<" --outOverlap=" <<outOverlap.def;
+		break;
+	case IntaRNAseed :
+		// RNAup-like
+		mode = 'S'; VLOG(1) <<" --mode=" <<mode.def;
 		break;
 	default : // no changes
 	}
@@ -597,8 +602,8 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 				->notifier(boost::bind(&CommandLineParsing::validate_mode,this,_1))
 			, std::string("prediction mode : "
 					"\n 'H' = heuristic (fast and low memory), "
-					"\n 'M' = exact and low memory, "
-					"\n 'E' = exact (high memory)"
+					"\n 'M' = exact (slow), "
+					"\n 'S' = seed-only"
 					).c_str())
 		;
 	opts_cmdline_short.add(opts_inter);
@@ -2067,6 +2072,8 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 			case 'H' :  return new PredictorMfe2dHeuristicSeed( energy, output, predTracker, getSeedHandler( energy ) );
 			case 'M' :  return new PredictorMfe2dSeed( energy, output, predTracker, getSeedHandler( energy ) );
 			case 'E' :  return new PredictorMfe4dSeed( energy, output, predTracker, getSeedHandler( energy ) );
+			case 'S' :  return new PredictorMfeSeedOnly( energy, output, predTracker, getSeedHandler( energy ) );
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
 			}
 		} break;
 		// single-site max-prob interactions (contain only interior loops)
@@ -2379,6 +2386,9 @@ getPersonality( int argc, char ** argv )
 	}
 	if (boost::regex_match(value,boost::regex("IntaRNAhelix"), boost::match_perl)) {
 		return Personality::IntaRNAhelix;
+	}
+	if (boost::regex_match(value,boost::regex("IntaRNAseed"), boost::match_perl)) {
+		return Personality::IntaRNAseed;
 	}
 
 	if (setViaParameter) {

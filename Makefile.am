@@ -10,6 +10,7 @@ SUBDIRS = src perl tests doc .
 # create versioned binaries and tool links (to activate respective alias)
 install-exec-hook:
 	cd $(DESTDIR)$(bindir); \
+	$(LN_S) -f IntaRNA$(EXEEXT) IntaRNAseed$(EXEEXT); \
 	$(LN_S) -f IntaRNA$(EXEEXT) IntaRNAhelix$(EXEEXT); \
 	$(LN_S) -f IntaRNA$(EXEEXT) IntaRNAduplex$(EXEEXT); \
 	$(LN_S) -f IntaRNA$(EXEEXT) IntaRNAup$(EXEEXT);

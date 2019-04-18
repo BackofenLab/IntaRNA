@@ -651,14 +651,14 @@ and according features are supported and can be set via the `--mode` parameter.
 The time and space complexities are given for the prediction of two sequences
 of equal length *n*.
 
-| Features | Heuristic `--mode=H` | Exact-SE `--mode=M` | Exact `--mode=E` |
+| Features | Heuristic `--mode=H` | Exact `--mode=M` | Seed-only `--mode=S` |
 | -------- | :------------------: | :-----------------: | :--------------: |
-| Time complexity (prediction only) | O(*n*^2) | O(*n*^4) | O(*n*^4) |
-| Space complexity | O(*n*^2) | O(*n*^2) | O(*n*^4) |
+| Time complexity (prediction only) | O(*n*^2) | O(*n*^4) | O(*n*^2) |
+| Space complexity | O(*n*^2) | O(*n*^2) | O(*n*^2) |
 | [Seed constraint](#seed) | x | x | x |
 | [Explicit seeds](#seedExplicit) | x | x | x |
 | [SHAPE reactivity constraint](#shape) | x | x | x |
-| No [seed constraint](#seed) | x | x | x |
+| No [seed constraint](#seed) | x | x | - |
 | Minimum free energy interaction | not guaranteed | x | x |
 | Overlapping [suboptimal interactions](#subopts) | x | x | x |
 | Non-overlapping [suboptimal interactions](#subopts) | x | - | x |
@@ -667,10 +667,9 @@ Note, due to the low run-time requirement of the heuristic prediction mode
 (`--mode=H`), heuristic IntaRNA interaction predictions are widely used to screen
 for interaction in a genome-wide scale. If you are more interested in specific
 details of an interaction site or of two relatively short RNA molecules, you
-should investigate the exact prediction mode (`--mode=M`, or `--mode=E`
-if non-overlapping suboptimal prediction is required). Note further, the exact
-mode `E` should provide the same results as mode `M` but uses dramatically more
-memory for computations.
+should investigate the exact prediction mode (`--mode=M`).
+Putative seed interactions (used by the `H` and `M` mode) can be enumerated 
+and studied using the `S` mode.
 
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
