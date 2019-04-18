@@ -932,22 +932,24 @@ parse(int argc, char** argv)
 			validate_tAccFile( tAccFile );
 
 			// check helix setup
-			// check for minimal sequence length
-			for(size_t i=0; i<query.size(); i++) {
-				if (query.at(i).size() < helixMinBP.val) {
-					throw error("length of query sequence "+toString(i+1)+" is below minimal number of helix base pairs (helixMinBP="+toString(helixMinBP.val)+")");
+			if (model.val == 'B') {
+				// check for minimal sequence length
+				for(size_t i=0; i<query.size(); i++) {
+					if (query.at(i).size() < helixMinBP.val) {
+						throw error("length of query sequence "+toString(i+1)+" is below minimal number of helix base pairs (helixMinBP="+toString(helixMinBP.val)+")");
+					}
 				}
-			}
 
-			for(size_t i=0; i<target.size(); i++) {
-				if (target.at(i).size() < helixMinBP.val) {
-					throw error("length of target sequence "+toString(i+1)+" is below minimal number of helix base pairs (helixMinBP="+toString(helixMinBP.val)+")");
+				for(size_t i=0; i<target.size(); i++) {
+					if (target.at(i).size() < helixMinBP.val) {
+						throw error("length of target sequence "+toString(i+1)+" is below minimal number of helix base pairs (helixMinBP="+toString(helixMinBP.val)+")");
+					}
 				}
-			}
 
-			// Ensure that min is smaller than max.
-			if (helixMinBP.val > helixMaxBP.val) {
-				throw error("the minimum number of base pairs (" +toString(helixMinBP.val)+") is higher than the maximum number of base pairs (" +toString(helixMaxBP.val)+")");
+				// Ensure that min is smaller than max.
+				if (helixMinBP.val > helixMaxBP.val) {
+					throw error("the minimum number of base pairs (" +toString(helixMinBP.val)+") is higher than the maximum number of base pairs (" +toString(helixMaxBP.val)+")");
+				}
 			}
 
 			// check seed setup
@@ -982,11 +984,14 @@ parse(int argc, char** argv)
 					}
 				}
 
-				// check if helixMaxBP >= seedBP
-				if (helixMaxBP.val < ( seedTQ.empty() ? seedBP.val : SeedHandlerExplicit::getSeedMaxBP(seedTQ) ) ) {
-					throw error("maximum number of seed base pairs ("
-							+toString(( seedTQ.empty() ? seedBP.val : SeedHandlerExplicit::getSeedMaxBP(seedTQ) ))
-							+") exceeds the maximally allowed number of helix base pairs ("+toString(helixMaxBP.val)+")");
+				// check compatibility with helix setup
+				if (model.val == 'B') {
+					// check if helixMaxBP >= seedBP
+					if (helixMaxBP.val < ( seedTQ.empty() ? seedBP.val : SeedHandlerExplicit::getSeedMaxBP(seedTQ) ) ) {
+						throw error("maximum number of seed base pairs ("
+								+toString(( seedTQ.empty() ? seedBP.val : SeedHandlerExplicit::getSeedMaxBP(seedTQ) ))
+								+") exceeds the maximally allowed number of helix base pairs ("+toString(helixMaxBP.val)+")");
+					}
 				}
 
 				// check for explicit seed constraints

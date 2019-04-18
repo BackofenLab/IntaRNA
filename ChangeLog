@@ -8,6 +8,10 @@
 
 development version
 
+190414 Martin Raden :
+ * bin/CommandLineParsing :
+   * bugfix: helix constraints checks only done for model = B
+
 190412 Martin Raden :
  * IntaRNA/Interaction :
    * dotBracket() :
