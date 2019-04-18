@@ -11,6 +11,15 @@ development version
 190414 Martin Raden :
  * bin/CommandLineParsing :
    * bugfix: helix constraints checks only done for model = B
+   + mode : renamed predMode
+   - predMode : renamed to mode
+   * NumberParameter :
+   * CharParameter :
+     * def value now non-constant to be changeable in constructor 
+   * constructor() :
+     - variable init now non-dynamic
+     + explicit en-bloc default update for each personality
+     + report of default changes via VLOG
 
 190412 Martin Raden :
  * IntaRNA/Interaction :

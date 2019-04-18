@@ -94,7 +94,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	query(),
 	qSet(),
 	qSetString(""),
-	qAcc("NCPE", personality == IntaRNAduplex ? 'N' : 'C'),
+	qAcc("NCPE", 'C'),
 	qAccW( 0, 99999, 150),
 	qAccL( 0, 99999, 100),
 	qAccConstr(""),
@@ -112,7 +112,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	target(),
 	tSet(),
 	tSetString(""),
-	tAcc("NCPE", personality == IntaRNAduplex ? 'N' : 'C'),
+	tAcc("NCPE", 'C'),
 	tAccW( 0, 99999, 150),
 	tAccL( 0, 99999, 100),
 	tAccConstr(""),
@@ -151,8 +151,8 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 
 	temperature(0,100,37),
 
-	model( "SPB", personality == IntaRNAhelix ? 'B' : 'S'),
-	predMode( "HME", personality == IntaRNAup ? 'M' : 'H'),
+	model( "SPB", 'S'),
+	mode( "HME", 'H'),
 #if INTARNA_MULITHREADING
 	threads( 0, omp_get_max_threads(), 1),
 #endif
@@ -169,7 +169,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	outStream(&(std::cout)),
 	outMode( "NDC1O", 'N' ),
 	outNumber( 0, 1000, 1),
-	outOverlap( "NTQB", personality == IntaRNAup ? 'B' : 'Q' ),
+	outOverlap( "NTQB", 'Q' ),
 	outDeltaE( 0.0, 100.0, 100.0),
 	outMaxE( -999.0, +999.0, 0.0),
 	outMinPu( 0.0, 1.0, 0.0),
@@ -187,6 +187,27 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 {
 	// report the used personality
 	VLOG(1) <<"I am "<<getPersonalityName(personality)<<" right now ..";
+
+	switch (personality) {
+	case IntaRNA :
+		// no changes
+		break;
+	case IntaRNAhelix :
+		model.def = 'B'; VLOG(1) <<" --model=" <<model.def;
+		// helix-based predictions
+		break;
+	case IntaRNAduplex :
+		// RNAhybrid/RNAduplex-like
+		qAcc.def = 'N'; VLOG(1) <<" --qAcc=" <<qAcc.def;
+		tAcc.def = 'N'; VLOG(1) <<" --tAcc=" <<tAcc.def;
+		break;
+	case IntaRNAup :
+		// RNAup-like
+		mode = 'M'; VLOG(1) <<" --mode=" <<mode.def;
+		outOverlap = 'B'; VLOG(1) <<" --outOverlap=" <<outOverlap.def;
+		break;
+	default : // no changes
+	}
 
 	using namespace boost::program_options;
 
@@ -571,9 +592,9 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 
 	opts_inter.add_options()
 		("mode,m"
-			, value<char>(&(predMode.val))
-				->default_value(predMode.def)
-				->notifier(boost::bind(&CommandLineParsing::validate_predMode,this,_1))
+			, value<char>(&(mode.val))
+				->default_value(mode.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_mode,this,_1))
 			, std::string("prediction mode : "
 					"\n 'H' = heuristic (fast and low memory), "
 					"\n 'M' = exact and low memory, "
@@ -1191,7 +1212,7 @@ parse(int argc, char** argv)
 			// check if multi-threading
 			if (threads.val != 1 && getTargetSequences().size() > 1) {
 				// warn if >= 4D space prediction enabled
-				if (model.val != 'S' || predMode.val == 'E') {
+				if (model.val != 'S' || mode.val == 'E') {
 					LOG(WARNING) <<"Multi-threading enabled in high-mem-prediction mode : ensure you have enough memory available!";
 				}
 				if (outMode.val == '1' || outMode.val == 'O') {
@@ -2002,47 +2023,47 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 		// predictors without seed constraint
 		switch( model.val ) {
 		case 'B':  {
-			switch ( predMode.val ) {
+			switch ( mode.val ) {
 			case 'H' :	return new PredictorMfe2dHelixBlockHeuristic( energy, output, predTracker, getHelixConstraint(energy));
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for model "+toString(model.val));
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
 			}
 		} break;
 		// single-site mfe interactions (contain only interior loops)
 		case 'S' : {
-			switch ( predMode.val ) {
+			switch ( mode.val ) {
 			case 'H' :  return new PredictorMfe2dHeuristic( energy, output, predTracker );
 			case 'M' :  return new PredictorMfe2d( energy, output, predTracker );
 			case 'E' :  return new PredictorMfe4d( energy, output, predTracker );
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for model "+toString(model.val));
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
 			}
 		} break;
 		// single-site max-prob interactions (contain only interior loops)
 		case 'P' : {
-			switch ( predMode.val ) {
+			switch ( mode.val ) {
 			case 'E' :  return new PredictorMaxProb( energy, output, predTracker );
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for model "+toString(model.val));
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
 			}
 		} break;
 		// multi-site mfe interactions (contain interior and multi-loops loops)
 		case 'M' : {
-			switch ( predMode.val ) {
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for model "+toString(model.val));
+			switch ( mode.val ) {
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
 			}
 		} break;
-		default : INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented");
+		default : INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented");
 		}
 	} else {
 		// seed-constrained predictors
 		switch( model.val ) {
 		case 'B' : {
-			switch  ( predMode.val ) {
+			switch  ( mode.val ) {
 				case 'H' : return new PredictorMfe2dHelixBlockHeuristicSeed(energy, output, predTracker, getHelixConstraint(energy), getSeedHandler(energy));
-				default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for model "+toString(model.val));
+				default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
 			}
 		} break;
 		// single-site mfe interactions (contain only interior loops)
 		case 'S' : {
-			switch ( predMode.val ) {
+			switch ( mode.val ) {
 			case 'H' :  return new PredictorMfe2dHeuristicSeed( energy, output, predTracker, getSeedHandler( energy ) );
 			case 'M' :  return new PredictorMfe2dSeed( energy, output, predTracker, getSeedHandler( energy ) );
 			case 'E' :  return new PredictorMfe4dSeed( energy, output, predTracker, getSeedHandler( energy ) );
@@ -2050,18 +2071,18 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 		} break;
 		// single-site max-prob interactions (contain only interior loops)
 		case 'P' : {
-			switch ( predMode.val ) {
-			case 'E' :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for seed constraint (try --noSeed)"); return NULL;
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for model "+toString(model.val));
+			switch ( mode.val ) {
+			case 'E' :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for seed constraint (try --noSeed)"); return NULL;
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
 			}
 		} break;
 		// multi-site mfe interactions (contain interior and multi-loops loops)
 		case 'M' : {
-			switch ( predMode.val ) {
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for model "+toString(model.val));
+			switch ( mode.val ) {
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
 			}
 		} break;
-		default : INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented");
+		default : INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented");
 		}
 	}
 }
@@ -2101,7 +2122,7 @@ initOutputHandler()
 		<<"weight for ED values of binding RNA in energy                 : 1" <<"\n"
 		<<"temperature                                                   : "<<temperature.val <<" Celsius" <<"\n"
 		<<"max. number of subopt. results                                : "<<(getOutputConstraint().reportMax-1) <<"\n"
-		<<"Heuristic for hybridization end used                          : "<<(predMode.val=='H'?"true":"false") <<"\n"
+		<<"Heuristic for hybridization end used                          : "<<(mode.val=='H'?"true":"false") <<"\n"
 		<<"\n"
 		<<"-------------------------" <<"\n"
 		<<"OUTPUT" <<"\n"

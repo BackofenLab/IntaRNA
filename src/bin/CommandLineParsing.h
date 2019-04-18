@@ -338,7 +338,7 @@ protected:
 		//! the maximally allowed value
 	  const T max;
 		//! the default value
-	  const T def;
+	  T def;
 		/**
 		 * construction feeding the members
 		 * @param min the minimally allowed value
@@ -371,7 +371,7 @@ protected:
 		  //! the set of allowed values for this parameter as a string
 		const std::string alphabet;
 		  //! the default value of the parameter
-		const char def;
+		char def;
 		/**
 		 * Construction and member setup
 		 * @param alphabet the allowed set of character values
@@ -560,7 +560,7 @@ protected:
 	//! the interaction model to predict in (mfe-single-site, helix-based-single-site, max-prob-site, ..)
 	CharParameter model;
 	//! the prediction mode (heuristic, space-efficient, exact)
-	CharParameter predMode;
+	CharParameter mode;
 #if INTARNA_MULITHREADING
 	//! number of threads = number of parallel predictors running
 	NumberParameter<int> threads;
@@ -910,7 +910,7 @@ protected:
 	 * Validates the prediction mode argument.
 	 * @param value the argument value to validate
 	 */
-	void validate_predMode(const char & value);
+	void validate_mode(const char & value);
 
 	/**
 	 * Validates the temperature argument.
@@ -1743,10 +1743,10 @@ void CommandLineParsing::validate_model(const char & value)
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_predMode(const char & value)
+void CommandLineParsing::validate_mode(const char & value)
 {
 	// forward check to general method
-	validate_charArgument("mode", predMode, value);
+	validate_charArgument("mode", mode, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////
