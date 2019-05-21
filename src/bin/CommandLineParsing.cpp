@@ -153,7 +153,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	temperature(0,100,37),
 
 	model( "SPB", 'S'),
-	mode( "HMES", 'H'),
+	mode( "HMS", 'H'),
 #if INTARNA_MULITHREADING
 	threads( 0, omp_get_max_threads(), 1),
 #endif
@@ -204,14 +204,15 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		break;
 	case IntaRNAup :
 		// RNAup-like
-		mode = 'M'; VLOG(1) <<" --mode=" <<mode.def;
-		outOverlap = 'B'; VLOG(1) <<" --outOverlap=" <<outOverlap.def;
+		mode.def = 'M'; VLOG(1) <<" --mode=" <<mode.def;
+		outOverlap.def = 'B'; VLOG(1) <<" --outOverlap=" <<outOverlap.def;
 		break;
 	case IntaRNAseed :
 		// RNAup-like
-		mode = 'S'; VLOG(1) <<" --mode=" <<mode.def;
+		mode.def = 'S'; VLOG(1) <<" --mode=" <<mode.def;
 		break;
 	default : // no changes
+		break;
 	}
 
 	using namespace boost::program_options;
@@ -980,6 +981,7 @@ parse(int argc, char** argv)
 
 			// check seed setup
 			if (noSeedRequired) {
+				if (mode.val == 'S') throw error("mode=S not applicable for non-seed predictions!");
 				// input sanity check : maybe seed constraints defined -> warn
 				if (!seedTQ.empty()) LOG(INFO) <<"no seed constraint wanted, but explicit seedTQ provided (will be ignored)";
 				if (seedBP.val != seedBP.def) LOG(INFO) <<"no seed constraint wanted, but seedBP provided (will be ignored)";
@@ -2038,7 +2040,7 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 			switch ( mode.val ) {
 			case 'H' :  return new PredictorMfe2dHeuristic( energy, output, predTracker );
 			case 'M' :  return new PredictorMfe2d( energy, output, predTracker );
-			case 'E' :  return new PredictorMfe4d( energy, output, predTracker );
+//			case 'E' :  return new PredictorMfe4d( energy, output, predTracker );
 			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
 			}
 		} break;
@@ -2071,7 +2073,7 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 			switch ( mode.val ) {
 			case 'H' :  return new PredictorMfe2dHeuristicSeed( energy, output, predTracker, getSeedHandler( energy ) );
 			case 'M' :  return new PredictorMfe2dSeed( energy, output, predTracker, getSeedHandler( energy ) );
-			case 'E' :  return new PredictorMfe4dSeed( energy, output, predTracker, getSeedHandler( energy ) );
+//			case 'E' :  return new PredictorMfe4dSeed( energy, output, predTracker, getSeedHandler( energy ) );
 			case 'S' :  return new PredictorMfeSeedOnly( energy, output, predTracker, getSeedHandler( energy ) );
 			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
 			}

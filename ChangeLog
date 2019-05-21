@@ -14,6 +14,14 @@ development version
    - getPfScale() :
    - fillByConstraints() :
    - fillByRNAup() : obsolete and not conform to new VRNA API
+ * bin/CommandLineParsing :
+   + check for noSeed+mode=S and throw error
+
+190418 Martin Raden :
+ + IntaRNA/PredictorMfeSeedOnly : predicts only seed interactions
+ * bin/CommandLineParsing :
+   + mode=S : predicting seeds only
+   + personality=IntaRNAseed : enabling mode=S
 
 190414 Martin Raden :
  * bin/CommandLineParsing :

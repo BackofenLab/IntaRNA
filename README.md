@@ -667,7 +667,8 @@ Note, due to the low run-time requirement of the heuristic prediction mode
 (`--mode=H`), heuristic IntaRNA interaction predictions are widely used to screen
 for interaction in a genome-wide scale. If you are more interested in specific
 details of an interaction site or of two relatively short RNA molecules, you
-should investigate the exact prediction mode (`--mode=M`).
+should investigate the exact prediction mode (`--mode=M`) providing the global  
+minimum free energy interaction.
 Putative seed interactions (used by the `H` and `M` mode) can be enumerated 
 and studied using the `S` mode.
 
