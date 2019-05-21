@@ -8,6 +8,13 @@
 
 development version
 
+190521 Martin Raden :
+ * IntaRNA/AccessibilityVrna :
+   - calc_ensemble_free_energy() :
+   - getPfScale() :
+   - fillByConstraints() :
+   - fillByRNAup() : obsolete and not conform to new VRNA API
+
 190414 Martin Raden :
  * bin/CommandLineParsing :
    * bugfix: helix constraints checks only done for model = B
@@ -37,9 +44,9 @@ development version
    * getE() :
    * getE_contributions() :
    * getE_multi() :
-     + consideration of energyWithDangles
+     + consideration of energyWithDangles parameter
    * getE_multi() :
-     + bugfix: helix end terms were missing
+     + bugfix: helix-end terms were missing
  * IntaRNA/InteractionEnergy* :
    * constructor() :
      + energyWithDangles handling
