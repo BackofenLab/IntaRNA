@@ -193,23 +193,33 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	case IntaRNA :
 		// no changes
 		break;
-	case IntaRNAhelix :
+	case IntaRNAblock :
 		model.def = 'B'; VLOG(1) <<" --model=" <<model.def;
 		// helix-based predictions
 		break;
 	case IntaRNAduplex :
-		// RNAhybrid/RNAduplex-like
+		// RNAhybrid/RNAduplex-like optimizing hybrid only
 		qAcc.def = 'N'; VLOG(1) <<" --qAcc=" <<qAcc.def;
 		tAcc.def = 'N'; VLOG(1) <<" --tAcc=" <<tAcc.def;
 		break;
-	case IntaRNAup :
-		// RNAup-like
+	case IntaRNAexact :
+		// RNAup-like exact predictions
 		mode.def = 'M'; VLOG(1) <<" --mode=" <<mode.def;
 		outOverlap.def = 'B'; VLOG(1) <<" --outOverlap=" <<outOverlap.def;
 		break;
 	case IntaRNAseed :
 		// RNAup-like
 		mode.def = 'S'; VLOG(1) <<" --mode=" <<mode.def;
+		break;
+	case IntaRNAsTar :
+		// optimized parameters for sRNA-target prediction
+		seedNoGU = true; VLOG(1) <<" --seedNoGU";
+		seedMinPu.def = 0.001; VLOG(1) <<" --seedMinPu="<<seedMinPu.def;
+		tIntLenMax.def = 60; VLOG(1) <<" --tIntLenMax="<<tIntLenMax.def;
+		tIntLoopMax.def = 8; VLOG(1) <<" --tIntLoopMax="<<tIntLoopMax.def;
+		qIntLenMax.def = 60; VLOG(1) <<" --qIntLenMax="<<qIntLenMax.def;
+		qIntLoopMax.def = 8; VLOG(1) <<" --qIntLoopMax="<<qIntLoopMax.def;
+		outMinPu.def = 0.001; VLOG(1) <<" --outMinPu="<<outMinPu.def;
 		break;
 	default : // no changes
 		break;
@@ -2380,22 +2390,25 @@ getPersonality( int argc, char ** argv )
 	}
 
 	// parse personality
-	if (boost::regex_match(value,boost::regex("IntaRNAup"), boost::match_perl)) {
-		return Personality::IntaRNAup;
+	if (boost::regex_match(value,boost::regex("IntaRNAexact"), boost::match_perl)) {
+		return Personality::IntaRNAexact;
 	}
 	if (boost::regex_match(value,boost::regex("IntaRNAduplex"), boost::match_perl)) {
 		return Personality::IntaRNAduplex;
 	}
-	if (boost::regex_match(value,boost::regex("IntaRNAhelix"), boost::match_perl)) {
-		return Personality::IntaRNAhelix;
+	if (boost::regex_match(value,boost::regex("IntaRNAblock"), boost::match_perl)) {
+		return Personality::IntaRNAblock;
 	}
 	if (boost::regex_match(value,boost::regex("IntaRNAseed"), boost::match_perl)) {
 		return Personality::IntaRNAseed;
 	}
+	if (boost::regex_match(value,boost::regex("IntaRNAsTar"), boost::match_perl)) {
+		return Personality::IntaRNAsTar;
+	}
 
 	if (setViaParameter) {
 		// handle wrong value
-		throw std::runtime_error("Personality '"+value+"' does not share in my head ...");
+		throw std::runtime_error("Personality '"+value+"' does not share my head ...");
 	}
 
 	// default behaviour

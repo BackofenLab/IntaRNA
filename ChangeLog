@@ -8,6 +8,11 @@
 
 development version
 
+190522 Martin Raden :
+ * renaming personality IntaRNAup to IntaRNAexact
+ * renaming personality IntaRNAhelix to IntaRNAblock
+ + personality IntaRNAsTar : optimized parameters for sRNA-target prediction  
+
 190521 Martin Raden :
  * IntaRNA/AccessibilityVrna :
    - calc_ensemble_free_energy() :

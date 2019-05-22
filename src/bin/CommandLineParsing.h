@@ -49,11 +49,13 @@ public:
 
 	enum Personality {
 		IntaRNA,		// default
+		IntaRNAsTar,	// sRNA-target prediction (optimized parameter)
 		IntaRNAseed,  	// seed-only predictions
-		IntaRNAhelix,  	// helix-based predictions
+		IntaRNAblock,  	// helix-block-based predictions
 		IntaRNAduplex,	// RNAhybrid/RNAduplex-like
-		IntaRNAup		// RNAup-like
+		IntaRNAexact	// RNAup-like exact predictions
 	};
+	// TODO if extended: also extend both getPersonality() and getPersonalityName()
 
 
 	/**
@@ -64,10 +66,11 @@ public:
 	getPersonalityName( Personality p ) {
 		switch(p) {
 		case IntaRNA : return "IntaRNA";
+		case IntaRNAsTar : return "IntaRNAsTar";
 		case IntaRNAseed : return "IntaRNAseed";
-		case IntaRNAhelix : return "IntaRNAhelix";
+		case IntaRNAblock : return "IntaRNAblock";
 		case IntaRNAduplex : return "IntaRNAduplex";
-		case IntaRNAup : return "IntaRNAup";
+		case IntaRNAexact : return "IntaRNAexact";
 		default : return "unknown";
 		}
 	}
