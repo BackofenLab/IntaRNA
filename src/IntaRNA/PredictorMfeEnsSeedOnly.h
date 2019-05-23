@@ -1,18 +1,19 @@
-#ifndef INTARNA_PREDICTORMFESEEDONLY_H_
-#define INTARNA_PREDICTORMFESEEDONLY_H_
+#ifndef INTARNA_PREDICTORMFEENSSEEDONLY_H_
+#define INTARNA_PREDICTORMFEENSSEEDONLY_H_
 
-#include "IntaRNA/PredictorMfe.h"
+#include "IntaRNA/PredictorMfeEns.h"
+#include "IntaRNA/PredictorMfeSeedOnly.h"
 #include "IntaRNA/SeedHandlerIdxOffset.h"
 
 namespace IntaRNA {
 
 /**
- * Prediction of seed interaction only.
+ * Ensemble-based prediction of seed interaction only.
  *
- * @author Martin Mann
+ * @author Martin Raden
  *
  */
-class PredictorMfeSeedOnly: public PredictorMfe {
+class PredictorMfeEnsSeedOnly: public PredictorMfeEns {
 
 public:
 
@@ -27,18 +28,16 @@ public:
 	 *         on this->destruction.
 	 * @param seedHandler the seed handler to be used
 	 */
-	PredictorMfeSeedOnly(
+	PredictorMfeEnsSeedOnly(
 			const InteractionEnergy & energy
 			, OutputHandler & output
 			, PredictionTracker * predTracker
 			, SeedHandler * seedHandler );
 
-
 	/**
 	 * data cleanup
 	 */
-	virtual ~PredictorMfeSeedOnly();
-
+	virtual ~PredictorMfeEnsSeedOnly();
 
 	/**
 	 * Computes the mfe seed for the given sequence ranges (i1-j1) in the first
@@ -61,13 +60,13 @@ protected:
 
 
 	//! access to the interaction energy handler of the super class
-	using PredictorMfe::energy;
+	using PredictorMfeEns::energy;
 
 	//! access to the output handler of the super class
-	using PredictorMfe::output;
+	using PredictorMfeEns::output;
 
 	//! access to the output handler of the super class
-	using PredictorMfe::reportedInteractions;
+	using PredictorMfeEns::reportedInteractions;
 
 	//! the seed handler (with idx offset)
 	SeedHandlerIdxOffset seedHandler;
@@ -103,9 +102,7 @@ protected:
 };
 
 //////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
 
 } // namespace
 
-#endif /* INTARNA_PREDICTORMFESEEDONLY_H_ */
+#endif /* INTARNA_PREDICTORMFEENSSEEDONLY_H_ */

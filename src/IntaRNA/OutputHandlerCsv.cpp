@@ -15,6 +15,10 @@ std::map<OutputHandlerCsv::ColType,std::string> OutputHandlerCsv::colType2string
 
 ////////////////////////////////////////////////////////////////////////
 
+const std::string OutputHandlerCsv::notAvailable = "NA";
+
+////////////////////////////////////////////////////////////////////////
+
 OutputHandlerCsv::OutputHandlerCsv(
 		  std::ostream & out
 		, const InteractionEnergy & energy
@@ -230,7 +234,7 @@ add( const Interaction & i, const OutputConstraint & outConstraint )
 
 			case seedStart1:
 				if (i.seed == NULL) {
-					outTmp <<std::numeric_limits<E_kcal_type>::signaling_NaN();
+					outTmp <<notAvailable;
 				} else {
 					if (!outConstraint.bestSeedOnly) {
 						// generate list
@@ -248,7 +252,7 @@ add( const Interaction & i, const OutputConstraint & outConstraint )
 
 			case seedEnd1:
 				if (i.seed == NULL) {
-					outTmp <<std::numeric_limits<E_kcal_type>::signaling_NaN();
+					outTmp <<notAvailable;
 				} else {
 					if (!outConstraint.bestSeedOnly) {
 						// generate list
@@ -266,7 +270,7 @@ add( const Interaction & i, const OutputConstraint & outConstraint )
 
 			case seedStart2:
 				if (i.seed == NULL) {
-					outTmp <<std::numeric_limits<E_kcal_type>::signaling_NaN();
+					outTmp <<notAvailable;
 				} else {
 					if (!outConstraint.bestSeedOnly) {
 						// generate list
@@ -284,7 +288,7 @@ add( const Interaction & i, const OutputConstraint & outConstraint )
 
 			case seedEnd2:
 				if (i.seed == NULL) {
-					outTmp <<std::numeric_limits<E_kcal_type>::signaling_NaN();
+					outTmp <<notAvailable;
 				} else {
 					if (!outConstraint.bestSeedOnly) {
 						// generate list
@@ -302,7 +306,7 @@ add( const Interaction & i, const OutputConstraint & outConstraint )
 
 			case seedE:
 				if (i.seed == NULL) {
-					outTmp <<std::numeric_limits<E_kcal_type>::signaling_NaN();
+					outTmp <<notAvailable;
 				} else {
 					outTmp << E_2_Ekcal(i.seed->begin()->energy);
 					if (!outConstraint.bestSeedOnly) {
@@ -318,7 +322,7 @@ add( const Interaction & i, const OutputConstraint & outConstraint )
 
 			case seedED1:
 				if (i.seed == NULL) {
-					outTmp <<std::numeric_limits<E_kcal_type>::signaling_NaN();
+					outTmp <<notAvailable;
 				} else {
 					outTmp << E_2_Ekcal(energy.getED1( i.seed->begin()->bp_i.first, i.seed->begin()->bp_j.first ));
 					if (!outConstraint.bestSeedOnly) {
@@ -332,7 +336,7 @@ add( const Interaction & i, const OutputConstraint & outConstraint )
 
 			case seedED2:
 				if (i.seed == NULL) {
-					outTmp <<std::numeric_limits<E_kcal_type>::signaling_NaN();
+					outTmp <<notAvailable;
 				} else {
 					outTmp << E_2_Ekcal(energy.getAccessibility2().getAccessibilityOrigin().getED( i.seed->begin()->bp_j.second, i.seed->begin()->bp_i.second ));
 					if (!outConstraint.bestSeedOnly) {
@@ -346,7 +350,7 @@ add( const Interaction & i, const OutputConstraint & outConstraint )
 
 			case seedPu1:
 				if (i.seed == NULL) {
-					outTmp <<std::numeric_limits<E_kcal_type>::signaling_NaN();
+					outTmp <<notAvailable;
 				} else {
 					if (!outConstraint.bestSeedOnly) {
 						// generate list
@@ -364,7 +368,7 @@ add( const Interaction & i, const OutputConstraint & outConstraint )
 
 			case seedPu2:
 				if (i.seed == NULL) {
-					outTmp <<std::numeric_limits<E_kcal_type>::signaling_NaN();
+					outTmp <<notAvailable;
 				} else {
 					if (!outConstraint.bestSeedOnly) {
 						// generate list
@@ -378,6 +382,18 @@ add( const Interaction & i, const OutputConstraint & outConstraint )
 						outTmp <<energy.getBoltzmannWeight( energy.getAccessibility2().getAccessibilityOrigin().getED( i.seed->begin()->bp_j.second, i.seed->begin()->bp_i.second ));
 					}
 				}
+				break;
+
+			case Eall:
+				if ( Z_equal(Z,Z_type(0)) ) outTmp << notAvailable; else outTmp <<E_2_Ekcal(energy.getE(Z));
+				break;
+
+			case Zall:
+				if ( Z_equal(Z,Z_type(0)) ) outTmp << notAvailable; else outTmp <<Z;
+				break;
+
+			case P_E:
+				if ( Z_equal(Z,Z_type(0)) ) outTmp << notAvailable; else outTmp <<(energy.getBoltzmannWeight(i.energy)/Z);
 				break;
 
 			default : throw std::runtime_error("OutputHandlerCsv::add() : unhandled ColType '"+colType2string[*col]+"'");

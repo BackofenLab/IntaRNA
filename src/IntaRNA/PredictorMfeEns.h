@@ -50,9 +50,9 @@ protected:
 	//! access to the prediction tracker of the super class
 	using PredictorMfe::predTracker;
 
-	//! the overall hybridization partition function since initZ() was last called.
+	//! the overall partition function since initZ() was last called.
 	//! its value is updated by updateZ()
-	Z_type overallZhybrid;
+	Z_type overallZ;
 
 	/**
 	 * Access to the current overall hybridization partition function covering
@@ -96,6 +96,16 @@ protected:
 				, const Z_type partFunct
 				, const bool isHybridZ );
 
+
+	/**
+	 * Reports the overall partition function and calls
+	 * PredictorMfe::reportOptima().
+	 *
+	 * @param outConstraint constrains the interactions reported to the output handler
+	 */
+	virtual
+	void
+	reportOptima( const OutputConstraint & outConstraint );
 
 };
 

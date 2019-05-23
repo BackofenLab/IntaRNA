@@ -6,6 +6,7 @@
 #include "IntaRNA/Interaction.h"
 #include "IntaRNA/InteractionRange.h"
 #include "IntaRNA/OutputConstraint.h"
+#include "IntaRNA/InteractionEnergy.h"
 #include <string>
 
 namespace IntaRNA {
@@ -66,11 +67,37 @@ public:
 	std::string
 	reverse( const std::string & str );
 
+	/**
+	 * Increments the overall partition function with the given value.
+	 *
+	 * Note, take care that multiple increments have to represent disjoint subsets
+	 * of all interactions for the same pair of sequences, otherwise the
+	 * aggregated overall partition function will be wrong!
+	 *
+	 * @param subZ increment to be added to the overall partition function
+	 */
+	virtual
+	void
+	incrementZ( const Z_type subZ );
+
+	/**
+	 * Access to the partition function (initialized with 0) aggregated via
+	 * incrementZ().
+	 *
+	 * @return the aggregated partition function Z
+	 */
+	virtual
+	Z_type
+	getZ() const;
+
 
 protected:
 
 	//! number of reported interactions
 	size_t reportedInteractions;
+
+	//! overall partition function for the sequences provided in Z_energy
+	Z_type Z;
 
 };
 
@@ -82,6 +109,7 @@ protected:
 inline
 OutputHandler::OutputHandler()
 	: reportedInteractions(0)
+	, Z(0)
 {
 }
 
@@ -109,6 +137,35 @@ OutputHandler::
 reported() const
 {
 	return reportedInteractions;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+Z_type
+OutputHandler::
+getZ() const
+{
+	return Z;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void
+OutputHandler::
+incrementZ( const Z_type subZ )
+{
+#if INTARNA_IN_DEBUG_MODE
+	if (std::numeric_limits<Z_type>::max() - subZ <= Z) {
+		LOG(WARNING) <<"OutputHandler::incrementZ() : partition function overflow! Recompile with larger partition function data type!";
+	}
+#endif
+	// increment partition function
+#if INTARNA_MULITHREADING
+	#pragma omp critical(intarna_omp_outputHandlerIncrementZ)
+#endif
+	{Z += subZ;}
 }
 
 ////////////////////////////////////////////////////////////////////////////

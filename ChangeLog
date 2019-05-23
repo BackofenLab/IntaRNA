@@ -8,6 +8,48 @@
 
 development version
 
+190523 Martin Raden :
+ - IntaRNA/PredictorMaxProb : obsolete (will be replaced soon)
+ + IntaRNAens personality (model=P)
+ * IntaRNA/IndexRangeList :
+   * constructor(stringEncoding, +allowOverlap) : explicit init of allowOverlap
+ * IntaRNA/OutputHandler :
+   + Z + getZ() : overall partition function (if updated by predictor)
+   + incrementZ() : update of Z (assuming independent interaction sets)
+ * IntaRNA/OutputHandlerCsv :
+   * column docu corrected for E and seedE
+   + Eall, Zall, P_E
+   + notAvailable : string to mark not available values
+   * add() :
+     * replace signalling_NaN() with notAvailable
+     + handling of Eall, Zall, P_E
+ * IntaRNA/PredictorMfe :
+   * predict() :
+     + output.add() calls now omp_critical (since multiple predictors can call
+       in parallel)
+ * IntaRNA/PredictorMfeEns :
+   - overallZhybrid : replaced by overallZ
+   + overallZ
+   + reportOptima() : calls output.incrementZ(overallZ) to report overall Z
+   * initZ() :
+     - no call of initOptima()
+ + IntaRNA/PredictorMfeEnsSeedOnly : ensemble-based seed-only predictions
+ * bin/IntaRNA :
+   + transfer accumulated Z information from bestInteractions to final output
+ * bin/CommandLineParsing :
+   - remove documentation of (non-implemented) BED-file support from q|tRegion
+   * updating model=P docu
+   * parse() :
+     + check for model=P that no window-based prediction (wrong Z aggregation)
+   * validateRegion() :
+     + explicit non-overlapping list check
+   * parseRegion() :
+     * cleanup
+ * README.md :
+   + IntaRNAens
+   + model=P
+   + CSV output : Eall, Zall, P_E
+
 190522 Martin Raden :
  * renaming personality IntaRNAup to IntaRNAexact
  * renaming personality IntaRNAhelix to IntaRNAblock

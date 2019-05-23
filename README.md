@@ -85,6 +85,7 @@ The following topics are covered by this documentation:
 - [General things you should know](#generalInformation)
   - [Interaction Model](#interactionModel)
     - [Single-site, unconstraint RNA-RNA interaction](#interactionModel-ssUnconstraintMfe)
+    - [Single-site, ensemble-based RNA-RNA interaction](#interactionModel-ssProbability)
     - [Single-site, helix-based RNA-RNA interaction](#interactionModel-ssHelixBlockMfe)
   - [Prediction modes](#predModes)
     - [Emulating other RNA-RNA interaction prediction tools](#predEmulateTools)
@@ -599,6 +600,46 @@ personalities.
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
 <br /><br />
+<a name="interactionModel-ssProbability" />
+
+
+### Ensemble-based, unconstraint single-site RNA-RNA interaction with minimal free ensemble energy
+
+IntaRNA supports using `--model=P` an ensemble based interaction prediction that
+is based on partition function computation. To this end, the model computes among all
+possible interaction sites `S`, defined by two interacting subsequences while the ends of the subsequences
+form a base pair, the one with maximal partition function `Z(S)`,  i.e. 
+```
+   arg max Z(S) = (  exp(-ED1(S)/RT) * exp(-ED2(S)/RT) * sum ( exp(-E_hybrid(I)/RT) )   )
+      S                                                 I of S
+```
+which sums the Boltzmann weights of all interactions `I` (hybridization terms only)
+for the given site `S` multiplied with the Boltzmann weights of the respective 
+accessibility penalties `ED1` and `ED2`. The site's partition function can be 
+used to compute the ensemble energy of all interactions of a given site via
+`E(S) = -RT log(Z(S))`, which is reported for the optimal site 
+(see [CSV output](#outModeCsv)).  
+This abstracts from individual inter-molecular base pairing and incorporates the 
+dynamics and flexibility of the interactions formed by two regions.
+
+The overall partition function is given by
+`Zall = sum Z(S)`, i.e. summation over all possible sites,
+and enables the computation of the probabilities `P_E(I) = exp(-E(I)/RT)/Zall`
+that a certain interaction `I` is formed.
+Both can be accessed via [CSV output](#outModeCsv).
+
+Note, all computations are *only based on the considered interactions* that are
+conform to the currently applied constraints (eg. on seed, accessibility,
+interaction width, etc.) and do *not* take *all possible interactions* into account!
+Thus, if you are predicting interactions for a subregion only, the results are
+based on the respective subset of interactions!
+
+This model is used by the [IntaRNAens](#IntaRNAens) personalities. 
+
+
+
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
+<br /><br />
 <a name="interactionModel-ssHelixBlockMfe" />
 
 ### Helix-based single-site RNA-RNA interaction with minimal free energy 
@@ -884,6 +925,20 @@ target prediction identified via the benchmarking introduced in our publication
 To this end, it
 
 - uses seed-only [prediction mode](#predModes).
+
+
+
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
+
+### IntaRNAens
+
+**IntaRNAens** provides [ensemble-based predictions](#interactionModel-ssProbability), 
+i.e. identifies an optimal site rather than an individual optimal interaction.
+This abstracts from individual base pairing and incorporates the base pairing
+flexibility of interacting regions.
+To do so, it
+
+- uses [ensemble-based prediction model](#interactionModel-ssProbability).
 
 
 
@@ -1264,11 +1319,14 @@ are
 - `seedEnd1` : end index of the seed in seq1 (* see below)
 - `seedStart2` : start index of the seed in seq2 (* see below)
 - `seedEnd2` : end index of the seed in seq2 (* see below)
-- `seedE` : overall hybridization energy of the seed only (excluding rest) (* see below)
+- `seedE` : overall energy of the seed only (including seedED etc) (* see below)
 - `seedED1` : ED value of seq1 of the seed only (excluding rest) (* see below)
 - `seedED2` : ED value of seq2 of the seed only (excluding rest) (* see below)
 - `seedPu1` : probability of seed region to be accessible for seq1 (* see below)
 - `seedPu2` : probability of seed region to be accessible for seq2 (* see below)
+- `Eall` : ensemble energy of all considered interactions (-RT*log(Zall)) (see [model=P](#interactionModel-ssProbability))
+- `Zall` : partition function of all considered interactions (see [model=P](#interactionModel-ssProbability))
+- `P_E` : probability of an interaction (site) within the considered ensemble (see [model=P](#interactionModel-ssProbability))
 
 (*) Note, since an interaction can cover more than one seed, all `seed*` columns
 might contain multiple entries separated by ':' symbols. In order to print only

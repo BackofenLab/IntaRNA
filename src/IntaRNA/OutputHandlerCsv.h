@@ -24,6 +24,10 @@ class OutputHandlerCsv : public OutputHandler
 
 public:
 
+	//! string to encode not available values
+	static const std::string notAvailable;
+
+
 	//! the column types supported
 	enum ColType {
 		id1 = 0, //!< id of first sequence
@@ -42,7 +46,7 @@ public:
 		hybridDB, //!< hybrid in dot-bar notation
 		hybridDPfull, //!< hybrid in VRNA dot-bracket notation for full sequence lengths
 		hybridDBfull, //!< hybrid in dot-bar notation for full sequence lengths
-		E, //!< overall hybridization energy
+		E, //!< overall interaction energy
 		ED1, //!< ED value of seq1
 		ED2, //!< ED value of seq2
 		Pu1, //!< probability to be accessible for seq1
@@ -61,11 +65,15 @@ public:
 		seedEnd1, //!< end index of the seed in seq1
 		seedStart2, //!< start index of the seed in seq2
 		seedEnd2, //!< end index of the seed in seq2
-		seedE, //!< overall hybridization energy of the seed only (excluding rest)
+		seedE, //!< overall energy of the seed only (including accessibility etc)
 		seedED1, //!< ED value of seq1 of the seed only (excluding rest)
 		seedED2, //!< ED value of seq2 of the seed only (excluding rest)
 		seedPu1, //!< probability of seed region to be accessible for seq1
 		seedPu2, //!< probability of seed region to be accessible for seq2
+		// output only available for ensemble-based prediction (model=P)
+		Eall, //!< ensemble energy of all interactions (model=P)
+		Zall, //!< partition function of all interactions (model=P)
+		P_E, //!< probability of mfe E within interaction ensemble (model=P)
 		ColTypeNumber //!< number of column types
 	};
 
@@ -132,6 +140,9 @@ protected:
 			colType2string[seedED2] = "seedED2";
 			colType2string[seedPu1] = "seedPu1";
 			colType2string[seedPu2] = "seedPu2";
+			colType2string[Eall] = "Eall";
+			colType2string[Zall] = "Zall";
+			colType2string[P_E] = "P_E";
 			// ensure filling is complete
 			for (size_t i=0; i<ColTypeNumber; i++) {
 				if ( colType2string.find( static_cast<ColType>(i) ) == colType2string.end() ) {
@@ -213,7 +224,11 @@ public:
 	std::string
 	getHeader( const ColTypeList & colTypes, const std::string& colSep = ";" );
 
+
 protected:
+
+	//! overall partition function (if set)
+	using OutputHandler::Z;
 
 	//! the output stream to write to
 	std::ostream & out;

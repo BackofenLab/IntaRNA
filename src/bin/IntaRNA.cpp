@@ -313,10 +313,13 @@ int main(int argc, char **argv){
 								#pragma omp critical(intarna_omp_outputHandlerUpdate)
 #endif
 								{// update final output handler
-								for( const Interaction * inter : bestInteractions) {
+									// copy partition function information if available
+									output->incrementZ( bestInteractions.getZ() );
 									// forward all reported interactions for all regions to final output handler
-									output->add(*inter, parameters.getOutputConstraint());
-								}}
+									for( const Interaction * inter : bestInteractions) {
+										output->add(*inter, parameters.getOutputConstraint());
+									}
+								}
 
 #if INTARNA_MULITHREADING
 								#pragma omp atomic update

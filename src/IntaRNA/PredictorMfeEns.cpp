@@ -14,7 +14,7 @@ PredictorMfeEns::PredictorMfeEns(
 		, PredictionTracker * predTracker
 		)
 	: PredictorMfe(energy,output,predTracker)
-	, overallZhybrid(0)
+	, overallZ(0)
 {
 
 }
@@ -33,10 +33,7 @@ PredictorMfeEns::
 initZ( const OutputConstraint & outConstraint )
 {
 	// reinit overall partition function
-	overallZhybrid = Z_type(0);
-
-	// reinit mfe information
-	initOptima( outConstraint );
+	overallZ = Z_type(0);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -45,7 +42,7 @@ Z_type
 PredictorMfeEns::
 getHybridZ() const
 {
-	return overallZhybrid;
+	return overallZ;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -57,13 +54,38 @@ updateZ( const size_t i1, const size_t j1
 		, const Z_type partZ
 		, const bool isHybridZ )
 {
+
 	// update overall hybridization partition function
 	if (isHybridZ) {
-		overallZhybrid += partZ;
+#if INTARNA_IN_DEBUG_MODE
+		if ( (std::numeric_limits<Z_type>::max() - (partZ*energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, E_type(0))))) <= overallZ) {
+			LOG(WARNING) <<"PredictorMfeEns::updateZ() : partition function overflow! Recompile with larger partition function data type!";
+		}
+#endif
+		overallZ += partZ*energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, E_type(0)));
 	} else {
+#if INTARNA_IN_DEBUG_MODE
+		if ( (std::numeric_limits<Z_type>::max() - partZ) <= overallZ) {
+			LOG(WARNING) <<"PredictorMfeEns::updateZ() : partition function overflow! Recompile with larger partition function data type!";
+		}
+#endif
 		// remove ED, dangling end contributions, etc. before adding
-		overallZhybrid += ( partZ / energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, E_type(0))) );
+		overallZ += partZ;
 	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////
+
+void
+PredictorMfeEns::
+reportOptima( const OutputConstraint & outConstraint )
+{
+	// store overall partition function
+	output.incrementZ( getHybridZ() );
+	// report optima
+	PredictorMfe::reportOptima( outConstraint );
 }
 
 ////////////////////////////////////////////////////////////////////////////

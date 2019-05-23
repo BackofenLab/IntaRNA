@@ -40,13 +40,14 @@ extern "C" {
 #include "IntaRNA/PredictorMfe2dHelixBlockHeuristic.h"
 #include "IntaRNA/PredictorMfe2d.h"
 #include "IntaRNA/PredictorMfe4d.h"
-#include "IntaRNA/PredictorMaxProb.h"
 
 #include "IntaRNA/PredictorMfeSeedOnly.h"
 #include "IntaRNA/PredictorMfe2dHeuristicSeed.h"
 #include "IntaRNA/PredictorMfe2dHelixBlockHeuristicSeed.h"
 #include "IntaRNA/PredictorMfe2dSeed.h"
 #include "IntaRNA/PredictorMfe4dSeed.h"
+
+#include "IntaRNA/PredictorMfeEnsSeedOnly.h"
 
 #include "IntaRNA/PredictionTracker.h"
 #include "IntaRNA/PredictionTrackerHub.h"
@@ -193,9 +194,13 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	case IntaRNA :
 		// no changes
 		break;
+	case IntaRNAens :
+		// ensemble-based predictions
+		model.def = 'P'; VLOG(1) <<" --model=" <<model.def;
+		break;
 	case IntaRNAblock :
+		// helix-block-based predictions
 		model.def = 'B'; VLOG(1) <<" --model=" <<model.def;
-		// helix-based predictions
 		break;
 	case IntaRNAduplex :
 		// RNAhybrid/RNAduplex-like optimizing hybrid only
@@ -313,8 +318,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 			, value<std::string>(&(qRegionString))
 				->notifier(boost::bind(&CommandLineParsing::validate_qRegion,this,_1))
 			, std::string("interaction site : query regions to be considered for"
-					" interaction prediction. Either given as BED file (for"
-					" multi-sequence FASTA input) or in the format"
+					" interaction prediction. Format ="
 					" 'from1-to1,from2-to2,..' assuming indexing starts with 1."
 					" Consider '--qRegionLenMax' for automatic region setup for"
 					" long sequences."
@@ -409,8 +413,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 			, value<std::string>(&(tRegionString))
 				->notifier(boost::bind(&CommandLineParsing::validate_tRegion,this,_1))
 			, std::string("interaction site : target regions to be considered for"
-					" interaction prediction. Either given as BED file (for"
-					" multi-sequence FASTA input) or in the format"
+					" interaction prediction. Format ="
 					" 'from1-to1,from2-to2,..' assuming indexing starts with 1."
 					" Consider '--tRegionLenMax' for automatic region setup for"
 					" long sequences."
@@ -626,7 +629,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 			, std::string("interaction model : "
 					"\n 'S' = single-site, minimum-free-energy interaction (interior loops only), "
 					"\n 'B' = single-site, helix-block-based, minimum-free-energy interaction (blocks of stable helices and interior loops only), "
-					"\n 'P' = single-site maximum-probability interaction (interior loops only)"
+					"\n 'P' = single-site interaction with minimal free ensemble energy per site (interior loops only)"
 					).c_str())
 		("energy,e"
 			, value<char>(&(energy.val))
@@ -1225,6 +1228,17 @@ parse(int argc, char** argv)
 				}
 			}
 
+			// final checks if parameter set compatible with model
+			switch (model.val) {
+			// ensemble based predictions
+			case 'P' : {
+				// no window decomposition of regions (overlapping regions break overall partition function computation)
+				if (windowWidth.val != 0)  throw error("windowWidth not supported for --model=P");
+				break;}
+			default:
+				break;
+			}
+
 #if INTARNA_MULITHREADING
 			// check if multi-threading
 			if (threads.val != 1 && getTargetSequences().size() > 1) {
@@ -1400,19 +1414,16 @@ validateRegion( const std::string & argName, const std::string & value )
 	if (boost::regex_match( value, IndexRangeList::regex, boost::match_perl )) {
 		try {
 			// test if parsable as ascending, non-overlapping range list
-			IndexRangeList tmpList(value);
+			// NOTE: non-overlapping is needed for ensemble-based prediction to ensure correctness of overall partition function!!!
+			IndexRangeList tmpList(value, false);
 		} catch (std::exception & ex) {
 			return false;
 		}
 		return true;
 	} else
-	// might be BED file input
-	if ( validateFile( value ) ) {
-		return true;
-	} else
 	// no valid input
 	{
-		LOG(ERROR) <<"the argument for "<<argName<<" is neither a valid range string encoding nor a file that can be found";
+		LOG(ERROR) <<"the argument for "<<argName<<" is no valid range string encoding";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
 	return false;
@@ -1442,9 +1453,7 @@ parseRegion( const std::string & argName, const std::string & value, const RnaSe
 	if (boost::regex_match( value, IndexRangeList::regex, boost::match_perl )) {
 		// ensure single sequence input
 		if(sequences.size() != 1) {
-			LOG(ERROR) <<argName <<" : string range list encoding provided but more than one sequence present.";
-			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
-			return;
+			throw boost::program_options::error(argName +" : string range list encoding provided but more than one sequence present.");
 		}
 		// validate range encodings
 		validate_indexRangeList(argName, value, 1, sequences.begin()->size());
@@ -1454,12 +1463,7 @@ parseRegion( const std::string & argName, const std::string & value, const RnaSe
 		rangeList[0] = IndexRangeList( value ).shift(-1, sequences.begin()->size()-1);
 		return;
 	}
-	// might be BED file input
-	if ( validateFile( value ) ) {
-		INTARNA_NOT_IMPLEMENTED("BED file input for index range list not implemented");
-		return;
-	}
-	assert(false) /*should never happen*/;
+	throw boost::program_options::error(argName+" is not a comma-separated list of index ranges.");
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -2054,10 +2058,9 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
 			}
 		} break;
-		// single-site max-prob interactions (contain only interior loops)
+		// single-site mfe ensemble interactions (contain only interior loops)
 		case 'P' : {
 			switch ( mode.val ) {
-			case 'E' :  return new PredictorMaxProb( energy, output, predTracker );
 			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
 			}
 		} break;
@@ -2091,7 +2094,7 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 		// single-site max-prob interactions (contain only interior loops)
 		case 'P' : {
 			switch ( mode.val ) {
-			case 'E' :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for seed constraint (try --noSeed)"); return NULL;
+			case 'S' :  return new PredictorMfeEnsSeedOnly( energy, output, predTracker, getSeedHandler(energy) );
 			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
 			}
 		} break;
@@ -2401,6 +2404,9 @@ getPersonality( int argc, char ** argv )
 	}
 	if (boost::regex_match(value,boost::regex("IntaRNAseed"), boost::match_perl)) {
 		return Personality::IntaRNAseed;
+	}
+	if (boost::regex_match(value,boost::regex("IntaRNAens"), boost::match_perl)) {
+		return Personality::IntaRNAens;
 	}
 	if (boost::regex_match(value,boost::regex("IntaRNAsTar"), boost::match_perl)) {
 		return Personality::IntaRNAsTar;

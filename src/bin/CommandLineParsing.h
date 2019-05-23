@@ -49,6 +49,7 @@ public:
 
 	enum Personality {
 		IntaRNA,		// default
+		IntaRNAens,		// ensemble-based prediction
 		IntaRNAsTar,	// sRNA-target prediction (optimized parameter)
 		IntaRNAseed,  	// seed-only predictions
 		IntaRNAblock,  	// helix-block-based predictions
@@ -66,6 +67,7 @@ public:
 	getPersonalityName( Personality p ) {
 		switch(p) {
 		case IntaRNA : return "IntaRNA";
+		case IntaRNAens : return "IntaRNAens";
 		case IntaRNAsTar : return "IntaRNAsTar";
 		case IntaRNAseed : return "IntaRNAseed";
 		case IntaRNAblock : return "IntaRNAblock";
