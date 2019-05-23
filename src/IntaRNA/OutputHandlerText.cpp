@@ -384,6 +384,15 @@ add( const Interaction & i, const OutputConstraint & outConstraint )
 					;
 			} // seed
 		} // detailed
+
+		// ensemble output if available
+		if (!Z_equal(Z,Z_type(0))) {
+		outTmp
+			<<"\n"
+			<<"ensemble energy    = "<<E_2_Ekcal(energy.getE(Z)) <<" kcal/mol\n"
+			;
+		}
+
 		// ensure outputs do not intervene
 	#if INTARNA_MULITHREADING
 		#pragma omp critical(intarna_omp_outputStreamUpdate)

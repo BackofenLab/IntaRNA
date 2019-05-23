@@ -58,6 +58,9 @@ protected:
 	//! counter of reported interactions
 	using OutputHandler::reportedInteractions;
 
+	//! aggregated overall partition function
+	using OutputHandler::Z;
+
 	//! the output stream to write the interaction text representation to
 	std::ostream & out;
 

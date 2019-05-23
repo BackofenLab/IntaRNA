@@ -16,6 +16,8 @@ development version
  * IntaRNA/OutputHandler :
    + Z + getZ() : overall partition function (if updated by predictor)
    + incrementZ() : update of Z (assuming independent interaction sets)
+ * IntaRNA/OutputHandlerText :
+   + print ensemble energy if computable
  * IntaRNA/OutputHandlerCsv :
    * column docu corrected for E and seedE
    + Eall, Zall, P_E
