@@ -1,26 +1,31 @@
 
-#ifndef INTARNA_PREDICTORMFE4DSEED_H_
-#define INTARNA_PREDICTORMFE4DSEED_H_
+#ifndef INTARNA_PREDICTORMFE2DSEEDEXTENSION_H_
+#define INTARNA_PREDICTORMFE2DSEEDEXTENSION_H_
 
-#include "IntaRNA/PredictorMfe4d.h"
-#include "IntaRNA/SeedConstraint.h"
+#include "IntaRNA/PredictorMfe2d.h"
 #include "IntaRNA/SeedHandlerIdxOffset.h"
 
 namespace IntaRNA {
 
 /**
- * Predictor for RNAup-like computation, i.e. full DP-implementation with
- * seed-heuristic using a 4D matrix.
+ * Implements seed-based space-efficient interaction prediction.
  *
- * This enables non-overlapping suboptimal enumeration.
+ * Note, for each seed start (i1,i2) only the mfe seed is considered for the
+ * overall interaction computation instead of considering all possible seeds
+ * starting at (i1,i2).
  *
  * @author Martin Mann
  *
  */
-class PredictorMfe4dSeed: public PredictorMfe4d {
+class PredictorMfe2dSeedExtension: public PredictorMfe2d {
 
+protected:
+
+	//! matrix type to hold the mfe energies for interaction site starts
+	typedef PredictorMfe2d::E2dMatrix E2dMatrix;
 
 public:
+
 
 	/**
 	 * Constructs a predictor and stores the energy and output handler
@@ -30,19 +35,28 @@ public:
 	 * @param predTracker the prediction tracker to be used or NULL if no
 	 *         tracking is to be done; if non-NULL, the tracker gets deleted
 	 *         on this->destruction.
-	 * @param seedHandler the seed handler to be used for seed identification
+	 * @param seedHandler the seed handler to be used
 	 */
-	PredictorMfe4dSeed( const InteractionEnergy & energy
-						, OutputHandler & output
-						, PredictionTracker * predTracker
-						, SeedHandler * seedHandler );
+	PredictorMfe2dSeedExtension(
+			const InteractionEnergy & energy
+			, OutputHandler & output
+			, PredictionTracker * predTracker
+			, SeedHandler * seedHandler );
 
-	virtual ~PredictorMfe4dSeed();
+
+	/**
+	 * data cleanup
+	 */
+	virtual ~PredictorMfe2dSeedExtension();
+
 
 	/**
 	 * Computes the mfe for the given sequence ranges (i1-j1) in the first
 	 * sequence and (i2-j2) in the second sequence and reports it to the output
 	 * handler.
+	 *
+	 * Each considered interaction contains a seed according to the seed handler
+	 * constraints.
 	 *
 	 * @param r1 the index range of the first sequence interacting with r2
 	 * @param r2 the index range of the second sequence interacting with r1
@@ -55,42 +69,29 @@ public:
 			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos)
 			, const OutputConstraint & outConstraint = OutputConstraint() );
 
+
 protected:
 
+
 	//! access to the interaction energy handler of the super class
-	using PredictorMfe4d::energy;
+	using PredictorMfe2d::energy;
 
 	//! access to the output handler of the super class
-	using PredictorMfe4d::output;
-
-	//! access to the list of reported interaction ranges of the super class
-	using PredictorMfe4d::reportedInteractions;
-
-	// TODO provide all data structures as arguments to make predict() call threadsafe
-
-	//! energy of all interaction hybrids computed by the recursion with indices
-	//! hybridE(i1,i2)->(w1,w2), with interaction start i1 (seq1) and i2 (seq2) and
-	//! interaction end j1=i1+w1 and j2=j2+w2. Interactions do not necessarily
-	//! contain a seed interaction.
-	//! NOTE: hybridE(i1,i2)==NULL if not complementary(seq1[i1],seq2[i2])
-	using PredictorMfe4d::hybridE;
-
+	using PredictorMfe2d::output;
 
 	//! the seed handler (with idx offset)
 	SeedHandlerIdxOffset seedHandler;
 
-	//! energy of all interaction hybrids that contain a seed interaction.
-	//! they are computed by the recursion with indices
-	//! hybridE_seed(i1,i2)->(w1,w2), with interaction start i1 (seq1) and i2 (seq2) and
-	//! interaction end j1=i1+w1 and j2=j2+w2.
-	//! NOTE: hybridE_seed(i1,i2)==NULL if not complementary(seq1[i1],seq2[i2])
-	E4dMatrix hybridE_seed;
+	//! energy of all interaction hybrids that start on the left side of the seed
+	E2dMatrix hybridE_left;
 
+	//! energy of all interaction hybrids that start on the right side of the seed
+	E2dMatrix hybridE_right;
 
 protected:
 
 	/**
-	 * optima update without tracker notification
+	 * does nothing but to ignore the calls from fillHybridE()
 	 *
 	 * @param i1 the index of the first sequence interacting with i2
 	 * @param j1 the index of the first sequence interacting with j2
@@ -107,20 +108,34 @@ protected:
 			, const bool isHybridE );
 
 	/**
-	 * Removes all temporary data structures and resets the predictor
+	 * Computes all entries of the hybridE matrix for interactions starting in
+	 * i1 and i2 and report all valid interactions to updateOptima()
+	 *
+	 * @param j1 start of the interaction within seq 1
+	 * @param j2 start of the interaction within seq 2
+	 * @param outConstraint constrains the interactions reported to the output handler
+	 *
 	 */
 	void
-	clear();
+	fillHybridE_left( const size_t j1, const size_t j2
+						, const OutputConstraint & outConstraint);
 
 	/**
-	 * computes all entries of the hybridE matrix
+	 * Computes all entries of the hybridE matrix for interactions starting in
+	 * i1 and i2 and report all valid interactions to updateOptima()
+	 *
+	 * @param i1 start of the interaction within seq 1
+	 * @param i2 start of the interaction within seq 2
+	 * @param outConstraint constrains the interactions reported to the output handler
+	 *
 	 */
 	void
-	fillHybridE_seed( );
+	fillHybridE_right( const size_t i1, const size_t i2
+				, const OutputConstraint & outConstraint);
 
 	/**
 	 * Fills a given interaction (boundaries given) with the according
-	 * hybridizing base pairs.
+	 * hybridizing base pairs using hybridE_seed.
 	 * @param interaction IN/OUT the interaction to fill
 	 * @param outConstraint constrains the interactions reported to the output handler
 	 */
@@ -128,20 +143,22 @@ protected:
 	void
 	traceBack( Interaction & interaction, const OutputConstraint & outConstraint  );
 
-
 	/**
 	 * Identifies the next best interaction with an energy equal to or higher
 	 * than the given interaction. The new interaction will not overlap any
 	 * index range stored in reportedInteractions.
 	 *
-	 * @param curBest IN/OUT the current best interaction to be replaced with one
-	 *        of equal or higher energy not overlapping with any reported
-	 *        interaction so far; an interaction with energy E_INF is set, if
-	 *        there is no better interaction left
+	 * NOTE: this is not possible for this predictor (unless a full recomputation
+	 * of the matrices is done). Thus, calling this method raises an exception.
+	 *
+	 * @param curBest ignored (see method comment)
 	 */
 	virtual
 	void
 	getNextBest( Interaction & curBest );
+
+	void
+	printMatrix( const E2dMatrix & matrix );
 
 };
 
@@ -151,23 +168,31 @@ protected:
 
 inline
 void
-PredictorMfe4dSeed::
+PredictorMfe2dSeedExtension::
 updateOptima( const size_t i1, const size_t j1
 		, const size_t i2, const size_t j2
 		, const E_type energy
 		, const bool isHybridE )
 {
-	// temporarily disable tracker
-	PredictionTracker * curPredTracker = this->predTracker;
-	this->predTracker = NULL;
-	// update optimum information
-	PredictorMfe4d::updateOptima(i1,j1,i2,j2,energy,isHybridE);
-	// reenable tracker
-	this->predTracker = curPredTracker;
+	// do nothing and ignore calls from fillHybridE()
 }
 
 //////////////////////////////////////////////////////////////////////////
 
+inline
+void
+PredictorMfe2dSeedExtension::
+printMatrix( const E2dMatrix & matrix )
+{
+	for (int i = 0; i < matrix.size1(); i++) {
+		std::cout << "| ";
+		for (int j = 0; j < matrix.size2(); j++) {
+			std::cout << matrix(i, j) << " | ";
+		}
+		std::cout << std::endl;
+	}
+}
+
 } // namespace
 
-#endif /* INTARNA_PREDICTORMFE4DSEED_H_ */
+#endif /* INTARNA_PREDICTORMFE2DSEEDEXTENSION_H_ */

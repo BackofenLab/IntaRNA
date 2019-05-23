@@ -38,8 +38,26 @@ public:
 
 	virtual ~PredictorMfeEns();
 
+	/**
+	 * Access to the current overall partition function covering
+	 * all interactions of the last predict() call.
+	 *
+	 * @return the overall hybridization partition function
+	 */
+	Z_type
+	getOverallZ() const;
+
 protected:
 
+// TODO move to subclass ?!
+	//! data container to encode a site with respective partition function
+	struct ZPartition {
+		size_t i1;
+		size_t j1;
+		size_t i2;
+		size_t j2;
+		Z_type partZ;
+	};
 
 	//! access to the interaction energy handler of the super class
 	using PredictorMfe::energy;
@@ -54,14 +72,9 @@ protected:
 	//! its value is updated by updateZ()
 	Z_type overallZ;
 
-	/**
-	 * Access to the current overall hybridization partition function covering
-	 * all interaction since the last predict() call.
-	 *
-	 * @return the overall hybridization partition function
-	 */
-	Z_type
-	getHybridZ() const;
+// TODO move to subclass...
+	//! map storing Z partitions for a given interaction
+	std::unordered_map<size_t, ZPartition> Z_partitions;
 
 
 	/**
@@ -73,6 +86,15 @@ protected:
 	virtual
 	void
 	initZ( const OutputConstraint & outConstraint );
+
+	/**
+	 * Check if energy maxLength exceeds allowed limit for key generation
+	 * Throw runtime error if exceeding limit
+	 * @param maxLength the maximal length of considered subsequences
+	 */
+	static
+	void
+	checkKeyBoundaries( const size_t maxLength );
 
 	/**
 	 * Updates the overall hybridization partition function.

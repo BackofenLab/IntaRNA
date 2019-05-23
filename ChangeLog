@@ -8,6 +8,35 @@
 
 development version
 
+190523 Frank Gelhausen + Martin Raden :
+ - IntaRNA/PredictorMfe4d : obsolete and was for testing only
+ - IntaRNA/PredictorMfe4dSeed : obsolete and was for testing only
+ + IntaRNA/PredictorMfe2dSeedExtension : exact mfe via SE
+ + IntaRNA/PredictorMfe2dSeedExtensionRiBlast : RIblast-like SE mfe
+ + IntaRNA/PredictorMfe2dHeuristicSeedExtension : heuristic SE mfe
+ + IntaRNA/PredictorMfeEns2d : exact ensemble mfe
+ + IntaRNA/PredictorMfeEns2dHeuristic : heuristic ensemble mfe
+ + IntaRNA/PredictorMfeEns2dSeedExtension : exact ensemble mfe via SE
+ + IntaRNA/PredictorMfeEns2dSeedExtensionRiBlast : RIblast-like SE ensemble mfe
+ + IntaRNA/PredictorMfeEns2dHeuristicSeedExtension : heuristic SE ensemble mfe
+ * configure.ac :
+   + support for multi-precision Z (via GNU quadmath library)
+ * IntaRNA/general :
+   + support for multi-precision Z (via GNU quadmath library)
+   + Z_log & Z_exp : placeholder to call correct function for current Z_type
+   - E_precisionEpsilon : obsolete
+ * IntaRNA/OutputHandlerText :
+   * range encoding now without whitespace, i.e. "i--j" instead of "i -- j"
+ * IntaRNA/PredictorMfeEns :
+   - getHybridZ() : replaced by getOverallZ()
+   + getOverallZ()
+   + checkKeyBoundaries() : to check if site-specific Z hashing is possible
+   + ZPartition : container to store and update site-specific Z values
+   + Z_partitions : member to store site-specific Z values
+   * updateZ() :
+     + check for partZ == 0 or INF
+     + update of Z_partitions
+
 190523 Martin Raden :
  - IntaRNA/PredictorMaxProb : obsolete (will be replaced soon)
  + IntaRNAens personality (model=P)

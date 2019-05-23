@@ -6,7 +6,6 @@
 #include "IntaRNA/Interaction.h"
 #include "IntaRNA/InteractionRange.h"
 #include "IntaRNA/OutputConstraint.h"
-#include "IntaRNA/InteractionEnergy.h"
 #include <string>
 
 namespace IntaRNA {

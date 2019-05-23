@@ -1,8 +1,8 @@
 
-#ifndef INTARNA_PREDICTORMFE4D_H_
-#define INTARNA_PREDICTORMFE4D_H_
+#ifndef INTARNA_PREDICTORMFEENS2DHEURISTIC_H_
+#define INTARNA_PREDICTORMFEENS2DHEURISTIC_H_
 
-#include "IntaRNA/PredictorMfe.h"
+#include "IntaRNA/PredictorMfeEns2d.h"
 #include "IntaRNA/Interaction.h"
 
 #include <boost/numeric/ublas/matrix.hpp>
@@ -10,24 +10,45 @@
 namespace IntaRNA {
 
 /**
- * Predictor for RNAup-like computation, i.e. full DP-implementation without
- * seed-heuristic using a 4D matrix
+ * Memory efficient interaction predictor that uses a heuristic to
+ * find the mfe or a close-to-mfe interaction.
+ *
+ * To this end, for each interaction start i1,i2 only the optimal right side
+ * interaction with boundaries j1,j2 is considered in the recursion instead of
+ * all possible interaction ranges.
+ *
+ * This yields a quadratic time and space complexity.
  *
  * @author Martin Mann
  *
  */
-class PredictorMfe4d: public PredictorMfe {
+class PredictorMfeEns2dHeuristic: public PredictorMfeEns2d {
 
 protected:
 
-	//! matrix type to cover the energies for different interaction site widths
-	typedef boost::numeric::ublas::matrix<E_type> E2dMatrix;
+	/**
+	 * Describes the currently best interaction found for a left interaction
+	 * boundary i1,i2
+	 */
+	class BestInteraction {
+	public:
 
-	//! full 4D DP-matrix for computation to hold all start position combinations
-	//! first index = start positions (i1,i2) of (seq1,seq2)
-	//! second index = interaction window sizes (w1,w2) or NULL if (i1,i2) not complementary
-	typedef boost::numeric::ublas::matrix< E2dMatrix* > E4dMatrix;
+		//! init data
+		BestInteraction( const Z_type Z=Z_INF, const size_t j1=RnaSequence::lastPos, const size_t j2=RnaSequence::lastPos )
+			: Z(Z), j1(j1), j2(j2)
+		{}
 
+	public:
+		//! energy of the interaction
+		Z_type Z;
+		//! right end of the interaction in seq1
+		size_t j1;
+		//! right end of the interaction in seq2
+		size_t j2;
+	};
+
+	//! matrix type to hold the mfe energies and boundaries for interaction site starts
+	typedef boost::numeric::ublas::matrix<BestInteraction> Z2dMatrix;
 
 public:
 
@@ -40,11 +61,11 @@ public:
 	 *         tracking is to be done; if non-NULL, the tracker gets deleted
 	 *         on this->destruction.
 	 */
-	PredictorMfe4d( const InteractionEnergy & energy
-					, OutputHandler & output
-					, PredictionTracker * predTracker );
+	PredictorMfeEns2dHeuristic( const InteractionEnergy & energy
+							, OutputHandler & output
+							, PredictionTracker * predTracker );
 
-	virtual ~PredictorMfe4d();
+	virtual ~PredictorMfeEns2dHeuristic();
 
 	/**
 	 * Computes the mfe for the given sequence ranges (i1-j1) in the first
@@ -65,49 +86,31 @@ public:
 protected:
 
 	//! access to the interaction energy handler of the super class
-	using PredictorMfe::energy;
+	using PredictorMfeEns2d::energy;
 
 	//! access to the output handler of the super class
-	using PredictorMfe::output;
+	using PredictorMfeEns2d::output;
 
 	//! access to the list of reported interaction ranges of the super class
-	using PredictorMfe::reportedInteractions;
+	using PredictorMfeEns2d::reportedInteractions;
 
-	// TODO provide all data structures as arguments to make predict() call threadsafe
-
-	//! energy of all interaction hybrids computed by the recursion with indices
-	//! hybridE(i1,i2)->(w1,w2), with interaction start i1 (seq1) and i2 (seq2) and
-	//! interaction end j1=i1+w1 and j2=j2+w2
-	//! NOTE: hybridE(i1,i2)==NULL if not complementary(seq1[i1],seq2[i2])
-	E4dMatrix hybridE;
+	//! energy of all interaction hybrids starting in i1,i2
+	Z2dMatrix hybridZ;
 
 protected:
 
 	/**
-	 * Removes all temporary data structures and resets the predictor
-	 */
-	void
-	clear();
-
-	/**
-	 * computes all entries of the hybridE matrix
-	 */
-	void
-	fillHybridE( );
-
-	/**
-	 * Fills a given interaction (boundaries given) with the according
-	 * hybridizing base pairs.
-	 * @param interaction IN/OUT the interaction to fill
+	 * Computes all entries of the hybridE matrix
+	 * and reports all valid interactions via updateOptima()
 	 * @param outConstraint constrains the interactions reported to the output handler
 	 */
 	virtual
 	void
-	traceBack( Interaction & interaction, const OutputConstraint & outConstraint  );
-
+	fillHybridZ( const OutputConstraint & outConstraint );
 
 	/**
-	 * Identifies the next best interaction with an energy equal to or higher
+	 * Identifies the next best interaction (containing a seed)
+	 * with an energy equal to or higher
 	 * than the given interaction. The new interaction will not overlap any
 	 * index range stored in reportedInteractions.
 	 *
@@ -124,4 +127,4 @@ protected:
 
 } // namespace
 
-#endif /* INTARNA_PREDICTORMFE4D_H_ */
+#endif /* INTARNA_PREDICTORMFEENS2DHEURISTIC_H_ */

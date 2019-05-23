@@ -164,6 +164,28 @@ AS_IF([test x"$multithreadingEnabled" = x"yes"], [
 ])
 
 ###############################################################################
+# MULTIPRECISION SUPPORT (via GNU quadmath library)
+###############################################################################
+
+AC_MSG_CHECKING([whether to use a multi-precision partition function data type (quadmath)])
+enable_multiprecision=no
+AC_ARG_ENABLE([multiprecision],
+    [AS_HELP_STRING([--enable-multiprecision],
+	    [multi-precision partition function data type (default=disabled)])],
+    [enable_multiprecision=$enableval],
+    [enable_multiprecision=no])
+AC_MSG_RESULT([$enable_multiprecision])
+
+AS_IF([test x"$enable_multiprecision" = x"yes"], [
+	LIBS="$LIBS -lquadmath"
+	AC_DEFINE([INTARNA_MULTIPRECISION], [1], [Enabling multiprecision partition function (using quadmath)])
+	AC_SUBST([INTARNA_MULTIPRECISION],[1])
+], [
+	AC_DEFINE([INTARNA_MULTIPRECISION], [0], [Disabling multiprecision partition function])
+	AC_SUBST([INTARNA_MULTIPRECISION],[0])
+])
+
+###############################################################################
 # Vienna RNA package library path support, if not installed in usual directories
 ###############################################################################
 AC_ARG_WITH([vrna],

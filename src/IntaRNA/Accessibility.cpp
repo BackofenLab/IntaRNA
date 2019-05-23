@@ -85,7 +85,7 @@ writeRNAplfold_text( std::ostream& out, const Z_type RT, const bool writeProbs )
 					out <<0 <<'\t';
 				} else {
 					// compute unpaired probability
-					double value = ( std::exp( - E_2_Z(getED(j+1-l, j)) / RT ) );
+					double value = (double)( Z_exp( - E_2_Z(getED(j+1-l, j)) / RT ) );
 					// check for nan result of conversion
 					if ( value != value ) {
 						out <<0 <<'\t';

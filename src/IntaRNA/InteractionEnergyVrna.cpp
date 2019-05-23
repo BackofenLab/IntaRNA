@@ -219,7 +219,7 @@ computeES( const Accessibility & acc, InteractionEnergyVrna::EsMatrix & esToFill
 				// get Qm value
 				// indexing via iindx starts with 1 instead of 0
 				qm_val = foldData->exp_matrices->qm[foldData->iindx[i+1]-j+1];
-				if ( Z_equal(Z_type(qm_val), 0.) ) {
+				if ( Z_equal(Z_type(qm_val), Z_type(0)) ) {
 					esToFill(i,j) = E_INF;
 				} else {
 					// ES energy = -RT*log( Qm )

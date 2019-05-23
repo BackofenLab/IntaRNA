@@ -15,7 +15,7 @@ AccessibilityBasePair::AccessibilityBasePair(const RnaSequence& seq,
       logPu(seq.size(), seq.size()),
       basePairEnergy(bpEnergy),
       RT(_RT),
-      basePairWeight( _RT == 0.0 ? 0.0 : std::exp(E_2_Z(-bpEnergy) / _RT) ),
+      basePairWeight( _RT == 0.0 ? 0.0 : Z_exp(E_2_Z(-bpEnergy) / _RT) ),
       minLoopLength(minLoopLen)
 {
 #if INTARNA_MULITHREADING
@@ -53,7 +53,7 @@ AccessibilityBasePair::AccessibilityBasePair(const RnaSequence& seq,
   // compute ED values
   for (size_t i = 0u; i < N; ++i) {
     for (size_t j = i; j < N; ++j) {
-      logPu(i, j) = Z_2_E( -RT * std::log(NussinovHandler::getPu(i, j, seq, basePairWeight, minLoopLength, Q, Qb, Pbp, Pu)) );
+      logPu(i, j) = Z_2_E( -RT * Z_log(Z_type(NussinovHandler::getPu(i, j, seq, basePairWeight, minLoopLength, Q, Qb, Pbp, Pu))) );
     }
   }
 }

@@ -145,7 +145,7 @@ parseRNAplfold_text( std::istream & inStream, const Z_type RT, const bool parseP
 								+" : the "+toString(j+1-i)+". value = "+toString(curVal)+" is no probability in [0,1]");
 					}
 					edValues( i-1, j-1 ) = curVal > 0
-											? std::min<E_type>(ED_UPPER_BOUND, Z_2_E( - RT * std::log( Z_type(curVal) ) ))
+											? std::min<E_type>(ED_UPPER_BOUND, Z_2_E( - RT * Z_log( Z_type(curVal) ) ))
 											: ED_UPPER_BOUND;
 				}
 				// or ED values (in kcal/mol)

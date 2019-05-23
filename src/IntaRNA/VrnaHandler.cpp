@@ -38,7 +38,7 @@ VrnaHandler( Z_type temperature, const std::string * const vrnaParamFile )
 
 	// set model details according to command line arguments
 
-	model.temperature = temperature;
+	model.temperature = (double)temperature;
 //	model.temperature = this->temperature;
 //	  double  temperature;                  /**<  @brief  The temperature used to scale the thermodynamic parameters */
 //	  double  betaScale;                    /**<  @brief  A scaling factor for the thermodynamic temperature of the Boltzmann factors */

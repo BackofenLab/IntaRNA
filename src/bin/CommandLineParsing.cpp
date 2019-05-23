@@ -39,15 +39,20 @@ extern "C" {
 #include "IntaRNA/PredictorMfe2dHeuristic.h"
 #include "IntaRNA/PredictorMfe2dHelixBlockHeuristic.h"
 #include "IntaRNA/PredictorMfe2d.h"
-#include "IntaRNA/PredictorMfe4d.h"
 
 #include "IntaRNA/PredictorMfeSeedOnly.h"
 #include "IntaRNA/PredictorMfe2dHeuristicSeed.h"
 #include "IntaRNA/PredictorMfe2dHelixBlockHeuristicSeed.h"
 #include "IntaRNA/PredictorMfe2dSeed.h"
-#include "IntaRNA/PredictorMfe4dSeed.h"
+#include "IntaRNA/PredictorMfe2dSeedExtension.h"
+#include "IntaRNA/PredictorMfe2dSeedExtensionRiBlast.h"
+#include "IntaRNA/PredictorMfe2dHeuristicSeedExtension.h"
 
 #include "IntaRNA/PredictorMfeEnsSeedOnly.h"
+#include "IntaRNA/PredictorMfeEns2d.h"
+#include "IntaRNA/PredictorMfeEns2dHeuristic.h"
+#include "IntaRNA/PredictorMfeEns2dSeedExtension.h"
+#include "IntaRNA/PredictorMfeEns2dHeuristicSeedExtension.h"
 
 #include "IntaRNA/PredictionTracker.h"
 #include "IntaRNA/PredictionTrackerHub.h"
@@ -153,8 +158,8 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 
 	temperature(0,100,37),
 
-	model( "SPB", 'S'),
-	mode( "HMS", 'H'),
+	model( "SPBX", 'S'),
+	mode( "HMSR", 'H'),  // R for RIblast heuristic only
 #if INTARNA_MULITHREADING
 	threads( 0, omp_get_max_threads(), 1),
 #endif
@@ -628,6 +633,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 				->notifier(boost::bind(&CommandLineParsing::validate_model,this,_1))
 			, std::string("interaction model : "
 					"\n 'S' = single-site, minimum-free-energy interaction (interior loops only), "
+					"\n 'X' = single-site, minimum-free-energy interaction via seed-extension (interior loops only), "
 					"\n 'B' = single-site, helix-block-based, minimum-free-energy interaction (blocks of stable helices and interior loops only), "
 					"\n 'P' = single-site interaction with minimal free ensemble energy per site (interior loops only)"
 					).c_str())
@@ -971,27 +977,6 @@ parse(int argc, char** argv)
 			validate_qAccFile( qAccFile );
 			validate_tAccFile( tAccFile );
 
-			// check helix setup
-			if (model.val == 'B') {
-				// check for minimal sequence length
-				for(size_t i=0; i<query.size(); i++) {
-					if (query.at(i).size() < helixMinBP.val) {
-						throw error("length of query sequence "+toString(i+1)+" is below minimal number of helix base pairs (helixMinBP="+toString(helixMinBP.val)+")");
-					}
-				}
-
-				for(size_t i=0; i<target.size(); i++) {
-					if (target.at(i).size() < helixMinBP.val) {
-						throw error("length of target sequence "+toString(i+1)+" is below minimal number of helix base pairs (helixMinBP="+toString(helixMinBP.val)+")");
-					}
-				}
-
-				// Ensure that min is smaller than max.
-				if (helixMinBP.val > helixMaxBP.val) {
-					throw error("the minimum number of base pairs (" +toString(helixMinBP.val)+") is higher than the maximum number of base pairs (" +toString(helixMaxBP.val)+")");
-				}
-			}
-
 			// check seed setup
 			if (noSeedRequired) {
 				if (mode.val == 'S') throw error("mode=S not applicable for non-seed predictions!");
@@ -1025,15 +1010,6 @@ parse(int argc, char** argv)
 					}
 				}
 
-				// check compatibility with helix setup
-				if (model.val == 'B') {
-					// check if helixMaxBP >= seedBP
-					if (helixMaxBP.val < ( seedTQ.empty() ? seedBP.val : SeedHandlerExplicit::getSeedMaxBP(seedTQ) ) ) {
-						throw error("maximum number of seed base pairs ("
-								+toString(( seedTQ.empty() ? seedBP.val : SeedHandlerExplicit::getSeedMaxBP(seedTQ) ))
-								+") exceeds the maximally allowed number of helix base pairs ("+toString(helixMaxBP.val)+")");
-					}
-				}
 
 				// check for explicit seed constraints
 				if (seedTQ.empty()) {
@@ -1234,6 +1210,33 @@ parse(int argc, char** argv)
 			case 'P' : {
 				// no window decomposition of regions (overlapping regions break overall partition function computation)
 				if (windowWidth.val != 0)  throw error("windowWidth not supported for --model=P");
+				break;}
+			case 'B' : {
+				// check compatibility of seed constraint with helix setup
+				if (!noSeedRequired) {
+					// check if helixMaxBP >= seedBP
+					if (helixMaxBP.val < ( seedTQ.empty() ? seedBP.val : SeedHandlerExplicit::getSeedMaxBP(seedTQ) ) ) {
+						throw error("maximum number of seed base pairs ("
+								+toString(( seedTQ.empty() ? seedBP.val : SeedHandlerExplicit::getSeedMaxBP(seedTQ) ))
+								+") exceeds the maximally allowed number of helix base pairs ("+toString(helixMaxBP.val)+")");
+					}
+				}
+				
+				// check for minimal sequence length
+				for(size_t i=0; i<query.size(); i++) {
+					if (query.at(i).size() < helixMinBP.val) {
+						throw error("length of query sequence "+toString(i+1)+" is below minimal number of helix base pairs (helixMinBP="+toString(helixMinBP.val)+")");
+					}
+				}
+				for(size_t i=0; i<target.size(); i++) {
+					if (target.at(i).size() < helixMinBP.val) {
+						throw error("length of target sequence "+toString(i+1)+" is below minimal number of helix base pairs (helixMinBP="+toString(helixMinBP.val)+")");
+					}
+				}
+				// Ensure that min is smaller than max.
+				if (helixMinBP.val > helixMaxBP.val) {
+					throw error("the minimum number of base pairs (" +toString(helixMinBP.val)+") is higher than the maximum number of base pairs (" +toString(helixMaxBP.val)+")");
+				}
 				break;}
 			default:
 				break;
@@ -2054,13 +2057,14 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 			switch ( mode.val ) {
 			case 'H' :  return new PredictorMfe2dHeuristic( energy, output, predTracker );
 			case 'M' :  return new PredictorMfe2d( energy, output, predTracker );
-//			case 'E' :  return new PredictorMfe4d( energy, output, predTracker );
 			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
 			}
 		} break;
 		// single-site mfe ensemble interactions (contain only interior loops)
 		case 'P' : {
 			switch ( mode.val ) {
+			case 'H' :  return new PredictorMfeEns2dHeuristic( energy, output, predTracker );
+			case 'M' :  return new PredictorMfeEns2d( energy, output, predTracker );
 			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
 			}
 		} break;
@@ -2086,14 +2090,25 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 			switch ( mode.val ) {
 			case 'H' :  return new PredictorMfe2dHeuristicSeed( energy, output, predTracker, getSeedHandler( energy ) );
 			case 'M' :  return new PredictorMfe2dSeed( energy, output, predTracker, getSeedHandler( energy ) );
-//			case 'E' :  return new PredictorMfe4dSeed( energy, output, predTracker, getSeedHandler( energy ) );
 			case 'S' :  return new PredictorMfeSeedOnly( energy, output, predTracker, getSeedHandler( energy ) );
 			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
+			}
+		} break;
+		// single-site min energy interactions via seed extension (contain only interior loops)
+		case 'X' : {
+			switch ( mode.val ) {
+			case 'H' :  return new PredictorMfe2dHeuristicSeedExtension( energy, output, predTracker, getSeedHandler( energy ) );
+			case 'M' :  return new PredictorMfe2dSeedExtension( energy, output, predTracker, getSeedHandler( energy ) );
+			case 'R' :  return new PredictorMfe2dSeedExtensionRiBlast( energy, output, predTracker, getSeedHandler( energy ) );
+			case 'S' :  return new PredictorMfeSeedOnly( energy, output, predTracker, getSeedHandler( energy ) );
+			default  :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented"); return NULL;
 			}
 		} break;
 		// single-site max-prob interactions (contain only interior loops)
 		case 'P' : {
 			switch ( mode.val ) {
+			case 'H' :  return new PredictorMfeEns2dHeuristicSeedExtension( energy, output, predTracker, getSeedHandler( energy ) );
+			case 'M' :  return new PredictorMfeEns2dSeedExtension( energy, output, predTracker, getSeedHandler( energy ) );
 			case 'S' :  return new PredictorMfeEnsSeedOnly( energy, output, predTracker, getSeedHandler(energy) );
 			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
 			}
