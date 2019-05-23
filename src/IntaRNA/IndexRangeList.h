@@ -42,6 +42,7 @@ public:
 
 	/**
 	 * empty construction
+	 * @param allowOverlap whether or not overlapping ranges are allowed
 	 */
 	IndexRangeList( const bool allowOverlap = false );
 
@@ -49,10 +50,11 @@ public:
 	 * String encoding based construction
 	 *
 	 * @param stringEncoding the string encoding to be parsed
+	 * @param allowOverlap whether or not overlapping ranges are allowed
 	 *
 	 * @throws std::runtime_error if stringEncoding does not match regex
 	 */
-	IndexRangeList( const std::string & stringEncoding );
+	IndexRangeList( const std::string & stringEncoding, const bool allowOverlap = false );
 
 	/**
 	 * copy construction
@@ -292,8 +294,8 @@ protected:
 //////////////////////////////////////////////////////////////////////
 
 inline
-IndexRangeList::IndexRangeList( const bool allowOverlap )
-: allowOverlap(allowOverlap)
+IndexRangeList::IndexRangeList( const bool allowOverlap_ )
+: allowOverlap(allowOverlap_)
 , list()
 {
 }
@@ -301,8 +303,8 @@ IndexRangeList::IndexRangeList( const bool allowOverlap )
 //////////////////////////////////////////////////////////////////////
 
 inline
-IndexRangeList::IndexRangeList( const std::string & stringEncoding )
-: allowOverlap(false)
+IndexRangeList::IndexRangeList( const std::string & stringEncoding, const bool allowOverlap_ )
+: allowOverlap(allowOverlap_)
 , list()
 {
 	fromString(stringEncoding);
