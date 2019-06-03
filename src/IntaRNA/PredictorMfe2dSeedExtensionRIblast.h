@@ -8,13 +8,16 @@
 namespace IntaRNA {
 
 /**
- * Implements seed-based space-efficient interaction prediction.
+ * Implements seed-based space-efficient interaction prediction following the
+ * ideas introduced for the RIblast approach
+ * (doi: 10.1093/bioinformatics/btx287).
  *
  * Note, for each seed start (i1,i2) only the mfe seed is considered for the
  * overall interaction computation instead of considering all possible seeds
  * starting at (i1,i2).
  *
- * @author Martin Mann
+ * @author Frank Gelhausen
+ * @author Martin Raden
  *
  */
 class PredictorMfe2dSeedExtensionRIblast: public PredictorMfe2d {

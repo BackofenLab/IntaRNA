@@ -8,13 +8,15 @@
 namespace IntaRNA {
 
 /**
- * Implements seed-based space-efficient interaction prediction.
+ * Implements seed-based space-efficient interaction prediction
+ * based on minimizing ensemble free energy of interaction sites.
  *
  * Note, for each seed start (i1,i2) only the mfe seed is considered for the
  * overall interaction computation instead of considering all possible seeds
  * starting at (i1,i2).
  *
- * @author Martin Mann
+ * @author Frank Gelhausen
+ * @author Martin Raden
  *
  */
 class PredictorMfeEns2dSeedExtension: public PredictorMfeEns {

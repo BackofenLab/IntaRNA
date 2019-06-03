@@ -8,13 +8,14 @@
 namespace IntaRNA {
 
 /**
- * Implements seed-based space-efficient interaction prediction.
+ * Implements heuristic, seed-based, space-efficient interaction prediction.
  *
  * Note, for each seed start (i1,i2) only the mfe seed is considered for the
  * overall interaction computation instead of considering all possible seeds
  * starting at (i1,i2).
  *
- * @author Martin Mann
+ * @author Frank Gelhausen
+ * @author Martin Raden
  *
  */
 class PredictorMfe2dHeuristicSeedExtension: public PredictorMfe2dSeedExtension {
