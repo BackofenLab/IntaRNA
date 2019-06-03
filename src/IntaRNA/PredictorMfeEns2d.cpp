@@ -39,7 +39,7 @@ predict( const IndexRange & r1
 #if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_omp_logOutput)
 #endif
-	{ VLOG(2) <<"predicting mfe interactions in O(n^2) space..."; }
+	{ VLOG(2) <<"predicting ensemble mfe interactions in O(n^2) space..."; }
 	// measure timing
 	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
 
@@ -99,9 +99,6 @@ predict( const IndexRange & r1
 		}
 	}
 
-	LOG(DEBUG) <<"Overall Z = "<< getOverallZ();
-	LOG(DEBUG) <<"Overall E = "<<E_2_Ekcal(energy.getE(getOverallZ()));
-
 	// report mfe interaction
 	reportOptima( outConstraint );
 }
@@ -132,7 +129,7 @@ fillHybridZ( const size_t j1, const size_t j2
 	// determine whether or not lonely base pairs are allowed or if we have to
 	// ensure a stacking to the right of the left boundary (i1,i2)
 	const size_t noLpShift = outConstraint.noLP ? 1 : 0;
-	Z_type iStackE = Z_type(0);
+	Z_type iStackZ = Z_type(1);
 
 	//////////  COMPUTE HYBRIDIZATION ENERGIES  ////////////
 
@@ -183,24 +180,24 @@ fillHybridZ( const size_t j1, const size_t j2
 							&& energy.areComplementary(i1+noLpShift,i2+noLpShift))
 						{
 							// get stacking term to avoid recomputation
-							iStackE = energy.getBoltzmannWeight(energy.getE_interLeft(i1,i1+noLpShift,i2,i2+noLpShift));
+							iStackZ = energy.getBoltzmannWeight(energy.getE_interLeft(i1,i1+noLpShift,i2,i2+noLpShift));
 
 							// init with stacking only
-							curMinE = iStackE + ((w1==2&&w2==2) ? energy.getBoltzmannWeight(energy.getE_init()) : hybridZ(i1+noLpShift, i2+noLpShift) );
+							curMinE = iStackZ * ((w1==2&&w2==2) ? energy.getBoltzmannWeight(energy.getE_init()) : hybridZ(i1+noLpShift, i2+noLpShift) );
 						} else {
 							//
-							iStackE = Z_INF;
+							iStackZ = Z_INF;
 						}
 					}
 					// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
 					// ensure stacking is possible if no LP allowed
-					if (w1 > 2 && w2 > 2 && Z_isNotINF(iStackE)) {
+					if (w1 > 2 && w2 > 2 && Z_isNotINF(iStackZ)) {
 						for (k1=std::min(j1-1,i1+energy.getMaxInternalLoopSize1()+1+noLpShift); k1>i1+noLpShift; k1--) {
 						for (k2=std::min(j2-1,i2+energy.getMaxInternalLoopSize2()+1+noLpShift); k2>i2+noLpShift; k2--) {
 							// check if (k1,k2) are valid left boundary
 							if ( ! Z_equal( hybridZ(k1,k2), 0.0 ) ) {
 								// update minimal value
-								curMinE += iStackE + energy.getBoltzmannWeight(energy.getE_interLeft(i1+noLpShift,k1,i2+noLpShift,k2)) * hybridZ(k1,k2);
+								curMinE += iStackZ * energy.getBoltzmannWeight(energy.getE_interLeft(i1+noLpShift,k1,i2+noLpShift,k2)) * hybridZ(k1,k2);
 							}
 						}
 						}

@@ -39,7 +39,7 @@ predict( const IndexRange & r1
 #if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_omp_logOutput)
 #endif
-	{ VLOG(2) <<"predicting mfe interactions heuristically in O(n^2) space and time..."; }
+	{ VLOG(2) <<"predicting ensemble mfe interactions heuristically in O(n^2) space and time..."; }
 	// measure timing
 	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
 
@@ -78,9 +78,6 @@ predict( const IndexRange & r1
 		}
 	}
 
-	LOG(DEBUG) <<"Overall Z = "<< getOverallZ();
-	LOG(DEBUG) <<"Overall E = "<<E_2_Ekcal(energy.getE(getOverallZ()));
-
 	// trace back and output handler update
 	reportOptima( outConstraint );
 
@@ -102,7 +99,7 @@ fillHybridZ( const OutputConstraint & outConstraint )
 	// determine whether or not lonely base pairs are allowed or if we have to
 	// ensure a stacking to the right of the left boundary (i1,i2)
 	const size_t noLpShift = outConstraint.noLP ? 1 : 0;
-	Z_type iStackE = Z_type(0);
+	Z_type iStackZ = Z_type(1);
 
 	BestInteraction * curCell = NULL;
 	const BestInteraction * rightExt = NULL;
@@ -130,7 +127,7 @@ fillHybridZ( const OutputConstraint & outConstraint )
 						&& energy.areComplementary(i1+noLpShift,i2+noLpShift))
 					{
 						// get stacking term to avoid recomputation
-						iStackE = energy.getBoltzmannWeight(energy.getE_interLeft(i1,i1+noLpShift,i2,i2+noLpShift));
+						iStackZ = energy.getBoltzmannWeight(energy.getE_interLeft(i1,i1+noLpShift,i2,i2+noLpShift));
 					} else {
 						// skip further processing, since no stacking possible
 						continue;
@@ -138,7 +135,7 @@ fillHybridZ( const OutputConstraint & outConstraint )
 				}
 
 				// set to interaction initiation with according boundary
-				*curCell = BestInteraction(iStackE + energy.getBoltzmannWeight(energy.getE_init()), i1+noLpShift, i2+noLpShift);
+				*curCell = BestInteraction(iStackZ * energy.getBoltzmannWeight(energy.getE_init()), i1+noLpShift, i2+noLpShift);
 
 				// current best total energy value (covers to far E_init only)
 				curCellEtotal = energy.getE(curCell->Z);
@@ -160,7 +157,7 @@ fillHybridZ( const OutputConstraint & outConstraint )
 					}
 
 					// compute energy for this loop sizes
-					curE = iStackE + energy.getBoltzmannWeight(energy.getE_interLeft(i1+noLpShift,i1+noLpShift+w1,i2+noLpShift,i2+noLpShift+w2)) * rightExt->Z;
+					curE = iStackZ * energy.getBoltzmannWeight(energy.getE_interLeft(i1+noLpShift,i1+noLpShift+w1,i2+noLpShift,i2+noLpShift+w2)) * rightExt->Z;
 					// check if this combination yields better energy
 					curEtotal = energy.getE(curE);
 
