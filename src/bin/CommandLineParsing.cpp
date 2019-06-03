@@ -45,7 +45,7 @@ extern "C" {
 #include "IntaRNA/PredictorMfe2dHelixBlockHeuristicSeed.h"
 #include "IntaRNA/PredictorMfe2dSeed.h"
 #include "IntaRNA/PredictorMfe2dSeedExtension.h"
-#include "IntaRNA/PredictorMfe2dSeedExtensionRiBlast.h"
+#include "IntaRNA/PredictorMfe2dSeedExtensionRIblast.h"
 #include "IntaRNA/PredictorMfe2dHeuristicSeedExtension.h"
 
 #include "IntaRNA/PredictorMfeEnsSeedOnly.h"
@@ -2099,7 +2099,7 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 			switch ( mode.val ) {
 			case 'H' :  return new PredictorMfe2dHeuristicSeedExtension( energy, output, predTracker, getSeedHandler( energy ) );
 			case 'M' :  return new PredictorMfe2dSeedExtension( energy, output, predTracker, getSeedHandler( energy ) );
-			case 'R' :  return new PredictorMfe2dSeedExtensionRiBlast( energy, output, predTracker, getSeedHandler( energy ) );
+			case 'R' :  return new PredictorMfe2dSeedExtensionRIblast( energy, output, predTracker, getSeedHandler( energy ) );
 			case 'S' :  return new PredictorMfeSeedOnly( energy, output, predTracker, getSeedHandler( energy ) );
 			default  :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented"); return NULL;
 			}

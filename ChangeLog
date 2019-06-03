@@ -15,6 +15,8 @@ development version
      * bugfix: noLP handling corrected
  * IntaRNA/Predictor*SeedExtension* :
    + warning that noLP not implemented yet
+ * renaming IntaRNA/PredictorMfeEns2dSeedExtensionRiBlast to
+   IntaRNA/PredictorMfeEns2dSeedExtensionRIblast
 
 190523 Frank Gelhausen + Martin Raden :
  - IntaRNA/PredictorMfe4d : obsolete and was for testing only

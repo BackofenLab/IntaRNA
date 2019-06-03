@@ -1,12 +1,12 @@
 
-#include "IntaRNA/PredictorMfe2dSeedExtensionRiBlast.h"
+#include "IntaRNA/PredictorMfe2dSeedExtensionRIblast.h"
 
 namespace IntaRNA {
 
 //////////////////////////////////////////////////////////////////////////
 
-PredictorMfe2dSeedExtensionRiBlast::
-PredictorMfe2dSeedExtensionRiBlast(
+PredictorMfe2dSeedExtensionRIblast::
+PredictorMfe2dSeedExtensionRIblast(
 		const InteractionEnergy & energy
 		, OutputHandler & output
 		, PredictionTracker * predTracker
@@ -21,15 +21,15 @@ PredictorMfe2dSeedExtensionRiBlast(
 
 //////////////////////////////////////////////////////////////////////////
 
-PredictorMfe2dSeedExtensionRiBlast::
-~PredictorMfe2dSeedExtensionRiBlast()
+PredictorMfe2dSeedExtensionRIblast::
+~PredictorMfe2dSeedExtensionRIblast()
 {
 }
 
 //////////////////////////////////////////////////////////////////////////
 
 void
-PredictorMfe2dSeedExtensionRiBlast::
+PredictorMfe2dSeedExtensionRIblast::
 predict( const IndexRange & r1, const IndexRange & r2
 		, const OutputConstraint & outConstraint )
 {
@@ -42,12 +42,12 @@ predict( const IndexRange & r1, const IndexRange & r2
 
 	// suboptimal setup check
 	if (outConstraint.reportMax>1 && outConstraint.reportOverlap != OutputConstraint::ReportOverlap::OVERLAP_BOTH) {
-		throw std::runtime_error("PredictorMfe2dSeedExtensionRiBlast : the enumeration of non-overlapping suboptimal interactions is not supported in this prediction mode");
+		throw std::runtime_error("PredictorMfe2dSeedExtensionRIblast : the enumeration of non-overlapping suboptimal interactions is not supported in this prediction mode");
 	}
 
 	// no-LP setup check
 	if (outConstraint.noLP) {
-		INTARNA_NOT_IMPLEMENTED("PredictorMfe2dSeedExtension : prediction without lonely base pairs is not implemented yet");
+		INTARNA_NOT_IMPLEMENTED("PredictorMfe2dSeedExtensionRIblast : prediction without lonely base pairs is not implemented yet");
 	}
 
 #if INTARNA_IN_DEBUG_MODE
@@ -156,8 +156,8 @@ predict( const IndexRange & r1, const IndexRange & r2
 ////////////////////////////////////////////////////////////////////////////
 
 void
-PredictorMfe2dSeedExtensionRiBlast::
-parallelExtension( PredictorMfe2dSeedExtensionRiBlast::ExtendedSeed & seed
+PredictorMfe2dSeedExtensionRIblast::
+parallelExtension( PredictorMfe2dSeedExtensionRIblast::ExtendedSeed & seed
 	  	, const size_t max_extension1, size_t max_extension2
 	  	)
 {
@@ -213,7 +213,7 @@ parallelExtension( PredictorMfe2dSeedExtensionRiBlast::ExtendedSeed & seed
 ////////////////////////////////////////////////////////////////////////////
 
 void
-PredictorMfe2dSeedExtensionRiBlast::
+PredictorMfe2dSeedExtensionRIblast::
 fillHybridE_left( const size_t j1, const size_t j2
 			, const OutputConstraint & outConstraint )
 {
@@ -268,7 +268,7 @@ fillHybridE_left( const size_t j1, const size_t j2
 ////////////////////////////////////////////////////////////////////////////
 
 void
-PredictorMfe2dSeedExtensionRiBlast::
+PredictorMfe2dSeedExtensionRIblast::
 fillHybridE_right( const size_t i1, const size_t i2
 			, const OutputConstraint & outConstraint )
 {
@@ -324,7 +324,7 @@ fillHybridE_right( const size_t i1, const size_t i2
 
 
 void
-PredictorMfe2dSeedExtensionRiBlast::
+PredictorMfe2dSeedExtensionRIblast::
 traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 {
 	// check if something to trace
@@ -335,7 +335,7 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 #if INTARNA_IN_DEBUG_MODE
 	// sanity checks
 	if ( interaction.basePairs.size() != 2 ) {
-		throw std::runtime_error("PredictorMfe2dSeedExtensionRiBlast::traceBack() : given interaction does not contain boundaries only");
+		throw std::runtime_error("PredictorMfe2dSeedExtensionRIblast::traceBack() : given interaction does not contain boundaries only");
 	}
 #endif
 
@@ -350,7 +350,7 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 #if INTARNA_IN_DEBUG_MODE
 	// sanity checks
 	if ( ! interaction.isValid() ) {
-		throw std::runtime_error("PredictorMfe2dSeedExtensionRiBlast::traceBack() : given interaction not valid");
+		throw std::runtime_error("PredictorMfe2dSeedExtensionRIblast::traceBack() : given interaction not valid");
 	}
 #endif
 
@@ -367,7 +367,7 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 	// check if intervals are larger enough to contain a seed
 	if (std::min(j1-i1,j2-i2)+1 < seedHandler.getConstraint().getBasePairs()) {
 		// no seed possible, abort computation
-		throw std::runtime_error("PredictorMfe2dSeedExtensionRiBlast::traceBack() : given boundaries "+toString(interaction)+" can not hold a seed of "+toString(seedHandler.getConstraint().getBasePairs())+" base pairs");
+		throw std::runtime_error("PredictorMfe2dSeedExtensionRIblast::traceBack() : given boundaries "+toString(interaction)+" can not hold a seed of "+toString(seedHandler.getConstraint().getBasePairs())+" base pairs");
 	}
 #endif
 
@@ -526,10 +526,10 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 ////////////////////////////////////////////////////////////////////////////
 
 void
-PredictorMfe2dSeedExtensionRiBlast::
+PredictorMfe2dSeedExtensionRIblast::
 getNextBest( Interaction & curBest )
 {
-	INTARNA_NOT_IMPLEMENTED("PredictorMfe2dSeedExtensionRiBlast::getNextBest() not implemented yet");
+	INTARNA_NOT_IMPLEMENTED("PredictorMfe2dSeedExtensionRIblast::getNextBest() not implemented yet");
 }
 
 //////////////////////////////////////////////////////////////////////////

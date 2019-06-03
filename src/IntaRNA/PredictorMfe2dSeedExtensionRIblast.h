@@ -17,7 +17,7 @@ namespace IntaRNA {
  * @author Martin Mann
  *
  */
-class PredictorMfe2dSeedExtensionRiBlast: public PredictorMfe2d {
+class PredictorMfe2dSeedExtensionRIblast: public PredictorMfe2d {
 
 protected:
 
@@ -47,7 +47,7 @@ public:
 	 *         on this->destruction.
 	 * @param seedHandler the seed handler to be used
 	 */
-	PredictorMfe2dSeedExtensionRiBlast(
+	PredictorMfe2dSeedExtensionRIblast(
 			const InteractionEnergy & energy
 			, OutputHandler & output
 			, PredictionTracker * predTracker
@@ -57,7 +57,7 @@ public:
 	/**
 	 * data cleanup
 	 */
-	virtual ~PredictorMfe2dSeedExtensionRiBlast();
+	virtual ~PredictorMfe2dSeedExtensionRIblast();
 
 
 	/**
@@ -190,7 +190,7 @@ protected:
 
 inline
 void
-PredictorMfe2dSeedExtensionRiBlast::
+PredictorMfe2dSeedExtensionRIblast::
 updateOptima( const size_t i1, const size_t j1
 		, const size_t i2, const size_t j2
 		, const E_type energy
@@ -203,7 +203,7 @@ updateOptima( const size_t i1, const size_t j1
 
 inline
 void
-PredictorMfe2dSeedExtensionRiBlast::
+PredictorMfe2dSeedExtensionRIblast::
 printMatrix( const E2dMatrix & matrix )
 {
 	for (int i = 0; i < matrix.size1(); i++) {

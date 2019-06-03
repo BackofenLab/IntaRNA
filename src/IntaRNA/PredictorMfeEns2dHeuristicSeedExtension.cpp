@@ -49,7 +49,7 @@ predict( const IndexRange & r1, const IndexRange & r2
 
 	// no-LP setup check
 	if (outConstraint.noLP) {
-		INTARNA_NOT_IMPLEMENTED("PredictorMfe2dSeedExtension : prediction without lonely base pairs is not implemented yet");
+		INTARNA_NOT_IMPLEMENTED("PredictorMfeEns2dHeuristicSeedExtension : prediction without lonely base pairs is not implemented yet");
 	}
 
 #if INTARNA_IN_DEBUG_MODE
