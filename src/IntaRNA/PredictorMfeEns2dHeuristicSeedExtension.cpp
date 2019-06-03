@@ -138,9 +138,6 @@ predict( const IndexRange & r1, const IndexRange & r2
 	// report mfe interaction
 	reportOptima( outConstraint );
 
-	LOG(DEBUG) <<"Overall Z = "<<getOverallZ();
-	LOG(DEBUG) <<"Overall E = "<<E_2_Ekcal(energy.getE(getOverallZ()));
-
 }
 
 

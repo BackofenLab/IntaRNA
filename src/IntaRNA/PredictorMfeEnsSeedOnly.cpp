@@ -65,7 +65,6 @@ predict( const IndexRange & r1, const IndexRange & r2
 	// compute seed interactions for whole range
 	// and check if any seed possible
 	if (seedHandler.fillSeed( 0, seedLastPos1, 0, seedLastPos2 ) == 0) {
-		LOG(DEBUG) <<"abort since no seeds";
 		reportOptima(outConstraint);
 		// stop computation
 		return;
