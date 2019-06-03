@@ -8,6 +8,14 @@
 
 development version
 
+190603 Martin Raden :
+ * IntaRNA/PredictorMfeEns2d :
+ * IntaRNA/PredictorMfeEns2dHeuristic :
+   * predict() :
+     * bugfix: noLP handling corrected
+ * IntaRNA/Predictor*SeedExtension* :
+   + warning that noLP not implemented yet
+
 190523 Frank Gelhausen + Martin Raden :
  - IntaRNA/PredictorMfe4d : obsolete and was for testing only
  - IntaRNA/PredictorMfe4dSeed : obsolete and was for testing only

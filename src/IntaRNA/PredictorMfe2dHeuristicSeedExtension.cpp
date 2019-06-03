@@ -43,6 +43,11 @@ predict( const IndexRange & r1, const IndexRange & r2
 		throw std::runtime_error("PredictorMfe2dHeuristicSeedExtension : the enumeration of non-overlapping suboptimal interactions is not supported in this prediction mode");
 	}
 
+	// no-LP setup check
+	if (outConstraint.noLP) {
+		INTARNA_NOT_IMPLEMENTED("PredictorMfe2dSeedExtension : prediction without lonely base pairs is not implemented yet");
+	}
+
 #if INTARNA_IN_DEBUG_MODE
 	// check indices
 	if (!(r1.isAscending() && r2.isAscending()) )
