@@ -8,6 +8,11 @@
 
 development version
 
+190605 Martin Raden :
+ * IntaRNA/HelixHandlerNoBulgeMax :
+   * fillHelixSeed() :
+     * bugfix: complementarity check was using (i2,i2)
+
 190603 Martin Raden :
  * IntaRNA/PredictorMfeEns2d :
  * IntaRNA/PredictorMfeEns2dHeuristic :

@@ -259,7 +259,7 @@ fillHelixSeed(const size_t i1min, const size_t i1max, const size_t i2min, const 
 			if (leadingBP > 0
 					&&!(energy.isAccessible1(i1)
 						&& energy.isAccessible2(i2)
-						&& energy.areComplementary(i2,i2)))
+						&& energy.areComplementary(i1,i2)))
 			{
 				break;
 			}
