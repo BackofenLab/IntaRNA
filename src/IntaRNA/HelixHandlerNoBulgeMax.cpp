@@ -365,7 +365,6 @@ traceBackHelixSeed( Interaction & interaction
 {
 #if INTARNA_IN_DEBUG_MODE
 	if ( seedHandler == NULL ) throw std::runtime_error("HelixHandlerNoBulgeMax::traceBackHelixSeed() no SeedHandler available");
-//	if ( helixSeed.find(BP(i1,i2)) == helixSeed.end() ) throw std::runtime_error("HelixHandlerNoBulgeMax::traceBackHelixSeed() no helix available for left bp "+toString(i1)+","+toString(i2));
 #endif
 	// check if something to trace
 	if ( helixSeed.find(BP(i1,i2)) == helixSeed.end() ) {
@@ -404,15 +403,10 @@ traceBackHelixSeed( Interaction & interaction
 	// screen over all possible leading and trailing base pair combinations
 	for (size_t leadingBP=0; traceNotFound
 							 && leadingBP <= possibleBasePairs
-//							 && (i1 + leadingBP) <= j1
-//							 && (i2 + leadingBP) <= j2
 							 ; leadingBP++) {
 
 		// check if leading based pairs are possible, otherwise stop computation
 		assert(energy.areComplementary(i1+leadingBP,i2+leadingBP));
-//		{
-//			break;
-//		}
 
 		// start positions of the seed
 		seedStart1 = i1 + leadingBP;
