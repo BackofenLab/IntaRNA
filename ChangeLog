@@ -8,6 +8,20 @@
 
 development version
 
+190606 Martin Raden :
+ * IntaRNA/OutputHandlerText :
+ * IntaRNA/OutputHandlerCsv :
+   * add() :
+     * bugfix: Pu values were truncated like energies 
+ * IntaRNA/HelixHandlerNoBulgeMax :
+   * fillHelixSeed() :
+     * bugfix: leadingE computation was shifted by one index to the right
+ * bin/CommandLineParsing :
+   + output alias information [seq1|seq2] added to target|query parameter info
+ * README.md 
+   * example output updated
+   + output alias information [seq1|seq2] added to detailed mode output
+
 190605 Martin Raden :
  * IntaRNA/HelixHandlerNoBulgeMax :
    * fillHelixSeed() :
