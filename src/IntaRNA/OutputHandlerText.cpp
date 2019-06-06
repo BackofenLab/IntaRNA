@@ -318,9 +318,9 @@ add( const Interaction & i, const OutputConstraint & outConstraint )
 				<<"  + E(endRight)    = "<<E_2_Ekcal(contr.endRight)<<'\n'
 				<<"    : E(hybrid)    = "<<E_2_Ekcal((i.energy-contr.ED1-contr.ED2))<<'\n'
 				<<"  + ED(seq1)       = "<<E_2_Ekcal(contr.ED1)<<'\n'
-				<<"    : Pu(seq1)     = "<<(E_equal(contr.ED2,0) ? 1 : E_2_Ekcal(Z_2_E(Z_exp(-E_2_Z(contr.ED1)/energy.getRT()))))<<'\n'
+				<<"    : Pu(seq1)     = "<<(E_equal(contr.ED2,0) ? Z_type(1) : energy.getBoltzmannWeight(contr.ED1))<<'\n'
 				<<"  + ED(seq2)       = "<<E_2_Ekcal(contr.ED2)<<'\n'
-				<<"    : Pu(seq2)     = "<<(E_equal(contr.ED2,0) ? 1 : E_2_Ekcal(Z_2_E(Z_exp(-E_2_Z(contr.ED2)/energy.getRT()))))<<'\n'
+				<<"    : Pu(seq2)     = "<<(E_equal(contr.ED2,0) ? Z_type(1) : energy.getBoltzmannWeight(contr.ED2))<<'\n'
 				;
 			if (!E_equal(contr.energyAdd,E_type(0))) {
 				outTmp
