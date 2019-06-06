@@ -379,13 +379,12 @@ traceBackHelixSeed( Interaction & interaction
 
 	// get energy to be traced
 	E_type curE = helixSeed.at(BP(i1,i2)).first;
-	const size_t curLength = decodeHelixSeedLength1(helixSeed.at(BP(i1,i2)).second);
 
 	const size_t bestL1 = getHelixSeedLength1(i1,i2);
 	const size_t bestL2 = getHelixSeedLength2(i1,i2);
 
-	const size_t j1 = i1 + curLength -1;
-	const size_t j2 = i2 + curLength -1;
+	const size_t j1 = i1 + decodeHelixSeedLength1(helixSeed.at(BP(i1,i2)).second) -1;
+	const size_t j2 = i2 + decodeHelixSeedLength2(helixSeed.at(BP(i1,i2)).second) -1;
 
 	// No traceback possible for current boundary
 	if (E_isINF(curE)) {
@@ -394,7 +393,7 @@ traceBackHelixSeed( Interaction & interaction
 
 	// Calculate how many base pairs are possible alongside the seed.
 	// Note: If seedHandler allows unpaired positions this check is not enough, check happens in loop
-	size_t possibleBasePairs = curLength - seedHandler->getConstraint().getBasePairs();
+	size_t possibleBasePairs = std::min(j1-i1,j2-i2) +1 - seedHandler->getConstraint().getBasePairs();
 
 	// stores energy of leading base pairs to avoid recomputation
 	E_type leadingE = E_type(0);
@@ -406,7 +405,9 @@ traceBackHelixSeed( Interaction & interaction
 							 ; leadingBP++) {
 
 		// check if leading based pairs are possible, otherwise stop computation
-		assert(energy.areComplementary(i1+leadingBP,i2+leadingBP));
+		if(!energy.areComplementary(i1+leadingBP,i2+leadingBP)) {
+			break;
+		}
 
 		// start positions of the seed
 		seedStart1 = i1 + leadingBP;
@@ -433,7 +434,7 @@ traceBackHelixSeed( Interaction & interaction
 		}
 
 		E_type trailingE = E_type(0);
-		const size_t trailingBP = curLength - leadingBP - seedHandler->getConstraint().getBasePairs();//(j1-seedEnd1);
+		const size_t trailingBP = (j1-seedEnd1);
 		// update trailingE to cover all (missing) trailing base pairs
 		for (size_t trailingL = 0; trailingL < trailingBP; trailingL++) {
 			// check if trailing based pairs are possible, otherwise stop computation
