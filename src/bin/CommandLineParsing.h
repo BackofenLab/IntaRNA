@@ -17,6 +17,7 @@
 #include "IntaRNA/InteractionEnergy.h"
 #include "IntaRNA/HelixConstraint.h"
 #include "IntaRNA/HelixHandler.h"
+#include "IntaRNA/OutputStreamHandler.h"
 #include "IntaRNA/OutputHandler.h"
 #include "IntaRNA/Predictor.h"
 #include "IntaRNA/SeedConstraint.h"
@@ -592,8 +593,6 @@ protected:
 	std::vector< std::string > out;
 	//! provides the parsed stream name for each out prefix
 	std::map<OutPrefixCode,std::string> outPrefix2streamName;
-	//! output stream
-	std::ostream * outStream;
 	//! output mode
 	CharParameter outMode;
 	//! number of (sub)optimal interactions to report
@@ -610,8 +609,14 @@ protected:
 	bool outBestSeedOnly;
 	//! whether or not only lonely (non-stacked) inter-molecular base pairs are allowed
 	bool outNoLP;
+	//! the CSV column separator
+	static const std::string outCsvColSep;
+	//! the CSV list separator within individual columns
+	static const std::string outCsvLstSep;
 	//! the CSV column selection
 	std::string outCsvCols;
+	//! the column ID from outCsvCols to be used for sorting the output
+	std::string outCsvSort;
 	//! the CSV column selection
 	static const std::string outCsvCols_default;
 	//! whether or not best interaction output should be provided independently
@@ -628,6 +633,9 @@ protected:
 
 	//! the vienna energy parameter handler initialized by #parse()
 	mutable VrnaHandler vrnaHandler;
+
+	//! the handler of the final output stream
+	OutputStreamHandler * outStreamHandler;
 
 protected:
 
@@ -987,6 +995,12 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_outCsvCols(const std::string & value);
+
+	/**
+	 * Validates the outCsvSort argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_outCsvSort(const std::string & value);
 
 #if INTARNA_MULITHREADING
 	/**

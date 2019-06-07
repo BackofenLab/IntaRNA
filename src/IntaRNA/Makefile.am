@@ -43,6 +43,8 @@ libIntaRNA_a_HEADERS =    \
 					InteractionRange.h \
 					NussinovHandler.h \
 					OutputConstraint.h \
+					OutputStreamHandler.h \
+					OutputStreamHandlerSortedCsv.h \
 					OutputHandler.h \
 					OutputHandlerCsv.h \
 					OutputHandlerHub.h \
@@ -107,6 +109,7 @@ libIntaRNA_a_SOURCES =    \
 					InteractionRange.cpp \
 					NussinovHandler.cpp \
 					OutputConstraint.cpp \
+					OutputStreamHandlerSortedCsv.cpp \
 					OutputHandler.cpp \
 					OutputHandlerCsv.cpp \
 					OutputHandlerIntaRNA1.cpp \

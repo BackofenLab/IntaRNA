@@ -80,6 +80,9 @@ public:
 	//! list of ColTypes
 	typedef std::list<ColType> ColTypeList;
 
+	//! list of ColTypes that have to be sorted numerically
+	static const ColTypeList colTypeNumericSort;
+
 	/**
 	 * Access to the mapping of ColTypes to according strings
 	 */
@@ -159,7 +162,7 @@ public:
 	 *
 	 * @param out the stream to write to
 	 * @param energy the interaction energy object used for computation
-	 * @param colOrder the order and list of columns to be printed
+	 * @param columns the order and list of columns to be printed
 	 * @param colSep the column separator to be used in CSV output
 	 * @param printHeader whether or not to print header information = col names
 	 * @param listSep if multiple entries have to be printed per column, this
@@ -167,7 +170,7 @@ public:
 	 */
 	OutputHandlerCsv( std::ostream & out
 						, const InteractionEnergy & energy
-						, const ColTypeList colOrder
+						, const ColTypeList columns
 						, const std::string& colSep = ";"
 						, const bool printHeader = false
 						, const std::string& listSep = ":"
@@ -237,7 +240,7 @@ protected:
 	const InteractionEnergy & energy;
 
 	//! the sequence of columns to be reported
-	const std::list< ColType > colOrder;
+	const std::list< ColType > columns;
 
 	//! the column separator to be used
 	std::string colSep;

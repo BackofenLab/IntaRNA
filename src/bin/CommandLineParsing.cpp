@@ -65,6 +65,8 @@ extern "C" {
 #include "IntaRNA/SeedHandlerMfe.h"
 #include "IntaRNA/SeedHandlerNoBulge.h"
 
+#include "IntaRNA/OutputStreamHandlerSortedCsv.h"
+
 #include "IntaRNA/OutputHandlerCsv.h"
 #include "IntaRNA/OutputHandlerIntaRNA1.h"
 #include "IntaRNA/OutputHandlerText.h"
@@ -76,6 +78,11 @@ using namespace IntaRNA;
 ////////////////////////////////////////////////////////////////////////////
 
 const std::string CommandLineParsing::outCsvCols_default = "id1,start1,end1,id2,start2,end2,subseqDP,hybridDP,E";
+
+////////////////////////////////////////////////////////////////////////////
+
+const std::string CommandLineParsing::outCsvColSep = ";";
+const std::string CommandLineParsing::outCsvLstSep = ",";
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -173,7 +180,6 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 
 	out(),
 	outPrefix2streamName(),
-	outStream(&(std::cout)),
 	outMode( "NDC1O", 'N' ),
 	outNumber( 0, 1000, 1),
 	outOverlap( "NTQB", 'Q' ),
@@ -189,7 +195,8 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	logFileName(""),
 	configFileName(""),
 
-	vrnaHandler()
+	vrnaHandler(),
+	outStreamHandler(NULL)
 
 {
 	// report the used personality
@@ -772,6 +779,10 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 					+ OutputHandlerCsv::list2string(OutputHandlerCsv::string2list(""),", ")+"."
 					+ "\nDefault = '"+outCsvCols+"'."
 					).c_str())
+		("outCsvSort"
+			, value<std::string>(&(outCsvSort))
+				->notifier(boost::bind(&CommandLineParsing::validate_outCsvSort,this,_1))
+			, std::string("output : column ID from [outCsvCols] to be used for CSV row sorting if outMode=CSV.").c_str())
 	    ("outPerRegion"
 	    		, value<bool>(&outPerRegion)
 						->default_value(outPerRegion)
@@ -817,11 +828,8 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 CommandLineParsing::~CommandLineParsing() {
 
 	INTARNA_CLEANUP(helixConstraint);
-	 INTARNA_CLEANUP(seedConstraint);
-
-	// reset output stream
-	deleteOutputStream( outStream );
-	outStream = & std::cout;
+	INTARNA_CLEANUP(seedConstraint);
+	INTARNA_CLEANUP(outStreamHandler);
 
 }
 
@@ -916,9 +924,9 @@ parse(int argc, char** argv)
 			if (personality != IntaRNA) {
 				std::cout
 					<<"\n############################################################################\n"
-					<<"\nNote, you are using the '"
+					<<"\nNote, you are using personality '"
 					<<getPersonalityName(personality)
-					<<"' personality, which alters some default values!\n"
+					<<"', which alters some default values!\n(see -v output)\n"
 					<<"\n############################################################################\n"
 					<< "\n";
 			}
@@ -962,11 +970,13 @@ parse(int argc, char** argv)
 			// open output stream
 			{
 				// open according stream
-				outStream = newOutputStream( outPrefix2streamName.at(OutPrefixCode::OP_EMPTY) );
+				std::ostream* outStream = newOutputStream( outPrefix2streamName.at(OutPrefixCode::OP_EMPTY) );
 				// check success
 				if (outStream == NULL) {
-					throw error("could not open output file --out='"+toString(outPrefix2streamName.at(OutPrefixCode::OP_EMPTY))+ "' for writing");
+					throw error("could not open output --out='"+toString(outPrefix2streamName.at(OutPrefixCode::OP_EMPTY))+ "' for writing");
 				}
+				// create final output handler
+				outStreamHandler = new OutputStreamHandler(outStream);
 			}
 
 			// parse the sequences
@@ -1188,6 +1198,26 @@ parse(int argc, char** argv)
 			if (outCsvCols != outCsvCols_default && outMode.val != 'C') {
 				throw error("outCsvCols set but outMode != C ("+toString(outMode.val)+")");
 			}
+			if (!outCsvSort.empty()) {
+				if (outMode.val != 'C') {
+					throw error("outCsvSort set but outMode != C ("+toString(outMode.val)+")");
+				}
+				// check if column to sort is within output list
+				std::string curCsvCols = (outCsvCols.empty() ? OutputHandlerCsv::list2string(OutputHandlerCsv::string2list(""),",") : outCsvCols);
+				if ( ("," + curCsvCols + ",").find(","+outCsvSort+",") == std::string::npos ) {
+					throw error("outCsvSort column ID '"+outCsvSort+"' is not within outCsvCols list");
+				}
+				// get index of column to sort
+				OutputHandlerCsv::ColTypeList csvCols = OutputHandlerCsv::string2list( curCsvCols );
+				OutputHandlerCsv::ColType outCsvColType = *(OutputHandlerCsv::string2list( outCsvSort ).begin());
+				auto it = std::find(csvCols.begin(), csvCols.end(), outCsvColType);
+				size_t outCsvSortIdx = std::distance(csvCols.begin(), it);
+				// check whether to do lex or numeric ordering
+				bool sortLexOrder = (std::find( OutputHandlerCsv::colTypeNumericSort.begin(), OutputHandlerCsv::colTypeNumericSort.end(), outCsvColType) == OutputHandlerCsv::colTypeNumericSort.end());
+				// setup sorted CSV output
+				OutputStreamHandler * tmpOSH = outStreamHandler;
+				outStreamHandler = new OutputStreamHandlerSortedCsv( tmpOSH, outCsvSortIdx, sortLexOrder, outCsvColSep, true, outCsvLstSep );
+			}
 
 			// check output sanity
 			{	// check for duplicates
@@ -1376,6 +1406,23 @@ void CommandLineParsing::validate_outCsvCols(const std::string & value) {
 		OutputHandlerCsv::string2list( value );
 	} catch (const std::runtime_error & e ) {
 		LOG(ERROR) <<"--outCsvCols : " <<e.what();
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void CommandLineParsing::validate_outCsvSort(const std::string & value) {
+	OutputHandlerCsv::ColTypeList lst;
+	try {
+		// try to parse
+		lst = OutputHandlerCsv::string2list( value );
+	} catch (const std::runtime_error & e ) {
+		LOG(ERROR) <<"--outCsvSort : " <<e.what();
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+	}
+	if (lst.size()>1) {
+		LOG(ERROR) <<"--outCsvSort : more than one column IDs given";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
 }
@@ -2124,14 +2171,6 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 	}
 }
 
-////////////////////////////////////////////////////////////////////////////
-
-std::ostream &
-CommandLineParsing::
-getOutputStream() const
-{
-	return *outStream;
-}
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -2142,7 +2181,7 @@ initOutputHandler()
 	// check if output mode == IntaRNA1-detailed
 	switch (outMode.val) {
 	case 'O' :
-		getOutputStream()
+		outStreamHandler->getOutStream()
 		<<"-------------------------" <<"\n"
 		<<"INPUT" <<"\n"
 		<<"-------------------------" <<"\n"
@@ -2166,7 +2205,7 @@ initOutputHandler()
 		<<"-------------------------" <<"\n"
 		; break;
 	case 'C' :
-		getOutputStream()
+		outStreamHandler->getOutStream()
 		<<OutputHandlerCsv::getHeader( OutputHandlerCsv::string2list( outCsvCols ) )
 		; break;
 	}
@@ -2181,15 +2220,15 @@ getOutputHandler( const InteractionEnergy & energy ) const
 {
 	switch (outMode.val) {
 	case 'N' :
-		return new OutputHandlerText( getOutputStream(), energy, 10, false );
+		return new OutputHandlerText( outStreamHandler->getOutStream(), energy, 10, false );
 	case 'D' :
-		return new OutputHandlerText( getOutputStream(), energy, 10, true );
+		return new OutputHandlerText( outStreamHandler->getOutStream(), energy, 10, true );
 	case 'C' :
-		return new OutputHandlerCsv( getOutputStream(), energy, OutputHandlerCsv::string2list( outCsvCols ) );
+		return new OutputHandlerCsv( outStreamHandler->getOutStream(), energy, OutputHandlerCsv::string2list( outCsvCols ), outCsvColSep, false, outCsvLstSep );
 	case '1' :
-		return new OutputHandlerIntaRNA1( getOutputStream(), energy, false );
+		return new OutputHandlerIntaRNA1( outStreamHandler->getOutStream(), energy, false );
 	case 'O' :
-		return new OutputHandlerIntaRNA1( getOutputStream(), energy, true );
+		return new OutputHandlerIntaRNA1( outStreamHandler->getOutStream(), energy, true );
 	default :
 		INTARNA_NOT_IMPLEMENTED("Output mode "+toString(outMode.val)+" not implemented yet");
 	}

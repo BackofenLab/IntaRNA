@@ -1367,6 +1367,19 @@ Pu1;Pu2;subseqDB;hybridDB
 0.00135534;0.00135534;1AAACACCCCCGGUG&4CACCCCCGGUGGUUU;1|||||||...||||&4||||...||||.|||
 ```
 
+
+You can produce a *sorted CSV output* using the argument `--outCsvSort=..`,
+which provides the colId from the CSV output to be used for sorting.
+Below, you find the `hybridDB`-sorted output from above. 
+```bash
+# call: IntaRNA --outCsvCols=Pu1,Pu2,subseqDB,hybridDB --outCsvSort=hybridDB -t AAACACCCCCGGUGGUUUGG -q AAACACCCCCGGUGGUUUGG --outMode=C --noSeed --outOverlap=B -n 3
+Pu1;Pu2;subseqDB;hybridDB
+0.00135534;0.00135534;1AAACACCCCCGGUG&4CACCCCCGGUGGUUU;1|||||||...||||&4||||...||||.|||
+0.00135534;0.00135534;4CACCCCCGGUG&4CACCCCCGGUG;4||||...||||&4||||...||||
+0.00135534;0.00135534;5ACCCCCGGUGGU&5ACCCCCGGUGGU;5|||||.||.|||&5|||||.||.|||
+```
+
+
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
 <a name="outModeV1" />

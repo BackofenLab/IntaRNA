@@ -15,21 +15,31 @@ std::map<OutputHandlerCsv::ColType,std::string> OutputHandlerCsv::colType2string
 
 ////////////////////////////////////////////////////////////////////////
 
-const std::string OutputHandlerCsv::notAvailable = "NA";
+const std::string OutputHandlerCsv::notAvailable = "NAN";
+
+////////////////////////////////////////////////////////////////////////
+
+const OutputHandlerCsv::ColTypeList OutputHandlerCsv::colTypeNumericSort(
+		OutputHandlerCsv::string2list(
+		"start1,end1,start2,end2"
+		",E,ED1,ED2,Pu1,Pu2,E_init,E_loops,E_dangleL,E_dangleR,E_endL,E_endR,E_hybrid,E_norm,E_hybridNorm,E_add"
+		",seedStart1,seedEnd1,seedStart2,seedEnd2,seedE,seedED1,seedED2,seedPu1,seedPu2"
+		",Eall,Zall,P_E"
+		));
 
 ////////////////////////////////////////////////////////////////////////
 
 OutputHandlerCsv::OutputHandlerCsv(
-		  std::ostream & out
+		  std::ostream & out_
 		, const InteractionEnergy & energy
-		, const ColTypeList colOrder
+		, const ColTypeList columns
 		, const std::string& colSep
 		, const bool printHeader
 		, const std::string& listSep
 		)
- :	out(out)
+ :	out(out_)
 	, energy(energy)
-	, colOrder(colOrder)
+	, columns(columns)
 	, colSep(colSep)
 	, listSep(listSep)
 {
@@ -43,7 +53,7 @@ OutputHandlerCsv::OutputHandlerCsv(
 		#pragma omp critical(intarna_omp_outputStreamUpdate)
 #endif
 		{
-			out <<getHeader(colOrder,colSep);
+			out <<getHeader(columns,colSep);
 		}
 	}
 }
@@ -92,9 +102,9 @@ add( const Interaction & i, const OutputConstraint & outConstraint )
 	{
 		std::stringstream outTmp;
 
-		for (auto col = colOrder.begin(); col != colOrder.end(); col++) {
+		for (auto col = columns.begin(); col != columns.end(); col++) {
 			// print separator if needed
-			if (col != colOrder.begin()) {
+			if (col != columns.begin()) {
 				outTmp <<colSep;
 			}
 			// print this column information

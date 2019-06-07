@@ -8,6 +8,32 @@
 
 development version
 
+190607 Martin Raden :
+ * IntaRNA/general :
+   * deleteOutputStream() :
+     - no warning if not a file stream (to support temporary stringstreams)
+ * IntaRNA/OutputHandlerCsv :
+   + colTypeNumericSort : list of types that need numerical sorting
+   * notAvailable : now "NAN" (was "NA")
+   - colOrder : renamed to columns
+   + columns (former colOrder)
+ + IntaRNA/OutputStreamHandler : generic handler to wrap the output stream
+ + IntaRNA/OutputStreamHandlerSortedCsv : OSH that stores output in temporary
+   stringstream to be finally sorted by the values of a given column
+ * bin/CommandLineParsing :
+   - outStream : replaced by outStreamHandler
+   + outStreamHandler : central OutputStreamHandler object
+   + outCsvColSep : CSV column separator
+   + outCsvLstSep : CSV value-list separator 
+   + outCsvSort : optional parameter to define the CSV column for sorting
+   * destructor() :
+     * outStream deletion
+   * parse() :
+     + parsing and setup CSV sorting
+   - getOutputStream() : replaced by outStreamHandler->getOutStream()
+ * README.md :
+   + outCsvSort documentation   
+
 190606 Martin Raden :
  * IntaRNA/OutputHandlerText :
  * IntaRNA/OutputHandlerCsv :
@@ -18,6 +44,9 @@ development version
      * bugfix: leadingE computation was shifted by one index to the right
  * bin/CommandLineParsing :
    + output alias information [seq1|seq2] added to target|query parameter info
+   + outCsvSort parameter to trigger sorted CSV output
+   * getOutputHandler() :
+     + returns OutputHandlerCsvSorted if outCsvSort non-empty
  * README.md 
    * example output updated
    + output alias information [seq1|seq2] added to detailed mode output

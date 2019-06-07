@@ -56,13 +56,6 @@ deleteOutputStream( std::ostream * outStream )
 		// close and delete file handle
 		outFile->close();
 		 INTARNA_CLEANUP(outFile);
-#if INTARNA_IN_DEBUG_MODE
-	} else {
-		// sanity check
-		if (outStream != &std::cout && outStream != &std::cerr) {
-			throw std::runtime_error("deleteOutputStream() : no file, nor STDOUT/STDERR");
-		}
-#endif
 	}
 }
 
