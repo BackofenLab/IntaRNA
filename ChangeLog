@@ -8,6 +8,36 @@
 
 development version
 
+#######  new features #######
+
++ outNoLP
++ outCsvSort
++ output of all putative seeds (unless outMode=N or outBestSeedOnly)
++ personality
++ model=P
++ support for multi-precision Z (via GNU quadmath library) : configure
++ mode=S
++ energyNoDangles
++ parameterFile
++ seed-extension-based prediction
++ seedNoGU
++ seedMaxEhybrid
++ helixMinPu (replaces helixMaxED)
++ helixFullE : replaces helixNoED
++ model=B (replaces L)
+* reporting best (mfe) seed per interaction
+* outMode=C
+  + sorting
+  + columns Eall, Zall, P_E
+  * marker "NAN" for not available values
+* outMode=D
+  * index ranges without whitespaces, i.e. "1--5" instead of "1 -- 5"
+  + highlighting of all bps part of putative seeds
+* E_type now int (was float)
+- IntaRNA v1 output support not continued
+
+###############################
+
 190607 Martin Raden :
  * IntaRNA/general :
    * deleteOutputStream() :
