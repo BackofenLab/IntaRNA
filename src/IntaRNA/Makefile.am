@@ -48,7 +48,6 @@ libIntaRNA_a_HEADERS =    \
 					OutputHandler.h \
 					OutputHandlerCsv.h \
 					OutputHandlerHub.h \
-					OutputHandlerIntaRNA1.h \
 					OutputHandlerInteractionList.h \
 					OutputHandlerText.h \
 					PredictionTracker.h \
@@ -112,7 +111,6 @@ libIntaRNA_a_SOURCES =    \
 					OutputStreamHandlerSortedCsv.cpp \
 					OutputHandler.cpp \
 					OutputHandlerCsv.cpp \
-					OutputHandlerIntaRNA1.cpp \
 					OutputHandlerInteractionList.cpp \
 					OutputHandlerText.cpp \
 					PredictionTrackerPairMinE.cpp \

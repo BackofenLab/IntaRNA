@@ -1193,7 +1193,7 @@ given on standard output streams.
 
 ### Standard RNA-RNA interaction output with ASCII chart
 
-The standard output mode `--outMode=D` provides a detailed ASCII chart of the
+The standard output mode `--outMode=N` provides a detailed ASCII chart of the
 interaction together with its overall interaction energy.
 For an example see the [Just run ...](#defaultRun) section.
 
@@ -1382,19 +1382,6 @@ Pu1;Pu2;subseqDB;hybridDB
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
-<a name="outModeV1" />
-
-### Backward compatible IntaRNA v1.* output
-
-If your scripts/whatever is tuned to the old IntaRNA v1.* output, you can use
-
-- `--outMode=1` : IntaRNA v1.* normal output
-- `--outMode=O` : IntaRNA v1.* detailed output (former `-o` option)
-
-Note, for for IntaRNA v1.* output, currently *no multi-threading computation* is available!
-
-[![up](doc/figures/icon-up.28.png) back to overview](#overview)
-
 <br /><br />
 <a name="subopts" />
 
@@ -1418,7 +1405,7 @@ Furthermore, it is possible to *restrict (sub)optimal enumeration* using
 - `--outDeltaE` : maximal energy difference of suboptimal interactions' energy
   to the minimum free energy interaction
 - `--outOverlap` : defines if an where overlapping of reported interaction sites
-  is allowed (Note, IntaRNA v1.* used implicitly the 'T' mode):
+  is allowed:
   - 'N' : no overlap neither in target nor query allowed for reported interactions
   - 'B' : overlap allowed for interacting subsequences for both target and query
   - 'T' : overlap allowed for interacting subsequences in target only
@@ -1472,7 +1459,7 @@ IntaRNA --energyVRNA=/usr/local/share/Vienna/rna_turner1999.par --seedMaxE=999
 
 To increase prediction quality and to reduce the computational complexity, the
 number of unpaired bases between intermolecular base pairs is restricted
-(similar to internal loop length restrictions in the Zuker algorithm). The
+(similar to internal loop length restrictions in single RNA folding algorithm). The
 upper bound can be set independently for the query and target sequence via
 `--qIntLoopMax` and `--tIntLoopMax`, respectively, and defaults to 16.
 

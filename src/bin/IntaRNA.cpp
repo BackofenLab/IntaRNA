@@ -20,7 +20,6 @@ INITIALIZE_EASYLOGGINGPP
 #include "IntaRNA/InteractionEnergy.h"
 #include "IntaRNA/Predictor.h"
 #include "IntaRNA/OutputHandler.h"
-#include "IntaRNA/OutputHandlerIntaRNA1.h"
 #include "IntaRNA/OutputHandlerInteractionList.h"
 
 using namespace IntaRNA;
@@ -210,11 +209,6 @@ int main(int argc, char **argv){
 								// get output/storage handler
 								OutputHandler * output = parameters.getOutputHandler( *energy );
 								INTARNA_CHECK_NOT_NULL(output,"output handler initialization failed");
-
-								// check if we have to add separator for IntaRNA v1 output
-								if (reportedInteractions > 0 && dynamic_cast<OutputHandlerIntaRNA1*>(output) != NULL) {
-									dynamic_cast<OutputHandlerIntaRNA1*>(output)->addSeparator( true );
-								}
 
 								// setup collecting output handler to ensure
 								// k-best output per query-target combination

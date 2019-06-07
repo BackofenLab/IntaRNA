@@ -32,7 +32,9 @@ development version
      + parsing and setup CSV sorting
    - getOutputStream() : replaced by outStreamHandler->getOutStream()
  * README.md :
-   + outCsvSort documentation   
+   + outCsvSort documentation
+ - perl/IntaRNA_1ui.pl : v1 support ends   
+ - perl/IntaRNA_up_1ui.pl : v1 support ends   
 
 190606 Martin Raden :
  * IntaRNA/OutputHandlerText :

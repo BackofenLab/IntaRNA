@@ -68,7 +68,6 @@ extern "C" {
 #include "IntaRNA/OutputStreamHandlerSortedCsv.h"
 
 #include "IntaRNA/OutputHandlerCsv.h"
-#include "IntaRNA/OutputHandlerIntaRNA1.h"
 #include "IntaRNA/OutputHandlerText.h"
 
 
@@ -180,7 +179,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 
 	out(),
 	outPrefix2streamName(),
-	outMode( "NDC1O", 'N' ),
+	outMode( "NDC", 'N' ),
 	outNumber( 0, 1000, 1),
 	outOverlap( "NTQB", 'Q' ),
 	outDeltaE( 0.0, 100.0, 100.0),
@@ -721,8 +720,6 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 					"\n 'N' normal output (ASCII char + energy),"
 					"\n 'D' detailed output (ASCII char + energy/position details),"
 					"\n 'C' CSV output (see --outCsvCols),"
-					"\n '1' backward compatible IntaRNA v1.* normal output,"
-					"\n 'O' backward compatible IntaRNA v1.* detailed output (former -o)"
 					).c_str())
 	    ("outNumber,n"
 			, value<int>(&(outNumber.val))
@@ -774,7 +771,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 			, value<std::string>(&(outCsvCols))
 				->default_value(outCsvCols,"see text")
 				->notifier(boost::bind(&CommandLineParsing::validate_outCsvCols,this,_1))
-			, std::string("output : comma separated list of CSV column IDs to print if outMode=CSV."
+			, std::string("output : comma separated list of CSV column IDs to print if outMode=C."
 					" An empty argument (using '') prints all possible columns from the following available ID list: "
 					+ OutputHandlerCsv::list2string(OutputHandlerCsv::string2list(""),", ")+"."
 					+ "\nDefault = '"+outCsvCols+"'."
@@ -782,7 +779,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		("outCsvSort"
 			, value<std::string>(&(outCsvSort))
 				->notifier(boost::bind(&CommandLineParsing::validate_outCsvSort,this,_1))
-			, std::string("output : column ID from [outCsvCols] to be used for CSV row sorting if outMode=CSV.").c_str())
+			, std::string("output : column ID from [outCsvCols] to be used for CSV row sorting if outMode=C.").c_str())
 	    ("outPerRegion"
 	    		, value<bool>(&outPerRegion)
 						->default_value(outPerRegion)
@@ -1278,9 +1275,6 @@ parse(int argc, char** argv)
 				// warn if >= 4D space prediction enabled
 				if (model.val != 'S' || mode.val == 'E') {
 					LOG(WARNING) <<"Multi-threading enabled in high-mem-prediction mode : ensure you have enough memory available!";
-				}
-				if (outMode.val == '1' || outMode.val == 'O') {
-					throw error("Multi-threading not supported for IntaRNA v1 output");
 				}
 			}
 #endif
@@ -2178,32 +2172,8 @@ void
 CommandLineParsing::
 initOutputHandler()
 {
-	// check if output mode == IntaRNA1-detailed
+	// check if initial output needed
 	switch (outMode.val) {
-	case 'O' :
-		outStreamHandler->getOutStream()
-		<<"-------------------------" <<"\n"
-		<<"INPUT" <<"\n"
-		<<"-------------------------" <<"\n"
-		<<"number of base pairs in seed                                  : "<<seedBP.val <<"\n"
-		<<"max. number of unpaired bases in the seed region of seq. 1    : "<<(seedTMaxUP.val<0 ? seedMaxUP.val : seedTMaxUP.val) <<"\n"
-		<<"max. number of unpaired bases in the seed region of seq. 2    : "<<(seedQMaxUP.val<0 ? seedMaxUP.val : seedQMaxUP.val) <<"\n"
-		<<"max. number of unpaired bases in the seed region of both seq's: "<<seedMaxUP.val <<"\n"
-		<<"RNAup used                                                    : "<<((qAccConstr.empty() && (qAccW.val ==0))?"true":"false") <<"\n"
-		<<"RNAplfold used                                                : "<<(((! tAccConstr.empty()) || (tAccW.val !=0))?"true":"false") <<"\n"
-		<<"sliding window size                                           : "<<tAccW.val<<"\n" //(tAccW.val!=0?tAccW.val:energy.size1()) <<"\n"
-		<<"max. length of unpaired region                                : "<<tAccW.val<<"\n" //(tAccW.val!=0?tAccW.val:energy.size1()) <<"\n"
-		<<"max. distance of two paired bases                             : "<<tAccL.val<<"\n" //(tAccL.val!=0?tAccL.val:energy.size1()) <<"\n"
-		<<"weight for ED values of target RNA in energy                  : 1" <<"\n"
-		<<"weight for ED values of binding RNA in energy                 : 1" <<"\n"
-		<<"temperature                                                   : "<<temperature.val <<" Celsius" <<"\n"
-		<<"max. number of subopt. results                                : "<<(getOutputConstraint().reportMax-1) <<"\n"
-		<<"Heuristic for hybridization end used                          : "<<(mode.val=='H'?"true":"false") <<"\n"
-		<<"\n"
-		<<"-------------------------" <<"\n"
-		<<"OUTPUT" <<"\n"
-		<<"-------------------------" <<"\n"
-		; break;
 	case 'C' :
 		outStreamHandler->getOutStream()
 		<<OutputHandlerCsv::getHeader( OutputHandlerCsv::string2list( outCsvCols ) )
@@ -2225,10 +2195,6 @@ getOutputHandler( const InteractionEnergy & energy ) const
 		return new OutputHandlerText( outStreamHandler->getOutStream(), energy, 10, true );
 	case 'C' :
 		return new OutputHandlerCsv( outStreamHandler->getOutStream(), energy, OutputHandlerCsv::string2list( outCsvCols ), outCsvColSep, false, outCsvLstSep );
-	case '1' :
-		return new OutputHandlerIntaRNA1( outStreamHandler->getOutStream(), energy, false );
-	case 'O' :
-		return new OutputHandlerIntaRNA1( outStreamHandler->getOutStream(), energy, true );
 	default :
 		INTARNA_NOT_IMPLEMENTED("Output mode "+toString(outMode.val)+" not implemented yet");
 	}
