@@ -101,6 +101,8 @@ predict( const IndexRange & r1
 
 	// report mfe interaction
 	reportOptima( outConstraint );
+
+	reportZ();
 }
 
 ////////////////////////////////////////////////////////////////////////////

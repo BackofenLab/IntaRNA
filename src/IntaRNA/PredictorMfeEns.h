@@ -47,6 +47,12 @@ public:
 	Z_type
 	getOverallZ() const;
 
+	/**
+	 * Report Z information to the prediction trackers
+	 */
+	void
+	reportZ() const;
+
 protected:
 
 // TODO move to subclass ?!

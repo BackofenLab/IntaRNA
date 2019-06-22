@@ -302,6 +302,7 @@ protected:
 		OP_tPu,
 		OP_spotProb,
 		OP_spotProbAll,
+		OP_basePairProb,
 		OP_UNKNOWN
 	};
 
@@ -329,6 +330,7 @@ protected:
 		if (prefLC == "qpu")	{ return OutPrefixCode::OP_qPu; } else
 		if (prefLC == "tpu")	{ return OutPrefixCode::OP_tPu; } else
 		if (prefLC == "spotprob")	{ return OutPrefixCode::OP_spotProb; } else
+		if (prefLC == "basepairprob")	{ return OutPrefixCode::OP_basePairProb; } else
 		// not known
 		return OutPrefixCode::OP_UNKNOWN;
 	}

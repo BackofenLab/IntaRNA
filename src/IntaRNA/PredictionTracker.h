@@ -11,6 +11,7 @@ namespace IntaRNA {
  * Generic interface to track prediction progress of Predictor instances.
  *
  */
+class PredictorMfeEns;
 class PredictionTracker
 {
 
@@ -43,9 +44,16 @@ public:
 						, const E_type energy
 						) = 0;
 
+	/**
+	 * Updates the probability information.
+	 *
+	 * @param predictor the predictor providing the probability information
+	 */
+	virtual
+	void
+	updateZ( const PredictorMfeEns *predictor );
+
 };
-
-
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -59,6 +67,15 @@ PredictionTracker::PredictionTracker()
 inline
 PredictionTracker::~PredictionTracker()
 {
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+inline
+void
+PredictionTracker::updateZ( const PredictorMfeEns *predictor )
+{
+	// override in PredictionTrackers
 }
 
 ///////////////////////////////////////////////////////////////////////////

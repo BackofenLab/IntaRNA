@@ -64,6 +64,15 @@ public:
 						);
 
 	/**
+	 * Updates the probability information.
+	 *
+	 * @param predictor the predictor providing the probability information
+	 */
+	virtual
+	void
+	updateZ( const PredictorMfeEns *predictor ) override;
+
+	/**
 	 * Adds a new PredictionTracker to the forwarding list.
 	 * @param tracker pointer to the tracker to forward to
 	 */
@@ -189,6 +198,19 @@ updateOptimumCalled( const size_t i1, const size_t j1
 	// forward to all in list
 	for (auto trackIt=trackList.begin(); trackIt!=trackList.end(); trackIt++) {
 		(*trackIt)->updateOptimumCalled(i1,j1,i2,j2,energy);
+	}
+}
+
+/////////////////////////////////////////////////////////////////////////
+
+inline
+void
+PredictionTrackerHub::
+updateZ( const PredictorMfeEns *predictor	)
+{
+	// forward to all in list
+	for (auto trackIt=trackList.begin(); trackIt!=trackList.end(); trackIt++) {
+		(*trackIt)->updateZ(predictor);
 	}
 }
 

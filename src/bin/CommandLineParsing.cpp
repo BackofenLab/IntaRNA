@@ -61,6 +61,7 @@ extern "C" {
 #include "IntaRNA/PredictionTrackerSpotProb.h"
 #include "IntaRNA/PredictionTrackerSpotProbAll.h"
 #include "IntaRNA/PredictionTrackerProfileSpotProb.h"
+#include "IntaRNA/PredictionTrackerBasePairProb.h"
 
 #include "IntaRNA/SeedHandlerMfe.h"
 #include "IntaRNA/SeedHandlerNoBulge.h"
@@ -710,6 +711,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 					"\n 'tPu:' (target) unpaired probabilities values (RNAplfold format)."
 					"\n 'pMinE:' (target+query) for each index pair the minimal energy of any interaction covering the pair (CSV format)"
 					"\n 'spotProb:' (target+query) tracks for a given set of interaction spots their probability to be covered by an interaction. If no spots are provided, probabilities for all index combinations are computed. Spots are encoded by comma-separated 'idxT&idxQ' pairs (target-query). For each spot a probability is provided in concert with the probability that none of the spots (encoded by '0&0') is covered (CSV format). The spot encoding is followed colon-separated by the output stream/file name, eg. '--out=\"spotProb:3&76,59&2:STDERR\"'. NOTE: value has to be quoted due to '&' symbol!"
+					"\n 'basePairProb:' (target+query) tracks intermolecular basepair probabilities."
 					"\nFor each, provide a file name or STDOUT/STDERR to write to the respective output stream."
 					).c_str())
 		("outMode"
@@ -1248,7 +1250,7 @@ parse(int argc, char** argv)
 								+") exceeds the maximally allowed number of helix base pairs ("+toString(helixMaxBP.val)+")");
 					}
 				}
-				
+
 				// check for minimal sequence length
 				for(size_t i=0; i<query.size(); i++) {
 					if (query.at(i).size() < helixMinBP.val) {
@@ -2077,6 +2079,15 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 						, "0") );
 	}
 
+	// check if specific basepairProbs are to be tracked
+	if (!outPrefix2streamName.at(OutPrefixCode::OP_basePairProb).empty()) {
+		// track only specific spots
+		predTracker->addPredictionTracker(
+				new PredictionTrackerBasePairProb( energy
+								, outPrefix2streamName.at(OutPrefixCode::OP_basePairProb) )
+							);
+	}
+
 	// check if any tracker registered
 	if (predTracker->empty()) {
 		// cleanup to avoid overhead
@@ -2443,6 +2454,3 @@ getPersonality( int argc, char ** argv )
 
 
 ////////////////////////////////////////////////////////////////////////////
-
-
-

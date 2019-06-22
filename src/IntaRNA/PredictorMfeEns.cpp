@@ -49,6 +49,17 @@ getOverallZ() const
 
 void
 PredictorMfeEns::
+reportZ() const
+{
+	if (predTracker != NULL) {
+		predTracker->updateZ(this);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void
+PredictorMfeEns::
 checkKeyBoundaries( const size_t maxLength )
 {
 	// check if getMaxLength > sqrt3(size_t) -> error
