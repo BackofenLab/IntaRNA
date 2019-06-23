@@ -1,6 +1,5 @@
 
 #include "IntaRNA/PredictionTrackerBasePairProb.h"
-#include "IntaRNA/PredictorMfeEns.h"
 
 #include <boost/foreach.hpp>
 #include <boost/regex.hpp>
@@ -19,6 +18,7 @@ PredictionTrackerBasePairProb(
 	, outStream(NULL)
 	, deleteOutStream(true)
 	, overallZ(0.0)
+	, mfeEnsPredictor(NULL)
 {
 	// open stream
 	if (!outStreamName.empty()) {
@@ -28,7 +28,6 @@ PredictionTrackerBasePairProb(
 		}
 	}
 
-	LOG(DEBUG) << "Hello Tracker";
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -43,6 +42,7 @@ PredictionTrackerBasePairProb(
 	, outStream(&outStream)
 	, deleteOutStream(false)
 	, overallZ(0.0)
+	, mfeEnsPredictor(NULL)
 {
 }
 
@@ -51,63 +51,6 @@ PredictionTrackerBasePairProb(
 PredictionTrackerBasePairProb::
 ~PredictionTrackerBasePairProb()
 {
-	// write probabilities to streams
-
-  /*
-
-	// overall structure probability
-	size_t key = generateMapKey(i1, j1, i2, j2);
-	StructureProb sProb;
-	sProb.i1 = i1;
-	sProb.j1 = j1;
-	sProb.i2 = i2;
-	sProb.j2 = j2;
-	sProb.prob = (Z_partitions[key].partZ * energy.getBoltzmannWeight( energy.getE(i1,j1,i2,j2,E_type(0)) )) / overallZ;
-	structureProbs[key] = sProb;
-
-	// last seen partition
-	size_t i1last = i1;
-	size_t j1last = j1;
-	size_t i2last = i2;
-	size_t j2last = j2;
-	size_t lastKey = key;
-
-	// compute structure probabilities
-	for (size_t l1 = j1+1; l1 --> i1;) {
-		for (size_t l2 = j2+1; l2 --> i2;) {
-			for (size_t k1 = i1; k1 <= l1; k1++) {
-				for (size_t k2 = i2; k2 <= l2; k2++) {
-					// check if hybrid partition available
-					key = generateMapKey(k1, l1, k2, l2);
-
-					// compute probability and update last seen
-					computeStructureProb(k1, l1, k2, l2, i1last, j1last, i2last, j2last, key, lastKey);
-					i1last = k1;
-					j1last = l1;
-					i2last = k2;
-					j2last = l2;
-					lastKey = key;
-				}
-			}
-		}
-	}
-
-	for (std::unordered_map<size_t, StructureProb >::const_iterator it = structureProbs.begin(); it != structureProbs.end(); ++it)
-	{
-		if (it->second.i1 == it->second.j1 && it->second.i2 == it->second.j2) {
-			LOG(DEBUG) << it->second.i1 << ":" << it->second.j1 << ":" << it->second.i2 << ":" << it->second.j2 << " = " << it->second.prob;
-		}
-	}
-	*/
-
-	(*outStream) << "stuff" << "\n";
-
-	outStream->flush();
-
-	if (deleteOutStream) {
-		// clean up if file pointers were created in constructor
-		deleteOutputStream( outStream );
-	}
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -125,30 +68,34 @@ updateOptimumCalled( const size_t i1, const size_t j1
 
 void
 PredictionTrackerBasePairProb::
-updateZ( const PredictorMfeEns * predictor )
+updateZ( PredictorMfeEns *predictor )
 {
-	LOG(DEBUG) << predictor->getOverallZ();
-	/*
-	// update overallZ
-	overallZ += partZ * energy.getBoltzmannWeight( energy.getE(i1,j1,i2,j2,E_type(0)) );
+	mfeEnsPredictor = predictor;
 
-	// store partial hybridZ
-	size_t key = generateMapKey(i1, j1, i2, j2);
-	if ( Z_partitions.find(key) == Z_partitions.end() ) {
-		// create new entry
-		ZPartition zPartition;
-		zPartition.i1 = i1;
-		zPartition.j1 = j1;
-		zPartition.i2 = i2;
-		zPartition.j2 = j2;
-		zPartition.partZ = partZ;
-		Z_partitions[key] = zPartition;
-	} else {
-		// update entry
-		ZPartition & zPartition = Z_partitions[key];
-		zPartition.partZ += partZ;
+	// write probabilities to streams
+	size_t n1 = energy.getAccessibility1().getMaxLength();
+	size_t n2 = energy.getAccessibility2().getMaxLength();
+
+	// recursively compute structure probabilities
+	float initProb = (mfeEnsPredictor->getZ(0, n1-1, 0, n2-1) * energy.getBoltzmannWeight( energy.getE(0,n1-1,0,n2-1,E_type(0)) )) / mfeEnsPredictor->getOverallZ();
+	float prob = computeStructureProbRecursive(0, n1-1, 0, n2-1, initProb);
+
+	// print base-pair probabilities
+	for (std::unordered_map<size_t, StructureProb >::const_iterator it = structureProbs.begin(); it != structureProbs.end(); ++it)
+	{
+		if (it->second.i1 == it->second.j1 && it->second.i2 == it->second.j2) {
+			LOG(DEBUG) << it->second.i1 << ":" << it->second.j1 << ":" << it->second.i2 << ":" << it->second.j2 << " = " << it->second.prob;
+		}
 	}
-	*/
+
+	(*outStream) << "stuff" << "\n";
+
+	outStream->flush();
+
+	if (deleteOutStream) {
+		// clean up if file pointers were created in constructor
+		deleteOutputStream( outStream );
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -156,7 +103,7 @@ updateZ( const PredictorMfeEns * predictor )
 size_t
 PredictionTrackerBasePairProb::
 generateMapKey( const size_t i1, const size_t j1
-					, const size_t i2, const size_t j2 )
+					, const size_t i2, const size_t j2 ) const
 {
 	size_t maxLength = std::max(energy.getAccessibility1().getMaxLength(), energy.getAccessibility2().getMaxLength());
 	size_t key = 0;
@@ -169,38 +116,95 @@ generateMapKey( const size_t i1, const size_t j1
 
 ////////////////////////////////////////////////////////////////////////////
 
-void
+float
 PredictionTrackerBasePairProb::
-computeStructureProb( const size_t i1, const size_t j1
-					, const size_t i2, const size_t j2
-					, const size_t i1last, const size_t j1last
-					, const size_t i2last, const size_t j2last, const size_t key, const size_t lastKey )
+computeStructureProbRecursive( const size_t k1, const size_t l1
+					, const size_t k2, const size_t l2, const float structProb )
 {
-	Z_type partZ = 0;
-	Z_type partZprime = 0;
-	if ( Z_partitions.find(key) != Z_partitions.end() ) {
-		partZ = Z_partitions[key].partZ;
+	size_t n1 = energy.getAccessibility1().getMaxLength();
+	size_t n2 = energy.getAccessibility2().getMaxLength();
+	size_t w1 = l1 - k1;
+	size_t w2 = l2 - k2;
+
+	if (w1 == 0 || w2 == 0) {
+		// store base-pair prob
+		size_t key = generateMapKey(k1, l1, k2, l2);
+		float prob = computeSubStructureProb(k1, l1, k2, l2, k1, l1, k2, l2, structProb);
+		if ( structureProbs.find(key) == structureProbs.end() ) {
+			// create new entry
+			StructureProb sProb;
+			sProb.i1 = k1;
+			sProb.j1 = l1;
+			sProb.i2 = k2;
+			sProb.j2 = l2;
+			sProb.prob = prob;
+			structureProbs[key] = sProb;
+		} else {
+			// update entry
+			StructureProb & sProb = structureProbs[key];
+			sProb.prob += prob;
+		}
+	} else {
+		// calculate sub probs
+		float prob = 0.0;
+
+		for (size_t i1 = 0; i1 <= n1-w1; i1++) {
+			for (size_t i2 = 0; i2 <= n2-w2; i2++) {
+				size_t j1 = i1 + w1 - 1;
+				size_t j2 = i2 + w2 - 1;
+
+				float subProb = computeSubStructureProb(i1, j1, i2, j2, k1, l1, k2, l2, structProb);
+				prob += subProb;
+
+				computeStructureProbRecursive(i1, j1, i2, j2, subProb);
+			}
+		}
 	}
-	if ( Z_partitions.find(lastKey) != Z_partitions.end() ) {
-		partZprime = Z_partitions[lastKey].partZ;
+
+
+
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+float
+PredictionTrackerBasePairProb::
+computeSubStructureProb( const size_t i1, const size_t j1
+					, const size_t i2, const size_t j2
+					, const size_t k1, const size_t l1
+					, const size_t k2, const size_t l2, const float structProb )
+{
+	float prob = 0;
+	Z_type partZ = mfeEnsPredictor->getZ(i1, j1, i2, j2);
+	Z_type partZprime = mfeEnsPredictor->getZ(k1, l1, k2, l2);
+
+	// case 1 (i=k, j=l)
+	if (i1 == k1 && i2 == k2 && j1 == l1 && j2 == l2) {
+		prob = (partZ * energy.getBoltzmannWeight( energy.getE(i1,j1,i2,j2,E_type(0)) )) / mfeEnsPredictor->getOverallZ();
 	}
 
-	float ps = (partZ * energy.getBoltzmannWeight( energy.getE(i1,j1,i2,j2,E_type(0)) )) / overallZ;
-
-	float psPrime = (partZprime * energy.getBoltzmannWeight( energy.getE(i1last,j1last,i2last,j2last,E_type(0)) )) / overallZ;
-
-	float b = 0;
-	if (!Z_equal(partZprime, 0)) {
-		b = (psPrime * partZ * energy.getBoltzmannWeight(energy.getE_interLeft(i1last,j1last,i1,j1)) * energy.getBoltzmannWeight(energy.getE_interLeft(i2,j2,i2last,j2last))) / partZprime;
+	// case 2 (i>k, j=l)
+	if ((i1 > k1 || i2 > k2) && j1 == l1 && j2 == l2) {
+		if (!Z_equal(partZprime, 0)) {
+			prob = (structProb * partZ * energy.getBoltzmannWeight(energy.getE_interLeft(k1,i1,k2,i2))) / partZprime;
+		}
 	}
 
-	StructureProb sProb;
-	sProb.i1 = i1;
-	sProb.j1 = j1;
-	sProb.i2 = i2;
-	sProb.j2 = j2;
-	sProb.prob = ps + b;
-	structureProbs[key] = sProb;
+	// case 3 (i=k, j<l)
+	if (i1 == k1 && i2 == k2 && (j1 < l1 || j2 < l2)) {
+		if (!Z_equal(partZprime, 0)) {
+			prob = (structProb * partZ * energy.getBoltzmannWeight(energy.getE_interLeft(j1,l1,j2,l2))) / partZprime;
+		}
+	}
+
+	// case 4 (i<k, j<l)
+	if ((i1 < k1 || i2 < k2) && (j1 < l1 || j2 < l2)) {
+		if (!Z_equal(partZprime, 0)) {
+			prob = (structProb * partZ * energy.getBoltzmannWeight(energy.getE_interLeft(k1,i1,k2,i2)) * energy.getBoltzmannWeight(energy.getE_interLeft(j1,l1,j2,l2))) / partZprime;
+		}
+	}
+
+	return prob;
 }
 
 ////////////////////////////////////////////////////////////////////////////

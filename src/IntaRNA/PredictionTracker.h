@@ -51,7 +51,7 @@ public:
 	 */
 	virtual
 	void
-	updateZ( const PredictorMfeEns *predictor );
+	updateZ( PredictorMfeEns *predictor );
 
 };
 
@@ -73,7 +73,7 @@ PredictionTracker::~PredictionTracker()
 
 inline
 void
-PredictionTracker::updateZ( const PredictorMfeEns *predictor )
+PredictionTracker::updateZ( PredictorMfeEns *predictor )
 {
 	// override in PredictionTrackers
 }

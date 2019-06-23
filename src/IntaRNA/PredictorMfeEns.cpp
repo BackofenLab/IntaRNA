@@ -47,9 +47,24 @@ getOverallZ() const
 
 ////////////////////////////////////////////////////////////////////////////
 
+Z_type
+PredictorMfeEns::
+getZ( const size_t i1, const size_t j1
+	 , const size_t i2, const size_t j2)
+{
+	size_t key = generateMapKey(i1, j1, i2, j2);
+	if ( Z_partitions.find(key) == Z_partitions.end() ) {
+		return Z_type(0);
+	} else {
+		return Z_partitions[key].partZ;
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
 void
 PredictorMfeEns::
-reportZ() const
+reportZ()
 {
 	if (predTracker != NULL) {
 		predTracker->updateZ(this);
@@ -101,12 +116,7 @@ updateZ( const size_t i1, const size_t j1
 
 // TODO : was soll das hier?
 	// store partial Z
-	size_t maxLength = std::max(energy.getAccessibility1().getMaxLength(), energy.getAccessibility2().getMaxLength());
-	size_t key = 0;
-	key += i1;
-	key += j1 * pow(maxLength, 1);
-	key += i2 * pow(maxLength, 2);
-	key += j2 * pow(maxLength, 3);
+	size_t key = generateMapKey(i1, j1, i2, j2);
 	if ( Z_partitions.find(key) == Z_partitions.end() ) {
 		// create new entry
 		ZPartition zPartition;
@@ -133,6 +143,22 @@ reportOptima( const OutputConstraint & outConstraint )
 	output.incrementZ( getOverallZ() );
 	// report optima
 	PredictorMfe::reportOptima( outConstraint );
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+size_t
+PredictorMfeEns::
+generateMapKey( const size_t i1, const size_t j1
+					, const size_t i2, const size_t j2 ) const
+{
+	size_t maxLength = std::max(energy.getAccessibility1().getMaxLength(), energy.getAccessibility2().getMaxLength());
+	size_t key = 0;
+	key += i1;
+	key += j1 * pow(maxLength, 1);
+	key += i2 * pow(maxLength, 2);
+	key += j2 * pow(maxLength, 3);
+	return key;
 }
 
 ////////////////////////////////////////////////////////////////////////////

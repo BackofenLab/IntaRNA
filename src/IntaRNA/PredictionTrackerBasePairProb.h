@@ -5,6 +5,7 @@
 #include "IntaRNA/PredictionTracker.h"
 #include "IntaRNA/InteractionEnergy.h"
 #include "IntaRNA/Interaction.h"
+#include "IntaRNA/PredictorMfeEns.h"
 
 #include <iostream>
 
@@ -84,37 +85,9 @@ public:
 	 */
 	virtual
 	void
-	updateZ( const PredictorMfeEns *predictor ) override;
-
-private:
-
-	/**
-	 * Generates key for storing values in map
-	 */
-	virtual
-	size_t
-	generateMapKey( const size_t i1, const size_t j1
-						, const size_t i2, const size_t j2 );
-
-	/**
-	 * Recursively computes structure probabilities
-	 */
-	virtual
-	void
-	computeStructureProb( const size_t i1, const size_t j1
-						, const size_t i2, const size_t j2
-						, const size_t i1last, const size_t j1last
-						, const size_t i2last, const size_t j2last, const size_t key, const size_t lastKey );
+	updateZ( PredictorMfeEns *predictor ) override;
 
 protected:
-
-	struct ZPartition {
-		size_t i1;
-		size_t j1;
-		size_t i2;
-		size_t j2;
-		Z_type partZ;
-	};
 
 	struct StructureProb {
 		size_t i1;
@@ -136,11 +109,39 @@ protected:
 	//! overall partition function of all reported interactions
 	Z_type overallZ;
 
-	//! map storing hybridZ partitions for a given interaction
-	std::unordered_map<size_t, ZPartition> Z_partitions;
-
 	//! map storing structure probabilities
 	std::unordered_map<size_t, StructureProb> structureProbs;
+
+	//! pointer to mfeEnsPredictor
+	PredictorMfeEns* mfeEnsPredictor;
+
+	/**
+	 * Generates key for storing values in map
+	 */
+	virtual
+	size_t
+	generateMapKey( const size_t i1, const size_t j1
+						, const size_t i2, const size_t j2 ) const;
+
+	/**
+	 * computes probability of a sub structure (i1, j1, i2, j2) given a
+	 * structure (k1, l1, k2, l2) with probability structProb
+	 */
+	virtual
+	float
+	computeSubStructureProb( const size_t i1, const size_t j1
+						, const size_t i2, const size_t j2
+						, const size_t k1, const size_t l1
+						, const size_t k2, const size_t l2, const float structProb );
+
+	/**
+	 * Recursively computes structure probabilities of sub structures given
+	 * an initial structure (k1, l1, k2, l2) with probability structProb
+	 */
+	virtual
+	float
+	computeStructureProbRecursive( const size_t k1, const size_t l1
+						, const size_t k2, const size_t l2, const float structProb );
 
 };
 

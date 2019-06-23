@@ -48,10 +48,29 @@ public:
 	getOverallZ() const;
 
 	/**
+	 * Access to the current partition function covering
+	 * the interaction (i1, j1, i2, j2).
+	 *
+	 * @return the overall hybridization partition function
+	 */
+	Z_type
+	getZ( const size_t i1, const size_t j1
+	   , const size_t i2, const size_t j2);
+
+	/**
 	 * Report Z information to the prediction trackers
 	 */
 	void
-	reportZ() const;
+	reportZ();
+
+private:
+
+	/**
+	 * Generates key for storing values in map
+	 */
+	size_t
+	generateMapKey( const size_t i1, const size_t j1
+						, const size_t i2, const size_t j2 ) const;
 
 protected:
 
