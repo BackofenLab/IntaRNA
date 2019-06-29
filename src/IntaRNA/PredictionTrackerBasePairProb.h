@@ -123,26 +123,6 @@ protected:
 	generateMapKey( const size_t i1, const size_t j1
 						, const size_t i2, const size_t j2 ) const;
 
-	/**
-	 * computes probability of a sub structure (i1, j1, i2, j2) given a
-	 * structure (k1, l1, k2, l2) with probability structProb
-	 */
-	virtual
-	float
-	computeSubStructureProb( const size_t i1, const size_t j1
-						, const size_t i2, const size_t j2
-						, const size_t k1, const size_t l1
-						, const size_t k2, const size_t l2, const float structProb );
-
-	/**
-	 * Recursively computes structure probabilities of sub structures given
-	 * an initial structure (k1, l1, k2, l2) with probability structProb
-	 */
-	virtual
-	float
-	computeStructureProbRecursive( const size_t k1, const size_t l1
-						, const size_t k2, const size_t l2, const float structProb );
-
 };
 
 //////////////////////////////////////////////////////////////////////
