@@ -176,7 +176,7 @@ fillHybridZ( const OutputConstraint & outConstraint )
 				} // w1
 
 				// update mfe if needed
-				updateZ( i1,curCell->j1, i2,curCell->j2, curCell->Z, true );
+				updateZ( i1,curCell->j1, i2,curCell->j2, curCell->Z );
 
 			} // valid base pair
 

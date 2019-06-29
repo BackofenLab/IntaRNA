@@ -94,7 +94,7 @@ updateZ( PredictorMfeEns *predictor )
 			sProb.j1 = i1 + n1 - 1;
 			sProb.i2 = i2;
 			sProb.j2 = i2 + n2 - 1;
-			sProb.prob = mfeEnsPredictor->getZ(i1, i1 + n1 - 1, i2, i2 + n2 - 1) / mfeEnsPredictor->getOverallZ();
+			sProb.prob = mfeEnsPredictor->getZ(i1, i1 + n1 - 1, i2, i2 + n2 - 1) / mfeEnsPredictor->getOverallHybridZ();
 			structureProbs[generateMapKey(i1, i1 + n1 -1, i2, i2 + n2 - 1)] = sProb;
 		}
 	}
@@ -118,7 +118,7 @@ updateZ( PredictorMfeEns *predictor )
 									size_t key;
 									float prob = 0.0;
 									if (l1 == i1 && l2 == i2 && j1 == r1 && j2 == r2) {
-										prob = mfeEnsPredictor->getZ(i1, j1, i2, j2) / mfeEnsPredictor->getOverallZ();
+										prob = mfeEnsPredictor->getZ(i1, j1, i2, j2) / mfeEnsPredictor->getOverallHybridZ();
 									} else {
 										// get outer probability
 										key = generateMapKey(l1, r1, l2, r2);

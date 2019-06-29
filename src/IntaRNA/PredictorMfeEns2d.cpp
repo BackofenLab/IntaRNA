@@ -208,7 +208,7 @@ fillHybridZ( const size_t j1, const size_t j2
 
 				// update mfe if needed
 				if (callUpdateOptima) {
-					updateZ(i1, j1, i2, j2, curMinE, true);
+					updateZ(i1, j1, i2, j2, curMinE);
 				}
 
 			} // complementary base pair

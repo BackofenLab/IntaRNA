@@ -39,13 +39,22 @@ public:
 	virtual ~PredictorMfeEns();
 
 	/**
-	 * Access to the current overall partition function covering
-	 * all interactions of the last predict() call.
+	 * Access to the current overall partition function (including accessibility energies)
+   * covering all interactions of the last predict() call.
 	 *
-	 * @return the overall hybridization partition function
+	 * @return the overall partition function
 	 */
 	Z_type
 	getOverallZ() const;
+
+	/**
+	 * Access to the current overall hybridization partition function covering
+	 * all interactions of the last predict() call.
+	 *
+	 * @return the overall partition function
+	 */
+	Z_type
+	getOverallHybridZ() const;
 
 	/**
 	 * Access to the current partition function covering
@@ -97,6 +106,10 @@ protected:
 	//! its value is updated by updateZ()
 	Z_type overallZ;
 
+	//! the overall hybrid partition function since initZ() was last called.
+	//! its value is updated by updateZ()
+	Z_type overallHybridZ;
+
 // TODO move to subclass...
 	//! map storing Z partitions for a given interaction
 	std::unordered_map<size_t, ZPartition> Z_partitions;
@@ -131,17 +144,13 @@ protected:
 	 * @param j1 the index of the first sequence interacting with j2
 	 * @param i2 the index of the second sequence interacting with i1
 	 * @param j2 the index of the second sequence interacting with j1
-	 * @param partFunct the partition function of the interaction
-	 * @param isHybridZ whether or not the given Z is only covering
-	 *        hybridization energy terms (init+loops) or the total
-	 *        interaction energy
+	 * @param partFunct the hybridization partition function of the interaction
 	 */
 	virtual
 	void
 	updateZ( const size_t i1, const size_t j1
 				, const size_t i2, const size_t j2
-				, const Z_type partFunct
-				, const bool isHybridZ );
+				, const Z_type partFunct );
 
 
 	/**

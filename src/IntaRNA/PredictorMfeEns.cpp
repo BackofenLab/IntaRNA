@@ -15,6 +15,7 @@ PredictorMfeEns::PredictorMfeEns(
 		)
 	: PredictorMfe(energy,output,predTracker)
 	, overallZ(0)
+	, overallHybridZ(0)
 {
 
 }
@@ -43,6 +44,15 @@ PredictorMfeEns::
 getOverallZ() const
 {
 	return overallZ;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+Z_type
+PredictorMfeEns::
+getOverallHybridZ() const
+{
+	return overallHybridZ;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -89,30 +99,20 @@ void
 PredictorMfeEns::
 updateZ( const size_t i1, const size_t j1
 		, const size_t i2, const size_t j2
-		, const Z_type partZ
-		, const bool isHybridZ )
+		, const Z_type partZ )
 {
 	// check if something to be done
-	if (Z_equal(partZ,0) || Z_isINF(overallZ))
+	if (Z_equal(partZ,0))
 		return;
 	// update overall partition function
-	if (isHybridZ) {
 #if INTARNA_IN_DEBUG_MODE
-		if ( (std::numeric_limits<Z_type>::max() - (partZ*energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, E_type(0))))) <= overallZ) {
-			LOG(WARNING) <<"PredictorMfeEns::updateZ() : partition function overflow! Recompile with larger partition function data type!";
-		}
-#endif
-		// add ED penalties etc.
-		overallZ += partZ*energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, E_type(0)));
-	} else {
-#if INTARNA_IN_DEBUG_MODE
-		if ( (std::numeric_limits<Z_type>::max() - partZ) <= overallZ) {
-			LOG(WARNING) <<"PredictorMfeEns::updateZ() : partition function overflow! Recompile with larger partition function data type!";
-		}
-#endif
-		// just increase
-		overallZ += partZ;
+	if ( (std::numeric_limits<Z_type>::max() - (partZ*energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, E_type(0))))) <= overallZ) {
+		LOG(WARNING) <<"PredictorMfeEns::updateZ() : partition function overflow! Recompile with larger partition function data type!";
 	}
+#endif
+	// add ED penalties etc.
+	overallZ += partZ * energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, E_type(0)));
+	overallHybridZ += partZ;
 
 // TODO : was soll das hier?
 	// store partial Z
