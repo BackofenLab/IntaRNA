@@ -112,9 +112,6 @@ protected:
 	//! map storing structure probabilities
 	std::unordered_map<size_t, StructureProb> structureProbs;
 
-	//! pointer to mfeEnsPredictor
-	PredictorMfeEns* mfeEnsPredictor;
-
 	/**
 	 * Generates key for storing values in map
 	 */

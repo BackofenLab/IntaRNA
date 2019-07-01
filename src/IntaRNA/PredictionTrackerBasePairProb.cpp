@@ -22,7 +22,6 @@ PredictionTrackerBasePairProb(
 	, outStream(NULL)
 	, deleteOutStream(true)
 	, overallZ(0.0)
-	, mfeEnsPredictor(NULL)
 {
 	// open stream
 	if (!outStreamName.empty()) {
@@ -46,7 +45,6 @@ PredictionTrackerBasePairProb(
 	, outStream(&outStream)
 	, deleteOutStream(false)
 	, overallZ(0.0)
-	, mfeEnsPredictor(NULL)
 {
 }
 
@@ -55,6 +53,10 @@ PredictionTrackerBasePairProb(
 PredictionTrackerBasePairProb::
 ~PredictionTrackerBasePairProb()
 {
+	if (deleteOutStream) {
+		// clean up if file pointers were created in constructor
+		deleteOutputStream( outStream );
+	}
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -74,7 +76,6 @@ void
 PredictionTrackerBasePairProb::
 updateZ( PredictorMfeEns *predictor )
 {
-	mfeEnsPredictor = predictor;
 
 	// sequence strings
 	const std::string & rna1 = energy.getAccessibility1().getSequence().asString();
@@ -94,7 +95,7 @@ updateZ( PredictorMfeEns *predictor )
 			sProb.j1 = i1 + n1 - 1;
 			sProb.i2 = i2;
 			sProb.j2 = i2 + n2 - 1;
-			sProb.prob = mfeEnsPredictor->getZ(i1, i1 + n1 - 1, i2, i2 + n2 - 1) / mfeEnsPredictor->getOverallHybridZ();
+			sProb.prob = predictor->getZ(i1, i1 + n1 - 1, i2, i2 + n2 - 1) / predictor->getOverallHybridZ();
 			structureProbs[generateMapKey(i1, i1 + n1 -1, i2, i2 + n2 - 1)] = sProb;
 		}
 	}
@@ -107,18 +108,20 @@ updateZ( PredictorMfeEns *predictor )
 				for (size_t i2 = 0; i2 < s2-w2+1; i2++) {
 					size_t j1 = i1 + w1 - 1;
 					size_t j2 = i2 + w2 - 1;
-					//LOG(DEBUG) << w1 << "|" << w2 << "=" << i1 << ":" << j1 << ":" << i2 << ":" << j2;
 					// loop over combinations of (0..i), (j..|s|)
 					for (size_t l1 = 0; l1 <= i1; l1++) {
 						for (size_t l2 = 0; l2 <= i2; l2++) {
 							for (size_t r1 = j1; r1 < s1; r1++) {
+								// ensure maximal loop length
+								if (r1-l1 > energy.getMaxInternalLoopSize1()+1) break;
 								for (size_t r2 = j2; r2 < s2; r2++) {
-									// TODO: check max interior loop size !!!!!
+									// ensure maximal loop length
+									if (r2-l2 > energy.getMaxInternalLoopSize2()+1) break;
 
 									size_t key;
 									float prob = 0.0;
 									if (l1 == i1 && l2 == i2 && j1 == r1 && j2 == r2) {
-										prob = mfeEnsPredictor->getZ(i1, j1, i2, j2) / mfeEnsPredictor->getOverallHybridZ();
+										prob = predictor->getZ(i1, j1, i2, j2) / predictor->getOverallHybridZ();
 									} else {
 										// get outer probability
 										key = generateMapKey(l1, r1, l2, r2);
@@ -126,11 +129,12 @@ updateZ( PredictorMfeEns *predictor )
 											throw std::runtime_error("PredictionTrackerBasePairProb() : could not find outer probability for interaction " + toString(l1) + ":" + toString(r1) + ":" + toString(l2) + ":" + toString(r2));
 										}
 
-										if (!Z_equal(mfeEnsPredictor->getZ(l1, r1, l2, r2), 0)) {
+										if (!Z_equal(predictor->getZ(l1, r1, l2, r2), 0)) {
 											prob = (structureProbs[key].prob
-											     * energy.getBoltzmannWeight(energy.getE_interLeft(l1,i1,l2,i2))
-													 * mfeEnsPredictor->getZ(i1, j1, i2, j2)
-													 * energy.getBoltzmannWeight(energy.getE_interLeft(j1,r1,j2,r2))) / mfeEnsPredictor->getZ(l1, r1, l2, r2);
+													     * energy.getBoltzmannWeight(energy.getE_interLeft(l1,i1,l2,i2))
+															 * predictor->getZ(i1, j1, i2, j2)
+															 * energy.getBoltzmannWeight(energy.getE_interLeft(j1,r1,j2,r2))
+												     ) / predictor->getZ(l1, r1, l2, r2);
 										}
 									}
 
@@ -181,26 +185,14 @@ updateZ( PredictorMfeEns *predictor )
 		}
 	}
 
-	// end plists
-	plist1[i].i = 0;
-	plist1[i].j = 0;
-	plist2[i].i = 0;
-	plist2[i].j = 0;
-
 	// create dot plot
 	std::string reverseRna2(rna2);
 	std::reverse(reverseRna2.begin(), reverseRna2.end());
 	char *rna = strdup((rna1 + reverseRna2).c_str());
-	PS_dot_plot_list(rna, "plot", plist1, plist2, "");
+	std::string outName = "plot";
+	std::string comment = "";
+	PS_dot_plot_list(rna, &outName[0u], plist1, plist2, &comment[0u]);
 
-	(*outStream) << "stuff" << "\n";
-
-	outStream->flush();
-
-	if (deleteOutStream) {
-		// clean up if file pointers were created in constructor
-		deleteOutputStream( outStream );
-	}
 }
 
 ////////////////////////////////////////////////////////////////////////////
