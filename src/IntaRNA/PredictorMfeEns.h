@@ -63,6 +63,16 @@ public:
 	 * @return the overall hybridization partition function
 	 */
 	Z_type
+	getHybridZ( const size_t i1, const size_t j1
+	   , const size_t i2, const size_t j2);
+
+	/**
+	 * Access to the current partition function covering
+	 * the interaction (i1, j1, i2, j2).
+	 *
+	 * @return the overall partition function including ED values
+	 */
+	Z_type
 	getZ( const size_t i1, const size_t j1
 	   , const size_t i2, const size_t j2);
 

@@ -59,7 +59,7 @@ getOverallHybridZ() const
 
 Z_type
 PredictorMfeEns::
-getZ( const size_t i1, const size_t j1
+getHybridZ( const size_t i1, const size_t j1
 	 , const size_t i2, const size_t j2)
 {
 	size_t key = generateMapKey(i1, j1, i2, j2);
@@ -67,6 +67,21 @@ getZ( const size_t i1, const size_t j1
 		return Z_type(0);
 	} else {
 		return Z_partitions[key].partZ;
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+Z_type
+PredictorMfeEns::
+getZ( const size_t i1, const size_t j1
+	 , const size_t i2, const size_t j2)
+{
+	size_t key = generateMapKey(i1, j1, i2, j2);
+	if ( Z_partitions.find(key) == Z_partitions.end() ) {
+		return Z_type(0);
+	} else {
+		return Z_partitions[key].partZ * energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, E_type(0)));
 	}
 }
 

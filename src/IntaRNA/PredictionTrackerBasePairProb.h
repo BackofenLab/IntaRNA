@@ -26,35 +26,17 @@ public:
 
 	/**
 	 * Constructs a PredictionTracker that collects probability information
-	 * for a set of interaction spots by computing the Boltzmann probability
-	 * of any interaction enclosing the positions.
+	 * for an interaction by computing the Boltzmann probabilities and
+	 * generates a basepair-probabilities dotplot
 	 *
 	 * @param energy the energy function used for energy calculation
-	 * @param spots the interaction spots to track for their probabilities
-	 * @param outStreamName the stream name where the probability data
-	 *        is to be written to. use STDOUT/STDERR for the respective stream.
-	 *        Otherwise, an according file is created
+	 * @param fileName the name of the generated postscript file containing
+	 * the dotplot
 	 */
 	PredictionTrackerBasePairProb(
 				const InteractionEnergy & energy
-				, const std::string & outStreamName
+				, const std::string & fileName
 			);
-
-	/**
-	 * Constructs a PredictionTracker that collects probability information
-	 * for a set of interaction spots by computing the Boltzmann probability
-	 * of any interaction enclosing the positions.
-	 *
-	 * @param energy the energy function used for energy calculation
-	 * @param spots the interaction spots to track for their probabilities
-	 * @param outStream the stream where the probability data
-	 *        is to be written to.
-	 */
-	PredictionTrackerBasePairProb(
-				const InteractionEnergy & energy
-				, std::ostream & outStream
-			);
-
 
 	/**
 	 * destruction: write the probabilities to stream.
@@ -100,11 +82,11 @@ protected:
 	//! energy handler used for predictions
 	const InteractionEnergy & energy;
 
-	//! the stream to write the probabilities to
-	std::ostream * outStream;
+	//! filename of the generated dotplot
+	const std::string fileName;
 
-	//! whether or not outStream is to be deleted on destruction
-	const bool deleteOutStream;
+	//! threshold used to draw probabilities in dotplot
+	const Z_type probabilityThreshold;
 
 	//! overall partition function of all reported interactions
 	Z_type overallZ;
