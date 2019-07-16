@@ -2291,7 +2291,7 @@ getQueryRanges( const InteractionEnergy & energy, const size_t sequenceNumber, c
 		// check if computation is needed
 		if (qRegion.at(sequenceNumber).begin()->to - qRegion.at(sequenceNumber).begin()->from +1 > qRegionLenMax.val) {
 			// compute highly accessible regions using ED-window-size = seedBP and minRangeLength = seedBP
-			qRegion.at(sequenceNumber) = acc.decomposeByMaxED( qRegionLenMax.val, seedBP.val, seedBP.val);
+			qRegion[sequenceNumber] = acc.decomposeByMaxED( qRegionLenMax.val, seedBP.val, seedBP.val);
 			// inform user
 			VLOG(1) <<"detected accessible regions for query '"<<getQuerySequences().at(sequenceNumber).getId()<<"' : "<<qRegion.at(sequenceNumber);
 		}
@@ -2300,7 +2300,7 @@ getQueryRanges( const InteractionEnergy & energy, const size_t sequenceNumber, c
 	if (outMinPu.val > Z_type(0) && !Z_equal(outMinPu.val, Z_type(0))) {
 		// decompose ranges based in minimal unpaired probability value per position
 		// since all ranges covering a position will have a lower unpaired probability
-		acc.decomposeByMaxED( qRegion.at(sequenceNumber), energy.getE( outMinPu.val ) );
+		acc.decomposeByMaxED( qRegion[sequenceNumber], energy.getE( outMinPu.val ), (noSeedRequired ? RnaSequence::lastPos : seedBP.val ) );
 	}
 
 	return qRegion.at(sequenceNumber);
@@ -2325,7 +2325,7 @@ getTargetRanges( const InteractionEnergy & energy, const size_t sequenceNumber, 
 		// check if computation is needed
 		if (tRegion.at(sequenceNumber).begin()->to - tRegion.at(sequenceNumber).begin()->from +1 > tRegionLenMax.val) {
 			// compute highly accessible regions using ED-window-size = seedBP and minRangeLength = seedBP
-			tRegion.at(sequenceNumber) = acc.decomposeByMaxED( tRegionLenMax.val, seedBP.val, seedBP.val);
+			tRegion[sequenceNumber] = acc.decomposeByMaxED( tRegionLenMax.val, seedBP.val, seedBP.val);
 			// inform user
 			VLOG(1) <<"detected accessible regions for target '"<<getTargetSequences().at(sequenceNumber).getId()<<"' : "<<tRegion.at(sequenceNumber);
 		}
@@ -2334,7 +2334,7 @@ getTargetRanges( const InteractionEnergy & energy, const size_t sequenceNumber, 
 	if (outMinPu.val > Z_type(0) && !Z_equal(outMinPu.val, Z_type(0))) {
 		// decompose ranges based in minimal unpaired probability value per position
 		// since all ranges covering a position will have a lower unpaired probability
-		acc.decomposeByMaxED( tRegion.at(sequenceNumber), energy.getE( outMinPu.val ) );
+		acc.decomposeByMaxED( tRegion[sequenceNumber], energy.getE( outMinPu.val ), (noSeedRequired ? RnaSequence::lastPos : seedBP.val ) );
 	}
 
 	return tRegion.at(sequenceNumber);

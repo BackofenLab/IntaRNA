@@ -196,7 +196,7 @@ decomposeByMaxED( const size_t maxRangeLength, const size_t winSize, const size_
 
 void
 Accessibility::
-decomposeByMaxED( IndexRangeList & ranges, const E_type maxED ) const
+decomposeByMaxED( IndexRangeList & ranges, const E_type maxED, const size_t minRangeLength ) const
 {
 	// check if there is an upper bound given; if not stop working
 	if (maxED >= ED_UPPER_BOUND) {
@@ -213,7 +213,7 @@ decomposeByMaxED( IndexRangeList & ranges, const E_type maxED ) const
 		for (size_t i= range->from; i <= range->to; i++) {
 			if (E_isINF(getED(i,i)) || (getED(i,i) > maxED && !E_equal(getED(i,i),maxED))) {
 				// check if end of range found and to be stored
-				if (lastStart < i) {
+				if (lastStart < i && minRangeLength <= (i +1 - lastStart)) {
 					out.push_back(IndexRange(lastStart,i));
 				}
 				lastStart = range->to +1;
@@ -225,7 +225,7 @@ decomposeByMaxED( IndexRangeList & ranges, const E_type maxED ) const
 			}
 		}
 		// handle last open range
-		if (lastStart <= range->to) {
+		if (lastStart <= range->to && minRangeLength <= (range->to +1 - lastStart)) {
 			out.push_back(IndexRange(lastStart,range->to));
 		}
 	}

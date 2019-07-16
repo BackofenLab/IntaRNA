@@ -35,7 +35,7 @@ overlappingWindows(const size_t windowWidth, const size_t windowOverlap) const
 				+"window width must be larger than the overlap");
 	}
 	// ensure ascending range
-	if (isDescending()) {
+	if (!isAscending()) {
 		throw std::runtime_error("IndexRange::overlappingWindows() : only implemented for ascending ranges but called on "+toString(*this));
 	}
 #endif

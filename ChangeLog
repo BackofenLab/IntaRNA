@@ -39,8 +39,15 @@ development version
 ###############################
 
 190716 Martin Raden :
+ * IntaRNA/Accessibility :
+   * decomposeByMaxED( ranges ) : 
+     + additional parameter for minimal range length
  * bin/CommandLineParsing :
    - high memory warning disabled
+   + set seedBP for minimal range length of range decomposition
+ * IntaRNA/IndexRange :
+   * overlappingWindows :
+     * bugfix: check for non-ascending was not using "!isAscending()"
 
 190607 Martin Raden :
  * IntaRNA/general :
