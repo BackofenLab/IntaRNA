@@ -38,6 +38,10 @@ development version
 
 ###############################
 
+190716 Martin Raden :
+ * bin/CommandLineParsing :
+   - high memory warning disabled
+
 190607 Martin Raden :
  * IntaRNA/general :
    * deleteOutputStream() :

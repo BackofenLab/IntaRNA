@@ -1269,16 +1269,6 @@ parse(int argc, char** argv)
 				break;
 			}
 
-#if INTARNA_MULITHREADING
-			// check if multi-threading
-			if (threads.val != 1 && getTargetSequences().size() > 1) {
-				// warn if >= 4D space prediction enabled
-				if (model.val != 'S' || mode.val == 'E') {
-					LOG(WARNING) <<"Multi-threading enabled in high-mem-prediction mode : ensure you have enough memory available!";
-				}
-			}
-#endif
-
 			// trigger initial output handler output
 			initOutputHandler();
 
