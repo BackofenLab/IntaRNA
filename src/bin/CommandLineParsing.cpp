@@ -221,6 +221,13 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	case IntaRNAexact :
 		// RNAup-like exact predictions
 		mode.def = 'M'; VLOG(1) <<" --mode=" <<mode.def;
+		model.def = 'X'; VLOG(1) <<" --model=" <<model.def;
+		qAccW.def = 0; VLOG(1) <<" --qAccW=" <<qAccW.def;
+		qAccL.def = 0; VLOG(1) <<" --qAccL=" <<qAccL.def;
+		qIntLenMax.def = 60; VLOG(1) <<" --qIntLenMax=" <<qIntLenMax.def;
+		tAccW.def = 0; VLOG(1) <<" --tAccW=" <<tAccW.def;
+		tAccL.def = 0; VLOG(1) <<" --tAccL=" <<tAccL.def;
+		tIntLenMax.def = 60; VLOG(1) <<" --tIntLenMax=" <<tIntLenMax.def;
 		outOverlap.def = 'B'; VLOG(1) <<" --outOverlap=" <<outOverlap.def;
 		break;
 	case IntaRNAseed :

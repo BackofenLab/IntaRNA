@@ -10,6 +10,10 @@ development version
 
 #######  new features #######
 
+TODO: model=X = new default
+TODO: IntaRNA1,2 personalities
+TODO: docu exact acc and length restriction in exact mode
+
 + outNoLP
 + outCsvSort
 + output of all putative seeds (unless outMode=N or outBestSeedOnly)
@@ -37,6 +41,12 @@ development version
 - IntaRNA v1 output support not continued
 
 ###############################
+
+190716 Martin Raden :
+ * bin/CommandLineParsing :
+   * IntaRNAexact :
+     + model=X
+     + exact accessibility computation (*AccW = *AccL = 0)
 
 190716 Martin Raden :
  * IntaRNA/Accessibility :
