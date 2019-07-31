@@ -1,5 +1,6 @@
 
 #include "IntaRNA/PredictorMfe.h"
+#include "IntaRNA/ObjectiveHandler.h"
 
 #include <iostream>
 #include <algorithm>
@@ -114,7 +115,10 @@ updateOptima( const size_t i1, const size_t j1
 
 
 	// check if we have to care about insertion (curE <= worst E in list)
-	if (curE > mfeInteractions.rbegin()->energy ) {
+//	if (curE > mfeInteractions.rbegin()->energy ) {
+	if (ObjectiveHandler::getLcE( std::max(1+j1-i1,1+j2-i2), curE, energy)
+		> ObjectiveHandler::getLcE( *(mfeInteractions.rbegin()), energy) )
+	{
 		return;
 	}
 
@@ -136,7 +140,10 @@ updateOptima( const size_t i1, const size_t j1
 	} else {
 
 		// check for insertion position
-		InteractionList::iterator insertPos = std::find_if_not( mfeInteractions.begin(), mfeInteractions.end(), [&](Interaction & i){return i < tmp;});
+		InteractionList::iterator insertPos = std::find_if_not( mfeInteractions.begin(), mfeInteractions.end(), [&](Interaction & i){
+			return ObjectiveHandler::getLcE(i,energy) < ObjectiveHandler::getLcE(tmp,energy);
+//			return i < tmp;
+		});
 
 		if ( insertPos != mfeInteractions.end() && !( tmp == *insertPos )) {
 

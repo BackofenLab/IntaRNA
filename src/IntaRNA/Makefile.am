@@ -42,6 +42,7 @@ libIntaRNA_a_HEADERS =    \
 					InteractionEnergyVrna.h \
 					InteractionRange.h \
 					NussinovHandler.h \
+					ObjectiveHandler.h \
 					OutputConstraint.h \
 					OutputStreamHandler.h \
 					OutputStreamHandlerSortedCsv.h \
@@ -107,6 +108,7 @@ libIntaRNA_a_SOURCES =    \
 					InteractionEnergyVrna.cpp \
 					InteractionRange.cpp \
 					NussinovHandler.cpp \
+					ObjectiveHandler.cpp \
 					OutputConstraint.cpp \
 					OutputStreamHandlerSortedCsv.cpp \
 					OutputHandler.cpp \
