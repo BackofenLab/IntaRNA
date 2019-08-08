@@ -53,7 +53,7 @@ public:
 		IntaRNAens,		// ensemble-based prediction
 		IntaRNAsTar,	// sRNA-target prediction (optimized parameter)
 		IntaRNAseed,  	// seed-only predictions
-		IntaRNAblock,  	// helix-block-based predictions
+		IntaRNAhelix,  	// helix-block-based predictions
 		IntaRNAduplex,	// RNAhybrid/RNAduplex-like
 		IntaRNAexact	// RNAup-like exact predictions
 	};
@@ -71,7 +71,7 @@ public:
 		case IntaRNAens : return "IntaRNAens";
 		case IntaRNAsTar : return "IntaRNAsTar";
 		case IntaRNAseed : return "IntaRNAseed";
-		case IntaRNAblock : return "IntaRNAblock";
+		case IntaRNAhelix : return "IntaRNAhelix";
 		case IntaRNAduplex : return "IntaRNAduplex";
 		case IntaRNAexact : return "IntaRNAexact";
 		default : return "unknown";

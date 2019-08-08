@@ -42,6 +42,9 @@ TODO: docu exact acc and length restriction in exact mode
 
 ###############################
 
+190808 Martin Raden :
+ * renaming personality IntaRNAblock to IntaRNAhelix (since used in resp. paper)
+
 190716 Martin Raden :
  * bin/CommandLineParsing :
    * IntaRNAexact :

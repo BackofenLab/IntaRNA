@@ -84,7 +84,7 @@ The following topics are covered by this documentation:
   - [Load arguments from file](#parameterFile)
 - [General things you should know](#generalInformation)
   - [Interaction Model](#interactionModel)
-    - [Single-site, unconstraint RNA-RNA interaction](#interactionModel-ssUnconstraintMfe)
+    - [Single-site, loop-based RNA-RNA interaction](#interactionModel-ssUnconstraintMfe)
     - [Single-site, ensemble-based RNA-RNA interaction](#interactionModel-ssProbability)
     - [Single-site, helix-based RNA-RNA interaction](#interactionModel-ssHelixBlockMfe)
   - [Prediction modes](#predModes)
@@ -92,7 +92,7 @@ The following topics are covered by this documentation:
     - [Limiting memory consumption - window-based prediction](#predWindowBased)
   - [IntaRNA's multiple personalities](#personality)
     - [IntaRNA - fast, heuristic RNA-RNA interaction prediction](#IntaRNA)
-    - [IntaRNAblock - helix-based predictions](#IntaRNAblock)
+    - [IntaRNAhelix - helix-based predictions](#IntaRNAhelix)
     - [IntaRNAexact - exact predictions like RNAup](#IntaRNAexact)
     - [IntaRNAduplex - hybrid-only optimization like RNAduplex](#IntaRNAduplex)
 - [How to constrain predicted interactions](#constraintSetup)
@@ -574,7 +574,7 @@ interaction pattern is available in our publications
 <br /><br />
 <a name="interactionModel-ssUnconstraintMfe" />
 
-### Unconstraint single-site RNA-RNA interaction with minimal free energy
+### Single-site, loop-based RNA-RNA interaction with minimal free energy
 
 This *default model* of IntaRNA (`--model=S`) predicts the single-site interaction `I` with 
 minimal free energy. That is, it minimizes
@@ -587,7 +587,7 @@ where `E_hybrid` represents all energy terms of intermolecular base pairs and
 accessible for inter-molecular base pairing, i.e. removing any possible intra-molecular
 base pairs.
 
-The model considers inter-molecular base pair patterns that correspond to 
+The model considers inter-molecular base pair patterns (so called *loops*) that correspond to 
 (helical) stackings, bulges or interior loops, which are depicted in figure (b) from above.
 Since intra-molecular base pairs are not explicitely represented, any structural 
 context of single-site interactions is considered/possible within IntaRNA 
@@ -603,7 +603,7 @@ personalities.
 <a name="interactionModel-ssProbability" />
 
 
-### Ensemble-based, unconstraint single-site RNA-RNA interaction with minimal free ensemble energy
+### Single-site, ensemble-based RNA-RNA interaction with minimal free ensemble energy
 
 IntaRNA supports using `--model=P` an ensemble based interaction prediction that
 is based on partition function computation. To this end, the model computes among all
@@ -634,7 +634,7 @@ interaction width, etc.) and do *not* take *all possible interactions* into acco
 Thus, if you are predicting interactions for a subregion only, the results are
 based on the respective subset of interactions!
 
-This model is used by the [IntaRNAens](#IntaRNAens) personalities. 
+This model is used by the [IntaRNAens](#IntaRNAens) personality. 
 
 
 
@@ -672,7 +672,7 @@ the prediction quality in genome wide screens. IntaRNA offers various
 [helix constraints](#helix) to guide which helices are considered for interaction 
 prediction.
 
-This model is used by the [IntaRNAblock](#IntaRNAblock) personality. 
+This model is used by the [IntaRNAhelix](#IntaRNAhelix) personality. 
 
 For further details on the model and the underlying algorithm, please refer to our respective publication
 
@@ -863,18 +863,18 @@ interest](#interConstr).
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
-### IntaRNAblock
+### IntaRNAhelix
 
-**IntaRNAblock** provides helix-based RNA-RNA interaction prediction described
+**IntaRNAhelix** provides helix-based RNA-RNA interaction prediction described
 in [(Gelhausen et al., 2019)](http://www.bioinf.uni-freiburg.de/Subpages/publications.html?de#Gelhausen-helixLength-2019.abstract).
 It therefore enables per default 
 
 - the [helix-based single-site interaction model](#interactionModel-ssHelixBlockMfe)
 
 All other parameters are kept from the normal IntaRNA personality, such that
-IntaRNAblock predicts per default interactions heuristically based on optimal 
+IntaRNAhelix predicts per default interactions heuristically based on optimal 
 helix blocks, which is faster than the normal mode but applies more constraints.
-Thus, you should use IntaRNAblock if you want to focus predictions on stable
+Thus, you should use IntaRNAhelix if you want to focus predictions on stable
 subinteractions (helices) and need to do it fast.
 
 

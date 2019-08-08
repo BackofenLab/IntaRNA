@@ -209,7 +209,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		// ensemble-based predictions
 		model.def = 'P'; VLOG(1) <<" --model=" <<model.def;
 		break;
-	case IntaRNAblock :
+	case IntaRNAhelix :
 		// helix-block-based predictions
 		model.def = 'B'; VLOG(1) <<" --model=" <<model.def;
 		break;
@@ -2416,8 +2416,8 @@ getPersonality( int argc, char ** argv )
 	if (boost::regex_match(value,boost::regex("IntaRNAduplex"), boost::match_perl)) {
 		return Personality::IntaRNAduplex;
 	}
-	if (boost::regex_match(value,boost::regex("IntaRNAblock"), boost::match_perl)) {
-		return Personality::IntaRNAblock;
+	if (boost::regex_match(value,boost::regex("IntaRNAhelix"), boost::match_perl)) {
+		return Personality::IntaRNAhelix;
 	}
 	if (boost::regex_match(value,boost::regex("IntaRNAseed"), boost::match_perl)) {
 		return Personality::IntaRNAseed;
