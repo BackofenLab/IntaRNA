@@ -79,7 +79,7 @@ namespace IntaRNA {
 
 	//! type for energy values (energy + accessibility [ED]) (internally)
 	typedef int E_type;
-	const E_type E_INF = (std::numeric_limits<E_type>::max() / 2) + 1;
+	const E_type E_INF = (std::numeric_limits<E_type>::max() / 8) + 1;
 	const E_type E_MAX = E_INF / 2;
 
 	//! type for probabilities, RT and Boltzmann values

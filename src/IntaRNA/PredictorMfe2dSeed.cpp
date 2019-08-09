@@ -339,7 +339,7 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 
 	// trace back
 	bool seedNotTraced = true;
-	while( i1+noLpShift < j1 ) {
+	while( i1 < j1 ) {
 
 		// check if only 3 stack helix possible
 		if (outConstraint.noLP && j1-i1+1 == 3) {
@@ -374,6 +374,7 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 									energy.getE(i1,k1,i2,k2,seedE)+energy.getE_init());
 					// trace back seed base pairs
 					seedHandler.traceBackSeed( interaction, i1, i2 );
+					seedNotTraced = false;
 					// stop tracing
 					break;
 				} else
@@ -386,23 +387,23 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 									energy.getE(i1,k1,i2,k2,seedE)+energy.getE_init());
 					// trace back seed base pairs
 					seedHandler.traceBackSeed( interaction, i1, i2 );
+					seedNotTraced = false;
 					// continue after seed
 					i1 = k1;
 					i2 = k2;
 					curE = hybridE_pq(i1,i2);
-					seedNotTraced = false;
 					continue;
 				} else
 				// check multi-bp seed followed by interior loop
-				if (outConstraint.noLP && k1 > i1) {
+				if (outConstraint.noLP && k1 > i1 && j1-k1 > 2 && j2-k2 > 2) {
 					bool traceNotFound = true;
-					for (size_t l1=std::min(j1+1-seedHandler.getConstraint().getBasePairs(),k1+energy.getMaxInternalLoopSize1()+1); traceNotFound && l1>k1; l1--) {
-					for (size_t l2=std::min(j2+1-seedHandler.getConstraint().getBasePairs(),k2+energy.getMaxInternalLoopSize2()+1); traceNotFound && l2>k2; l2--) {
+					for (size_t l1=std::min(j1-1,k1+energy.getMaxInternalLoopSize1()+1); traceNotFound && l1>k1; l1--) {
+					for (size_t l2=std::min(j2-1,k2+energy.getMaxInternalLoopSize2()+1); traceNotFound && l2>k2; l2--) {
 						// check if (k1,k2) are valid left boundaries including a seed
 						if ( E_isNotINF( hybridE_pq(l1,l2) ) ) {
 							// check if correct split
 							if (E_equal ( curE,
-									(seedE + energy.getE_interLeft(k1,l2,k2,l2)
+									(seedE + energy.getE_interLeft(k1,l1,k2,l2)
 											+ hybridE_pq(l1,l2) )
 									) )
 							{
@@ -413,6 +414,7 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 												energy.getE(i1,k1,i2,k2,seedE)+energy.getE_init());
 								// trace back seed base pairs
 								seedHandler.traceBackSeed( interaction, i1, i2 );
+								seedNotTraced = false;
 								// store splitting base pair
 								interaction.basePairs.push_back( energy.getBasePair(k1,k2) );
 								// update trace back boundary
@@ -425,6 +427,10 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 						}
 					} // l2
 					} // l1
+					// start next iteration if trace was found
+					if (!traceNotFound) {
+						continue;
+					}
 				}
 			}
 

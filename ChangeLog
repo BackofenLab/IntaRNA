@@ -42,6 +42,18 @@ TODO: docu exact acc and length restriction in exact mode
 
 ###############################
 
+190809 Martin Raden :
+ * IntaRNA/general :
+   * deleteOutStream() :
+     * now reference to stream pointer to ensure update of original pointer
+   * E_INF = INTMAX / 8 (to ensure correct boundary checks in predictors)
+ * IntaRNA/OutputStreamHandlerSortedCsv :
+   * destructor() :
+     * BUGFIX: double deletion of outstream (fixes #157)
+ * IntaRNA/PredictorMfe2dSeed :
+   * traceback() :
+     * BUGFIX noLP traceback (fixes #153)
+
 190808 Martin Raden :
  * renaming personality IntaRNAblock to IntaRNAhelix (since used in resp. paper)
 
