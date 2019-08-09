@@ -141,7 +141,7 @@ add( const Interaction & i, const OutputConstraint & outConstraint )
 	s1Unbound.width(1);	 s1Unbound <<std::left <<' ';
 	s1Bound.width(1);	 s1Bound   <<std::left <<i.s1->asString().at(leftBP->first);
 	pairing.width(1);	 pairing   <<std::left;
-	if (detailedOutput && seedRanges1.covers(leftBP->first)) {
+	if (seedRanges1.covers(leftBP->first)) {
 		pairing   <<'+';
 	} else
 	if (energy.isGU(leftBP->first, leftBP->second)) {
@@ -200,7 +200,7 @@ add( const Interaction & i, const OutputConstraint & outConstraint )
 		s1Unbound.width(1);	 s1Unbound <<' ';
 		s1Bound.width(1);	 s1Bound   <<i.s1->asString().at(curBP->first);
 		pairing.width(1);
-		if (detailedOutput && seedRanges1.covers(curBP->first)) {
+		if (seedRanges1.covers(curBP->first)) {
 			pairing   <<'+';
 		} else
 		if (energy.isGU(curBP->first, curBP->second)) {
