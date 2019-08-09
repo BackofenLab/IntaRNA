@@ -22,16 +22,16 @@ libIntaRNA_adir = $(includedir)/IntaRNA
 # the list of header files that belong to the library (to be installed later)
 libIntaRNA_a_HEADERS =    \
 					intarna_config.h \
-					general.h \
 					Accessibility.h \
 					AccessibilityConstraint.h \
 					AccessibilityDisabled.h \
 					AccessibilityFromStream.h \
 					AccessibilityVrna.h \
 					AccessibilityBasePair.h \
+					HelixConstraint.h \
 					HelixHandler.h \
 					HelixHandlerIdxOffset.h \
-					HelixHandlerStackingOnly.h \
+					HelixHandlerNoBulgeMax.h \
 					HelixHandlerUnpaired.h \
 					IndexRange.h \
 					IndexRangeList.h \
@@ -43,12 +43,12 @@ libIntaRNA_a_HEADERS =    \
 					InteractionRange.h \
 					NussinovHandler.h \
 					OutputConstraint.h \
+					OutputStreamHandler.h \
+					OutputStreamHandlerSortedCsv.h \
 					OutputHandler.h \
 					OutputHandlerCsv.h \
 					OutputHandlerHub.h \
-					OutputHandlerIntaRNA1.h \
 					OutputHandlerInteractionList.h \
-					OutputHandlerRangeOnly.h \
 					OutputHandlerText.h \
 					PredictionTracker.h \
 					PredictionTrackerHub.h \
@@ -58,16 +58,23 @@ libIntaRNA_a_HEADERS =    \
 					PredictionTrackerSpotProbAll.h \
 					PredictionTrackerProfileSpotProb.h \
 					Predictor.h \
-					PredictorMaxProb.h \
 					PredictorMfe.h \
+					PredictorMfeSeedOnly.h \
 					PredictorMfe2d.h \
 					PredictorMfe2dSeed.h \
+					PredictorMfe2dSeedExtension.h \
+					PredictorMfe2dSeedExtensionRIblast.h \
 					PredictorMfe2dHeuristic.h \
 					PredictorMfe2dHeuristicSeed.h \
-					PredictorMfe2dHelixHeuristic.h \
-					PredictorMfe2dHelixHeuristicSeed.h \
-					PredictorMfe4d.h \
-					PredictorMfe4dSeed.h \
+					PredictorMfe2dHelixBlockHeuristic.h \
+					PredictorMfe2dHelixBlockHeuristicSeed.h \
+					PredictorMfe2dHeuristicSeedExtension.h \
+					PredictorMfeEns.h \
+					PredictorMfeEnsSeedOnly.h \
+					PredictorMfeEns2d.h \
+					PredictorMfeEns2dHeuristic.h \
+					PredictorMfeEns2dSeedExtension.h \
+					PredictorMfeEns2dHeuristicSeedExtension.h \
 					ReverseAccessibility.h \
 					RnaSequence.h \
 					SeedConstraint.h \
@@ -76,22 +83,21 @@ libIntaRNA_a_HEADERS =    \
 					SeedHandlerIdxOffset.h \
 					SeedHandlerMfe.h \
 					SeedHandlerNoBulge.h \
-					VrnaHandler.h
+					VrnaHandler.h \
+					general.h
+
 
 # the sources to add to the library and to add to the source distribution
 libIntaRNA_a_SOURCES =    \
                     $(libmylib_a_HEADERS) \
-					general.cpp \
 					Accessibility.cpp \
 					AccessibilityConstraint.cpp \
 					AccessibilityFromStream.cpp \
 					AccessibilityVrna.cpp \
 					AccessibilityBasePair.cpp \
 					HelixHandler.cpp \
-					HelixHandlerStackingOnly.cpp \
-					HelixHandlerStackingOnlySeed.cpp \
+					HelixHandlerNoBulgeMax.cpp \
 				    HelixHandlerUnpaired.cpp \
-				    HelixHandlerUnpairedSeed.cpp \
 					IndexRange.cpp \
 					IndexRangeList.cpp \
 					Interaction.cpp \
@@ -102,41 +108,48 @@ libIntaRNA_a_SOURCES =    \
 					InteractionRange.cpp \
 					NussinovHandler.cpp \
 					OutputConstraint.cpp \
+					OutputStreamHandlerSortedCsv.cpp \
 					OutputHandler.cpp \
 					OutputHandlerCsv.cpp \
-					OutputHandlerIntaRNA1.cpp \
 					OutputHandlerInteractionList.cpp \
-					OutputHandlerRangeOnly.cpp \
 					OutputHandlerText.cpp \
 					PredictionTrackerPairMinE.cpp \
 					PredictionTrackerProfileMinE.cpp \
 					PredictionTrackerSpotProb.cpp \
 					PredictionTrackerSpotProbAll.cpp \
 					PredictionTrackerProfileSpotProb.cpp \
-					PredictorMaxProb.cpp \
 					PredictorMfe.cpp \
+					PredictorMfeSeedOnly.cpp \
 					PredictorMfe2d.cpp \
 					PredictorMfe2dSeed.cpp \
+					PredictorMfe2dSeedExtension.cpp \
+					PredictorMfe2dSeedExtensionRIblast.cpp \
 					PredictorMfe2dHeuristic.cpp \
 					PredictorMfe2dHeuristicSeed.cpp \
-					PredictorMfe2dHelixHeuristic.cpp \
-					PredictorMfe2dHelixHeuristicSeed.cpp \
-					PredictorMfe4d.cpp \
-					PredictorMfe4dSeed.cpp \
+					PredictorMfe2dHelixBlockHeuristic.cpp \
+					PredictorMfe2dHelixBlockHeuristicSeed.cpp \
+					PredictorMfe2dHeuristicSeedExtension.cpp \
+					PredictorMfeEns.cpp \
+					PredictorMfeEns2d.cpp \
+					PredictorMfeEns2dHeuristic.cpp \
+					PredictorMfeEnsSeedOnly.cpp \
+					PredictorMfeEns2dSeedExtension.cpp \
+					PredictorMfeEns2dHeuristicSeedExtension.cpp \
 					ReverseAccessibility.cpp \
 					RnaSequence.cpp \
-					SeedConstraint.cpp \
+					SeedHandler.cpp \
 					SeedHandlerExplicit.cpp \
 					SeedHandlerMfe.cpp \
 					SeedHandlerNoBulge.cpp \
-					VrnaHandler.cpp
+					VrnaHandler.cpp \
+					general.cpp
 
 
-# generated intaRNA sources 
+# generated intaRNA sources
 nodist_libIntaRNA_a_SOURCES = 	\
 					../config.h \
 					intarna_config.h
-						
+
 ################################################################
 # pkg-config
 ################################################################
@@ -147,4 +160,3 @@ pkgconfig_DATA = $(top_srcdir)/IntaRNA.pc
 endif
 
 ###############################################################################
-

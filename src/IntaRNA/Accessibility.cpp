@@ -48,7 +48,7 @@ operator<<(std::ostream& out, const Accessibility& acc)
 
 void
 Accessibility::
-writeRNAplfold_text( std::ostream& out, const E_type RT, const bool writeProbs ) const
+writeRNAplfold_text( std::ostream& out, const Z_type RT, const bool writeProbs ) const
 {
 	// store current flags
 	std::ios_base::fmtflags oldFlags = out.flags();
@@ -85,7 +85,7 @@ writeRNAplfold_text( std::ostream& out, const E_type RT, const bool writeProbs )
 					out <<0 <<'\t';
 				} else {
 					// compute unpaired probability
-					double value = ( std::exp( - getED(j+1-l, j) / RT ) );
+					double value = (double)( Z_exp( - E_2_Z(getED(j+1-l, j)) / RT ) );
 					// check for nan result of conversion
 					if ( value != value ) {
 						out <<0 <<'\t';
@@ -95,8 +95,8 @@ writeRNAplfold_text( std::ostream& out, const E_type RT, const bool writeProbs )
 					}
 				}
 			} else {
-				// write ED value (ensure not printing infinity)
-				out <<std::min<E_type>( std::numeric_limits<E_type>::max(), getED(j+1-l, j) ) <<'\t';
+				// write ED value in kcal/mol (ensure not printing infinity)
+				out <<E_2_Ekcal(std::min<E_type>( E_MAX, getED(j+1-l, j) )) <<'\t';
 			}
 		}
 		// print NA for remaining entries
@@ -196,13 +196,15 @@ decomposeByMaxED( const size_t maxRangeLength, const size_t winSize, const size_
 
 void
 Accessibility::
-decomposeByMinPu( IndexRangeList & ranges, const double minPu, const E_type RT ) const
+decomposeByMaxED( IndexRangeList & ranges, const E_type maxED, const size_t minRangeLength ) const
 {
+	// check if there is an upper bound given; if not stop working
+	if (maxED >= ED_UPPER_BOUND) {
+		return;
+	}
+
 	// the range list to fill
 	IndexRangeList out;
-
-	// compute the maximal energy penalty according to the minimal unpaired probability
-	const E_type maxED = - RT * std::log( minPu );
 
 	// decompose each range individually
 	for (auto range = ranges.begin(); range != ranges.end(); range++) {
@@ -211,7 +213,7 @@ decomposeByMinPu( IndexRangeList & ranges, const double minPu, const E_type RT )
 		for (size_t i= range->from; i <= range->to; i++) {
 			if (E_isINF(getED(i,i)) || (getED(i,i) > maxED && !E_equal(getED(i,i),maxED))) {
 				// check if end of range found and to be stored
-				if (lastStart < i) {
+				if (lastStart < i && minRangeLength <= (i +1 - lastStart)) {
 					out.push_back(IndexRange(lastStart,i));
 				}
 				lastStart = range->to +1;
@@ -223,7 +225,7 @@ decomposeByMinPu( IndexRangeList & ranges, const double minPu, const E_type RT )
 			}
 		}
 		// handle last open range
-		if (lastStart <= range->to) {
+		if (lastStart <= range->to && minRangeLength <= (range->to +1 - lastStart)) {
 			out.push_back(IndexRange(lastStart,range->to));
 		}
 	}

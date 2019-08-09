@@ -75,7 +75,7 @@ public:
 	 */
 	virtual
 	void
-	traceBackSeed( Interaction & interaction, const size_t i1, const size_t i2) = 0;
+	traceBackSeed( Interaction & interaction, const size_t i1, const size_t i2) const = 0;
 
 
 	/**
@@ -87,6 +87,18 @@ public:
 	virtual
 	E_type
 	getSeedE( const size_t i1, const size_t i2 ) const = 0;
+
+	/**
+	 * Checks whether or not a given base pair is the left-most base pair of
+	 * any seed
+	 * @param i1 the interacting base of seq1
+	 * @param i2 the interacting base of seq2
+	 * @return true if (i1,i2) is the left most base pair of some seed; false
+	 *         otherwise
+	 */
+	virtual
+	bool
+	isSeedBound( const size_t i1, const size_t i2 ) const = 0;
 
 	/**
 	 * Access to the length in seq1 of the mfe seed with left-most base pair (i1,i2)
@@ -109,6 +121,63 @@ public:
 	getSeedLength2( const size_t i1, const size_t i2 ) const = 0;
 
 
+	/**
+	 * Replace the input variables i1 and i2 to values to within the given range
+	 * that correspond to
+	 *
+	 * - the first seed (if the given index pair is no valid seed start or one
+	 *   of the indices is out of range bounds)
+	 * - the next seed according to some seed order
+	 *
+	 * The indices are not updated if the last seed within the range is given
+	 * or no seed within the range could be found.
+	 * It returns whether or not the input variables have been updated.
+	 *
+	 * Note, if changed, only the seed left-most base pair is within the range
+	 * but the full seed indices might exceed i1max or i2max.
+	 *
+	 * @param i1 seq1 seed index to be changed
+	 * @param i2 seq2 seed index to be changed
+	 * @param i1min first position within seq1 (inclusive)
+	 * @param i1max last position within seq1 (inclusive)
+	 * @param i2min first position within seq2 (inclusive)
+	 * @param i2max last position within seq2 (inclusive)
+	 * @return true if the input variables have been changed; false otherwise
+	 */
+	virtual
+	bool
+	updateToNextSeed( size_t & i1, size_t & i2
+			, const size_t i1min = 0, const size_t i1max = RnaSequence::lastPos
+			, const size_t i2min = 0, const size_t i2max = RnaSequence::lastPos
+			) const;
+
+	/**
+	 * Adds all seeds to a given interaction that are completely covered by its
+	 * base pairs.
+	 *
+	 * @param i the interaction to update with indexing in global in-sequence
+	 *          order
+	 */
+	virtual
+	void
+	addSeeds( Interaction & i ) const;
+
+	/**
+	 * Checks whether or not two seeds are loop overlapping, ie. given i1 < k1, the
+	 * last x (>1) base pairs of seed(i1,i2) are equal to the first x base pairs of
+	 * seed(k1,k2), or vice versa if k1 < i1.
+	 *
+	 * @param i1 the left most interacting base of seq1 of seedA
+	 * @param i2 the left most interacting base of seq2 of seedA
+	 * @param k1 the left most interacting base of seq1 of seedB
+	 * @param k2 the left most interacting base of seq2 of seedB
+	 * @return true if seedA and seedB exist and they are loop overlapping;
+	 *         false otherwise
+	 */
+	virtual
+	bool
+	areLoopOverlapping( const size_t i1, const size_t i2
+					, const size_t k1, const size_t k2 ) const;
 
 protected:
 
@@ -178,28 +247,6 @@ getInteractionEnergy() const
 {
 	return energy;
 }
-
-//////////////////////////////////////////////////////////////////////////
-
-inline
-bool
-SeedHandler::
-isFeasibleSeedBasePair( const size_t i1, const size_t i2 ) const
-{
-#if INTARNA_IN_DEBUG_MODE
-	if ( i1 >= energy.size1() ) throw std::runtime_error("SeedHandler::isFeasibleSeedBasePair: i1("+toString(i1)+") >= energy.size1("+toString(energy.size1())+")");
-	if ( i2 >= energy.size2() ) throw std::runtime_error("SeedHandler::isFeasibleSeedBasePair: i2("+toString(i2)+") >= energy.size2("+toString(energy.size2())+")");
-#endif
-
-	return		i1 < energy.size1() && i2 < energy.size2()
-			&&	energy.areComplementary(i1,i2)
-			&&	seedConstraint.getMaxED() >= energy.getED1( i1,i1 )
-			&&	seedConstraint.getMaxED() >= energy.getED2( i2,i2 )
-			&&	(seedConstraint.getRanges1().empty() || seedConstraint.getRanges1().covers(i1))
-			&&	(seedConstraint.getRanges2().empty() || seedConstraint.getRanges2().covers(i2))
-			;
-}
-
 
 //////////////////////////////////////////////////////////////////////////
 

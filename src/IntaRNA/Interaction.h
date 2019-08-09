@@ -3,9 +3,11 @@
 #define INTARNA_INTERACTION_H_
 
 #include <vector>
+#include <set>
 #include <utility>
 
 #include "IntaRNA/general.h"
+#include "IntaRNA/IndexRangeList.h"
 #include "IntaRNA/RnaSequence.h"
 #include "IntaRNA/InteractionRange.h"
 
@@ -33,13 +35,59 @@ public:
 	 */
 	class Seed {
 	public:
+
+		/**
+		 * empty construction and init with invalid data
+		 */
+		Seed();
+
+		/**
+		 * construction
+		 * @param bp_i left-most base pair of the seed
+		 * @param bp_j right-most base pair of the seed
+		 * @param energy overall energy of the seed
+		 */
+		Seed( 	const BasePair & bp_i
+				, const BasePair & bp_j
+				, const E_type energy );
+
 		//! left-most base pair of seed
 		BasePair bp_i;
 		//! right-most base pair of seed
 		BasePair bp_j;
 		//! overall energy of seed
 		E_type energy;
+
+		/**
+		 * order definition: first by increasing energy using increasing seq1
+		 * index as tie breaker.
+		 * @param s the seed to compare to
+		 * @return true if this seed is considered smaller than s
+		 */
+		const bool
+		operator <  ( const Seed &s ) const {
+			return ( energy < s.energy
+						|| (E_equal(energy,s.energy && bp_i.first < s.bp_i.first))
+						);
+		}
+
+		/**
+		 * equality check
+		 * @param s the seed to compare to
+		 * @return true if this seed equals s
+		 */
+		const bool
+		operator ==  ( const Seed &s ) const {
+			return E_equal(energy, s.energy )
+					&& bp_i == s.bp_i
+					&& bp_j == s.bp_j
+					;
+		}
+
 	};
+
+	//! type of a vector containing seeds
+	typedef std::set<Seed> SeedSet;
 
 public:
 
@@ -52,11 +100,11 @@ public:
 	//! interacting indices
 	PairingVec basePairs;
 
-	//! energy of the interaction (can be NaN)
+	//! energy of the interaction
 	E_type energy;
 
 	//! optional: seed information
-	Seed * seed;
+	SeedSet * seed;
 
 	/**
 	 * construction
@@ -124,6 +172,21 @@ public:
 	void
 	setSeedRange( const BasePair bp_left, const BasePair bp_right, const E_type energy );
 
+	/**
+	 * Compiles the list of ranges in seq1 covered by seeds.
+	 *
+	 * @return the list of ranges covered by seeds in seq1
+	 */
+	IndexRangeList
+	getSeedRanges1() const;
+
+	/**
+	 * Compiles the list of ranges in seq2 covered by seeds.
+	 *
+	 * @return the list of ranges covered by seeds in seq2
+	 */
+	IndexRangeList
+	getSeedRanges2() const;
 
 	/**
 	 * Creates an interaction with one base pair for each interaction range
@@ -153,7 +216,6 @@ public:
 	Interaction &
 	operator= ( const InteractionRange & range );
 
-
 	/**
 	 * Checks whether or not this interaction is considered better (smaller)
 	 * than another interaction of the same sequences
@@ -164,7 +226,12 @@ public:
 	 */
 	bool operator < ( const Interaction &i ) const;
 
-
+	/**
+	 * Checks whether or not this interaction equals another
+	 * @param i the interaction to compare to (for the same sequences!)
+	 * @return (equal sequence pointers) && (same energy) && (same positions)
+	 */
+	bool operator == ( const Interaction &i ) const;
 
 	/**
 	 * Compares if an interaction has larger energy that a given value
@@ -178,13 +245,20 @@ public:
 	compareEnergy( const E_type& energy, const Interaction & hasLargerE );
 
 	/**
+	 * Prints the interacting base pair to stream
+	 * @param out the ostream to write to
+	 * @param bp the Interaction base pair object to add
+	 * @return the altered stream out
+	 */
+	friend std::ostream& operator<<(std::ostream& out, const Interaction::BasePair& bp);
+
+	/**
 	 * Prints the interacting base pairs to stream
 	 * @param out the ostream to write to
 	 * @param i the Interaction object to add
 	 * @return the altered stream out
 	 */
 	friend std::ostream& operator<<(std::ostream& out, const Interaction& i);
-
 
 	/**
 	 * Produces a dot-bar encoding of the interaction in the form
@@ -244,14 +318,6 @@ protected:
 
 };
 
-/**
- * Prints the interacting base pair to stream
- * @param out the ostream to write to
- * @param bp the Interaction base pair object to add
- * @return the altered stream out
- */
-std::ostream& operator<<(std::ostream& out, const Interaction::BasePair& bp);
-
 
 
 ////////////////////////////////////////////////////////////////////////////
@@ -265,7 +331,7 @@ Interaction::Interaction( const RnaSequence & s1, const RnaSequence & s2 )
 	s1(&s1)
 	, s2(&s2)
 	, basePairs()
-	, energy( std::numeric_limits<E_type>::signaling_NaN() )
+	, energy( E_INF )
 	, seed( NULL )
 {
 }
@@ -279,13 +345,12 @@ Interaction::Interaction( const Interaction & toCopy )
 	, s2(toCopy.s2)
 	, basePairs(toCopy.basePairs)
 	, energy( toCopy.energy )
-	, seed( toCopy.seed == NULL ? NULL : new Seed() )
+	, seed( toCopy.seed == NULL ? NULL : new SeedSet() )
 {
 	// copy seed if needed
 	if (seed != NULL) {
-		seed->bp_i = toCopy.seed->bp_i;
-		seed->bp_j = toCopy.seed->bp_j;
-		seed->energy = toCopy.seed->energy;
+		// copy all seeds
+		seed->insert(toCopy.seed->begin(), toCopy.seed->end());
 	}
 }
 
@@ -297,7 +362,7 @@ Interaction::Interaction( const InteractionRange & range )
 	s1(NULL)
 	, s2(NULL)
 	, basePairs()
-	, energy( std::numeric_limits<E_type>::signaling_NaN() )
+	, energy( E_INF )
 	, seed( NULL )
 {
 	// init data
@@ -309,7 +374,7 @@ Interaction::Interaction( const InteractionRange & range )
 inline
 Interaction::~Interaction()
 {
-	 INTARNA_CLEANUP(seed);
+	INTARNA_CLEANUP(seed);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -343,9 +408,9 @@ clear()
 	// clear interaction base pairing information
 	basePairs.clear();
 	// clear energy
-	energy = std::numeric_limits<E_type>::signaling_NaN();
+	energy = E_INF;
 	// undo seed information
-	 INTARNA_CLEANUP(seed);
+	INTARNA_CLEANUP(seed);
 
 }
 
@@ -397,40 +462,18 @@ operator < ( const Interaction &i ) const
 				&& basePairs.rbegin()->first == i.basePairs.rbegin()->first // j1
 				&& basePairs.rbegin()->second == i.basePairs.rbegin()->second // j2
 				&& basePairs.size() > i.basePairs.size())
-		// i1, i2, j1, j2, #bps are equal BUT seed energy smaller
+		// i1, i2, j1, j2, #bps are equal BUT first seed energy smaller
 		|| (basePairs.begin()->first == i.basePairs.begin()->first // i1
 				&& basePairs.begin()->second == i.basePairs.begin()->second // i2
 				&& basePairs.rbegin()->first == i.basePairs.rbegin()->first // j1
 				&& basePairs.rbegin()->second == i.basePairs.rbegin()->second // j2
 				&& basePairs.size() == i.basePairs.size()
-				&& seed != NULL && i.seed != NULL && seed->energy < i.seed->energy)
+				&& seed != NULL && seed->size() > 0 && i.seed != NULL && i.seed->size() > 0 && seed->begin()->energy < i.seed->begin()->energy)
 			;
 	} else {
 		// has to have smaller energy
 		return true;
 	}
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-std::ostream&
-operator<<(std::ostream& out, const Interaction::BasePair& bp)
-{
-	out <<"("<<bp.first<<"-"<<bp.second<<")";
-	return out;
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-std::ostream&
-operator<<(std::ostream& out, const Interaction& i)
-{
-	for (int p=0; p<i.basePairs.size(); p++) {
-		out <<(p==0?"":",") <<i.basePairs.at(p);
-	}
-	return out;
 }
 
 ////////////////////////////////////////////////////////////////////////////

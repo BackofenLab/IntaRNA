@@ -9,14 +9,14 @@ PredictionTrackerSpotProbAll::
 PredictionTrackerSpotProbAll(
 		const InteractionEnergy & energy
 		, const std::string & streamName
-		, const std::string E_INF_string
+		, const std::string NA_string
 	)
  :	PredictionTracker()
 	, energy(energy)
 	, deleteStreamsOnDestruction(true)
 	, outStream(NULL)
-	, E_INF_string(E_INF_string)
-	, overallZ( 0.0 )
+	, NA_string(NA_string)
+	, overallZ( Z_type(0.0) )
 	, pairZ( energy.size1(), energy.size2(), (Z_type)0.0 ) // init 0
 {
 #if INTARNA_IN_DEBUG_MODE
@@ -37,14 +37,14 @@ PredictionTrackerSpotProbAll::
 PredictionTrackerSpotProbAll(
 		const InteractionEnergy & energy
 		, std::ostream * outStream
-		, const std::string E_INF_string
+		, const std::string NA_string
 	)
  :	PredictionTracker()
 	, energy(energy)
 	, deleteStreamsOnDestruction(false)
 	, outStream(outStream)
-	, E_INF_string(E_INF_string)
-	, overallZ( 0.0 )
+	, NA_string(NA_string)
+	, overallZ( Z_type(0.0) )
 	, pairZ( energy.size1(), energy.size2(), (Z_type)0.0 ) // init 0
 {
 }
@@ -58,7 +58,7 @@ PredictionTrackerSpotProbAll::
 				, pairZ
 				, overallZ
 				, energy
-				, E_INF_string );
+				, NA_string );
 
 	// clean up if file pointers were created in constructor
 	if (deleteStreamsOnDestruction) {
@@ -113,7 +113,7 @@ writeData( std::ostream &out
 			, const Z2dMatrix & pairZ
 			, const Z_type & overallZ
 			, const InteractionEnergy & energy
-			, const std::string & E_INF_string )
+			, const std::string & NA_string )
 {
 	// direct access to sequence string information
 	const std::string & rna1 = energy.getAccessibility1().getSequence().asString();
@@ -138,8 +138,8 @@ writeData( std::ostream &out
 			// out separator
 			out <<';';
 			// out infinity replacement if needed
-			if ( E_isINF( pairZ(i,j) ) ) {
-				out<<E_INF_string;
+			if ( Z_isINF( pairZ(i,j) ) ) {
+				out<<NA_string;
 			} else {
 				// print probability = pairZ / overallZ
 				out <<(pairZ(i,j)/overallZ);

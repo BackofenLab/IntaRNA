@@ -15,12 +15,17 @@ AccessibilityFromStream(
 		, const AccessibilityConstraint * const accConstraint
 		, std::istream & inStream
 		, const InStreamType inStreamType
-		, const E_type RT
+		, const Z_type RT
 		)
  :	Accessibility( sequence, maxLength, accConstraint )
 	, edValues()
 	, availMaxLength( Accessibility::getMaxLength() )
 {
+#if INTARNA_MULITHREADING
+	#pragma omp critical(intarna_omp_logOutput)
+#endif
+	{ VLOG(2) <<"reading accessibility from input..."; }
+
 	if (accConstraint != NULL && !accConstraint->isEmpty()) {
 		INTARNA_NOT_IMPLEMENTED("AccessibilityFromStream: accessibility constraints not supported for direct accessibility input");
 	}
@@ -49,7 +54,7 @@ AccessibilityFromStream::
 
 void
 AccessibilityFromStream::
-parseRNAplfold_text( std::istream & inStream, const E_type RT, const bool parseProbs )
+parseRNAplfold_text( std::istream & inStream, const Z_type RT, const bool parseProbs )
 {
 #if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_omp_logOutput)
@@ -128,7 +133,7 @@ parseRNAplfold_text( std::istream & inStream, const E_type RT, const bool parseP
 					+ toString(lastJ)+" lines of values");
 		}
 
-		// parse probabilities for this line and store
+		// parse probabilities or EDs for this line and store
 		double curVal;
 		size_t minI = j - std::min( j, getMaxLength() );
 		for ( size_t i = j; i>minI; i--) {
@@ -140,16 +145,16 @@ parseRNAplfold_text( std::istream & inStream, const E_type RT, const bool parseP
 								+" : the "+toString(j+1-i)+". value = "+toString(curVal)+" is no probability in [0,1]");
 					}
 					edValues( i-1, j-1 ) = curVal > 0
-											? std::min<E_type>(ED_UPPER_BOUND, - RT * std::log( curVal ))
+											? std::min<E_type>(ED_UPPER_BOUND, Z_2_E( - RT * Z_log( Z_type(curVal) ) ))
 											: ED_UPPER_BOUND;
 				}
-				// or ED values
+				// or ED values (in kcal/mol)
 				else {
 					if (curVal < 0.0) {
 						throw std::runtime_error("AccessibilityFromStream::parseRNAplfold_Text(ED) : in line i="+toString(j)
 								+" : the "+toString(j+1-i)+". value = "+toString(curVal)+" is no ED value >= 0");
 					}
-					edValues( i-1, j-1 ) = std::min<E_type>(ED_UPPER_BOUND, curVal);
+					edValues( i-1, j-1 ) = std::min<E_type>(ED_UPPER_BOUND, Ekcal_2_E(curVal));
 				}
 			} else {
 				throw std::runtime_error("AccessibilityFromStream::parseRNAplfold_text() : in line i="+toString(j)

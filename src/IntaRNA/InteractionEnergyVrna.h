@@ -21,6 +21,8 @@ extern "C" {
 
 #include <boost/numeric/ublas/triangular.hpp>
 
+#define Evrna_2_E( e ) ( static_cast<E_type>(e) )
+
 namespace IntaRNA {
 
 // http://www.tbi.univie.ac.at/RNA/ViennaRNA/doc/RNAlib-2.3.0.pdf
@@ -53,7 +55,12 @@ public:
 	 *          for an intermolecular loop closed by base pairs (i1,i2) and
 	 *          (j1,j2) : (j2-i2+1) <= maxInternalLoopSize
 	 * @param initES whether or not ES values are to be computed
-	 *
+	 * @param energyAdd when computing the overall energy via getE(), this term
+	 *          is always added; thus it defines a shift of the energy spectrum
+	 *          as e.g. needed when computing predictions with accessibility
+	 *          constraints
+	 * @param energyWithDangles whether or not dangling end contributions are
+	 *          considered within overall energies
 	 */
 	InteractionEnergyVrna( const Accessibility & accS1
 					, const ReverseAccessibility & accS2
@@ -61,6 +68,8 @@ public:
 					, const size_t maxInternalLoopSize1 = 16
 					, const size_t maxInternalLoopSize2 = 16
 					, const bool initES = false
+					, const E_type energyAdd = Ekcal_2_E(0.0)
+					, const bool energyWithDangles = true
 				);
 
 	virtual ~InteractionEnergyVrna();
@@ -233,7 +242,7 @@ public:
 	 * @return R*temperature
 	 */
 	virtual
-	E_type
+	Z_type
 	getRT() const;
 
 	/**
@@ -276,7 +285,7 @@ protected:
 	vrna_param_t * foldParams;
 
 	//! the RT constant to be used for Boltzmann weight computations
-	E_type RT;
+	Z_type RT;
 
 	//! base pair code for (C,G)
 	const int bpCG;
@@ -323,7 +332,7 @@ InteractionEnergyVrna::
 getE_init() const
 {
 	// init term is sequence independent
-	return (E_type)foldParams->DuplexInit/(E_type)100.0;
+	return Evrna_2_E(foldParams->DuplexInit);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -334,7 +343,7 @@ InteractionEnergyVrna::
 getE_endLeft( const size_t i1, const size_t i2 ) const
 {
 	// VRNA non-GC penalty
-	return isGC(i1,i2) ? 0.0 : (E_type)foldParams->TerminalAU/(E_type)100.0;
+	return Evrna_2_E( isGC(i1,i2) ? 0.0 : foldParams->TerminalAU );
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -345,13 +354,13 @@ InteractionEnergyVrna::
 getE_endRight( const size_t j1, const size_t j2 ) const
 {
 	// VRNA non-GC penalty
-	return isGC(j1,j2) ? 0.0 : (E_type)foldParams->TerminalAU/(E_type)100.0;
+	return Evrna_2_E( isGC(j1,j2) ? 0.0 : foldParams->TerminalAU );
 }
 
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-E_type
+Z_type
 InteractionEnergyVrna::
 getRT() const
 {
@@ -365,7 +374,7 @@ E_type
 InteractionEnergyVrna::
 getBestE_end() const
 {
-	return (E_type)std::min(0,foldParams->TerminalAU)/(E_type)100.0;
+	return (E_type)std::min(0,Evrna_2_E(foldParams->TerminalAU));
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -379,7 +388,7 @@ getE_interLeft( const size_t i1, const size_t j1, const size_t i2, const size_t 
 	if ( isValidInternalLoop(i1,j1,i2,j2) ) {
 		assert( i1!=j1 && i2!=j2 );
 		// Vienna RNA : compute internal loop / stacking energy for base pair [i1,i2]
-		return (E_type)E_IntLoop(	(int)j1-i1-1	// unpaired region 1
+		return Evrna_2_E(E_IntLoop(	(int)j1-i1-1	// unpaired region 1
 							, (int)j2-i2-1	// unpaired region 2
 							, BP_pair[accS1.getSequence().asCodes().at(i1)][accS2.getSequence().asCodes().at(i2)]	// type BP (i1,i2)
 							, BP_pair[accS2.getSequence().asCodes().at(j2)][accS1.getSequence().asCodes().at(j1)]	// type BP (j2,j1)
@@ -387,9 +396,7 @@ getE_interLeft( const size_t i1, const size_t j1, const size_t i2, const size_t 
 							, accS2.getSequence().asCodes().at(i2+1)
 							, accS1.getSequence().asCodes().at(j1-1)
 							, accS2.getSequence().asCodes().at(j2-1)
-							, foldParams)
-				// correct from dcal/mol to kcal/mol
-				/ (E_type)100.0
+							, foldParams))
 				;
 	} else {
 		return E_INF;
@@ -404,14 +411,11 @@ InteractionEnergyVrna::
 getE_danglingLeft( const size_t i1, const size_t i2 ) const
 {
 	// Vienna RNA : dangling end contribution
-	return (E_type) E_Stem( BP_pair[accS1.getSequence().asCodes().at(i1)][accS2.getSequence().asCodes().at(i2)]
+	return Evrna_2_E(vrna_E_ext_stem( BP_pair[accS1.getSequence().asCodes().at(i1)][accS2.getSequence().asCodes().at(i2)]
 							  , ( i1==0 ? -1 : accS1.getSequence().asCodes().at(i1-1) )
 							  , ( i2==0 ? -1 : accS2.getSequence().asCodes().at(i2-1) )
-							  , 1 // is an external loop
 							  , foldParams
-							  )
-					// correct from dcal/mol to kcal/mol
-							  /(E_type)100.0
+							  ))
 			// substract closing penalty
 			- getE_endLeft(i1,i2);
 }
@@ -424,14 +428,11 @@ InteractionEnergyVrna::
 getE_danglingRight( const size_t j1, const size_t j2 ) const
 {
 	// Vienna RNA : dangling end contribution (reverse base pair to be sequence end conform)
-	return (E_type) E_Stem( BP_pair[accS2.getSequence().asCodes().at(j2)][accS1.getSequence().asCodes().at(j1)]
+	return Evrna_2_E(vrna_E_ext_stem( BP_pair[accS2.getSequence().asCodes().at(j2)][accS1.getSequence().asCodes().at(j1)]
 							  , ( j2+1>=accS2.getSequence().size() ? -1 : accS2.getSequence().asCodes().at(j2+1) )
 							  , ( j1+1>=accS1.getSequence().size() ? -1 : accS1.getSequence().asCodes().at(j1+1) )
-							  , 1 // is an external loop
 							  , foldParams
-							  )
-					// correct from dcal/mol to kcal/mol
-							  /(E_type)100.0
+							  ))
 			// substract closing penalty
 			- getE_endRight(j1,j2);
 }
@@ -490,7 +491,7 @@ E_type
 InteractionEnergyVrna::
 getE_multiUnpaired( const size_t numUnpaired ) const
 {
-	return numUnpaired * ((E_type)foldParams->MLbase) / (E_type)100.0;
+	return E_type(numUnpaired) * (Evrna_2_E(foldParams->MLbase));
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -500,10 +501,10 @@ E_type
 InteractionEnergyVrna::
 getE_multiHelix( const size_t j1, const size_t j2 ) const
 {
-	return ((E_type)foldParams->MLintern[
+	return (Evrna_2_E(foldParams->MLintern[
 	                                     BP_pair[accS2.getSequence().asCodes().at(j2)]
 	                                             [accS1.getSequence().asCodes().at(j1)]
-	                                    ]) / (E_type)100.0;
+	                                    ]));
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -513,7 +514,7 @@ E_type
 InteractionEnergyVrna::
 getE_multiClosing() const
 {
-	return ((E_type)foldParams->MLclosing) / (E_type)100.0;
+	return (Evrna_2_E(foldParams->MLclosing));
 }
 
 ////////////////////////////////////////////////////////////////////////////

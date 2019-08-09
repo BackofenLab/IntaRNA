@@ -75,60 +75,6 @@ protected:
 	//! the ED values for the given sequence
 	EdMatrix edValues;
 
-	/**
-	 * Computes the free energy of the structure ensemble that is unstructured
-	 * in the region [start_unfold,end_unfold] including the boundaries.
-	 * If start and end are set to -1 the full structure ensemble without
-	 * constraints is considered.
-	 *
-	 * @param start_unfold first position to be unstructured, or -1 if no
-	 * structure constraint is to be set
-	 * @param end_unfold last position to be unstructured, or -1 if no
-	 * structure constraint is to be set
-	 * @param partFoldParams the folding parameters to be used
-	 *
-	 * @return the energy of the structure ensemble
-	 */
-	E_type
-	calc_ensemble_free_energy(
-			const int start_unfold
-			, const int end_unfold
-			, vrna_exp_param_s * partFoldParams
-			);
-
-	/**
-	 * Computes a scaling factor to avoid overflow in partition function
-	 * computation.
-	 *
-	 * @param seq the sequence the parameter is for
-	 * @param vrnaHandler the VRNA handler to be used
-	 * @param plFoldL the maximal base pair span to be used or 0 for plFoldW
-	 */
-	double
-	getPfScale( const RnaSequence & seq
-				, const VrnaHandler & vrnaHandler
-				, const size_t plFoldL );
-
-
-	/**
-	 * Use the old intaRNA way using n^2 constrained folding to fill ED-values
-	 *
-	 * @param vrnaHandler the VRNA handler to be used
-	 * @param plFoldL the maximal base pair span to be used or 0 for plFoldW
-	 */
-	void
-	fillByConstraints( const VrnaHandler &vrnaHandler
-						, const size_t plFoldL );
-
-	/**
-	 * Use RNAup-like style to fill ED-values
-	 *
-	 * @param vrnaHandler the VRNA handler to be used
-	 * @param plFoldL the maximal base pair span to be used or 0 for plFoldW
-	 */
-	void
-	fillByRNAup( const VrnaHandler &vrnaHandler
-					, const size_t plFoldL );
 
 	/**
 	 * Use RNAplfold-like style to fill ED-values

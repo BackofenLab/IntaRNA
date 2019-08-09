@@ -33,9 +33,11 @@ public:
 	 *        allowed within a seed
 	 * @param maxE maximal energy a seed is allowed to have
 	 * @param maxED maximal ED value a seed is allowed to have for each subsequence
+	 * @param maxE maximal hybridization energy (including E_init) a seed is allowed to have
 	 * @param ranges1 the index ranges of seq1 to be searched for seeds
 	 * @param ranges2reversed the index reversed ranges of seq2 to be searched for seeds
 	 * @param explicitSeeds the encodings of explicit seed interactions to be used
+	 * @param noGUallowed whether or not GU base pairs are allowed within seeds
 	 */
 	SeedConstraint(  const size_t bp
 				, const size_t maxUnpairedOverall
@@ -43,9 +45,11 @@ public:
 				, const size_t maxUnpaired2
 				, const E_type maxE
 				, const E_type maxED
+				, const E_type maxEhybrid
 				, const IndexRangeList & ranges1
 				, const IndexRangeList & ranges2reversed
 				, const std::string & explicitSeeds
+				, const bool noGUallowed
 				);
 
 	virtual ~SeedConstraint();
@@ -106,6 +110,15 @@ public:
 	getMaxED() const;
 
 	/**
+	 * Provides the maximally allowed hybridization energy (including E_init)
+	 * for seeds to be considered
+	 *
+	 * @return the maximally allowed hybridization energy for a seed
+	 */
+	E_type
+	getMaxEhybrid() const;
+
+	/**
 	 * Provides the maximal length of the seed in seq1
 	 * @return the maximal length of the seed in seq1
 	 */
@@ -118,6 +131,13 @@ public:
 	 */
 	size_t
 	getMaxLength2() const;
+
+	/**
+	 * Whether or not GU base pairs are allowed within seeds
+	 * @return true if GU base pairs are allowed; false otherwise
+	 */
+	bool
+	isGUallowed() const;
 
 	/**
 	 * Index ranges in seq1 to be searched for seeds or empty if all indices
@@ -193,6 +213,9 @@ protected:
 	//! the maximal ED value (per sequence) allowed for a seed
 	E_type maxED;
 
+	//! the maximal hybridization energy (incl E_init) allowed for a seed
+	E_type maxEhybrid;
+
 	//! the index ranges of seq1 to be searched for seeds
 	IndexRangeList ranges1;
 
@@ -201,6 +224,9 @@ protected:
 
 	//! the string encoding of the explicit seed interactions to be used
 	std::string explicitSeeds;
+
+	//! whether or not GU base pairs are allowed within seeds
+	bool bpGUallowed;
 
 };
 
@@ -217,9 +243,11 @@ SeedConstraint::SeedConstraint(
 		, const size_t maxUnpaired2_
 		, const E_type maxE_
 		, const E_type maxED_
+		, const E_type maxEhybrid
 		, const IndexRangeList & ranges1
 		, const IndexRangeList & ranges2reversed
 		, const std::string & explicitSeeds
+		, const bool noGUallowed
 		)
  :
 	  bp(bp_)
@@ -228,9 +256,11 @@ SeedConstraint::SeedConstraint(
 	, maxUnpaired2(std::min(maxUnpaired2_,maxUnpairedOverall_)) // exclude too large boundaries
 	, maxE(maxE_)
 	, maxED(maxED_)
+	, maxEhybrid(maxEhybrid)
 	, ranges1(ranges1)
 	, ranges2(ranges2reversed)
 	, explicitSeeds(explicitSeeds)
+	, bpGUallowed(!noGUallowed)
 {
 	if (bp < 2) throw std::runtime_error("SeedConstraint() : base pair number ("+toString(bp)+") < 2");
 }
@@ -266,6 +296,15 @@ E_type
 SeedConstraint::
 getMaxED() const {
 	return maxED;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+SeedConstraint::
+getMaxEhybrid() const {
+	return maxEhybrid;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -370,6 +409,15 @@ getExplicitSeeds() {
 /////////////////////////////////////////////////////////////////////////////
 
 inline
+bool
+SeedConstraint::
+isGUallowed() const {
+	return bpGUallowed;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+inline
 std::ostream&
 operator<<(std::ostream& out, const SeedConstraint& c)
 {
@@ -377,7 +425,10 @@ operator<<(std::ostream& out, const SeedConstraint& c)
 			<<", up="<<c.getMaxUnpairedOverall()
 			<<", up1="<<c.getMaxUnpaired1()
 			<<", up2="<<c.getMaxUnpaired2()
-			<<", E="<<c.getMaxE()
+			<<", E="<<E_2_Ekcal(c.getMaxE())
+			<<", ED="<<E_2_Ekcal(c.getMaxED())
+			<<", Ehybrid="<<E_2_Ekcal(c.getMaxEhybrid())
+			<<", noGU="<<(c.isGUallowed() ? "false":"true")
 			<<")";
 	return out;
 }

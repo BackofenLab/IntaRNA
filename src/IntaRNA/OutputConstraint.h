@@ -37,11 +37,17 @@ public:
 	//! defines whether and where overlapping interaction sites are allowed for reporting
 	const ReportOverlap reportOverlap;
 
-	//! the maximal energy of a reported interaction (<= 0.0)
+	//! upper bound (exclusive) for the energy of a reported interaction (E(interaction) < maxE)
 	const E_type maxE;
 
 	//! the maximal energy difference to the mfe of a reported interaction
 	const E_type deltaE;
+
+	//! whether or not only the best or all putative seeds are to be reported
+	const bool bestSeedOnly;
+
+	//! whether or not lonely (non-stacked) inter-molecular base pairs are to be considered
+	const bool noLP;
 
 public:
 
@@ -52,13 +58,17 @@ public:
 	 *            reported to the output handler
 	 * @param reportOverlap defines whether and where overlapping interaction
 	 *            sites are allowed for reporting
-	 * @param maxE maximal energy of a reported interaction (<= 0.0)
+	 * @param maxE upper bound (exclusive) for the energy of a reported interaction (E(interaction) < maxE)
 	 * @param deltaE maximal energy difference of a reported interaction to mfe
+	 * @param bestSeedOnly whether or not only the best seed is to be reported
+	 * @param noLP whether or not lonely (non-stacked) inter-molecular bps are allowed
 	 */
 	OutputConstraint(	  const size_t reportMax = 1
 						, const ReportOverlap reportOverlap = OVERLAP_BOTH
 						, const E_type maxE = 0.0
-						, const E_type deltaE = E_INF );
+						, const E_type deltaE = E_INF
+						, const bool bestSeedOnly = false
+						, const bool noLP = false );
 
 	//! destruction
 	virtual ~OutputConstraint();

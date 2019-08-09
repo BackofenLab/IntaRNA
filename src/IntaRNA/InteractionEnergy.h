@@ -55,6 +55,8 @@ public:
 		E_type endLeft;
 		//! the energy penalty for the right end of the interaction
 		E_type endRight;
+		//! the energy shift requested by the user
+		E_type energyAdd;
 	};
 
 
@@ -73,12 +75,19 @@ public:
 	 *          between two intermolecular base pairs in sequence 2, ie it holds
 	 *          for an intermolecular loop closed by base pairs (i1,i2) and
 	 *          (j1,j2) : (j2-i2) <= (1+maxInternalLoopSize2)
-	 *
+	 * @param energyAdd when computing the overall energy via getE(), this term
+	 *          is always added; thus it defines a shift of the energy spectrum
+	 *          as e.g. needed when computing predictions with accessibility
+	 *          constraints
+	 * @param energyWithDangle whether or not danling end energy contributions
+	 *          are taken into account for the overall energy computation
 	 */
 	InteractionEnergy( const Accessibility & accS1
 			, const ReverseAccessibility & accS2
 			, const size_t maxInternalLoopSize1
 			, const size_t maxInternalLoopSize2
+			, const E_type energyAdd
+			, const bool energyWithDangle
 			);
 
 	/**
@@ -118,7 +127,7 @@ public:
 	 */
 	virtual
 	E_type
-	getE( const E_type Z ) const;
+	getE( const Z_type Z ) const;
 
 	/**
 	 * Provides details about the energy contributions for the given interaction
@@ -140,6 +149,16 @@ public:
 	virtual
 	bool
 	areComplementary( const size_t i1, const size_t i2 ) const;
+
+	/**
+	 * Checks whether or not two positions can form a GU base pair
+	 * @param i1 index in first sequence
+	 * @param i2 index in second sequence
+	 * @return true if seq1(i1) can form a GU base pair with seq2(i2)
+	 */
+	virtual
+	bool
+	isGU( const size_t i1, const size_t i2 ) const;
 
 	/**
 	 * Length of sequence 1
@@ -308,7 +327,7 @@ public:
 	 * Computes the energy estimate for the 'left side' interaction loop region
 	 * closed by the intermolecular base pairs (i1,i2) and enclosing (j1,j2)
 	 * where the regions [i1,j1] and [i2,j2] are considered unpaired or E_INF
-	 * is the internal loop size exceeds the allowed maximum (see constructor).
+	 * if the internal loop size exceeds the allowed maximum (see constructor).
 	 *
 	 * Note, the right interaction base pair (j1,j2) is not included in the
 	 * returned energy value.
@@ -394,7 +413,7 @@ public:
 	 * @return the dangling end probability for the left side of the interaction
 	 */
 	virtual
-	E_type
+	Z_type
 	getPr_danglingLeft( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const;
 
 	/**
@@ -410,7 +429,7 @@ public:
 	 * @return the dangling end probability for the right side of the interaction
 	 */
 	virtual
-	E_type
+	Z_type
 	getPr_danglingRight( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const;
 
 	/**
@@ -453,7 +472,7 @@ public:
 	 * Access to the normalized temperature for Boltzmann weight computation
 	 */
 	virtual
-	E_type
+	Z_type
 	getRT() const = 0;
 
 
@@ -493,7 +512,7 @@ public:
 	 * @return the Boltzmann weight, i.e. exp( - energy / RT );
 	 */
 	virtual
-	E_type
+	Z_type
 	getBoltzmannWeight( const E_type energy ) const ;
 
 
@@ -525,6 +544,15 @@ public:
 	size_t
 	getIndex2( const Interaction::BasePair & bp ) const;
 
+	/**
+	 * Provides the energy shift used
+	 * @return the energy contribution always added to compute the overall
+	 *         energy
+	 */
+	virtual
+	E_type
+	getEnergyAdd() const;
+
 
 protected:
 
@@ -541,6 +569,12 @@ protected:
 	//! maximally allowed unpaired range between two base pairs in sequence S2
 	//! forming an intermolecular internal loop
 	const size_t maxInternalLoopSize2;
+
+	//! user defined shift of the energy spectrum
+	const E_type energyAdd;
+
+	//! whether or not dangling end energy contributions are to be added
+	const bool energyWithDangles;
 
 	/**
 	 * Checks whether or not the given indices are valid index region within the
@@ -593,13 +627,16 @@ InteractionEnergy::InteractionEnergy( const Accessibility & accS1
 				, const ReverseAccessibility & accS2
 				, const size_t maxInternalLoopSize1
 				, const size_t maxInternalLoopSize2
+				, const E_type energyAdd
+				, const bool energyWithDangles
 		)
   :
 	accS1(accS1)
 	, accS2(accS2)
 	, maxInternalLoopSize1(maxInternalLoopSize1)
 	, maxInternalLoopSize2(maxInternalLoopSize2)
-
+	, energyAdd(energyAdd)
+	, energyWithDangles(energyWithDangles)
 {
 }
 
@@ -635,6 +672,16 @@ InteractionEnergy::
 areComplementary( const size_t i1, const size_t i2 ) const
 {
 	return RnaSequence::areComplementary( accS1.getSequence(), accS2.getSequence(), i1, i2);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+InteractionEnergy::
+isGU( const size_t i1, const size_t i2 ) const
+{
+	return RnaSequence::isGU( accS1.getSequence(), accS2.getSequence(), i1, i2);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -698,10 +745,20 @@ getAccessibility2() const
 inline
 E_type
 InteractionEnergy::
+getEnergyAdd() const
+{
+	return energyAdd;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+Z_type
+InteractionEnergy::
 getBoltzmannWeight( const E_type e ) const
 {
 	// TODO can be optimized when using exp-energies from VRNA
-	return std::exp( - e / getRT() );
+	return Z_exp( - E_2_Z(e) / getRT() );
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -782,19 +839,19 @@ isAccessible2( const size_t i ) const
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-E_type
+Z_type
 InteractionEnergy::
 getPr_danglingLeft( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const
 {
 	// initial probabilities
-	E_type probDangle1 = 1.0, probDangle2 = 1.0;
+	Z_type probDangle1 = 1.0, probDangle2 = 1.0;
 
 	// if dangle1 possible
 	if (i1>0)  {
 		// Pr( i1-1 is unpaired | i1..j1 unpaired )
 		probDangle1 =
-			std::max( (E_type)0.0
-					, std::min( (E_type)1.0
+			std::max( (Z_type)0.0
+					, std::min( (Z_type)1.0
 							, getBoltzmannWeight( getED1(i1-1,j1)-getED1(i1,j1) )
 							)
 					)
@@ -804,8 +861,8 @@ getPr_danglingLeft( const size_t i1, const size_t j1, const size_t i2, const siz
 	if (i2>0)  {
 		// Pr( i2-1 is unpaired | i2..j2 unpaired )
 		probDangle2 =
-			std::max( (E_type)0.0
-					, std::min( (E_type)1.0
+			std::max( (Z_type)0.0
+					, std::min( (Z_type)1.0
 							, getBoltzmannWeight( getED2(i2-1,j2)-getED2(i2,j2) )
 							)
 					)
@@ -819,19 +876,19 @@ getPr_danglingLeft( const size_t i1, const size_t j1, const size_t i2, const siz
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-E_type
+Z_type
 InteractionEnergy::
 getPr_danglingRight( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const
 {
 	// initial probabilities
-	E_type probDangle1 = 1.0, probDangle2 = 1.0;
+	Z_type probDangle1 = 1.0, probDangle2 = 1.0;
 
 	// if dangle1 possible
 	if (j1+1<size1())  {
 		// Pr( j1+1 is unpaired | i1..j1 unpaired )
 		probDangle1 =
-			std::max( (E_type)0.0
-					, std::min( (E_type)1.0
+			std::max( (Z_type)0.0
+					, std::min( (Z_type)1.0
 							, getBoltzmannWeight( getED1(i1,j1+1)-getED1(i1,j1) )
 							)
 					)
@@ -841,8 +898,8 @@ getPr_danglingRight( const size_t i1, const size_t j1, const size_t i2, const si
 	if (j2+1<size2())  {
 		// Pr( j2+1 is unpaired | i2..j2 unpaired )
 		probDangle2 =
-			std::max( (E_type)0.0
-					, std::min( (E_type)1.0
+			std::max( (Z_type)0.0
+					, std::min( (Z_type)1.0
 							, getBoltzmannWeight( getED2(i2,j2+1)-getED2(i2,j2) )
 							)
 					)
@@ -862,8 +919,11 @@ getE( const size_t i1, const size_t j1
 		, const size_t i2, const size_t j2
 		, const E_type hybridE ) const
 {
-	// check if hybridization energy is not infinite
-	if ( E_isNotINF(hybridE) ) {
+	// check if hybridization energy and EDs are not infinite
+	if ( E_isNotINF(hybridE)
+			&& (getED1( i1, j1 ) < Accessibility::ED_UPPER_BOUND)
+			&& (getED2( i2, j2 ) < Accessibility::ED_UPPER_BOUND))
+	{
 		// compute overall interaction energy
 		return hybridE
 				// accessibility penalty
@@ -871,11 +931,12 @@ getE( const size_t i1, const size_t j1
 				+ getED2( i2, j2 )
 				// dangling end penalty
 				// weighted by the probability that ends are unpaired
-				+ (getE_danglingLeft( i1, i2 )*getPr_danglingLeft(i1,j1,i2,j2))
-				+ (getE_danglingRight( j1, j2 )*getPr_danglingRight(i1,j1,i2,j2))
+				+ (energyWithDangles ? Z_2_E(E_2_Z(getE_danglingLeft( i1, i2 ))*getPr_danglingLeft(i1,j1,i2,j2)) : E_type(0))
+				+ (energyWithDangles ? Z_2_E(E_2_Z(getE_danglingRight( j1, j2 ))*getPr_danglingRight(i1,j1,i2,j2)) : E_type(0))
 				// helix closure penalty
 				+ getE_endLeft( i1, i2 )
 				+ getE_endRight( j1, j2 )
+				+ getEnergyAdd()
 				;
 	} else {
 		// hybridE is infinite, thus overall energy is infinity as well
@@ -888,10 +949,11 @@ getE( const size_t i1, const size_t j1
 inline
 E_type
 InteractionEnergy::
-getE( const E_type Z ) const
+getE( const Z_type Z ) const
 {
 	// convert partition function to ensemble energy
-	return - getRT() * std::log( Z );
+	// convert to E_type
+	return Z_2_E( - getRT() * Z_log( Z ) );
 }
 
 
@@ -917,9 +979,12 @@ getE_multi(  const size_t i1, const size_t j1
 			// intramolecular structure contributions
 			  (ES_mode != ES_multi_2only ? getES1(i1,j1) : 0)
 			+ (ES_mode != ES_multi_1only ? getES2(i2,j2) : 0)
-			// dangling end treatments (including helix closure penalty)
-			+ getE_danglingRight(i1,i2)
-			+ getE_danglingLeft(j1,j2)
+			// dangling end treatments of helix ends
+			+ (energyWithDangles ? getE_danglingRight(i1,i2) : E_type(0))
+			+ (energyWithDangles ? getE_danglingLeft(j1,j2) : E_type(0))
+			// helix closure penalties
+			+ getE_endRight(i1,i2)
+			+ getE_endLeft(j1,j2)
 			// multiloop unpaired contributions
 			+ getE_multiUnpaired(
 					(ES_mode == ES_multi_2only ? j1-i1-1 : 0 )

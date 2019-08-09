@@ -20,7 +20,7 @@ TEST_CASE( "InteractionEnergyBasePair", "[InteractionEnergyBasePair]" ) {
 	ReverseAccessibility rAcc(acc);
 
 	size_t maxLoop1 = 1, maxLoop2 = 2;
-	InteractionEnergyBasePair energy( acc, rAcc, maxLoop1, maxLoop2, true, 1, -1, 1);
+	InteractionEnergyBasePair energy( acc, rAcc, maxLoop1, maxLoop2, true, 1, Ekcal_2_E(-1.0), 1);
 
 	SECTION("data access") {
 		// check
@@ -72,12 +72,12 @@ TEST_CASE( "InteractionEnergyBasePair", "[InteractionEnergyBasePair]" ) {
 	}
 
   SECTION("ES computation") {
-    REQUIRE( std::abs(energy.getES1(0, 3) - (-1.313186)) < 1e-4 );
-    REQUIRE( std::abs(energy.getES2(0, 3) - (-1.313186)) < 1e-4 );
-    REQUIRE( std::isinf(energy.getES1(0, 2)) );
-    REQUIRE( std::isinf(energy.getES1(1, 2)) );
-    REQUIRE( std::isinf(energy.getES2(0, 2)) );
-    REQUIRE( std::isinf(energy.getES2(1, 2)) );
+    REQUIRE( E_equal(energy.getES1(0, 3), Ekcal_2_E(-1.313186)) );
+    REQUIRE( E_equal(energy.getES2(0, 3), Ekcal_2_E(-1.313186)) );
+    REQUIRE( E_isINF(energy.getES1(0, 2)) );
+    REQUIRE( E_isINF(energy.getES1(1, 2)) );
+    REQUIRE( E_isINF(energy.getES2(0, 2)) );
+    REQUIRE( E_isINF(energy.getES2(1, 2)) );
   }
 
 }

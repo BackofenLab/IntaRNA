@@ -17,6 +17,7 @@
 #include "IntaRNA/InteractionEnergy.h"
 #include "IntaRNA/HelixConstraint.h"
 #include "IntaRNA/HelixHandler.h"
+#include "IntaRNA/OutputStreamHandler.h"
 #include "IntaRNA/OutputHandler.h"
 #include "IntaRNA/Predictor.h"
 #include "IntaRNA/SeedConstraint.h"
@@ -47,15 +48,57 @@ public:
 		NOT_PARSED_YET = 999
 	};
 
+	enum Personality {
+		IntaRNA,		// default
+		IntaRNA1,		// IntaRNA v1 like setup
+		IntaRNA2,		// IntaRNA v2 like setup
+		IntaRNA3,		// default IntaRNA v3 setup
+		IntaRNAens,		// ensemble-based prediction
+		IntaRNAsTar,	// sRNA-target prediction (optimized parameter)
+		IntaRNAseed,  	// seed-only predictions
+		IntaRNAhelix,  	// helix-block-based predictions
+		IntaRNAduplex,	// RNAhybrid/RNAduplex-like
+		IntaRNAexact	// RNAup-like exact predictions
+	};
+	// TODO if extended: also extend both getPersonality() and getPersonalityName()
+
+
+	/**
+	 * Identifies the requested personality from the given call arguments
+	 */
+	static
+	std::string
+	getPersonalityName( Personality p ) {
+		switch(p) {
+		case IntaRNA : return "IntaRNA";
+		case IntaRNA1 : return "IntaRNA1";
+		case IntaRNA2 : return "IntaRNA2";
+		case IntaRNA3 : return "IntaRNA3";
+		case IntaRNAens : return "IntaRNAens";
+		case IntaRNAsTar : return "IntaRNAsTar";
+		case IntaRNAseed : return "IntaRNAseed";
+		case IntaRNAhelix : return "IntaRNAhelix";
+		case IntaRNAduplex : return "IntaRNAduplex";
+		case IntaRNAexact : return "IntaRNAexact";
+		default : return "unknown";
+		}
+	}
+
+	/**
+	 * Identifies the requested personality from the given call arguments
+	 */
+	static
+	Personality
+	getPersonality( int argc, char** argv );
 
 public:
 
 	/**
 	 * Constructs a commandline argument parser for IntaRNA.
 	 *
-	 * @param logStream the stream to write validation log messages to
+	 * @param personality the Personality for which to provide and parse parameters
 	 */
-	CommandLineParsing();
+	CommandLineParsing( const Personality personality );
 	virtual ~CommandLineParsing();
 
 	/**
@@ -109,9 +152,10 @@ public:
 	 * @param energy the energy handler later used for prediction (needed for region postprocessing)
 	 * @param sequenceNumber the number of the sequence within the vector
 	 *         returned by getQuerySequences()
+	 * @param acc the accessibility object for the sequence of the given number
 	 * @return the range list for the according sequence.
 	 */
-	const IndexRangeList& getQueryRanges( const InteractionEnergy & energy, const size_t sequenceNumber ) const;
+	const IndexRangeList& getQueryRanges( const InteractionEnergy & energy, const size_t sequenceNumber, const Accessibility & acc ) const;
 
 	/**
 	 * Access to the ranges to screen for interactions for the target with the
@@ -119,9 +163,10 @@ public:
 	 * @param energy the energy handler later used for prediction (needed for region postprocessing)
 	 * @param sequenceNumber the number of the sequence within the vector
 	 *         returned by getTargetSequences()
+	 * @param acc the accessibility object for the sequence of the given number
 	 * @return the range list for the according sequence.
 	 */
-	const IndexRangeList& getTargetRanges( const InteractionEnergy & energy, const size_t sequenceNumber ) const;
+	const IndexRangeList& getTargetRanges( const InteractionEnergy & energy, const size_t sequenceNumber, const Accessibility & acc ) const;
 
 	/**
 	 * Access to the maximal window width of a query/target sequence range to
@@ -199,7 +244,7 @@ public:
 	 * Access to the set folding temperature in Celsius.
 	 * @return the chosen temperature in Celsius
 	 */
-	T_type getTemperature() const;
+	Z_type getTemperature() const;
 
 	/**
 	 * The constraints to be applied to the interaction output generation
@@ -307,7 +352,7 @@ protected:
 		//! the maximally allowed value
 	  const T max;
 		//! the default value
-	  const T def;
+	  T def;
 		/**
 		 * construction feeding the members
 		 * @param min the minimally allowed value
@@ -340,7 +385,7 @@ protected:
 		  //! the set of allowed values for this parameter as a string
 		const std::string alphabet;
 		  //! the default value of the parameter
-		const char def;
+		char def;
 		/**
 		 * Construction and member setup
 		 * @param alphabet the allowed set of character values
@@ -366,6 +411,11 @@ protected:
 		}
 
 	};
+
+	//! what is the requested personality for which we parse the parameters
+	Personality personality;
+	//! might hold the personality string after parsing if given via parameter
+	std::string personalityParamValue;
 
 	//! whether or not STDIN was already requested by one of the following
 	//! arguments
@@ -482,12 +532,12 @@ protected:
 	NumberParameter<int> helixMaxBP;
 	//! maximal internal loop size in the helix computation (0-2)
 	NumberParameter<int> helixMaxIL;
-	//! maximal ED-value allowed (per sequence) of a helix to be considered
-	NumberParameter<E_type> helixMaxED;
+	//! minimal unpaired probability (per sequence) of a helix to be considered
+	NumberParameter<Z_type> helixMinPu;
 	//! maximal energy of a helix to be considered
-	NumberParameter<E_type> helixMaxE;
-	//! when set, ED values are excluded from a helix's energy evaluation
-	bool helixNoED;
+	NumberParameter<E_kcal_type> helixMaxE;
+	//! when set, full helix energy is to be used for energy checks
+	bool helixFullE;
 	//! the final helix constraint to be used
 	mutable HelixConstraint * helixConstraint;
 
@@ -504,9 +554,13 @@ protected:
 	//! max unpaired in target's seed
 	NumberParameter<int> seedTMaxUP;
 	//! max energy of a seed to be considered
-	NumberParameter<E_type> seedMaxE;
+	NumberParameter<E_kcal_type> seedMaxE;
 	//! minimal unpaired probability (per sequence) of a seed to be considered
-	NumberParameter<E_type> seedMinPu;
+	NumberParameter<Z_type> seedMinPu;
+	//! max hybridization energy of a seed to be considered
+	NumberParameter<E_kcal_type> seedMaxEhybrid;
+	//! whether or not GU base pairs are allowed within seeds
+	bool seedNoGU;
 	//! intervals in query for seed search
 	std::string seedQRange;
 	//! intervals in target for seed search
@@ -515,12 +569,12 @@ protected:
 	mutable SeedConstraint * seedConstraint;
 
 	//! the temperature to be used for energy computations
-	NumberParameter<T_type> temperature;
+	NumberParameter<Z_type> temperature;
 
 	//! the interaction model to predict in (mfe-single-site, helix-based-single-site, max-prob-site, ..)
 	CharParameter model;
 	//! the prediction mode (heuristic, space-efficient, exact)
-	CharParameter predMode;
+	CharParameter mode;
 #if INTARNA_MULITHREADING
 	//! number of threads = number of parallel predictors running
 	NumberParameter<int> threads;
@@ -535,13 +589,16 @@ protected:
 	//! the provided energy parameter file of the VRNA package
 	std::string energyFile;
 
+	//! the energy shift to be applied
+	NumberParameter<E_kcal_type> energyAdd;
+	//! whether or not the overall energy covers dangling end contributions
+	bool energyNoDangles;
+
 	//! where to write the output to and for each in what format
 //	std::string out;
 	std::vector< std::string > out;
 	//! provides the parsed stream name for each out prefix
 	std::map<OutPrefixCode,std::string> outPrefix2streamName;
-	//! output stream
-	std::ostream * outStream;
 	//! output mode
 	CharParameter outMode;
 	//! number of (sub)optimal interactions to report
@@ -549,13 +606,23 @@ protected:
 	//! whether or not reported interactions can to be overlapping
 	CharParameter outOverlap;
 	//! deltaE to mfe allowed to report an interaction
-	NumberParameter<double> outDeltaE;
+	NumberParameter<E_kcal_type> outDeltaE;
 	//! max E allowed to report an interaction
-	NumberParameter<double> outMaxE;
+	NumberParameter<E_kcal_type> outMaxE;
 	//! min unpaired prob of an interacting subsequence allowed
-	NumberParameter<double> outMinPu;
+	NumberParameter<Z_type> outMinPu;
+	//! whether or not only the best seed is to be reported
+	bool outBestSeedOnly;
+	//! whether or not only lonely (non-stacked) inter-molecular base pairs are allowed
+	bool outNoLP;
+	//! the CSV column separator
+	static const std::string outCsvColSep;
+	//! the CSV list separator within individual columns
+	static const std::string outCsvLstSep;
 	//! the CSV column selection
 	std::string outCsvCols;
+	//! the column ID from outCsvCols to be used for sorting the output
+	std::string outCsvSort;
 	//! the CSV column selection
 	static const std::string outCsvCols_default;
 	//! whether or not best interaction output should be provided independently
@@ -567,9 +634,14 @@ protected:
 
 	//! (optional) file name for log output
 	std::string logFileName;
+	//! (optional) file name for input parameter configuration file
+	std::string configFileName;
 
 	//! the vienna energy parameter handler initialized by #parse()
 	mutable VrnaHandler vrnaHandler;
+
+	//! the handler of the final output stream
+	OutputStreamHandler * outStreamHandler;
 
 protected:
 
@@ -579,6 +651,40 @@ protected:
 	 * @return true if stdinUsed was false so far; false otherwise (error logged)
 	 */
 	bool setStdinUsed();
+
+
+	/**
+	 * resets the default value of a parameter member to the given value.
+	 * if the value is changed, a respective VLOG output is produced.
+	 * @param param the parameter member to update
+	 * @param value the new default value to set
+	 * @param paramName the name of the parameter as used in the CLI
+	 */
+	template <typename Param, typename Value>
+	void
+	resetParamDefault( Param & param, Value value, const std::string & paramName ) {
+		if (param.def != value) {
+			param.def = value;
+			VLOG(1) <<"  "<<paramName<<"=" <<value;
+		}
+	}
+
+	/**
+	 * resets the default value of a parameter member to the given value.
+	 * if the value is changed, a respective VLOG output is produced.
+	 * @param param the parameter member to update
+	 * @param value the new default value to set
+	 * @param paramName the name of the parameter as used in the CLI
+	 */
+	template <typename ParamType>
+	void
+	resetParamDefault( ParamType & param, ParamType value, const std::string & paramName ) {
+		if (param != value) {
+			param = value;
+			VLOG(1) <<"  "<<paramName<<"=" <<value;
+		}
+	}
+
 
 	////////////  INDIVIDUAL TESTS  //////////////////
 
@@ -741,16 +847,16 @@ protected:
 	void validate_helixMaxIL(const int & value);
 
 	/**
-	 * Validates the helixMaxED argument.
+	 * Validates the helixMinPu argument.
 	 * @param value the argument value to validate
 	 */
-	void validate_helixMaxED(const E_type & value);
+	void validate_helixMinPu(const Z_type & value);
 
 	/**
 	 * Validates the helixMaxE argument.
 	 * @param value the argument value to validate
 	 */
-	void validate_helixMaxE(const E_type & value);
+	void validate_helixMaxE(const E_kcal_type & value);
 
 	/**
 	 * Validates the target's region argument.
@@ -817,13 +923,19 @@ protected:
 	 * Validates the seedMaxE argument.
 	 * @param value the argument value to validate
 	 */
-	void validate_seedMaxE(const E_type & value);
+	void validate_seedMaxE(const E_kcal_type & value);
+
+	/**
+	 * Validates the seedMaxEhybrid argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_seedMaxEhybrid(const E_kcal_type & value);
 
 	/**
 	 * Validates the seedMinPu argument.
 	 * @param value the argument value to validate
 	 */
-	void validate_seedMinPu(const E_type & value);
+	void validate_seedMinPu(const Z_type & value);
 
 	/**
 	 * Validates the seedQRange argument.
@@ -841,7 +953,7 @@ protected:
 	 * Validates the temperature argument.
 	 * @param value the argument value to validate
 	 */
-	void validate_temperature(const T_type & value);
+	void validate_temperature(const Z_type & value);
 
 	/**
 	 * Validates the prediction target argument.
@@ -853,7 +965,7 @@ protected:
 	 * Validates the prediction mode argument.
 	 * @param value the argument value to validate
 	 */
-	void validate_predMode(const char & value);
+	void validate_mode(const char & value);
 
 	/**
 	 * Validates the temperature argument.
@@ -866,6 +978,12 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_energyFile(const std::string & value);
+
+	/**
+	 * Validates the energy shift argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_energyAdd(const E_kcal_type & value);
 
 	/**
 	 * Validates the out argument.
@@ -898,25 +1016,31 @@ protected:
 	 * Validates the outDeltaE argument.
 	 * @param value the argument value to validate
 	 */
-	void validate_outDeltaE(const double & value);
+	void validate_outDeltaE(const E_kcal_type & value);
 
 	/**
 	 * Validates the outMaxE argument.
 	 * @param value the argument value to validate
 	 */
-	void validate_outMaxE(const double & value);
+	void validate_outMaxE(const E_kcal_type & value);
 
 	/**
 	 * Validates the outMinPu argument.
 	 * @param value the argument value to validate
 	 */
-	void validate_outMinPu(const double & value);
+	void validate_outMinPu(const Z_type & value);
 
 	/**
 	 * Validates the outCsvCols argument.
 	 * @param value the argument value to validate
 	 */
 	void validate_outCsvCols(const std::string & value);
+
+	/**
+	 * Validates the outCsvSort argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_outCsvSort(const std::string & value);
 
 #if INTARNA_MULITHREADING
 	/**
@@ -937,6 +1061,12 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_windowOverlap( const int & value);
+
+	/**
+	 * Validates the configFileName argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_configFileName( const std::string & value);
 
 	////////////  GENERIC TESTS  /////////////////
 
@@ -1129,6 +1259,7 @@ protected:
 	getFullFilename( const std::string & fileName
 					, const RnaSequence * target
 					, const RnaSequence * query ) const;
+
 
 };
 
@@ -1527,15 +1658,15 @@ void CommandLineParsing::validate_helixMaxIL(const int & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_helixMaxED(const E_type & value) {
+void CommandLineParsing::validate_helixMinPu(const Z_type & value) {
 	// forward check to general method
-	validate_numberArgument("helixMaxED", helixMaxED, value);
+	validate_numberArgument("helixMinPu", helixMinPu, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_helixMaxE(const E_type & value) {
+void CommandLineParsing::validate_helixMaxE(const E_kcal_type & value) {
 	// forward check to general method
 	validate_numberArgument("helixMaxE", helixMaxE, value);
 }
@@ -1606,7 +1737,7 @@ void CommandLineParsing::validate_seedTMaxUP(const int & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_seedMaxE(const E_type & value) {
+void CommandLineParsing::validate_seedMaxE(const E_kcal_type & value) {
 	// forward check to general method
 	validate_numberArgument("seedMaxE", seedMaxE, value);
 }
@@ -1614,7 +1745,15 @@ void CommandLineParsing::validate_seedMaxE(const E_type & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_seedMinPu(const E_type & value) {
+void CommandLineParsing::validate_seedMaxEhybrid(const E_kcal_type & value) {
+	// forward check to general method
+	validate_numberArgument("seedMaxEhybrid", seedMaxEhybrid, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_seedMinPu(const Z_type & value) {
 	// forward check to general method
 	validate_numberArgument("seedMinPu", seedMinPu, value);
 }
@@ -1648,7 +1787,7 @@ void CommandLineParsing::validate_seedTRange(const std::string & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_temperature(const T_type & value) {
+void CommandLineParsing::validate_temperature(const Z_type & value) {
 	// forward check to general method
 	validate_numberArgument("temperature", temperature, value);
 }
@@ -1665,10 +1804,10 @@ void CommandLineParsing::validate_model(const char & value)
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_predMode(const char & value)
+void CommandLineParsing::validate_mode(const char & value)
 {
 	// forward check to general method
-	validate_charArgument("mode", predMode, value);
+	validate_charArgument("mode", mode, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1692,6 +1831,14 @@ validate_energyFile(const std::string & value)
 		LOG(ERROR) <<"provided VRNA energy parameter file '" <<value <<"' could not be processed.";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_energyAdd(const E_kcal_type & value) {
+	// forward check to general method
+	validate_numberArgument("energyAdd", energyAdd, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1853,7 +2000,7 @@ void CommandLineParsing::validate_outOverlap(const char & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_outDeltaE(const double & value) {
+void CommandLineParsing::validate_outDeltaE(const E_kcal_type & value) {
 	// forward check to general method
 	validate_numberArgument("outDeltaE", outDeltaE, value);
 }
@@ -1861,7 +2008,7 @@ void CommandLineParsing::validate_outDeltaE(const double & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_outMaxE(const double & value) {
+void CommandLineParsing::validate_outMaxE(const E_kcal_type & value) {
 	// forward check to general method
 	validate_numberArgument("outMaxE", outMaxE, value);
 }
@@ -1869,7 +2016,7 @@ void CommandLineParsing::validate_outMaxE(const double & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_outMinPu(const double & value) {
+void CommandLineParsing::validate_outMinPu(const Z_type & value) {
 	// forward check to general method
 	validate_numberArgument("outMinPu", outMinPu, value);
 }
@@ -1901,6 +2048,16 @@ void CommandLineParsing::validate_windowOverlap(const int & value)
 {
 	// forward check to general method
 	validate_numberArgument("windowOverlap", windowOverlap, value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_configFileName( const std::string & value )
+{
+	if (!validateFile( value )) {
+		LOG(ERROR) <<"Can not access/read parameter file '" <<value <<"'";
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////

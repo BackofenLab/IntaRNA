@@ -25,9 +25,12 @@ TEST_CASE( "SeedHandlerMfe", "[SeedHandlerMfe]") {
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
 		SeedConstraint sC(3,0,0,0,0
 				, AccessibilityDisabled::ED_UPPER_BOUND
+				, 0
 				, IndexRangeList("")
 				, IndexRangeList("")
-				, "");
+				, ""
+				, false
+				);
 
 		SeedHandlerMfe sHM(energy, sC);
 

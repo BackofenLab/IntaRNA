@@ -1,37 +1,27 @@
+dist: trusty
 
-os:
-    - linux
+language: minimal
 
-language: cpp
-
-compiler:
-    - gcc
-
-cache:
-  apt: true
-
-addons:
-  apt:
-    sources:
-    - ubuntu-toolchain-r-test
-    packages:
-    - libboost-all-dev
-    - libgsl0-dev
-    
-before_install:
-    - sudo apt-add-repository ppa:j-4/vienna-rna -y
-    - sudo apt-get update -q
-    - sudo apt-get install vienna-rna -y
+install:
+  - wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -q conda
+  # Useful for debugging any issues with conda
+  - conda info -a
+  # create build environment
+  - conda create -q -n build-IntaRNA -c bioconda gcc_linux-64 gxx_linux-64 boost-cpp viennarna pkgconfig
+  - source activate build-IntaRNA
 
 script:
-    - $CXX --version
-    - which $CXX
-    - RNAalifold --version
     ##### start IntaRNA build #####
-    - cd $TRAVIS_BUILD_DIR 
+    - cd $TRAVIS_BUILD_DIR
     # generate autotools's files 
     - bash autotools-init.sh 
-    - ./configure --prefix=$HOME/IntaRNA
+    # run configure
+    - ./configure --prefix=$HOME/IntaRNA --with-vrna=$HOME/miniconda/envs/build-IntaRNA --with-boost=no
     # compile documentation
     # - make doxygen-doc
     # compile, test and install IntaRNA

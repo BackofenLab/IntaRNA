@@ -325,7 +325,7 @@ public:
 	 * @return the dangling end probability for the left side of the interaction
 	 */
 	virtual
-	E_type
+	Z_type
 	getPr_danglingLeft( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const;
 
 	/**
@@ -343,7 +343,7 @@ public:
 	 * @return the dangling end probability for the right side of the interaction
 	 */
 	virtual
-	E_type
+	Z_type
 	getPr_danglingRight( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const;
 
 
@@ -383,7 +383,7 @@ public:
 	 * Access to the normalized temperature for Boltzmann weight computation
 	 */
 	virtual
-	E_type
+	Z_type
 	getRT() const;
 
 
@@ -699,7 +699,7 @@ getE_endRight( const size_t j1, const size_t j2 ) const
 //////////////////////////////////////////////////////////////////////////
 
 inline
-E_type
+Z_type
 InteractionEnergyIdxOffset::
 getPr_danglingLeft( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const
 {
@@ -709,7 +709,7 @@ getPr_danglingLeft( const size_t i1, const size_t j1, const size_t i2, const siz
 //////////////////////////////////////////////////////////////////////////
 
 inline
-E_type
+Z_type
 InteractionEnergyIdxOffset::
 getPr_danglingRight( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const
 {
@@ -755,7 +755,7 @@ getIndex2( const Interaction::BasePair & bp ) const
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-E_type
+Z_type
 InteractionEnergyIdxOffset::
 getRT() const
 {

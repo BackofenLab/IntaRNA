@@ -43,22 +43,36 @@ covers( const IndexRange & range ) const
 	if (list.empty()) {
 		return false;
 	}
-
-	// find first range with begin > index
+	// find first range with (begin > range.from) or (begin == range.from && end > range.from)
 	const_iterator r = std::upper_bound( list.begin(), list.end(), range );
 
-	bool isCovered = false;
-	if ( r != list.end() ) {
-		// check succeeding range and check
-		isCovered = r->from <= range.from && range.to <= r->to;
-	}
-	if ( !isCovered && r != list.begin() ) {
-		// go to preceding range and check
-		--r;
-		isCovered = r->from <= range.from && range.to <= r->to;
+	// check if covered by trailing range
+	if ( r != list.end() && r->from <= range.from && range.to <= r->to) {
+		return true;
 	}
 
-	return isCovered;
+	if (allowOverlap) {
+
+		// check ALL preceding ranges
+		while( r-- != list.begin() ) {
+			if ( r->from <= range.from && r->to >= range.to) {
+				return true;
+			}
+		}
+
+	} else {
+
+		// simply check only the preceding range if any
+		if ( r != list.begin() ) {
+			// go to preceding range and check
+			--r;
+			if (r->from <= range.from && range.to <= r->to) {
+				return true;
+			}
+		}
+	}
+	// default assumption
+	return false;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -81,23 +95,42 @@ overlaps( const IndexRange& range ) const
 	// find first range that with begin > range.from
 	const_iterator r = std::upper_bound( list.begin(), list.end(), range );
 
-	bool isNotOverlapping = true;
-
-	// check if not overlapping with successor
-	if (isNotOverlapping && r != list.end()) {
-		// check for overlap
-		isNotOverlapping = range.to < r->from;
+	// check if overlapping with trailing range
+	if ( r != list.end() && r->from <= range.to) {
+		return true;
 	}
 
-	// check if not overlapping with predecessor
-	if (isNotOverlapping && r != list.begin()) {
-		// go to predecessor
-		--r;
-		// check for overlap
-		isNotOverlapping = r->to < range.from;
+	if (allowOverlap) {
+
+		// check ALL ranges
+		for ( auto & r : list ) {
+			if ( (r.from >= range.from && r.from <= range.to)
+				|| (r.to >= range.from && r.to <= range.to)
+				|| (r.from <= range.from && r.to >= range.to)	)
+			{
+				return true;
+			}
+			// check if subsequent ranges can not overlap anymore
+			if (r.from > range.to) {
+				break;
+			}
+		}
+
+	} else { // non-overlapping ranges
+
+		// check if not overlapping with predecessor
+		if ( r != list.begin()) {
+			// go to predecessor
+			--r;
+			// check for overlap
+			if ( r->to >= range.from ) {
+				return true;
+			}
+		}
 	}
 
-	return !isNotOverlapping;
+	// default assumption
+	return false;
 
 }
 
@@ -113,8 +146,8 @@ push_back( const IndexRange& range )
 	if (!list.empty() && list.rbegin()->from >= range.from) {
 		throw std::runtime_error("IndexRangeList::push_back("+toString(range)+") violates order given last range = "+toString(*(list.rbegin())));
 	}
-	if (!list.empty() && list.rbegin()->to >= range.from) {
-		INTARNA_NOT_IMPLEMENTED("IndexRangeList::push_back() : overlapping ranges are currently not supported")
+	if (!allowOverlap && !list.empty() && list.rbegin()->to >= range.from) {
+		throw std::runtime_error("IndexRangeList::push_back() : not allowed overlap with existing range");
 	}
 	// sorting should be OK (in debug mode.. ;) )
 	list.push_back( range );
@@ -129,20 +162,30 @@ insert( const IndexRange& range )
 	if (!range.isAscending())  {
 		throw std::runtime_error("IndexRangeList::insert("+toString(range)+") range is not ascending");
 	}
-	// add first member to list
+	// init list
 	if (list.empty()) {
 		list.push_back( range );
+		// iterator to first element
 		return begin();
+	} else
+	// init list or add at the end to list
+	if ( *(list.rbegin()) < range ) {
+		list.push_back( range );
+		// iterator to last element
+		iterator idxIter = list.begin();
+		std::advance( idxIter, list.size()-1 );
+		return idxIter;
 	} else
 	// insert accordingly
 	{
-		// find first range that with begin > i
+		// find first range that with begin < from or begin==from && end>to
 		List::iterator r = std::upper_bound( list.begin(), list.end(), range );
 		if (r != list.end()) {
 			// check for overlap
-			if (range.to >= r->from) {
-				INTARNA_NOT_IMPLEMENTED("IndexRangeList::insert() : overlapping ranges are currently not supported")
+			if (range.to >= r->from && !allowOverlap) {
+				throw std::runtime_error("IndexRangeList::insert("+toString(range)+") range is overlapping with "+toString(*r)+", which is not allowed");
 			}
+			return list.insert( r, range );
 		}
 		// check if already existing (predecessor)
 		if (r != list.begin()){
@@ -153,8 +196,8 @@ insert( const IndexRange& range )
 				return r;
 			}
 			// check for overlap
-			if (r->to >= range.from) {
-				INTARNA_NOT_IMPLEMENTED("IndexRangeList::insert() : overlapping ranges are currently not supported")
+			if (r->to >= range.from && !allowOverlap) {
+				throw std::runtime_error("IndexRangeList::insert("+toString(range)+") range is overlapping with "+toString(*r)+", which is not allowed");
 			}
 			++r;
 		}
@@ -221,7 +264,7 @@ shift( const int indexShift, const size_t indexMax ) const
 
 IndexRangeList &
 IndexRangeList::
-reverse( const size_t seqLength )
+reverseInplace( const size_t seqLength )
 {
 	// reverse each entry
 	size_t tmpFrom;

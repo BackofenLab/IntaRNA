@@ -52,20 +52,13 @@ public:
 	 * instances.
 	 *
 	 * @param interaction the interaction to add
+	 * @param outConstraint the output constraint applied to find the reported
+	 *        interaction
 	 */
 	virtual
 	void
-	add( const Interaction & interaction );
-
-	/**
-	 * Forwards a given RNA-RNA interaction range to all registered
-	 * OutputHandler instances.
-	 *
-	 * @param range the interaction range to add
-	 */
-	virtual
-	void
-	add( const InteractionRange & range );
+	add( const Interaction & interaction
+		, const OutputConstraint & outConstraint );
 
 	/**
 	 * Returns the maximal number of reported interactions among all handlers
@@ -76,6 +69,28 @@ public:
 	size_t
 	reported() const;
 
+	/**
+	 * Increments the overall partition function with the given value.
+	 *
+	 * Note, take care that multiple increments have to represent disjoint subsets
+	 * of all interactions for the same pair of sequences, otherwise the
+	 * aggregated overall partition function will be wrong!
+	 *
+	 * @param subZ increment to be added to the overall partition function
+	 */
+	virtual
+	void
+	incrementZ( const Z_type subZ );
+
+	/**
+	 * Access to the partition function (initialized with 0) aggregated via
+	 * incrementZ().
+	 *
+	 * @return the maximal aggregated partition function Z among all handlers
+	 */
+	virtual
+	Z_type
+	getZ() const;
 
 	/**
 	 * Adds a new OutputHandler to the forwarding list.
@@ -188,24 +203,11 @@ addOutputHandler( OutputHandler * handler )
 inline
 void
 OutputHandlerHub::
-add( const Interaction & inter )
+add( const Interaction & inter, const OutputConstraint & outConstraint )
 {
 	// forward to all in list
 	for (auto it=outList.begin(); it!=outList.end(); it++) {
-		(*it)->add(inter);
-	}
-}
-
-/////////////////////////////////////////////////////////////////////////
-
-inline
-void
-OutputHandlerHub::
-add( const InteractionRange & range )
-{
-	// forward to all in list
-	for (auto it=outList.begin(); it!=outList.end(); it++) {
-		(*it)->add(range);
+		(*it)->add(inter,outConstraint);
 	}
 }
 
@@ -223,6 +225,36 @@ reported() const
 	}
 	// return maximum
 	return maxReported;
+}
+
+/////////////////////////////////////////////////////////////////////////
+
+inline
+void
+OutputHandlerHub::
+incrementZ( const Z_type subZ )
+{
+	// forward to all in list
+	for (auto it=outList.begin(); it!=outList.end(); it++) {
+		(*it)->incrementZ(subZ);
+	}
+}
+
+/////////////////////////////////////////////////////////////////////////
+
+inline
+Z_type
+OutputHandlerHub::
+getZ( ) const
+{
+	Z_type maxZ = 0;
+	// find max from all in list
+	for (auto it=outList.begin(); it!=outList.end(); it++) {
+		if ((*it)->getZ() > maxZ) {
+			maxZ = (*it)->getZ();
+		}
+	}
+	return maxZ;
 }
 
 /////////////////////////////////////////////////////////////////////////

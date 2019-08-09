@@ -20,7 +20,6 @@ TEST_CASE( "SeedHandlerExplicit", "[SeedHandlerExplicit]" ) {
 	ReverseAccessibility rAcc(acc);
 	InteractionEnergyBasePair energy( acc, rAcc );
 
-
 	SECTION( "test SeedData construction" ) {
 
 		SeedHandlerExplicit::SeedData seedEmpty("1||&3||", energy);
@@ -40,7 +39,7 @@ TEST_CASE( "SeedHandlerExplicit", "[SeedHandlerExplicit]" ) {
 		REQUIRE( seedEmpty.start2 == 0 );
 		REQUIRE( seedEmpty.dotBar1 == "||" );
 		REQUIRE( seedEmpty.dotBar2 == "||" );
-		REQUIRE( E_equal( seedEmpty.energy, -1 ) );
+		REQUIRE( E_equal( seedEmpty.energy, energy.getE_basePair() ) );
 		REQUIRE( seedEmpty.isValid() );
 
 		// valid input
@@ -49,7 +48,7 @@ TEST_CASE( "SeedHandlerExplicit", "[SeedHandlerExplicit]" ) {
 		REQUIRE( seedEmpty.start2 == 4 );
 		REQUIRE( seedEmpty.dotBar1 == "|..|" );
 		REQUIRE( seedEmpty.dotBar2 == "|..|" );
-		REQUIRE( E_equal( seedEmpty.energy, -1 ) );
+		REQUIRE( E_equal( seedEmpty.energy, energy.getE_basePair() ) );
 		REQUIRE( seedEmpty.isValid() );
 
 		// invalid out of bounds
@@ -106,6 +105,77 @@ TEST_CASE( "SeedHandlerExplicit", "[SeedHandlerExplicit]" ) {
 		REQUIRE( SeedHandlerExplicit::checkSeedEncoding( "2||.&2||" ) != "" );
 		REQUIRE( SeedHandlerExplicit::checkSeedEncoding( "2||&2.||" ) != "" );
 		REQUIRE( SeedHandlerExplicit::checkSeedEncoding( "2||&2||." ) != "" );
+
+	}
+
+	SECTION( "test seed enumeration" ) {
+
+		RnaSequence r1("r1", "GGGGGG");  // 1GGGGGG6
+		RnaSequence r2("r2", "CCCCCG");  // 6GCCCCC1
+		AccessibilityDisabled acc1(r1, 0, NULL);
+		AccessibilityDisabled acc2(r2, 0, NULL);
+		ReverseAccessibility racc(acc2);
+		InteractionEnergyBasePair energy(acc1, racc);
+
+		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
+		SeedConstraint sC(3,0,0,0,0
+				, AccessibilityDisabled::ED_UPPER_BOUND, 0
+				, IndexRangeList("")
+				, IndexRangeList("")
+				, "1||&3||,2|.|&1||"
+				, false);
+
+		// create instance (triggers parsing)
+		SeedHandlerExplicit sh( energy, sC );
+
+		// check parsing number
+		REQUIRE( sh.fillSeed(0,5,0,5) == 2 );
+
+		// check seed iteration
+		size_t i1=0, i2=0;
+		REQUIRE( sh.updateToNextSeed(i1,i2) );
+		bool isSeed13 = (i1 == 0 && i2 == 2);
+		bool isSeed21 = (i1 == 1 && i2 == 4);
+		bool isInputSeed = isSeed13 || isSeed21;
+		REQUIRE( isInputSeed );
+		REQUIRE( sh.updateToNextSeed(i1,i2) );
+		bool isTheOtherSeed = (isSeed13 && (i1 == 1 && i2 == 4) ) || (isSeed21 && (i1 == 0 && i2 == 2) );
+		REQUIRE( isTheOtherSeed );
+		REQUIRE_FALSE( sh.updateToNextSeed(i1,i2) );
+
+		// check seed init
+		i1=20; i2=0;
+		REQUIRE( sh.updateToNextSeed(i1,i2) );
+		isSeed13 = (i1 == 0 && i2 == 2);
+		isSeed21 = (i1 == 1 && i2 == 4);
+		isInputSeed = isSeed13 || isSeed21;
+		REQUIRE( isInputSeed );
+
+		// check seed init
+		i1=0; i2=20;
+		REQUIRE( sh.updateToNextSeed(i1,i2) );
+		isSeed13 = (i1 == 0 && i2 == 2);
+		isSeed21 = (i1 == 1 && i2 == 4);
+		isInputSeed = isSeed13 || isSeed21;
+		REQUIRE( isInputSeed );
+
+		// check seed init
+		i1=20; i2=20;
+		REQUIRE( sh.updateToNextSeed(i1,i2) );
+		isSeed13 = (i1 == 0 && i2 == 2);
+		isSeed21 = (i1 == 1 && i2 == 4);
+		isInputSeed = isSeed13 || isSeed21;
+		REQUIRE( isInputSeed );
+
+		//////////////////  seeds of subregion  ///////////////////////////
+
+		i1=0; i2=0;
+		REQUIRE_FALSE( sh.updateToNextSeed(i1,i2,3,5,0,5) );
+		REQUIRE_FALSE( sh.updateToNextSeed(i1,i2,0,5,0,1) );
+
+		i1=0; i2=0;
+		REQUIRE( sh.updateToNextSeed(i1,i2,0,0,2,2) );
+		REQUIRE_FALSE( sh.updateToNextSeed(i1,i2,0,0,2,2) );
 
 	}
 

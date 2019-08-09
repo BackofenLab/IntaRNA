@@ -1,10 +1,18 @@
 
-# ensure serial test build and run
-AUTOMAKE_OPTIONS = serial-tests
+# ensure parallel test build and run
+AUTOMAKE_OPTIONS = parallel-tests
+
+# setup environment needed for the tests
+AM_TESTS_ENVIRONMENT = export INTARNABINPATH=$(abs_top_builddir);
 
 # list of tests to run
-TESTS = runApiTests
+TESTS = runApiTests$(EXEEXT) $(dist_check_SCRIPTS)
+# how to handle the tests
+TEST_EXTENSIONS = $(EXEEXT) .sh
+SH_LOG_COMPILER = $(SHELL)
 
+# the script needed for tests
+dist_check_SCRIPTS = runIntaRNA.sh
 
 # the program to build
 check_PROGRAMS = runApiTests 
@@ -17,10 +25,10 @@ runApiTests_SOURCES =	\
 					AccessibilityFromStream_test.cpp \
 					AccessibilityBasePair_test.cpp \
 					HelixConstraint_test.cpp \
-					HelixHandlerStackingOnly_test.cpp \
-					HelixHandlerStackingOnlyIdxOffset_test.cpp \
-					HelixHandlerStackingOnlySeed_test.cpp \
-					HelixHandlerStackingOnlySeedIdxOffset_test.cpp \
+					HelixHandlerNoBulgeMax_test.cpp \
+					HelixHandlerNoBulgeMaxSeed_test.cpp \
+					HelixHandlerNoBulgeMaxIdxOffset_test.cpp \
+					HelixHandlerNoBulgeMaxSeedIdxOffset_test.cpp \
 					HelixHandlerUnpaired_test.cpp \
 					HelixHandlerUnpairedIdxOffset_test.cpp \
 					HelixHandlerUnpairedSeed_test.cpp \
@@ -31,19 +39,18 @@ runApiTests_SOURCES =	\
 					InteractionEnergyBasePair_test.cpp  \
 					InteractionRange_test.cpp  \
 					PredictionTrackerProfileMinE_test.cpp \
-					PredictorMfe2dHelixHeuristic_test.cpp \
-					PredictorMfe2dHelixHeuristicSeed_test.cpp \
 					PredictionTrackerSpotProb_test.cpp \
+					PredictorMfe2dHelixBlockHeuristic_test.cpp \
+					PredictorMfe2dHelixBlockHeuristicSeed_test.cpp \
 					NussinovHandler_test.cpp \
 					RnaSequence_test.cpp \
-					OutputHandlerRangeOnly_test.cpp \
+					OutputStreamHandlerSortedCsv_test.cpp \
 					OutputHandlerInteractionList_test.cpp \
 					SeedHandlerExplicit_test.cpp \
 					SeedHandlerNoBulge_test.cpp \
 					SeedHandlerMfe_test.cpp \
 					SeedHandlerIdxOffset_test.cpp \
-					runTests.cpp
-
+					runApiTests.cpp
 
 # add IntaRNA lib for linking
 LIBS= 	-L$(top_builddir)/src/IntaRNA -lIntaRNA \
@@ -54,3 +61,6 @@ LIBS= 	-L$(top_builddir)/src/IntaRNA -lIntaRNA \
 runApiTests_CXXFLAGS =	-I$(top_builddir)/src \
 						@AM_CXXFLAGS@ @CXXFLAGS@ \
 						-DELPP_NO_LOG_TO_FILE
+
+
+						

@@ -37,15 +37,22 @@ extern "C" {
 #include "IntaRNA/InteractionEnergyVrna.h"
 
 #include "IntaRNA/PredictorMfe2dHeuristic.h"
-#include "IntaRNA/PredictorMfe2dHelixHeuristic.h"
+#include "IntaRNA/PredictorMfe2dHelixBlockHeuristic.h"
 #include "IntaRNA/PredictorMfe2d.h"
-#include "IntaRNA/PredictorMfe4d.h"
-#include "IntaRNA/PredictorMaxProb.h"
 
+#include "IntaRNA/PredictorMfeSeedOnly.h"
 #include "IntaRNA/PredictorMfe2dHeuristicSeed.h"
-#include "IntaRNA/PredictorMfe2dHelixHeuristicSeed.h"
+#include "IntaRNA/PredictorMfe2dHelixBlockHeuristicSeed.h"
 #include "IntaRNA/PredictorMfe2dSeed.h"
-#include "IntaRNA/PredictorMfe4dSeed.h"
+#include "IntaRNA/PredictorMfe2dSeedExtension.h"
+#include "IntaRNA/PredictorMfe2dSeedExtensionRIblast.h"
+#include "IntaRNA/PredictorMfe2dHeuristicSeedExtension.h"
+
+#include "IntaRNA/PredictorMfeEnsSeedOnly.h"
+#include "IntaRNA/PredictorMfeEns2d.h"
+#include "IntaRNA/PredictorMfeEns2dHeuristic.h"
+#include "IntaRNA/PredictorMfeEns2dSeedExtension.h"
+#include "IntaRNA/PredictorMfeEns2dHeuristicSeedExtension.h"
 
 #include "IntaRNA/PredictionTracker.h"
 #include "IntaRNA/PredictionTrackerHub.h"
@@ -58,8 +65,9 @@ extern "C" {
 #include "IntaRNA/SeedHandlerMfe.h"
 #include "IntaRNA/SeedHandlerNoBulge.h"
 
+#include "IntaRNA/OutputStreamHandlerSortedCsv.h"
+
 #include "IntaRNA/OutputHandlerCsv.h"
-#include "IntaRNA/OutputHandlerIntaRNA1.h"
 #include "IntaRNA/OutputHandlerText.h"
 
 
@@ -72,12 +80,19 @@ const std::string CommandLineParsing::outCsvCols_default = "id1,start1,end1,id2,
 
 ////////////////////////////////////////////////////////////////////////////
 
-CommandLineParsing::CommandLineParsing()
+const std::string CommandLineParsing::outCsvColSep = ";";
+const std::string CommandLineParsing::outCsvLstSep = ",";
+
+////////////////////////////////////////////////////////////////////////////
+
+CommandLineParsing::CommandLineParsing( const Personality personality  )
 	:
+	personality( personality ),
+	personalityParamValue(""),
 	stdinUsed(false),
 	opts_query("Query"),
 	opts_target("Target"),
-	opts_helix("Helix (only if --model=H)"),
+	opts_helix("Helix (only if --model=B)"),
 	opts_seed("Seed"),
 	opts_shape("SHAPE"),
 	opts_inter("Interaction"),
@@ -92,7 +107,7 @@ CommandLineParsing::CommandLineParsing()
 	query(),
 	qSet(),
 	qSetString(""),
-	qAcc("NCPE",'C'),
+	qAcc("NCPE", 'C'),
 	qAccW( 0, 99999, 150),
 	qAccL( 0, 99999, 100),
 	qAccConstr(""),
@@ -110,13 +125,13 @@ CommandLineParsing::CommandLineParsing()
 	target(),
 	tSet(),
 	tSetString(""),
-	tAcc("NCPE",'C'),
+	tAcc("NCPE", 'C'),
 	tAccW( 0, 99999, 150),
 	tAccL( 0, 99999, 100),
 	tAccConstr(""),
 	tAccFile(""),
 	tIntLenMax( 0, 99999, 0),
-	tIntLoopMax( 0, 30, 16),
+	tIntLoopMax( 0, 30, 10),
 	tRegionString(""),
 	tRegion(),
 	tRegionLenMax( 0, 99999, 0),
@@ -128,9 +143,9 @@ CommandLineParsing::CommandLineParsing()
 	helixMinBP(2,4,2),
 	helixMaxBP(2,20,10),
 	helixMaxIL(0,2,0),
-	helixMaxED(-999,+999, 999),
+	helixMinPu(0,1,0),
 	helixMaxE(-999,+999,0),
-	helixNoED(false),
+	helixFullE(false),
 	helixConstraint(NULL),
 
 	noSeedRequired(false),
@@ -141,14 +156,16 @@ CommandLineParsing::CommandLineParsing()
 	seedTMaxUP(-1,20,-1),
 	seedMaxE(-999,+999,0),
 	seedMinPu(0,1,0),
+	seedMaxEhybrid(-999,+999,999),
+	seedNoGU(false),
 	seedQRange(""),
 	seedTRange(""),
 	seedConstraint(NULL),
 
 	temperature(0,100,37),
 
-	model( "SPH", 'S'),
-	predMode( "HME", 'H'),
+	model( "SPBX", 'X'),
+	mode( "HMSR", 'H'),  // R for RIblast heuristic only
 #if INTARNA_MULITHREADING
 	threads( 0, omp_get_max_threads(), 1),
 #endif
@@ -157,25 +174,124 @@ CommandLineParsing::CommandLineParsing()
 
 	energy("BV",'V'),
 	energyFile(""),
+	energyAdd(-999,+999,0),
+	energyNoDangles(false),
 
 	out(),
 	outPrefix2streamName(),
-	outStream(&(std::cout)),
-	outMode( "NDC1O", 'N' ),
+	outMode( "NDC", 'N' ),
 	outNumber( 0, 1000, 1),
 	outOverlap( "NTQB", 'Q' ),
 	outDeltaE( 0.0, 100.0, 100.0),
 	outMaxE( -999.0, +999.0, 0.0),
 	outMinPu( 0.0, 1.0, 0.0),
+	outBestSeedOnly(false),
+	outNoLP(false),
 	outCsvCols(outCsvCols_default),
 	outPerRegion(false),
 	outSpotProbSpots(""),
 
 	logFileName(""),
+	configFileName(""),
 
-	vrnaHandler()
+	vrnaHandler(),
+	outStreamHandler(NULL)
 
 {
+	// report the used personality
+	VLOG(1) <<"You called me "<<getPersonalityName(personality)<<" ..";
+
+	switch (personality) {
+	case IntaRNA :
+	case IntaRNA3 :
+		// no changes
+		break;
+	case IntaRNA1 :
+		resetParamDefault<>(model, 'S', "model");
+		resetParamDefault<>(mode, 'H', "mode");
+		resetParamDefault<>(qAccW, 0, "qAccW");
+		resetParamDefault<>(qAccL, 0, "qAccL");
+		resetParamDefault<>(qIntLenMax, 0, "qIntLenMax");
+		resetParamDefault<>(qIntLoopMax, 16, "qIntLoopMax");
+		resetParamDefault<>(tAccW, 0, "tAccW");
+		resetParamDefault<>(tAccL, 0, "tAccL");
+		resetParamDefault<>(tIntLoopMax, 16, "tIntLoopMax");
+		resetParamDefault<>(threads, 1, "threads");
+		resetParamDefault<>(outBestSeedOnly, true, "outBestSeedOnly");
+		resetParamDefault<>(seedBP, 6, "seedBP");
+		resetParamDefault<>(seedMaxUP, 0, "seedMaxUP");
+		resetParamDefault<>(seedQMaxUP, -1, "seedMaxQUP");
+		resetParamDefault<>(seedTMaxUP, -1, "seedMaxTUP");
+		resetParamDefault<>(seedMaxE, 999, "seedMaxE");
+		resetParamDefault<>(seedMinPu, 0, "seedMinPu");
+		resetParamDefault<>(seedMaxEhybrid, 999, "seedMaxEhybrid");
+		resetParamDefault<>(seedNoGU, false, "seedNoGU");
+		break;
+	case IntaRNA2 :
+		// IntaRNA v2 parameters
+		resetParamDefault<>(model, 'S', "model");
+		resetParamDefault<>(mode, 'H', "mode");
+		resetParamDefault<>(qAccW, 150, "qAccW");
+		resetParamDefault<>(qAccL, 100, "qAccL");
+		resetParamDefault<>(qIntLenMax, 0, "qIntLenMax");
+		resetParamDefault<>(qIntLoopMax, 16, "qIntLoopMax");
+		resetParamDefault<>(tAccW, 150, "tAccW");
+		resetParamDefault<>(tAccL, 100, "tAccL");
+		resetParamDefault<>(tIntLoopMax, 16, "tIntLoopMax");
+		resetParamDefault<>(threads, 1, "threads");
+		resetParamDefault<>(outBestSeedOnly, true, "outBestSeedOnly");
+		resetParamDefault<>(seedBP, 7, "seedBP");
+		resetParamDefault<>(seedMaxUP, 0, "seedMaxUP");
+		resetParamDefault<>(seedQMaxUP, -1, "seedMaxQUP");
+		resetParamDefault<>(seedTMaxUP, -1, "seedMaxTUP");
+		resetParamDefault<>(seedMaxE, 0, "seedMaxE");
+		resetParamDefault<>(seedMinPu, 0, "seedMinPu");
+		resetParamDefault<>(seedMaxEhybrid, 999, "seedMaxEhybrid");
+		resetParamDefault<>(seedNoGU, false, "seedNoGU");
+		break;
+	case IntaRNAens :
+		// ensemble-based predictions
+		resetParamDefault<>(model, 'P', "model");
+		break;
+	case IntaRNAhelix :
+		// helix-block-based predictions
+		resetParamDefault<>(model, 'B', "model");
+		break;
+	case IntaRNAduplex :
+		// RNAhybrid/RNAduplex-like optimizing hybrid only
+		resetParamDefault<>(qAcc, 'N', "qAcc");
+		resetParamDefault<>(tAcc, 'N', "tAcc");
+		break;
+	case IntaRNAexact :
+		// RNAup-like exact predictions
+		resetParamDefault<>(model, 'X', "model");
+		resetParamDefault<>(mode, 'M', "mode");
+		resetParamDefault<>(outOverlap, 'B', "outOverlap");
+		resetParamDefault<>(qAccW, 0, "qAccW");
+		resetParamDefault<>(qAccL, 0, "qAccL");
+		resetParamDefault<>(qIntLenMax, 60, "qIntLenMax");
+		resetParamDefault<>(tAccW, 0, "tAccW");
+		resetParamDefault<>(tAccL, 0, "tAccL");
+		resetParamDefault<>(tIntLenMax, 60, "tIntLenMax");
+		break;
+	case IntaRNAseed :
+		// seed-only prediction
+		resetParamDefault<>(mode, 'S', "mode");
+		break;
+	case IntaRNAsTar :
+		// optimized parameters for sRNA-target prediction
+		resetParamDefault<>(seedNoGU, true, "seedNoGU");
+		resetParamDefault<>(seedMinPu, 0.001, "seedMinPu");
+		resetParamDefault<>(tIntLenMax, 60, "tIntLenMax");
+		resetParamDefault<>(tIntLoopMax, 8, "tIntLoopMax");
+		resetParamDefault<>(qIntLenMax, 60, "qIntLenMax");
+		resetParamDefault<>(qIntLoopMax, 8, "qIntLoopMax");
+		resetParamDefault<>(outMinPu, 0.001, "outMinPu");
+		break;
+	default : // no changes
+		break;
+	}
+
 	using namespace boost::program_options;
 
 	////  REMAINING INITIALIZATIONS  /////////////////////////////////
@@ -194,7 +310,7 @@ CommandLineParsing::CommandLineParsing()
 			, value<std::string>(&queryArg)
 				->required()
 				->notifier(boost::bind(&CommandLineParsing::validate_query,this,_1))
-			, "either an RNA sequence or the stream/file name from where to read the query sequences (should be the shorter sequences to increase efficiency); use 'STDIN' to read from standard input stream; sequences have to use IUPAC nucleotide encoding")
+			, "either an RNA sequence or the stream/file name from where to read the query sequences (should be the shorter sequences to increase efficiency); use 'STDIN' to read from standard input stream; sequences have to use IUPAC nucleotide encoding; output alias is [seq2]")
 		("qAcc"
 			, value<char>(&(qAcc.val))
 				->default_value(qAcc.def)
@@ -238,7 +354,8 @@ CommandLineParsing::CommandLineParsing()
 					" '"+toString(AccessibilityConstraint::dotBracket_blocked)+"' blocked."
 					" Note, blocked positions are excluded from interaction prediction and constrained to be unpaired!"
 					"\n OR an index range based encoding that is prefixed by the according constraint letter and a colon,"
-					" e.g. 'b:3-4,33-40,p:1-2,12-20'"
+					" e.g. 'b:3-4,33-40,p:1-2,12-20'.\n"
+					"You might also want to check --energyAdd to correct the computed energies."
 					).c_str())
 		("qAccFile"
 			, value<std::string>(&(qAccFile))
@@ -263,8 +380,7 @@ CommandLineParsing::CommandLineParsing()
 			, value<std::string>(&(qRegionString))
 				->notifier(boost::bind(&CommandLineParsing::validate_qRegion,this,_1))
 			, std::string("interaction site : query regions to be considered for"
-					" interaction prediction. Either given as BED file (for"
-					" multi-sequence FASTA input) or in the format"
+					" interaction prediction. Format ="
 					" 'from1-to1,from2-to2,..' assuming indexing starts with 1."
 					" Consider '--qRegionLenMax' for automatic region setup for"
 					" long sequences."
@@ -289,7 +405,7 @@ CommandLineParsing::CommandLineParsing()
 			, value<std::string>(&targetArg)
 				->required()
 				->notifier(boost::bind(&CommandLineParsing::validate_target,this,_1))
-				, "either an RNA sequence or the stream/file name from where to read the target sequences (should be the longer sequences to increase efficiency); use 'STDIN' to read from standard input stream; sequences have to use IUPAC nucleotide encoding")
+				, "either an RNA sequence or the stream/file name from where to read the target sequences (should be the longer sequences to increase efficiency); use 'STDIN' to read from standard input stream; sequences have to use IUPAC nucleotide encoding; output alias is [seq1]")
 		("tAcc"
 			, value<char>(&(tAcc.val))
 				->default_value(tAcc.def)
@@ -333,7 +449,8 @@ CommandLineParsing::CommandLineParsing()
 					" '"+toString(AccessibilityConstraint::dotBracket_blocked)+"' blocked."
 					" Note, blocked positions are excluded from interaction prediction and constrained to be unpaired!"
 					"\n OR an index range based encoding that is prefixed by the according constraint letter and a colon,"
-					" e.g. 'b:3-4,33-40,p:1-2,12-20'"
+					" e.g. 'b:3-4,33-40,p:1-2,12-20'.\n"
+					"You might also want to check --energyAdd to correct the computed energies."
 					).c_str())
 		("tAccFile"
 			, value<std::string>(&(tAccFile))
@@ -358,8 +475,7 @@ CommandLineParsing::CommandLineParsing()
 			, value<std::string>(&(tRegionString))
 				->notifier(boost::bind(&CommandLineParsing::validate_tRegion,this,_1))
 			, std::string("interaction site : target regions to be considered for"
-					" interaction prediction. Either given as BED file (for"
-					" multi-sequence FASTA input) or in the format"
+					" interaction prediction. Format ="
 					" 'from1-to1,from2-to2,..' assuming indexing starts with 1."
 					" Consider '--tRegionLenMax' for automatic region setup for"
 					" long sequences."
@@ -402,21 +518,25 @@ CommandLineParsing::CommandLineParsing()
 					, std::string("maximal size for each internal loop size in a helix"
 										  " (arg in range ["+toString(helixMaxIL.min)+","+toString(helixMaxIL.max)+"]).").c_str())
 
-			("helixMaxED"
-			, value<E_type>(&(helixMaxED.val))
-					->default_value(helixMaxED.def)
-					->notifier(boost::bind(&CommandLineParsing::validate_helixMaxED, this,_1))
-			, std::string("maximal ED-value allowed (per sequence) during helix computation"
-								  " (arg in range ["+toString(helixMaxED.min)+","+toString(helixMaxED.max)+"]).").c_str())
+			("helixMinPu"
+			, value<Z_type>(&(helixMinPu.val))
+					->default_value(helixMinPu.def)
+					->notifier(boost::bind(&CommandLineParsing::validate_helixMinPu, this,_1))
+			, std::string("minimal unpaired probability (per sequence) of considered helices"
+								  " (arg in range ["+toString(helixMinPu.min)+","+toString(helixMinPu.max)+"]).").c_str())
 
 			("helixMaxE"
-					, value<E_type>(&(helixMaxE.val))
+					, value<E_kcal_type>(&(helixMaxE.val))
 					 ->default_value(helixMaxE.def)
 					 ->notifier(boost::bind(&CommandLineParsing::validate_helixMaxE, this,_1))
-					, std::string("maximal energy considered during helix computation"
+					, std::string("maximal energy (excluding) a helix may have"
 										  " (arg in range ["+toString(helixMaxE.min)+","+toString(helixMaxE.max)+"]).").c_str())
 
-			("helixWithED", "if present, ED-values will be used within the energy evaluation of a helix")
+			("helixFullE"
+					, value<bool>(&helixFullE)
+						->default_value(helixFullE)
+						->implicit_value(true)
+					,"if given (or true), the overall energy of a helix (including E_init, ED, dangling ends, ..) will be used for helixMaxE checks; otherwise only loop-terms are considered.")
 			;
 	opts_cmdline_short.add(opts_helix);
 
@@ -424,7 +544,10 @@ CommandLineParsing::CommandLineParsing()
 
 
 	opts_seed.add_options()
-	    ("noSeed", "if present, no seed is enforced within the predicted interactions")
+	    ("noSeed", value<bool>(&noSeedRequired)
+						->default_value(noSeedRequired)
+						->implicit_value(true)
+	    		, "if given (or true), no seed is enforced within the predicted interactions")
 
 		("seedTQ"
 			, value<std::string>(&(seedTQ))
@@ -458,13 +581,19 @@ CommandLineParsing::CommandLineParsing()
 			, std::string("maximal number of unpaired bases within the target's seed region"
 					" (arg in range ["+toString(seedTMaxUP.min)+","+toString(seedTMaxUP.max)+"]); if -1 the value of seedMaxUP is used.").c_str())
 		("seedMaxE"
-			, value<E_type>(&(seedMaxE.val))
+			, value<E_kcal_type>(&(seedMaxE.val))
 				->default_value(seedMaxE.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_seedMaxE,this,_1))
 			, std::string("maximal energy a seed region may have"
 					" (arg in range ["+toString(seedMaxE.min)+","+toString(seedMaxE.max)+"]).").c_str())
+		("seedMaxEhybrid"
+			, value<E_kcal_type>(&(seedMaxEhybrid.val))
+				->default_value(seedMaxEhybrid.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_seedMaxEhybrid,this,_1))
+			, std::string("maximal hybridization energy (including E_init) a seed region may have"
+					" (arg in range ["+toString(seedMaxEhybrid.min)+","+toString(seedMaxEhybrid.max)+"]).").c_str())
 		("seedMinPu"
-			, value<E_type>(&(seedMinPu.val))
+			, value<Z_type>(&(seedMinPu.val))
 				->default_value(seedMinPu.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_seedMinPu,this,_1))
 			, std::string("minimal unpaired probability (per sequence) a seed region may have"
@@ -477,6 +606,10 @@ CommandLineParsing::CommandLineParsing()
 			, value<std::string>(&(seedTRange))
 				->notifier(boost::bind(&CommandLineParsing::validate_seedTRange,this,_1))
 			, std::string("interval(s) in the target to search for seeds in format 'from1-to1,from2-to2,...' (Note, only for single target)").c_str())
+	    ("seedNoGU", value<bool>(&seedNoGU)
+						->default_value(seedNoGU)
+						->implicit_value(true)
+	    		, "if given (or true), no GU base pairs are allowed within seeds")
 		;
 
 	////  SHAPE OPTIONS  ////////////////////////
@@ -540,13 +673,13 @@ CommandLineParsing::CommandLineParsing()
 
 	opts_inter.add_options()
 		("mode,m"
-			, value<char>(&(predMode.val))
-				->default_value(predMode.def)
-				->notifier(boost::bind(&CommandLineParsing::validate_predMode,this,_1))
+			, value<char>(&(mode.val))
+				->default_value(mode.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_mode,this,_1))
 			, std::string("prediction mode : "
 					"\n 'H' = heuristic (fast and low memory), "
-					"\n 'M' = exact and low memory, "
-					"\n 'E' = exact (high memory)"
+					"\n 'M' = exact (slow), "
+					"\n 'S' = seed-only"
 					).c_str())
 		;
 	opts_cmdline_short.add(opts_inter);
@@ -557,8 +690,9 @@ CommandLineParsing::CommandLineParsing()
 				->notifier(boost::bind(&CommandLineParsing::validate_model,this,_1))
 			, std::string("interaction model : "
 					"\n 'S' = single-site, minimum-free-energy interaction (interior loops only), "
-					"\n 'H' = single-site, helix-based, minimum-free-energy interaction (helices and interior loops only), "
-					"\n 'P' = single-site maximum-probability interaction (interior loops only)"
+					"\n 'X' = single-site, minimum-free-energy interaction via seed-extension (interior loops only), "
+					"\n 'B' = single-site, helix-block-based, minimum-free-energy interaction (blocks of stable helices and interior loops only), "
+					"\n 'P' = single-site interaction with minimal free ensemble energy per site (interior loops only)"
 					).c_str())
 		("energy,e"
 			, value<char>(&(energy.val))
@@ -571,8 +705,20 @@ CommandLineParsing::CommandLineParsing()
 			, value<std::string>(&energyFile)
 				->notifier(boost::bind(&CommandLineParsing::validate_energyFile,this,_1))
 			, std::string("energy parameter file of VRNA package to be used. If not provided, the default parameter set of the linked Vienna RNA package is used.").c_str())
+		("energyNoDangles"
+				, value<bool>(&(energyNoDangles))
+					->default_value(energyNoDangles)
+					->implicit_value(true)
+				, std::string("if given (or true), no dangling end contributions are considered within the overall interaction energy").c_str())
+		("energyAdd"
+			, value<E_kcal_type>(&(energyAdd.val))
+				->default_value(energyAdd.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_energyAdd,this,_1))
+			, std::string("energy computation :"
+					" if provided, this term is added to compute the overall energy of an interaction."
+					" This is useful to incorporate the energy shift of applied accessibility constraints.").c_str())
 		("temperature"
-			, value<T_type>(&(temperature.val))
+			, value<Z_type>(&(temperature.val))
 				->default_value(temperature.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_temperature,this,_1))
 			, std::string("temperature in Celsius to setup the VRNA energy parameters"
@@ -625,8 +771,6 @@ CommandLineParsing::CommandLineParsing()
 					"\n 'N' normal output (ASCII char + energy),"
 					"\n 'D' detailed output (ASCII char + energy/position details),"
 					"\n 'C' CSV output (see --outCsvCols),"
-					"\n '1' backward compatible IntaRNA v1.* normal output,"
-					"\n 'O' backward compatible IntaRNA v1.* detailed output (former -o)"
 					).c_str())
 	    ("outNumber,n"
 			, value<int>(&(outNumber.val))
@@ -647,36 +791,54 @@ CommandLineParsing::CommandLineParsing()
 	opts_cmdline_short.add(opts_output);
 	opts_output.add_options()
 	    ("outMaxE"
-			, value<double>(&(outMaxE.val))
+			, value<E_kcal_type>(&(outMaxE.val))
 				->default_value(outMaxE.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_outMaxE,this,_1))
-			, std::string("only interactions with E <= maxE are reported"
+			, std::string("only interactions with E < maxE are reported"
 					" (arg in range ["+toString(outMaxE.min)+","+toString(outMaxE.max)+"])").c_str())
 	    ("outMinPu"
-			, value<double>(&(outMinPu.val))
+			, value<Z_type>(&(outMinPu.val))
 				->default_value(outMinPu.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_outMinPu,this,_1))
 			, std::string("only interactions where all individual positions of both interacting sites have an unpaired probability >= minPu are reported"
 					" (arg in range ["+toString(outMinPu.min)+","+toString(outMinPu.max)+"])").c_str())
 	    ("outDeltaE"
-			, value<double>(&(outDeltaE.val))
+			, value<E_kcal_type>(&(outDeltaE.val))
 				->default_value(outDeltaE.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_outDeltaE,this,_1))
 			, std::string("suboptimal output : only interactions with E <= (minE+deltaE) are reported"
 					" (arg in range ["+toString(outDeltaE.min)+","+toString(outDeltaE.max)+"])").c_str())
+	    ("outBestSeedOnly"
+			, value<bool>(&(outBestSeedOnly))
+				->default_value(outBestSeedOnly)
+				->implicit_value(true)
+			, std::string("if given (or true), only the energetically best putative seed is reported").c_str())
+	    ("outNoLP"
+			, value<bool>(&(outNoLP))
+				->default_value(outNoLP)
+				->implicit_value(true)
+			, std::string("if given (or true), no lonely (non-stacked) inter-molecular base pairs are allowed in predictions").c_str())
 		("outCsvCols"
 			, value<std::string>(&(outCsvCols))
 				->default_value(outCsvCols,"see text")
 				->notifier(boost::bind(&CommandLineParsing::validate_outCsvCols,this,_1))
-			, std::string("output : comma separated list of CSV column IDs to print if outMode=CSV."
+			, std::string("output : comma separated list of CSV column IDs to print if outMode=C."
 					" An empty argument (using '') prints all possible columns from the following available ID list: "
-					+ boost::replace_all_copy(OutputHandlerCsv::list2string(OutputHandlerCsv::string2list("")), ",", ", ")+"."
+					+ OutputHandlerCsv::list2string(OutputHandlerCsv::string2list(""),", ")+"."
 					+ "\nDefault = '"+outCsvCols+"'."
 					).c_str())
-	    ("outPerRegion", "output : if given, best interactions are reported independently"
+		("outCsvSort"
+			, value<std::string>(&(outCsvSort))
+				->notifier(boost::bind(&CommandLineParsing::validate_outCsvSort,this,_1))
+			, std::string("output : column ID from [outCsvCols] to be used for CSV row sorting if outMode=C.").c_str())
+	    ("outPerRegion"
+	    		, value<bool>(&outPerRegion)
+						->default_value(outPerRegion)
+						->implicit_value(true)
+	    		, "output : if given (or true), best interactions are reported independently"
 	    		" for all region combinations; otherwise only the best for each query-target combination")
 	    ("verbose,v", "verbose output") // handled via easylogging++
-	    ("default-log-file", value<std::string>(&(logFileName)), "name of file to be used for log output (INFO, WARNING, VERBOSE, DEBUG)")
+	    ("default-log-file", value<std::string>(&(logFileName)), "file to be used for log output (INFO, WARNING, VERBOSE, DEBUG)")
 	    ;
 
 	////  GENERAL OPTIONS  ////////////////////////////////////
@@ -693,6 +855,10 @@ CommandLineParsing::CommandLineParsing()
 					" (arg in range ["+toString(threads.min)+","+toString(threads.max)+"])").c_str())
 #endif
 	    ("version", "print version")
+	    ("personality", value<std::string>(&(personalityParamValue))
+			, "IntaRNA personality to be used, which defines default values, available program arguments and tool behavior")
+	    ("parameterFile", value<std::string>(&(configFileName))
+			, "file from where to read additional command line arguments")
 	    ("help,h", "show the help page for basic parameters")
 	    ("fullhelp", "show the extended help page for all available parameters")
 	    ;
@@ -710,11 +876,8 @@ CommandLineParsing::CommandLineParsing()
 CommandLineParsing::~CommandLineParsing() {
 
 	INTARNA_CLEANUP(helixConstraint);
-	 INTARNA_CLEANUP(seedConstraint);
-
-	// reset output stream
-	deleteOutputStream( outStream );
-	outStream = & std::cout;
+	INTARNA_CLEANUP(seedConstraint);
+	INTARNA_CLEANUP(outStreamHandler);
 
 }
 
@@ -741,9 +904,33 @@ parse(int argc, char** argv)
 				| command_line_style::style_t::short_allow_next
 				| command_line_style::style_t::case_insensitive
 				;
+		// parse and store
 		store( parse_command_line(argc, argv, opts_cmdline_all, parseStyle), vm);
 		// parsing fine so far
 		parsingCode = ReturnCode::KEEP_GOING;
+
+		// check if we have to parse parameters from file
+		if (vm.count("parameterFile") > 0 ) {
+			const std::string paramFileName = vm.at("parameterFile").as<std::string>();
+			validate_configFileName(paramFileName);
+			if (parsingCode == ReturnCode::KEEP_GOING) {
+				// open file handle
+				std::ifstream paramfile(paramFileName);
+				try {
+					if(!paramfile.good()){
+						LOG(ERROR) <<"Parsing of 'parameterFile' : could not open file  '"<<paramFileName<<"'";
+						updateParsingCode( ReturnCode::STOP_PARSING_ERROR );
+					} else {
+						store( parse_config_file(paramfile, opts_cmdline_all), vm);
+					}
+				} catch (std::exception & ex) {
+					LOG(ERROR) <<"error while parsing of 'parameterFile="<<paramFileName<<"' : "<<ex.what();
+					updateParsingCode( ReturnCode::STOP_PARSING_ERROR );
+				}
+				// close stream
+				paramfile.close();
+			}
+		}
 	} catch (error& e) {
 		LOG(ERROR) <<e.what() << " : run with '--help' for allowed arguments";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
@@ -751,7 +938,7 @@ parse(int argc, char** argv)
 
 	// if parsing was successful, check for help request
 	if (parsingCode == ReturnCode::KEEP_GOING) {
-		if (vm.count("help")) {
+		if ( vm.count("help") > 0 ) {
 			std::cout
 				<<"\nIntaRNA predicts RNA-RNA interactions.\n"
 				<<"\nThe following basic program arguments are supported:\n"
@@ -759,19 +946,42 @@ parse(int argc, char** argv)
 				<< "\n"
 				<< "Run --fullhelp for the extended list of parameters\n"
 				<< "\n";
+			if (personality != IntaRNA) {
+				std::cout
+					<<"\n############################################################################\n"
+					<<"\nNote, you are using the '"
+					<<getPersonalityName(personality)
+					<<"' personality, which alters some default values!\n"
+					<<"\n############################################################################\n"
+					<< "\n";
+			}
+			std::cout
+				<<"You can find more detailed documentation of IntaRNA on \n"
+				<<"\n  https://backofenlab.github.io/IntaRNA/\n"
+				<<std::endl
+				;
 			parsingCode = ReturnCode::STOP_ALL_FINE;
 			return parsingCode;
 		}
-		if (vm.count("fullhelp")) {
+		if ( vm.count("fullhelp") > 0 ) {
 			std::cout
 				<<"\nIntaRNA predicts RNA-RNA interactions.\n"
 				<<"\nThe following program arguments are supported:\n"
 				<< opts_cmdline_all
 				<< "\n";
+			if (personality != IntaRNA) {
+				std::cout
+					<<"\n############################################################################\n"
+					<<"\nNote, you are using personality '"
+					<<getPersonalityName(personality)
+					<<"', which alters some default values!\n(see -v output)\n"
+					<<"\n############################################################################\n"
+					<< "\n";
+			}
 			parsingCode = ReturnCode::STOP_ALL_FINE;
 			return parsingCode;
 		}
-		if (vm.count("version")) {
+		if ( vm.count("version") > 0 ) {
 			std::cout
 					<<INTARNA_PACKAGE_STRING
 					<< "\n"
@@ -808,47 +1018,31 @@ parse(int argc, char** argv)
 			// open output stream
 			{
 				// open according stream
-				outStream = newOutputStream( outPrefix2streamName.at(OutPrefixCode::OP_EMPTY) );
+				std::ostream* outStream = newOutputStream( outPrefix2streamName.at(OutPrefixCode::OP_EMPTY) );
 				// check success
 				if (outStream == NULL) {
-					throw error("could not open output file --out='"+toString(outPrefix2streamName.at(OutPrefixCode::OP_EMPTY))+ "' for writing");
+					throw error("could not open output --out='"+toString(outPrefix2streamName.at(OutPrefixCode::OP_EMPTY))+ "' for writing");
 				}
+				// create final output handler
+				outStreamHandler = new OutputStreamHandler(outStream);
 			}
-			outPerRegion = vm.count("outPerRegion") > 0;
 
 			// parse the sequences
 			parseSequences("query",queryArg,query,qSet);
 			parseSequences("target",targetArg,target,tSet);
 
-			// valide accessibility input from file (requires parsed sequences)
+			// validate accessibility input from file (requires parsed sequences)
 			validate_qAccFile( qAccFile );
 			validate_tAccFile( tAccFile );
 
-			// check helix setup
-			// check for minimal sequence length
-			for(size_t i=0; i<query.size(); i++) {
-				if (query.at(i).size() < helixMinBP.val) {
-					throw error("length of query sequence "+toString(i+1)+" is below minimal number of helix base pairs (helixMinBP="+toString(helixMinBP.val)+")");
-				}
-			}
-
-			for(size_t i=0; i<target.size(); i++) {
-				if (target.at(i).size() < helixMinBP.val) {
-					throw error("length of target sequence "+toString(i+1)+" is below minimal number of helix base pairs (helixMinBP="+toString(helixMinBP.val)+")");
-				}
-			}
-
-			// Ensure that min is smaller than max.
-			if (helixMinBP.val > helixMaxBP.val) {
-				throw error("the minimum number of base pairs (" +toString(helixMinBP.val)+") is higher than the maximum number of base pairs (" +toString(helixMaxBP.val)+")");
-			}
-
-			// check for helixWithED
-			helixNoED = vm.count("helixWithED") == 0;
-
 			// check seed setup
-			noSeedRequired = vm.count("noSeed") > 0;
 			if (noSeedRequired) {
+				// reset model if needed
+				if (model.val == 'X') {
+					LOG(INFO) <<"Since no seed constraint needed: resetting model from 'X' to 'S'";
+					model.val='S';
+				}
+				if (mode.val == 'S') throw error("mode=S not applicable for non-seed predictions!");
 				// input sanity check : maybe seed constraints defined -> warn
 				if (!seedTQ.empty()) LOG(INFO) <<"no seed constraint wanted, but explicit seedTQ provided (will be ignored)";
 				if (seedBP.val != seedBP.def) LOG(INFO) <<"no seed constraint wanted, but seedBP provided (will be ignored)";
@@ -856,14 +1050,16 @@ parse(int argc, char** argv)
 				if (seedQMaxUP.val != seedQMaxUP.def) LOG(INFO) <<"no seed constraint wanted, but seedQMaxUP provided (will be ignored)";
 				if (seedTMaxUP.val != seedTMaxUP.def) LOG(INFO) <<"no seed constraint wanted, but seedTMaxUP provided (will be ignored)";
 				if (seedMaxE.val != seedMaxE.def) LOG(INFO) <<"no seed constraint wanted, but seedMaxE provided (will be ignored)";
+				if (seedMaxEhybrid.val != seedMaxEhybrid.def) LOG(INFO) <<"no seed constraint wanted, but seedMaxEhybrid provided (will be ignored)";
 				if (seedMinPu.val != seedMinPu.def) LOG(INFO) <<"no seed constraint wanted, but seedMinPu provided (will be ignored)";
 				if (!seedQRange.empty()) LOG(INFO) <<"no seed constraint wanted, but seedQRange provided (will be ignored)";
 				if (!seedTRange.empty()) LOG(INFO) <<"no seed constraint wanted, but seedTRange provided (will be ignored)";
+				if (seedNoGU) LOG(INFO) <<"no seed constraint wanted, but seedNoGU provided (will be ignored)";
 			} else {
 				// check query search ranges
 				if (!seedQRange.empty()) {
 					if (query.size()!=1) {
-						throw error("seedQRange given but not only one query sequence provided");
+						throw error("seedQRange given but more than one query sequence provided");
 					} else {
 						validate_indexRangeList("seedQRange",seedQRange, 1, query.begin()->size());
 					}
@@ -871,30 +1067,27 @@ parse(int argc, char** argv)
 				// check target search ranges
 				if (!seedTRange.empty()) {
 					if (target.size()!=1) {
-						throw error("seedTRange given but not only one target sequence provided");
+						throw error("seedTRange given but more than one target sequence provided");
 					} else {
 						validate_indexRangeList("seedTRange",seedTRange, 1, target.begin()->size());
 					}
 				}
 
-				// check if helixMaxBP >= seedBP
-				if (helixMaxBP.val < seedBP.val) {
-					throw error("maximum number of allowed seed base pairs ("+toString(seedBP.val)+") exceeds the maximal allowed number of helix base pairs ("+toString(helixMaxBP.val)+")");
-				}
-				// check for minimal sequence length (>=seedBP)
-				for( size_t i=0; i<query.size(); i++) {
-					if (query.at(i).size() < seedBP.val) {
-						throw error("length of query sequence "+toString(i+1)+" is below minimal number of seed base pairs (seedBP="+toString(seedBP.val)+")");
-					}
-				}
-				for( size_t i=0; i<target.size(); i++) {
-					if (target.at(i).size() < seedBP.val) {
-						throw error("length of target sequence "+toString(i+1)+" is below minimal number of seed base pairs (seedBP="+toString(seedBP.val)+")");
-					}
-				}
 
 				// check for explicit seed constraints
-				if (!seedTQ.empty()) {
+				if (seedTQ.empty()) {
+					// check for minimal sequence length (>=seedBP)
+					for( size_t i=0; i<query.size(); i++) {
+						if (query.at(i).size() < seedBP.val) {
+							throw error("length of query sequence "+toString(i+1)+" is below minimal number of seed base pairs (seedBP="+toString(seedBP.val)+")");
+						}
+					}
+					for( size_t i=0; i<target.size(); i++) {
+						if (target.at(i).size() < seedBP.val) {
+							throw error("length of target sequence "+toString(i+1)+" is below minimal number of seed base pairs (seedBP="+toString(seedBP.val)+")");
+						}
+					}
+				} else {
 					if (target.size()>1 || query.size() > 1) {
 						throw error("explicit seed definition only for single query/target available");
 					}
@@ -904,9 +1097,11 @@ parse(int argc, char** argv)
 					if (seedQMaxUP.val != seedQMaxUP.def) LOG(INFO) <<"explicit seeds defined, but seedQMaxUP provided (will be ignored)";
 					if (seedTMaxUP.val != seedTMaxUP.def) LOG(INFO) <<"explicit seeds defined, but seedTMaxUP provided (will be ignored)";
 					if (seedMaxE.val != seedMaxE.def) LOG(INFO) <<"explicit seeds defined, but seedMaxE provided (will be ignored)";
+					if (seedMaxEhybrid.val != seedMaxEhybrid.def) LOG(INFO) <<"explicit seeds defined, but seedMaxEhybrid provided (will be ignored)";
 					if (seedMinPu.val != seedMinPu.def) LOG(INFO) <<"explicit seeds defined, but seedMinPu provided (will be ignored)";
 					if (!seedQRange.empty()) LOG(INFO) <<"explicit seeds defined, but seedQRange provided (will be ignored)";
 					if (!seedTRange.empty()) LOG(INFO) <<"explicit seeds defined, but seedTRange provided (will be ignored)";
+					if (seedNoGU) LOG(INFO) <<"explicit seeds defined, but seedNoGU provided (will be ignored)";
 				}
 			}
 
@@ -980,7 +1175,7 @@ parse(int argc, char** argv)
 			if (vm.count("qAccConstr") > 0) {
 				// only for single sequence input supported
 				if (!validateSequenceNumber("qAccConstr",query,1,1)) {
-					// TODO report error
+					// report error
 					INTARNA_NOT_IMPLEMENTED("--qAccConstr only supported for single sequence input");
 				}
 			} else {
@@ -991,7 +1186,7 @@ parse(int argc, char** argv)
 			if (vm.count("tAccConstr") > 0) {
 				// only for single sequence input supported
 				if (!validateSequenceNumber("tAccConstr",target,1,1)) {
-					// TODO report error
+					// report error
 					INTARNA_NOT_IMPLEMENTED("--tAccConstr only supported for single sequence input");
 				}
 			} else {
@@ -1056,6 +1251,26 @@ parse(int argc, char** argv)
 			if (outCsvCols != outCsvCols_default && outMode.val != 'C') {
 				throw error("outCsvCols set but outMode != C ("+toString(outMode.val)+")");
 			}
+			if (!outCsvSort.empty()) {
+				if (outMode.val != 'C') {
+					throw error("outCsvSort set but outMode != C ("+toString(outMode.val)+")");
+				}
+				// check if column to sort is within output list
+				std::string curCsvCols = (outCsvCols.empty() ? OutputHandlerCsv::list2string(OutputHandlerCsv::string2list(""),",") : outCsvCols);
+				if ( ("," + curCsvCols + ",").find(","+outCsvSort+",") == std::string::npos ) {
+					throw error("outCsvSort column ID '"+outCsvSort+"' is not within outCsvCols list");
+				}
+				// get index of column to sort
+				OutputHandlerCsv::ColTypeList csvCols = OutputHandlerCsv::string2list( curCsvCols );
+				OutputHandlerCsv::ColType outCsvColType = *(OutputHandlerCsv::string2list( outCsvSort ).begin());
+				auto it = std::find(csvCols.begin(), csvCols.end(), outCsvColType);
+				size_t outCsvSortIdx = std::distance(csvCols.begin(), it);
+				// check whether to do lex or numeric ordering
+				bool sortLexOrder = (std::find( OutputHandlerCsv::colTypeNumericSort.begin(), OutputHandlerCsv::colTypeNumericSort.end(), outCsvColType) == OutputHandlerCsv::colTypeNumericSort.end());
+				// setup sorted CSV output
+				OutputStreamHandler * tmpOSH = outStreamHandler;
+				outStreamHandler = new OutputStreamHandlerSortedCsv( tmpOSH, outCsvSortIdx, sortLexOrder, outCsvColSep, true, outCsvLstSep );
+			}
 
 			// check output sanity
 			{	// check for duplicates
@@ -1072,18 +1287,43 @@ parse(int argc, char** argv)
 				}
 			}
 
-#if INTARNA_MULITHREADING
-			// check if multi-threading
-			if (threads.val != 1 && getTargetSequences().size() > 1) {
-				// warn if >= 4D space prediction enabled
-				if (model.val != 'S' || predMode.val == 'E') {
-					LOG(WARNING) <<"Multi-threading enabled in high-mem-prediction mode : ensure you have enough memory available!";
+			// final checks if parameter set compatible with model
+			switch (model.val) {
+			// ensemble based predictions
+			case 'P' : {
+				// no window decomposition of regions (overlapping regions break overall partition function computation)
+				if (windowWidth.val != 0)  throw error("windowWidth not supported for --model=P");
+				break;}
+			case 'B' : {
+				// check compatibility of seed constraint with helix setup
+				if (!noSeedRequired) {
+					// check if helixMaxBP >= seedBP
+					if (helixMaxBP.val < ( seedTQ.empty() ? seedBP.val : SeedHandlerExplicit::getSeedMaxBP(seedTQ) ) ) {
+						throw error("maximum number of seed base pairs ("
+								+toString(( seedTQ.empty() ? seedBP.val : SeedHandlerExplicit::getSeedMaxBP(seedTQ) ))
+								+") exceeds the maximally allowed number of helix base pairs ("+toString(helixMaxBP.val)+")");
+					}
 				}
-				if (outMode.val == '1' || outMode.val == 'O') {
-					throw error("Multi-threading not supported for IntaRNA v1 output");
+				
+				// check for minimal sequence length
+				for(size_t i=0; i<query.size(); i++) {
+					if (query.at(i).size() < helixMinBP.val) {
+						throw error("length of query sequence "+toString(i+1)+" is below minimal number of helix base pairs (helixMinBP="+toString(helixMinBP.val)+")");
+					}
 				}
+				for(size_t i=0; i<target.size(); i++) {
+					if (target.at(i).size() < helixMinBP.val) {
+						throw error("length of target sequence "+toString(i+1)+" is below minimal number of helix base pairs (helixMinBP="+toString(helixMinBP.val)+")");
+					}
+				}
+				// Ensure that min is smaller than max.
+				if (helixMinBP.val > helixMaxBP.val) {
+					throw error("the minimum number of base pairs (" +toString(helixMinBP.val)+") is higher than the maximum number of base pairs (" +toString(helixMaxBP.val)+")");
+				}
+				break;}
+			default:
+				break;
 			}
-#endif
 
 			// trigger initial output handler output
 			initOutputHandler();
@@ -1212,6 +1452,23 @@ void CommandLineParsing::validate_outCsvCols(const std::string & value) {
 
 ////////////////////////////////////////////////////////////////////////////
 
+void CommandLineParsing::validate_outCsvSort(const std::string & value) {
+	OutputHandlerCsv::ColTypeList lst;
+	try {
+		// try to parse
+		lst = OutputHandlerCsv::string2list( value );
+	} catch (const std::runtime_error & e ) {
+		LOG(ERROR) <<"--outCsvSort : " <<e.what();
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+	}
+	if (lst.size()>1) {
+		LOG(ERROR) <<"--outCsvSort : more than one column IDs given";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
 bool
 CommandLineParsing::
 validateFile( const std::string & filename )
@@ -1226,7 +1483,7 @@ validateFile( const std::string & filename )
 	// check if it is a file
 	if ( !boost::filesystem::is_regular_file( filename ) )
 	{
-		LOG(ERROR) <<"'"<<filename<<"' : Is no file!";
+		LOG(ERROR) <<"'"<<filename<<"' : is no file!";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 		return false;
 	}
@@ -1247,19 +1504,16 @@ validateRegion( const std::string & argName, const std::string & value )
 	if (boost::regex_match( value, IndexRangeList::regex, boost::match_perl )) {
 		try {
 			// test if parsable as ascending, non-overlapping range list
-			IndexRangeList tmpList(value);
+			// NOTE: non-overlapping is needed for ensemble-based prediction to ensure correctness of overall partition function!!!
+			IndexRangeList tmpList(value, false);
 		} catch (std::exception & ex) {
 			return false;
 		}
 		return true;
 	} else
-	// might be BED file input
-	if ( validateFile( value ) ) {
-		return true;
-	} else
 	// no valid input
 	{
-		LOG(ERROR) <<"the argument for "<<argName<<" is neither a valid range string encoding nor a file that can be found";
+		LOG(ERROR) <<"the argument for "<<argName<<" is no valid range string encoding";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
 	return false;
@@ -1276,7 +1530,7 @@ parseRegion( const std::string & argName, const std::string & value, const RnaSe
 		// ensure range list size sufficient
 		rangeList.resize( sequences.size() );
 		size_t s=0;
-		BOOST_FOREACH( IndexRangeList & r, rangeList ) {
+		for( IndexRangeList & r : rangeList ) {
 			// clear old data if any
 			r.clear();
 			assert(sequences.at(s).size()>0);
@@ -1289,9 +1543,7 @@ parseRegion( const std::string & argName, const std::string & value, const RnaSe
 	if (boost::regex_match( value, IndexRangeList::regex, boost::match_perl )) {
 		// ensure single sequence input
 		if(sequences.size() != 1) {
-			LOG(ERROR) <<argName <<" : string range list encoding provided but more than one sequence present.";
-			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
-			return;
+			throw boost::program_options::error(argName +" : string range list encoding provided but more than one sequence present.");
 		}
 		// validate range encodings
 		validate_indexRangeList(argName, value, 1, sequences.begin()->size());
@@ -1301,12 +1553,7 @@ parseRegion( const std::string & argName, const std::string & value, const RnaSe
 		rangeList[0] = IndexRangeList( value ).shift(-1, sequences.begin()->size()-1);
 		return;
 	}
-	// might be BED file input
-	if ( validateFile( value ) ) {
-		INTARNA_NOT_IMPLEMENTED("BED file input for index range list not implemented");
-		return;
-	}
-	assert(false) /*should never happen*/;
+	throw boost::program_options::error(argName+" is not a comma-separated list of index ranges.");
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1549,8 +1796,11 @@ getEnergyHandler( const Accessibility& accTarget, const ReverseAccessibility& ac
 	const bool initES = std::string("M").find(model.val) != std::string::npos;
 
 	switch( energy.val ) {
-	case 'B' : return new InteractionEnergyBasePair( accTarget, accQuery, tIntLoopMax.val, qIntLoopMax.val, initES );
-	case 'V' : return new InteractionEnergyVrna( accTarget, accQuery, vrnaHandler, tIntLoopMax.val, qIntLoopMax.val, initES );
+	case 'B' : return new InteractionEnergyBasePair( accTarget, accQuery
+						, tIntLoopMax.val, qIntLoopMax.val
+						, initES, Z_type(1.0), Ekcal_2_E(-1), 3
+						, Ekcal_2_E(energyAdd.val), !energyNoDangles );
+	case 'V' : return new InteractionEnergyVrna( accTarget, accQuery, vrnaHandler, tIntLoopMax.val, qIntLoopMax.val, initES, Ekcal_2_E(energyAdd.val), !energyNoDangles );
 	default :
 		INTARNA_NOT_IMPLEMENTED("CommandLineParsing::getEnergyHandler : energy = '"+toString(energy.val)+"' is not supported");
 	}
@@ -1576,8 +1826,10 @@ getOutputConstraint()  const
 	return OutputConstraint(
 			  outNumber.val
 			, overlap
-			, static_cast<E_type>(outMaxE.val)
-			, static_cast<E_type>(outDeltaE.val)
+			, Ekcal_2_E(outMaxE.val)
+			, Ekcal_2_E(outDeltaE.val)
+			, outBestSeedOnly
+			, outNoLP
 			);
 }
 
@@ -1792,7 +2044,7 @@ validateSequenceAlphabet( const std::string& paramName,
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 
-T_type
+Z_type
 CommandLineParsing::
 getTemperature() const {
 	return temperature.val;
@@ -1881,79 +2133,84 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 	if (noSeedRequired) {
 		// predictors without seed constraint
 		switch( model.val ) {
-		case 'H':  {
-			switch ( predMode.val ) {
-			case 'H' :	return new PredictorMfe2dHelixHeuristic( energy, output, predTracker, getHelixConstraint(energy));
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(model.val));
+		case 'B':  {
+			switch ( mode.val ) {
+			case 'H' :	return new PredictorMfe2dHelixBlockHeuristic( energy, output, predTracker, getHelixConstraint(energy));
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
 			}
 		} break;
 		// single-site mfe interactions (contain only interior loops)
 		case 'S' : {
-			switch ( predMode.val ) {
+			switch ( mode.val ) {
 			case 'H' :  return new PredictorMfe2dHeuristic( energy, output, predTracker );
 			case 'M' :  return new PredictorMfe2d( energy, output, predTracker );
-			case 'E' :  return new PredictorMfe4d( energy, output, predTracker );
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(model.val));
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
 			}
 		} break;
-		// single-site max-prob interactions (contain only interior loops)
+		// single-site mfe ensemble interactions (contain only interior loops)
 		case 'P' : {
-			switch ( predMode.val ) {
-			case 'E' :  return new PredictorMaxProb( energy, output, predTracker );
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(model.val)+" : try --mode=E");
+			switch ( mode.val ) {
+			case 'H' :  return new PredictorMfeEns2dHeuristic( energy, output, predTracker );
+			case 'M' :  return new PredictorMfeEns2d( energy, output, predTracker );
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
 			}
 		} break;
 		// multi-site mfe interactions (contain interior and multi-loops loops)
 		case 'M' : {
-			switch ( predMode.val ) {
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(model.val));
+			switch ( mode.val ) {
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
 			}
 		} break;
-		default : INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented");
+		default : INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented");
 		}
 	} else {
 		// seed-constrained predictors
 		switch( model.val ) {
-		case 'H' : {
-			switch  ( predMode.val ) {
-				case 'H' : return new PredictorMfe2dHelixHeuristicSeed(energy, output, predTracker, getHelixConstraint(energy), getSeedHandler(energy));
-				default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(model.val));
+		case 'B' : {
+			switch  ( mode.val ) {
+				case 'H' : return new PredictorMfe2dHelixBlockHeuristicSeed(energy, output, predTracker, getHelixConstraint(energy), getSeedHandler(energy));
+				default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
 			}
 		} break;
 		// single-site mfe interactions (contain only interior loops)
 		case 'S' : {
-			switch ( predMode.val ) {
+			switch ( mode.val ) {
 			case 'H' :  return new PredictorMfe2dHeuristicSeed( energy, output, predTracker, getSeedHandler( energy ) );
 			case 'M' :  return new PredictorMfe2dSeed( energy, output, predTracker, getSeedHandler( energy ) );
-			case 'E' :  return new PredictorMfe4dSeed( energy, output, predTracker, getSeedHandler( energy ) );
+			case 'S' :  return new PredictorMfeSeedOnly( energy, output, predTracker, getSeedHandler( energy ) );
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
+			}
+		} break;
+		// single-site min energy interactions via seed extension (contain only interior loops)
+		case 'X' : {
+			switch ( mode.val ) {
+			case 'H' :  return new PredictorMfe2dHeuristicSeedExtension( energy, output, predTracker, getSeedHandler( energy ) );
+			case 'M' :  return new PredictorMfe2dSeedExtension( energy, output, predTracker, getSeedHandler( energy ) );
+			case 'R' :  return new PredictorMfe2dSeedExtensionRIblast( energy, output, predTracker, getSeedHandler( energy ) );
+			case 'S' :  return new PredictorMfeSeedOnly( energy, output, predTracker, getSeedHandler( energy ) );
+			default  :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented"); return NULL;
 			}
 		} break;
 		// single-site max-prob interactions (contain only interior loops)
 		case 'P' : {
-			switch ( predMode.val ) {
-			case 'E' :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for seed constraint (try --noSeed)"); return NULL;
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(model.val));
+			switch ( mode.val ) {
+			case 'H' :  return new PredictorMfeEns2dHeuristicSeedExtension( energy, output, predTracker, getSeedHandler( energy ) );
+			case 'M' :  return new PredictorMfeEns2dSeedExtension( energy, output, predTracker, getSeedHandler( energy ) );
+			case 'S' :  return new PredictorMfeEnsSeedOnly( energy, output, predTracker, getSeedHandler(energy) );
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
 			}
 		} break;
 		// multi-site mfe interactions (contain interior and multi-loops loops)
 		case 'M' : {
-			switch ( predMode.val ) {
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented for prediction target "+toString(model.val));
+			switch ( mode.val ) {
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
 			}
 		} break;
-		default : INTARNA_NOT_IMPLEMENTED("mode "+toString(predMode.val)+" not implemented");
+		default : INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented");
 		}
 	}
 }
 
-////////////////////////////////////////////////////////////////////////////
-
-std::ostream &
-CommandLineParsing::
-getOutputStream() const
-{
-	return *outStream;
-}
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -1961,34 +2218,10 @@ void
 CommandLineParsing::
 initOutputHandler()
 {
-	// check if output mode == IntaRNA1-detailed
+	// check if initial output needed
 	switch (outMode.val) {
-	case 'O' :
-		getOutputStream()
-		<<"-------------------------" <<"\n"
-		<<"INPUT" <<"\n"
-		<<"-------------------------" <<"\n"
-		<<"number of base pairs in seed                                  : "<<seedBP.val <<"\n"
-		<<"max. number of unpaired bases in the seed region of seq. 1    : "<<(seedTMaxUP.val<0 ? seedMaxUP.val : seedTMaxUP.val) <<"\n"
-		<<"max. number of unpaired bases in the seed region of seq. 2    : "<<(seedQMaxUP.val<0 ? seedMaxUP.val : seedQMaxUP.val) <<"\n"
-		<<"max. number of unpaired bases in the seed region of both seq's: "<<seedMaxUP.val <<"\n"
-		<<"RNAup used                                                    : "<<((qAccConstr.empty() && (qAccW.val ==0))?"true":"false") <<"\n"
-		<<"RNAplfold used                                                : "<<(((! tAccConstr.empty()) || (tAccW.val !=0))?"true":"false") <<"\n"
-		<<"sliding window size                                           : "<<tAccW.val<<"\n" //(tAccW.val!=0?tAccW.val:energy.size1()) <<"\n"
-		<<"max. length of unpaired region                                : "<<tAccW.val<<"\n" //(tAccW.val!=0?tAccW.val:energy.size1()) <<"\n"
-		<<"max. distance of two paired bases                             : "<<tAccL.val<<"\n" //(tAccL.val!=0?tAccL.val:energy.size1()) <<"\n"
-		<<"weight for ED values of target RNA in energy                  : 1" <<"\n"
-		<<"weight for ED values of binding RNA in energy                 : 1" <<"\n"
-		<<"temperature                                                   : "<<temperature.val <<" Celsius" <<"\n"
-		<<"max. number of subopt. results                                : "<<(getOutputConstraint().reportMax-1) <<"\n"
-		<<"Heuristic for hybridization end used                          : "<<(predMode.val=='H'?"true":"false") <<"\n"
-		<<"\n"
-		<<"-------------------------" <<"\n"
-		<<"OUTPUT" <<"\n"
-		<<"-------------------------" <<"\n"
-		; break;
 	case 'C' :
-		getOutputStream()
+		outStreamHandler->getOutStream()
 		<<OutputHandlerCsv::getHeader( OutputHandlerCsv::string2list( outCsvCols ) )
 		; break;
 	}
@@ -2003,15 +2236,11 @@ getOutputHandler( const InteractionEnergy & energy ) const
 {
 	switch (outMode.val) {
 	case 'N' :
-		return new OutputHandlerText( getOutputStream(), energy, 10, false );
+		return new OutputHandlerText( outStreamHandler->getOutStream(), energy, 10, false );
 	case 'D' :
-		return new OutputHandlerText( getOutputStream(), energy, 10, true );
+		return new OutputHandlerText( outStreamHandler->getOutStream(), energy, 10, true );
 	case 'C' :
-		return new OutputHandlerCsv( getOutputStream(), energy, OutputHandlerCsv::string2list( outCsvCols ));
-	case '1' :
-		return new OutputHandlerIntaRNA1( getOutputStream(), energy, false );
-	case 'O' :
-		return new OutputHandlerIntaRNA1( getOutputStream(), energy, true );
+		return new OutputHandlerCsv( outStreamHandler->getOutStream(), energy, OutputHandlerCsv::string2list( outCsvCols ), outCsvColSep, false, outCsvLstSep );
 	default :
 		INTARNA_NOT_IMPLEMENTED("Output mode "+toString(outMode.val)+" not implemented yet");
 	}
@@ -2038,9 +2267,9 @@ getHelixConstraint(const InteractionEnergy &energy) const
 				  helixMinBP.val
 				, helixMaxBP.val
 			    , helixMaxIL.val
-			    , helixMaxED.val
-			    , helixMaxE.val
-				, helixNoED
+			    , ( (helixMinPu.val > Z_type(0)) ? std::min<E_type>(Accessibility::ED_UPPER_BOUND, energy.getE(helixMinPu.val)) : Accessibility::ED_UPPER_BOUND )
+			    , Ekcal_2_E(helixMaxE.val)
+				, helixFullE
 		);
 	}
 	return *helixConstraint;
@@ -2059,12 +2288,14 @@ getSeedConstraint( const InteractionEnergy & energy ) const
 							, seedMaxUP.val
 							, seedTMaxUP.val<0 ? seedMaxUP.val : seedTMaxUP.val
 							, seedQMaxUP.val<0 ? seedMaxUP.val : seedQMaxUP.val
-							, seedMaxE.val
+							, Ekcal_2_E(seedMaxE.val)
 							, (seedMinPu.val>0 ? std::min<E_type>(Accessibility::ED_UPPER_BOUND, energy.getE( seedMinPu.val )) : Accessibility::ED_UPPER_BOUND) // transform unpaired prob to ED value
+							, Ekcal_2_E(seedMaxEhybrid.val)
 							// shift ranges to start counting with 0
 							, IndexRangeList( seedTRange ).shift(-1,energy.size1()-1)
 							, IndexRangeList( seedQRange ).shift(-1,energy.size2()-1).reverse(energy.size2())
 							, seedTQ
+							, seedNoGU
 						);
 	}
 	return *seedConstraint;
@@ -2085,6 +2316,9 @@ getSeedHandler( const InteractionEnergy & energy ) const
 	} else {
 		// check if we have to allow for bulges in seed
 		if (seedConstr.getMaxUnpaired1()+seedConstr.getMaxUnpaired2()+seedConstr.getMaxUnpairedOverall() > 0) {
+			if (outNoLP) {
+				INTARNA_NOT_IMPLEMENTED("outNoLP not yet implemented for seeds with bulges");
+			}
 			// create new seed handler using mfe computation
 			return new SeedHandlerMfe( energy, seedConstr );
 		} else {
@@ -2098,7 +2332,7 @@ getSeedHandler( const InteractionEnergy & energy ) const
 
 const IndexRangeList&
 CommandLineParsing::
-getQueryRanges( const InteractionEnergy & energy, const size_t sequenceNumber ) const
+getQueryRanges( const InteractionEnergy & energy, const size_t sequenceNumber, const Accessibility & acc ) const
 {
 	checkIfParsed();
 #if INTARNA_IN_DEBUG_MODE
@@ -2113,15 +2347,17 @@ getQueryRanges( const InteractionEnergy & energy, const size_t sequenceNumber ) 
 		// check if computation is needed
 		if (qRegion.at(sequenceNumber).begin()->to - qRegion.at(sequenceNumber).begin()->from +1 > qRegionLenMax.val) {
 			// compute highly accessible regions using ED-window-size = seedBP and minRangeLength = seedBP
-			qRegion.at(sequenceNumber) = getQueryAccessibility( sequenceNumber )->decomposeByMaxED( qRegionLenMax.val, seedBP.val, seedBP.val);
+			qRegion[sequenceNumber] = acc.decomposeByMaxED( qRegionLenMax.val, seedBP.val, seedBP.val);
 			// inform user
 			VLOG(1) <<"detected accessible regions for query '"<<getQuerySequences().at(sequenceNumber).getId()<<"' : "<<qRegion.at(sequenceNumber);
 		}
 	}
 
-	// decompose ranges based in minimal unpaired probability value per position
-	// since all ranges covering a position will have a lower unpaired probability
-	getQueryAccessibility( sequenceNumber )->decomposeByMinPu( qRegion.at(sequenceNumber), outMinPu.val, energy.getRT() );
+	if (outMinPu.val > Z_type(0) && !Z_equal(outMinPu.val, Z_type(0))) {
+		// decompose ranges based in minimal unpaired probability value per position
+		// since all ranges covering a position will have a lower unpaired probability
+		acc.decomposeByMaxED( qRegion[sequenceNumber], energy.getE( outMinPu.val ), (noSeedRequired ? RnaSequence::lastPos : seedBP.val ) );
+	}
 
 	return qRegion.at(sequenceNumber);
 }
@@ -2130,7 +2366,7 @@ getQueryRanges( const InteractionEnergy & energy, const size_t sequenceNumber ) 
 
 const IndexRangeList&
 CommandLineParsing::
-getTargetRanges( const InteractionEnergy & energy, const size_t sequenceNumber ) const
+getTargetRanges( const InteractionEnergy & energy, const size_t sequenceNumber, const Accessibility & acc ) const
 {
 	checkIfParsed();
 #if INTARNA_IN_DEBUG_MODE
@@ -2145,16 +2381,17 @@ getTargetRanges( const InteractionEnergy & energy, const size_t sequenceNumber )
 		// check if computation is needed
 		if (tRegion.at(sequenceNumber).begin()->to - tRegion.at(sequenceNumber).begin()->from +1 > tRegionLenMax.val) {
 			// compute highly accessible regions using ED-window-size = seedBP and minRangeLength = seedBP
-			tRegion.at(sequenceNumber) = getTargetAccessibility( sequenceNumber )->decomposeByMaxED( tRegionLenMax.val, seedBP.val, seedBP.val);
+			tRegion[sequenceNumber] = acc.decomposeByMaxED( tRegionLenMax.val, seedBP.val, seedBP.val);
 			// inform user
 			VLOG(1) <<"detected accessible regions for target '"<<getTargetSequences().at(sequenceNumber).getId()<<"' : "<<tRegion.at(sequenceNumber);
 		}
 	}
 
-	// decompose ranges based in minimal unpaired probability value per position
-	// since all ranges covering a position will have a lower unpaired probability
-	getTargetAccessibility( sequenceNumber )->decomposeByMinPu( tRegion.at(sequenceNumber), outMinPu.val, energy.getRT() );
-
+	if (outMinPu.val > Z_type(0) && !Z_equal(outMinPu.val, Z_type(0))) {
+		// decompose ranges based in minimal unpaired probability value per position
+		// since all ranges covering a position will have a lower unpaired probability
+		acc.decomposeByMaxED( tRegion[sequenceNumber], energy.getE( outMinPu.val ), (noSeedRequired ? RnaSequence::lastPos : seedBP.val ) );
+	}
 
 	return tRegion.at(sequenceNumber);
 }
@@ -2184,6 +2421,81 @@ writeAccessibility( const Accessibility& acc, const std::string & fileOrStream, 
 	// clean up
 	deleteOutputStream( out );
 }
+
+////////////////////////////////////////////////////////////////////////////
+
+CommandLineParsing::Personality
+CommandLineParsing::
+getPersonality( int argc, char ** argv )
+{
+	// default : check via call name
+	std::string value(argv[0]);
+	// strip path if present
+	size_t cutPos = value.find_last_of("/\\");
+	if (cutPos != std::string::npos) {
+		value = value.substr(cutPos+1);
+	}
+
+	// check if respective parameter provided
+	// --> overwrites default from call name
+	const boost::regex paramNameRegex("^--personality.*", boost::regex::icase);
+	const boost::regex paramRegex("^--personality=\\S+$", boost::regex::icase);
+	bool setViaParameter = false;
+	for (int i=1; i<argc; i++) {
+		std::string argi(argv[i]);
+		// found parameter
+		if (boost::regex_match(argi,paramNameRegex, boost::match_perl)) {
+			if (boost::regex_match(argi,paramRegex, boost::match_perl)) {
+				// cut off argument
+				value = argi.substr( argi.find('=')+1 );
+				setViaParameter = true;
+			} else {
+				// handle missing value
+				throw std::runtime_error("--personality provided without argument (no spaces allowed!)");
+			}
+			break;
+		}
+
+	}
+
+	// parse personality
+	if (boost::regex_match(value,boost::regex("IntaRNAexact"), boost::match_perl)) {
+		return Personality::IntaRNAexact;
+	}
+	if (boost::regex_match(value,boost::regex("IntaRNAduplex"), boost::match_perl)) {
+		return Personality::IntaRNAduplex;
+	}
+	if (boost::regex_match(value,boost::regex("IntaRNAhelix"), boost::match_perl)) {
+		return Personality::IntaRNAhelix;
+	}
+	if (boost::regex_match(value,boost::regex("IntaRNAseed"), boost::match_perl)) {
+		return Personality::IntaRNAseed;
+	}
+	if (boost::regex_match(value,boost::regex("IntaRNAens"), boost::match_perl)) {
+		return Personality::IntaRNAens;
+	}
+	if (boost::regex_match(value,boost::regex("IntaRNA3"), boost::match_perl)) {
+		return Personality::IntaRNA3;
+	}
+	if (boost::regex_match(value,boost::regex("IntaRNA2"), boost::match_perl)) {
+		return Personality::IntaRNA2;
+	}
+	if (boost::regex_match(value,boost::regex("IntaRNA1"), boost::match_perl)) {
+		return Personality::IntaRNA1;
+	}
+	if (boost::regex_match(value,boost::regex("IntaRNAsTar"), boost::match_perl)) {
+		return Personality::IntaRNAsTar;
+	}
+
+	if (setViaParameter) {
+		// handle wrong value
+		throw std::runtime_error("Personality '"+value+"' does not share my head ...");
+	}
+
+	// default behaviour
+	return Personality::IntaRNA;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////
 

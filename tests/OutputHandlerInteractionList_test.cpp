@@ -11,7 +11,7 @@ using namespace IntaRNA;
 /**
  * Dummy class for testing the add result
  */
-bool equalInteraction( const Interaction& i1 , const Interaction& i2 ) {
+bool OHIL_equalInteraction( const Interaction& i1 , const Interaction& i2 ) {
 	return !(i1 < i2) && !(i2 < i1);
 };
 
@@ -21,6 +21,8 @@ TEST_CASE( "OutputHandlerInteractionList", "[OutputHandlerInteractionList]" ) {
 	#include "testEasyLoggingSetup.icc"
 
 	RnaSequence r("test","AACCGGUU");
+
+	OutputConstraint oc;
 
 	SECTION("sorting") {
 
@@ -33,10 +35,10 @@ TEST_CASE( "OutputHandlerInteractionList", "[OutputHandlerInteractionList]" ) {
 		OutputHandlerInteractionList out(2);
 		REQUIRE( out.empty() );
 
-		out.add(i1);
+		out.add(i1,oc);
 		REQUIRE( ! out.empty() );
 		auto outIt = out.begin();
-		REQUIRE( equalInteraction( **outIt, i1) );
+		REQUIRE( OHIL_equalInteraction( **outIt, i1) );
 		outIt++;
 		REQUIRE( outIt == out.end() );
 
@@ -45,13 +47,13 @@ TEST_CASE( "OutputHandlerInteractionList", "[OutputHandlerInteractionList]" ) {
 		REQUIRE( i2.isValid() );
 
 		// insert (should be new first element)
-		out.add(i2);
+		out.add(i2,oc);
 		REQUIRE( ! out.empty() );
 		outIt = out.begin();
-		REQUIRE( equalInteraction( **outIt, i2) );
+		REQUIRE( OHIL_equalInteraction( **outIt, i2) );
 		outIt++;
 		REQUIRE( outIt != out.end() );
-		REQUIRE( equalInteraction( **outIt, i1) );
+		REQUIRE( OHIL_equalInteraction( **outIt, i1) );
 		outIt++;
 		REQUIRE( outIt == out.end() );
 
@@ -69,18 +71,18 @@ TEST_CASE( "OutputHandlerInteractionList", "[OutputHandlerInteractionList]" ) {
 		OutputHandlerInteractionList out(2);
 		REQUIRE( out.empty() );
 
-		out.add(i);
+		out.add(i,oc);
 		REQUIRE( ! out.empty() );
 		auto outIt = out.begin();
-		REQUIRE( equalInteraction( **outIt, i) );
+		REQUIRE( OHIL_equalInteraction( **outIt, i) );
 		outIt++;
 		REQUIRE( outIt == out.end() );
 
 		// insert a second time (should cause no insertion)
-		out.add(i);
+		out.add(i,oc);
 		REQUIRE( ! out.empty() );
 		outIt = out.begin();
-		REQUIRE( equalInteraction( **outIt, i) );
+		REQUIRE( OHIL_equalInteraction( **outIt, i) );
 		outIt++;
 		REQUIRE( outIt == out.end() );
 

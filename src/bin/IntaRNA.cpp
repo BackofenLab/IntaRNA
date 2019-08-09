@@ -20,7 +20,6 @@ INITIALIZE_EASYLOGGINGPP
 #include "IntaRNA/InteractionEnergy.h"
 #include "IntaRNA/Predictor.h"
 #include "IntaRNA/OutputHandler.h"
-#include "IntaRNA/OutputHandlerIntaRNA1.h"
 #include "IntaRNA/OutputHandlerInteractionList.h"
 
 using namespace IntaRNA;
@@ -38,7 +37,7 @@ int main(int argc, char **argv){
 
 		// set overall logging style
 		el::Loggers::reconfigureAllLoggers(el::ConfigurationType::Format, std::string("# %level : %msg"));
-		// TODO setup log file
+		// default log file setup
 		el::Loggers::reconfigureAllLoggers(el::ConfigurationType::ToFile, std::string("false"));
 		el::Loggers::reconfigureAllLoggers(el::ConfigurationType::ToStandardOutput, std::string("true"));
 		// set additional logging flags
@@ -65,7 +64,7 @@ int main(int argc, char **argv){
 		}
 
 		// parse command line parameters
-		CommandLineParsing parameters;
+		CommandLineParsing parameters( CommandLineParsing::getPersonality(argc,argv) );
 		{
 			VLOG(1) <<"parsing arguments"<<"...";
 			int retCode = parameters.parse( argc, argv );
@@ -211,11 +210,6 @@ int main(int argc, char **argv){
 								OutputHandler * output = parameters.getOutputHandler( *energy );
 								INTARNA_CHECK_NOT_NULL(output,"output handler initialization failed");
 
-								// check if we have to add separator for IntaRNA v1 output
-								if (reportedInteractions > 0 && dynamic_cast<OutputHandlerIntaRNA1*>(output) != NULL) {
-									dynamic_cast<OutputHandlerIntaRNA1*>(output)->addSeparator( true );
-								}
-
 								// setup collecting output handler to ensure
 								// k-best output per query-target combination
 								// and not per region combination if not requested
@@ -224,8 +218,8 @@ int main(int argc, char **argv){
 											* parameters.getOutputConstraint().reportMax );
 
 								// run prediction for all range combinations
-								BOOST_FOREACH(const IndexRange & tRange, parameters.getTargetRanges(*energy, targetNumber)) {
-								BOOST_FOREACH(const IndexRange & qRange, parameters.getQueryRanges(*energy, queryNumber)) {
+								for(const IndexRange & tRange : parameters.getTargetRanges(*energy, targetNumber, *targetAcc)) {
+								for(const IndexRange & qRange : parameters.getQueryRanges(*energy, queryNumber, queryAcc.at(queryNumber)->getAccessibilityOrigin())) {
 
 									// get windows for both ranges
 									std::vector<IndexRange> queryWindows = qRange.overlappingWindows(parameters.getWindowWidth(), parameters.getWindowOverlap());
@@ -313,10 +307,13 @@ int main(int argc, char **argv){
 								#pragma omp critical(intarna_omp_outputHandlerUpdate)
 #endif
 								{// update final output handler
-								BOOST_FOREACH( const Interaction * inter, bestInteractions) {
+									// copy partition function information if available
+									output->incrementZ( bestInteractions.getZ() );
 									// forward all reported interactions for all regions to final output handler
-									output->add(*inter);
-								}}
+									for( const Interaction * inter : bestInteractions) {
+										output->add(*inter, parameters.getOutputConstraint());
+									}
+								}
 
 #if INTARNA_MULITHREADING
 								#pragma omp atomic update
@@ -364,7 +361,7 @@ int main(int argc, char **argv){
 					parameters.writeTargetAccessibility( *targetAcc );
 
 					// garbage collection
-					 INTARNA_CLEANUP(targetAcc);
+					INTARNA_CLEANUP(targetAcc);
 
 #if INTARNA_MULITHREADING
 				////////////////////// exception handling ///////////////////////////
@@ -405,9 +402,9 @@ int main(int argc, char **argv){
 			Accessibility* queryAccOrig = &(const_cast<Accessibility&>(queryAcc[queryNumber]->getAccessibilityOrigin()) );
 			// write accessibility to file if needed
 			parameters.writeQueryAccessibility( *queryAccOrig );
-			 INTARNA_CLEANUP( queryAccOrig );
+			INTARNA_CLEANUP( queryAccOrig );
 			// cleanup (now broken) reverse accessibility object
-			 INTARNA_CLEANUP(queryAcc[queryNumber]);
+			INTARNA_CLEANUP(queryAcc[queryNumber]);
 		}
 
 #if INTARNA_MULITHREADING

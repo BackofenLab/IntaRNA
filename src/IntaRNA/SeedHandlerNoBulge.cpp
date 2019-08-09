@@ -133,6 +133,56 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 	return seedForLeftEnd.size();
 }
 
+//////////////////////////////////////////////////////////////////////////
+
+bool
+SeedHandlerNoBulge::
+updateToNextSeed( size_t & i1_out, size_t & i2_out
+		, const size_t i1min, const size_t i1max
+		, const size_t i2min, const size_t i2max
+		) const
+{
+	// ensure we do have any seed
+	if (seedForLeftEnd.empty()) {
+		return false;
+	}
+
+	size_t i1 = i1_out, i2 = i2_out;
+	// find true max value
+	const size_t i1maxVal = std::min(energy.size1()-1,i1max)
+				, i2maxVal = std::min(energy.size2()-1,i2max);
+
+	// find current seed
+	auto curSeedData = seedForLeftEnd.find( Interaction::BasePair(i1,i2) );
+	// check if we have to provide first seed (out of bound or no seed start)
+	if (curSeedData == seedForLeftEnd.end()) {
+		curSeedData = seedForLeftEnd.begin();
+	} else {
+		// go to next seed
+		curSeedData++;
+	}
+
+	// find next seed within range
+	while (curSeedData != seedForLeftEnd.end()
+			&& (curSeedData->first.first < i1min
+				|| curSeedData->first.first > i1maxVal
+				|| curSeedData->first.second < i2min
+				|| curSeedData->first.second > i2maxVal
+			))
+	{
+		curSeedData++;
+	}
+	// ensure we have a valid new seed
+	if (curSeedData != seedForLeftEnd.end()) {
+		// copy data
+		i1_out = curSeedData->first.first;
+		i2_out = curSeedData->first.second;
+		return true;
+	}
+
+	return false;
+}
+
 ////////////////////////////////////////////////////////////////////////////
 
 } // namespace

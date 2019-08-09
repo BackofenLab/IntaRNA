@@ -48,7 +48,7 @@ predict( const IndexRange & r1, const IndexRange & r2
 #if INTARNA_IN_DEBUG_MODE
 	// check indices
 	if (!(r1.isAscending() && r2.isAscending()) )
-		throw std::runtime_error("PredictorMfe2d::predict("+toString(r1)+","+toString(r2)+") is not sane");
+		throw std::runtime_error("PredictorMfe2dSeed::predict("+toString(r1)+","+toString(r2)+") is not sane");
 #endif
 
 	// setup index offset
@@ -94,8 +94,8 @@ predict( const IndexRange & r1, const IndexRange & r2
 			if (!energy.areComplementary( j1, j2 ))
 				continue;
 
-			// compute hybridE_pq_seed and update mfe via PredictorMfe2d::updateOptima()
-			fillHybridE_seed( j1, j2, 0, 0, outConstraint );
+			// compute both hybridE_pq and hybridE_pq_seed and update mfe
+			fillHybridE( j1, j2, outConstraint, 0, 0, true );
 		}
 	}
 
@@ -108,82 +108,165 @@ predict( const IndexRange & r1, const IndexRange & r2
 
 void
 PredictorMfe2dSeed::
-fillHybridE_seed( const size_t j1, const size_t j2, const size_t i1min, const size_t i2min
-		, const OutputConstraint & outConstraint )
+fillHybridE( const size_t j1, const size_t j2
+		, const OutputConstraint & outConstraint
+		, const size_t i1min, const size_t i2min
+		, const bool callUpdateOptima)
 {
 
-	// compute hybridE_pq
-	fillHybridE( j1, j2, outConstraint, i1min, i2min );
-
-	assert(i1min <= j1);
-	assert(i2min <= j2);
-	assert(j1==hybridErange.r1.to);
-	assert(j2==hybridErange.r2.to);
+#if INTARNA_IN_DEBUG_MODE
+	if (i1min > j1)
+		throw std::runtime_error("PredictorMfe2dSeed::fillHybridE() : i1init > j1 : "+toString(i1min)+" > "+toString(j1));
+	if (i2min > j2)
+		throw std::runtime_error("PredictorMfe2dSeed::fillHybridE() : i2init > j2 : "+toString(i2min)+" > "+toString(j2));
 	assert(j1<hybridE_pq.size1());
 	assert(j2<hybridE_pq.size2());
+#endif
 
-	// check if it is possible to have a seed ending on the right at (j1,j2)
+	// get minimal start indices heeding max interaction length
+	const size_t i1start = std::max(i1min,j1-std::min(j1,energy.getAccessibility1().getMaxLength()+1));
+	const size_t i2start = std::max(i2min,j2-std::min(j2,energy.getAccessibility2().getMaxLength()+1));
+
+
+	// check if it is possible to have a seed within the range
 	if (std::min(j1-i1min,j2-i2min)+1 < seedHandler.getConstraint().getBasePairs()) {
 		// no seed possible, abort table computation
 		return;
 	}
 
 	// global vars to avoid reallocation
-	size_t i1,i2,k1,k2,j1c,j2c;
+	size_t i1,i2,k1,k2,j1c,j2c, w1,w2;
 
-	// get i1/i2 index boundaries for computation
-	const IndexRange i1range( std::max(hybridErange.r1.from,i1min), j1+1-seedHandler.getConstraint().getBasePairs() );
-	const IndexRange i2range( std::max(hybridErange.r2.from,i2min), j2+1-seedHandler.getConstraint().getBasePairs() );
+	// determine whether or not lonely base pairs are allowed or if we have to
+	// ensure a stacking to the right of the left boundary (i1,i2)
+	const size_t noLpShift = outConstraint.noLP ? 1 : 0;
+	E_type iStackE = E_type(0);
 
-	//////////  COMPUTE HYBRIDIZATION ENERGIES (WITH SEED)  ////////////
+	//////////  COMPUTE HYBRIDIZATION ENERGIES (WITHOUT AND WITH SEED)  ////////////
 
 	// current minimal value
-	E_type curMinE = E_INF;
+	E_type curEloop = E_INF;
 	// iterate over all window starts i1 (seq1) and i2 (seq2)
-	// TODO PARALLELIZE THIS DOUBLE LOOP ?!
-	for (i1=1+i1range.to; i1-- > i1range.from; ) {
+	for (i1=1+j1; i1-- > i1start; ) {
+		// w1 = interaction width in seq1
+		w1 = j1-i1+1;
 		// screen for left boundaries i2 in seq2
-		for (i2=1+i2range.to; i2-- > i2range.from; ) {
+		for (i2=1+j2; i2-- > i2start; ) {
 
-			// compute entry
-			curMinE = E_INF;
+			// init: mark as invalid boundary
+			hybridE_pq(i1,i2) = E_INF;
+			hybridE_pq_seed(i1,i2) = E_INF;
 
 			// check if this cell is to be computed (!=E_INF)
-			if( E_isNotINF( hybridE_pq(i1,i2) ) ) {
+			if( energy.isAccessible1(i1)
+				&& energy.isAccessible2(i2)
+				&& energy.areComplementary(i1,i2))
+			{
 
-				// base case = incorporate mfe seed starting at (i1,i2)
-				//             + interaction on right side up to (p,q)
-				if ( E_isNotINF( seedHandler.getSeedE(i1,i2) ) ) {
-					// decode right mfe boundary
-					k1 = i1+seedHandler.getSeedLength1(i1,i2)-1;
-					k2 = i2+seedHandler.getSeedLength2(i1,i2)-1;
-					// compute overall energy of seed+upToPQ
-					if ( k1 <= j1 && k2 <= j2 && E_isNotINF(hybridE_pq(k1,k2))) {
-						curMinE = seedHandler.getSeedE(i1,i2) + hybridE_pq(k1,k2);
+				// w2 = interaction width in seq2
+				w2 = j2-i2+1;
+
+				// reference access to cell value
+				E_type &curMinE = hybridE_pq(i1,i2);
+				E_type &curMinEseed = hybridE_pq_seed(i1,i2);
+
+				// either interaction initiation
+				if ( i1==j1 && i2==j2 )  {
+					// single base pair
+					if (noLpShift == 0) {
+						curMinE = energy.getE_init();
+					}
+				} else
+				// or at least two base pairs possible
+				if ( w1 > 1 && w2 > 1) { // or more complex stuff
+
+					// no-seed base case:
+					// if lonely bps are allowed
+					if (noLpShift == 0) {
+						// test full-width internal loop energy (nothing between i and j)
+						// will be E_INF if loop is too large
+						curMinE = energy.getE_interLeft(i1,j1,i2,j2) + hybridE_pq(j1,j2);
+					} else {
+						// no lp allowed
+						// check if right-side stacking of (i1,i2) is possible
+						if (energy.isAccessible1(i1+noLpShift)
+							&& energy.isAccessible2(i2+noLpShift)
+							&& energy.areComplementary(i1+noLpShift,i2+noLpShift))
+						{
+							// get stacking term to avoid recomputation
+							iStackE = energy.getE_interLeft(i1,i1+noLpShift,i2,i2+noLpShift);
+
+							// init with stacking only
+							curMinE = iStackE + ((w1==2&&w2==2) ? energy.getE_init() : hybridE_pq(i1+noLpShift, i2+noLpShift) );
+						} else {
+							//
+							iStackE = E_INF;
+						}
+					}
+
+					// seed base case = incorporate mfe seed starting at (i1,i2)
+					//             + interaction on right side up to (p,q)
+					// assumption: seed heeds noLP constraint
+					if ( seedHandler.isSeedBound(i1,i2) ) {
+						// decode right mfe boundary
+						k1 = i1+seedHandler.getSeedLength1(i1,i2)-1;
+						k2 = i2+seedHandler.getSeedLength2(i1,i2)-1;
+						// compute overall energy of seed+upToPQ
+						if ( k1 <= j1 && k2 <= j2 ) {
+							// init = seed + something without seed
+							if ( E_isNotINF(hybridE_pq(k1,k2)) ) {
+								// Note: noLP-handling via hybridE_pq recursion
+								curMinEseed = std::min( curMinEseed, seedHandler.getSeedE(i1,i2) + hybridE_pq(k1,k2) );
+							} else
+							// just the seed up to right boundary (explicit noLP handling)
+							if (k1 == j1 && k2 == j2) {
+								curMinEseed = std::min( curMinEseed, seedHandler.getSeedE(i1,i2) + energy.getE_init() );
+							}
+							// handle interior loops after seeds in noLP-mode
+							if ( outConstraint.noLP) {
+								// multi-bp seed can be followed directly by interior loop
+								// check all combinations of decompositions into (k1,k2)..(l1,l2)-(j1,j2)
+								if (k1 > i1 && j1-k1 > 2 && j2-k2 > 2) {
+									for (size_t l1=std::min(j1-1,k1+energy.getMaxInternalLoopSize1()+1); l1>k1; l1--) {
+									for (size_t l2=std::min(j2-1,k2+energy.getMaxInternalLoopSize2()+1); l2>k2; l2--) {
+										// check if (k1,k2) are valid left boundary
+										if ( E_isNotINF( hybridE_pq(l1,l2) ) ) {
+											// get loop energy
+											curEloop = energy.getE_interLeft(k1,l1,k2,l2);
+											// update minimal value
+											curMinEseed = std::min( curMinEseed, (seedHandler.getSeedE(i1,i2) + curEloop + hybridE_pq(l1,l2) ) );
+										}
+									}
+									}
+								}
+							}
+						}
+					}
+
+					// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
+					if (w1 > 2 && w2 > 2) {
+						for (k1=std::min(j1-1,i1+energy.getMaxInternalLoopSize1()+1+noLpShift); k1>i1+noLpShift; k1--) {
+						for (k2=std::min(j2-1,i2+energy.getMaxInternalLoopSize2()+1+noLpShift); k2>i2+noLpShift; k2--) {
+							// check if (k1,k2) are valid left boundary
+							if ( E_isNotINF( hybridE_pq(k1,k2) ) ) {
+								// get loop energy
+								curEloop = energy.getE_interLeft(i1+noLpShift,k1,i2+noLpShift,k2);
+								// update minimal value
+								curMinE = std::min( curMinE, (iStackE + curEloop + hybridE_pq(k1,k2) ) );
+								// check if (k1,k2) are valid left boundaries including a seed
+								if ( E_isNotINF( hybridE_pq_seed(k1,k2) ) ) {
+									curMinEseed = std::min( curMinEseed, (iStackE + curEloop + hybridE_pq_seed(k1,k2) ) );
+								}
+							}
+						}
+						}
 					}
 				}
 
-				// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
-				// where k1..j1 contains a seed
-				for (k1=std::min(i1range.to,i1+energy.getMaxInternalLoopSize1()+1); k1>i1; k1--) {
-				for (k2=std::min(i2range.to,i2+energy.getMaxInternalLoopSize2()+1); k2>i2; k2--) {
-					// check if (k1,k2) are valid left boundaries including a seed
-					if ( E_isNotINF( hybridE_pq_seed(k1,k2) ) ) {
-						curMinE = std::min( curMinE,
-								(energy.getE_interLeft(i1,k1,i2,k2)
-										+ hybridE_pq_seed(k1,k2) )
-							);
-					}
-				}
-				}
-				// update mfe if needed (call super class)
-				if (E_isNotINF(curMinE)) {
-					PredictorMfe2d::updateOptima( i1,j1,i2,j2, curMinE, true );
-				}
-			}
+				// update mfe if needed
+				updateOptima( i1,j1,i2,j2, curMinEseed, true );
 
-			// store value
-			hybridE_pq_seed(i1,i2) = curMinE;
+			} // complementary base pair
 		}
 	}
 
@@ -207,7 +290,10 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 	}
 #endif
 
-	// check for single interaction
+	// ensure sorting
+	interaction.sort();
+
+	// check for single base pair interaction
 	if (interaction.basePairs.at(0).first == interaction.basePairs.at(1).first) {
 		// delete second boundary (identical to first)
 		interaction.basePairs.resize(1);
@@ -222,14 +308,11 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 	}
 #endif
 
-	// ensure sorting
-	interaction.sort();
 	// get indices in hybridE for boundary base pairs
 	size_t	i1 = energy.getIndex1(interaction.basePairs.at(0)),
 			j1 = energy.getIndex1(interaction.basePairs.at(1)),
 			i2 = energy.getIndex2(interaction.basePairs.at(0)),
-			j2 = energy.getIndex2(interaction.basePairs.at(1))
-			;
+			j2 = energy.getIndex2(interaction.basePairs.at(1));
 
 #if INTARNA_IN_DEBUG_MODE
 	// check if intervals are larger enough to contain a seed
@@ -244,61 +327,136 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 
 
 	// refill submatrices of mfe interaction
-	fillHybridE_seed( j1, j2, i1, i2, outConstraint );
+	fillHybridE( j1, j2, outConstraint, i1, i2, false );
 
 	// the currently traced value for i1-j1, i2-j2
 	E_type curE = hybridE_pq_seed(i1,i2);
 
+	// determine whether or not lonely base pairs are allowed or if we have to
+	// ensure a stacking to the right of the left boundary (i1,i2)
+	const size_t noLpShift = outConstraint.noLP ? 1 : 0;
+	E_type iStackE = E_type(0);
+
 	// trace back
 	bool seedNotTraced = true;
-	while( i1 != j1 ) {
+	while( i1 < j1 ) {
+
+		// check if only 3 stack helix possible
+		if (outConstraint.noLP && j1-i1+1 == 3) {
+			interaction.basePairs.push_back( energy.getBasePair(i1+1,i2+1) );
+			break;
+		}
+
 
 		// check if we still have to find the seed
 		if (seedNotTraced) {
 
+			// handle single-bp seed
+			if (outConstraint.noLP) {
+				iStackE = energy.getE_interLeft(i1,i1+noLpShift,i2,i2+noLpShift);
+			}
+
 			// check base case == seed only
-			if ( E_isNotINF( seedHandler.getSeedE(i1,i2) ) ) {
+			if ( seedHandler.isSeedBound(i1,i2) ) {
 
 				// right boundary of seed
 				k1 = i1 + seedHandler.getSeedLength1(i1,i2) -1;
 				k2 = i2 + seedHandler.getSeedLength2(i1,i2) -1;
+				// energy of seed
+				const E_type seedE = seedHandler.getSeedE(i1,i2);
 
-				// check if correct trace
-				if ( E_equal( curE, seedHandler.getSeedE(i1,i2) + hybridE_pq(k1,k2) ) ) {
+				if(k1 == j1 && k2 == j2 && E_equal(curE, seedE + energy.getE_init())) {
+					// just seed
 					// store seed information
 					interaction.setSeedRange(
 									energy.getBasePair(i1,i2),
 									energy.getBasePair(k1,k2),
-									energy.getE(i1,k1,i2,k2,seedHandler.getSeedE(i1,i2))+energy.getE_init());
+									energy.getE(i1,k1,i2,k2,seedE)+energy.getE_init());
 					// trace back seed base pairs
 					seedHandler.traceBackSeed( interaction, i1, i2 );
+					seedNotTraced = false;
+					// stop tracing
+					break;
+				} else
+				// check if seed + something without seed
+				if ( E_equal( curE,  seedE + hybridE_pq(k1,k2) ) ) {
+					// store seed information
+					interaction.setSeedRange(
+									energy.getBasePair(i1,i2),
+									energy.getBasePair(k1,k2),
+									energy.getE(i1,k1,i2,k2,seedE)+energy.getE_init());
+					// trace back seed base pairs
+					seedHandler.traceBackSeed( interaction, i1, i2 );
+					seedNotTraced = false;
 					// continue after seed
 					i1 = k1;
 					i2 = k2;
-					curE = hybridE_pq(k1,k2);
-					seedNotTraced = false;
+					curE = hybridE_pq(i1,i2);
 					continue;
+				} else
+				// check multi-bp seed followed by interior loop
+				if (outConstraint.noLP && k1 > i1 && j1-k1 > 2 && j2-k2 > 2) {
+					bool traceNotFound = true;
+					for (size_t l1=std::min(j1-1,k1+energy.getMaxInternalLoopSize1()+1); traceNotFound && l1>k1; l1--) {
+					for (size_t l2=std::min(j2-1,k2+energy.getMaxInternalLoopSize2()+1); traceNotFound && l2>k2; l2--) {
+						// check if (k1,k2) are valid left boundaries including a seed
+						if ( E_isNotINF( hybridE_pq(l1,l2) ) ) {
+							// check if correct split
+							if (E_equal ( curE,
+									(seedE + energy.getE_interLeft(k1,l1,k2,l2)
+											+ hybridE_pq(l1,l2) )
+									) )
+							{
+								// store seed information
+								interaction.setSeedRange(
+												energy.getBasePair(i1,i2),
+												energy.getBasePair(k1,k2),
+												energy.getE(i1,k1,i2,k2,seedE)+energy.getE_init());
+								// trace back seed base pairs
+								seedHandler.traceBackSeed( interaction, i1, i2 );
+								seedNotTraced = false;
+								// store splitting base pair
+								interaction.basePairs.push_back( energy.getBasePair(k1,k2) );
+								// update trace back boundary
+								i1=l1;
+								i2=l2;
+								curE = hybridE_pq(i1,i2);
+								// stop search splits
+								traceNotFound = false;
+							}
+						}
+					} // l2
+					} // l1
+					// start next iteration if trace was found
+					if (!traceNotFound) {
+						continue;
+					}
 				}
 			}
+
 			// check all interval splits
 			if ( (j1-i1) > 1 && (j2-i2) > 1) {
 				// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
 				// where k1..j1 contains a seed
 				bool traceNotFound = true;
-				for (k1=std::min(j1-seedHandler.getConstraint().getBasePairs()+1,i1+energy.getMaxInternalLoopSize1()+1); traceNotFound && k1>i1; k1--) {
-				for (k2=std::min(j2-seedHandler.getConstraint().getBasePairs()+1,i2+energy.getMaxInternalLoopSize2()+1); traceNotFound && k2>i2; k2--) {
+				for (k1=std::min(j1-seedHandler.getConstraint().getBasePairs()+1,i1+energy.getMaxInternalLoopSize1()+1+noLpShift); traceNotFound && k1>i1+noLpShift; k1--) {
+				for (k2=std::min(j2-seedHandler.getConstraint().getBasePairs()+1,i2+energy.getMaxInternalLoopSize2()+1+noLpShift); traceNotFound && k2>i2+noLpShift; k2--) {
 					// check if (k1,k2) are valid left boundaries including a seed
 					if ( E_isNotINF( hybridE_pq_seed(k1,k2) ) ) {
 						// check if correct split
 						if (E_equal ( curE,
-								(energy.getE_interLeft(i1,k1,i2,k2)
+								(iStackE + energy.getE_interLeft(i1+noLpShift,k1,i2+noLpShift,k2)
 										+ hybridE_pq_seed(k1,k2) )
 								) )
 						{
+							if (outConstraint.noLP) {
+								// store stacked base pair
+								interaction.basePairs.push_back( energy.getBasePair(i1+noLpShift,i2+noLpShift) );
+							}
 							// update trace back boundary
 							i1=k1;
 							i2=k2;
-							curE= hybridE_pq_seed(k1,k2);
+							curE= hybridE_pq_seed(i1,i2);
 							// stop search splits
 							traceNotFound = false;
 							// store splitting base pair
@@ -341,6 +499,9 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 		// set last to j1-j2
 		(*bps.rbegin()) = energy.getBasePair( j1, j2 );
 	}
+
+	// add all seeds that are subsets of the interaction
+	seedHandler.addSeeds( interaction );
 }
 
 ////////////////////////////////////////////////////////////////////////////

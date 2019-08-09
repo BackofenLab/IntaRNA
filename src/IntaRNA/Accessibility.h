@@ -98,7 +98,7 @@ public:
 	 *        ED to Pu :  Pu = exp( -ED/RT )
 	 */
 	void
-	writeRNAplfold_Pu_text( std::ostream& out, const E_type RT ) const;
+	writeRNAplfold_Pu_text( std::ostream& out, const Z_type RT ) const;
 
 	/**
 	 * Writes the ED values in RNAplfold style to stream.
@@ -142,16 +142,16 @@ public:
 
 	/**
 	 * Decomposes a given range list into subranges that contain only positions
-	 * where the position-wise unpaired probability is above a given threshold,
-	 * since any interaction site enclosing this positions has a lower
-	 * probability.
+	 * where the position-wise ED value is below
+	 * or equal to a given threshold,
+	 * since any interaction site enclosing this positions has a higher ED.
 	 *
 	 * @param ranges INOUT the list of ranges to decompose
-	 * @param minPu the minimal unpaired probability threshold
-	 * @param RT the relative temperature to be used for Boltzmann weight computation
+	 * @param maxED the maximal ED threshold (inclusive)
+	 * @param minRangeLength the minimal length of a resulting sequence region
 	 */
 	void
-	decomposeByMinPu( IndexRangeList & ranges, const double minPu, const E_type RT ) const;
+	decomposeByMaxED( IndexRangeList & ranges, const E_type maxED, const size_t minRangeLength ) const;
 
 protected:
 
@@ -186,7 +186,7 @@ protected:
 	 * @param writeProbs (true) write unpaired probabilities; (false) write ED
 	 */
 	void
-	writeRNAplfold_text( std::ostream& out, const E_type RT, const bool writeProbs ) const;
+	writeRNAplfold_text( std::ostream& out, const Z_type RT, const bool writeProbs ) const;
 
 };
 
@@ -276,7 +276,7 @@ writeRNAplfold_ED_text( std::ostream& out ) const
 inline
 void
 Accessibility::
-writeRNAplfold_Pu_text( std::ostream& out, const E_type RT ) const
+writeRNAplfold_Pu_text( std::ostream& out, const Z_type RT ) const
 {
 	writeRNAplfold_text( out, RT, true );
 }

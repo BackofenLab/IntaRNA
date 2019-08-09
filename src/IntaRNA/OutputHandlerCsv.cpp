@@ -15,17 +15,33 @@ std::map<OutputHandlerCsv::ColType,std::string> OutputHandlerCsv::colType2string
 
 ////////////////////////////////////////////////////////////////////////
 
+const std::string OutputHandlerCsv::notAvailable = "NAN";
+
+////////////////////////////////////////////////////////////////////////
+
+const OutputHandlerCsv::ColTypeList OutputHandlerCsv::colTypeNumericSort(
+		OutputHandlerCsv::string2list(
+		"start1,end1,start2,end2"
+		",E,ED1,ED2,Pu1,Pu2,E_init,E_loops,E_dangleL,E_dangleR,E_endL,E_endR,E_hybrid,E_norm,E_hybridNorm,E_add"
+		",seedStart1,seedEnd1,seedStart2,seedEnd2,seedE,seedED1,seedED2,seedPu1,seedPu2"
+		",Eall,Zall,P_E"
+		));
+
+////////////////////////////////////////////////////////////////////////
+
 OutputHandlerCsv::OutputHandlerCsv(
-		  std::ostream & out
+		  std::ostream & out_
 		, const InteractionEnergy & energy
-		, const ColTypeList colOrder
+		, const ColTypeList columns
 		, const std::string& colSep
 		, const bool printHeader
+		, const std::string& listSep
 		)
- :	out(out)
+ :	out(out_)
 	, energy(energy)
-	, colOrder(colOrder)
+	, columns(columns)
 	, colSep(colSep)
+	, listSep(listSep)
 {
 	// init mapping of coltypes to string
 	initColType2string();
@@ -37,7 +53,7 @@ OutputHandlerCsv::OutputHandlerCsv(
 		#pragma omp critical(intarna_omp_outputStreamUpdate)
 #endif
 		{
-			out <<getHeader(colOrder,colSep);
+			out <<getHeader(columns,colSep);
 		}
 	}
 }
@@ -59,7 +75,7 @@ OutputHandlerCsv::~OutputHandlerCsv()
 
 void
 OutputHandlerCsv::
-add( const Interaction & i )
+add( const Interaction & i, const OutputConstraint & outConstraint )
 {
 #if INTARNA_IN_DEBUG_MODE
 	// debug checks
@@ -86,9 +102,9 @@ add( const Interaction & i )
 	{
 		std::stringstream outTmp;
 
-		for (auto col = colOrder.begin(); col != colOrder.end(); col++) {
+		for (auto col = columns.begin(); col != columns.end(); col++) {
 			// print separator if needed
-			if (col != colOrder.begin()) {
+			if (col != columns.begin()) {
 				outTmp <<colSep;
 			}
 			// print this column information
@@ -167,131 +183,227 @@ add( const Interaction & i )
 				break;
 
 			case E:
-				outTmp <<i.energy;
+				outTmp <<E_2_Ekcal(i.energy);
 				break;
 
 			case ED1:
-				outTmp <<contr.ED1;
+				outTmp <<E_2_Ekcal(contr.ED1);
 				break;
 
 			case ED2:
-				outTmp <<contr.ED2;
+				outTmp <<E_2_Ekcal(contr.ED2);
 				break;
 
 			case Pu1:
-				outTmp <<std::exp( - contr.ED1 / energy.getRT() );
+				outTmp <<(E_equal(contr.ED1,0) ? Z_type(1) : energy.getBoltzmannWeight(contr.ED1));
 				break;
 
 			case Pu2:
-				outTmp <<std::exp( - contr.ED2 / energy.getRT() );
+				outTmp <<(E_equal(contr.ED2,0) ? Z_type(1) : energy.getBoltzmannWeight(contr.ED2));
 				break;
 
 			case E_init:
-				outTmp <<contr.init;
+				outTmp <<E_2_Ekcal(contr.init);
 				break;
 
 			case E_loops:
-				outTmp <<contr.loops;
+				outTmp <<E_2_Ekcal(contr.loops);
 				break;
 
 			case E_dangleL:
-				outTmp <<contr.dangleLeft;
+				outTmp <<E_2_Ekcal(contr.dangleLeft);
 				break;
 
 			case E_dangleR:
-				outTmp <<contr.dangleRight;
+				outTmp <<E_2_Ekcal(contr.dangleRight);
 				break;
 
 			case E_endL:
-				outTmp <<contr.endLeft;
+				outTmp <<E_2_Ekcal(contr.endLeft);
 				break;
 
 			case E_endR:
-				outTmp <<contr.endRight;
+				outTmp <<E_2_Ekcal(contr.endRight);
 				break;
 
 			case E_hybrid:
-				outTmp <<(i.energy - contr.ED1 - contr.ED2);
+				outTmp <<E_2_Ekcal(i.energy - contr.ED1 - contr.ED2);
 				break;
 
 			case E_norm:
-				outTmp <<(i.energy / std::log( energy.size1() * energy.size2() ) );
+				outTmp <<E_2_Ekcal(i.energy) / std::log( energy.size1() * energy.size2() );
 				break;
 
 			case E_hybridNorm:
-				outTmp <<( (i.energy - contr.ED1 - contr.ED2) / std::log( energy.size1() * energy.size2() ) );
+				outTmp <<E_2_Ekcal(i.energy - contr.ED1 - contr.ED2) / std::log( energy.size1() * energy.size2() );
+				break;
+
+			case E_add:
+				outTmp <<E_2_Ekcal(contr.energyAdd);
 				break;
 
 			case seedStart1:
 				if (i.seed == NULL) {
-					outTmp <<std::numeric_limits<E_type>::signaling_NaN();
+					outTmp <<notAvailable;
 				} else {
-					outTmp <<(i.seed->bp_i.first+1);
+					if (!outConstraint.bestSeedOnly) {
+						// generate list
+						outTmp << std::accumulate( std::next( i.seed->begin() )
+										, i.seed->end()
+										, toString( i.seed->begin()->bp_i.first +1 ) // start with first element
+										, [&](std::string a, Interaction::Seed s) {
+											 return std::move(a) + listSep + toString( s.bp_i.first +1 ); // extend list
+										 });
+					} else {
+						outTmp <<i.seed->begin()->bp_i.first +1;
+					}
 				}
 				break;
 
 			case seedEnd1:
 				if (i.seed == NULL) {
-					outTmp <<std::numeric_limits<E_type>::signaling_NaN();
+					outTmp <<notAvailable;
 				} else {
-					outTmp <<(i.seed->bp_j.first+1);
+					if (!outConstraint.bestSeedOnly) {
+						// generate list
+						outTmp << std::accumulate( std::next( i.seed->begin() )
+										, i.seed->end()
+										, toString( i.seed->begin()->bp_j.first +1 ) // start with first element
+										, [&](std::string a, Interaction::Seed s) {
+											 return std::move(a) + listSep + toString( s.bp_j.first +1 ); // extend list
+										 });
+					} else {
+						outTmp <<i.seed->begin()->bp_j.first +1;
+					}
 				}
 				break;
 
 			case seedStart2:
 				if (i.seed == NULL) {
-					outTmp <<std::numeric_limits<E_type>::signaling_NaN();
+					outTmp <<notAvailable;
 				} else {
-					outTmp <<(i.seed->bp_j.second+1);
+					if (!outConstraint.bestSeedOnly) {
+						// generate list
+						outTmp << std::accumulate( std::next( i.seed->begin() )
+										, i.seed->end()
+										, toString( i.seed->begin()->bp_j.second +1 ) // start with first element
+										, [&](std::string a, Interaction::Seed s) {
+											 return std::move(a) + listSep + toString( s.bp_j.second +1 ); // extend list
+										 });
+					} else {
+						outTmp <<i.seed->begin()->bp_j.second +1;
+					}
 				}
 				break;
 
 			case seedEnd2:
 				if (i.seed == NULL) {
-					outTmp <<std::numeric_limits<E_type>::signaling_NaN();
+					outTmp <<notAvailable;
 				} else {
-					outTmp <<(i.seed->bp_i.second+1);
+					if (!outConstraint.bestSeedOnly) {
+						// generate list
+						outTmp << std::accumulate( std::next( i.seed->begin() )
+										, i.seed->end()
+										, toString( i.seed->begin()->bp_i.second +1 ) // start with first element
+										, [&](std::string a, Interaction::Seed s) {
+											 return std::move(a) + listSep + toString( s.bp_i.second +1 ); // extend list
+										 });
+					} else {
+						outTmp <<i.seed->begin()->bp_i.second +1;
+					}
 				}
 				break;
 
 			case seedE:
 				if (i.seed == NULL) {
-					outTmp <<std::numeric_limits<E_type>::signaling_NaN();
+					outTmp <<notAvailable;
 				} else {
-					outTmp <<i.seed->energy;
+					outTmp << E_2_Ekcal(i.seed->begin()->energy);
+					if (!outConstraint.bestSeedOnly) {
+						// generate list
+						// print via std::for_each instead of std::accumulate due to rounding issues of boost::lexical_cast or std::to_string
+						// since sometimes (float(int)/100.0) gives strings with 10E-5 deviations of expected value
+						std::for_each( ++(i.seed->begin()), i.seed->end(), [&]( const Interaction::Seed & s) {
+									 outTmp << listSep << E_2_Ekcal(s.energy);
+									});
+					}
 				}
 				break;
 
 			case seedED1:
 				if (i.seed == NULL) {
-					outTmp <<std::numeric_limits<E_type>::signaling_NaN();
+					outTmp <<notAvailable;
 				} else {
-					outTmp <<energy.getED1( i.seed->bp_i.first, i.seed->bp_j.first );
+					outTmp << E_2_Ekcal(energy.getED1( i.seed->begin()->bp_i.first, i.seed->begin()->bp_j.first ));
+					if (!outConstraint.bestSeedOnly) {
+						// generate list
+						std::for_each( ++(i.seed->begin()), i.seed->end(), [&]( const Interaction::Seed & s) {
+									 outTmp << listSep << E_2_Ekcal(energy.getED1( s.bp_i.first, s.bp_j.first ));
+									});
+					}
 				}
 				break;
 
 			case seedED2:
 				if (i.seed == NULL) {
-					outTmp <<std::numeric_limits<E_type>::signaling_NaN();
+					outTmp <<notAvailable;
 				} else {
-					outTmp <<energy.getAccessibility2().getAccessibilityOrigin().getED( i.seed->bp_j.second, i.seed->bp_i.second );
+					outTmp << E_2_Ekcal(energy.getAccessibility2().getAccessibilityOrigin().getED( i.seed->begin()->bp_j.second, i.seed->begin()->bp_i.second ));
+					if (!outConstraint.bestSeedOnly) {
+						// generate list
+						std::for_each( ++(i.seed->begin()), i.seed->end(), [&]( const Interaction::Seed & s) {
+							outTmp << listSep << E_2_Ekcal(energy.getAccessibility2().getAccessibilityOrigin().getED( s.bp_j.second, s.bp_i.second ));
+						});
+					}
 				}
 				break;
 
 			case seedPu1:
 				if (i.seed == NULL) {
-					outTmp <<std::numeric_limits<E_type>::signaling_NaN();
+					outTmp <<notAvailable;
 				} else {
-					outTmp <<std::exp( - energy.getED1( i.seed->bp_i.first, i.seed->bp_j.first ) / energy.getRT() );
+					if (!outConstraint.bestSeedOnly) {
+						// generate list
+						outTmp << std::accumulate( std::next( i.seed->begin() )
+										, i.seed->end()
+										, toString( energy.getBoltzmannWeight( energy.getED1( i.seed->begin()->bp_i.first, i.seed->begin()->bp_j.first )) ) // start with first element
+										, [&](std::string a, Interaction::Seed s) {
+											 return std::move(a) + listSep + toString( energy.getBoltzmannWeight( energy.getED1( s.bp_i.first, s.bp_j.first ) ) ); // extend list
+										 });
+					} else {
+						outTmp <<energy.getBoltzmannWeight( energy.getED1( i.seed->begin()->bp_i.first, i.seed->begin()->bp_j.first ));
+					}
 				}
 				break;
 
 			case seedPu2:
 				if (i.seed == NULL) {
-					outTmp <<std::numeric_limits<E_type>::signaling_NaN();
+					outTmp <<notAvailable;
 				} else {
-					outTmp <<std::exp( - energy.getAccessibility2().getAccessibilityOrigin().getED( i.seed->bp_j.second, i.seed->bp_i.second ) / energy.getRT() );
+					if (!outConstraint.bestSeedOnly) {
+						// generate list
+						outTmp << std::accumulate( std::next( i.seed->begin() )
+										, i.seed->end()
+										, toString( energy.getBoltzmannWeight( energy.getAccessibility2().getAccessibilityOrigin().getED( i.seed->begin()->bp_j.second, i.seed->begin()->bp_i.second )) ) // start with first element
+										, [&](std::string a, Interaction::Seed s) {
+											 return std::move(a) + listSep + toString( energy.getBoltzmannWeight( energy.getAccessibility2().getAccessibilityOrigin().getED( s.bp_j.second, s.bp_i.second ) ) ); // extend list
+										 });
+					} else {
+						outTmp <<energy.getBoltzmannWeight( energy.getAccessibility2().getAccessibilityOrigin().getED( i.seed->begin()->bp_j.second, i.seed->begin()->bp_i.second ));
+					}
 				}
+				break;
+
+			case Eall:
+				if ( Z_equal(Z,Z_type(0)) ) outTmp << notAvailable; else outTmp <<E_2_Ekcal(energy.getE(Z));
+				break;
+
+			case Zall:
+				if ( Z_equal(Z,Z_type(0)) ) outTmp << notAvailable; else outTmp <<Z;
+				break;
+
+			case P_E:
+				if ( Z_equal(Z,Z_type(0)) ) outTmp << notAvailable; else outTmp <<(energy.getBoltzmannWeight(i.energy)/Z);
 				break;
 
 			default : throw std::runtime_error("OutputHandlerCsv::add() : unhandled ColType '"+colType2string[*col]+"'");
@@ -311,4 +423,3 @@ add( const Interaction & i )
 ////////////////////////////////////////////////////////////////////////
 
 } // namespace
-

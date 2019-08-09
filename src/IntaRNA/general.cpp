@@ -41,7 +41,7 @@ newOutputStream( const std::string & out )
 /////////////////////////////////////////////////////////////////////
 
 void
-deleteOutputStream( std::ostream * outStream )
+deleteOutputStream( std::ostream *& outStream )
 {
 	// check if something to be done
 	if (outStream == NULL) {
@@ -55,15 +55,11 @@ deleteOutputStream( std::ostream * outStream )
 	if (outFile != NULL) {
 		// close and delete file handle
 		outFile->close();
-		 INTARNA_CLEANUP(outFile);
-#if INTARNA_IN_DEBUG_MODE
-	} else {
-		// sanity check
-		if (outStream != &std::cout && outStream != &std::cerr) {
-			throw std::runtime_error("deleteOutputStream() : no file, nor STDOUT/STDERR");
-		}
-#endif
+		INTARNA_CLEANUP(outFile);
 	}
+
+	// ensure NULL setting
+	outStream = NULL;
 }
 
 /////////////////////////////////////////////////////////////////////

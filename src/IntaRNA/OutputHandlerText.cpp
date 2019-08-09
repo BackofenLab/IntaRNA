@@ -3,6 +3,8 @@
 
 #include <sstream>
 #include <iomanip>
+#include <numeric>
+#include <algorithm>
 
 #if INTARNA_MULITHREADING
 	#include <omp.h>
@@ -61,7 +63,7 @@ OutputHandlerText::
 
 void
 OutputHandlerText::
-add( const Interaction & i )
+add( const Interaction & i, const OutputConstraint & outConstraint )
 {
 #if INTARNA_IN_DEBUG_MODE
 	// debug checks
@@ -78,6 +80,8 @@ add( const Interaction & i )
 	const size_t j1 = i.basePairs.rbegin()->first;
 	const size_t i2 = i.basePairs.begin()->second;
 	const size_t j2 = i.basePairs.rbegin()->second;
+
+	const IndexRangeList seedRanges1 = i.getSeedRanges1();
 
 	// decompose printing into several rows
 	std::ostringstream s1Unbound;
@@ -133,13 +137,14 @@ add( const Interaction & i )
 
 	// interaction start left
 	Interaction::PairingVec::const_iterator leftBP = i.basePairs.begin();
-	char nt1 = i.s1->asString().at(leftBP->first);
-	char nt2 = i.s2->asString().at(leftBP->second);
 	// print start
 	s1Unbound.width(1);	 s1Unbound <<std::left <<' ';
 	s1Bound.width(1);	 s1Bound   <<std::left <<i.s1->asString().at(leftBP->first);
 	pairing.width(1);	 pairing   <<std::left;
-	if ((nt1=='G' && nt2=='U') || (nt1=='U' && nt2=='G')) {
+	if (seedRanges1.covers(leftBP->first)) {
+		pairing   <<'+';
+	} else
+	if (energy.isGU(leftBP->first, leftBP->second)) {
 		pairing   <<':';
 	} else {
 		pairing   <<'|';
@@ -161,38 +166,49 @@ add( const Interaction & i )
 		// print unbound loop regions
 		if (loop>0) {
 			// unbound region s1
-			s1Unbound.width(loop);
 			if (loop1 > 0) {
 				s1Unbound <<i.s1->asString().substr( leftBP->first +1, loop1 );
+				// fill missing positions
+				if (loop1 < loop) {
+					s1Unbound.width(loop-loop1);
+					s1Unbound <<std::setfill('-') <<'-' <<std::setfill(' ');
+				}
 			} else {
-				s1Unbound <<' ';
+				s1Unbound.width(loop);
+				s1Unbound <<std::setfill('-') <<'-' <<std::setfill(' ');
 			}
 			// bound region
 			s1Bound.width(loop); s1Bound <<' ';
 			pairing.width(loop); pairing <<' ';
 			s2Bound.width(loop); s2Bound <<' ';
 			// unbound region s2
-			s2Unbound.width(loop);
 			if (loop2 > 0) {
 				s2Unbound <<reverse(i.s2->asString().substr( curBP->second +1, loop2 ));
+				// fill missing positions
+				if (loop2 < loop) {
+					s2Unbound.width(loop-loop2);
+					s2Unbound <<std::setfill('-') <<'-' <<std::setfill(' ');
+				}
 			} else {
-				s2Unbound <<' ';
+				s2Unbound.width(loop);
+				s2Unbound <<std::setfill('-') <<'-' <<std::setfill(' ');
 			}
 		}
 		interactionLength += loop;
 
 		// print current base pair (right end of internal loop)
-		nt1 = i.s1->asString().at(curBP->first);
-		nt2 = i.s2->asString().at(curBP->second);
 		s1Unbound.width(1);	 s1Unbound <<' ';
-		s1Bound.width(1);	 s1Bound   <<nt1;
+		s1Bound.width(1);	 s1Bound   <<i.s1->asString().at(curBP->first);
 		pairing.width(1);
-		if ((nt1=='G' && nt2=='U') || (nt1=='U' && nt2=='G')) {
+		if (seedRanges1.covers(curBP->first)) {
+			pairing   <<'+';
+		} else
+		if (energy.isGU(curBP->first, curBP->second)) {
 			pairing   <<':';
 		} else {
 			pairing   <<'|';
 		}
-		s2Bound.width(1);	 s2Bound   <<nt2;
+		s2Bound.width(1);	 s2Bound   <<i.s2->asString().at(curBP->second);
 		s2Unbound.width(1);	 s2Unbound <<' ';
 		interactionLength++;
 	}
@@ -292,45 +308,101 @@ add( const Interaction & i )
 			outTmp
 				// interaction range
 				<<"\n"
-				<<"interaction seq1   = "<<(i.basePairs.begin()->first +1)<<" -- "<<(i.basePairs.rbegin()->first +1) <<'\n'
-				<<"interaction seq2   = "<<(i.basePairs.rbegin()->second +1)<<" -- "<<(i.basePairs.begin()->second +1) <<'\n'
+				<<"interaction seq1   = "<<(i.basePairs.begin()->first +1)<<"--"<<(i.basePairs.rbegin()->first +1) <<'\n'
+				<<"interaction seq2   = "<<(i.basePairs.rbegin()->second +1)<<"--"<<(i.basePairs.begin()->second +1) <<'\n'
 				;
 		} // detailed
 			// print energy
 		outTmp
 			<<"\n"
-			<<"interaction energy = "<<i.energy <<" kcal/mol\n"
+			<<"interaction energy = "<<E_2_Ekcal(i.energy) <<" kcal/mol\n"
 			;
 
 		if (detailedOutput) {
 			outTmp
-				<<"  = E(init)        = "<<contr.init<<'\n'
-				<<"  + E(loops)       = "<<contr.loops<<'\n'
-				<<"  + E(dangleLeft)  = "<<contr.dangleLeft<<'\n'
-				<<"  + E(dangleRight) = "<<contr.dangleRight<<'\n'
-				<<"  + E(endLeft)     = "<<contr.endLeft<<'\n'
-				<<"  + E(endRight)    = "<<contr.endRight<<'\n'
-				<<"    : E(hybrid)    = "<<(i.energy-contr.ED1-contr.ED2)<<'\n'
-				<<"  + ED(seq1)       = "<<contr.ED1<<'\n'
-				<<"    : Pu(seq1)     = "<<std::exp(-contr.ED1/energy.getRT())<<'\n'
-				<<"  + ED(seq2)       = "<<contr.ED2<<'\n'
-				<<"    : Pu(seq2)     = "<<std::exp(-contr.ED2/energy.getRT())<<'\n'
+				<<"  = E(init)        = "<<E_2_Ekcal(contr.init)<<'\n'
+				<<"  + E(loops)       = "<<E_2_Ekcal(contr.loops)<<'\n'
+				<<"  + E(dangleLeft)  = "<<E_2_Ekcal(contr.dangleLeft)<<'\n'
+				<<"  + E(dangleRight) = "<<E_2_Ekcal(contr.dangleRight)<<'\n'
+				<<"  + E(endLeft)     = "<<E_2_Ekcal(contr.endLeft)<<'\n'
+				<<"  + E(endRight)    = "<<E_2_Ekcal(contr.endRight)<<'\n'
+				<<"    : E(hybrid)    = "<<E_2_Ekcal((i.energy-contr.ED1-contr.ED2))<<'\n'
+				<<"  + ED(seq1)       = "<<E_2_Ekcal(contr.ED1)<<'\n'
+				<<"    : Pu(seq1)     = "<<(E_equal(contr.ED2,0) ? Z_type(1) : energy.getBoltzmannWeight(contr.ED1))<<'\n'
+				<<"  + ED(seq2)       = "<<E_2_Ekcal(contr.ED2)<<'\n'
+				<<"    : Pu(seq2)     = "<<(E_equal(contr.ED2,0) ? Z_type(1) : energy.getBoltzmannWeight(contr.ED2))<<'\n'
 				;
+			if (!E_equal(contr.energyAdd,E_type(0))) {
+				outTmp
+				<<"  + E(add)         = "<<E_2_Ekcal(contr.energyAdd)<<'\n'
+				;
+			}
 
 			// print seed information if available
 			if (i.seed != NULL) {
+				const std::string listSep = " | ";
+				const auto s1 = i.seed->begin();
+				// print via std::for_each instead of std::accumulate due to rounding issues of boost::lexical_cast or std::to_string
+				// since sometimes (float(int)/100.0) gives strings with 10-5 deviations of expected value
 				outTmp
-					<<"\n"
-					<<"seed seq1   = "<<(i.seed->bp_i.first +1)<<" -- "<<(i.seed->bp_j.first +1) <<'\n'
-					<<"seed seq2   = "<<(i.seed->bp_j.second +1)<<" -- "<<(i.seed->bp_i.second +1) <<'\n'
-					<<"seed energy = "<<(i.seed->energy)<<" kcal/mol\n"
-					<<"seed ED1    = "<<energy.getED1( i.seed->bp_i.first, i.seed->bp_j.first )<<" kcal/mol\n"
-					<<"seed ED2    = "<<energy.getAccessibility2().getAccessibilityOrigin().getED( i.seed->bp_j.second, i.seed->bp_i.second )<<" kcal/mol\n"
-					<<"seed Pu1    = "<<std::exp(-(energy.getED1( i.seed->bp_i.first, i.seed->bp_j.first ))/energy.getRT())<<'\n'
-					<<"seed Pu2    = "<<std::exp(-(energy.getAccessibility2().getAccessibilityOrigin().getED( i.seed->bp_j.second, i.seed->bp_i.second ))/energy.getRT())<<'\n'
+					<<"\nseed seq1   = "<<(s1->bp_i.first +1)<<"--"<<(s1->bp_j.first +1);
+				if (!outConstraint.bestSeedOnly)
+					std::for_each( ++(i.seed->begin()), i.seed->end(), [&]( const Interaction::Seed & s) {
+								 outTmp << listSep <<(s.bp_i.first +1)<<"--"<<(s.bp_j.first +1);
+								});
+				outTmp
+					<<"\nseed seq2   = "<<(s1->bp_j.second +1)<<"--"<<(s1->bp_i.second +1);
+				if (!outConstraint.bestSeedOnly)
+					std::for_each( ++(i.seed->begin()), i.seed->end(), [&]( const Interaction::Seed & s) {
+								 outTmp << listSep <<(s.bp_j.second +1)<<"--"<<(s.bp_i.second +1);
+								});
+				outTmp
+					<<"\nseed energy = "<<E_2_Ekcal(s1->energy);
+				if (!outConstraint.bestSeedOnly)
+					std::for_each( ++(i.seed->begin()), i.seed->end(), [&]( const Interaction::Seed & s) {
+								 outTmp << listSep << E_2_Ekcal(s.energy);
+								});
+				outTmp
+//						<<" kcal/mol"
+					<<"\nseed ED1    = "<<E_2_Ekcal(energy.getED1( s1->bp_i.first, s1->bp_j.first ));
+				if (!outConstraint.bestSeedOnly)
+					std::for_each( ++(i.seed->begin()), i.seed->end(), [&]( const Interaction::Seed & s) {
+								 outTmp << listSep << E_2_Ekcal(energy.getED1( s.bp_i.first, s.bp_j.first ));
+								});
+				outTmp
+//						<<" kcal/mol"
+					<<"\nseed ED2    = "<<E_2_Ekcal(energy.getAccessibility2().getAccessibilityOrigin().getED( s1->bp_j.second, s1->bp_i.second ));
+				if (!outConstraint.bestSeedOnly)
+					std::for_each( ++(i.seed->begin()), i.seed->end(), [&]( const Interaction::Seed & s) {
+								 outTmp << listSep << E_2_Ekcal(energy.getAccessibility2().getAccessibilityOrigin().getED( s.bp_j.second, s.bp_i.second ));
+								});
+				outTmp
+//						<<" kcal/mol"
+					<<"\nseed Pu1    = "<<(E_equal(energy.getED1( s1->bp_i.first, s1->bp_j.first ),0) ? 1 : energy.getBoltzmannWeight(energy.getED1( s1->bp_i.first, s1->bp_j.first )));
+				if (!outConstraint.bestSeedOnly)
+					std::for_each( ++(i.seed->begin()), i.seed->end(), [&]( const Interaction::Seed & s) {
+								 outTmp << listSep <<(E_equal(energy.getED1( s.bp_i.first, s.bp_j.first ),0) ? 1 : energy.getBoltzmannWeight(energy.getED1( s.bp_i.first, s.bp_j.first )));
+								});
+				outTmp
+					<<"\nseed Pu2    = " <<(E_equal(energy.getAccessibility2().getAccessibilityOrigin().getED( s1->bp_j.second, s1->bp_i.second ),0) ? 1 : energy.getBoltzmannWeight(energy.getAccessibility2().getAccessibilityOrigin().getED( s1->bp_j.second, s1->bp_i.second )));
+				if (!outConstraint.bestSeedOnly)
+					std::for_each( ++(i.seed->begin()), i.seed->end(), [&]( const Interaction::Seed & s) {
+								 outTmp << listSep <<(E_equal(energy.getAccessibility2().getAccessibilityOrigin().getED( s.bp_j.second, s.bp_i.second ),0) ? 1 : energy.getBoltzmannWeight(energy.getAccessibility2().getAccessibilityOrigin().getED( s.bp_j.second, s.bp_i.second )));
+								});
+				outTmp
+					<<'\n'
 					;
 			} // seed
 		} // detailed
+
+		// ensemble output if available
+		if (!Z_equal(Z,Z_type(0))) {
+		outTmp
+			<<"\n"
+			<<"ensemble energy    = "<<E_2_Ekcal(energy.getE(Z)) <<" kcal/mol\n"
+			;
+		}
+
 		// ensure outputs do not intervene
 	#if INTARNA_MULITHREADING
 		#pragma omp critical(intarna_omp_outputStreamUpdate)
@@ -345,13 +417,4 @@ add( const Interaction & i )
 
 ////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////
-
 } // namespace
-

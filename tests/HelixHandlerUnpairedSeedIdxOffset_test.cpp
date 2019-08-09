@@ -26,8 +26,8 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 
 		HelixConstraint hC(2, 10, 2, 999, 0, false);
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
-		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
-						  "");
+		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, 0, IndexRangeList(""), IndexRangeList(""),
+						  "", false );
 
 		HelixHandler *hhU = new HelixHandlerUnpaired(energy, hC);
 		SeedHandler *sH = new SeedHandlerMfe(energy, sC);
@@ -66,8 +66,8 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 		HelixConstraint hC(2, 4, 2, 999, 0, false);
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
-		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
-						  "");
+		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, 0, IndexRangeList(""), IndexRangeList(""),
+						  "", false );
 
 		HelixHandler *hhU = new HelixHandlerUnpaired(energy, hC);
 		SeedHandler *sH = new SeedHandlerMfe(energy, sC);
@@ -92,17 +92,17 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 								   energy.size2() - hhIO.getOffset2() - 1) == 9);
 
 		// (0,0)
-		REQUIRE(hhIO.getHelixSeedE(0, 0) == -3);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(0, 0)) == -3);
 		REQUIRE(hhIO.getHelixSeedLength1(0, 0) == 4);
 		REQUIRE(hhIO.getHelixSeedLength2(0, 0) == 4);
 
 		// (0,1)
-		REQUIRE(hhIO.getHelixSeedE(0, 1) == -3);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(0, 1)) == -3);
 		REQUIRE(hhIO.getHelixSeedLength1(0, 1) == 4);
 		REQUIRE(hhIO.getHelixSeedLength2(0, 1) == 4);
 
 		// (0,2)
-		REQUIRE(hhIO.getHelixSeedE(0, 2) == -2);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(0, 2)) == -2);
 		REQUIRE(hhIO.getHelixSeedLength1(0, 2) == 3);
 		REQUIRE(hhIO.getHelixSeedLength2(0, 2) == 3);
 
@@ -112,12 +112,12 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 		REQUIRE(hhIO.getHelixSeedLength2(0, 3) == 0);
 
 		// (1,1)
-		REQUIRE(hhIO.getHelixSeedE(1, 1) == -3);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(1, 1)) == -3);
 		REQUIRE(hhIO.getHelixSeedLength1(1, 1) == 4);
 		REQUIRE(hhIO.getHelixSeedLength2(1, 1) == 4);
 
 		// (2,2)
-		REQUIRE(hhIO.getHelixSeedE(2, 2) == -2);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(2, 2)) == -2);
 		REQUIRE(hhIO.getHelixSeedLength1(2, 2) == 3);
 		REQUIRE(hhIO.getHelixSeedLength2(2, 2) == 3);
 
@@ -163,8 +163,8 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 		HelixConstraint hC(2, 4, 2, 999, 0, false);
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
-		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
-						  "");
+		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, 0, IndexRangeList(""), IndexRangeList(""),
+						  "", false );
 
 		HelixHandler *hhU = new HelixHandlerUnpaired(energy, hC);
 		SeedHandler *sH = new SeedHandlerMfe(energy, sC);
@@ -226,8 +226,8 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 		HelixConstraint hC(2, 4, 2, 999, 0, false);
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
-		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
-						  "");
+		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, 0, IndexRangeList(""), IndexRangeList(""),
+						  "", false );
 
 		HelixHandler *hhU = new HelixHandlerUnpaired(energy, hC);
 		SeedHandler *sH = new SeedHandlerMfe(energy, sC);
@@ -262,7 +262,7 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 		REQUIRE(hhIO.getHelixSeedLength2(1, 0) == 0);
 
 		// (1,3)
-		REQUIRE(hhIO.getHelixSeedE(1, 1) == -2);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(1, 1)) == -2);
 		REQUIRE(hhIO.getHelixSeedLength1(1, 1) == 3);
 		REQUIRE(hhIO.getHelixSeedLength2(1, 1) == 3);
 
@@ -301,8 +301,8 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 		HelixConstraint hC(2, 4, 2, 999, 0, false);
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
-		SeedConstraint sC(3, 2, 1, 1, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
-						  "");
+		SeedConstraint sC(3, 2, 1, 1, 0, AccessibilityDisabled::ED_UPPER_BOUND, 0, IndexRangeList(""), IndexRangeList(""),
+						  "", false );
 
 		HelixHandler *hhU = new HelixHandlerUnpaired(energy, hC);
 		SeedHandler *sH = new SeedHandlerMfe(energy, sC);
@@ -327,17 +327,17 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 								   energy.size2() - hhIO.getOffset2() - 1) == 4);
 
 		// (0,0)
-		REQUIRE(hhIO.getHelixSeedE(0, 0) == -3);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(0, 0)) == -3);
 		REQUIRE(hhIO.getHelixSeedLength1(0, 0) == 5);
 		REQUIRE(hhIO.getHelixSeedLength2(0, 0) == 5);
 
 		// (0,2)
-		REQUIRE(hhIO.getHelixSeedE(1, 0) == -2);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(1, 0)) == -2);
 		REQUIRE(hhIO.getHelixSeedLength1(1, 0) == 4);
 		REQUIRE(hhIO.getHelixSeedLength2(1, 0) == 4);
 
 		// (1,3)
-		REQUIRE(hhIO.getHelixSeedE(1, 1) == -2);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(1, 1)) == -2);
 		REQUIRE(hhIO.getHelixSeedLength1(1, 1) == 4);
 		REQUIRE(hhIO.getHelixSeedLength2(1, 1) == 4);
 
@@ -396,8 +396,8 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 		HelixConstraint hC(2, 4, 2, 999, 0, false);
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
-		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
-						  "");
+		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, 0, IndexRangeList(""), IndexRangeList(""),
+						  "", false );
 
 		HelixHandler *hhU = new HelixHandlerUnpaired(energy, hC);
 		SeedHandler *sH = new SeedHandlerMfe(energy, sC);
@@ -422,17 +422,17 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 								   energy.size2() - hhIO.getOffset2() - 1) == 9);
 
 		// (0,0)
-		REQUIRE(hhIO.getHelixSeedE(0, 0) == -3);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(0, 0)) == -3);
 		REQUIRE(hhIO.getHelixSeedLength1(0, 0) == 4);
 		REQUIRE(hhIO.getHelixSeedLength2(0, 0) == 4);
 
 		// (0,1)
-		REQUIRE(hhIO.getHelixSeedE(0, 1) == -3);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(0, 1)) == -3);
 		REQUIRE(hhIO.getHelixSeedLength1(0, 1) == 4);
 		REQUIRE(hhIO.getHelixSeedLength2(0, 1) == 4);
 
 		// (0,2)
-		REQUIRE(hhIO.getHelixSeedE(0, 2) == -2);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(0, 2)) == -2);
 		REQUIRE(hhIO.getHelixSeedLength1(0, 2) == 3);
 		REQUIRE(hhIO.getHelixSeedLength2(0, 2) == 3);
 
@@ -442,12 +442,12 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 		REQUIRE(hhIO.getHelixSeedLength2(0, 3) == 0);
 
 		// (1,1)
-		REQUIRE(hhIO.getHelixSeedE(1, 1) == -3);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(1, 1)) == -3);
 		REQUIRE(hhIO.getHelixSeedLength1(1, 1) == 4);
 		REQUIRE(hhIO.getHelixSeedLength2(1, 1) == 4);
 
 		// (2,2)
-		REQUIRE(hhIO.getHelixSeedE(2, 2) == -2);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(2, 2)) == -2);
 		REQUIRE(hhIO.getHelixSeedLength1(2, 2) == 3);
 		REQUIRE(hhIO.getHelixSeedLength2(2, 2) == 3);
 
@@ -493,8 +493,8 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 		HelixConstraint hC(2, 5, 2, 999, 0, false);
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
-		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
-						  "");
+		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, 0, IndexRangeList(""), IndexRangeList(""),
+						  "", false );
 
 		HelixHandler *hhU = new HelixHandlerUnpaired(energy, hC);
 		SeedHandler *sH = new SeedHandlerMfe(energy, sC);
@@ -519,17 +519,17 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 								   energy.size2() - hhIO.getOffset2() - 1) == 3);
 
 		// (0,0)
-		REQUIRE(hhIO.getHelixSeedE(0, 0) == -4);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(0, 0)) == -4);
 		REQUIRE(hhIO.getHelixSeedLength1(0, 0) == 6);
 		REQUIRE(hhIO.getHelixSeedLength2(0, 0) == 6);
 
 		// (1,1)
-		REQUIRE(hhIO.getHelixSeedE(1, 1) == -3);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(1, 1)) == -3);
 		REQUIRE(hhIO.getHelixSeedLength1(1, 1) == 5);
 		REQUIRE(hhIO.getHelixSeedLength2(1, 1) == 5);
 
 		// (3,3)
-		REQUIRE(hhIO.getHelixSeedE(3, 3) == -2);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(3, 3)) == -2);
 		REQUIRE(hhIO.getHelixSeedLength1(3, 3) == 3);
 		REQUIRE(hhIO.getHelixSeedLength2(3, 3) == 3);
 
@@ -581,8 +581,8 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 		HelixConstraint hC(2, 5, 2, 999, 0, false);
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
-	    SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
-						  "");
+	    SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, 0, IndexRangeList(""), IndexRangeList(""),
+						  "", false );
 
 		HelixHandler *hhU = new HelixHandlerUnpaired(energy, hC);
 		SeedHandler *sH = new SeedHandlerMfe(energy, sC);
@@ -607,32 +607,32 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 								   energy.size2() - hhIO.getOffset2() - 1) == 5);
 
 		// (0,0)
-		REQUIRE(hhIO.getHelixSeedE(0, 0) == -4);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(0, 0)) == -4);
 		REQUIRE(hhIO.getHelixSeedLength1(0, 0) == 6);
 		REQUIRE(hhIO.getHelixSeedLength2(0, 0) == 6);
 
 		// (0,1)
-		REQUIRE(hhIO.getHelixSeedE(0, 1) == -3);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(0, 1)) == -3);
 		REQUIRE(hhIO.getHelixSeedLength1(0, 1) == 5);
 		REQUIRE(hhIO.getHelixSeedLength2(0, 1) == 5);
 
 //		// (2,0)
-//		REQUIRE(hhIO.getHelixSeedE(2, 0) == -3);
+//		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(2, 0)) == -3);
 //		REQUIRE(hhIO.getHelixSeedLength1(2, 0) == 4);
 //		REQUIRE(hhIO.getHelixSeedLength2(2, 0) == 6);
 
 		// (2,1)
-		REQUIRE(hhIO.getHelixSeedE(2, 1) == -3);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(2, 1)) == -3);
 		REQUIRE(hhIO.getHelixSeedLength1(2, 1) == 4);
 		REQUIRE(hhIO.getHelixSeedLength2(2, 1) == 5);
 
 		// (2,3)
-		REQUIRE(hhIO.getHelixSeedE(2, 3) == -2);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(2, 3)) == -2);
 		REQUIRE(hhIO.getHelixSeedLength1(2, 3) == 3);
 		REQUIRE(hhIO.getHelixSeedLength2(2, 3) == 3);
 
 		// (3,3)
-		REQUIRE(hhIO.getHelixSeedE(3, 3) == -2);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(3, 3)) == -2);
 		REQUIRE(hhIO.getHelixSeedLength1(3, 3) == 3);
 		REQUIRE(hhIO.getHelixSeedLength2(3, 3) == 3);
 
@@ -684,8 +684,8 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 		HelixConstraint hC(2, 5, 2, 999, 0, false);
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
-		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
-						  "");
+		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, 0, IndexRangeList(""), IndexRangeList(""),
+						  "", false );
 
 		HelixHandler *hhU = new HelixHandlerUnpaired(energy, hC);
 		SeedHandler *sH = new SeedHandlerMfe(energy, sC);
@@ -710,7 +710,7 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 								   0, energy.size2() - hhIO.getOffset2() - 1) == 1);
 
 		// (0,0)
-		REQUIRE(hhIO.getHelixSeedE(0, 0) == -4);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(0, 0)) == -4);
 		REQUIRE(hhIO.getHelixSeedLength1(0, 0) == 6);
 		REQUIRE(hhIO.getHelixSeedLength2(0, 0) == 6);
 
@@ -750,8 +750,8 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 		HelixConstraint hC(2, 5, 2, 999, 0, false);
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
-		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
-						  "");
+		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, 0, IndexRangeList(""), IndexRangeList(""),
+						  "", false );
 
 		HelixHandler *hhU = new HelixHandlerUnpaired(energy, hC);
 		SeedHandler *sH = new SeedHandlerMfe(energy, sC);
@@ -775,12 +775,12 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 		REQUIRE(hhIO.fillHelixSeed(0, energy.size1() - hhIO.getOffset1() - 1, 0,
 								   energy.size2() - hhIO.getOffset2() - 1) == 2);
 		// (0,0)
-		REQUIRE(hhIO.getHelixSeedE(0, 0) == -4);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(0, 0)) == -4);
 		REQUIRE(hhIO.getHelixSeedLength1(0, 0) == 6);
 		REQUIRE(hhIO.getHelixSeedLength2(0, 0) == 6);
 
 		// (0,0)
-		REQUIRE(hhIO.getHelixSeedE(0, 1) == -4);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(0, 1)) == -4);
 		REQUIRE(hhIO.getHelixSeedLength1(0, 1) == 6);
 		REQUIRE(hhIO.getHelixSeedLength2(0, 1) == 6);
 
@@ -832,8 +832,8 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 		HelixConstraint hC(2, 5, 2, 999, 0, false);
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
-		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
-						  "");
+		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, 0, IndexRangeList(""), IndexRangeList(""),
+						  "", false );
 
 		HelixHandler *hhU = new HelixHandlerUnpaired(energy, hC);
 		SeedHandler *sH = new SeedHandlerMfe(energy, sC);
@@ -858,7 +858,7 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 								   energy.size2() - hhIO.getOffset2() - 1) == 5);
 
 		// (0,0)
-		REQUIRE(hhIO.getHelixSeedE(0, 0) == -4);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(0, 0)) == -4);
 		REQUIRE(hhIO.getHelixSeedLength1(0, 0) == 6);
 		REQUIRE(hhIO.getHelixSeedLength2(0, 0) == 6);
 
@@ -868,22 +868,22 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 		REQUIRE(hhIO.getHelixSeedLength2(0, 1) == 0);
 
 		// (2,0)
-		REQUIRE(hhIO.getHelixSeedE(2, 0) == -3);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(2, 0)) == -3);
 		REQUIRE(hhIO.getHelixSeedLength1(2, 0) == 4);
 		REQUIRE(hhIO.getHelixSeedLength2(2, 0) == 4);
 
 		// (2,1)
-		REQUIRE(hhIO.getHelixSeedE(2, 1) == -3);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(2, 1)) == -3);
 		REQUIRE(hhIO.getHelixSeedLength1(2, 1) == 4);
 		REQUIRE(hhIO.getHelixSeedLength2(2, 1) == 5);
 
 		// (3,0)
-		REQUIRE(hhIO.getHelixSeedE(3, 0) == -2);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(3, 0)) == -2);
 		REQUIRE(hhIO.getHelixSeedLength1(3, 0) == 3);
 		REQUIRE(hhIO.getHelixSeedLength2(3, 0) == 3);
 
 		// (3,1)
-		REQUIRE(hhIO.getHelixSeedE(3, 1) == -2);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(3, 1)) == -2);
 		REQUIRE(hhIO.getHelixSeedLength1(3, 1) == 3);
 		REQUIRE(hhIO.getHelixSeedLength2(3, 1) == 3);
 
@@ -935,8 +935,8 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 		HelixConstraint hC(2, 5, 2, 999, 0, false);
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
-		SeedConstraint sC(3, 1, 1, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, IndexRangeList(""), IndexRangeList(""),
-						  "");
+		SeedConstraint sC(3, 1, 1, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, 0, IndexRangeList(""), IndexRangeList(""),
+						  "", false );
 
 		HelixHandler *hhU = new HelixHandlerUnpaired(energy, hC);
 		SeedHandler *sH = new SeedHandlerMfe(energy, sC);
@@ -961,32 +961,32 @@ TEST_CASE( "HelixSeed for Unpaired with offset", "[HelixHandlerUnpaired]" ) {
 								   energy.size2() - hhIO.getOffset2() - 1) == 6);
 
 		// (0,0)
-		REQUIRE(hhIO.getHelixSeedE(0, 0) == -4);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(0, 0)) == -4);
 		REQUIRE(hhIO.getHelixSeedLength1(0, 0) == 7);
 		REQUIRE(hhIO.getHelixSeedLength2(0, 0) == 6);
 
 		// (0,1)
-		REQUIRE(hhIO.getHelixSeedE(0, 1) == -3);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(0, 1)) == -3);
 		REQUIRE(hhIO.getHelixSeedLength1(0, 1) == 6);
 		REQUIRE(hhIO.getHelixSeedLength2(0, 1) == 5);
 
 		// (2,0)
-		REQUIRE(hhIO.getHelixSeedE(2, 0) == -3);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(2, 0)) == -3);
 		REQUIRE(hhIO.getHelixSeedLength1(2, 0) == 5);
 		REQUIRE(hhIO.getHelixSeedLength2(2, 0) == 4);
 
 		// (2,1)
-		REQUIRE(hhIO.getHelixSeedE(2, 1) == -3);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(2, 1)) == -3);
 		REQUIRE(hhIO.getHelixSeedLength1(2, 1) == 5);
 		REQUIRE(hhIO.getHelixSeedLength2(2, 1) == 5);
 
 		// (3,0)
-		REQUIRE(hhIO.getHelixSeedE(3, 0) == -2);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(3, 0)) == -2);
 		REQUIRE(hhIO.getHelixSeedLength1(3, 0) == 4);
 		REQUIRE(hhIO.getHelixSeedLength2(3, 0) == 3);
 
 		// (3,1)
-		REQUIRE(hhIO.getHelixSeedE(3, 1) == -2);
+		REQUIRE(E_2_Ekcal(hhIO.getHelixSeedE(3, 1)) == -2);
 		REQUIRE(hhIO.getHelixSeedLength1(3, 1) == 4);
 		REQUIRE(hhIO.getHelixSeedLength2(3, 1) == 3);
 

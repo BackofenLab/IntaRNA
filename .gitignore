@@ -51,6 +51,7 @@ compile
 doxygen-doc
 doxygen-doc/*
 conf3108*
+test-driver
 
 
 # temp dir
@@ -69,3 +70,4 @@ tests/logs/*
 /t.fasta
 /t2.fasta
 /IntaRNA.pc
+/IntaRNA.exe.stackdump

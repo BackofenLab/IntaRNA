@@ -2,6 +2,7 @@
 #ifndef INTARNA_OUTPUTHANDLERTEXT_H_
 #define INTARNA_OUTPUTHANDLERTEXT_H_
 
+#include "IntaRNA/OutputConstraint.h"
 #include "IntaRNA/OutputHandler.h"
 #include "IntaRNA/InteractionEnergy.h"
 
@@ -31,7 +32,8 @@ public:
 	OutputHandlerText( std::ostream & out
 				, const InteractionEnergy & energy
 				, const size_t flankingLength = 10
-				, const bool detailedOutput = false );
+				, const bool detailedOutput = false
+				);
 
 	/**
 	 * destruction, enforces a flush on the output stream.
@@ -43,26 +45,21 @@ public:
 	 * stream.
 	 *
 	 * @param interaction the interaction to output
+	 * @param outConstraint the output constraint applied to find the reported
+	 *        interaction
 	 */
 	virtual
 	void
-	add( const Interaction & interaction );
-
-	/**
-	 * Handles a given RNA-RNA interaction range as a
-	 * RNA-RNA interaction with two base pairs and writes it in simple
-	 * text format to the output stream.
-	 *
-	 * @param range the interaction range to add
-	 */
-	virtual
-	void
-	add( const InteractionRange & range );
+	add( const Interaction & interaction
+		, const OutputConstraint & outConstraint );
 
 protected:
 
 	//! counter of reported interactions
 	using OutputHandler::reportedInteractions;
+
+	//! aggregated overall partition function
+	using OutputHandler::Z;
 
 	//! the output stream to write the interaction text representation to
 	std::ostream & out;
@@ -78,17 +75,6 @@ protected:
 
 };
 
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void
-OutputHandlerText::
-add( const InteractionRange & range )
-{
-	// forward to interaction reporting
-	add( Interaction(range) );
-}
 
 ////////////////////////////////////////////////////////////////////////////
 

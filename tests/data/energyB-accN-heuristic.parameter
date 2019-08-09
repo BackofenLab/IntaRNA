@@ -1,0 +1,13 @@
+mode=H
+noSeed=true
+model=S
+energy=B 
+tAcc=N
+qAcc=N
+target=CCAACCCACC
+query=GGGG
+outMode=C
+outNumber=10
+outOverlap=B
+outDeltaE=0
+outNoLP=false

@@ -62,82 +62,82 @@ TEST_CASE( "HelixHandlerUnpaired", "[HelixHandlerUnpaired]") {
 
 		// All optimal combinations
 		// (0,0)
-		REQUIRE(hhU.getHelixE(0, 0) == -3);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(0, 0)) == -3);
 		REQUIRE(hhU.getHelixLength1(0, 0) == 4);
 		REQUIRE(hhU.getHelixLength2(0, 0) == hhU.getHelixLength1(0, 0));
 
 		// (0,1)
-		REQUIRE(hhU.getHelixE(0, 1) == -3);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(0, 1)) == -3);
 		REQUIRE(hhU.getHelixLength1(0, 1) == 4);
 		REQUIRE(hhU.getHelixLength2(0, 1) == hhU.getHelixLength1(0, 1));
 
 		// (0,2)
-		REQUIRE(hhU.getHelixE(0, 2) == -2);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(0, 2)) == -2);
 		REQUIRE(hhU.getHelixLength1(0, 2) == 3);
 		REQUIRE(hhU.getHelixLength2(0, 2) == hhU.getHelixLength1(0, 2));
 
 		// (0,3)
-		REQUIRE(hhU.getHelixE(0, 3) == -1);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(0, 3)) == -1);
 		REQUIRE(hhU.getHelixLength1(0, 3) == 2);
 		REQUIRE(hhU.getHelixLength2(0, 3) == hhU.getHelixLength1(0, 3));
 
 		// (1,0)
-		REQUIRE(hhU.getHelixE(1, 0) == -3);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(1, 0)) == -3);
 		REQUIRE(hhU.getHelixLength1(1, 0) == 4);
 		REQUIRE(hhU.getHelixLength2(1, 0) == hhU.getHelixLength1(1, 0));
 
 		// (1,1)
-		REQUIRE(hhU.getHelixE(1, 1) == -3);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(1, 1)) == -3);
 		REQUIRE(hhU.getHelixLength1(1, 1) == 4);
 		REQUIRE(hhU.getHelixLength2(1, 1) == hhU.getHelixLength1(1, 1));
 
 		// (1,2)
-		REQUIRE(hhU.getHelixE(1, 2) == -2);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(1, 2)) == -2);
 		REQUIRE(hhU.getHelixLength1(1, 2) == 3);
 		REQUIRE(hhU.getHelixLength2(1, 2) == hhU.getHelixLength1(1, 2));
 
 		// (1,3)
-		REQUIRE(hhU.getHelixE(1, 3) == -1);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(1, 3)) == -1);
 		REQUIRE(hhU.getHelixLength1(1, 3) == 2);
 		REQUIRE(hhU.getHelixLength2(1, 3) == hhU.getHelixLength1(1, 3));
 
 		// (2,0)
-		REQUIRE(hhU.getHelixE(2, 0) == -2);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(2, 0)) == -2);
 		REQUIRE(hhU.getHelixLength1(2, 0) == 3);
 		REQUIRE(hhU.getHelixLength2(2, 0) == hhU.getHelixLength1(2, 0));
 
 		// (2,1)
-		REQUIRE(hhU.getHelixE(2, 1) == -2);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(2, 1)) == -2);
 		REQUIRE(hhU.getHelixLength1(2, 1) == 3);
 		REQUIRE(hhU.getHelixLength2(2, 1) == hhU.getHelixLength1(2, 1));
 
 		// (2,2)
-		REQUIRE(hhU.getHelixE(2, 2) == -2);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(2, 2)) == -2);
 		REQUIRE(hhU.getHelixLength1(2, 2) == 3);
 		REQUIRE(hhU.getHelixLength2(2, 2) == hhU.getHelixLength1(2, 2));
 
 		// (2,3)
-		REQUIRE(hhU.getHelixE(2, 3) == -1);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(2, 3)) == -1);
 		REQUIRE(hhU.getHelixLength1(2, 3) == 2);
 		REQUIRE(hhU.getHelixLength2(2, 3) == hhU.getHelixLength1(2, 3));
 
 		// (3,0)
-		REQUIRE(hhU.getHelixE(3, 0) == -1);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(3, 0)) == -1);
 		REQUIRE(hhU.getHelixLength1(3, 0) == 2);
 		REQUIRE(hhU.getHelixLength2(3, 0) == hhU.getHelixLength1(3, 0));
 
 		// (3,1)
-		REQUIRE(hhU.getHelixE(3, 1) == -1);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(3, 1)) == -1);
 		REQUIRE(hhU.getHelixLength1(3, 1) == 2);
 		REQUIRE(hhU.getHelixLength2(3, 1) == hhU.getHelixLength1(3, 1));
 
 		// (3,2)
-		REQUIRE(hhU.getHelixE(3, 2) == -1);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(3, 2)) == -1);
 		REQUIRE(hhU.getHelixLength1(3, 2) == 2);
 		REQUIRE(hhU.getHelixLength2(3, 2) == hhU.getHelixLength1(3, 2));
 
 		// (3,3)
-		REQUIRE(hhU.getHelixE(3, 3) == -1);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(3, 3)) == -1);
 		REQUIRE(hhU.getHelixLength1(3, 3) == 2);
 		REQUIRE(hhU.getHelixLength2(3, 3) == hhU.getHelixLength1(3, 3));
 
@@ -212,82 +212,82 @@ TEST_CASE( "HelixHandlerUnpaired", "[HelixHandlerUnpaired]") {
 
 		// All optimal combinations
 		// (0,0)
-		REQUIRE(hhU.getHelixE(0, 0) == -3);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(0, 0)) == -3);
 		REQUIRE(hhU.getHelixLength1(0, 0) == 5);
 		REQUIRE(hhU.getHelixLength2(0, 0) == 4);
 
 		// (0,1)
-		REQUIRE(hhU.getHelixE(0, 1) == -3);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(0, 1)) == -3);
 		REQUIRE(hhU.getHelixLength1(0, 1) == 5);
 		REQUIRE(hhU.getHelixLength2(0, 1) == 4);
 
 		// (0,2)
-		REQUIRE(hhU.getHelixE(0, 2) == -2);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(0, 2)) == -2);
 		REQUIRE(hhU.getHelixLength1(0, 2) == 3);
 		REQUIRE(hhU.getHelixLength2(0, 2) == hhU.getHelixLength1(0, 2));
 
 		// (0,3)
-		REQUIRE(hhU.getHelixE(0, 3) == -1);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(0, 3)) == -1);
 		REQUIRE(hhU.getHelixLength1(0, 3) == 2);
 		REQUIRE(hhU.getHelixLength2(0, 3) == hhU.getHelixLength1(0, 3));
 
 		// (1,0)
-		REQUIRE(hhU.getHelixE(1, 0) == -3);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(1, 0)) == -3);
 		REQUIRE(hhU.getHelixLength1(1, 0) == 5);
 		REQUIRE(hhU.getHelixLength2(1, 0) == 4);
 
 		// (1,1)
-		REQUIRE(hhU.getHelixE(1, 1) == -3);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(1, 1)) == -3);
 		REQUIRE(hhU.getHelixLength1(1, 1) == 5);
 		REQUIRE(hhU.getHelixLength2(1, 1) == 4);
 
 		// (1,2)
-		REQUIRE(hhU.getHelixE(1, 2) == -2);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(1, 2)) == -2);
 		REQUIRE(hhU.getHelixLength1(1, 2) == 4);
 		REQUIRE(hhU.getHelixLength2(1, 2) == 3);
 
 		// (1,3)
-		REQUIRE(hhU.getHelixE(1, 3) == -1);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(1, 3)) == -1);
 		REQUIRE(hhU.getHelixLength1(1, 3) == 2);
 		REQUIRE(hhU.getHelixLength2(1, 3) == hhU.getHelixLength1(1, 3));
 
 		// (2,0)
-		REQUIRE(hhU.getHelixE(2, 0) == -2);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(2, 0)) == -2);
 		REQUIRE(hhU.getHelixLength1(2, 0) == 4);
 		REQUIRE(hhU.getHelixLength2(2, 0) == 3);
 
 		// (2,1)
-		REQUIRE(hhU.getHelixE(2, 1) == -2);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(2, 1)) == -2);
 		REQUIRE(hhU.getHelixLength1(2, 1) == 4);
 		REQUIRE(hhU.getHelixLength2(2, 1) == 3);
 
 		// (2,2)
-		REQUIRE(hhU.getHelixE(2, 2) == -2);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(2, 2)) == -2);
 		REQUIRE(hhU.getHelixLength1(2, 2) == 4);
 		REQUIRE(hhU.getHelixLength2(2, 2) == 3);
 
 		// (2,3)
-		REQUIRE(hhU.getHelixE(2, 3) == -1);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(2, 3)) == -1);
 		REQUIRE(hhU.getHelixLength1(2, 3) == 3);
 		REQUIRE(hhU.getHelixLength2(2, 3) == 2);
 
 		// (4,0)
-		REQUIRE(hhU.getHelixE(4, 0) == -1);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(4, 0)) == -1);
 		REQUIRE(hhU.getHelixLength1(4, 0) == 2);
 		REQUIRE(hhU.getHelixLength2(4, 0) == hhU.getHelixLength1(4, 0));
 
 		// (4,1)
-		REQUIRE(hhU.getHelixE(4, 1) == -1);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(4, 1)) == -1);
 		REQUIRE(hhU.getHelixLength1(4, 1) == 2);
 		REQUIRE(hhU.getHelixLength2(4, 1) == hhU.getHelixLength1(4, 1));
 
 		// (4,2)
-		REQUIRE(hhU.getHelixE(4, 2) == -1);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(4, 2)) == -1);
 		REQUIRE(hhU.getHelixLength1(4, 2) == 2);
 		REQUIRE(hhU.getHelixLength2(4, 2) == hhU.getHelixLength1(4, 2));
 
 		// (4,3)
-		REQUIRE(hhU.getHelixE(4, 3) == -1);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(4, 3)) == -1);
 		REQUIRE(hhU.getHelixLength1(4, 3) == 2);
 		REQUIRE(hhU.getHelixLength2(4, 3) == hhU.getHelixLength1(4, 3));
 
@@ -365,77 +365,77 @@ TEST_CASE( "HelixHandlerUnpaired", "[HelixHandlerUnpaired]") {
 		REQUIRE_FALSE(energy.areComplementary(5,4));
 		// All optimal combinations
 		// (0,0)
-		REQUIRE(hhU.getHelixE(0, 0) == -3);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(0, 0)) == -3);
 		REQUIRE(hhU.getHelixLength1(0, 0) == 6);
 		REQUIRE(hhU.getHelixLength2(0, 0) == 7);
 
 		// (0,1)
-		REQUIRE(hhU.getHelixE(0, 1) == -3);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(0, 1)) == -3);
 		REQUIRE(hhU.getHelixLength1(0, 1) == 6);
 		REQUIRE(hhU.getHelixLength2(0, 1) == 6);
 
 		// (0,2)
-		REQUIRE(hhU.getHelixE(0, 2) == -2);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(0, 2)) == -2);
 		REQUIRE(hhU.getHelixLength1(0, 2) == 3);
 		REQUIRE(hhU.getHelixLength2(0, 2) == 5);
 
 		// (0,5)
-		REQUIRE(hhU.getHelixE(0, 5) == -1);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(0, 5)) == -1);
 		REQUIRE(hhU.getHelixLength1(0, 5) == 2);
 		REQUIRE(hhU.getHelixLength2(0, 5) == hhU.getHelixLength1(0, 5));
 
 		// (1,0)
-		REQUIRE(hhU.getHelixE(1, 0) == -3);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(1, 0)) == -3);
 		REQUIRE(hhU.getHelixLength1(1, 0) == 6);
 		REQUIRE(hhU.getHelixLength2(1, 0) == 6);
 
 		// (1,1)
-		REQUIRE(hhU.getHelixE(1, 1) == -1);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(1, 1)) == -1);
 		REQUIRE(hhU.getHelixLength1(1, 1) == 2);
 		REQUIRE(hhU.getHelixLength2(1, 1) == hhU.getHelixLength1(1, 1));
 
 		// (1,2)
-		REQUIRE(hhU.getHelixE(1, 2) == -2);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(1, 2)) == -2);
 		REQUIRE(hhU.getHelixLength1(1, 2) == 5);
 		REQUIRE(hhU.getHelixLength2(1, 2) == 5);
 
 		// (1,5)
-		REQUIRE(hhU.getHelixE(1, 5) == -1);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(1, 5)) == -1);
 		REQUIRE(hhU.getHelixLength1(1, 5) == 2);
 		REQUIRE(hhU.getHelixLength2(1, 5) == hhU.getHelixLength1(1, 5));
 
 		// (2,0)
-		REQUIRE(hhU.getHelixE(2, 0) == -2);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(2, 0)) == -2);
 		REQUIRE(hhU.getHelixLength1(2, 0) == 5);
 		REQUIRE(hhU.getHelixLength2(2, 0) == 3);
 
 		// (2,1)
-		REQUIRE(hhU.getHelixE(2, 1) == -2);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(2, 1)) == -2);
 		REQUIRE(hhU.getHelixLength1(2, 1) == 5);
 		REQUIRE(hhU.getHelixLength2(2, 1) == 5);
 
 		// (2,5)
-		REQUIRE(hhU.getHelixE(2, 5) == -1);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(2, 5)) == -1);
 		REQUIRE(hhU.getHelixLength1(2, 5) == 4);
 		REQUIRE(hhU.getHelixLength2(2, 5) == 2);
 
 		// (5,0)
-		REQUIRE(hhU.getHelixE(5, 0) == -1);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(5, 0)) == -1);
 		REQUIRE(hhU.getHelixLength1(5, 0) == 2);
 		REQUIRE(hhU.getHelixLength2(5, 0) == hhU.getHelixLength1(5, 0));
 
 		// (5,1)
-		REQUIRE(hhU.getHelixE(5, 1) == -1);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(5, 1)) == -1);
 		REQUIRE(hhU.getHelixLength1(5, 1) == 2);
 		REQUIRE(hhU.getHelixLength2(5, 1) == hhU.getHelixLength1(5, 1));
 
 		// (5,2)
-		REQUIRE(hhU.getHelixE(5, 2) == -1);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(5, 2)) == -1);
 		REQUIRE(hhU.getHelixLength1(5, 2) == 2);
 		REQUIRE(hhU.getHelixLength2(5, 2) == 4);
 
 		// (5,5)
-		REQUIRE(hhU.getHelixE(5, 5) == -1);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(5, 5)) == -1);
 		REQUIRE(hhU.getHelixLength1(5, 5) == 2);
 		REQUIRE(hhU.getHelixLength2(5, 5) == hhU.getHelixLength1(5, 5));
 
@@ -546,25 +546,6 @@ TEST_CASE( "HelixHandlerUnpaired", "[HelixHandlerUnpaired]") {
 		REQUIRE(hhU.getHelixLength1(0, 3) == 0);
 		REQUIRE(hhU.getHelixLength2(0, 3) == hhU.getHelixLength1(0, 3));
 
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////
-		////////////////////////////////////////////   TRACEBACK   ///////////////////////////////////////////////
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-		// Exceptions are only thrown in debug mode
-#if INTARNA_IN_DEBUG_MODE
-
-		// Case (0,0)
-		//////////////////////
-		Interaction interaction(r1,r2);
-
-		REQUIRE_THROWS_WITH(hhU.traceBackHelix(interaction, 0, 0), "HelixHandlerUnpaired::traceBackHelix(i1=0,i2=0) no helix known (E_INF)");
-
-		// Case (1,3)
-		//////////////////////
-		interaction.clear();
-
-		REQUIRE_THROWS_WITH(hhU.traceBackHelix(interaction, 1, 3), "HelixHandlerUnpaired::traceBackHelix(i1=1,i2=3) no helix known (E_INF)");
-#endif
 
 	}
 
@@ -587,7 +568,7 @@ TEST_CASE( "HelixHandlerUnpaired", "[HelixHandlerUnpaired]") {
 		REQUIRE(hhU.fillHelix(0, energy.size1() - 1, 0, energy.size2() - 1) == 9);
 
 		// (0,0)
-		REQUIRE(hhU.getHelixE(0, 0) == -3);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(0, 0)) == -3);
 		REQUIRE(hhU.getHelixLength1(0, 0) == 6);
 		REQUIRE(hhU.getHelixLength2(0, 0) == 4);
 
@@ -629,7 +610,7 @@ TEST_CASE( "HelixHandlerUnpaired", "[HelixHandlerUnpaired]") {
 		REQUIRE(hhU.fillHelix(0, energy.size1() - 1, 0, energy.size2() - 1) == 1);
 
 		// (0,0)
-		REQUIRE(hhU.getHelixE(0, 0) == -1);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(0, 0)) == -1);
 		REQUIRE(hhU.getHelixLength1(0, 0) == 3);
 		REQUIRE(hhU.getHelixLength2(0, 0) == 3);
 
@@ -665,82 +646,82 @@ TEST_CASE( "HelixHandlerUnpaired", "[HelixHandlerUnpaired]") {
 		REQUIRE(hhU.fillHelix(0, energy.size1() - 1, 0, energy.size2() - 1) == 16);
 
 		// (0,0)
-		REQUIRE(hhU.getHelixE(0, 0) == -4);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(0, 0)) == -4);
 		REQUIRE(hhU.getHelixLength1(0, 0) == 6);
 		REQUIRE(hhU.getHelixLength2(0, 0) == 6);
 
 		// (0,1)
-		REQUIRE(hhU.getHelixE(0, 1) == -3);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(0, 1)) == -3);
 		REQUIRE(hhU.getHelixLength1(0, 1) == 5);
 		REQUIRE(hhU.getHelixLength2(0, 1) == 5);
 
 		// (0,2)
-		REQUIRE(hhU.getHelixE(0, 2) == -2);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(0, 2)) == -2);
 		REQUIRE(hhU.getHelixLength1(0, 2) == 3);
 		REQUIRE(hhU.getHelixLength2(0, 2) == 4);
 
 		// (0,4)
-		REQUIRE(hhU.getHelixE(0, 4) == -1);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(0, 4)) == -1);
 		REQUIRE(hhU.getHelixLength1(0, 4) == 2);
 		REQUIRE(hhU.getHelixLength2(0, 4) == 2);
 
 		// (1,0)
-		REQUIRE(hhU.getHelixE(1, 0) == -3);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(1, 0)) == -3);
 		REQUIRE(hhU.getHelixLength1(1, 0) == 5);
 		REQUIRE(hhU.getHelixLength2(1, 0) == 5);
 
 		// (1,1)
-		REQUIRE(hhU.getHelixE(1, 1) == -3);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(1, 1)) == -3);
 		REQUIRE(hhU.getHelixLength1(1, 1) == 5);
 		REQUIRE(hhU.getHelixLength2(1, 1) == 5);
 
 		// (1,2)
-		REQUIRE(hhU.getHelixE(1, 2) == -2);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(1, 2)) == -2);
 		REQUIRE(hhU.getHelixLength1(1, 2) == 4);
 		REQUIRE(hhU.getHelixLength2(1, 2) == 4);
 
 		// (1,4)
-		REQUIRE(hhU.getHelixE(1, 4) == -1);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(1, 4)) == -1);
 		REQUIRE(hhU.getHelixLength1(1, 4) == 2);
 		REQUIRE(hhU.getHelixLength2(1, 4) == 2);
 
 		// (2,0)
-		REQUIRE(hhU.getHelixE(2, 0) == -2);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(2, 0)) == -2);
 		REQUIRE(hhU.getHelixLength1(2, 0) == 4);
 		REQUIRE(hhU.getHelixLength2(2, 0) == 3);
 
 		// (2,1)
-		REQUIRE(hhU.getHelixE(2, 1) == -2);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(2, 1)) == -2);
 		REQUIRE(hhU.getHelixLength1(2, 1) == 4);
 		REQUIRE(hhU.getHelixLength2(2, 1) == 4);
 
 		// (2,2)
-		REQUIRE(hhU.getHelixE(2, 2) == -2);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(2, 2)) == -2);
 		REQUIRE(hhU.getHelixLength1(2, 2) == 4);
 		REQUIRE(hhU.getHelixLength2(2, 2) == 4);
 
 		// (2,4)
-		REQUIRE(hhU.getHelixE(2, 4) == -1);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(2, 4)) == -1);
 		REQUIRE(hhU.getHelixLength1(2, 4) == 3);
 		REQUIRE(hhU.getHelixLength2(2, 4) == 2);
 
 		// (4,0)
-		REQUIRE(hhU.getHelixE(4, 0) == -1);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(4, 0)) == -1);
 		REQUIRE(hhU.getHelixLength1(4, 0) == 2);
 		REQUIRE(hhU.getHelixLength2(4, 0) == 2);
 
 		// (4,1)
-		REQUIRE(hhU.getHelixE(4, 1) == -1);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(4, 1)) == -1);
 		REQUIRE(hhU.getHelixLength1(4, 1) == 2);
 		REQUIRE(hhU.getHelixLength2(4, 1) == 2);
 
 		// (4,2)
-		REQUIRE(hhU.getHelixE(4, 2) == -1);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(4, 2)) == -1);
 		REQUIRE(hhU.getHelixLength1(4, 2) == 2);
 		REQUIRE(hhU.getHelixLength2(4, 2) == 3);
 
 		// (4,4)
-		REQUIRE(hhU.getHelixE(4, 4) == -1);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(4, 4)) == -1);
 		REQUIRE(hhU.getHelixLength1(4, 4) == 2);
 		REQUIRE(hhU.getHelixLength2(4, 4) == 2);
 
@@ -781,32 +762,32 @@ TEST_CASE( "HelixHandlerUnpaired", "[HelixHandlerUnpaired]") {
 		REQUIRE(hhU.fillHelix(0, energy.size1() - 1, 0, energy.size2() - 1) == 6);
 
 		// (0,0)
-		REQUIRE(hhU.getHelixE(0, 0) == -3);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(0, 0)) == -3);
 		REQUIRE(hhU.getHelixLength1(0, 0) == 7);
 		REQUIRE(hhU.getHelixLength2(0, 0) == 7);
 
 		// (3,0)
-		REQUIRE(hhU.getHelixE(3, 0) == -2);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(3, 0)) == -2);
 		REQUIRE(hhU.getHelixLength1(3, 0) == 4);
 		REQUIRE(hhU.getHelixLength2(3, 0) == 4);
 
 		// (3,1)
-		REQUIRE(hhU.getHelixE(3, 1) == -2);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(3, 1)) == -2);
 		REQUIRE(hhU.getHelixLength1(3, 1) == 4);
 		REQUIRE(hhU.getHelixLength2(3, 1) == 6);
 
 		// (5,0)
-		REQUIRE(hhU.getHelixE(5, 0) == -1);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(5, 0)) == -1);
 		REQUIRE(hhU.getHelixLength1(5, 0) == 2);
 		REQUIRE(hhU.getHelixLength2(5, 0) == 2);
 
 		// (5,1)
-		REQUIRE(hhU.getHelixE(5, 1) == -1);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(5, 1)) == -1);
 		REQUIRE(hhU.getHelixLength1(5, 1) == 2);
 		REQUIRE(hhU.getHelixLength2(5, 1) == 3);
 
 		// (5,3)
-		REQUIRE(hhU.getHelixE(5, 3) == -1);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(5, 3)) == -1);
 		REQUIRE(hhU.getHelixLength1(5, 3) == 2);
 		REQUIRE(hhU.getHelixLength2(5, 3) == 4);
 
@@ -847,17 +828,17 @@ TEST_CASE( "HelixHandlerUnpaired", "[HelixHandlerUnpaired]") {
 		REQUIRE(hhU.fillHelix(0, energy.size1() - 1, 0, energy.size2() - 1) == 3);
 
 		// (3,0)
-		REQUIRE(hhU.getHelixE(3, 0) == -2);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(3, 0)) == -2);
 		REQUIRE(hhU.getHelixLength1(3, 0) == 4);
 		REQUIRE(hhU.getHelixLength2(3, 0) == 4);
 
 		// (5,0)
-		REQUIRE(hhU.getHelixE(5, 0) == -1);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(5, 0)) == -1);
 		REQUIRE(hhU.getHelixLength1(5, 0) == 2);
 		REQUIRE(hhU.getHelixLength2(5, 0) == 2);
 
 		// (5,1)
-		REQUIRE(hhU.getHelixE(5, 1) == -1);
+		REQUIRE(E_2_Ekcal(hhU.getHelixE(5, 1)) == -1);
 		REQUIRE(hhU.getHelixLength1(5, 1) == 2);
 		REQUIRE(hhU.getHelixLength2(5, 1) == 3);
 

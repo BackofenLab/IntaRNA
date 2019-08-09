@@ -20,7 +20,7 @@ namespace IntaRNA {
 ////////////////////////////////////////////////////////////////////////////
 
 VrnaHandler::
-VrnaHandler( double temperature, const std::string * const vrnaParamFile )
+VrnaHandler( Z_type temperature, const std::string * const vrnaParamFile )
 	:
 	model()
 	, RT(getRT(temperature))
@@ -38,7 +38,7 @@ VrnaHandler( double temperature, const std::string * const vrnaParamFile )
 
 	// set model details according to command line arguments
 
-	model.temperature = temperature;
+	model.temperature = (double)temperature;
 //	model.temperature = this->temperature;
 //	  double  temperature;                  /**<  @brief  The temperature used to scale the thermodynamic parameters */
 //	  double  betaScale;                    /**<  @brief  A scaling factor for the thermodynamic temperature of the Boltzmann factors */
@@ -104,7 +104,7 @@ getModel( int max_bp_span, int window_size ) const
 
 	// copy default model
 	vrna_md_copy(&subModel, &model);
-	
+
     // set specific parameters
     subModel.max_bp_span = max_bp_span;
     subModel.window_size = window_size;
@@ -115,11 +115,11 @@ getModel( int max_bp_span, int window_size ) const
 
 ////////////////////////////////////////////////////////////////////////////
 
-double
+Z_type
 VrnaHandler::
-getRT( const double temperature )
+getRT( const Z_type temperature )
 {
-	return ((temperature+K0)*GASCONST/1000.0);
+	return (((FLT_OR_DBL)temperature+K0)*GASCONST/1000.0);
 }
 
 ////////////////////////////////////////////////////////////////////////////

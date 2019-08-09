@@ -16,7 +16,7 @@
    version="1.1"
    inkscape:version="0.48.4 r9939"
    sodipodi:docname="icon-yes.svg"
-   inkscape:export-filename="C:\Users\mmann\git\IntaRNA\doc\figures\icon-yes.png"
+   inkscape:export-filename="C:\Users\mmann\git\IntaRNA-2\doc\figures\icon-yes.png"
    inkscape:export-xdpi="19.946081"
    inkscape:export-ydpi="19.946081">
   <defs
@@ -45,9 +45,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.35"
-     inkscape:cx="73.92776"
-     inkscape:cy="41.070797"
+     inkscape:zoom="1.979899"
+     inkscape:cx="53.314655"
+     inkscape:cy="117.38985"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -55,11 +55,11 @@
      fit-margin-left="0"
      fit-margin-right="0"
      fit-margin-bottom="0"
-     inkscape:window-width="505"
-     inkscape:window-height="423"
-     inkscape:window-x="125"
-     inkscape:window-y="25"
-     inkscape:window-maximized="0" />
+     inkscape:window-width="1820"
+     inkscape:window-height="1178"
+     inkscape:window-x="1458"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1" />
   <metadata
      id="metadata4485">
     <rdf:RDF>
@@ -76,31 +76,16 @@
      inkscape:label="Ebene 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-276.07224,-388.43423)">
+     transform="translate(-52.07224,-388.43423)">
     <path
        inkscape:connector-curvature="0"
        id="path4207"
        style="fill:#79cb43;fill-opacity:1;fill-rule:nonzero;stroke:none"
-       d="m 461.07061,480.93423 c 0,-51.08625 -41.41374,-92.5 -92.49875,-92.5 -51.08625,0 -92.49962,41.41375 -92.49962,92.5 0,51.085 41.41337,92.49875 92.49962,92.49875 51.08501,0 92.49875,-41.41375 92.49875,-92.49875" />
-    <g
-       id="g4211"
-       clip-path="url(#clipPath4213)"
-       transform="matrix(0.125,0,0,-0.125,179.08936,913.81923)">
-      <g
-         id="g4217"
-         transform="matrix(371.2,0,0,207.2,1664.9,2728.9)">
-        <image
-           width="1"
-           height="1"
-           transform="matrix(1,0,0,-1,0,1)"
-           xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAE0AAAArCAYAAAA9pAX3AAAABHNCSVQICAgIfAhkiAAAAOBJREFUaIHt2LttxEAAA9Hh9F+egSvBXXgdrHBOzegSvkTQ/oIJJEH5+n4dT4jhXkUgCSLHkHDnEuDex+DP3QfesQQJJ8EDcNclEiQePAKg3vOfs4DnvDt/19zx5NlDOPwx8gkuWM8F67lgPRes54L1XLCeC9ZzwXouWM8F67lgPRes54L1XLCeC9ZzwXouWM8F67lgPRes54L1XLCesGAtF6zngvVcsJ4L1nPBesKCtVywngvWc8F6LljvvggWrOKC9Vyw3rvCgv3f83G7YA0XrHd/Qi5YxQXr3WfaglV+AZSpDVvUVMWuAAAAAElFTkSuQmCC"
-           id="image4219" />
-      </g>
-    </g>
+       d="m 237.07061,480.93423 c 0,-51.08625 -41.41374,-92.5 -92.49875,-92.5 -51.08625,0 -92.49962,41.41375 -92.49962,92.5 0,51.085 41.41337,92.49875 92.49962,92.49875 51.08501,0 92.49875,-41.41375 92.49875,-92.49875" />
     <g
        id="g4223"
        clip-path="url(#clipPath4225)"
-       transform="matrix(0.125,0,0,-0.125,179.08936,913.81923)">
+       transform="matrix(0.125,0,0,-0.125,-44.91064,913.81923)">
       <g
          id="g4229"
          transform="matrix(913.2,0,0,1114.2,1347.9,2733.9)">
@@ -116,6 +101,6 @@
        inkscape:connector-curvature="0"
        id="path4233"
        style="fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none"
-       d="m 348.86811,532.08798 -41.21875,-41.21875 c -5.16012,-5.15875 -5.16012,-13.52375 0,-18.6825 5.1575,-5.15875 13.5225,-5.15875 18.68125,0 l 22.63875,22.64 61.64375,-60.9775 c 5.18625,-5.13125 13.55125,-5.085 18.68125,0.10125 5.13,5.18625 5.085,13.55125 -0.1025,18.68125 l -80.32375,79.45625" />
+       d="M 124.86811,532.08798 83.64936,490.86923 c -5.16012,-5.15875 -5.16012,-13.52375 0,-18.6825 5.1575,-5.15875 13.5225,-5.15875 18.68125,0 l 22.63875,22.64 61.64375,-60.9775 c 5.18625,-5.13125 13.55125,-5.085 18.68125,0.10125 5.13,5.18625 5.085,13.55125 -0.1025,18.68125 l -80.32375,79.45625" />
   </g>
 </svg>

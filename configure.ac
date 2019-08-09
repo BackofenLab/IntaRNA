@@ -1,8 +1,7 @@
-# this is example-file: configure.ac
 
 AC_PREREQ([2.65])
 # 5 argument version only available with aclocal >= 2.64
-AC_INIT([IntaRNA], [2.4.0], [], [intaRNA], [http://www.bioinf.uni-freiburg.de] )
+AC_INIT([IntaRNA], [3.0.0], [], [intaRNA], [http://www.bioinf.uni-freiburg.de] )
 
 # minimal required version of the boost library 
 BOOST_REQUIRED_VERSION=1.50.0
@@ -38,6 +37,7 @@ OLD_CFLAGS=$CFLAGS
 # Checks for programs.
 AC_PROG_CXX
 AC_PROG_CC
+AC_PROG_LN_S
 AC_PROG_RANLIB
 # reset compiler flags to initial flags
 CXXFLAGS=$OLD_CXXFLAGS
@@ -160,6 +160,28 @@ AS_IF([test x"$multithreadingEnabled" = x"yes"], [
 	AC_DEFINE([INTARNA_MULITHREADING], [0], [Disabling multi-threading support])
 	AC_SUBST([INTARNA_MULITHREADING],[0])
 	AM_CXXFLAGS="$AM_CXXFLAGS -pthread"
+])
+
+###############################################################################
+# MULTIPRECISION SUPPORT (via GNU quadmath library)
+###############################################################################
+
+AC_MSG_CHECKING([whether to use a multi-precision partition function data type (quadmath)])
+enable_multiprecision=no
+AC_ARG_ENABLE([multiprecision],
+    [AS_HELP_STRING([--enable-multiprecision],
+	    [multi-precision partition function data type (default=disabled)])],
+    [enable_multiprecision=$enableval],
+    [enable_multiprecision=no])
+AC_MSG_RESULT([$enable_multiprecision])
+
+AS_IF([test x"$enable_multiprecision" = x"yes"], [
+	LIBS="$LIBS -lquadmath"
+	AC_DEFINE([INTARNA_MULTIPRECISION], [1], [Enabling multiprecision partition function (using quadmath)])
+	AC_SUBST([INTARNA_MULTIPRECISION],[1])
+], [
+	AC_DEFINE([INTARNA_MULTIPRECISION], [0], [Disabling multiprecision partition function])
+	AC_SUBST([INTARNA_MULTIPRECISION],[0])
 ])
 
 ###############################################################################

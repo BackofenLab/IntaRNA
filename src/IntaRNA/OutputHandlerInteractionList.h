@@ -42,19 +42,13 @@ public:
 	 * Adds a given RNA-RNA interaction to the storage/output.
 	 *
 	 * @param interaction the interaction to add
+	 * @param outConstraint the output constraint applied to find the reported
+	 *        interaction
 	 */
 	virtual
 	void
-	add( const Interaction & interaction );
-
-	/**
-	 * Adds a given RNA-RNA interaction range to the storage/output.
-	 *
-	 * @param range the interaction range to add
-	 */
-	virtual
-	void
-	add( const InteractionRange & range );
+	add( const Interaction & interaction
+		, const OutputConstraint & outConstraint );
 
 	//! whether or not the container is empty
 	//! @return true if no elements are stored

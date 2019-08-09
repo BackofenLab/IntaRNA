@@ -1,9 +1,3 @@
-/*
- * Sequence.cpp
- *
- *  Created on: 24.06.2014
- *      Author: Mmann
- */
 
 #include "IntaRNA/RnaSequence.h"
 #include <stdexcept>
@@ -17,6 +11,10 @@ std::locale RnaSequence::codeLocale = std::locale();
 // setup allowed alphabet in lower and upper case
 const std::string RnaSequence::SequenceAlphabet	= "ACGUN";
 const std::string RnaSequence::SequenceAlphabetIUPAC	= "aAuUcCgGtTrRyYsSwWkKmMbBdDhHvVnN";
+
+// setup GU base pair code information
+int RnaSequence::bpGUcodes[] = { BP_pair[RnaSequence::getCodeForChar('G')][RnaSequence::getCodeForChar('U')]
+				,BP_pair[RnaSequence::getCodeForChar('U')][RnaSequence::getCodeForChar('G')]};
 
 
 ////////////////////////////////////////////////////////////////////////////

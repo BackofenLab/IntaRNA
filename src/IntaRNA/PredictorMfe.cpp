@@ -45,7 +45,7 @@ initOptima( const OutputConstraint & outConstraint )
 
 	// init all interactions to be filled
 	for (InteractionList::iterator i = mfeInteractions.begin(); i!= mfeInteractions.end(); i++) {
-		// initialize global E minimum : should be below 0.0
+		// initialize global E minimum : reported interactions have to have energy below that value
 		i->energy = outConstraint.maxE;
 		// ensure it holds only the boundary
 		if (i->basePairs.size()!=2) {
@@ -73,7 +73,12 @@ updateOptima( const size_t i1, const size_t j1
 		, const E_type interE
 		, const bool isHybridE )
 {
-//	LOG(DEBUG) <<"PredictorMfe::updateOptima( "<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" , E = " <<interE;
+//	LOG(DEBUG) <<"PredictorMfe::updateOptima( "<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" , E = " <<interE<<" isHybridE="<<(isHybridE?"true":"false");
+
+	// ignore invalid reports
+	if (E_isINF(interE) || interE >= E_MAX) {
+		return;
+	}
 
 	// check if nothing to be done
 	if (mfeInteractions.size() == 0) {
@@ -107,62 +112,51 @@ updateOptima( const size_t i1, const size_t j1
 										, curE );
 	}
 
+
+	// check if we have to care about insertion (curE <= worst E in list)
+	if (curE > mfeInteractions.rbegin()->energy ) {
+		return;
+	}
+
+	// create temporary interaction
+	Interaction tmp( *(mfeInteractions.begin()) );
+	tmp.energy = curE;
+	tmp.basePairs.resize(2);
+	tmp.basePairs[0] = energy.getBasePair(i1,i2);
+	tmp.basePairs[1] = energy.getBasePair(j1,j2);
+	// handle single bp interactions
+	if (tmp.basePairs[0] == tmp.basePairs[1]) { tmp.basePairs.resize(1); }
+	INTARNA_CLEANUP(tmp.seed);
+
 	if (mfeInteractions.size() == 1) {
-		if (curE < mfeInteractions.begin()->energy) {
-//			LOG(DEBUG) <<"PredictorMfe::updateOptima() : new mfe ( "
-//				<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" ) = " <<interE <<" : "<<curE;
-			// store new global min
-			mfeInteractions.begin()->energy = (curE);
-			// store interaction boundaries
-			// left
-			mfeInteractions.begin()->basePairs[0] = energy.getBasePair(i1,i2);
-			// right
-			mfeInteractions.begin()->basePairs[1] = energy.getBasePair(j1,j2);
+		if ( tmp < *(mfeInteractions.begin()) ) {
+			// overwrite current minimum
+			*(mfeInteractions.begin()) = tmp;
 		}
 	} else {
 
-		// check if within range of already known suboptimals (< E(worst==last))
-		if (curE < mfeInteractions.rbegin()->energy) {
+		// check for insertion position
+		InteractionList::iterator insertPos = std::find_if_not( mfeInteractions.begin(), mfeInteractions.end(), [&](Interaction & i){return i < tmp;});
 
-			// identify sorted insertion position (iterator to position AFTER insertion)
-			InteractionList::iterator toInsert = --(mfeInteractions.end());
-			InteractionList::iterator insertSuccPos =
-					std::upper_bound(mfeInteractions.begin(), toInsert
-								, curE
-								, Interaction::compareEnergy );
+		if ( insertPos != mfeInteractions.end() && !( tmp == *insertPos )) {
 
-			// check if not already within list
-			bool isToBeInserted = insertSuccPos == mfeInteractions.begin();
-			if (!isToBeInserted) {
-				// go to preceeding interaction to check for equivalence
-				--insertSuccPos;
-				// check if not equal
-				isToBeInserted =
-						// check energy
-						! E_equal(curE,insertSuccPos->energy)
-						// check boundaries
-						&& insertSuccPos->basePairs.at(0) != energy.getBasePair(i1,i2)
-						&& insertSuccPos->basePairs.at(1) != energy.getBasePair(j1,j2)
-						;
-				// restore insert position
-				++insertSuccPos;
+			// check for equivalence with last element
+			if (insertPos != mfeInteractions.begin()) {
+				--insertPos;
+				if (*insertPos == tmp) {
+					// already within list; nothing else to do
+					return;
+				}
+				++insertPos;
 			}
 
-			// insert current interaction into lowest energy interaction list
-			if (isToBeInserted) {
+			// replace last element with current interaction
+			InteractionList::iterator lastInteraction = mfeInteractions.begin();
+			std::advance(lastInteraction,mfeInteractions.size()-1);
+			*lastInteraction = tmp;
 
-				// overwrite last list element
-				// set current energy
-				toInsert->energy = (curE);
-				// store interaction boundaries
-				// left
-				toInsert->basePairs[0] = energy.getBasePair(i1,i2);
-				// right
-				toInsert->basePairs[1] = energy.getBasePair(j1,j2);
-
-				// relocate last element within list (no reallocation needed, just list-link-update)
-				mfeInteractions.splice( insertSuccPos, mfeInteractions, toInsert );
-			}
+			// relocate last element within list (no reallocation needed, just list-link-update)
+			mfeInteractions.splice( insertPos, mfeInteractions, lastInteraction );
 
 		}
 	}
@@ -177,7 +171,7 @@ reportOptima( const OutputConstraint & outConstraint )
 	// number of reported interactions
 	size_t reported = 0;
 	// get maximal report energy = mfe + deltaE + precisionEpsilon
-	const E_type maxE = std::min(outConstraint.maxE, (E_type)(mfeInteractions.begin()->energy + outConstraint.deltaE + E_precisionEpsilon));
+	const E_type mfeDeltaE = (mfeInteractions.begin()->energy + outConstraint.deltaE);
 
 	// clear reported interaction ranges
 	reportedInteractions.first.clear();
@@ -187,12 +181,18 @@ reportOptima( const OutputConstraint & outConstraint )
 	if (outConstraint.reportOverlap!=OutputConstraint::ReportOverlap::OVERLAP_BOTH) {
 		// check if mfe is worth reporting
 		Interaction curBest = *mfeInteractions.begin();
-		while( curBest.energy < maxE && reported < outConstraint.reportMax ) {
+		while( curBest.energy < outConstraint.maxE
+				&& (curBest.energy < mfeDeltaE || E_equal(curBest.energy,mfeDeltaE))
+				&& reported < outConstraint.reportMax )
+		{
 			// report current best
 			// fill interaction with according base pairs
 			traceBack( curBest, outConstraint );
 			// report mfe interaction
-			output.add( curBest );
+#if INTARNA_MULITHREADING
+			#pragma omp critical(intarna_omp_predictorOutputAdd)
+#endif
+			{output.add( curBest, outConstraint );}
 
 			// store ranges to ensure non-overlapping of next best solution
 			switch( outConstraint.reportOverlap ) {
@@ -231,12 +231,16 @@ reportOptima( const OutputConstraint & outConstraint )
 				&& i!= mfeInteractions.end(); i++)
 		{
 			// check if interaction is within allowed energy range
-			if (i->energy < maxE) {
+			if ( i->energy < outConstraint.maxE
+					&& (i->energy < mfeDeltaE || E_equal(i->energy,mfeDeltaE))) {
 
 				// fill mfe interaction with according base pairs
 				traceBack( *i, outConstraint );
 				// report mfe interaction
-				output.add( *i );
+#if INTARNA_MULITHREADING
+				#pragma omp critical(intarna_omp_predictorOutputAdd)
+#endif
+				{output.add( *i, outConstraint );}
 				// count
 				reported++;
 			}
@@ -251,7 +255,10 @@ reportOptima( const OutputConstraint & outConstraint )
 		mfeInteractions.begin()->clear();
 		mfeInteractions.begin()->energy = 0.0;
 		// report mfe interaction
-		output.add( *(mfeInteractions.begin()) );
+#if INTARNA_MULITHREADING
+		#pragma omp critical(intarna_omp_predictorOutputAdd)
+#endif
+		{output.add( *(mfeInteractions.begin()), outConstraint );}
 	}
 
 }

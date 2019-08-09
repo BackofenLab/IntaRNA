@@ -44,7 +44,7 @@ public:
 			, const AccessibilityConstraint * const accConstraint
 			, std::istream & inStream
 			, const InStreamType inStreamType
-			, const E_type RT
+			, const Z_type RT
 			);
 
 
@@ -101,7 +101,7 @@ protected:
 	 *        ED values
 	 */
 	void
-	parsePu_RNAplfold_text( std::istream & inStream, const E_type RT );
+	parsePu_RNAplfold_text( std::istream & inStream, const Z_type RT );
 
 
 	/**
@@ -123,7 +123,7 @@ protected:
 	 */
 	void
 	parseRNAplfold_text( std::istream & inStream
-						, const E_type RT
+						, const Z_type RT
 						, const bool parseProbs );
 
 
@@ -168,7 +168,7 @@ getMaxLength() const
 inline
 void
 AccessibilityFromStream::
-parsePu_RNAplfold_text( std::istream & inStream, const E_type RT )
+parsePu_RNAplfold_text( std::istream & inStream, const Z_type RT )
 {
 	parseRNAplfold_text( inStream, RT, true );
 }

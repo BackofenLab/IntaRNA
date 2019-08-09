@@ -48,6 +48,28 @@ TEST_CASE( "RnaSequence", "[RNAsequence]" ) {
 
 	}
 
+	SECTION( "isGU()" ) {
+
+		std::string id= "test", seq="AAAUUUGGGCCC";
+
+		RnaSequence rna(id, seq);
+
+		// check complementarity
+		REQUIRE( RnaSequence::isGU( rna, rna, 3, 6) );
+		REQUIRE( RnaSequence::isGU( rna, rna, 7, 4) );
+		REQUIRE_FALSE( RnaSequence::isGU( rna, rna, 0, 3) );
+		REQUIRE_FALSE( RnaSequence::isGU( rna, rna, 3, 0) );
+		REQUIRE_FALSE( RnaSequence::isGU( rna, rna, 0, 6) );
+		REQUIRE_FALSE( RnaSequence::isGU( rna, rna, 6, 0) );
+		REQUIRE_FALSE( RnaSequence::isGU( rna, rna, 0, 9) );
+		REQUIRE_FALSE( RnaSequence::isGU( rna, rna, 9, 0) );
+		REQUIRE_FALSE( RnaSequence::isGU( rna, rna, 3, 9) );
+		REQUIRE_FALSE( RnaSequence::isGU( rna, rna, 9, 3) );
+		REQUIRE_FALSE( RnaSequence::isGU( rna, rna, 6, 9) );
+		REQUIRE_FALSE( RnaSequence::isGU( rna, rna, 9, 6) );
+
+	}
+
 	SECTION( "operator==()" ) {
 
 		std::string id= "test", seq="AAAUUUGGGCCC";

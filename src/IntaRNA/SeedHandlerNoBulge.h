@@ -73,7 +73,7 @@ public:
 	 */
 	virtual
 	void
-	traceBackSeed( Interaction & interaction, const size_t i1, const size_t i2);
+	traceBackSeed( Interaction & interaction, const size_t i1, const size_t i2) const;
 
 
 	/**
@@ -85,6 +85,18 @@ public:
 	virtual
 	E_type
 	getSeedE( const size_t i1, const size_t i2 ) const;
+
+	/**
+	 * Checks whether or not a given base pair is the left-most base pair of
+	 * any seed
+	 * @param i1 the interacting base of seq1
+	 * @param i2 the interacting base of seq2
+	 * @return true if (i1,i2) is the left most base pair of some seed; false
+	 *         otherwise
+	 */
+	virtual
+	bool
+	isSeedBound( const size_t i1, const size_t i2 ) const;
 
 	/**
 	 * Access to the length in seq1 of the mfe seed with left-most base pair (i1,i2)
@@ -105,6 +117,36 @@ public:
 	virtual
 	size_t
 	getSeedLength2( const size_t i1, const size_t i2 ) const;
+
+	/**
+	 * Replace the input variables i1 and i2 to values to within the given range
+	 * that correspond to
+	 *
+	 * - the first seed (if the given index pair is no valid seed start or one
+	 *   of the indices is out of range bounds)
+	 * - the next seed according to some seed order
+	 *
+	 * The indices are not updated if the last seed within the range is given
+	 * or no seed within the range could be found.
+	 * It returns whether or not the input variables have been updated.
+	 *
+	 * Note, if changed, only the seed left-most base pair is within the range
+	 * but the full seed indices might exceed i1max or i2max.
+	 *
+	 * @param i1 seq1 seed index to be changed
+	 * @param i2 seq2 seed index to be changed
+	 * @param i1min first position within seq1 (inclusive)
+	 * @param i1max last position within seq1 (inclusive)
+	 * @param i2min first position within seq2 (inclusive)
+	 * @param i2max last position within seq2 (inclusive)
+	 * @return true if the input variables have been changed; false otherwise
+	 */
+	virtual
+	bool
+	updateToNextSeed( size_t & i1, size_t & i2
+			, const size_t i1min = 0, const size_t i1max = RnaSequence::lastPos
+			, const size_t i2min = 0, const size_t i2max = RnaSequence::lastPos
+			) const;
 
 
 protected:
@@ -162,10 +204,10 @@ SeedHandlerNoBulge::
 traceBackSeed( Interaction & interaction
 		, const size_t i1
 		, const size_t i2
-		)
+		) const
 {
 #if INTARNA_IN_DEBUG_MODE
-	if ( E_isINF( getSeedE(i1,i2) ) ) throw std::runtime_error("SeedHandlerNoBulge::traceBackSeed(i1="+toString(i1)+",i2="+toString(i2)+") no seed known (E_INF)");
+	if ( !( isSeedBound(i1,i2) ) ) throw std::runtime_error("SeedHandlerNoBulge::traceBackSeed(i1="+toString(i1)+",i2="+toString(i2)+") no seed known");
 #endif
 
 	// get number of base pairs within the seed
@@ -195,12 +237,23 @@ getSeedE( const size_t i1, const size_t i2 ) const
 //////////////////////////////////////////////////////////////////////////
 
 inline
+bool
+SeedHandlerNoBulge::
+isSeedBound( const size_t i1, const size_t i2 ) const
+{
+	// search for seed entry in hash
+	return seedForLeftEnd.find( SeedHash::key_type(i1,i2) ) != seedForLeftEnd.end();
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+inline
 size_t
 SeedHandlerNoBulge::
 getSeedLength1( const size_t i1, const size_t i2 ) const
 {
 #if INTARNA_IN_DEBUG_MODE
-	if ( E_isINF( getSeedE(i1,i2) ) ) throw std::runtime_error("SeedHandlerNoBulge::getSeedLength1(i1="+toString(i1)+",i2="+toString(i2)+") no seed known (E_INF)");
+	if ( !( isSeedBound(i1,i2) ) ) throw std::runtime_error("SeedHandlerNoBulge::getSeedLength1(i1="+toString(i1)+",i2="+toString(i2)+") no seed known");
 #endif
 	// check if
 	return getConstraint().getBasePairs();
@@ -214,7 +267,7 @@ SeedHandlerNoBulge::
 getSeedLength2( const size_t i1, const size_t i2 ) const
 {
 #if INTARNA_IN_DEBUG_MODE
-	if ( E_isINF( getSeedE(i1,i2) ) ) throw std::runtime_error("SeedHandlerNoBulge::getSeedLength2(i1="+toString(i1)+",i2="+toString(i2)+") no seed known (E_INF)");
+	if ( !( isSeedBound(i1,i2) ) ) throw std::runtime_error("SeedHandlerNoBulge::getSeedLength2(i1="+toString(i1)+",i2="+toString(i2)+") no seed known");
 #endif
 	// check if
 	return getConstraint().getBasePairs();
@@ -229,30 +282,26 @@ storeSeed( const size_t j1, const size_t j2, const StackingEnergyList & bpE )
 {
 	const size_t seedBP = seedConstraint.getBasePairs();
 	E_type seedEhybrid = 0;
-//	bool stored = false;
-//	std::stringstream tmp;
-//	for(auto e=bpE.begin(); e!=bpE.end(); e++) { tmp <<" + "<<*e; }
 
 	// check if EDs of full seed are within boundaries
-	if (seedConstraint.getMaxED() >= energy.getED1(j1+1-seedBP, j1)
-			&& seedConstraint.getMaxED() >= energy.getED2(j2+1-seedBP, j2) )
+	if ( energy.getED1(j1+1-seedBP, j1) < seedConstraint.getMaxED()
+		&& energy.getED2(j2+1-seedBP, j2) < seedConstraint.getMaxED() )
 	{
 		// compute seed energy
 		for(auto e=bpE.begin(); e!=bpE.end(); e++) { seedEhybrid += *e; } // (left) stacking energies
+		// check hybridization energy bound (incl E_init)
+		if ( (seedEhybrid+energy.getE_init()) >= seedConstraint.getMaxEhybrid()) {
+			return;
+		}
+
 		E_type seedEfull = energy.getE(j1+1-seedBP, j1, j2+1-seedBP, j2, seedEhybrid) + energy.getE_init(); // ED values etc.
 
-		// store seed hybridization energy if overall E is below or equal to threshold
-		if( seedEfull <= seedConstraint.getMaxE() ) {
-//	if (E_isNotINF(getSeedE(j1+1-seedBP,j2+1-seedBP))) {
-//		LOG(DEBUG)<<" seed duplicate for j "<<j1<<"-"<<j2<<" : ";
-//		LOG(DEBUG)<<getSeedE(j1+1-seedBP,j2+1-seedBP) <<" <- "<<seedEhybrid<<" = "<<tmp.str();
-//	}
-//	stored = true;
+		// store seed hybridization energy if overall E is below to threshold
+		if( seedEfull < seedConstraint.getMaxE() ) {
 			seedForLeftEnd[ SeedHash::key_type(j1+1-seedBP,j2+1-seedBP) ] = seedEhybrid ;
 		}
 	}
 
-//	LOG(DEBUG)<<"storing "<<(j1+1-seedBP)<<"-"<<(j2+1-seedBP) <<" = "<<seedEhybrid <<" -> "<<(stored?"true":"false") <<" = "<<tmp.str();
 
 }
 

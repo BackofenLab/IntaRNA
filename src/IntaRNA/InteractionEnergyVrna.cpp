@@ -24,9 +24,11 @@ InteractionEnergyVrna::InteractionEnergyVrna(
 		, const size_t maxInternalLoopSize1
 		, const size_t maxInternalLoopSize2
 		, const bool initES
+		, const E_type energyAdd
+		, const bool energyWithDangles
 	)
  :
-	InteractionEnergy(accS1, accS2, maxInternalLoopSize1, maxInternalLoopSize2)
+	InteractionEnergy(accS1, accS2, maxInternalLoopSize1, maxInternalLoopSize2, energyAdd, energyWithDangles)
 // get final VRNA folding parameters
 	, foldModel( vrnaHandler.getModel() )
 	, foldParams( vrna_params( &foldModel ) )
@@ -93,7 +95,7 @@ getBestE_interLoop() const
 	for (std::set<int>::const_iterator p1=basePairCodes.begin(); p1!=basePairCodes.end(); p1++) {
 	for (std::set<int>::const_iterator p2=basePairCodes.begin(); p2!=basePairCodes.end(); p2++) {
 		minStackingE = std::min( minStackingE
-				, (E_type)E_IntLoop(	0	// unpaired region 1
+				, Evrna_2_E(E_IntLoop(	0	// unpaired region 1
 						, 0	// unpaired region 2
 						, *p1	// type BP (i1,i2)
 						, *p2	// type BP (j2,j1)
@@ -101,9 +103,7 @@ getBestE_interLoop() const
 						, 0
 						, 0
 						, 0
-						, foldParams)
-					// correct from dcal/mol to kcal/mol
-					/ (E_type)100.0
+						, foldParams))
 				);
 	}
 	}
@@ -138,14 +138,11 @@ getBestE_dangling() const
 	for (size_t i=0; i<alphabet.size(); i++) {
 	for (size_t j=0; j<alphabet.size(); j++) {
 		minDangleE = std::min( minDangleE
-				, (E_type)E_Stem( *p1
+				, Evrna_2_E(vrna_E_ext_stem( *p1
 					  , alphabet.at(i)
 					  , alphabet.at(j)
-					  , 1 // is an external loop
 					  , foldParams
-					  )
-					// correct from dcal/mol to kcal/mol
-					/ (E_type)100.0
+					))
 				);
 	}
 	}
@@ -166,7 +163,7 @@ computeES( const Accessibility & acc, InteractionEnergyVrna::EsMatrix & esToFill
 
 	// sequence length
 	const int seqLength = (int)acc.getSequence().size();
-	const E_type RT = getRT();
+	const Z_type RT = getRT();
 
 	// VRNA compatible data structures
 	char * sequence = (char *) vrna_alloc(sizeof(char) * (seqLength + 1));
@@ -201,7 +198,7 @@ computeES( const Accessibility & acc, InteractionEnergyVrna::EsMatrix & esToFill
     vrna_exp_params_rescale( foldData, &min_free_energy);
 
 	// compute partition functions
-	const float ensembleE = vrna_pf( foldData, NULL );
+	const FLT_OR_DBL ensembleE = vrna_pf( foldData, NULL );
 
 	if (foldData->exp_matrices == NULL) {
 		throw std::runtime_error("AccessibilityVrna::computeES() : partition functions after computation not available");
@@ -222,11 +219,11 @@ computeES( const Accessibility & acc, InteractionEnergyVrna::EsMatrix & esToFill
 				// get Qm value
 				// indexing via iindx starts with 1 instead of 0
 				qm_val = foldData->exp_matrices->qm[foldData->iindx[i+1]-j+1];
-				if ( E_equal(qm_val, 0.) ) {
+				if ( Z_equal(Z_type(qm_val), Z_type(0)) ) {
 					esToFill(i,j) = E_INF;
 				} else {
 					// ES energy = -RT*log( Qm )
-					esToFill(i,j) =  (E_type)( - RT*( std::log(qm_val)
+					esToFill(i,j) =  Z_2_E( - RT* Z_type( std::log(qm_val)
 													+((FLT_OR_DBL)(j-i+1))*std::log(foldData->exp_params->pf_scale)));
 				}
 			}

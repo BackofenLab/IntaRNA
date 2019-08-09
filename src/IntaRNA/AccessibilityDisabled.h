@@ -65,6 +65,10 @@ AccessibilityDisabled::AccessibilityDisabled(const RnaSequence& seq
  :
 	Accessibility(seq, maxLength, accConstr)
 {
+#if INTARNA_MULITHREADING
+	#pragma omp critical(intarna_omp_logOutput)
+#endif
+	{ VLOG(2) <<"no accessibility requested..."; }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

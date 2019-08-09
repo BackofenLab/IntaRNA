@@ -78,11 +78,13 @@ public:
 	getMaxE() const;
 
 	/**
-	 * Whether or not ED- values are used in the helix computation
-	 * @return true / false
+	 * Whether or not only the full interaction energy (including E_init, ED,
+	 * dangling end contributions, etc) are to be used for
+	 * energy check (getMaxE()) or the loop-terms only.
+	 * @return true if the full helix energy is to be considered
 	 */
 	bool
-	useNoED() const;
+	evalFullE() const;
 
 	/**
 	 * Provides the minimum interior loop length depending on the maximum allowed number of unpaired bases
@@ -130,8 +132,9 @@ protected:
 	//! the maximal energie allowed for a helix
 	E_type maxE;
 
-	//! decision variable, whether ED-values are used in the computation of helix energies or not
-	bool noED;
+	//! decision variable, whether the full helix energy is to be used for
+	//! energy checks (true) or the loop-terms only (false)
+	bool checkFullE;
 };
 
 
@@ -146,14 +149,14 @@ HelixConstraint::HelixConstraint(
 		, const size_t maxIL_
 		, const E_type maxED_
 		, const E_type maxE_
-		, const bool noED_)
+		, const bool checkFullE_)
 	:
 		minBP(minBP_)
 	  , maxBP(maxBP_)
 	  , maxIL(maxIL_)
 	  , maxED(maxED_)
 	  , maxE(maxE_)
-	  , noED(noED_)
+	  , checkFullE(checkFullE_)
 {
 	if (minBP < 2) throw std::runtime_error("HelixConstraint() : minimal base pair number ("+toString(minBP)+") < 2");
 }
@@ -214,8 +217,8 @@ getMaxE() const {
 inline
 bool
 HelixConstraint::
-useNoED() const {
-	return noED;
+evalFullE() const {
+	return checkFullE;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -254,9 +257,9 @@ operator<<(std::ostream& out, const HelixConstraint& c)
 	out <<"HelixConstraint( minBP="<<c.getMinBasePairs()
 			<<", maxBP="<<c.getMaxBasePairs()
 			<<", maxIL="<<c.getMaxIL()
-			<<", maxED="<<c.getMaxED()
-			<<", maxE="<<c.getMaxE()
-			<<", withED="<<c.useNoED()
+			<<", maxED="<<E_2_Ekcal(c.getMaxED())
+			<<", maxE="<<E_2_Ekcal(c.getMaxE())
+			<<", evalFullE="<<(c.evalFullE()?"true":"false")
 		    <<")";
 	return out;
 
