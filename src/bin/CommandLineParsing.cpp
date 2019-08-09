@@ -206,13 +206,48 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	case IntaRNA3 :
 		// no changes
 		break;
-	case IntaRNA2 :
-		// IntaRNA v2 parameters
+	case IntaRNA1 :
 		resetParamDefault<>(model, 'S', "model");
+		resetParamDefault<>(mode, 'H', "mode");
+		resetParamDefault<>(qAccW, 0, "qAccW");
+		resetParamDefault<>(qAccL, 0, "qAccL");
+		resetParamDefault<>(qIntLenMax, 0, "qIntLenMax");
 		resetParamDefault<>(qIntLoopMax, 16, "qIntLoopMax");
+		resetParamDefault<>(tAccW, 0, "tAccW");
+		resetParamDefault<>(tAccL, 0, "tAccL");
 		resetParamDefault<>(tIntLoopMax, 16, "tIntLoopMax");
 		resetParamDefault<>(threads, 1, "threads");
 		resetParamDefault<>(outBestSeedOnly, true, "outBestSeedOnly");
+		resetParamDefault<>(seedBP, 6, "seedBP");
+		resetParamDefault<>(seedMaxUP, 0, "seedMaxUP");
+		resetParamDefault<>(seedQMaxUP, -1, "seedMaxQUP");
+		resetParamDefault<>(seedTMaxUP, -1, "seedMaxTUP");
+		resetParamDefault<>(seedMaxE, 999, "seedMaxE");
+		resetParamDefault<>(seedMinPu, 0, "seedMinPu");
+		resetParamDefault<>(seedMaxEhybrid, 999, "seedMaxEhybrid");
+		resetParamDefault<>(seedNoGU, false, "seedNoGU");
+		break;
+	case IntaRNA2 :
+		// IntaRNA v2 parameters
+		resetParamDefault<>(model, 'S', "model");
+		resetParamDefault<>(mode, 'H', "mode");
+		resetParamDefault<>(qAccW, 150, "qAccW");
+		resetParamDefault<>(qAccL, 100, "qAccL");
+		resetParamDefault<>(qIntLenMax, 0, "qIntLenMax");
+		resetParamDefault<>(qIntLoopMax, 16, "qIntLoopMax");
+		resetParamDefault<>(tAccW, 150, "tAccW");
+		resetParamDefault<>(tAccL, 100, "tAccL");
+		resetParamDefault<>(tIntLoopMax, 16, "tIntLoopMax");
+		resetParamDefault<>(threads, 1, "threads");
+		resetParamDefault<>(outBestSeedOnly, true, "outBestSeedOnly");
+		resetParamDefault<>(seedBP, 7, "seedBP");
+		resetParamDefault<>(seedMaxUP, 0, "seedMaxUP");
+		resetParamDefault<>(seedQMaxUP, -1, "seedMaxQUP");
+		resetParamDefault<>(seedTMaxUP, -1, "seedMaxTUP");
+		resetParamDefault<>(seedMaxE, 0, "seedMaxE");
+		resetParamDefault<>(seedMinPu, 0, "seedMinPu");
+		resetParamDefault<>(seedMaxEhybrid, 999, "seedMaxEhybrid");
+		resetParamDefault<>(seedNoGU, false, "seedNoGU");
 		break;
 	case IntaRNAens :
 		// ensemble-based predictions
@@ -237,7 +272,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		resetParamDefault<>(qIntLenMax, 60, "qIntLenMax");
 		resetParamDefault<>(tAccW, 0, "tAccW");
 		resetParamDefault<>(tAccL, 0, "tAccL");
-		resetParamDefault<>(tIntLenMax, 0, "tIntLenMax");
+		resetParamDefault<>(tIntLenMax, 60, "tIntLenMax");
 		break;
 	case IntaRNAseed :
 		// seed-only prediction
@@ -996,12 +1031,17 @@ parse(int argc, char** argv)
 			parseSequences("query",queryArg,query,qSet);
 			parseSequences("target",targetArg,target,tSet);
 
-			// valide accessibility input from file (requires parsed sequences)
+			// validate accessibility input from file (requires parsed sequences)
 			validate_qAccFile( qAccFile );
 			validate_tAccFile( tAccFile );
 
 			// check seed setup
 			if (noSeedRequired) {
+				// reset model if needed
+				if (model.val == 'X') {
+					LOG(INFO) <<"Since no seed constraint needed: resetting model from 'X' to 'S'";
+					model.val='S';
+				}
 				if (mode.val == 'S') throw error("mode=S not applicable for non-seed predictions!");
 				// input sanity check : maybe seed constraints defined -> warn
 				if (!seedTQ.empty()) LOG(INFO) <<"no seed constraint wanted, but explicit seedTQ provided (will be ignored)";
@@ -1135,7 +1175,7 @@ parse(int argc, char** argv)
 			if (vm.count("qAccConstr") > 0) {
 				// only for single sequence input supported
 				if (!validateSequenceNumber("qAccConstr",query,1,1)) {
-					// TODO report error
+					// report error
 					INTARNA_NOT_IMPLEMENTED("--qAccConstr only supported for single sequence input");
 				}
 			} else {
@@ -1146,7 +1186,7 @@ parse(int argc, char** argv)
 			if (vm.count("tAccConstr") > 0) {
 				// only for single sequence input supported
 				if (!validateSequenceNumber("tAccConstr",target,1,1)) {
-					// TODO report error
+					// report error
 					INTARNA_NOT_IMPLEMENTED("--tAccConstr only supported for single sequence input");
 				}
 			} else {

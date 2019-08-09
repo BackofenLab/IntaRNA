@@ -10,19 +10,12 @@ development version
 
 #######  new features #######
 
-TODO: model=X = new default
-TODO: IntaRNA1,2 personalities
-TODO: docu exact acc and length restriction in exact mode
-TODO: update example output in README
-TODO: theads=0 default?
-
-TODO: reset all parameters via IntaRNA3 personality before checking selected personality;
-TODO: for IntaRNA2 set all parameters
-
 + outNoLP
 + outCsvSort
 + output of all putative seeds (unless outMode=N or outBestSeedOnly)
 + personality
++ seed bps are highlighted with '+' in text output mode (minimal + detailed)
+* model=X : new default
 + model=P
 + support for multi-precision Z (via GNU quadmath library) : configure
 + mode=S
@@ -45,6 +38,7 @@ TODO: for IntaRNA2 set all parameters
   * gaped loop positions now represented by '-'
 * E_type now int (was float)
 - IntaRNA v1 output support not continued
++ IntaRNA1 and 2 personality
 
 ###############################
 
@@ -62,10 +56,12 @@ TODO: for IntaRNA2 set all parameters
  * IntaRNA/OutputHandlerText :
    * add():
      * non-existing positions in loops are now represented by '-' symbol (#155)
+     * always highlight seed bps with '+'
  * bin/CommandLineParsing :
    + resetParamDefault() : resets a parameter's default value and reports VLOG
+   + IntaRNA1 personality: defaults similar to v1
    + IntaRNA2 personality: old v2 defaults
-   + IntaRNA3 personality: default alias
+   + IntaRNA3 personality: IntaRNA alias
 
 190808 Martin Raden :
  * renaming personality IntaRNAblock to IntaRNAhelix (since used in resp. paper)
