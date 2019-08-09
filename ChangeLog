@@ -53,6 +53,9 @@ TODO: docu exact acc and length restriction in exact mode
  * IntaRNA/PredictorMfe2dSeed :
    * traceback() :
      * BUGFIX noLP traceback (fixes #153)
+ * IntaRNA/OutputHandlerText :
+   * add():
+     * non-existing positions in loops are now represented by '-' symbol (#155)
 
 190808 Martin Raden :
  * renaming personality IntaRNAblock to IntaRNAhelix (since used in resp. paper)

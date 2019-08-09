@@ -166,22 +166,32 @@ add( const Interaction & i, const OutputConstraint & outConstraint )
 		// print unbound loop regions
 		if (loop>0) {
 			// unbound region s1
-			s1Unbound.width(loop);
 			if (loop1 > 0) {
 				s1Unbound <<i.s1->asString().substr( leftBP->first +1, loop1 );
+				// fill missing positions
+				if (loop1 < loop) {
+					s1Unbound.width(loop-loop1);
+					s1Unbound <<std::setfill('-') <<'-' <<std::setfill(' ');
+				}
 			} else {
-				s1Unbound <<' ';
+				s1Unbound.width(loop);
+				s1Unbound <<std::setfill('-') <<'-' <<std::setfill(' ');
 			}
 			// bound region
 			s1Bound.width(loop); s1Bound <<' ';
 			pairing.width(loop); pairing <<' ';
 			s2Bound.width(loop); s2Bound <<' ';
 			// unbound region s2
-			s2Unbound.width(loop);
 			if (loop2 > 0) {
 				s2Unbound <<reverse(i.s2->asString().substr( curBP->second +1, loop2 ));
+				// fill missing positions
+				if (loop2 < loop) {
+					s2Unbound.width(loop-loop2);
+					s2Unbound <<std::setfill('-') <<'-' <<std::setfill(' ');
+				}
 			} else {
-				s2Unbound <<' ';
+				s2Unbound.width(loop);
+				s2Unbound <<std::setfill('-') <<'-' <<std::setfill(' ');
 			}
 		}
 		interactionLength += loop;
