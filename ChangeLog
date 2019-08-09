@@ -8,12 +8,16 @@
 
 development version
 
-#######  new features #######
+##### version 3.0.0
 
++ personality
+  + IntaRNA1,2,3
+  + IntaRNAexact
+  + IntaRNAhelix
+  + IntaRNAduplex
 + outNoLP
 + outCsvSort
 + output of all putative seeds (unless outMode=N or outBestSeedOnly)
-+ personality
 + seed bps are highlighted with '+' in text output mode (minimal + detailed)
 * model=X : new default
 + model=P
@@ -38,7 +42,6 @@ development version
   * gaped loop positions now represented by '-'
 * E_type now int (was float)
 - IntaRNA v1 output support not continued
-+ IntaRNA1 and 2 personality
 
 ###############################
 
@@ -62,6 +65,8 @@ development version
    + IntaRNA1 personality: defaults similar to v1
    + IntaRNA2 personality: old v2 defaults
    + IntaRNA3 personality: IntaRNA alias
+ * tests/data/*.parameter :
+   * adapt to new default model=X (was S)
 
 190808 Martin Raden :
  * renaming personality IntaRNAblock to IntaRNAhelix (since used in resp. paper)
@@ -646,13 +651,13 @@ development version
    * initHybridE() : 
      - E_MAX since it was masking global variable with wrong value
 
-version 2.4.1
+##### version 2.4.1
 
 190409 Martin Raden :
  * IntaRNA/Makefile :
    + add missing HelixConstraint.h (thanks to A. R. Garcia and M. Fuchs)
 
-version 2.4.0
+##### version 2.4.0
 
 190228 Martin Raden :
  * easylogging++ :
@@ -740,7 +745,7 @@ version 2.4.0
    * windowOverlap : default changed to 150 (was 0) to avoid the need to set for
      default q|tAccW values
 
-version 2.3.1
+##### version 2.3.1
 
 181108 Martin Raden :
  + IntaRNA/PredictionTrackerSpotProbAll : exhaustively computes and prints all
@@ -761,7 +766,7 @@ version 2.3.1
  * README.md : 
    + 'hybridD(P|B)full' documentation
 
-version 2.3.0
+##### version 2.3.0
 
 180906 Martin Raden :
  * bin/CommandLineParsing :
@@ -857,7 +862,7 @@ version 2.3.0
  * README.md : 
    + docu of spot probability profiles 
  
-version 2.2.1
+##### version 2.2.1
 
 180627 Martin Raden / Milad Miladi :
  * adaptation to VRNA v2.4.8
@@ -875,7 +880,7 @@ version 2.2.1
  * bin/CommandLineParsing :
    * "version" output extended with used VRNA and boost version
      
-version 2.2.0
+##### version 2.2.0
 
 180319 Martin Raden :
  * IntaRNA/PredictorMfe2dHeuristic :
@@ -1212,7 +1217,7 @@ version 2.2.0
    + log-file handling
    + flushing log streams on exit
 
-version 2.1.0
+##### version 2.1.0
 
 171010 Martin Raden :
  * README.md :
@@ -1287,7 +1292,7 @@ version 2.1.0
  * bin/IntaRNA : 
    * adaptation to new easylogging++ version and library
 
-version 2.0.5
+##### version 2.0.5
 
 170926 Martin Raden :
  * IntaRNA/PredictorMfe4d :
@@ -1305,7 +1310,7 @@ version 2.0.5
          seeded interactions and thus not complementary with the predicted
          interactions
 
-version 2.0.4
+##### version 2.0.4
 
 170706 Martin Raden :
  * IntaRNA/OutputHandlerCsv :
@@ -1328,7 +1333,7 @@ version 2.0.4
        (thanks to Milad Miladi)
      * sequence index now suffix of filename (added in front of file extension) 
 
-version 2.0.3
+##### version 2.0.3
 
 170503 Martin Mann :
  * README.md :
@@ -1366,7 +1371,7 @@ version 2.0.3
      * bugfix : reinit was not overwriting all hybridE_seed entries 
        (thanks to Alex Gawronski)
 
-version 2.0.2
+##### version 2.0.2
 
 170328 Martin Mann :
  * PredictorHeuristic* :
