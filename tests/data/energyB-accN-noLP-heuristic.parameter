@@ -1,5 +1,6 @@
 mode = H
 noSeed = true
+model=S
 energy=B 
 tAcc=N
 qAcc=N
