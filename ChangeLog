@@ -13,6 +13,11 @@ development version
 TODO: model=X = new default
 TODO: IntaRNA1,2 personalities
 TODO: docu exact acc and length restriction in exact mode
+TODO: update example output in README
+TODO: theads=0 default?
+
+TODO: reset all parameters via IntaRNA3 personality before checking selected personality;
+TODO: for IntaRNA2 set all parameters
 
 + outNoLP
 + outCsvSort
@@ -37,6 +42,7 @@ TODO: docu exact acc and length restriction in exact mode
 * outMode=D
   * index ranges without whitespaces, i.e. "1--5" instead of "1 -- 5"
   + highlighting of all bps part of putative seeds
+  * gaped loop positions now represented by '-'
 * E_type now int (was float)
 - IntaRNA v1 output support not continued
 
@@ -56,6 +62,10 @@ TODO: docu exact acc and length restriction in exact mode
  * IntaRNA/OutputHandlerText :
    * add():
      * non-existing positions in loops are now represented by '-' symbol (#155)
+ * bin/CommandLineParsing :
+   + resetParamDefault() : resets a parameter's default value and reports VLOG
+   + IntaRNA2 personality: old v2 defaults
+   + IntaRNA3 personality: default alias
 
 190808 Martin Raden :
  * renaming personality IntaRNAblock to IntaRNAhelix (since used in resp. paper)

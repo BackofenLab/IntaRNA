@@ -50,6 +50,9 @@ public:
 
 	enum Personality {
 		IntaRNA,		// default
+		IntaRNA1,		// IntaRNA v1 like setup
+		IntaRNA2,		// IntaRNA v2 like setup
+		IntaRNA3,		// default IntaRNA v3 setup
 		IntaRNAens,		// ensemble-based prediction
 		IntaRNAsTar,	// sRNA-target prediction (optimized parameter)
 		IntaRNAseed,  	// seed-only predictions
@@ -68,6 +71,9 @@ public:
 	getPersonalityName( Personality p ) {
 		switch(p) {
 		case IntaRNA : return "IntaRNA";
+		case IntaRNA1 : return "IntaRNA1";
+		case IntaRNA2 : return "IntaRNA2";
+		case IntaRNA3 : return "IntaRNA3";
 		case IntaRNAens : return "IntaRNAens";
 		case IntaRNAsTar : return "IntaRNAsTar";
 		case IntaRNAseed : return "IntaRNAseed";
@@ -645,6 +651,40 @@ protected:
 	 * @return true if stdinUsed was false so far; false otherwise (error logged)
 	 */
 	bool setStdinUsed();
+
+
+	/**
+	 * resets the default value of a parameter member to the given value.
+	 * if the value is changed, a respective VLOG output is produced.
+	 * @param param the parameter member to update
+	 * @param value the new default value to set
+	 * @param paramName the name of the parameter as used in the CLI
+	 */
+	template <typename Param, typename Value>
+	void
+	resetParamDefault( Param & param, Value value, const std::string & paramName ) {
+		if (param.def != value) {
+			param.def = value;
+			VLOG(1) <<"  "<<paramName<<"=" <<value;
+		}
+	}
+
+	/**
+	 * resets the default value of a parameter member to the given value.
+	 * if the value is changed, a respective VLOG output is produced.
+	 * @param param the parameter member to update
+	 * @param value the new default value to set
+	 * @param paramName the name of the parameter as used in the CLI
+	 */
+	template <typename ParamType>
+	void
+	resetParamDefault( ParamType & param, ParamType value, const std::string & paramName ) {
+		if (param != value) {
+			param = value;
+			VLOG(1) <<"  "<<paramName<<"=" <<value;
+		}
+	}
+
 
 	////////////  INDIVIDUAL TESTS  //////////////////
 

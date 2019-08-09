@@ -131,7 +131,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	tAccConstr(""),
 	tAccFile(""),
 	tIntLenMax( 0, 99999, 0),
-	tIntLoopMax( 0, 30, 16),
+	tIntLoopMax( 0, 30, 10),
 	tRegionString(""),
 	tRegion(),
 	tRegionLenMax( 0, 99999, 0),
@@ -164,7 +164,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 
 	temperature(0,100,37),
 
-	model( "SPBX", 'S'),
+	model( "SPBX", 'X'),
 	mode( "HMSR", 'H'),  // R for RIblast heuristic only
 #if INTARNA_MULITHREADING
 	threads( 0, omp_get_max_threads(), 1),
@@ -199,50 +199,59 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 
 {
 	// report the used personality
-	VLOG(1) <<"I am "<<getPersonalityName(personality)<<" right now ..";
+	VLOG(1) <<"You called me "<<getPersonalityName(personality)<<" ..";
 
 	switch (personality) {
 	case IntaRNA :
+	case IntaRNA3 :
 		// no changes
+		break;
+	case IntaRNA2 :
+		// IntaRNA v2 parameters
+		resetParamDefault<>(model, 'S', "model");
+		resetParamDefault<>(qIntLoopMax, 16, "qIntLoopMax");
+		resetParamDefault<>(tIntLoopMax, 16, "tIntLoopMax");
+		resetParamDefault<>(threads, 1, "threads");
+		resetParamDefault<>(outBestSeedOnly, true, "outBestSeedOnly");
 		break;
 	case IntaRNAens :
 		// ensemble-based predictions
-		model.def = 'P'; VLOG(1) <<" --model=" <<model.def;
+		resetParamDefault<>(model, 'P', "model");
 		break;
 	case IntaRNAhelix :
 		// helix-block-based predictions
-		model.def = 'B'; VLOG(1) <<" --model=" <<model.def;
+		resetParamDefault<>(model, 'B', "model");
 		break;
 	case IntaRNAduplex :
 		// RNAhybrid/RNAduplex-like optimizing hybrid only
-		qAcc.def = 'N'; VLOG(1) <<" --qAcc=" <<qAcc.def;
-		tAcc.def = 'N'; VLOG(1) <<" --tAcc=" <<tAcc.def;
+		resetParamDefault<>(qAcc, 'N', "qAcc");
+		resetParamDefault<>(tAcc, 'N', "tAcc");
 		break;
 	case IntaRNAexact :
 		// RNAup-like exact predictions
-		mode.def = 'M'; VLOG(1) <<" --mode=" <<mode.def;
-		model.def = 'X'; VLOG(1) <<" --model=" <<model.def;
-		qAccW.def = 0; VLOG(1) <<" --qAccW=" <<qAccW.def;
-		qAccL.def = 0; VLOG(1) <<" --qAccL=" <<qAccL.def;
-		qIntLenMax.def = 60; VLOG(1) <<" --qIntLenMax=" <<qIntLenMax.def;
-		tAccW.def = 0; VLOG(1) <<" --tAccW=" <<tAccW.def;
-		tAccL.def = 0; VLOG(1) <<" --tAccL=" <<tAccL.def;
-		tIntLenMax.def = 60; VLOG(1) <<" --tIntLenMax=" <<tIntLenMax.def;
-		outOverlap.def = 'B'; VLOG(1) <<" --outOverlap=" <<outOverlap.def;
+		resetParamDefault<>(model, 'X', "model");
+		resetParamDefault<>(mode, 'M', "mode");
+		resetParamDefault<>(outOverlap, 'B', "outOverlap");
+		resetParamDefault<>(qAccW, 0, "qAccW");
+		resetParamDefault<>(qAccL, 0, "qAccL");
+		resetParamDefault<>(qIntLenMax, 60, "qIntLenMax");
+		resetParamDefault<>(tAccW, 0, "tAccW");
+		resetParamDefault<>(tAccL, 0, "tAccL");
+		resetParamDefault<>(tIntLenMax, 0, "tIntLenMax");
 		break;
 	case IntaRNAseed :
-		// RNAup-like
-		mode.def = 'S'; VLOG(1) <<" --mode=" <<mode.def;
+		// seed-only prediction
+		resetParamDefault<>(mode, 'S', "mode");
 		break;
 	case IntaRNAsTar :
 		// optimized parameters for sRNA-target prediction
-		seedNoGU = true; VLOG(1) <<" --seedNoGU";
-		seedMinPu.def = 0.001; VLOG(1) <<" --seedMinPu="<<seedMinPu.def;
-		tIntLenMax.def = 60; VLOG(1) <<" --tIntLenMax="<<tIntLenMax.def;
-		tIntLoopMax.def = 8; VLOG(1) <<" --tIntLoopMax="<<tIntLoopMax.def;
-		qIntLenMax.def = 60; VLOG(1) <<" --qIntLenMax="<<qIntLenMax.def;
-		qIntLoopMax.def = 8; VLOG(1) <<" --qIntLoopMax="<<qIntLoopMax.def;
-		outMinPu.def = 0.001; VLOG(1) <<" --outMinPu="<<outMinPu.def;
+		resetParamDefault<>(seedNoGU, true, "seedNoGU");
+		resetParamDefault<>(seedMinPu, 0.001, "seedMinPu");
+		resetParamDefault<>(tIntLenMax, 60, "tIntLenMax");
+		resetParamDefault<>(tIntLoopMax, 8, "tIntLoopMax");
+		resetParamDefault<>(qIntLenMax, 60, "qIntLenMax");
+		resetParamDefault<>(qIntLoopMax, 8, "qIntLoopMax");
+		resetParamDefault<>(outMinPu, 0.001, "outMinPu");
 		break;
 	default : // no changes
 		break;
@@ -2424,6 +2433,15 @@ getPersonality( int argc, char ** argv )
 	}
 	if (boost::regex_match(value,boost::regex("IntaRNAens"), boost::match_perl)) {
 		return Personality::IntaRNAens;
+	}
+	if (boost::regex_match(value,boost::regex("IntaRNA3"), boost::match_perl)) {
+		return Personality::IntaRNA3;
+	}
+	if (boost::regex_match(value,boost::regex("IntaRNA2"), boost::match_perl)) {
+		return Personality::IntaRNA2;
+	}
+	if (boost::regex_match(value,boost::regex("IntaRNA1"), boost::match_perl)) {
+		return Personality::IntaRNA1;
 	}
 	if (boost::regex_match(value,boost::regex("IntaRNAsTar"), boost::match_perl)) {
 		return Personality::IntaRNAsTar;
