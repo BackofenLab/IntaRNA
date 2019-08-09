@@ -211,7 +211,7 @@ newOutputStream( const std::string & outName );
  * @param outStream the pointer to the output stream to delete
  */
 void
-deleteOutputStream( std::ostream * outStream );
+deleteOutputStream( std::ostream *& outStream );
 
 } // namespace
 
