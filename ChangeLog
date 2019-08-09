@@ -19,13 +19,12 @@ development version
 + outCsvSort
 + output of all putative seeds (unless outMode=N or outBestSeedOnly)
 + seed bps are highlighted with '+' in text output mode (minimal + detailed)
-* model=X : new default
+* model=X : new default = seed-extension-based prediction
 + model=P
 + support for multi-precision Z (via GNU quadmath library) : configure
 + mode=S
 + energyNoDangles
 + parameterFile
-+ seed-extension-based prediction
 + seedNoGU
 + seedMaxEhybrid
 + helixMinPu (replaces helixMaxED)
@@ -67,6 +66,7 @@ development version
    + IntaRNA3 personality: IntaRNA alias
  * tests/data/*.parameter :
    * adapt to new default model=X (was S)
+ + tests/data/Makefile.am : add test data to distribution
 
 190808 Martin Raden :
  * renaming personality IntaRNAblock to IntaRNAhelix (since used in resp. paper)

@@ -1,4 +1,7 @@
 
+# sub directories to check for Makefiles
+SUBDIRS = data .
+
 # ensure parallel test build and run
 AUTOMAKE_OPTIONS = parallel-tests
 

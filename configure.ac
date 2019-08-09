@@ -400,6 +400,7 @@ AC_CONFIG_FILES([src/IntaRNA/intarna_config.h])
 AC_CONFIG_FILES([src/bin/Makefile])
 AC_CONFIG_FILES([perl/Makefile])
 AC_CONFIG_FILES([tests/Makefile])
+AC_CONFIG_FILES([tests/data/Makefile])
 AC_CONFIG_FILES([doc/Makefile])
 AC_CONFIG_FILES([IntaRNA.pc])
 
