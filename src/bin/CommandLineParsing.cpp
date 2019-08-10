@@ -216,7 +216,9 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		resetParamDefault<>(tAccW, 0, "tAccW");
 		resetParamDefault<>(tAccL, 0, "tAccL");
 		resetParamDefault<>(tIntLoopMax, 16, "tIntLoopMax");
+#if INTARNA_MULITHREADING
 		resetParamDefault<>(threads, 1, "threads");
+#endif
 		resetParamDefault<>(outBestSeedOnly, true, "outBestSeedOnly");
 		resetParamDefault<>(seedBP, 6, "seedBP");
 		resetParamDefault<>(seedMaxUP, 0, "seedMaxUP");
@@ -238,7 +240,9 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		resetParamDefault<>(tAccW, 150, "tAccW");
 		resetParamDefault<>(tAccL, 100, "tAccL");
 		resetParamDefault<>(tIntLoopMax, 16, "tIntLoopMax");
+#if INTARNA_MULITHREADING
 		resetParamDefault<>(threads, 1, "threads");
+#endif
 		resetParamDefault<>(outBestSeedOnly, true, "outBestSeedOnly");
 		resetParamDefault<>(seedBP, 7, "seedBP");
 		resetParamDefault<>(seedMaxUP, 0, "seedMaxUP");
