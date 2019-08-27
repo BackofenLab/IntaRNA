@@ -198,6 +198,9 @@ public:
 	/**
 	 * Provides a newly allocated output handler according to the user request.
 	 *
+	 * Furthermore, it checks whether Zall has to be computed to generate the
+	 * output.
+	 *
 	 * @param energy the energy handler used for interaction computation
 	 *
 	 * @return the newly allocated OutputHandler object to be deleted by the
@@ -631,6 +634,8 @@ protected:
 	bool outPerRegion;
 	//! for SpotProb output : spots to be tracked
 	std::string outSpotProbSpots;
+	//! whether or not Zall is needed for output generation
+	mutable bool outNeedsZall;
 
 	//! (optional) file name for log output
 	std::string logFileName;

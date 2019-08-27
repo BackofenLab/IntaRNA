@@ -32,9 +32,10 @@ PredictorMfeEns2dHeuristicSeedExtension::
 
 void
 PredictorMfeEns2dHeuristicSeedExtension::
-predict( const IndexRange & r1, const IndexRange & r2
-		, const OutputConstraint & outConstraint )
+predict( const IndexRange & r1, const IndexRange & r2 )
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 #if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_omp_logOutput)
 #endif
@@ -73,16 +74,16 @@ predict( const IndexRange & r1, const IndexRange & r2
 	// and check if any seed possible
 	if (seedHandler.fillSeed( 0, interaction_size1-1, 0, interaction_size2-1 ) == 0) {
 		// trigger empty interaction reporting
-		initOptima(outConstraint);
-		reportOptima(outConstraint);
+		initOptima();
+		reportOptima();
 		// stop computation
 		return;
 	}
 
 	// initialize mfe interaction for updates
-	initOptima( outConstraint );
+	initOptima();
 	// initialize overall partition function for updates
-	initZ( outConstraint );
+	initZ();
 
 	size_t si1 = RnaSequence::lastPos, si2 = RnaSequence::lastPos;
 	while( seedHandler.updateToNextSeed(si1,si2
@@ -106,15 +107,15 @@ predict( const IndexRange & r1, const IndexRange & r2
 		E_right_opt = E_INF;
 
 		// update mfe for seed only
-		PredictorMfeEns::updateOptima( si1,sj1,si2,sj2, energy.getE_init() + seedHandler.getSeedE(si1, si2), true );
+		PredictorMfeEns::updateOptima( si1,sj1,si2,sj2, energy.getE_init() + seedHandler.getSeedE(si1, si2), true, false );
 
 		// ER
 		hybridZ_right.resize( std::min(interaction_size1-sj1, maxMatrixLen1), std::min(interaction_size2-sj2, maxMatrixLen2) );
-		fillHybridZ_right(sj1, sj2, outConstraint, si1, si2);
+		fillHybridZ_right(sj1, sj2, si1, si2);
 
 		// EL for fixed right boundary jopt
 		hybridZ_left.resize( std::min(si1+1, maxMatrixLen1-(j1opt-sj1)), std::min(si2+1, maxMatrixLen2-(j2opt-sj2)) );
-		fillHybridZ_left(si1, si2, outConstraint);
+		fillHybridZ_left(si1, si2);
 
 		// updateZ for all boundary combinations
 		for (size_t i1 = 0; i1<hybridZ_left.size1(); i1++) {
@@ -141,7 +142,7 @@ predict( const IndexRange & r1, const IndexRange & r2
 	} // si1 / si2
 
 	// report mfe interaction
-	reportOptima( outConstraint );
+	reportOptima();
 
 }
 
@@ -151,9 +152,10 @@ predict( const IndexRange & r1, const IndexRange & r2
 void
 PredictorMfeEns2dHeuristicSeedExtension::
 fillHybridZ_right( const size_t i1, const size_t i2
-			, const OutputConstraint & outConstraint
 			, const size_t si1, const size_t si2 )
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 
 	// global vars to avoid reallocation
 	size_t j1,j2,k1,k2;
@@ -201,9 +203,10 @@ fillHybridZ_right( const size_t i1, const size_t i2
 
 void
 PredictorMfeEns2dHeuristicSeedExtension::
-fillHybridZ_left( const size_t j1, const size_t j2
-			, const OutputConstraint & outConstraint )
+fillHybridZ_left( const size_t j1, const size_t j2 )
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 
 #if INTARNA_IN_DEBUG_MODE
 	// check indices
@@ -311,7 +314,7 @@ fillHybridZ_left( const size_t j1, const size_t j2
 						(energy.getE(hybridZ_right(j1opt-sj1, j2opt-sj2))
 								+ energy.getE(hybridZ_left(j1-i1,j2-i2))
 								+ seedHandler.getSeedE(j1, j2))
-								, true );
+								, true, false );
 			}
 		}
 	}

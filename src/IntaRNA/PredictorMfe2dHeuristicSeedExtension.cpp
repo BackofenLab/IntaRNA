@@ -13,6 +13,9 @@ PredictorMfe2dHeuristicSeedExtension(
 		, SeedHandler * seedHandlerInstance )
  :
 	PredictorMfe2dSeedExtension(energy,output,predTracker,seedHandlerInstance)
+	, energy_opt(E_INF)
+	, j1opt(0)
+	, j2opt(0)
 {
 	assert( seedHandler.getConstraint().getBasePairs() > 1 );
 }
@@ -28,9 +31,10 @@ PredictorMfe2dHeuristicSeedExtension::
 
 void
 PredictorMfe2dHeuristicSeedExtension::
-predict( const IndexRange & r1, const IndexRange & r2
-		, const OutputConstraint & outConstraint )
+predict( const IndexRange & r1, const IndexRange & r2  )
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 #if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_omp_logOutput)
 #endif
@@ -69,14 +73,14 @@ predict( const IndexRange & r1, const IndexRange & r2
 	// and check if any seed possible
 	if (seedHandler.fillSeed( 0, interaction_size1-1, 0, interaction_size2-1 ) == 0) {
 		// trigger empty interaction reporting
-		initOptima(outConstraint);
-		reportOptima(outConstraint);
+		initOptima();
+		reportOptima();
 		// stop computation
 		return;
 	}
 
 	// initialize mfe interaction for updates
-	initOptima( outConstraint );
+	initOptima();
 
 	size_t si1 = RnaSequence::lastPos, si2 = RnaSequence::lastPos;
 	while( seedHandler.updateToNextSeed(si1,si2
@@ -104,16 +108,16 @@ predict( const IndexRange & r1, const IndexRange & r2
 
 		// ER
 		hybridE_right.resize( std::min(interaction_size1-sj1, maxMatrixLen1), std::min(interaction_size2-sj2, maxMatrixLen2) );
-		fillHybridE_right(sj1, sj2, outConstraint, si1, si2);
+		fillHybridE_right(sj1, sj2, si1, si2);
 
 		// EL for fixed right boundary jopt
 		hybridE_left.resize( std::min(si1+1, maxMatrixLen1-(j1opt-sj1)), std::min(si2+1, maxMatrixLen2-(j2opt-sj2)) );
-		fillHybridE_left(si1, si2, outConstraint);
+		fillHybridE_left(si1, si2);
 
 	} // si1 / si2
 
 	// report mfe interaction
-	reportOptima( outConstraint );
+	reportOptima();
 }
 
 
@@ -122,9 +126,10 @@ predict( const IndexRange & r1, const IndexRange & r2
 void
 PredictorMfe2dHeuristicSeedExtension::
 fillHybridE_right( const size_t i1, const size_t i2
-			, const OutputConstraint & outConstraint
 			, const size_t si1, const size_t si2 )
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 
 	// global vars to avoid reallocation
 	size_t j1,j2,k1,k2;
@@ -175,9 +180,10 @@ fillHybridE_right( const size_t i1, const size_t i2
 
 void
 PredictorMfe2dHeuristicSeedExtension::
-fillHybridE_left( const size_t j1, const size_t j2
-			, const OutputConstraint & outConstraint )
+fillHybridE_left( const size_t j1, const size_t j2 )
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 
 	// global vars to avoid reallocation
 	size_t i1,i2,k1,k2;

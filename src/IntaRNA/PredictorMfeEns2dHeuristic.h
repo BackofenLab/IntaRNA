@@ -10,7 +10,7 @@
 namespace IntaRNA {
 
 /**
- * Memory efficient interaction predictor that uses a heuristic to
+ * Memory efficient ensemble interaction predictor that uses a heuristic to
  * find the mfe or a close-to-mfe interaction.
  *
  * To this end, for each interaction start i1,i2 only the optimal right side
@@ -19,7 +19,8 @@ namespace IntaRNA {
  *
  * This yields a quadratic time and space complexity.
  *
- * @author Martin Mann
+ * @author Martin Raden
+ * @author Frank Gelhausen
  *
  */
 class PredictorMfeEns2dHeuristic: public PredictorMfeEns2d {
@@ -74,14 +75,12 @@ public:
 	 *
 	 * @param r1 the index range of the first sequence interacting with r2
 	 * @param r2 the index range of the second sequence interacting with r1
-	 * @param outConstraint constrains the interactions reported to the output handler
 	 *
 	 */
 	virtual
 	void
 	predict( const IndexRange & r1 = IndexRange(0,RnaSequence::lastPos)
-			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos)
-			, const OutputConstraint & outConstraint = OutputConstraint() );
+			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos) );
 
 protected:
 
@@ -102,11 +101,10 @@ protected:
 	/**
 	 * Computes all entries of the hybridE matrix
 	 * and reports all valid interactions via updateOptima()
-	 * @param outConstraint constrains the interactions reported to the output handler
 	 */
 	virtual
 	void
-	fillHybridZ( const OutputConstraint & outConstraint );
+	fillHybridZ();
 
 	/**
 	 * Identifies the next best interaction (containing a seed)

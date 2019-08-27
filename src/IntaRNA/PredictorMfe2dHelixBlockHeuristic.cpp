@@ -31,9 +31,10 @@ void
 PredictorMfe2dHelixBlockHeuristic::
 predict( const IndexRange & r1
 		, const IndexRange & r2
-		, const OutputConstraint & outConstraint
 )
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 #if INTARNA_MULITHREADING
 #pragma omp critical(intarna_omp_logOutput)
 #endif
@@ -66,8 +67,8 @@ predict( const IndexRange & r1
 
 	if (helixHandler.fillHelix( 0, hybridEsize1-1, 0, hybridEsize2-1 ) == 0) {
 		// trigger empty interaction reporting
-		initOptima(outConstraint);
-		reportOptima(outConstraint);
+		initOptima();
+		reportOptima();
 		// stop computation
 		return;
 	}
@@ -99,13 +100,13 @@ predict( const IndexRange & r1
 	} // i1
 
 	// init mfe for later updates
-	initOptima( outConstraint );
+	initOptima();
 
 	// compute table and update mfeInteraction
 	fillHybridE();
 
 	// trace back and output handler update
-	reportOptima( outConstraint );
+	reportOptima();
 
 }
 
@@ -219,8 +220,10 @@ fillHybridE()
 
 void
 PredictorMfe2dHelixBlockHeuristic::
-traceBack( Interaction & interaction, const OutputConstraint & outConstraint )
+traceBack( Interaction & interaction )
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 
 	// check if something to trace
 	if (interaction.basePairs.size() < 2) {

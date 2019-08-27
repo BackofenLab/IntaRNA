@@ -1348,9 +1348,9 @@ are
 - `seedED2` : ED value of seq2 of the seed only (excluding rest) (* see below)
 - `seedPu1` : probability of seed region to be accessible for seq1 (* see below)
 - `seedPu2` : probability of seed region to be accessible for seq2 (* see below)
-- `Eall` : ensemble energy of all considered interactions (-RT*log(Zall)) (see [model=P](#interactionModel-ssProbability))
-- `Zall` : partition function of all considered interactions (see [model=P](#interactionModel-ssProbability))
-- `P_E` : probability of an interaction (site) within the considered ensemble (see [model=P](#interactionModel-ssProbability))
+- `Eall` : ensemble energy of all considered interactions (-RT*log(Zall))
+- `Zall` : partition function of all considered interactions
+- `P_E` : probability of an interaction (site) within the considered ensemble
 
 (*) Note, since an interaction can cover more than one seed, all `seed*` columns
 might contain multiple entries separated by ':' symbols. In order to print only

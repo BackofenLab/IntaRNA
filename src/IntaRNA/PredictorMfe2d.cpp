@@ -32,9 +32,11 @@ PredictorMfe2d::
 void
 PredictorMfe2d::
 predict( const IndexRange & r1
-		, const IndexRange & r2
-		, const OutputConstraint & outConstraint )
+		, const IndexRange & r2 )
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
+
 #if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_omp_logOutput)
 #endif
@@ -65,7 +67,7 @@ predict( const IndexRange & r1
 						, (r2.to==RnaSequence::lastPos?energy.size2()-1:r2.to)-r2.from+1 ) );
 
 	// initialize mfe interaction for updates
-	initOptima( outConstraint );
+	initOptima();
 
 	// for all right ends j1
 	for (size_t j1 = hybridE_pq.size1(); j1-- > 0; ) {
@@ -82,13 +84,13 @@ predict( const IndexRange & r1
 				continue;
 
 			// fill matrix and store best interaction
-			fillHybridE( j1, j2, outConstraint, 0, 0, true );
+			fillHybridE( j1, j2, 0, 0, true );
 
 		}
 	}
 
 	// report mfe interaction
-	reportOptima( outConstraint );
+	reportOptima();
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -96,10 +98,11 @@ predict( const IndexRange & r1
 void
 PredictorMfe2d::
 fillHybridE( const size_t j1, const size_t j2
-			, const OutputConstraint & outConstraint
 			, const size_t i1init, const size_t i2init
 			, const bool callUpdateOptima )
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 #if INTARNA_IN_DEBUG_MODE
 	if (i1init > j1)
 		throw std::runtime_error("PredictorMfe2d::fillHybridE() : i1init > j1 : "+toString(i1init)+" > "+toString(j1));
@@ -210,8 +213,11 @@ fillHybridE( const size_t j1, const size_t j2
 
 void
 PredictorMfe2d::
-traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
+traceBack( Interaction & interaction  )
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
+
 	// check if something to trace
 	if (interaction.basePairs.size() < 2) {
 		return;
@@ -249,7 +255,7 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 			j2 = energy.getIndex2(interaction.basePairs.at(1));
 
 	// refill submatrix of mfe interaction
-	fillHybridE( j1, j2, outConstraint, i1, i2, false );
+	fillHybridE( j1, j2, i1, i2, false );
 
 	// the currently traced value for i1-j1, i2-j2
 	E_type curE = hybridE_pq(i1,i2);

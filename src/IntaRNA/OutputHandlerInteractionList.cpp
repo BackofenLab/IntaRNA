@@ -9,8 +9,10 @@ namespace IntaRNA
 /////////////////////////////////////////////////////////////////////////////
 
 OutputHandlerInteractionList::
-OutputHandlerInteractionList(const size_t maxToStore)
- :	storage()
+OutputHandlerInteractionList(const OutputConstraint & outConstraint
+							, const size_t maxToStore)
+ :	OutputHandler(outConstraint)
+	, storage()
 	, maxToStore(maxToStore)
 {
 }
@@ -31,7 +33,7 @@ OutputHandlerInteractionList::
 
 void
 OutputHandlerInteractionList::
-add( const Interaction & interaction, const OutputConstraint & outConstraint )
+add( const Interaction & interaction )
 {
 	if (interaction.isEmpty()) {
 #if INTARNA_MULITHREADING

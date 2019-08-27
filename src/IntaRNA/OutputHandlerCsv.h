@@ -70,10 +70,10 @@ public:
 		seedED2, //!< ED value of seq2 of the seed only (excluding rest)
 		seedPu1, //!< probability of seed region to be accessible for seq1
 		seedPu2, //!< probability of seed region to be accessible for seq2
-		// output only available for ensemble-based prediction (model=P)
-		Eall, //!< ensemble energy of all interactions (model=P)
-		Zall, //!< partition function of all interactions (model=P)
-		P_E, //!< probability of mfe E within interaction ensemble (model=P)
+		// output only available if Zall was computed (outConstraint.needZall)
+		Eall, //!< ensemble energy of all interactions (outConstraint.needZall)
+		Zall, //!< partition function of all interactions (outConstraint.needZall)
+		P_E, //!< probability of mfe E within interaction ensemble (outConstraint.needZall)
 		ColTypeNumber //!< number of column types
 	};
 
@@ -160,6 +160,8 @@ public:
 	/**
 	 * Construct a CSV table output handler for interaction reporting.
 	 *
+	 * @param outConstraint the output constraint applied to find the reported
+	 *        interaction
 	 * @param out the stream to write to
 	 * @param energy the interaction energy object used for computation
 	 * @param columns the order and list of columns to be printed
@@ -168,7 +170,8 @@ public:
 	 * @param listSep if multiple entries have to be printed per column, this
 	 *        separator is used between values
 	 */
-	OutputHandlerCsv( std::ostream & out
+	OutputHandlerCsv( const OutputConstraint & outConstraint
+						, std::ostream & out
 						, const InteractionEnergy & energy
 						, const ColTypeList columns
 						, const std::string& colSep = ";"
@@ -186,13 +189,10 @@ public:
 	 * stream.
 	 *
 	 * @param interaction the interaction to output
-	 * @param outConstraint the output constraint applied to find the reported
-	 *        interaction
 	 */
 	virtual
 	void
-	add( const Interaction & interaction
-		, const OutputConstraint & outConstraint );
+	add( const Interaction & interaction  );
 
 	/**
 	 * Converts a list of Coltypes to their string representation.
@@ -216,6 +216,17 @@ public:
 	static
 	ColTypeList
 	string2list( const std::string & listString );
+
+	/**
+	 * Checks whether or not Zall needs to be computed to generate all colTypes
+	 * @param colTypes the list of column types to consider
+	 * @param colSep the column separator to be used
+	 * @return true if one of the colTypes requires Zall computation;
+	 *         false otherwise.
+	 */
+	static
+	bool
+	needsZall( const ColTypeList & colTypes, const std::string & colSep = ";" );
 
 	/**
 	 * Generates the header line for a given list of columns
@@ -331,6 +342,25 @@ string2list( const std::string & stringEncoding )
 		}
 	}
 	return list;
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+OutputHandlerCsv::
+needsZall( const ColTypeList & colTypes, const std::string & colSep )
+{
+	for (auto it = colTypes.begin(); it != colTypes.end(); it++ ) {
+		// check if type requires Zall computation
+		switch ( *it ) {
+		case Eall:
+		case Zall:
+		case P_E:
+			return true;
+		}
+	}
+	return false;
 }
 
 //////////////////////////////////////////////////////////////////////////

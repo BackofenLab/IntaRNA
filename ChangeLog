@@ -8,6 +8,47 @@
 
 development version
 
+# IntaRNA
++ Zall (estimates) and derived output now available for all prediction models
+
+# API
+* OutputHandler requires an OutputConstraint instances in construction
+* Predictor objects now access OutputConstraint instances via the OutputHandler;
+  this simplifies the signature of the member functions
+* OutputConstraint now guides whether or not Zall is required for output
+  
+
+190827 Martin Raden :
+ * IntaRNA/OutputConstraint :
+   + needZall : whether or not Zall is needed for output generation
+ * IntaRNA/OutputHandler* :
+   + outConstraint : OutputConstraint to be heeded
+   * constructor : required OutputConstraint object
+   * add() : outConstraint parameter obsolete
+ * IntaRNA/OutputHandlerCsv :
+   + needsZall() : checks whether or not the requested column types require Zall
+ * IntaRNA/Predictor* :
+   * outConstraint parameter in member functions obsolete
+ * bin/CommandLineParsing :
+   + outNeedsZall : flag to check whether or not Zall is needed for output
+ * IntaRNA/Predictor :
+   + Zall : overall partition function
+   * updateOptima( ..., incrementZall = true ) : Zall is incremented
+     if output.outConstraint.needZall == true
+   + getZall() : access to overall partition function
+   + incrementZall() : increments Zall (+ overflow check in debug mode)
+   * reportOptima() :
+     + calls output.incrementZ()
+   * initOptima() :
+     + init of Zall if needed
+ * IntaRNA/PredictorMfeEns :
+   - overallZ : replaced by Predictor::Zall
+   - reportOptima() : obsolete
+ * IntaRNA/PredictorMfeEns* :
+   * call of updateOptima( ..., incrementZall = false ) to avoid duplicated Zall
+     updates
+   * initZ() : - no init of Zall
+
 ##### version 3.0.0
 
 + personality

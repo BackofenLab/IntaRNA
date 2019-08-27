@@ -23,8 +23,9 @@ public:
 
 	/**
 	 * Construction
+	 * @param outConstraint the output constraints to be heeded
 	 */
-	OutputHandler();
+	OutputHandler( const OutputConstraint & outConstraint );
 
 	/**
 	 * Destruction
@@ -45,8 +46,7 @@ public:
 	 */
 	virtual
 	void
-	add( const Interaction & interaction
-		, const OutputConstraint & outConstraint ) = 0;
+	add( const Interaction & interaction ) = 0;
 
 	/**
 	 * Returns the number of reported interactions.
@@ -89,8 +89,18 @@ public:
 	Z_type
 	getZ() const;
 
+	/**
+	 * Access to the output constraints to be applied
+	 * @return the OutputConstraint object to be heeded
+	 */
+	const OutputConstraint &
+	getOutputConstraint() const;
+
 
 protected:
+
+	//! the output constraints to be applied
+	const OutputConstraint & outConstraint;
 
 	//! number of reported interactions
 	size_t reportedInteractions;
@@ -106,8 +116,9 @@ protected:
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-OutputHandler::OutputHandler()
-	: reportedInteractions(0)
+OutputHandler::OutputHandler( const OutputConstraint & outConstraint )
+	: outConstraint(outConstraint)
+	, reportedInteractions(0)
 	, Z(0)
 {
 }
@@ -146,6 +157,16 @@ OutputHandler::
 getZ() const
 {
 	return Z;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+const OutputConstraint &
+OutputHandler::
+getOutputConstraint() const
+{
+	return outConstraint;
 }
 
 ////////////////////////////////////////////////////////////////////////////

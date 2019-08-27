@@ -30,9 +30,10 @@ PredictorMfeSeedOnly::
 
 void
 PredictorMfeSeedOnly::
-predict( const IndexRange & r1, const IndexRange & r2
-		, const OutputConstraint & outConstraint )
+predict( const IndexRange & r1, const IndexRange & r2 )
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 #if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_omp_logOutput)
 #endif
@@ -59,12 +60,12 @@ predict( const IndexRange & r1, const IndexRange & r2
 			, (r2.to==RnaSequence::lastPos?energy.size2()-1:r2.to)-r2.from+1 ) -1;
 
 	// trigger empty interaction reporting
-	initOptima(outConstraint);
+	initOptima();
 
 	// compute seed interactions for whole range
 	// and check if any seed possible
 	if (seedHandler.fillSeed( 0, seedLastPos1, 0, seedLastPos2 ) == 0) {
-		reportOptima(outConstraint);
+		reportOptima();
 		// stop computation
 		return;
 	}
@@ -83,7 +84,7 @@ predict( const IndexRange & r1, const IndexRange & r2
 	}
 
 	// report mfe interaction
-	reportOptima( outConstraint );
+	reportOptima();
 
 }
 
@@ -92,8 +93,10 @@ predict( const IndexRange & r1, const IndexRange & r2
 
 void
 PredictorMfeSeedOnly::
-traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
+traceBack( Interaction & interaction )
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 	// check if something to trace
 	if (interaction.basePairs.size() < 2) {
 		return;

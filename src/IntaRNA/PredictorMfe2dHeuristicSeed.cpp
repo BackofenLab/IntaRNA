@@ -33,9 +33,10 @@ PredictorMfe2dHeuristicSeed::
 void
 PredictorMfe2dHeuristicSeed::
 predict( const IndexRange & r1
-		, const IndexRange & r2
-		, const OutputConstraint & outConstraint )
+		, const IndexRange & r2 )
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 #if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_omp_logOutput)
 #endif
@@ -64,8 +65,8 @@ predict( const IndexRange & r1
 	// and check if any seed possible
 	if (seedHandler.fillSeed( 0, hybridEsize1-1, 0, hybridEsize2-1 ) == 0) {
 		// trigger empty interaction reporting
-		initOptima(outConstraint);
-		reportOptima(outConstraint);
+		initOptima();
+		reportOptima();
 		// stop computation
 		return;
 	}
@@ -75,13 +76,13 @@ predict( const IndexRange & r1
 	hybridE_seed.resize( hybridE.size1(), hybridE.size2() );
 
 	// reinit mfe for later updates with final information
-	initOptima( outConstraint );
+	initOptima();
 
 	// fill matrices and update optima
-	fillHybridE( outConstraint );
+	fillHybridE();
 
 	// report mfe interaction
-	reportOptima( outConstraint );
+	reportOptima();
 
 }
 
@@ -90,8 +91,10 @@ predict( const IndexRange & r1
 
 void
 PredictorMfe2dHeuristicSeed::
-fillHybridE( const OutputConstraint & outConstraint )
+fillHybridE()
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 	// compute entries
 	// current minimal value
 	E_type curE = E_INF, curEtotal = E_INF, curCellEtotal = E_INF;
@@ -324,8 +327,10 @@ fillHybridE( const OutputConstraint & outConstraint )
 
 void
 PredictorMfe2dHeuristicSeed::
-traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
+traceBack( Interaction & interaction )
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 	// check if something to trace
 	if (interaction.basePairs.size() < 2) {
 		return;
@@ -473,7 +478,7 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 				Interaction bpsRight(*(interaction.s1), *(interaction.s2) );
 				bpsRight.basePairs.push_back( energy.getBasePair(i1,i2) );
 				bpsRight.basePairs.push_back( energy.getBasePair(j1,j2) );
-				PredictorMfe2dHeuristic::traceBack( bpsRight, outConstraint );
+				PredictorMfe2dHeuristic::traceBack( bpsRight );
 				// copy remaining base pairs
 				Interaction::PairingVec & bps = bpsRight.basePairs;
 				// copy all base pairs excluding the right most

@@ -30,14 +30,16 @@ const OutputHandlerCsv::ColTypeList OutputHandlerCsv::colTypeNumericSort(
 ////////////////////////////////////////////////////////////////////////
 
 OutputHandlerCsv::OutputHandlerCsv(
-		  std::ostream & out_
+		const OutputConstraint & outConstraint
+		,  std::ostream & out_
 		, const InteractionEnergy & energy
 		, const ColTypeList columns
 		, const std::string& colSep
 		, const bool printHeader
 		, const std::string& listSep
 		)
- :	out(out_)
+ :	OutputHandler(outConstraint)
+	, out(out_)
 	, energy(energy)
 	, columns(columns)
 	, colSep(colSep)
@@ -75,7 +77,7 @@ OutputHandlerCsv::~OutputHandlerCsv()
 
 void
 OutputHandlerCsv::
-add( const Interaction & i, const OutputConstraint & outConstraint )
+add( const Interaction & i )
 {
 #if INTARNA_IN_DEBUG_MODE
 	// debug checks

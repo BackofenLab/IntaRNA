@@ -35,8 +35,11 @@ PredictorMfe::~PredictorMfe()
 
 void
 PredictorMfe::
-initOptima( const OutputConstraint & outConstraint )
+initOptima()
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
+
 	// resize to the given number of interactions if overlapping reports allowed
 	mfeInteractions.resize(outConstraint.reportOverlap!=OutputConstraint::ReportOverlap::OVERLAP_BOTH ? 1 : outConstraint.reportMax
 			, Interaction(energy.getAccessibility1().getSequence()
@@ -62,6 +65,10 @@ initOptima( const OutputConstraint & outConstraint )
 	reportedInteractions.first.clear();
 	reportedInteractions.second.clear();
 
+	// init overallZ if needed
+	if (outConstraint.needZall) {
+		Zall = 0.0;
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -71,13 +78,36 @@ PredictorMfe::
 updateOptima( const size_t i1, const size_t j1
 		, const size_t i2, const size_t j2
 		, const E_type interE
-		, const bool isHybridE )
+		, const bool isHybridE
+		, const bool incrementZall )
 {
 //	LOG(DEBUG) <<"PredictorMfe::updateOptima( "<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" , E = " <<interE<<" isHybridE="<<(isHybridE?"true":"false");
 
 	// ignore invalid reports
 	if (E_isINF(interE) || interE >= E_MAX) {
 		return;
+	}
+
+	// update Zall if needed
+	if (incrementZall && output.getOutputConstraint().needZall) {
+		// update overall partition function
+		if (isHybridE) {
+#if INTARNA_IN_DEBUG_MODE
+			if ( (std::numeric_limits<Z_type>::max() - energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, interE))) <= Zall) {
+				LOG(WARNING) <<"PredictorMfeEns::updateZ() : partition function overflow! Recompile with larger partition function data type!";
+			}
+#endif
+			// add ED penalties etc.
+			Zall += energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, interE));
+		} else {
+#if INTARNA_IN_DEBUG_MODE
+			if ( (std::numeric_limits<Z_type>::max() - energy.getBoltzmannWeight(interE)) <= Zall) {
+				LOG(WARNING) <<"PredictorMfeEns::updateZ() : partition function overflow! Recompile with larger partition function data type!";
+			}
+#endif
+			// just increase
+			Zall += energy.getBoltzmannWeight(interE);
+		}
 	}
 
 	// check if nothing to be done
@@ -166,8 +196,15 @@ updateOptima( const size_t i1, const size_t j1
 
 void
 PredictorMfe::
-reportOptima( const OutputConstraint & outConstraint )
+reportOptima()
 {
+	// store overall partition function
+	if (Z_isNotINF(getZall())) {
+		output.incrementZ( getZall() );
+	}
+
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 	// number of reported interactions
 	size_t reported = 0;
 	// get maximal report energy = mfe + deltaE + precisionEpsilon
@@ -187,12 +224,12 @@ reportOptima( const OutputConstraint & outConstraint )
 		{
 			// report current best
 			// fill interaction with according base pairs
-			traceBack( curBest, outConstraint );
+			traceBack( curBest );
 			// report mfe interaction
 #if INTARNA_MULITHREADING
 			#pragma omp critical(intarna_omp_predictorOutputAdd)
 #endif
-			{output.add( curBest, outConstraint );}
+			{output.add( curBest );}
 
 			// store ranges to ensure non-overlapping of next best solution
 			switch( outConstraint.reportOverlap ) {
@@ -235,12 +272,12 @@ reportOptima( const OutputConstraint & outConstraint )
 					&& (i->energy < mfeDeltaE || E_equal(i->energy,mfeDeltaE))) {
 
 				// fill mfe interaction with according base pairs
-				traceBack( *i, outConstraint );
+				traceBack( *i );
 				// report mfe interaction
 #if INTARNA_MULITHREADING
 				#pragma omp critical(intarna_omp_predictorOutputAdd)
 #endif
-				{output.add( *i, outConstraint );}
+				{output.add( *i );}
 				// count
 				reported++;
 			}
@@ -258,7 +295,7 @@ reportOptima( const OutputConstraint & outConstraint )
 #if INTARNA_MULITHREADING
 		#pragma omp critical(intarna_omp_predictorOutputAdd)
 #endif
-		{output.add( *(mfeInteractions.begin()), outConstraint );}
+		{output.add( *(mfeInteractions.begin()) );}
 	}
 
 }

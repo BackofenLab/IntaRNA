@@ -33,9 +33,10 @@ void
 PredictorMfe2dHeuristic::
 predict( const IndexRange & r1
 		, const IndexRange & r2
-		, const OutputConstraint & outConstraint
 		)
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 #if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_omp_logOutput)
 #endif
@@ -61,13 +62,13 @@ predict( const IndexRange & r1
 						, (r2.to==RnaSequence::lastPos?energy.size2()-1:r2.to)-r2.from+1 ) );
 
 	// init mfe for later updates
-	initOptima( outConstraint );
+	initOptima();
 
 	// compute table and update mfeInteraction
-	fillHybridE( outConstraint );
+	fillHybridE();
 
 	// trace back and output handler update
-	reportOptima( outConstraint );
+	reportOptima();
 
 }
 
@@ -76,8 +77,10 @@ predict( const IndexRange & r1
 
 void
 PredictorMfe2dHeuristic::
-fillHybridE( const OutputConstraint & outConstraint )
+fillHybridE()
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 	// compute entries
 	// current minimal value
 	E_type curE = E_INF, curEtotal = E_INF, curCellEtotal = E_INF;
@@ -174,8 +177,10 @@ fillHybridE( const OutputConstraint & outConstraint )
 
 void
 PredictorMfe2dHeuristic::
-traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
+traceBack( Interaction & interaction )
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 	// check if something to trace
 	if (interaction.basePairs.size() < 2) {
 		return;

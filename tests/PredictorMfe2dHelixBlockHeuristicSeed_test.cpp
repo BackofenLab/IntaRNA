@@ -32,15 +32,15 @@ TEST_CASE( "PredictorMfe2dHelixBlockHeuristicSeed", "[PredictorMfe2dHelixBlockHe
 		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, 0, IndexRangeList(""), IndexRangeList(""),
 						  "", false );
 
-		OutputHandlerInteractionList out(1);
+		OutputConstraint outC(1, OutputConstraint::OVERLAP_SEQ2, 0, 100);
+		OutputHandlerInteractionList out(outC,1);
 
 		PredictorMfe2dHelixBlockHeuristicSeed pLSH(energy, out, NULL, hc, new SeedHandlerMfe(energy, sC));
 
 		IndexRange idx1(0, r1.lastPos);
 		IndexRange idx2(0, r2.lastPos);
-		OutputConstraint outC(1, OutputConstraint::OVERLAP_SEQ2, 0, 100);
 
-		pLSH.predict(idx1, idx2, outC);
+		pLSH.predict(idx1, idx2);
 
 		REQUIRE_FALSE(out.empty());
 		REQUIRE(out.reported() == 1);
@@ -70,15 +70,15 @@ TEST_CASE( "PredictorMfe2dHelixBlockHeuristicSeed", "[PredictorMfe2dHelixBlockHe
 						  "", false );
 
 		SeedHandlerMfe sH(energy, sC);
-		OutputHandlerInteractionList out(1);
+		OutputConstraint outC(1, OutputConstraint::OVERLAP_SEQ2, 0, 100);
+		OutputHandlerInteractionList out(outC,1);
 
 		PredictorMfe2dHelixBlockHeuristicSeed pLSH(energy, out, NULL, hc, new SeedHandlerMfe(energy, sC));
 
 		IndexRange idx1(0, r1.lastPos);
 		IndexRange idx2(0, r2.lastPos);
-		OutputConstraint outC(1, OutputConstraint::OVERLAP_SEQ2, 0, 100);
 
-		pLSH.predict(idx1, idx2, outC);
+		pLSH.predict(idx1, idx2);
 
 		REQUIRE_FALSE(out.empty());
 		REQUIRE(out.reported() == 1);

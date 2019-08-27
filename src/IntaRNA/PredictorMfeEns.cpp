@@ -14,9 +14,7 @@ PredictorMfeEns::PredictorMfeEns(
 		, PredictionTracker * predTracker
 		)
 	: PredictorMfe(energy,output,predTracker)
-	, overallZ(0)
 {
-
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -30,19 +28,10 @@ PredictorMfeEns::~PredictorMfeEns()
 
 void
 PredictorMfeEns::
-initZ( const OutputConstraint & outConstraint )
+initZ()
 {
-	// reinit overall partition function
-	overallZ = Z_type(0);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-Z_type
-PredictorMfeEns::
-getOverallZ() const
-{
-	return overallZ;
+	// reset storage
+	Z_partitions.clear();
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -67,28 +56,27 @@ updateZ( const size_t i1, const size_t j1
 		, const bool isHybridZ )
 {
 	// check if something to be done
-	if (Z_equal(partZ,0) || Z_isINF(overallZ))
+	if (Z_equal(partZ,0) || Z_isINF(Zall))
 		return;
 	// update overall partition function
 	if (isHybridZ) {
 #if INTARNA_IN_DEBUG_MODE
-		if ( (std::numeric_limits<Z_type>::max() - (partZ*energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, E_type(0))))) <= overallZ) {
+		if ( (std::numeric_limits<Z_type>::max() - (partZ*energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, E_type(0))))) <= Zall) {
 			LOG(WARNING) <<"PredictorMfeEns::updateZ() : partition function overflow! Recompile with larger partition function data type!";
 		}
 #endif
 		// add ED penalties etc.
-		overallZ += partZ*energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, E_type(0)));
+		Zall += partZ*energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, E_type(0)));
 	} else {
 #if INTARNA_IN_DEBUG_MODE
-		if ( (std::numeric_limits<Z_type>::max() - partZ) <= overallZ) {
+		if ( (std::numeric_limits<Z_type>::max() - partZ) <= Zall) {
 			LOG(WARNING) <<"PredictorMfeEns::updateZ() : partition function overflow! Recompile with larger partition function data type!";
 		}
 #endif
 		// just increase
-		overallZ += partZ;
+		Zall += partZ;
 	}
 
-// TODO : was soll das hier?
 	// store partial Z
 	size_t maxLength = std::max(energy.getAccessibility1().getMaxLength(), energy.getAccessibility2().getMaxLength());
 	size_t key = 0;
@@ -110,18 +98,6 @@ updateZ( const size_t i1, const size_t j1
 		ZPartition & zPartition = Z_partitions[key];
 		zPartition.partZ += partZ;
 	}
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-void
-PredictorMfeEns::
-reportOptima( const OutputConstraint & outConstraint )
-{
-	// store overall partition function
-	output.incrementZ( getOverallZ() );
-	// report optima
-	PredictorMfe::reportOptima( outConstraint );
 }
 
 ////////////////////////////////////////////////////////////////////////////

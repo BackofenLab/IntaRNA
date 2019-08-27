@@ -36,9 +36,10 @@ PredictorMfe2dHelixBlockHeuristicSeed::
 void
 PredictorMfe2dHelixBlockHeuristicSeed::
 predict( const IndexRange & r1
-		, const IndexRange & r2
-		, const OutputConstraint & outConstraint )
+		, const IndexRange & r2 )
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 #if INTARNA_MULITHREADING
 #pragma omp critical(intarna_omp_logOutput)
 #endif
@@ -78,8 +79,8 @@ predict( const IndexRange & r1
 		|| (helixHandler.fillHelix( 0, hybridEsize1-1, 0, hybridEsize2-1) == 0)
 		|| (helixHandler.fillHelixSeed( 0, hybridEsize1-1, 0, hybridEsize2-1) == 0)) {
 		// trigger empty interaction reporting
-		initOptima(outConstraint);
-		reportOptima(outConstraint);
+		initOptima();
+		reportOptima();
 		// stop computation
 		return;
 	}
@@ -111,7 +112,7 @@ predict( const IndexRange & r1
 
 	// init mfe without seed condition
 	OutputConstraint tmpOutConstraint(1, outConstraint.reportOverlap, outConstraint.maxE, outConstraint.deltaE);
-	initOptima( tmpOutConstraint );
+	initOptima();
 
 	// compute hybridization energies WITHOUT seed condition
 	// sets also -energy -hybridE
@@ -122,12 +123,12 @@ predict( const IndexRange & r1
 	// if not no seed-containing interaction is possible neither
 	if (this->mfeInteractions.begin()->energy > tmpOutConstraint.maxE || E_equal(this->mfeInteractions.begin()->energy,tmpOutConstraint.maxE)) {
 		// stop computation since no favorable interaction found
-		reportOptima(tmpOutConstraint);
+		reportOptima();
 		return;
 	}
 
 	// init mfe for later updates
-	initOptima( outConstraint );
+	initOptima();
 
 	// compute entries
 	// current minimal value
@@ -282,7 +283,7 @@ predict( const IndexRange & r1
 
 
 	// report mfe interaction
-	reportOptima( outConstraint );
+	reportOptima();
 
 }
 
@@ -291,8 +292,10 @@ predict( const IndexRange & r1
 
 void
 PredictorMfe2dHelixBlockHeuristicSeed::
-traceBack( Interaction & interaction, const OutputConstraint & outConstraint )
+traceBack( Interaction & interaction )
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 	// check if something to trace
 	if (interaction.basePairs.size() < 2) {
 		return;
@@ -424,7 +427,7 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint )
 						Interaction bpsRight(*(interaction.s1), *(interaction.s2));
 						bpsRight.basePairs.push_back(energy.getBasePair(i1, i2));
 						bpsRight.basePairs.push_back(energy.getBasePair(j1, j2));
-						PredictorMfe2dHelixBlockHeuristic::traceBack(bpsRight, outConstraint);
+						PredictorMfe2dHelixBlockHeuristic::traceBack(bpsRight);
 						// copy remaining base pairs
 						Interaction::PairingVec &bps = bpsRight.basePairs;
 						// copy all base pairs excluding the right most

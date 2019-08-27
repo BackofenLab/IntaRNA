@@ -33,9 +33,10 @@ void
 PredictorMfeEns2dHeuristic::
 predict( const IndexRange & r1
 		, const IndexRange & r2
-		, const OutputConstraint & outConstraint
 		)
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 #if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_omp_logOutput)
 #endif
@@ -61,12 +62,12 @@ predict( const IndexRange & r1
 						, (r2.to==RnaSequence::lastPos?energy.size2()-1:r2.to)-r2.from+1 ) );
 
 	// init mfe for later updates
-	initOptima( outConstraint );
+	initOptima();
 	// initialize overall partition function for updates
-	initZ( outConstraint );
+	initZ();
 
 	// compute table and update mfeInteraction
-	fillHybridZ( outConstraint );
+	fillHybridZ();
 
 	// update ensemble mfe
 	for (std::unordered_map<size_t, ZPartition >::const_iterator it = Z_partitions.begin(); it != Z_partitions.end(); ++it)
@@ -74,12 +75,12 @@ predict( const IndexRange & r1
 		// if partition function is > 0
 		if (Z_isNotINF(it->second.partZ) && it->second.partZ > 0) {
 			//LOG(DEBUG) << "partZ: " << it->second.partZ;
-			PredictorMfe::updateOptima( it->second.i1, it->second.j1, it->second.i2, it->second.j2, energy.getE(it->second.partZ), true );
+			PredictorMfe::updateOptima( it->second.i1, it->second.j1, it->second.i2, it->second.j2, energy.getE(it->second.partZ), true, false );
 		}
 	}
 
 	// trace back and output handler update
-	reportOptima( outConstraint );
+	reportOptima();
 
 }
 
@@ -88,8 +89,10 @@ predict( const IndexRange & r1
 
 void
 PredictorMfeEns2dHeuristic::
-fillHybridZ( const OutputConstraint & outConstraint )
+fillHybridZ()
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 	// compute entries
 	// current minimal value
 	Z_type curE = Z_INF;

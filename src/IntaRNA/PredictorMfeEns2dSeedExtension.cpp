@@ -32,9 +32,10 @@ PredictorMfeEns2dSeedExtension::
 
 void
 PredictorMfeEns2dSeedExtension::
-predict( const IndexRange & r1, const IndexRange & r2
-		, const OutputConstraint & outConstraint )
+predict( const IndexRange & r1, const IndexRange & r2 )
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 #if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_omp_logOutput)
 #endif
@@ -73,16 +74,16 @@ predict( const IndexRange & r1, const IndexRange & r2
 	// and check if any seed possible
 	if (seedHandler.fillSeed( 0, interaction_size1-1, 0, interaction_size2-1 ) == 0) {
 		// trigger empty interaction reporting
-		initOptima(outConstraint);
-		reportOptima(outConstraint);
+		initOptima();
+		reportOptima();
 		// stop computation
 		return;
 	}
 
 	// initialize mfe interaction for updates
-	initOptima( outConstraint );
+	initOptima();
 	// initialize overall partition function for updates
-	initZ( outConstraint );
+	initZ();
 
 	size_t si1 = RnaSequence::lastPos, si2 = RnaSequence::lastPos;
 	while( seedHandler.updateToNextSeed(si1,si2
@@ -103,11 +104,11 @@ predict( const IndexRange & r1, const IndexRange & r2
 
 		// EL
 		hybridZ_left.resize( std::min(si1+1, maxMatrixLen1), std::min(si2+1, maxMatrixLen2) );
-		fillHybridZ_left(si1, si2, outConstraint);
+		fillHybridZ_left(si1, si2);
 
 		// ER
 		hybridZ_right.resize( std::min(interaction_size1-sj1, maxMatrixLen1), std::min(interaction_size2-sj2, maxMatrixLen2) );
-		fillHybridZ_right(sj1, sj2, outConstraint);
+		fillHybridZ_right(sj1, sj2);
 
 		// updateZ for all boundary combinations
 		for (size_t i1 = 0; i1<hybridZ_left.size1(); i1++) {
@@ -138,12 +139,12 @@ predict( const IndexRange & r1, const IndexRange & r2
 	{
 		// if partition function is > 0
 		if (Z_isNotINF(it->second.partZ) && it->second.partZ > 0) {
-			PredictorMfe::updateOptima( it->second.i1, it->second.j1, it->second.i2, it->second.j2, energy.getE(it->second.partZ), true );
+			PredictorMfe::updateOptima( it->second.i1, it->second.j1, it->second.i2, it->second.j2, energy.getE(it->second.partZ), true, false );
 		}
 	}
 
 	// report mfe interaction
-	reportOptima( outConstraint );
+	reportOptima();
 
 }
 
@@ -192,9 +193,10 @@ getNonOverlappingEnergy( const size_t si1, const size_t si2, const size_t si1p, 
 
 void
 PredictorMfeEns2dSeedExtension::
-fillHybridZ_left( const size_t j1, const size_t j2
-			, const OutputConstraint & outConstraint )
+fillHybridZ_left( const size_t j1, const size_t j2 )
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 #if INTARNA_IN_DEBUG_MODE
 	// check indices
 	if (!energy.areComplementary(j1,j2) )
@@ -297,9 +299,10 @@ fillHybridZ_left( const size_t j1, const size_t j2
 
 void
 PredictorMfeEns2dSeedExtension::
-fillHybridZ_right( const size_t i1, const size_t i2
-			, const OutputConstraint & outConstraint )
+fillHybridZ_right( const size_t i1, const size_t i2 )
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 #if INTARNA_IN_DEBUG_MODE
 	// check indices
 	if (!energy.areComplementary(i1,i2) )
@@ -344,8 +347,10 @@ fillHybridZ_right( const size_t i1, const size_t i2
 
 void
 PredictorMfeEns2dSeedExtension::
-traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
+traceBack( Interaction & interaction )
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 	// check if something to trace
 	if (interaction.basePairs.size() < 2) {
 		return;

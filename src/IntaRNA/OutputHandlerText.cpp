@@ -16,13 +16,14 @@ namespace IntaRNA {
 
 OutputHandlerText::
 OutputHandlerText(
+		const OutputConstraint & outConstraint,
 		std::ostream & out,
 		const InteractionEnergy & energy,
 		const size_t flankingLength_,
 		const bool detailedOutput
 		)
- :
-	out(out)
+ :	OutputHandler(outConstraint)
+	, out(out)
 	, energy(energy)
 	, flankingLength(flankingLength_)
 	, detailedOutput(detailedOutput)
@@ -63,7 +64,7 @@ OutputHandlerText::
 
 void
 OutputHandlerText::
-add( const Interaction & i, const OutputConstraint & outConstraint )
+add( const Interaction & i )
 {
 #if INTARNA_IN_DEBUG_MODE
 	// debug checks

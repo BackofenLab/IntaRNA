@@ -31,9 +31,10 @@ PredictorMfe2dSeedExtension::
 
 void
 PredictorMfe2dSeedExtension::
-predict( const IndexRange & r1, const IndexRange & r2
-		, const OutputConstraint & outConstraint )
+predict( const IndexRange & r1, const IndexRange & r2 )
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 #if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_omp_logOutput)
 #endif
@@ -72,14 +73,14 @@ predict( const IndexRange & r1, const IndexRange & r2
 	// and check if any seed possible
 	if (seedHandler.fillSeed( 0, interaction_size1-1, 0, interaction_size2-1 ) == 0) {
 		// trigger empty interaction reporting
-		initOptima(outConstraint);
-		reportOptima(outConstraint);
+		initOptima();
+		reportOptima();
 		// stop computation
 		return;
 	}
 
 	// initialize mfe interaction for updates
-	initOptima( outConstraint );
+	initOptima();
 
 	size_t si1 = RnaSequence::lastPos, si2 = RnaSequence::lastPos;
 	while( seedHandler.updateToNextSeed(si1,si2
@@ -100,11 +101,11 @@ predict( const IndexRange & r1, const IndexRange & r2
 
 		// EL
 		hybridE_left.resize( std::min(si1+1, maxMatrixLen1), std::min(si2+1, maxMatrixLen2) );
-		fillHybridE_left(si1, si2, outConstraint);
+		fillHybridE_left(si1, si2);
 
 		// ER
 		hybridE_right.resize( std::min(interaction_size1-sj1, maxMatrixLen1), std::min(interaction_size2-sj2, maxMatrixLen2) );
-		fillHybridE_right(sj1, sj2, outConstraint);
+		fillHybridE_right(sj1, sj2);
 
 		// update Optimum for all boundary combinations
 		for (int i1 = 0; i1 < hybridE_left.size1(); i1++) {
@@ -126,7 +127,7 @@ predict( const IndexRange & r1, const IndexRange & r2
 	} // si1 / si2
 
 	// report mfe interaction
-	reportOptima( outConstraint );
+	reportOptima();
 
 }
 
@@ -134,9 +135,10 @@ predict( const IndexRange & r1, const IndexRange & r2
 
 void
 PredictorMfe2dSeedExtension::
-fillHybridE_left( const size_t j1, const size_t j2
-			, const OutputConstraint & outConstraint )
+fillHybridE_left( const size_t j1, const size_t j2 )
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 
 	// global vars to avoid reallocation
 	size_t i1,i2,k1,k2;
@@ -183,9 +185,10 @@ fillHybridE_left( const size_t j1, const size_t j2
 
 void
 PredictorMfe2dSeedExtension::
-fillHybridE_right( const size_t i1, const size_t i2
-			, const OutputConstraint & outConstraint )
+fillHybridE_right( const size_t i1, const size_t i2 )
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 
 	// global vars to avoid reallocation
 	size_t j1,j2,k1,k2;
@@ -234,8 +237,10 @@ fillHybridE_right( const size_t i1, const size_t i2
 
 void
 PredictorMfe2dSeedExtension::
-traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
+traceBack( Interaction & interaction )
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 	// check if something to trace
 	if (interaction.basePairs.size() < 2) {
 		return;
@@ -296,9 +301,9 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 			const size_t maxMatrixLen2 = energy.getAccessibility2().getMaxLength()-sl2+1;
 
 			hybridE_left.resize( std::min(si1+1, maxMatrixLen1), std::min(si2+1, maxMatrixLen2) );
-			fillHybridE_left( si1, si2, outConstraint );
+			fillHybridE_left( si1, si2 );
 			hybridE_right.resize( std::min(j1-sj1+1, maxMatrixLen1), std::min(j2-sj2+1, maxMatrixLen2) );
-			fillHybridE_right( sj1, sj2, outConstraint );
+			fillHybridE_right( sj1, sj2 );
 
 			if ( E_equal( fullE,
 					(energy.getE(i1, j1, i2, j2, seedE + hybridE_left( si1-i1, si2-i2 ) + hybridE_right( j1-sj1, j2-sj2 )))))

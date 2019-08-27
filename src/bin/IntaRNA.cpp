@@ -213,7 +213,7 @@ int main(int argc, char **argv){
 								// setup collecting output handler to ensure
 								// k-best output per query-target combination
 								// and not per region combination if not requested
-								OutputHandlerInteractionList bestInteractions(
+								OutputHandlerInteractionList bestInteractions( parameters.getOutputConstraint(),
 										(parameters.reportBestPerRegion() ? std::numeric_limits<size_t>::max() : 1 )
 											* parameters.getOutputConstraint().reportMax );
 
@@ -265,7 +265,6 @@ int main(int argc, char **argv){
 												// run prediction for this window combination
 												predictor->predict(	  tWindow
 																	, queryAcc.at(queryNumber)->getReversedIndexRange(qWindow)
-																	, parameters.getOutputConstraint()
 																	);
 												// garbage collection
 												INTARNA_CLEANUP(predictor);
@@ -311,7 +310,7 @@ int main(int argc, char **argv){
 									output->incrementZ( bestInteractions.getZ() );
 									// forward all reported interactions for all regions to final output handler
 									for( const Interaction * inter : bestInteractions) {
-										output->add(*inter, parameters.getOutputConstraint());
+										output->add(*inter);
 									}
 								}
 

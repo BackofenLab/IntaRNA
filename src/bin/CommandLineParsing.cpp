@@ -190,6 +190,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	outCsvCols(outCsvCols_default),
 	outPerRegion(false),
 	outSpotProbSpots(""),
+	outNeedsZall(false),
 
 	logFileName(""),
 	configFileName(""),
@@ -1295,6 +1296,8 @@ parse(int argc, char** argv)
 			switch (model.val) {
 			// ensemble based predictions
 			case 'P' : {
+				// ensure Zall is computed
+				outNeedsZall = true;
 				// no window decomposition of regions (overlapping regions break overall partition function computation)
 				if (windowWidth.val != 0)  throw error("windowWidth not supported for --model=P");
 				break;}
@@ -1834,6 +1837,7 @@ getOutputConstraint()  const
 			, Ekcal_2_E(outDeltaE.val)
 			, outBestSeedOnly
 			, outNoLP
+			, outNeedsZall
 			);
 }
 
@@ -2240,11 +2244,14 @@ getOutputHandler( const InteractionEnergy & energy ) const
 {
 	switch (outMode.val) {
 	case 'N' :
-		return new OutputHandlerText( outStreamHandler->getOutStream(), energy, 10, false );
+		return new OutputHandlerText( getOutputConstraint(), outStreamHandler->getOutStream(), energy, 10, false );
 	case 'D' :
-		return new OutputHandlerText( outStreamHandler->getOutStream(), energy, 10, true );
+		return new OutputHandlerText( getOutputConstraint(), outStreamHandler->getOutStream(), energy, 10, true );
 	case 'C' :
-		return new OutputHandlerCsv( outStreamHandler->getOutStream(), energy, OutputHandlerCsv::string2list( outCsvCols ), outCsvColSep, false, outCsvLstSep );
+		// check if we have to compute Zall
+		outNeedsZall = outNeedsZall || OutputHandlerCsv::needsZall(OutputHandlerCsv::string2list( outCsvCols ), outCsvColSep);
+		// create output handler
+		return new OutputHandlerCsv( getOutputConstraint(), outStreamHandler->getOutStream(), energy, OutputHandlerCsv::string2list( outCsvCols ), outCsvColSep, false, outCsvLstSep );
 	default :
 		INTARNA_NOT_IMPLEMENTED("Output mode "+toString(outMode.val)+" not implemented yet");
 	}

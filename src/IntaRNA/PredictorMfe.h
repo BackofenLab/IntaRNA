@@ -75,12 +75,10 @@ protected:
 
 	/**
 	 * Initializes the global energy minimum storage
-	 *
-	 * @param outConstraint constrains the interactions reported to the output handler
 	 */
 	virtual
 	void
-	initOptima( const OutputConstraint & outConstraint );
+	initOptima();
 
 	/**
 	 * updates the global optimum to be the mfe interaction if needed
@@ -92,13 +90,15 @@ protected:
 	 * @param energy the energy of the interaction
 	 * @param isHybridE whether or not the given energy is only the
 	 *        hybridization energy (init+loops) or the total interaction energy
+	 * @param incrementZall whether or not Zall is to be incremented (if needed)
 	 */
 	virtual
 	void
 	updateOptima( const size_t i1, const size_t j1
 				, const size_t i2, const size_t j2
 				, const E_type energy
-				, const bool isHybridE );
+				, const bool isHybridE
+				, const bool incrementZall = true );
 
 
 	/**
@@ -106,11 +106,10 @@ protected:
 	 * hybridizing base pairs.
 	 * Note, the
 	 * @param interaction IN/OUT the interaction to fill
-	 * @param outConstraint constrains the interactions reported to the output handler
 	 */
 	virtual
 	void
-	traceBack( Interaction & interaction, const OutputConstraint & outConstraint  ) = 0;
+	traceBack( Interaction & interaction ) = 0;
 
 
 	/**
@@ -132,12 +131,10 @@ protected:
 	 * and pushes the according interactions to the output handler.
 	 * For non-overlapping interaction enumeration, getNextBest() is called
 	 * iteratively.
-	 *
-	 * @param outConstraint constrains the interactions reported to the output handler
 	 */
 	virtual
 	void
-	reportOptima( const OutputConstraint & outConstraint );
+	reportOptima();
 
 };
 
