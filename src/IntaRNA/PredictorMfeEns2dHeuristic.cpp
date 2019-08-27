@@ -81,6 +81,8 @@ predict( const IndexRange & r1
 	// trace back and output handler update
 	reportOptima( outConstraint );
 
+	reportZ( NULL );
+
 }
 
 

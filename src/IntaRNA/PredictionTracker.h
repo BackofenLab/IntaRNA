@@ -4,6 +4,7 @@
 
 
 #include "IntaRNA/general.h"
+#include "IntaRNA/SeedHandlerIdxOffset.h"
 
 namespace IntaRNA {
 
@@ -51,7 +52,7 @@ public:
 	 */
 	virtual
 	void
-	updateZ( PredictorMfeEns *predictor );
+	updateZ( PredictorMfeEns *predictor, SeedHandler* seedHandler );
 
 };
 
@@ -73,7 +74,7 @@ PredictionTracker::~PredictionTracker()
 
 inline
 void
-PredictionTracker::updateZ( PredictorMfeEns *predictor )
+PredictionTracker::updateZ( PredictorMfeEns *predictor, SeedHandler* seedHandler )
 {
 	// override in PredictionTrackers
 }

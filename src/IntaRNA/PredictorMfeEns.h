@@ -48,15 +48,6 @@ public:
 	getOverallZ() const;
 
 	/**
-	 * Access to the current overall hybridization partition function covering
-	 * all interactions of the last predict() call.
-	 *
-	 * @return the overall partition function
-	 */
-	Z_type
-	getOverallHybridZ() const;
-
-	/**
 	 * Access to the current partition function covering
 	 * the interaction (i1, j1, i2, j2).
 	 *
@@ -80,7 +71,7 @@ public:
 	 * Report Z information to the prediction trackers
 	 */
 	void
-	reportZ();
+	reportZ( SeedHandler *seedHandler );
 
 private:
 
@@ -115,10 +106,6 @@ protected:
 	//! the overall partition function since initZ() was last called.
 	//! its value is updated by updateZ()
 	Z_type overallZ;
-
-	//! the overall hybrid partition function since initZ() was last called.
-	//! its value is updated by updateZ()
-	Z_type overallHybridZ;
 
 // TODO move to subclass...
 	//! map storing Z partitions for a given interaction

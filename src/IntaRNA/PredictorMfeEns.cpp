@@ -15,7 +15,6 @@ PredictorMfeEns::PredictorMfeEns(
 		)
 	: PredictorMfe(energy,output,predTracker)
 	, overallZ(0)
-	, overallHybridZ(0)
 {
 
 }
@@ -44,15 +43,6 @@ PredictorMfeEns::
 getOverallZ() const
 {
 	return overallZ;
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-Z_type
-PredictorMfeEns::
-getOverallHybridZ() const
-{
-	return overallHybridZ;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -89,10 +79,10 @@ getZ( const size_t i1, const size_t j1
 
 void
 PredictorMfeEns::
-reportZ()
+reportZ( SeedHandler* seedHandler )
 {
 	if (predTracker != NULL) {
-		predTracker->updateZ(this);
+		predTracker->updateZ(this, seedHandler);
 	}
 }
 
@@ -127,7 +117,6 @@ updateZ( const size_t i1, const size_t j1
 #endif
 	// add ED penalties etc.
 	overallZ += partZ * energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, E_type(0)));
-	overallHybridZ += partZ;
 
 // TODO : was soll das hier?
 	// store partial Z

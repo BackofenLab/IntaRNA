@@ -145,6 +145,8 @@ predict( const IndexRange & r1, const IndexRange & r2
 	// report mfe interaction
 	reportOptima( outConstraint );
 
+	reportZ( &seedHandler );
+
 }
 
 //////////////////////////////////////////////////////////////////////////

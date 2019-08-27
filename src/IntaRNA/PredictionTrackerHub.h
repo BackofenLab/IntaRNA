@@ -70,7 +70,7 @@ public:
 	 */
 	virtual
 	void
-	updateZ( PredictorMfeEns *predictor ) override;
+	updateZ( PredictorMfeEns *predictor, SeedHandler* seedHandler ) override;
 
 	/**
 	 * Adds a new PredictionTracker to the forwarding list.
@@ -206,11 +206,11 @@ updateOptimumCalled( const size_t i1, const size_t j1
 inline
 void
 PredictionTrackerHub::
-updateZ( PredictorMfeEns *predictor	)
+updateZ( PredictorMfeEns *predictor, SeedHandler* seedHandler	)
 {
 	// forward to all in list
 	for (auto trackIt=trackList.begin(); trackIt!=trackList.end(); trackIt++) {
-		(*trackIt)->updateZ(predictor);
+		(*trackIt)->updateZ(predictor, seedHandler);
 	}
 }
 
