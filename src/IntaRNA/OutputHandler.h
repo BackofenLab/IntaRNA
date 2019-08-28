@@ -100,7 +100,7 @@ public:
 protected:
 
 	//! the output constraints to be applied
-	const OutputConstraint & outConstraint;
+	const OutputConstraint outConstraint;
 
 	//! number of reported interactions
 	size_t reportedInteractions;
