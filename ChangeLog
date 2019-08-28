@@ -18,6 +18,10 @@ development version
 * OutputConstraint now guides whether or not Zall is required for output
   
 
+190828 Martin Raden :
+ * Makefile.am :
+   + show test log if tests failed
+
 190827 Martin Raden :
  * IntaRNA/OutputConstraint :
    + needZall : whether or not Zall is needed for output generation

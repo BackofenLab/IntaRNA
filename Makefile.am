@@ -41,6 +41,6 @@ tests: all
 	@echo " => compiling and running tests ... will take a while ..."
 	@echo
 	@$(MAKE) clean-checkPROGRAMS -s -C tests
-	@$(MAKE) check -s -C tests
-
+	@$(MAKE) check -s -C tests || (cat tests/test-suite.log && false)
+	
 test: tests
