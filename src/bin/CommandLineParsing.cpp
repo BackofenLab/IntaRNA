@@ -926,7 +926,7 @@ parse(int argc, char** argv)
 						LOG(ERROR) <<"Parsing of 'parameterFile' : could not open file  '"<<paramFileName<<"'";
 						updateParsingCode( ReturnCode::STOP_PARSING_ERROR );
 					} else {
-						store( parse_config_file(paramfile, opts_cmdline_all), vm);
+						store( parse_config_file<char>(paramfile, opts_cmdline_all), vm);
 					}
 				} catch (std::exception & ex) {
 					LOG(ERROR) <<"error while parsing of 'parameterFile="<<paramFileName<<"' : "<<ex.what();
