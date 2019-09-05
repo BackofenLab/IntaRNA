@@ -91,6 +91,9 @@ add( const Interaction & i )
 		return;
 	}
 
+	// count the interaction
+	reportedInteractions++;
+
 	// get interaction start/end per sequence
 	const size_t i1 = i.basePairs.begin()->first;
 	const size_t j1 = i.basePairs.rbegin()->first;
