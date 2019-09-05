@@ -68,6 +68,7 @@ extern "C" {
 #include "IntaRNA/OutputStreamHandlerSortedCsv.h"
 
 #include "IntaRNA/OutputHandlerCsv.h"
+#include "IntaRNA/OutputHandlerEnsemble.h"
 #include "IntaRNA/OutputHandlerText.h"
 
 
@@ -179,7 +180,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 
 	out(),
 	outPrefix2streamName(),
-	outMode( "NDC", 'N' ),
+	outMode( "NDCE", 'N' ),
 	outNumber( 0, 1000, 1),
 	outOverlap( "NTQB", 'Q' ),
 	outDeltaE( 0.0, 100.0, 100.0),
@@ -776,6 +777,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 					"\n 'N' normal output (ASCII char + energy),"
 					"\n 'D' detailed output (ASCII char + energy/position details),"
 					"\n 'C' CSV output (see --outCsvCols),"
+					"\n 'E' ensemble information"
 					).c_str())
 	    ("outNumber,n"
 			, value<int>(&(outNumber.val))
@@ -1250,6 +1252,14 @@ parse(int argc, char** argv)
 			// check qAcc upper bound
 			if (tAccL.val > tAccW.val && tAccW.val != 0) {
 				throw error("tAccL = " +toString(tAccL.val)+" : has to be <= tAccW (=" +toString(tAccW.val)+")");
+			}
+
+			// check ensemble sanity
+			if (outMode.val != 'E') {
+				// check single sequence input
+				if (target.size() > 1 || query.size() > 1) {
+					throw error("outmode=E allows only single sequence input for query and target");
+				}
 			}
 
 			// check CSV stuff
@@ -2247,8 +2257,12 @@ getOutputHandler( const InteractionEnergy & energy ) const
 		return new OutputHandlerText( getOutputConstraint(), outStreamHandler->getOutStream(), energy, 10, false );
 	case 'D' :
 		return new OutputHandlerText( getOutputConstraint(), outStreamHandler->getOutStream(), energy, 10, true );
+	case 'E' :
+		// ensure that Zall is computed
+		outNeedsZall = true;
+		return new OutputHandlerEnsemble( getOutputConstraint(), outStreamHandler->getOutStream(), energy );
 	case 'C' :
-		// check if we have to compute Zall
+		// ensure that Zall is computed if needed
 		outNeedsZall = outNeedsZall || OutputHandlerCsv::needsZall(OutputHandlerCsv::string2list( outCsvCols ), outCsvColSep);
 		// create output handler
 		return new OutputHandlerCsv( getOutputConstraint(), outStreamHandler->getOutStream(), energy, OutputHandlerCsv::string2list( outCsvCols ), outCsvColSep, false, outCsvLstSep );

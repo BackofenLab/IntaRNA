@@ -21,6 +21,8 @@ development version
 190828 Martin Raden :
  * Makefile.am :
    + show test log if tests failed
+ * IntaRNA/OutputHandler* :
+   * bugfix: outConstraint was reference instead of full object
 
 190827 Martin Raden :
  * IntaRNA/OutputConstraint :

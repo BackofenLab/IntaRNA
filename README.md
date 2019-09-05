@@ -1402,6 +1402,33 @@ Pu1;Pu2;subseqDB;hybridDB
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
+<a name="outModeEnsemble" />
+
+### Ensemble output of considered RNA-RNA interactions
+
+The output mode `--outMode=E` provides information on the ensemble of all 
+considered RNA-RNA interactions (e.g. compatible with the current seed constraints).
+This covers key-value pairs of the following information using 
+column labels introduced for the CVS output:
+
+- `id1` : id of first sequence (target)
+- `id2` : id of second sequence (query)
+- `Zall` : partition function of all considered interactions
+- `Eall` : ensemble energy of all considered interactions (-RT*log(Zall))
+
+Note, `Zall` depends on the selected 
+[prediction mode](#predModes) and 
+[RNA-RNA interaction model](#interactionModel).
+It holds `Zall(--model=S) <= Zall(--model=P)` as well as 
+`Zall(--mode=H) <= Zall(--mode=M)`.
+Thus, most accurate results are computed using
+```
+IntaRNA --model=P --mode=M --out=E ...
+```
+
+
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
+
 <br /><br />
 <a name="subopts" />
 
