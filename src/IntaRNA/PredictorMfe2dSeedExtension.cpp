@@ -121,7 +121,7 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 						assert(sj2+j2-si2+i2 < energy.getAccessibility2().getMaxLength());
 						if (E_isINF(hybridE_right(j1,j2))) continue;
 						// no Z update for left extensions to avoid duplicated handling (underestimates Zall)
-						updateOptima( si1-i1, sj1+j1, si2-i2, sj2+j2, seedE + hybridE_left(i1,i2) + hybridE_right(j1,j2), true, i1!=0 && i2!=0 );
+						updateOptima( si1-i1, sj1+j1, si2-i2, sj2+j2, seedE + hybridE_left(i1,i2) + hybridE_right(j1,j2), true, i1==0 && i2==0 );
 					} // j2
 				} // i2
 			} // j1
