@@ -6,20 +6,25 @@
 #
 ################################################################################
 
-development version
+################################################################################
+# changes in development version since last release 
+################################################################################
 
 # IntaRNA
 + Zall (estimates) and derived output now available for all prediction models
 + outMode=E : report of ensemble information only
 * ensemble-based prediction revised
 * seed-extension-based prediction revised
++ --seedNoGUend : prohibit GU base pairs at seed ends
 
 # API
 * OutputHandler requires an OutputConstraint instances in construction
 * Predictor objects now access OutputConstraint instances via the OutputHandler;
   this simplifies the signature of the member functions
 * OutputConstraint now guides whether or not Zall is required for output
-  
+
+################################################################################  
+################################################################################  
 
 190906 Martin Raden :
  * IntaRNA/Interaction
@@ -71,8 +76,21 @@ development version
    + updateZ() called for all tested seed+leftExtension
  * bin/CommandLineParsing :
    + check for outOverlap=B if window-based computation with subopt output (n>1)
- * IntaRNA/PredictorMfe2dHeuristic
+ * IntaRNA/PredictorMfe2dHeuristic :
    - BestInteraction : replaced by PredictorMfe::BestInteraction
+ * IntaRNA/SeedConstraint :
+   + bpGUendAllowed + is*() : whether or not GU is allowed at seed ends
+ * IntaRNA/SeedHandler :
+   * isFeasibleBasePair() :
+     + atSeedEnd argument: to enable seed end check if needed
+     + explicit GU-end checks if atSeedEnd==true 
+ * IntaRNA/SeedHandlerMfe :
+   + check for GU ends
+ * IntaRNA/SeedHandlerNoBulge :
+   * storeSeed() : 
+     + check for GU ends
+ * README.md :
+   + seedNoGUend documentation
  
 190905 Martin Raden :
  * IntaRNA/PredictorMfe2dHeuristicSeedExtension :

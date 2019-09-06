@@ -1075,6 +1075,7 @@ by
 - `--seedQRange` : a list of index intervals where a seed in the query is allowed
 - `--seedTRange` : a list of index intervals where a seed in the target is allowed
 - `--seedNoGU` : if present, no GU base pairs are allowed within seeds
+- `--seedNoGUend` : if present, no GU base pairs are allowed at seed ends
 
 Alternatively, you can set
 

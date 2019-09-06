@@ -159,6 +159,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	seedMinPu(0,1,0),
 	seedMaxEhybrid(-999,+999,999),
 	seedNoGU(false),
+	seedNoGUend(false),
 	seedQRange(""),
 	seedTRange(""),
 	seedConstraint(NULL),
@@ -231,6 +232,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		resetParamDefault<>(seedMinPu, 0, "seedMinPu");
 		resetParamDefault<>(seedMaxEhybrid, 999, "seedMaxEhybrid");
 		resetParamDefault<>(seedNoGU, false, "seedNoGU");
+		resetParamDefault<>(seedNoGUend, false, "seedNoGUend");
 		break;
 	case IntaRNA2 :
 		// IntaRNA v2 parameters
@@ -256,6 +258,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		resetParamDefault<>(seedMinPu, 0, "seedMinPu");
 		resetParamDefault<>(seedMaxEhybrid, 999, "seedMaxEhybrid");
 		resetParamDefault<>(seedNoGU, false, "seedNoGU");
+		resetParamDefault<>(seedNoGUend, false, "seedNoGUend");
 		break;
 	case IntaRNAens :
 		// ensemble-based predictions
@@ -618,6 +621,10 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 						->default_value(seedNoGU)
 						->implicit_value(true)
 	    		, "if given (or true), no GU base pairs are allowed within seeds")
+	    ("seedNoGUend", value<bool>(&seedNoGUend)
+						->default_value(seedNoGUend)
+						->implicit_value(true)
+	    		, "if given (or true), no GU base pairs are allowed at seed ends")
 		;
 
 	////  SHAPE OPTIONS  ////////////////////////
@@ -1064,6 +1071,7 @@ parse(int argc, char** argv)
 				if (!seedQRange.empty()) LOG(INFO) <<"no seed constraint wanted, but seedQRange provided (will be ignored)";
 				if (!seedTRange.empty()) LOG(INFO) <<"no seed constraint wanted, but seedTRange provided (will be ignored)";
 				if (seedNoGU) LOG(INFO) <<"no seed constraint wanted, but seedNoGU provided (will be ignored)";
+				if (seedNoGUend) LOG(INFO) <<"no seed constraint wanted, but seedNoGUend provided (will be ignored)";
 			} else {
 				// check query search ranges
 				if (!seedQRange.empty()) {
@@ -1111,6 +1119,7 @@ parse(int argc, char** argv)
 					if (!seedQRange.empty()) LOG(INFO) <<"explicit seeds defined, but seedQRange provided (will be ignored)";
 					if (!seedTRange.empty()) LOG(INFO) <<"explicit seeds defined, but seedTRange provided (will be ignored)";
 					if (seedNoGU) LOG(INFO) <<"explicit seeds defined, but seedNoGU provided (will be ignored)";
+					if (seedNoGUend) LOG(INFO) <<"explicit seeds defined, but seedNoGUend provided (will be ignored)";
 				}
 			}
 
@@ -2326,6 +2335,7 @@ getSeedConstraint( const InteractionEnergy & energy ) const
 							, IndexRangeList( seedQRange ).shift(-1,energy.size2()-1).reverse(energy.size2())
 							, seedTQ
 							, seedNoGU
+							, seedNoGUend
 						);
 	}
 	return *seedConstraint;

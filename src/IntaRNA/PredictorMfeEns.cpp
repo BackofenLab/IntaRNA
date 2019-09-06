@@ -87,7 +87,7 @@ updateOptimaUsingZ()
 	{
 		// if partition function is > 0
 		if (Z_isNotINF(it->second) && it->second > 0) {
-			PredictorMfe::updateOptima( it->first.i1, it->first.i2, it->first.i3, it->first.i4, energy.getE(it->second), true, false );
+			PredictorMfe::updateOptima( it->first.i1, it->first.j1, it->first.i2, it->first.j2, energy.getE(it->second), true, false );
 		}
 	}
 }

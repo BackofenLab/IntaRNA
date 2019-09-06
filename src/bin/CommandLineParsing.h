@@ -564,6 +564,8 @@ protected:
 	NumberParameter<E_kcal_type> seedMaxEhybrid;
 	//! whether or not GU base pairs are allowed within seeds
 	bool seedNoGU;
+	//! whether or not GU base pairs are allowed at seed ends
+	bool seedNoGUend;
 	//! intervals in query for seed search
 	std::string seedQRange;
 	//! intervals in target for seed search

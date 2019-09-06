@@ -195,11 +195,14 @@ protected:
 	 *
 	 * @param i1 the interacting base of seq1
 	 * @param i2 the interacting base of seq2
+	 * @param atEndOfSeed whether or not the (i1,i2) form the end of a seed
 	 * @return true if (i1,i2) are complementary, ED(i,i) < maxED, and both i1
 	 *              and i2 are in allowed regions; false otherwise
 	 */
 	bool
-	isFeasibleSeedBasePair( const size_t i1, const size_t i2 ) const;
+	isFeasibleSeedBasePair( const size_t i1
+						, const size_t i2
+						, const bool atEndOfSeed = false ) const;
 
 
 };
