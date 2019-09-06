@@ -31,7 +31,7 @@ TEST_CASE( "SeedHandlerMfe with offset", "[SeedHandlerIdxOffset]") {
 				, IndexRangeList("")
 				, IndexRangeList("")
 				, ""
-				, false );
+				, false, false );
 
 		SeedHandlerNoBulge shOrig(energy, sC);
 		SeedHandlerIdxOffset shIO( &shOrig, false );
