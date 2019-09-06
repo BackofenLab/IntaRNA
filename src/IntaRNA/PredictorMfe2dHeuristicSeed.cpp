@@ -184,7 +184,7 @@ fillHybridE()
 								curCellSeedEtotal = curEseedtotal;
 							}
 							// update mfe
-							updateOptima(i1,rightExt->j1,i2,rightExt->j2,curEseedtotal,false);
+							updateOptima(i1,curCellSeed->j1,i2,curCellSeed->j2,curEseedtotal,false);
 						}
 						// for noLP : check for explicit interior loop after seed
 						// assumption: seed fulfills noLP
@@ -236,7 +236,7 @@ fillHybridE()
 										curCellSeedEtotal = curEseedtotal;
 									}
 									// update mfe
-									updateOptima(i1,rightExt->j1,i2,rightExt->j2,curEseedtotal,false);
+									updateOptima(i1,curCellSeed->j1,i2,curCellSeed->j2,curEseedtotal,false);
 								}
 
 							} } // w1 w2
@@ -314,7 +314,9 @@ fillHybridE()
 								curCellSeedEtotal = curEseedtotal;
 							}
 							// update mfe
-							updateOptima(i1,rightExt->j1,i2,rightExt->j2,curEseedtotal,false);
+							// avoid Z update; otherwise double-counting of interactions
+							//   --> that way, underestimation of Z
+							updateOptima(i1,rightExt->j1,i2,rightExt->j2,curEseedtotal,false, false);
 						}
 
 					} // w2

@@ -40,7 +40,7 @@ OutputHandlerEnsemble::
 		<<std::setprecision(2)
 		<<std::fixed // avoid scientific output format
 		<<"Zall " <<getZ() <<'\n'
-		<<"Eall " <<E_2_Ekcal(energy.getE(getZ())) <<'\n'
+		<<"Eall " <<(Z_equal(getZ(),Z_type(0)) ? 0 : E_2_Ekcal(energy.getE(getZ()))) <<'\n'
 		;
 #if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_omp_outputStreamUpdate)
