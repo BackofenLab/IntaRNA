@@ -38,18 +38,6 @@ initZ()
 
 void
 PredictorMfeEns::
-checkKeyBoundaries( const size_t maxLength )
-{
-	// check if getMaxLength > sqrt3(size_t) -> error
-	if (maxLength > cbrt(std::numeric_limits<size_t>::max())) {
-		throw std::runtime_error("PredictorMfeEns::checkKeyBoundaries() : maxLength too big for key generation (out of bounds)");
-	}
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-void
-PredictorMfeEns::
 updateZ( const size_t i1, const size_t j1
 		, const size_t i2, const size_t j2
 		, const Z_type partZ
@@ -78,26 +66,15 @@ updateZ( const size_t i1, const size_t j1
 	}
 
 	// store partial Z
-	size_t maxLength = std::max(energy.getAccessibility1().getMaxLength(), energy.getAccessibility2().getMaxLength());
-	size_t key = 0;
-	key += i1;
-	key += j1 * pow(maxLength, 1);
-	key += i2 * pow(maxLength, 2);
-	key += j2 * pow(maxLength, 3);
+	Interaction::Boundary key(i1,j1,i2,j2);
+	auto keyEntry = Z_partition.find(key);
 	if ( Z_partition.find(key) == Z_partition.end() ) {
-		// create new entry
-		ZPartition zPartition;
-		zPartition.i1 = i1;
-		zPartition.j1 = j1;
-		zPartition.i2 = i2;
-		zPartition.j2 = j2;
-		zPartition.partZ = partZ;
-		Z_partition[key] = zPartition;
+		Z_partition[key] = partZ;
 	} else {
 		// update entry
-		ZPartition & zPartition = Z_partition[key];
-		zPartition.partZ += partZ;
+		keyEntry->second += partZ;
 	}
+
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -106,11 +83,11 @@ void
 PredictorMfeEns::
 updateOptimaUsingZ()
 {
-	for (std::unordered_map<size_t, ZPartition >::const_iterator it = Z_partition.begin(); it != Z_partition.end(); ++it)
+	for (auto it = Z_partition.begin(); it != Z_partition.end(); ++it)
 	{
 		// if partition function is > 0
-		if (Z_isNotINF(it->second.partZ) && it->second.partZ > 0) {
-			PredictorMfe::updateOptima( it->second.i1, it->second.j1, it->second.i2, it->second.j2, energy.getE(it->second.partZ), true, false );
+		if (Z_isNotINF(it->second) && it->second > 0) {
+			PredictorMfe::updateOptima( it->first.i1, it->first.i2, it->first.i3, it->first.i4, energy.getE(it->second), true, false );
 		}
 	}
 }

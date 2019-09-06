@@ -90,10 +90,10 @@ predict( const IndexRange & r1
 				&& energy.areComplementary(i1,i2) )
 		{
 			// set to interaction initiation with according boundary
-			hybridE(i1,i2) = BestInteraction(energy.getE_init(), i1, i2);
+			hybridE(i1,i2) = BestInteractionE(energy.getE_init(), i1, i2);
 		} else {
 			// set to infinity, ie not used
-			hybridE(i1,i2) = BestInteraction(E_INF, RnaSequence::lastPos, RnaSequence::lastPos);
+			hybridE(i1,i2) = BestInteractionE(E_INF, RnaSequence::lastPos, RnaSequence::lastPos);
 		}
 
 	} // i2
@@ -121,8 +121,8 @@ fillHybridE()
 	// current minimal value
 	E_type curE = E_INF, curEtotal = E_INF, curCellEtotal = E_INF;
 	size_t i1,i2,h1,h2,w1,w2;
-	BestInteraction * curCell = NULL;
-	const BestInteraction * rightExt = NULL;
+	BestInteractionE * curCell = NULL;
+	const BestInteractionE * rightExt = NULL;
 	// iterate (decreasingly) over all left interaction starts
 	for (i1=hybridE.size1(); i1-- > 0;) {
 	for (i2=hybridE.size2(); i2-- > 0;) {
@@ -131,12 +131,12 @@ fillHybridE()
 		curCell = &(hybridE(i1,i2));
 
 		// check if left side can pair
-		if (E_isINF(curCell->E)) {
+		if (E_isINF(curCell->val)) {
 			continue;
 		}
 
 		// E_init initialization
-		curCellEtotal = energy.getE(i1,curCell->j1,i2,curCell->j2,curCell->E);
+		curCellEtotal = energy.getE(i1,curCell->j1,i2,curCell->j2,curCell->val);
 
 		// check if helix is possible for this left boundary
 		if ( E_isNotINF( helixHandler.getHelixE(i1,i2) ) ) {
@@ -158,7 +158,7 @@ fillHybridE()
 				curCell->j1 = i1+h1;
 				curCell->j2 = i2+h2;
 				// set new energy
-				curCell->E = curE;
+				curCell->val = curE;
 				// store total energy to avoid recomputation
 				curCellEtotal = curEtotal;
 			}
@@ -178,7 +178,7 @@ fillHybridE()
 				// direct cell access (const)
 				rightExt = &(hybridE(i1+h1+w1,i2+h2+w2));
 				// check if right side can pair
-				if (E_isINF(rightExt->E)) {
+				if (E_isINF(rightExt->val)) {
 					continue;
 				}
 
@@ -190,7 +190,7 @@ fillHybridE()
 				}
 
 				// compute energy for this loop sizes
-				curE = helixHandler.getHelixE(i1,i2) + energy.getE_interLeft(i1+h1,i1+h1+w1,i2+h2,i2+h2+w2) + rightExt->E;
+				curE = helixHandler.getHelixE(i1,i2) + energy.getE_interLeft(i1+h1,i1+h1+w1,i2+h2,i2+h2+w2) + rightExt->val;
 //				LOG(DEBUG) << "Case 2: curE " << curE;
 				// check if this combination yields better energy
 				curEtotal = energy.getE(i1,rightExt->j1,i2,rightExt->j2,curE);
@@ -200,7 +200,7 @@ fillHybridE()
 					// copy right boundary
 					*curCell = *rightExt;
 					// set new energy
-					curCell->E = curE;
+					curCell->val = curE;
 					// store total energy to avoid recomputation
 					curCellEtotal = curEtotal;
 				}
@@ -259,7 +259,7 @@ traceBack( Interaction & interaction )
 
 //	LOG(DEBUG) << "TRACEBACK: " << i1 << " " << i2;
 	// the currently traced value for i1-j1, i2-j2
-	E_type curE = hybridE(i1,i2).E;
+	E_type curE = hybridE(i1,i2).val;
 //	LOG(DEBUG) << "curE: " << curE;
 	assert( hybridE(i1,i2).j1 == j1 );
 	assert( hybridE(i1,i2).j2 == j2 );
@@ -273,7 +273,7 @@ traceBack( Interaction & interaction )
 	size_t h1,h2,k1,k2;
 	// do until only right boundary is left over
 	while( (j1-i1) > 1 ) {
-		const BestInteraction * curCell = NULL;
+		const BestInteractionE * curCell = NULL;
 		bool traceNotFound = true;
 
 		assert(E_isNotINF(helixHandler.getHelixE(i1,i2)));
@@ -298,7 +298,7 @@ traceBack( Interaction & interaction )
 			// check if right boundary is equal (part of the heuristic)
 			if ( curCell->j1 == j1 && curCell->j2 == j2 &&
 				 // and energy is the source of curE
-				 E_equal( curE, (helixHandler.getHelixE(i1,i2) + energy.getE_interLeft(i1+h1,k1,i2+h2,k2) + curCell->E ) ) )
+				 E_equal( curE, (helixHandler.getHelixE(i1,i2) + energy.getE_interLeft(i1+h1,k1,i2+h2,k2) + curCell->val ) ) )
 			{
  					// stop searching
 					traceNotFound = false;
@@ -315,7 +315,7 @@ traceBack( Interaction & interaction )
 					// trace right part of split
 					i1=k1;
 					i2=k2;
-					curE = curCell->E;
+					curE = curCell->val;
 
 			}
 //			LOG(DEBUG) << curE
@@ -367,10 +367,10 @@ getNextBest( Interaction & curBest )
 	// identify cell with next best non-overlapping interaction site
 	// iterate (decreasingly) over all left interaction starts
 	size_t i1,i2;
-	BestInteraction * curBestCell = NULL;
+	BestInteractionE * curBestCell = NULL;
 	E_type curBestCellE = E_INF;
 	Interaction::BasePair curBestCellStart;
-	BestInteraction * curCell = NULL;
+	BestInteractionE * curCell = NULL;
 	E_type curCellE = E_INF;
 	IndexRange r1,r2;
 	for (i1=hybridE.size1(); i1-- > 0;) {
@@ -386,12 +386,12 @@ getNextBest( Interaction & curBest )
 			// direct cell access
 			curCell = &(hybridE(i1,i2));
 			// check if left side can pair
-			if (E_isINF(curCell->E))
+			if (E_isINF(curCell->val))
 			{
 				continue;
 			}
 			// get overall energy of the interaction
-			curCellE = energy.getE(i1,curCell->j1,i2,curCell->j2,curCell->E);
+			curCellE = energy.getE(i1,curCell->j1,i2,curCell->j2,curCell->val);
 			// or energy is too low to be considered
 			// or energy is higher than current best found so far
 			if (curCellE < curBestE || curCellE >= curBestCellE )

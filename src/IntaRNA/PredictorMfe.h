@@ -21,6 +21,42 @@ namespace IntaRNA {
  */
 class PredictorMfe : public Predictor {
 
+protected:
+
+	/**
+	 * Describes the currently best interaction found for a left interaction
+	 * boundary i1,i2
+	 */
+	template < class ValueType >
+	class BestInteraction {
+	public:
+
+		/**
+		 * Init object
+		 * @param val the value to be stored (default = INF [or MAX if not supported])
+		 * @param j1 first index
+		 * @param j1 second index
+		 */
+		BestInteraction( const ValueType val=(std::numeric_limits<ValueType>::has_infinity ? std::numeric_limits<ValueType>::infinity() : std::numeric_limits<ValueType>::max())
+				, const size_t j1=RnaSequence::lastPos, const size_t j2=RnaSequence::lastPos )
+			: val(val), j1(j1), j2(j2)
+		{}
+
+	public:
+		//! value to be stored for the interaction, e.g. energy
+		ValueType val;
+		//! right end of the interaction in seq1
+		size_t j1;
+		//! right end of the interaction in seq2
+		size_t j2;
+	};
+
+	//! BestInteraction that stores an energy value
+	typedef BestInteraction<E_type> BestInteractionE;
+	//! BestInteraction that stores a partition function value
+	typedef BestInteraction<Z_type> BestInteractionZ;
+
+
 
 public:
 

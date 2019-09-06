@@ -27,29 +27,8 @@ class PredictorMfeEns2dHeuristic: public PredictorMfeEns2d {
 
 protected:
 
-	/**
-	 * Describes the currently best interaction found for a left interaction
-	 * boundary i1,i2
-	 */
-	class BestInteraction {
-	public:
-
-		//! init data
-		BestInteraction( const Z_type Z=Z_INF, const size_t j1=RnaSequence::lastPos, const size_t j2=RnaSequence::lastPos )
-			: Z(Z), j1(j1), j2(j2)
-		{}
-
-	public:
-		//! energy of the interaction
-		Z_type Z;
-		//! right end of the interaction in seq1
-		size_t j1;
-		//! right end of the interaction in seq2
-		size_t j2;
-	};
-
 	//! matrix type to hold the mfe energies and boundaries for interaction site starts
-	typedef boost::numeric::ublas::matrix<BestInteraction> Z2dMatrix;
+	typedef boost::numeric::ublas::matrix<BestInteractionZ> Z2dMatrix;
 
 public:
 

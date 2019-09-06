@@ -22,6 +22,8 @@ development version
   
 
 190906 Martin Raden :
+ * IntaRNA/Interaction
+   + Boundary : 4-tuple of indices to store boundaries of an interaction site
  * tests/runIntaRNA.sh :
    * tests are run for all data/*.parameter files (no explicit listing anymore)
  + tests/*-modelX|S : explicitly testing model=X or =S
@@ -33,6 +35,10 @@ development version
    + updateOptimaUsingZ() : calls updateOptima() for all Z_partition entries
    + reportOptima() : calls updateOptimaUsingZ() and super class reportOptima()
    + traceBack() : central traceback for all ensemble-based predictors
+   + BestInteraction template class
+   + BestInteractionE|Z typedefs
+   * Z_partition now hash of Interaction::Boundary keys that map to Z_type
+   - checkKeyBoundaries() : obsolete
  * IntaRNA/PredictorMfeEns2d :
    - traceBack()
    * predict() :
@@ -42,6 +48,7 @@ development version
      - explicit updateOptima() calls
    * fillHybridZ() :
      + explicit updateZ() calls for all recursion cases to reduce heuristic bias
+   - BestInteraction : replaced by PredictorMfe::BestInteraction
  * IntaRNA/PredictorMfe2dSeedExtension :
    - updateOptima() : obsolete
    * predict() :
@@ -64,7 +71,9 @@ development version
    + updateZ() called for all tested seed+leftExtension
  * bin/CommandLineParsing :
    + check for outOverlap=B if window-based computation with subopt output (n>1)
-
+ * IntaRNA/PredictorMfe2dHeuristic
+   - BestInteraction : replaced by PredictorMfe::BestInteraction
+ 
 190905 Martin Raden :
  * IntaRNA/PredictorMfe2dHeuristicSeedExtension :
    + updateOptima() also for left+seed called (less heuristic bias)

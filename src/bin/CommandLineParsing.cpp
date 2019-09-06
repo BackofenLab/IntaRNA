@@ -1176,7 +1176,7 @@ parse(int argc, char** argv)
 				if (windowWidth.val <= windowOverlap.val) {
 					throw error("window-based computation: --windowWidth ("+toString(windowWidth.val)+") has to exceed --windowOverlap ("+toString(windowOverlap.val)+")");
 				}
-				if (outNumber > 1 && outOverlap.val != 'B') {
+				if (outNumber.val > 1 && outOverlap.val != 'B') {
 					throw error("window-based computation: non-overlapping subopt output (-n > 1) only supported for --outOverlap=B");
 				}
 			}

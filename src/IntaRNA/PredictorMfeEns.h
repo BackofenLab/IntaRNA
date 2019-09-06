@@ -59,7 +59,7 @@ protected:
 	using PredictorMfe::predTracker;
 
 	//! map storing the partition of Zall for all considered interaction sites
-	std::unordered_map<size_t, ZPartition> Z_partition;
+	std::unordered_map<Interaction::Boundary, Z_type, Interaction::Boundary::Hash, Interaction::Boundary::Equal> Z_partition;
 
 
 	/**
@@ -69,15 +69,6 @@ protected:
 	virtual
 	void
 	initZ();
-
-	/**
-	 * Check if energy maxLength exceeds allowed limit for key generation
-	 * Throw runtime error if exceeding limit
-	 * @param maxLength the maximal length of considered subsequences
-	 */
-	static
-	void
-	checkKeyBoundaries( const size_t maxLength );
 
 	/**
 	 * Updates the local hybridization partition functions as well as Zall.

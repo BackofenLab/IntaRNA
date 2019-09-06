@@ -17,8 +17,6 @@ PredictorMfeEns2dHeuristicSeedExtension(
 , j2opt(0)
 {
 	assert( seedHandler.getConstraint().getBasePairs() > 1 );
-
-	checkKeyBoundaries(std::max(energy.getAccessibility1().getMaxLength(), energy.getAccessibility2().getMaxLength()));
 }
 
 //////////////////////////////////////////////////////////////////////////

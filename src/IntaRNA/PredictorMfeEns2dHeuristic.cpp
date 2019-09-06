@@ -14,7 +14,6 @@ PredictorMfeEns2dHeuristic(
 		, PredictionTracker * predTracker )
  : PredictorMfeEns2d(energy,output,predTracker)
 {
-	checkKeyBoundaries(std::max(energy.getAccessibility1().getMaxLength(), energy.getAccessibility2().getMaxLength()));
 }
 
 
@@ -94,8 +93,8 @@ fillHybridZ()
 	const size_t noLpShift = outConstraint.noLP ? 1 : 0;
 	Z_type iStackZ = Z_type(1);
 
-	BestInteraction * curCell = NULL;
-	const BestInteraction * rightExt = NULL;
+	BestInteractionZ * curCell = NULL;
+	const BestInteractionZ * rightExt = NULL;
 	// iterate (decreasingly) over all left interaction starts
 	for (i1=hybridZ.size1(); i1-- > 0;) {
 		for (i2=hybridZ.size2(); i2-- > 0;) {
@@ -103,7 +102,7 @@ fillHybridZ()
 			curCell = &(hybridZ(i1,i2));
 
 			// init as invalid boundary
-			*curCell = BestInteraction(0.0, RnaSequence::lastPos, RnaSequence::lastPos);
+			*curCell = BestInteractionZ(0.0, RnaSequence::lastPos, RnaSequence::lastPos);
 
 			// check if positions can form interaction
 			if (	energy.isAccessible1(i1)
@@ -128,10 +127,10 @@ fillHybridZ()
 				}
 
 				// set to interaction initiation with according boundary
-				*curCell = BestInteraction(iStackZ * energy.getBoltzmannWeight(energy.getE_init()), i1+noLpShift, i2+noLpShift);
+				*curCell = BestInteractionZ(iStackZ * energy.getBoltzmannWeight(energy.getE_init()), i1+noLpShift, i2+noLpShift);
 
 				// current best total energy value (covers to far E_init only)
-				curCellEtotal = energy.getE(curCell->Z);
+				curCellEtotal = energy.getE(curCell->val);
 
 				// iterate over all loop sizes w1 (seq1) and w2 (seq2) (minus 1)
 				for (w1=1; w1-1 <= energy.getMaxInternalLoopSize1() && i1+w1+noLpShift<hybridZ.size1(); w1++) {
@@ -139,7 +138,7 @@ fillHybridZ()
 					// direct cell access (const)
 					rightExt = &(hybridZ(i1+noLpShift+w1,i2+noLpShift+w2));
 					// check if right side can pair
-					if (Z_equal(rightExt->Z, 0.0)) {
+					if (Z_equal(rightExt->val, 0.0)) {
 						continue;
 					}
 					// check if interaction length is within boundary
@@ -150,7 +149,7 @@ fillHybridZ()
 					}
 
 					// compute Z for this loop sizes
-					curZ = iStackZ * energy.getBoltzmannWeight(energy.getE_interLeft(i1+noLpShift,i1+noLpShift+w1,i2+noLpShift,i2+noLpShift+w2)) * rightExt->Z;
+					curZ = iStackZ * energy.getBoltzmannWeight(energy.getE_interLeft(i1+noLpShift,i1+noLpShift+w1,i2+noLpShift,i2+noLpShift+w2)) * rightExt->val;
 
 					// update overall partition function information for current right extension
 					updateZ( i1,rightExt->j1, i2,rightExt->j2, curZ, true );
@@ -165,7 +164,7 @@ fillHybridZ()
 						// copy right boundary
 						*curCell = *rightExt;
 						// set new partition function
-						curCell->Z = curZ;
+						curCell->val = curZ;
 						// store total energy to avoid recomputation
 						curCellEtotal = curEtotal;
 					}
@@ -193,10 +192,10 @@ getNextBest( Interaction & curBest )
 	// identify cell with next best non-overlapping interaction site
 	// iterate (decreasingly) over all left interaction starts
 	size_t i1,i2;
-	BestInteraction * curBestCell = NULL;
+	BestInteractionZ * curBestCell = NULL;
 	Z_type curBestCellE = Z_INF;
 	Interaction::BasePair curBestCellStart;
-	BestInteraction * curCell = NULL;
+	BestInteractionZ * curCell = NULL;
 	Z_type curCellE = Z_INF;
 	IndexRange r1,r2;
 	for (i1=hybridZ.size1(); i1-- > 0;) {
@@ -212,12 +211,12 @@ getNextBest( Interaction & curBest )
 			// direct cell access
 			curCell = &(hybridZ(i1,i2));
 			// check if left side can pair
-			if (Z_isINF(curCell->Z))
+			if (Z_isINF(curCell->val))
 			{
 				continue;
 			}
 			// get overall energy of the interaction
-			curCellE = energy.getE(curCell->Z);
+			curCellE = energy.getE(curCell->val);
 			// or energy is too low to be considered
 			// or energy is higher than current best found so far
 			if (curCellE < curBestE || curCellE >= curBestCellE )
