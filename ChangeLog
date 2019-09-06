@@ -11,13 +11,14 @@ development version
 # IntaRNA
 + Zall (estimates) and derived output now available for all prediction models
 + outMode=E : report of ensemble information only
+* ensemble-based prediction revised
+* seed-extension-based prediction revised
 
 # API
 * OutputHandler requires an OutputConstraint instances in construction
 * Predictor objects now access OutputConstraint instances via the OutputHandler;
   this simplifies the signature of the member functions
 * OutputConstraint now guides whether or not Zall is required for output
-+ OutputHandlerEnsemble: reports ensemble information only
   
 
 190906 Martin Raden :
@@ -61,6 +62,8 @@ development version
    + extended search range for seed+leftExtension (so far limited by jOptRight)
    + updateZ() called for all tested right extensions
    + updateZ() called for all tested seed+leftExtension
+ * bin/CommandLineParsing :
+   + check for outOverlap=B if window-based computation with subopt output (n>1)
 
 190905 Martin Raden :
  * IntaRNA/PredictorMfe2dHeuristicSeedExtension :

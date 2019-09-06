@@ -182,7 +182,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	outPrefix2streamName(),
 	outMode( "NDCE", 'N' ),
 	outNumber( 0, 1000, 1),
-	outOverlap( "NTQB", 'Q' ),
+	outOverlap( "NTQB", 'B' ),
 	outDeltaE( 0.0, 100.0, 100.0),
 	outMaxE( -999.0, +999.0, 0.0),
 	outMinPu( 0.0, 1.0, 0.0),
@@ -211,6 +211,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	case IntaRNA1 :
 		resetParamDefault<>(model, 'S', "model");
 		resetParamDefault<>(mode, 'H', "mode");
+		resetParamDefault<>(outOverlap, 'Q', "outOverlap");
 		resetParamDefault<>(qAccW, 0, "qAccW");
 		resetParamDefault<>(qAccL, 0, "qAccL");
 		resetParamDefault<>(qIntLenMax, 0, "qIntLenMax");
@@ -235,6 +236,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		// IntaRNA v2 parameters
 		resetParamDefault<>(model, 'S', "model");
 		resetParamDefault<>(mode, 'H', "mode");
+		resetParamDefault<>(outOverlap, 'Q', "outOverlap");
 		resetParamDefault<>(qAccW, 150, "qAccW");
 		resetParamDefault<>(qAccL, 100, "qAccL");
 		resetParamDefault<>(qIntLenMax, 0, "qIntLenMax");
@@ -1173,6 +1175,9 @@ parse(int argc, char** argv)
 				}
 				if (windowWidth.val <= windowOverlap.val) {
 					throw error("window-based computation: --windowWidth ("+toString(windowWidth.val)+") has to exceed --windowOverlap ("+toString(windowOverlap.val)+")");
+				}
+				if (outNumber > 1 && outOverlap.val != 'B') {
+					throw error("window-based computation: non-overlapping subopt output (-n > 1) only supported for --outOverlap=B");
 				}
 			}
 
