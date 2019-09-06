@@ -103,15 +103,12 @@ predict( const IndexRange & r1, const IndexRange & r2  )
 		j2opt = sj2;
 		energy_opt = E_INF;
 
-		// update mfe for seed only
-		updateOptima( si1,sj1,si2,sj2, energy.getE_init() + seedHandler.getSeedE(si1, si2), true );
-
-		// ER
+		// ER : update for seed + ER
 		hybridE_right.resize( std::min(interaction_size1-sj1, maxMatrixLen1), std::min(interaction_size2-sj2, maxMatrixLen2) );
 		fillHybridE_right(sj1, sj2, si1, si2);
 
-		// EL for fixed right boundary jopt
-		hybridE_left.resize( std::min(si1+1, maxMatrixLen1-(j1opt-sj1)), std::min(si2+1, maxMatrixLen2-(j2opt-sj2)) );
+		// EL
+		hybridE_left.resize( std::min(si1+1, maxMatrixLen1), std::min(si2+1, maxMatrixLen2) );
 		fillHybridE_left(si1, si2);
 
 	} // si1 / si2
@@ -133,7 +130,10 @@ fillHybridE_right( const size_t i1, const size_t i2
 
 	// global vars to avoid reallocation
 	size_t j1,j2,k1,k2;
+
 	//////////  FIRST ROUND : COMPUTE HYBRIDIZATION ENERGIES ONLY  ////////////
+
+	const E_type seedE = seedHandler.getSeedE(si1, si2);
 
 	// current minimal value
 	E_type curMinE = E_INF;
@@ -142,12 +142,14 @@ fillHybridE_right( const size_t i1, const size_t i2
 		// screen for right boundaries in seq2
 		for (j2=i2; j2-i2 < hybridE_right.size2(); j2++) {
 
+			// referencing cell access
+			E_type & curMinE = hybridE_right(j1-i1,j2-i2);
+
 			// init current cell (0 if just left (i1,i2) base pair)
-			hybridE_right(j1-i1,j2-i2) = i1==j1 && i2==j2 ? 0 : E_INF;
+			curMinE = i1==j1 && i2==j2 ? 0 : E_INF;
 
 			// check if complementary
 			if( i1<j1 && i2<j2 && energy.areComplementary(j1,j2) ) {
-				curMinE = E_INF;
 
 				// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
 				for (k1=j1; k1-- > i1; ) {
@@ -166,10 +168,13 @@ fillHybridE_right( const size_t i1, const size_t i2
 				}
 				}
 
-				// store value
-				hybridE_right(j1-i1,j2-i2) = curMinE;
 				// update mfe if needed
-				updateOptima( si1,j1,si2,j2, hybridE_right(j1-i1,j2-i2) + energy.getE_init() + seedHandler.getSeedE(si1, si2), true );//, si1, si2 );
+				if (E_isNotINF(curMinE)) {
+					// seedE + rightE + E_init (not covered by rightE)
+					updateOptimalRightExt( si1,j1,si2,j2, seedE + curMinE + energy.getE_init(), true );
+					// update mfe for seed+rightExt
+					updateOptima( si1,j1,si2,j2, seedE + curMinE + energy.getE_init(),true);
+				}
 			}
 		}
 	}
@@ -187,19 +192,27 @@ fillHybridE_left( const size_t j1, const size_t j2 )
 
 	// global vars to avoid reallocation
 	size_t i1,i2,k1,k2;
+
 	//////////  FIRST ROUND : COMPUTE HYBRIDIZATION ENERGIES ONLY  ////////////
 
-	// current minimal value
-	E_type curMinE = E_INF;
+	const E_type seedE = seedHandler.getSeedE(j1, j2);
+	const size_t sl1 = seedHandler.getSeedLength1(j1, j2);
+	const size_t sl2 = seedHandler.getSeedLength2(j1, j2);
+	const size_t sj1 = j1+sl1-1;
+	const size_t sj2 = j2+sl2-1;
+	const E_type rightOptE = hybridE_right(j1opt-sj1, j2opt-sj2);
+
 	// iterate over all window starts j1 (seq1) and j2 (seq2)
 	for (i1=j1; j1-i1 < hybridE_left.size1(); i1--) {
 		// screen for right boundaries in seq2
 		for (i2=j2; j2-i2 < hybridE_left.size2(); i2--) {
-			// init current cell (e_init if just left (i1,i2) base pair)
-			hybridE_left(j1-i1,j2-i2) = i1==j1 && i2==j2 ? energy.getE_init() : E_INF;
+
+			// referencing cell access
+			E_type & curMinE = hybridE_left(j1-i1,j2-i2);
+			// init cell
+			curMinE = i1==j1 && i2==j2 ? energy.getE_init() : E_INF;
 			// check if complementary
 			if( i1<j1 && i2<j2 && energy.areComplementary(i1,i2) ) {
-				curMinE = E_INF;
 
 				// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
 				for (k1=i1; k1++ < j1; ) {
@@ -217,17 +230,21 @@ fillHybridE_left( const size_t j1, const size_t j2 )
 					}
 				} // k2
 			  } // k1
-
-				// store value
-				hybridE_left(j1-i1,j2-i2) = curMinE;
 			}
 			// update mfe if needed
-			if ( E_isNotINF( hybridE_left(j1-i1,j2-i2) ) ) {
-				const size_t sl1 = seedHandler.getSeedLength1(j1, j2);
-				const size_t sl2 = seedHandler.getSeedLength2(j1, j2);
-				const size_t sj1 = j1+sl1-1;
-				const size_t sj2 = j2+sl2-1;
-				PredictorMfe2d::updateOptima( i1,j1opt,i2,j2opt, hybridE_right(j1opt-sj1, j2opt-sj2) + hybridE_left(j1-i1,j2-i2) + seedHandler.getSeedE(j1, j2), true );
+			if ( E_isNotINF( curMinE ) ) {
+				// leftE (incl. E_init) + seedE
+				updateOptima( i1,sj1,i2,sj2, curMinE + seedE, true );
+
+				// check if right opt != right seed boundary
+				// check for max interaction length
+				if (j1opt != sj1
+					&& (j1opt+1-i1)<=energy.getAccessibility1().getMaxLength()
+					&& (j2opt+1-i2)<=energy.getAccessibility2().getMaxLength() )
+				{
+					// leftE (incl. E_init) + seedE + rightOptE
+					updateOptima( i1,j1opt,i2,j2opt, curMinE + seedE + rightOptE, true );
+				}
 			}
 		}
 	}

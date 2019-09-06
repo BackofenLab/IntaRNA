@@ -10,13 +10,65 @@ development version
 
 # IntaRNA
 + Zall (estimates) and derived output now available for all prediction models
++ outMode=E : report of ensemble information only
 
 # API
 * OutputHandler requires an OutputConstraint instances in construction
 * Predictor objects now access OutputConstraint instances via the OutputHandler;
   this simplifies the signature of the member functions
 * OutputConstraint now guides whether or not Zall is required for output
++ OutputHandlerEnsemble: reports ensemble information only
   
+
+190906 Martin Raden :
+ * tests/runIntaRNA.sh :
+   * tests are run for all data/*.parameter files (no explicit listing anymore)
+ + tests/*-modelX|S : explicitly testing model=X or =S
+ * IntaRNA/PredictorMfe2dHeuristicSeed :
+   * fillHybridE() : updateOptima() now called for all tested cases to reduce
+     heuristic bias in subopt listing
+ * IntaRNA/PredictorMfeEns :
+   * renaming Z_partitions to Z_partition
+   + updateOptimaUsingZ() : calls updateOptima() for all Z_partition entries
+   + reportOptima() : calls updateOptimaUsingZ() and super class reportOptima()
+   + traceBack() : central traceback for all ensemble-based predictors
+ * IntaRNA/PredictorMfeEns2d :
+   - traceBack()
+   * predict() :
+     - explicit updateOptima() calls
+ * IntaRNA/PredictorMfeEns2dHeuristic :
+   * predict() :
+     - explicit updateOptima() calls
+   * fillHybridZ() :
+     + explicit updateZ() calls for all recursion cases to reduce heuristic bias
+ * IntaRNA/PredictorMfe2dSeedExtension :
+   - updateOptima() : obsolete
+   * predict() :
+     + explicit j boundary computation to reduce considered index tuples when
+       updating optima
+ * IntaRNA/PredictorMfe2dSeedExtensionRIblast :
+   - updateOptima() : obsolete
+ * IntaRNA/PredictorMfe2dHeuristicSeedExtension :
+   * rename updateOptima() to updateOptimalRightExt()
+   + updateOptima() called for all tested right extensions
+   + updateOptima() called for all tested seed+leftExtension
+   + extended search range for seed+leftExtension (so far limited by jOptRight)
+ * IntaRNA/PredictorMfeEns2dSeedExtension :
+   - explicit updateOptima() calls
+   * traceBack() : reduced to super class traceBack() call seed addition
+ * IntaRNA/PredictorMfeEns2dHeuristicSeedExtension :
+   - explicit updateOptima() calls
+   + extended search range for seed+leftExtension (so far limited by jOptRight)
+   + updateZ() called for all tested right extensions
+   + updateZ() called for all tested seed+leftExtension
+
+190905 Martin Raden :
+ * IntaRNA/PredictorMfe2dHeuristicSeedExtension :
+   + updateOptima() also for left+seed called (less heuristic bias)
+ * IntaRNA/PredictorMfeEns* : ensemble-mfe prediction revised
+
+190830 Martin Raden :
+ + IntaRNA/OutputHandlerEnsemble : reports ensemble information only
 
 190828 Martin Raden :
  * Makefile.am :

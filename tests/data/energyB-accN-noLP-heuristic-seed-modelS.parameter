@@ -1,6 +1,6 @@
-mode = H
-seedBP=3
 model=S
+mode=H
+seedBP=3
 energy=B 
 tAcc=N
 qAcc=N

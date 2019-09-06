@@ -98,7 +98,7 @@ protected:
 protected:
 
 	/**
-	 * updates the mfe and j1opt/j2opt
+	 * updates j1opt/j2opt
 	 *
 	 * @param i1 the index of the first sequence interacting with i2
 	 * @param j1 the index of the first sequence interacting with j2
@@ -109,7 +109,7 @@ protected:
 	 */
 	virtual
 	void
-	updateOptima( const size_t i1, const size_t j1
+	updateOptimalRightExt( const size_t i1, const size_t j1
 			, const size_t i2, const size_t j2
 			, const E_type energy
 			, const bool isHybridE );
@@ -163,13 +163,11 @@ protected:
 inline
 void
 PredictorMfe2dHeuristicSeedExtension::
-updateOptima( const size_t i1, const size_t j1
+updateOptimalRightExt( const size_t i1, const size_t j1
 		, const size_t i2, const size_t j2
 		, const E_type energy
 		, const bool isHybridE )
 {
-	PredictorMfe2dSeedExtension::updateOptima(i1,j1,i2,j2,energy,isHybridE);
-
 	// store boundaries and energy of the optimal right extension
 	E_type fullE = isHybridE ? this->energy.getE(i1,j1,i2,j2,energy) : energy;
 	if (fullE < energy_opt) {

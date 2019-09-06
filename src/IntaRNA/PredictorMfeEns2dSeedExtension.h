@@ -117,8 +117,7 @@ protected:
 	fillHybridZ_right( const size_t i1, const size_t i2 );
 
 	/**
-	 * Fills a given interaction (boundaries given) with the according
-	 * hybridizing base pairs using hybridE_seed.
+	 * adds seed information and calls traceBack() of super class
 	 * @param interaction IN/OUT the interaction to fill
 	 */
 	virtual

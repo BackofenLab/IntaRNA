@@ -58,8 +58,8 @@ protected:
 	//! access to the prediction tracker of the super class
 	using PredictorMfe::predTracker;
 
-	//! map storing Z partitions for a given interaction
-	std::unordered_map<size_t, ZPartition> Z_partitions;
+	//! map storing the partition of Zall for all considered interaction sites
+	std::unordered_map<size_t, ZPartition> Z_partition;
 
 
 	/**
@@ -102,6 +102,31 @@ protected:
 				, const size_t i2, const size_t j2
 				, const Z_type partFunct
 				, const bool isHybridZ );
+
+	/**
+	 * Calls for the stored Z_partition information updateOptima() before
+	 * calling reportOptima() from its super class.
+	 */
+	virtual
+	void
+	reportOptima();
+
+	/**
+	 * Reports interaction boundaries only (no base pair tracking)
+	 * @param interaction the interaction to be traced
+	 */
+	virtual
+	void
+	traceBack( Interaction & interaction );
+
+private:
+
+	/**
+	 * Calls updateOptima() for each entry of Z_partition.
+	 */
+	virtual
+	void
+	updateOptimaUsingZ();
 
 };
 

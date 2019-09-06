@@ -65,14 +65,14 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 	seedHandler.setOffset1(r1.from);
 	seedHandler.setOffset2(r2.from);
 
-	const size_t interaction_size1 = std::min( energy.size1()
+	const size_t range_size1 = std::min( energy.size1()
 			, (r1.to==RnaSequence::lastPos?energy.size1()-1:r1.to)-r1.from+1 );
-	const size_t interaction_size2 = std::min( energy.size2()
+	const size_t range_size2 = std::min( energy.size2()
 			, (r2.to==RnaSequence::lastPos?energy.size2()-1:r2.to)-r2.from+1 );
 
 	// compute seed interactions for whole range
 	// and check if any seed possible
-	if (seedHandler.fillSeed( 0, interaction_size1-1, 0, interaction_size2-1 ) == 0) {
+	if (seedHandler.fillSeed( 0, range_size1-1, 0, range_size2-1 ) == 0) {
 		// trigger empty interaction reporting
 		initOptima();
 		reportOptima();
@@ -87,8 +87,8 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 
 	size_t si1 = RnaSequence::lastPos, si2 = RnaSequence::lastPos;
 	while( seedHandler.updateToNextSeed(si1,si2
-			, 0, interaction_size1+1-seedHandler.getConstraint().getBasePairs()
-			, 0, interaction_size2+1-seedHandler.getConstraint().getBasePairs()) )
+			, 0, range_size1+1-seedHandler.getConstraint().getBasePairs()
+			, 0, range_size2+1-seedHandler.getConstraint().getBasePairs()) )
 	{
 		const Z_type seedZ = energy.getBoltzmannWeight( seedHandler.getSeedE(si1, si2) );
 
@@ -97,7 +97,7 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 		const size_t sj1 = si1+sl1-1;
 		const size_t sj2 = si2+sl2-1;
 		// check if seed fits into interaction range
-		if (sj1 > interaction_size1 || sj2 > interaction_size2)
+		if (sj1 > range_size1 || sj2 > range_size2)
 			continue;
 		const size_t maxMatrixLen1 = energy.getAccessibility1().getMaxLength()-sl1+1;
 		const size_t maxMatrixLen2 = energy.getAccessibility2().getMaxLength()-sl2+1;
@@ -107,7 +107,7 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 		fillHybridZ_left(si1, si2);
 
 		// ER
-		hybridZ_right.resize( std::min(interaction_size1-sj1, maxMatrixLen1), std::min(interaction_size2-sj2, maxMatrixLen2) );
+		hybridZ_right.resize( std::min(range_size1-sj1, maxMatrixLen1), std::min(range_size2-sj2, maxMatrixLen2) );
 		fillHybridZ_right(sj1, sj2);
 
 		// updateZ for all boundary combinations
@@ -133,15 +133,6 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 		} // di1
 
 	} // si1 / si2
-
-	// update ensemble mfe
-	for (std::unordered_map<size_t, ZPartition >::const_iterator it = Z_partitions.begin(); it != Z_partitions.end(); ++it)
-	{
-		// if partition function is > 0
-		if (Z_isNotINF(it->second.partZ) && it->second.partZ > 0) {
-			PredictorMfe::updateOptima( it->second.i1, it->second.j1, it->second.i2, it->second.j2, energy.getE(it->second.partZ), true, false );
-		}
-	}
 
 	// report mfe interaction
 	reportOptima();
@@ -209,8 +200,12 @@ fillHybridZ_left( const size_t j1, const size_t j2 )
 	// iterate over all window starts i1 (seq1) and i2 (seq2)
 	for (i1=j1; j1-i1 < hybridZ_left.size1(); i1-- ) {
 		for (i2=j2; j2-i2 < hybridZ_left.size2(); i2-- ) {
+
+			// referencing cell access
+			Z_type & curZ = hybridZ_left(j1-i1,j2-i2);
+
 			// init current cell (0 if not just right-most (j1,j2) base pair)
-			hybridZ_left(j1-i1,j2-i2) = (i1==j1 && i2==j2) ? energy.getBoltzmannWeight(energy.getE_init()) : 0.0;
+			curZ = (i1==j1 && i2==j2) ? energy.getBoltzmannWeight(energy.getE_init()) : 0.0;
 
 			// check if complementary (use global sequence indexing)
 			if( i1<j1 && i2<j2 && energy.areComplementary(i1,i2) ) {
@@ -224,7 +219,7 @@ fillHybridZ_left( const size_t j1, const size_t j2 )
 						if (k2-i2 > energy.getMaxInternalLoopSize2()+1) break;
 						// check if (k1,k2) are valid left boundary
 						if ( ! Z_equal(hybridZ_left(j1-k1,j2-k2), 0.0) ) {
-							hybridZ_left(j1-i1,j2-i2) += energy.getBoltzmannWeight(energy.getE_interLeft(i1,k1,i2,k2)) * hybridZ_left(j1-k1,j2-k2);
+							curZ += energy.getBoltzmannWeight(energy.getE_interLeft(i1,k1,i2,k2)) * hybridZ_left(j1-k1,j2-k2);
 						}
 					} // k2
 				} // k1
@@ -267,10 +262,10 @@ fillHybridZ_left( const size_t j1, const size_t j2 )
 								E_type nonOverlapE = getNonOverlappingEnergy(i1, i2, si1overlap, si2overlap);
 								// substract energy.getBoltzmannWeight( nonOverlapE ) * hybridZ_left( si1overlap, si2overlap bis anchor seed [==1 falls gleich])
 								Z_type correctionTerm = energy.getBoltzmannWeight( nonOverlapE ) * hybridZ_left( j1-si1overlap, j2-si2overlap);
-								hybridZ_left(j1-i1, j2-i2) -= correctionTerm;
+								curZ -= correctionTerm;
 								// sanity ensurence
-								if (hybridZ_left(j1-i1, j2-i2) < 0) {
-									hybridZ_left(j1-i1, j2-i2) = Z_type(0.0);
+								if (curZ < 0) {
+									curZ = Z_type(0.0);
 								}
 							}
 						} else {
@@ -279,10 +274,10 @@ fillHybridZ_left( const size_t j1, const size_t j2 )
 							// if no S'
 							// substract seedZ * hybridZ_left(right end seed bis anchor seed)
 							Z_type correctionTerm = energy.getBoltzmannWeight(seedE) * hybridZ_left( j1-(i1+seedHandler.getSeedLength1(i1, i2)-1), j2-(i2+seedHandler.getSeedLength2(i1, i2)-1));
-							hybridZ_left(j1-i1, j2-i2) -= correctionTerm;
+							curZ -= correctionTerm;
 							// sanity ensurence
-							if (hybridZ_left(j1-i1, j2-i2) < 0) {
-								hybridZ_left(j1-i1, j2-i2) = Z_type(0.0);
+							if (curZ < 0) {
+								curZ = Z_type(0.0);
 							}
 						}
 					} // substractThisSeed
@@ -317,8 +312,11 @@ fillHybridZ_right( const size_t i1, const size_t i2 )
 	for (j1=i1; j1-i1 < hybridZ_right.size1(); j1++ ) {
 		for (j2=i2; j2-i2 < hybridZ_right.size2(); j2++ ) {
 
+			// referencing cell access
+			Z_type & curZ = hybridZ_right(j1-i1,j2-i2);
+
 			// init partition function for current cell -> (i1,i2) are complementary per definition
-			hybridZ_right(j1-i1,j2-i2) = i1==j1 && i2==j2 ? energy.getBoltzmannWeight(0.0) : 0.0;
+			curZ = i1==j1 && i2==j2 ? energy.getBoltzmannWeight(0.0) : 0.0;
 
 			// check if complementary free base pair
 			if( i1<j1 && i2<j2 && energy.areComplementary(j1,j2) ) {
@@ -333,7 +331,7 @@ fillHybridZ_right( const size_t i1, const size_t i2 )
 						// check if (k1,k2) are valid left boundary
 						if ( ! Z_equal(hybridZ_right(k1-i1,k2-i2), 0.0) ) {
 							// update partition function
-							hybridZ_right(j1-i1,j2-i2) += energy.getBoltzmannWeight(energy.getE_interLeft(k1,j1,k2,j2)) * hybridZ_right(k1-i1,k2-i2);
+							curZ += energy.getBoltzmannWeight(energy.getE_interLeft(k1,j1,k2,j2)) * hybridZ_right(k1-i1,k2-i2);
 						}
 					} // k2
 				} // k1
@@ -349,34 +347,9 @@ void
 PredictorMfeEns2dSeedExtension::
 traceBack( Interaction & interaction )
 {
-	// temporary access
-	const OutputConstraint & outConstraint = output.getOutputConstraint();
-	// check if something to trace
-	if (interaction.basePairs.size() < 2) {
-		return;
-	}
 
-#if INTARNA_IN_DEBUG_MODE
-	// sanity checks
-	if ( interaction.basePairs.size() != 2 ) {
-		throw std::runtime_error("PredictorMfeEns2dSeedExtension::traceBack() : given interaction does not contain boundaries only");
-	}
-#endif
-
-	// check for single interaction
-	if (interaction.basePairs.at(0).first == interaction.basePairs.at(1).first) {
-		// delete second boundary (identical to first)
-		interaction.basePairs.resize(1);
-		// update done
-		return;
-	}
-
-#if INTARNA_IN_DEBUG_MODE
-	// sanity checks
-	if ( ! interaction.isValid() ) {
-		throw std::runtime_error("PredictorMfeEns2dSeedExtension::traceBack() : given interaction not valid");
-	}
-#endif
+	// forward tracing
+	PredictorMfeEns::traceBack(interaction);
 
 	// add seeds in region
 	seedHandler.addSeeds( interaction );

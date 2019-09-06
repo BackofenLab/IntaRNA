@@ -64,14 +64,14 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 	seedHandler.setOffset1(r1.from);
 	seedHandler.setOffset2(r2.from);
 
-	const size_t interaction_size1 = std::min( energy.size1()
+	const size_t range_size1 = std::min( energy.size1()
 			, (r1.to==RnaSequence::lastPos?energy.size1()-1:r1.to)-r1.from+1 );
-	const size_t interaction_size2 = std::min( energy.size2()
+	const size_t range_size2 = std::min( energy.size2()
 			, (r2.to==RnaSequence::lastPos?energy.size2()-1:r2.to)-r2.from+1 );
 
 	// compute seed interactions for whole range
 	// and check if any seed possible
-	if (seedHandler.fillSeed( 0, interaction_size1-1, 0, interaction_size2-1 ) == 0) {
+	if (seedHandler.fillSeed( 0, range_size1-1, 0, range_size2-1 ) == 0) {
 		// trigger empty interaction reporting
 		initOptima();
 		reportOptima();
@@ -84,8 +84,8 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 
 	size_t si1 = RnaSequence::lastPos, si2 = RnaSequence::lastPos;
 	while( seedHandler.updateToNextSeed(si1,si2
-			, 0, interaction_size1+1-seedHandler.getConstraint().getBasePairs()
-			, 0, interaction_size2+1-seedHandler.getConstraint().getBasePairs()) )
+			, 0, range_size1+1-seedHandler.getConstraint().getBasePairs()
+			, 0, range_size2+1-seedHandler.getConstraint().getBasePairs()) )
 	{
 		// get energy and boundaries of seed
 		E_type seedE = seedHandler.getSeedE(si1, si2);
@@ -96,7 +96,7 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 		const size_t maxMatrixLen1 = energy.getAccessibility1().getMaxLength()-sl1+1;
 		const size_t maxMatrixLen2 = energy.getAccessibility2().getMaxLength()-sl2+1;
 		// check if seed fits into interaction range
-		if (sj1 > interaction_size1 || sj2 > interaction_size2)
+		if (sj1 > range_size1 || sj2 > range_size2)
 			continue;
 
 		// EL
@@ -104,21 +104,23 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 		fillHybridE_left(si1, si2);
 
 		// ER
-		hybridE_right.resize( std::min(interaction_size1-sj1, maxMatrixLen1), std::min(interaction_size2-sj2, maxMatrixLen2) );
+		hybridE_right.resize( std::min(range_size1-sj1, maxMatrixLen1), std::min(range_size2-sj2, maxMatrixLen2) );
 		fillHybridE_right(sj1, sj2);
 
 		// update Optimum for all boundary combinations
 		for (int i1 = 0; i1 < hybridE_left.size1(); i1++) {
+			const size_t j1max = std::min(maxMatrixLen1-i1, hybridE_right.size1());
 			// ensure max interaction length in seq 1
-			for (int j1 = 0; j1 < hybridE_right.size1(); j1++) {
-				if (sj1+j1-si1+i1 >= energy.getAccessibility1().getMaxLength()) continue;
+			for (int j1 = 0; j1 < j1max; j1++) {
+				assert(sj1+j1-si1+i1 < energy.getAccessibility1().getMaxLength());
 				for (int i2 = 0; i2 < hybridE_left.size2(); i2++) {
 					if (E_isINF(hybridE_left(i1,i2))) continue;
+					const size_t j2max = std::min(maxMatrixLen2-i2, hybridE_right.size2());
 					// ensure max interaction length in seq 2
-					for (int j2 = 0; j2 < hybridE_right.size2(); j2++) {
-						if (sj2+j2-si2+i2 >= energy.getAccessibility2().getMaxLength()) continue;
+					for (int j2 = 0; j2 < j2max; j2++) {
+						assert(sj2+j2-si2+i2 < energy.getAccessibility2().getMaxLength());
 						if (E_isINF(hybridE_right(j1,j2))) continue;
-						PredictorMfe::updateOptima( si1-i1, sj1+j1, si2-i2, sj2+j2, seedE + hybridE_left(i1,i2) + hybridE_right(j1,j2), true );
+						updateOptima( si1-i1, sj1+j1, si2-i2, sj2+j2, seedE + hybridE_left(i1,i2) + hybridE_right(j1,j2), true );
 					} // j2
 				} // i2
 			} // j1

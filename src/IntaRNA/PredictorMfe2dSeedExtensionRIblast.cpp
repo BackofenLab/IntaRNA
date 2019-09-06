@@ -141,7 +141,7 @@ predict( const IndexRange & r1, const IndexRange & r2  )
 					for (int j2 = 0; j2 < hybridE_right.size2() ; j2++) {
 						if (extension.j2+j2-extension.i2+i2 > energy.getAccessibility2().getMaxLength()) continue;
 						if (E_isINF(hybridE_right(j1,j2))) continue;
-						PredictorMfe::updateOptima( extension.i1-i1, extension.j1+j1, extension.i2-i2, extension.j2+j2, extension.energy + hybridE_left(i1,i2) + hybridE_right(j1,j2), true );
+						updateOptima( extension.i1-i1, extension.j1+j1, extension.i2-i2, extension.j2+j2, extension.energy + hybridE_left(i1,i2) + hybridE_right(j1,j2), true );
 					} // j2
 				} // i2
 			} // j1

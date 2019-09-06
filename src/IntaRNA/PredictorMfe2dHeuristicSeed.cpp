@@ -183,11 +183,13 @@ fillHybridE()
 								// store total energy
 								curCellSeedEtotal = curEseedtotal;
 							}
+							// update mfe
+							updateOptima(i1,rightExt->j1,i2,rightExt->j2,curEseedtotal,false);
 						}
 						// for noLP : check for explicit interior loop after seed
 						// assumption: seed fulfills noLP
 						if (outConstraint.noLP) {
-							// get energy of seed only explicitely
+							// get energy of seed only explicitly
 							curE = seedE + energy.getE_init();
 							// check if this combination yields better energy
 							curEseedtotal = energy.getE(i1,sj1,i2,sj2,curE);
@@ -203,6 +205,8 @@ fillHybridE()
 								// store total energy
 								curCellSeedEtotal = curEseedtotal;
 							}
+							// update mfe for seed only
+							updateOptima(i1,sj1,i2,sj2,curEseedtotal,false);
 							// iterate over all loop sizes w1 (seq1) and w2 (seq2) (minus 1)
 							for (w1=1; w1-1 <= energy.getMaxInternalLoopSize1() && sj1+w1<hybridE.size1(); w1++) {
 							for (w2=1; w2-1 <= energy.getMaxInternalLoopSize2() && sj2+w2<hybridE.size2(); w2++) {
@@ -229,8 +233,10 @@ fillHybridE()
 										// set new energy
 										curCellSeed->E = curE;
 										// store total energy to avoid recomputation
-										curCellSeedEtotal = curEtotal;
+										curCellSeedEtotal = curEseedtotal;
 									}
+									// update mfe
+									updateOptima(i1,rightExt->j1,i2,rightExt->j2,curEseedtotal,false);
 								}
 
 							} } // w1 w2
@@ -278,7 +284,7 @@ fillHybridE()
 						}
 
 						//////////////////////////////////////////////////////////
-						// update hybridE including seed constraint
+						// update hybridE_seed including seed constraint
 						//////////////////////////////////////////////////////////
 
 						// direct cell access to right side end of loop (seed has to be to the right of it)
@@ -307,14 +313,13 @@ fillHybridE()
 								// store overall energy
 								curCellSeedEtotal = curEseedtotal;
 							}
+							// update mfe
+							updateOptima(i1,rightExt->j1,i2,rightExt->j2,curEseedtotal,false);
 						}
 
 					} // w2
 					} // w1
 				}
-
-				// update mfe if needed
-				updateOptima( i1,curCellSeed->j1, i2,curCellSeed->j2, curCellSeedEtotal, false );
 
 			} // valid base pair
 

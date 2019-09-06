@@ -7,17 +7,11 @@ else
 	GENERATE_OUTPUT=true
 fi
 
+# subdirectory of test data
+datadir=data
+
 # list of all test names (parameter and output file in data subfolder) 
-IntaRNA_tests="\
-				energyB-accN-exact \
-				energyB-accN-exact-seed \
-				energyB-accN-heuristic \
-				energyB-accN-heuristic-seed \
-				energyB-accN-noLP-exact \
-				energyB-accN-noLP-exact-seed \
-				energyB-accN-noLP-heuristic \
-				energyB-accN-noLP-heuristic-seed \
-				"
+IntaRNA_tests=`ls $datadir/*.parameter | sed "s/^$datadir\/\(\S*\).parameter$/\1/g"`
 
 DIFFERENCES=false
 
@@ -32,8 +26,6 @@ DIFFERENCES=false
 function calltest {
     name="$1"
     diffopts="${2:-"--normal"}"
-    
-    datadir=data
 
     resultfile=$datadir/$name.testout
     reference_resultsfile=$datadir/$name.testresult

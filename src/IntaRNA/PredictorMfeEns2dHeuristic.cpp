@@ -69,16 +69,6 @@ predict( const IndexRange & r1
 	// compute table and update mfeInteraction
 	fillHybridZ();
 
-	// update ensemble mfe
-	for (std::unordered_map<size_t, ZPartition >::const_iterator it = Z_partitions.begin(); it != Z_partitions.end(); ++it)
-	{
-		// if partition function is > 0
-		if (Z_isNotINF(it->second.partZ) && it->second.partZ > 0) {
-			//LOG(DEBUG) << "partZ: " << it->second.partZ;
-			PredictorMfe::updateOptima( it->second.i1, it->second.j1, it->second.i2, it->second.j2, energy.getE(it->second.partZ), true, false );
-		}
-	}
-
 	// trace back and output handler update
 	reportOptima();
 
@@ -95,7 +85,7 @@ fillHybridZ()
 	const OutputConstraint & outConstraint = output.getOutputConstraint();
 	// compute entries
 	// current minimal value
-	Z_type curE = Z_INF;
+	Z_type curZ = Z_INF;
 	E_type curEtotal = E_INF, curCellEtotal = E_INF;
 	size_t i1,i2,w1,w2;
 
@@ -159,27 +149,29 @@ fillHybridZ()
 						continue;
 					}
 
-					// compute energy for this loop sizes
-					curE = iStackZ * energy.getBoltzmannWeight(energy.getE_interLeft(i1+noLpShift,i1+noLpShift+w1,i2+noLpShift,i2+noLpShift+w2)) * rightExt->Z;
-					// check if this combination yields better energy
-					curEtotal = energy.getE(curE);
+					// compute Z for this loop sizes
+					curZ = iStackZ * energy.getBoltzmannWeight(energy.getE_interLeft(i1+noLpShift,i1+noLpShift+w1,i2+noLpShift,i2+noLpShift+w2)) * rightExt->Z;
 
+					// update overall partition function information for current right extension
+					updateZ( i1,rightExt->j1, i2,rightExt->j2, curZ, true );
+
+					// check if this combination yields better energy
+					curEtotal = energy.getE(curZ);
+
+					// update best right extension for (i1,i2) in curCell
 					if ( curEtotal < curCellEtotal )
 					{
 						// update current best for this left boundary
 						// copy right boundary
 						*curCell = *rightExt;
-						// set new energy
-						curCell->Z += curE;
+						// set new partition function
+						curCell->Z = curZ;
 						// store total energy to avoid recomputation
 						curCellEtotal = curEtotal;
 					}
 
 				} // w2
 				} // w1
-
-				// update mfe if needed
-				updateZ( i1,curCell->j1, i2,curCell->j2, curCell->Z, true );
 
 			} // valid base pair
 
@@ -197,8 +189,6 @@ getNextBest( Interaction & curBest )
 
 	// get original
 	const Z_type curBestE = curBest.energy;
-
-	// TODO replace index iteration with something based on ranges from reportedInteractions
 
 	// identify cell with next best non-overlapping interaction site
 	// iterate (decreasingly) over all left interaction starts

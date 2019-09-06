@@ -89,15 +89,6 @@ protected:
 				);
 
 	/**
-	 * Fills a given interaction (boundaries given) with the according
-	 * hybridizing base pairs.
-	 * @param interaction IN/OUT the interaction to fill
-	 */
-	virtual
-	void
-	traceBack( Interaction & interaction );
-
-	/**
 	 * Identifies the next best interaction with an energy equal to or higher
 	 * than the given interaction. The new interaction will not overlap any
 	 * index range stored in reportedInteractions.

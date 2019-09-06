@@ -31,7 +31,7 @@ PredictorMfeEns::
 initZ()
 {
 	// reset storage
-	Z_partitions.clear();
+	Z_partition.clear();
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -84,7 +84,7 @@ updateZ( const size_t i1, const size_t j1
 	key += j1 * pow(maxLength, 1);
 	key += i2 * pow(maxLength, 2);
 	key += j2 * pow(maxLength, 3);
-	if ( Z_partitions.find(key) == Z_partitions.end() ) {
+	if ( Z_partition.find(key) == Z_partition.end() ) {
 		// create new entry
 		ZPartition zPartition;
 		zPartition.i1 = i1;
@@ -92,12 +92,80 @@ updateZ( const size_t i1, const size_t j1
 		zPartition.i2 = i2;
 		zPartition.j2 = j2;
 		zPartition.partZ = partZ;
-		Z_partitions[key] = zPartition;
+		Z_partition[key] = zPartition;
 	} else {
 		// update entry
-		ZPartition & zPartition = Z_partitions[key];
+		ZPartition & zPartition = Z_partition[key];
 		zPartition.partZ += partZ;
 	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void
+PredictorMfeEns::
+updateOptimaUsingZ()
+{
+	for (std::unordered_map<size_t, ZPartition >::const_iterator it = Z_partition.begin(); it != Z_partition.end(); ++it)
+	{
+		// if partition function is > 0
+		if (Z_isNotINF(it->second.partZ) && it->second.partZ > 0) {
+			PredictorMfe::updateOptima( it->second.i1, it->second.j1, it->second.i2, it->second.j2, energy.getE(it->second.partZ), true, false );
+		}
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void
+PredictorMfeEns::
+reportOptima()
+{
+	// update optima from Z information
+	updateOptimaUsingZ();
+
+	// call super-class function
+	PredictorMfe::reportOptima();
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void
+PredictorMfeEns::
+traceBack( Interaction & interaction )
+{
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
+	// check if something to trace
+	if (interaction.basePairs.size() < 2) {
+		return;
+	}
+
+#if INTARNA_IN_DEBUG_MODE
+	// sanity checks
+	if ( interaction.basePairs.size() != 2 ) {
+		throw std::runtime_error("PredictorMfeEns::traceBack() : given interaction does not contain boundaries only");
+	}
+#endif
+
+	// ensure sorting
+	interaction.sort();
+
+	// check for single base pair interaction
+	if (interaction.basePairs.at(0).first == interaction.basePairs.at(1).first) {
+		// delete second boundary (identical to first)
+		interaction.basePairs.resize(1);
+		// update done
+		return;
+	}
+
+#if INTARNA_IN_DEBUG_MODE
+	// sanity checks
+	if ( ! interaction.isValid() ) {
+		throw std::runtime_error("PredictorMfeEns2d::traceBack() : given interaction is not valid");
+	}
+#endif
+
 }
 
 ////////////////////////////////////////////////////////////////////////////
