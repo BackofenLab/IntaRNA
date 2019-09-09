@@ -8,16 +8,16 @@ export GCC_COLORS ?= "error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:
 SUBDIRS = src perl tests doc .
 
 # list of all personalities to be installed
-PERSONALITIES = `grep -P "^\\s+case\\s+IntaRNA\\S+\\s*:\\s*return" $(abs_top_srcdir)/src/bin/CommandLineParsing.h | sed "s/^\\s*case\\s\\+\\(IntaRNA\\S*\\)\\s\\+:\\s\\+return.*/\\1/g"`
+#PERSONALITIES = `grep -P "^\\s+case\\s+IntaRNA\\S+\\s*:\\s*return" $(abs_top_srcdir)/src/bin/CommandLineParsing.h | sed "s/^\\s*case\\s\\+\\(IntaRNA\\S*\\)\\s\\+:\\s\\+return.*/\\1/g"`
+PERSONALITIES=@PERSONALITIES@
 
 # create tool links to activate respective personalities
 install-exec-hook:
-	@echo " => creating personality links"
-	@cd $(DESTDIR)$(bindir); \
-	@for p in $(PERSONALITIES); do \
-	@	$(LN_S) -f IntaRNA$(EXEEXT) $$p$(EXEEXT); \
-	@done;
-
+	@echo " => creating personality links" 
+	@cd $(DESTDIR)$(bindir); \ 
+	for p in @PERSONALITIES@; do \
+		$(LN_S) -f IntaRNA$(EXEEXT) $$p$(EXEEXT); \
+	done
 
 ################################################################
 # doxygen
