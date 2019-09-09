@@ -70,6 +70,7 @@ public:
 		seedED2, //!< ED value of seq2 of the seed only (excluding rest)
 		seedPu1, //!< probability of seed region to be accessible for seq1
 		seedPu2, //!< probability of seed region to be accessible for seq2
+		w, //!< Boltzmann weight of the interaction energy
 		// output only available if Zall was computed (outConstraint.needZall)
 		Eall, //!< ensemble energy of all interactions (outConstraint.needZall)
 		Zall, //!< partition function of all interactions (outConstraint.needZall)
@@ -134,6 +135,7 @@ protected:
 			colType2string[E_norm] = "E_norm";
 			colType2string[E_hybridNorm] = "E_hybridNorm";
 			colType2string[E_add] = "E_add";
+			colType2string[w] = "w";
 			colType2string[seedStart1] = "seedStart1";
 			colType2string[seedEnd1] = "seedEnd1";
 			colType2string[seedStart2] = "seedStart2";
