@@ -172,6 +172,8 @@ fillHybridE()
 							curE = seedE + rightExt->val;
 							// check if this combination yields better energy
 							curEseedtotal = energy.getE(i1,rightExt->j1,i2,rightExt->j2,curE);
+							// update Zall
+							updateZall( i1,rightExt->j1,i2,rightExt->j2, curEseedtotal, false );
 							// update optimum
 							if ( curEseedtotal < curCellSeedEtotal )
 							{
@@ -183,8 +185,6 @@ fillHybridE()
 								// store total energy
 								curCellSeedEtotal = curEseedtotal;
 							}
-							// update mfe
-							updateOptima(i1,curCellSeed->j1,i2,curCellSeed->j2,curEseedtotal,false);
 						}
 						// for noLP : check for explicit interior loop after seed
 						// assumption: seed fulfills noLP
@@ -193,6 +193,8 @@ fillHybridE()
 							curE = seedE + energy.getE_init();
 							// check if this combination yields better energy
 							curEseedtotal = energy.getE(i1,sj1,i2,sj2,curE);
+							// update Zall for seed only (if otherwise stacking enforced)
+							updateZall( i1,sj1,i2,sj2, curEseedtotal, false );
 							// update optimum
 							if ( curEseedtotal < curCellSeedEtotal )
 							{
@@ -205,8 +207,6 @@ fillHybridE()
 								// store total energy
 								curCellSeedEtotal = curEseedtotal;
 							}
-							// update mfe for seed only
-							updateOptima(i1,sj1,i2,sj2,curEseedtotal,false);
 							// iterate over all loop sizes w1 (seq1) and w2 (seq2) (minus 1)
 							for (w1=1; w1-1 <= energy.getMaxInternalLoopSize1() && sj1+w1<hybridE.size1(); w1++) {
 							for (w2=1; w2-1 <= energy.getMaxInternalLoopSize2() && sj2+w2<hybridE.size2(); w2++) {
@@ -225,6 +225,8 @@ fillHybridE()
 									curE = seedE + curEloop + rightExt->val;
 									// check if this combination yields better energy
 									curEseedtotal = energy.getE(i1,rightExt->j1,i2,rightExt->j2,curE);
+									// update Zall
+									updateZall( i1,rightExt->j1,i2,rightExt->j2, curEseedtotal, false );
 									if ( curEseedtotal < curCellSeedEtotal )
 									{
 										// update current best for this left boundary
@@ -235,8 +237,6 @@ fillHybridE()
 										// store total energy to avoid recomputation
 										curCellSeedEtotal = curEseedtotal;
 									}
-									// update mfe
-									updateOptima(i1,curCellSeed->j1,i2,curCellSeed->j2,curEseedtotal,false);
 								}
 
 							} } // w1 w2
@@ -313,15 +313,16 @@ fillHybridE()
 								// store overall energy
 								curCellSeedEtotal = curEseedtotal;
 							}
-							// update mfe
 							// avoid Z update; otherwise double-counting of interactions
 							//   --> that way, underestimation of Z
-							updateOptima(i1,rightExt->j1,i2,rightExt->j2,curEseedtotal,false, false);
 						}
 
 					} // w2
 					} // w1
 				}
+
+			// update mfe
+			updateOptima(i1,curCellSeed->j1,i2,curCellSeed->j2,curCellSeedEtotal,false, false);
 
 			} // valid base pair
 

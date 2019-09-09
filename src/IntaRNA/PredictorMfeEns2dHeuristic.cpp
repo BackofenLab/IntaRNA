@@ -130,7 +130,9 @@ fillHybridZ()
 				*curCell = BestInteractionZ(iStackZ * energy.getBoltzmannWeight(energy.getE_init()), i1+noLpShift, i2+noLpShift);
 
 				// current best total energy value (covers to far E_init only)
-				curCellEtotal = energy.getE(curCell->val);
+				curCellEtotal = energy.getE(i1,i1+noLpShift, i2,i2+noLpShift ,energy.getE(curCell->val));
+				// update overall partition function information for initial bps only
+				updateZ( i1,curCell->j1, i2,curCell->j2, curCell->val, true );
 
 				// iterate over all loop sizes w1 (seq1) and w2 (seq2) (minus 1)
 				for (w1=1; w1-1 <= energy.getMaxInternalLoopSize1() && i1+w1+noLpShift<hybridZ.size1(); w1++) {
@@ -155,7 +157,7 @@ fillHybridZ()
 					updateZ( i1,rightExt->j1, i2,rightExt->j2, curZ, true );
 
 					// check if this combination yields better energy
-					curEtotal = energy.getE(curZ);
+					curEtotal = energy.getE(i1,rightExt->j1, i2,rightExt->j2, energy.getE(curZ));
 
 					// update best right extension for (i1,i2) in curCell
 					if ( curEtotal < curCellEtotal )

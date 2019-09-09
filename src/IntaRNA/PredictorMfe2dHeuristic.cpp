@@ -129,6 +129,8 @@ fillHybridE()
 
 				// current best total energy value (covers to far E_init only)
 				curCellEtotal = energy.getE(i1,curCell->j1,i2,curCell->j2,curCell->val);
+				// update Zall
+				updateZall( i1,curCell->j1,i2,curCell->j2, curCellEtotal, false );
 
 				// iterate over all loop sizes w1 (seq1) and w2 (seq2) (minus 1)
 				for (w1=1; w1-1 <= energy.getMaxInternalLoopSize1() && i1+w1+noLpShift<hybridE.size1(); w1++) {
@@ -149,6 +151,9 @@ fillHybridE()
 					curE = iStackE + energy.getE_interLeft(i1+noLpShift,i1+noLpShift+w1,i2+noLpShift,i2+noLpShift+w2) + rightExt->val;
 					// check if this combination yields better energy
 					curEtotal = energy.getE(i1,rightExt->j1,i2,rightExt->j2,curE);
+					// update Zall
+					updateZall( i1,rightExt->j1,i2,rightExt->j2, curEtotal, false );
+					// update best extension
 					if ( curEtotal < curCellEtotal )
 					{
 						// update current best for this left boundary
@@ -164,7 +169,7 @@ fillHybridE()
 				} // w1
 
 				// update mfe if needed
-				updateOptima( i1,curCell->j1, i2,curCell->j2, curCellEtotal, false );
+				updateOptima( i1,curCell->j1, i2,curCell->j2, curCellEtotal, false, false );
 
 			} // valid base pair
 

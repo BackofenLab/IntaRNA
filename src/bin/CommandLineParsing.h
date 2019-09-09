@@ -48,6 +48,7 @@ public:
 		NOT_PARSED_YET = 999
 	};
 
+	// TODO if extended: also extend both getPersonality() and getPersonalityName()
 	enum Personality {
 		IntaRNA,		// default
 		IntaRNA1,		// IntaRNA v1 like setup
@@ -60,7 +61,6 @@ public:
 		IntaRNAduplex,	// RNAhybrid/RNAduplex-like
 		IntaRNAexact	// RNAup-like exact predictions
 	};
-	// TODO if extended: also extend both getPersonality() and getPersonalityName()
 
 
 	/**
@@ -70,6 +70,9 @@ public:
 	std::string
 	getPersonalityName( Personality p ) {
 		switch(p) {
+		// the following case list is parsed by ROOT/Makefile.am to generate
+		// respective binary links for each personality
+		// thus: keep the one-line format!
 		case IntaRNA : return "IntaRNA";
 		case IntaRNA1 : return "IntaRNA1";
 		case IntaRNA2 : return "IntaRNA2";

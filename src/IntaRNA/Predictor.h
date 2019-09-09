@@ -122,6 +122,28 @@ protected:
 				, const bool isHybridE
 				, const bool incrementZall = false ) = 0;
 
+	/**
+	 * Updates the global Zall partition function.
+	 *
+	 * Note: should not be called for interactions for which
+	 * updateOptima(..,incrementZall=true) is called. Otherwise, these
+	 * interactions are considered multiple times.
+	 *
+	 * @param i1 the index of the first sequence interacting with i2
+	 * @param j1 the index of the first sequence interacting with j2
+	 * @param i2 the index of the second sequence interacting with i1
+	 * @param j2 the index of the second sequence interacting with j1
+	 * @param energy the energy of the interaction site
+	 * @param isHybridE whether or not the given energy is only the
+	 *        hybridization energy (init+loops) or the total interaction energy
+	 * @param incrementZall whether or not Zall is to be incremented (if needed)
+	 */
+	virtual
+	void
+	updateZall( const size_t i1, const size_t j1
+				, const size_t i2, const size_t j2
+				, const E_type energy
+				, const bool isHybridE );
 
 
 
@@ -199,11 +221,39 @@ incrementZall( const Z_type partZ )
 {
 #if INTARNA_IN_DEBUG_MODE
 	if ( (std::numeric_limits<Z_type>::max() - partZ) <= Zall) {
-		LOG(WARNING) <<"PredictorMfeEns::updateZ() : partition function overflow! Recompile with larger partition function data type!";
+		LOG(WARNING) <<"PredictorMfeEns::incrementZall() : partition function overflow! Recompile with larger partition function data type!";
 	}
 #endif
 	// increment overall partition function
 	Zall += partZ;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void
+Predictor::
+updateZall( const size_t i1, const size_t j1
+		, const size_t i2, const size_t j2
+		, const E_type interE
+		, const bool isHybridE )
+{
+
+	// ignore invalid reports
+	if (E_isINF(interE) || interE >= E_MAX) {
+		return;
+	}
+
+	// increment Zall with BW of overall energy
+	incrementZall(
+			energy.getBoltzmannWeight(
+					isHybridE ?
+							energy.getE( i1,j1, i2,j2, interE )
+							: interE
+			));
 }
 
 ////////////////////////////////////////////////////////////////////////////

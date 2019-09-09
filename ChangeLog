@@ -26,6 +26,33 @@
 ################################################################################  
 ################################################################################  
 
+190909 Martin Raden :
+ * Makefile.am :
+   - explicit personality list for link generation; replaced by
+   + automatic link generation for each personality
+ * IntaRNA/OutputHandlerCsv : 
+   + 'w' = Boltzmann weight output
+ * IntaRNA/Predictor :
+   + updateZall() : updates Zall with a given interaction energy
+ * IntaRNA/PredictorMfe :
+   * updateOptima() :
+     + calls updateZall() if needed
+ * IntaRNA/PredictorMfe2dHeuristic :
+   + update of Zall
+ * IntaRNA/PredictorMfe2dHeuristicSeed :
+   * bugfix Zall update
+ * IntaRNA/PredictorMfe2dSeed :
+   * bugfix updateOptima() call
+ * IntaRNA/PredictorMfeEns2dHeuristic :
+   * bugfix total energy computation
+   + updateZ() call corrected
+ * IntaRNA/PredictorMfeEns2dSeedHeuristic :
+   * updateZ() call order changed to reduce for-loop iterations
+ * README.md :
+   + w CVS output documentation
+   + E_add CVS output documentation
+   + RT(37Celsius)=0.6163173043012 docu
+
 190906 Martin Raden :
  * IntaRNA/Interaction
    + Boundary : 4-tuple of indices to store boundaries of an interaction site

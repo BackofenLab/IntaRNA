@@ -621,9 +621,12 @@ form a base pair, the one with maximal partition function `Z(S)`,  i.e.
 ```
 which sums the Boltzmann weights of all interactions `I` (hybridization terms only)
 for the given site `S` multiplied with the Boltzmann weights of the respective 
-accessibility penalties `ED1` and `ED2`. The site's partition function can be 
+accessibility penalties `ED1` and `ED2`.
+Here, `R` denotes the gas constant and `T` the temperature of the system.
+At `T=37` degree Celsius, the product `RT` is about `RT=0.6163173043012`. 
+The site's partition function can be 
 used to compute the ensemble energy of all interactions of a given site via
-`E(S) = -RT log(Z(S))`, which is reported for the optimal site 
+`E(S) = -RT log(Z(S))` (`log` = natural logarithm), which is reported for the optimal site 
 (see [CSV output](#outModeCsv)).  
 This abstracts from individual inter-molecular base pairing and incorporates the 
 dynamics and flexibility of the interactions formed by two regions.
@@ -1340,6 +1343,8 @@ are
 - `E_hybrid` : energy of hybridization only = E - ED1 - ED2
 - `E_norm` : length normalized energy = E / ln(length(seq1)*length(seq2))
 - `E_hybridNorm` : length normalized energy of hybridization only = E_hybrid / ln(length(seq1)*length(seq2))
+- `E_add` : user defined energy correction term incorporated into `E`
+- `w` : Boltzmann weight of `E`, e.g. used for partition function computation
 - `seedStart1` : start index of the seed in seq1 (* see below)
 - `seedEnd1` : end index of the seed in seq1 (* see below)
 - `seedStart2` : start index of the seed in seq2 (* see below)

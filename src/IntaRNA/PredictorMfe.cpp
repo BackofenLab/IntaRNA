@@ -90,24 +90,7 @@ updateOptima( const size_t i1, const size_t j1
 
 	// update Zall if needed
 	if (incrementZall && output.getOutputConstraint().needZall) {
-		// update overall partition function
-		if (isHybridE) {
-#if INTARNA_IN_DEBUG_MODE
-			if ( (std::numeric_limits<Z_type>::max() - energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, interE))) <= Zall) {
-				LOG(WARNING) <<"PredictorMfeEns::updateZ() : partition function overflow! Recompile with larger partition function data type!";
-			}
-#endif
-			// add ED penalties etc.
-			Zall += energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, interE));
-		} else {
-#if INTARNA_IN_DEBUG_MODE
-			if ( (std::numeric_limits<Z_type>::max() - energy.getBoltzmannWeight(interE)) <= Zall) {
-				LOG(WARNING) <<"PredictorMfeEns::updateZ() : partition function overflow! Recompile with larger partition function data type!";
-			}
-#endif
-			// just increase
-			Zall += energy.getBoltzmannWeight(interE);
-		}
+		updateZall( i1,j1, i2,j2, interE, isHybridE );
 	}
 
 	// check if nothing to be done
@@ -156,7 +139,7 @@ updateOptima( const size_t i1, const size_t j1
 	tmp.basePairs[1] = energy.getBasePair(j1,j2);
 	// handle single bp interactions
 	if (tmp.basePairs[0] == tmp.basePairs[1]) { tmp.basePairs.resize(1); }
-	INTARNA_CLEANUP(tmp.seed);
+	INTARNA_CLEANUP(tmp.seed); tmp.seed=NULL;
 
 	if (mfeInteractions.size() == 1) {
 		if ( tmp < *(mfeInteractions.begin()) ) {
