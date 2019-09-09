@@ -170,7 +170,9 @@ fillHybridZ_right( const size_t sj1, const size_t sj2
 					updateOptRightZ( si1,j1,si2,j2, energy.getE(seedZ * curZ * initZ) );
 					// update overall partition function information given the current seed
 					// seed only not covered due to enclosing check
-					updateZ(si1, j1, si2, j2, seedZ * curZ * initZ, true);
+					if (sj1 != j1) {
+						updateZ(si1, j1, si2, j2, seedZ * curZ * initZ, true);
+					}
 				}
 			}
 
@@ -236,8 +238,8 @@ fillHybridZ_left( const size_t si1, const size_t si2 )
 				// check if seed is to be processed:
 				bool subtractThisSeed =
 						// check if left of anchor seed
-									( i1+seedHandler.getSeedLength1(i1,i2)-1 < si1
-									&& i2+seedHandler.getSeedLength2(i1,i2)-1 < si2 )
+									( i1+seedHandler.getSeedLength1(i1,i2)-1 <= si1
+									&& i2+seedHandler.getSeedLength2(i1,i2)-1 <= si2 )
 						// check if overlapping with anchor seed
 								||	seedHandler.areLoopOverlapping(i1,i2,si1,si2);
 				if (subtractThisSeed) {
@@ -296,7 +298,8 @@ fillHybridZ_left( const size_t si1, const size_t si2 )
 				updateZ(i1, sj1, i2, sj2, curZ * seedZ, true);
 
 				// Z( left + seed + rightOpt ) and rightOpt true seed extension
-				if (	j1opt != sj1 // true right seed extension
+				if (	i1 != si1 // true left seed extension
+					&&	j1opt != sj1 // true right seed extension
 					// check if interaction width is within boundaries
 					&&	j1opt+1-i1 <= energy.getAccessibility1().getMaxLength()
 					&& 	j2opt+1-i2 <= energy.getAccessibility2().getMaxLength())

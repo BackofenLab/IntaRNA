@@ -139,7 +139,8 @@ protected:
 	getNextBest( Interaction & curBest );
 
 	/**
-	 * Returns the hybridization energy of the non overlapping part of seeds si and sj
+	 * Returns the hybridization energy of the non overlapping part of seeds
+	 * starting at si and sj
 	 *
 	 * @param si1 the index of seed1 in the first sequence
 	 * @param si2 the index of seed1 in the second sequence

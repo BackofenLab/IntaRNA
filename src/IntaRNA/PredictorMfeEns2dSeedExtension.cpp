@@ -90,10 +90,13 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 	{
 		const Z_type seedZ = energy.getBoltzmannWeight( seedHandler.getSeedE(si1, si2) );
 
+
+
 		const size_t sl1 = seedHandler.getSeedLength1(si1, si2);
 		const size_t sl2 = seedHandler.getSeedLength2(si1, si2);
 		const size_t sj1 = si1+sl1-1;
 		const size_t sj2 = si2+sl2-1;
+		LOG(DEBUG)<<"######## next seed i "<<si1<<","<<si2<<" .. j "<<sj1<<","<<sj2;
 		// check if seed fits into interaction range
 		if (sj1 > range_size1 || sj2 > range_size2)
 			continue;
@@ -150,20 +153,27 @@ getNonOverlappingEnergy( const size_t si1, const size_t si2, const size_t si1p, 
 		throw std::runtime_error("PredictorMfeEns2dSeedExtension::getNonOverlappingEnergy( si "+toString(si1)+","+toString(si2)+",..) is no seed bound");
 	if( !seedHandler.isSeedBound(si1p,si2p) )
 		throw std::runtime_error("PredictorMfeEns2dSeedExtension::getNonOverlappingEnergy( sip "+toString(si1p)+","+toString(si2p)+",..) is no seed bound");
+	if( si1 > si1p )
+		throw std::runtime_error("PredictorMfeEns2dSeedExtension::getNonOverlappingEnergy( si "+toString(si1)+","+toString(si2)+", sip "+toString(si1p)+","+toString(si2p)+",..) si1 > sj1 !");
+	// check if loop-overlapping (i.e. share at least one loop)
+	if( !seedHandler.areLoopOverlapping(si1,si2,si1p,si2p) ) {
+		throw std::runtime_error("PredictorMfeEns2dSeedExtension::getNonOverlappingEnergy( si "+toString(si1)+","+toString(si2)+", sip "+toString(si1p)+","+toString(si2p)+",..) are not loop overlapping");
+	}
 #endif
 
-	// sanity check
-	if( si1 == si1p || ! seedHandler.areLoopOverlapping(si1,si2,si1p,si2p) ) {
+	// identity check
+	if( si1 == si1p ) {
 		return E_type(0);
 	}
 
-	// trace S
+	// trace seed at (si1,si2)
 	Interaction interaction = Interaction(energy.getAccessibility1().getSequence(), energy.getAccessibility2().getAccessibilityOrigin().getSequence());
 	interaction.basePairs.push_back( energy.getBasePair(si1, si2) );
 	seedHandler.traceBackSeed( interaction, si1, si2 );
 
 	E_type fullE = 0;
 	size_t k1old = si1, k2old = si2;
+	LOG(DEBUG)<<" overlap of i "<<si1<<","<<si2<<" with "<<si1p<<","<<si2p<<"##################";
 	for (size_t i = 1; i < interaction.basePairs.size(); i++) {
 		// get index of current base pair
 		size_t k1 = energy.getIndex1(interaction.basePairs[i]);
@@ -172,6 +182,8 @@ getNonOverlappingEnergy( const size_t si1, const size_t si2, const size_t si1p, 
 		size_t k2 = energy.getIndex2(interaction.basePairs[i]);
 		// add hybridization energy
 		fullE += energy.getE_interLeft(k1old,k1,k2old,k2);
+
+		LOG(DEBUG)<<"   loop("<<k1old<<","<<k2old<<".."<<k1<<","<<k2<<")";
 		// store
 		k1old = k1;
 		k2old = k2;
@@ -230,10 +242,11 @@ fillHybridZ_left( const size_t j1, const size_t j2 )
 					// check if seed is to be processed:
 					bool substractThisSeed =
 							// check if left of anchor seed
-										( i1+seedHandler.getSeedLength1(i1,i2)-1 < j1
-										&& i2+seedHandler.getSeedLength2(i1,i2)-1 < j2 )
+										( i1+seedHandler.getSeedLength1(i1,i2)-1 <= j1
+										&& i2+seedHandler.getSeedLength2(i1,i2)-1 <= j2 )
 							// check if overlapping with anchor seed
 									||	seedHandler.areLoopOverlapping(i1,i2,j1,j2);
+
 					if (substractThisSeed) {
 
 						// iterate seeds in S region
@@ -260,7 +273,7 @@ fillHybridZ_left( const size_t j1, const size_t j2 )
 							if ( ! E_equal(hybridZ_left( j1-si1overlap, j2-si2overlap),0) ) {
 								// compute Energy of loop S \ S'
 								E_type nonOverlapE = getNonOverlappingEnergy(i1, i2, si1overlap, si2overlap);
-								// substract energy.getBoltzmannWeight( nonOverlapE ) * hybridZ_left( si1overlap, si2overlap bis anchor seed [==1 falls gleich])
+								// substract energy.getBoltzmannWeight( nonOverlapE ) * hybridZ_left( si1overlap, si2overlap up to anchor seed [==1 if equal])
 								Z_type correctionTerm = energy.getBoltzmannWeight( nonOverlapE )
 														* hybridZ_left( j1-si1overlap, j2-si2overlap);
 								curZ -= correctionTerm;
@@ -273,7 +286,7 @@ fillHybridZ_left( const size_t j1, const size_t j2 )
 							// get energy of seed
 							E_type seedE = seedHandler.getSeedE(i1, i2);
 							// if no S'
-							// substract seedZ * hybridZ_left(right end seed bis anchor seed)
+							// substract seedZ * hybridZ_left(right end seed up to anchor seed)
 							Z_type correctionTerm = energy.getBoltzmannWeight(seedE)
 									* hybridZ_left( j1-(i1+seedHandler.getSeedLength1(i1, i2)-1)
 												  , j2-(i2+seedHandler.getSeedLength2(i1, i2)-1));
