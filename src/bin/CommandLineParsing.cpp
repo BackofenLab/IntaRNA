@@ -290,6 +290,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		resetParamDefault<>(mode, 'S', "mode");
 		break;
 	case IntaRNAsTar :
+		resetParamDefault<>(outOverlap, 'Q', "outOverlap");
 		// optimized parameters for sRNA-target prediction
 		resetParamDefault<>(seedNoGU, true, "seedNoGU");
 		resetParamDefault<>(seedMinPu, 0.001, "seedMinPu");

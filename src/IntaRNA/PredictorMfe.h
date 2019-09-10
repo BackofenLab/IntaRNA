@@ -10,6 +10,8 @@
 #include <list>
 #include <utility>
 
+#include <boost/unordered_map.hpp>
+
 namespace IntaRNA {
 
 /**
@@ -93,6 +95,13 @@ protected:
 	//! mfe interaction boundaries
 	InteractionList mfeInteractions;
 
+	//! hash to map index pairs to BestInteractionE entries
+	typedef boost::unordered_map< Interaction::BasePair, BestInteractionE > HashIdx2E;
+
+	//! if non-overlapping output is required, this data structure is filled
+	//! to find non-overlapping interactions
+	HashIdx2E mfe4leftEnd;
+
 	//! index ranges of reported interactions to identify non-overlapping
 	//! interactions (first = seq1, second = seq2)
 	//! NOTE: the indices for seq2 are reversed
@@ -158,7 +167,25 @@ protected:
 	 */
 	virtual
 	void
-	getNextBest( Interaction & curBest ) = 0;
+	getNextBest( Interaction & curBest );
+
+
+	/**
+	 * Updates the mfe4leftEnd data container.
+	 *
+	 * Overwrite, if no update is to be done.
+	 *
+	 * @param i1 interaction start in seq1
+	 * @param j1 interaction end in seq1
+	 * @param i2 interaction start in seq2
+	 * @param i2 interaction end in seq2
+	 * @param curInteraction the interaction information to be used for update
+	 */
+	virtual
+	void
+	updateMfe4leftEnd(const size_t i1, const size_t j1
+					, const size_t i2, const size_t j2
+					, const Interaction & curInteraction );
 
 	/**
 	 * Calls for the stored mfe and suboptimal solutions traceBack(i)

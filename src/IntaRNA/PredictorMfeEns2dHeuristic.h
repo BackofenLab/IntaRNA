@@ -100,6 +100,21 @@ protected:
 	void
 	getNextBest( Interaction & curBest );
 
+	/**
+	 * Overwrites function of super class to surpress the update.
+	 *
+	 * @param i1 interaction start in seq1
+	 * @param j1 interaction end in seq1
+	 * @param i2 interaction start in seq2
+	 * @param i2 interaction end in seq2
+	 * @param curInteraction the interaction information to be used for update
+	 */
+	virtual
+	void
+	updateMfe4leftEnd(const size_t i1, const size_t j1
+					, const size_t i2, const size_t j2
+					, const Interaction & curInteraction );
+
 };
 
 } // namespace

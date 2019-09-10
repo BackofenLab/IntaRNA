@@ -96,20 +96,6 @@ protected:
 	void
 	traceBack( Interaction & interaction );
 
-	/**
-	 * Identifies the next best interaction with an energy equal to or higher
-	 * than the given interaction. The new interaction will not overlap any
-	 * index range stored in reportedInteractions.
-	 *
-	 * NOTE: this is not possible for this predictor (unless a full recomputation
-	 * of the matrices is done). Thus, calling this method raises an exception.
-	 *
-	 * @param curBest ignored (see method comment)
-	 */
-	virtual
-	void
-	getNextBest( Interaction & curBest );
-
 };
 
 } // namespace

@@ -41,11 +41,6 @@ predict( const IndexRange & r1, const IndexRange & r2  )
 	// measure timing
 	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
 
-	// suboptimal setup check
-	if (outConstraint.reportMax>1 && outConstraint.reportOverlap != OutputConstraint::ReportOverlap::OVERLAP_BOTH) {
-		throw std::runtime_error("PredictorMfe2dSeedExtensionRIblast : the enumeration of non-overlapping suboptimal interactions is not supported in this prediction mode");
-	}
-
 	// no-LP setup check
 	if (outConstraint.noLP) {
 		INTARNA_NOT_IMPLEMENTED("PredictorMfe2dSeedExtensionRIblast : prediction without lonely base pairs is not supported");
@@ -527,15 +522,6 @@ traceBack( Interaction & interaction )
 }
 
 ////////////////////////////////////////////////////////////////////////////
-
-void
-PredictorMfe2dSeedExtensionRIblast::
-getNextBest( Interaction & curBest )
-{
-	INTARNA_NOT_IMPLEMENTED("PredictorMfe2dSeedExtensionRIblast::getNextBest() not implemented yet");
-}
-
-//////////////////////////////////////////////////////////////////////////
 
 
 } // namespace

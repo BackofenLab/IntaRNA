@@ -18,6 +18,7 @@
 + --seedNoGUend : prohibit GU base pairs at seed ends
 + outNoLP support in all prediction modes
 * FASTA input: sequence id = prefix up to first whitespace from FASTA header
+* new default for outOverlap = B: overlapping output enabled 
 
 # API
 * OutputHandler requires an OutputConstraint instances in construction
@@ -35,6 +36,22 @@
  * bin/CommandLineParsing :
    * parseSequencesFasta() :
      * name = FASTA header prefix up to first whitespace
+ * IntaRNA/PredictorMfe :
+   + HashIdx2E : hash for base pair to BestInteractionE objects
+   + mfe4leftEnd : (optional) hash to store best interaction for left boundary;
+     filled by updateMfe4leftEnd()
+   + updateMfe4leftEnd() : updates mfe4leftEnd
+   * getNextBest() :
+     + default implementation based on mfe4leftEnd
+   * updateOptima() :
+     + calls updateMfe4leftEnd() if outconstraint.reportOverlap != BOTH
+   * exact + seed-extension predictors :
+     - getNextBest() dummy functions : obsolete
+     - outConstraint.reportOverlap != BOTH error : obsolete
+   * heuristic non-seed-extension predictors :
+     + updateMfe4leftEnd() : dummy function to avoid mfe4leftEnd updates; since
+       local getNextBest() is based on local data member 
+ + tests for outOverlap=NQTB (model=X)
 
 190909 Martin Raden :
  * Makefile.am :

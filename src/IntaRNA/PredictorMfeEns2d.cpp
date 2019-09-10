@@ -43,11 +43,6 @@ predict( const IndexRange & r1
 	// measure timing
 	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
 
-	// suboptimal setup check
-	if (outConstraint.reportMax>1 && outConstraint.reportOverlap != OutputConstraint::ReportOverlap::OVERLAP_BOTH) {
-		throw std::runtime_error("PredictorMfeEns2d : the enumeration of non-overlapping suboptimal interactions is not supported in this prediction mode");
-	}
-
 #if INTARNA_IN_DEBUG_MODE
 	// check indices
 	if (!(r1.isAscending() && r2.isAscending()) )
@@ -204,16 +199,6 @@ fillHybridZ( const size_t j1, const size_t j2
 		}
 	}
 
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-void
-PredictorMfeEns2d::
-getNextBest( Interaction & curBest )
-{
-	curBest.energy = E_INF;
-	curBest.basePairs.clear();
 }
 
 ////////////////////////////////////////////////////////////////////////////

@@ -41,11 +41,6 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 	// measure timing
 	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
 
-	// suboptimal setup check
-	if (outConstraint.reportMax>1 && outConstraint.reportOverlap != OutputConstraint::ReportOverlap::OVERLAP_BOTH) {
-		throw std::runtime_error("PredictorMfeEns2dSeedExtension : the enumeration of non-overlapping suboptimal interactions is not supported in this prediction mode");
-	}
-
 #if INTARNA_IN_DEBUG_MODE
 	// check indices
 	if (!(r1.isAscending() && r2.isAscending()) )
@@ -400,15 +395,6 @@ traceBack( Interaction & interaction )
 }
 
 ////////////////////////////////////////////////////////////////////////////
-
-void
-PredictorMfeEns2dSeedExtension::
-getNextBest( Interaction & curBest )
-{
-	INTARNA_NOT_IMPLEMENTED("PredictorMfeEns2dSeedExtension::getNextBest() not implemented yet");
-}
-
-//////////////////////////////////////////////////////////////////////////
 
 
 } // namespace

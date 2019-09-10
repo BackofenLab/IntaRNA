@@ -389,5 +389,16 @@ getNextBest( Interaction & curBest )
 
 ////////////////////////////////////////////////////////////////////////////
 
+void
+PredictorMfe2dHeuristic::
+updateMfe4leftEnd(const size_t i1, const size_t j1
+					, const size_t i2, const size_t j2
+					, const Interaction & curInteraction )
+{
+	// do nothing since getNextBest() is based on local data structure
+}
+
+////////////////////////////////////////////////////////////////////////////
+
 } // namespace
 

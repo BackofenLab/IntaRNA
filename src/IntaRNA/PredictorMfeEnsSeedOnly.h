@@ -85,17 +85,6 @@ protected:
 	void
 	traceBack( Interaction & interaction );
 
-	/**
-	 * Identifies the next best interaction with an energy equal to or higher
-	 * than the given interaction. The new interaction will not overlap any
-	 * index range stored in reportedInteractions.
-	 *
-	 * @param curBest the interaction to be replaced
-	 */
-	virtual
-	void
-	getNextBest( Interaction & curBest );
-
 };
 
 //////////////////////////////////////////////////////////////////////////

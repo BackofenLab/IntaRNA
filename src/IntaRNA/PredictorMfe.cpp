@@ -15,6 +15,7 @@ PredictorMfe::PredictorMfe(
 		)
 	: Predictor(energy,output,predTracker)
 	, mfeInteractions()
+	, mfe4leftEnd()
 	, reportedInteractions()
 	, minStackingEnergy( energy.getBestE_interLoop() )
 	, minInitEnergy( energy.getE_init() )
@@ -64,6 +65,9 @@ initOptima()
 	// clear reported interaction ranges
 	reportedInteractions.first.clear();
 	reportedInteractions.second.clear();
+
+	// clear mfe information for left boundaries
+	mfe4leftEnd.clear();
 
 	// init overallZ if needed
 	if (outConstraint.needZall) {
@@ -146,7 +150,15 @@ updateOptima( const size_t i1, const size_t j1
 			// overwrite current minimum
 			*(mfeInteractions.begin()) = tmp;
 		}
-	} else {
+		///////  handle non-overlapping suboptimal output  ////////////
+		if (output.getOutputConstraint().reportOverlap != OutputConstraint::OVERLAP_BOTH)
+		{
+			// update mfe4leftEnd information
+			updateMfe4leftEnd(i1,j1,i2,j2,tmp);
+		}
+	} else
+	///////  handle fully overlapping suboptimal output  ////////////
+	if (output.getOutputConstraint().reportOverlap == OutputConstraint::OVERLAP_BOTH) {
 
 		// check for insertion position
 		InteractionList::iterator insertPos = std::find_if_not( mfeInteractions.begin(), mfeInteractions.end(), [&](Interaction & i){return i < tmp;});
@@ -172,7 +184,8 @@ updateOptima( const size_t i1, const size_t j1
 			mfeInteractions.splice( insertPos, mfeInteractions, lastInteraction );
 
 		}
-	}
+
+	} // >1 overlapping suboptimals
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -244,7 +257,7 @@ reportOptima()
 	else // overlapping interactions are allowed
 	{
 
-		// report all (possibly overlapping) interactions with energy below 0
+		// report all (possibly overlapping) interactions with energy below threshold
 		assert(outConstraint.reportMax <= mfeInteractions.size());
 		for (InteractionList::iterator i = mfeInteractions.begin();
 				reported < outConstraint.reportMax
@@ -281,6 +294,88 @@ reportOptima()
 		{output.add( *(mfeInteractions.begin()) );}
 	}
 
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void
+PredictorMfe::
+getNextBest( Interaction & curBest )
+{
+
+	// get original
+	const E_type curBestE = curBest.energy;
+
+	// identify cell with next best non-overlapping interaction site
+	// iterate (decreasingly) over all left interaction starts
+	BestInteractionE * curBestCell = NULL;
+	E_type curBestCellE = E_INF;
+	HashIdx2E::key_type curBestCellStart;
+	BestInteractionE * curCell = NULL;
+	E_type curCellE = E_INF;
+	for (auto curLeftBound = mfe4leftEnd.begin(); curLeftBound != mfe4leftEnd.end(); curLeftBound++) {
+
+		// interaction is non-overlapping with any already reported interaction
+		if (   reportedInteractions.first.overlaps( IndexRange(curLeftBound->first.first, curLeftBound->second.j1) )
+			|| reportedInteractions.second.overlaps( IndexRange(curLeftBound->first.second, curLeftBound->second.j2) )
+				)
+		{
+			continue;
+		}
+		// pointer access to cell value
+		curCell = &(curLeftBound->second);
+		// get overall energy of the interaction
+		curCellE = energy.getE(curLeftBound->first.first, curLeftBound->second.j1
+							, curLeftBound->first.second, curLeftBound->second.j2
+							, curLeftBound->second.val );
+		// or energy is too low to be considered
+		// or energy is higher than current best found so far
+		if (curCellE < curBestE || curCellE >= curBestCellE )
+		{
+			continue;
+		}
+		//// FOUND THE NEXT BETTER SOLUTION
+		// overwrite current best found so far
+		curBestCell = curCell;
+		curBestCellE = curCellE;
+		curBestCellStart = curLeftBound->first;
+
+	} // all left boundaries of valid interactions
+
+	// overwrite curBest
+	curBest.energy = curBestCellE;
+	curBest.basePairs.resize(2);
+	if (E_isNotINF(curBestCellE)) {
+		curBest.basePairs[0] = energy.getBasePair( curBestCellStart.first, curBestCellStart.second );
+		curBest.basePairs[1] = energy.getBasePair( curBestCell->j1, curBestCell->j2 );
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void
+PredictorMfe::
+updateMfe4leftEnd(const size_t i1, const size_t j1, const size_t i2, const size_t j2, const Interaction & tmp )
+{
+	auto mfe4leftEndEntry = mfe4leftEnd.find(HashIdx2E::key_type(i1,i2));
+	// check if left end is unknown -> just add
+	if (mfe4leftEndEntry == mfe4leftEnd.end()) {
+		// store current interaction
+		mfe4leftEnd[HashIdx2E::key_type(i1,i2)] = BestInteractionE(tmp.energy,j1,j2);
+	} else {
+	// else: update entry if needed
+		// create temporary interaction for comparison
+		Interaction mfe4curLeftBound(tmp);
+		mfe4curLeftBound.energy = mfe4leftEndEntry->second.val;
+		*(mfe4curLeftBound.basePairs.rbegin()) = energy.getBasePair(mfe4leftEndEntry->second.j1,mfe4leftEndEntry->second.j2);
+		// check if current interaction is to be stored
+		if ( tmp < mfe4curLeftBound ) {
+			// overwrite current minimum
+			mfe4leftEndEntry->second.val = tmp.energy;
+			mfe4leftEndEntry->second.j1 = j1;
+			mfe4leftEndEntry->second.j2 = j2;
+		}
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////

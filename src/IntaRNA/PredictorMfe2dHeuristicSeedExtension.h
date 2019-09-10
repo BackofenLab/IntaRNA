@@ -137,20 +137,6 @@ protected:
 	void
 	fillHybridE_left( const size_t j1, const size_t j2 );
 
-	/**
-	 * Identifies the next best interaction with an energy equal to or higher
-	 * than the given interaction. The new interaction will not overlap any
-	 * index range stored in reportedInteractions.
-	 *
-	 * NOTE: this is not possible for this predictor (unless a full recomputation
-	 * of the matrices is done). Thus, calling this method raises an exception.
-	 *
-	 * @param curBest ignored (see method comment)
-	 */
-	virtual
-	void
-	getNextBest( Interaction & curBest );
-
 	void
 	printMatrix( const E2dMatrix & matrix );
 
