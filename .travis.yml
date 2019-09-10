@@ -15,7 +15,7 @@ install:
 #  - conda create -q -n build-IntaRNA -c bioconda gcc_linux-64 gxx_linux-64 boost-cpp viennarna pkgconfig
 #  - conda activate build-IntaRNA
   # install dependencies
-  - conda install -c bioconda gcc_linux-64 gxx_linux-64 boost-cpp viennarna pkgconfig
+  - conda install --yes -c bioconda gcc_linux-64 gxx_linux-64 boost-cpp viennarna pkgconfig
 
 script:
     ##### start IntaRNA build #####
