@@ -217,8 +217,6 @@ traceBackSeed( Interaction & interaction
 	// get energy of provided seed
 	E_type curE = getSeedE(i1_,i2_,bpInbetween,u1_,u2_);
 
-	// TODO: if (umax==0) just add remaining base pairs (no trace needed)
-
 	// trace seed
 	// trace each seed base pair (excluding right most)
 	for( size_t bpIn=1+bpInbetween; bpIn-- > 0; ) {

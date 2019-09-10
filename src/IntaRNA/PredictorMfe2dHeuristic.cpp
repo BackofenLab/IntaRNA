@@ -323,8 +323,6 @@ getNextBest( Interaction & curBest )
 	// get original
 	const E_type curBestE = curBest.energy;
 
-	// TODO replace index iteration with something based on ranges from reportedInteractions
-
 	// identify cell with next best non-overlapping interaction site
 	// iterate (decreasingly) over all left interaction starts
 	size_t i1,i2;

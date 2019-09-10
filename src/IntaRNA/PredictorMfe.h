@@ -87,8 +87,6 @@ protected:
 	//! access to the prediction tracker of the super class
 	using Predictor::predTracker;
 
-	// TODO provide all data structures as arguments to make predict() call threadsafe
-
 	//! list of interactions
 	typedef std::list<Interaction> InteractionList;
 
