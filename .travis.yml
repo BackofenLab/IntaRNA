@@ -12,8 +12,10 @@ install:
   # Useful for debugging any issues with conda
   - conda info -a
   # create build environment
-  - conda create -q -n build-IntaRNA -c bioconda gcc_linux-64 gxx_linux-64 boost-cpp viennarna pkgconfig
-  - conda activate build-IntaRNA
+#  - conda create -q -n build-IntaRNA -c bioconda gcc_linux-64 gxx_linux-64 boost-cpp viennarna pkgconfig
+#  - conda activate build-IntaRNA
+  # install dependencies
+  - conda install -c bioconda gcc_linux-64 gxx_linux-64 boost-cpp viennarna pkgconfig
 
 script:
     ##### start IntaRNA build #####
