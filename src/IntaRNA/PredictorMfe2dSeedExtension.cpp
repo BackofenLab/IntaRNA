@@ -347,7 +347,6 @@ traceBack( Interaction & interaction )
 						for (k2=std::min(si2-1,i2+energy.getMaxInternalLoopSize2()+1); traceNotFound && k2>i2; k2--) {
 							// check if (k1,k2) are valid left boundary
 							if ( E_isNotINF( hybridE_left(si1-k1,si2-k2) ) ) {
-								// LOG(DEBUG) << (energy.getE_interLeft(i1,k1,i2,k2) + hybridE_left(k1,k2));
 								if ( E_equal( curE,
 										(energy.getE_interLeft(i1,k1,i2,k2) + hybridE_left(si1-k1,si2-k2)) ) )
 								{

@@ -85,8 +85,6 @@ updateOptima( const size_t i1, const size_t j1
 		, const bool isHybridE
 		, const bool incrementZall )
 {
-//	LOG(DEBUG) <<"PredictorMfe::updateOptima( "<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" , E = " <<interE<<" isHybridE="<<(isHybridE?"true":"false");
-
 	// ignore invalid reports
 	if (E_isINF(interE) || interE >= E_MAX) {
 		return;
@@ -117,8 +115,7 @@ updateOptima( const size_t i1, const size_t j1
 
 	// get final energy of current interaction
 	E_type curE = isHybridE ? energy.getE( i1,j1, i2,j2, interE ) : interE;
-//	LOG(DEBUG) <<"energy( "<<i1<<"-"<<j1<<", "<<i2<<"-"<<j2<<" ) = "
-//			<<interE <<" : total = "<<curE;
+
 	// report call if needed
 	if (predTracker != NULL && E_isNotINF(curE)) {
 		// inform about prediction

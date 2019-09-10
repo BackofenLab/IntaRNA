@@ -86,7 +86,6 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 		const size_t sl2 = seedHandler.getSeedLength2(si1, si2);
 		const size_t sj1 = si1+sl1-1;
 		const size_t sj2 = si2+sl2-1;
-		LOG(DEBUG)<<"######## next seed i "<<si1<<","<<si2<<" .. j "<<sj1<<","<<sj2;
 		// check if seed fits into interaction range
 		if (sj1 > range_size1 || sj2 > range_size2)
 			continue;
@@ -163,7 +162,6 @@ getNonOverlappingEnergy( const size_t si1, const size_t si2, const size_t si1p, 
 
 	E_type fullE = 0;
 	size_t k1old = si1, k2old = si2;
-	LOG(DEBUG)<<" overlap of i "<<si1<<","<<si2<<" with "<<si1p<<","<<si2p<<"##################";
 	for (size_t i = 1; i < interaction.basePairs.size(); i++) {
 		// get index of current base pair
 		size_t k1 = energy.getIndex1(interaction.basePairs[i]);
@@ -173,7 +171,6 @@ getNonOverlappingEnergy( const size_t si1, const size_t si2, const size_t si1p, 
 		// add hybridization energy
 		fullE += energy.getE_interLeft(k1old,k1,k2old,k2);
 
-		LOG(DEBUG)<<"   loop("<<k1old<<","<<k2old<<".."<<k1<<","<<k2<<")";
 		// store
 		k1old = k1;
 		k2old = k2;
