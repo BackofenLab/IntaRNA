@@ -16,6 +16,7 @@
 * ensemble-based prediction revised
 * seed-extension-based prediction revised
 + --seedNoGUend : prohibit GU base pairs at seed ends
++ outNoLP support in all prediction modes
 
 # API
 * OutputHandler requires an OutputConstraint instances in construction
@@ -25,6 +26,11 @@
 
 ################################################################################  
 ################################################################################  
+
+190910 Martin Raden :
+ * IntaRNA/PredictorMfe2d*SeedExtension :
+   + noLP support
+ + tests for noLP seed extension (model=X)
 
 190909 Martin Raden :
  * Makefile.am :

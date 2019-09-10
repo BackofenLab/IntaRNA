@@ -47,11 +47,6 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 		throw std::runtime_error("PredictorMfe2dSeedExtension : the enumeration of non-overlapping suboptimal interactions is not supported in this prediction mode");
 	}
 
-	// no-LP setup check
-	if (outConstraint.noLP) {
-		INTARNA_NOT_IMPLEMENTED("PredictorMfe2dSeedExtension : prediction without lonely base pairs is not implemented yet");
-	}
-
 #if INTARNA_IN_DEBUG_MODE
 	// check indices
 	if (!(r1.isAscending() && r2.isAscending()) )
@@ -145,42 +140,55 @@ fillHybridE_left( const size_t j1, const size_t j2 )
 
 	// global vars to avoid reallocation
 	size_t i1,i2,k1,k2;
-	//////////  FIRST ROUND : COMPUTE HYBRIDIZATION ENERGIES ONLY  ////////////
 
-	// current minimal value
-	E_type curMinE = E_INF;
+	// determine whether or not lonely base pairs are allowed or if we have to
+	// ensure a stacking to the right of the left boundary (i1,i2)
+	const size_t noLpShift = outConstraint.noLP ? 1 : 0;
+	E_type iStackE = E_type(0);
+
 	// iterate over all window starts j1 (seq1) and j2 (seq2)
 	for (i1=j1; j1-i1 < hybridE_left.size1(); i1--) {
 		// screen for right boundaries in seq2
 		for (i2=j2; j2-i2 < hybridE_left.size2(); i2--) {
+
+			// referencing cell access
+			E_type & curE = hybridE_left(j1-i1,j2-i2);
 			// init current cell (e_init if just left (i1,i2) base pair)
-			hybridE_left(j1-i1,j2-i2) = i1==j1 && i2==j2 ? energy.getE_init() : E_INF;
+			curE = (i1==j1 && i2==j2) ? energy.getE_init() : E_INF;
+
 			// check if complementary
 			if( i1<j1 && i2<j2 && energy.areComplementary(i1,i2) ) {
-				curMinE = E_INF;
+
+				// left-stacking of j if no-LP
+				if (outConstraint.noLP) {
+					// skip if no stacking possible
+					if (!energy.areComplementary(i1+noLpShift,i2+noLpShift)) {
+						continue;
+					}
+					// get stacking energy to avoid recomputation in recursion below
+					iStackE = energy.getE_interLeft(i1,i1+noLpShift,j2,j2+noLpShift);
+				}
 
 				// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
-				for (k1=i1; k1++ < j1; ) {
+				for (k1=i1+noLpShift; k1++ < j1; ) {
 					// ensure maximal loop length
-					if (k1-i1 > energy.getMaxInternalLoopSize1()+1) break;
-				for (k2=i2; k2++ < j2; ) {
+					if (k1-i1-noLpShift > energy.getMaxInternalLoopSize1()+1) break;
+				for (k2=i2+noLpShift; k2++ < j2; ) {
 					// ensure maximal loop length
-					if (k2-i2 > energy.getMaxInternalLoopSize2()+1) break;
+					if (k2-i2-noLpShift > energy.getMaxInternalLoopSize2()+1) break;
 					// check if (k1,k2) are valid left boundary
 					if ( E_isNotINF( hybridE_left(j1-k1,j2-k2) ) ) {
-						curMinE = std::min( curMinE,
-								(energy.getE_interLeft(i1,k1,i2,k2)
+						curE = std::min( curE,
+								(iStackE
+										+ energy.getE_interLeft(i1+noLpShift,k1,i2+noLpShift,k2)
 										+ hybridE_left(j1-k1,j2-k2) )
 								);
 					}
 				} // k2
 			  } // k1
-
-				// store value
-				hybridE_left(j1-i1,j2-i2) = curMinE;
-			}
-		}
-	}
+			} // i is valid right end
+		} // i2
+	} // i1
 
 }
 
@@ -195,44 +203,55 @@ fillHybridE_right( const size_t i1, const size_t i2 )
 
 	// global vars to avoid reallocation
 	size_t j1,j2,k1,k2;
-	//////////  FIRST ROUND : COMPUTE HYBRIDIZATION ENERGIES ONLY  ////////////
 
-	// current minimal value
-	E_type curMinE = E_INF;
+	// determine whether or not lonely base pairs are allowed or if we have to
+	// ensure a stacking to the right of the left boundary (i1,i2)
+	const size_t noLpShift = outConstraint.noLP ? 1 : 0;
+	E_type iStackE = E_type(0);
+
 	// iterate over all window starts j1 (seq1) and j2 (seq2)
 	for (j1=i1; j1-i1 < hybridE_right.size1(); j1++) {
 		// screen for right boundaries in seq2
 		for (j2=i2; j2-i2 < hybridE_right.size2(); j2++) {
 
+			// referencing access to cell
+			E_type & curE = hybridE_right(j1-i1,j2-i2);
 			// init current cell (0 if just left (i1,i2) base pair)
-			hybridE_right(j1-i1,j2-i2) = i1==j1 && i2==j2 ? 0 : E_INF;
+			curE = (i1==j1 && i2==j2) ? 0 : E_INF;
 
 			// check if complementary
 			if( i1<j1 && i2<j2 && energy.areComplementary(j1,j2) ) {
-				curMinE = E_INF;
+
+				// left-stacking of j if no-LP
+				if (outConstraint.noLP) {
+					// skip if no stacking possible
+					if (!energy.areComplementary(j1-noLpShift,j2-noLpShift)) {
+						continue;
+					}
+					// get stacking energy to avoid recomputation in recursion below
+					iStackE = energy.getE_interLeft(j1-noLpShift,j1,j2-noLpShift,j2);
+				}
 
 				// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
-				for (k1=j1; k1-- > i1; ) {
+				for (k1=j1-noLpShift; k1-- > i1; ) {
 					// ensure maximal loop length
-					if (j1-k1 > energy.getMaxInternalLoopSize1()+1) break;
-				for (k2=j2; k2-- > i2; ) {
+					if (j1-noLpShift-k1 > energy.getMaxInternalLoopSize1()+1) break;
+				for (k2=j2-noLpShift; k2-- > i2; ) {
 					// ensure maximal loop length
-					if (j2-k2 > energy.getMaxInternalLoopSize2()+1) break;
+					if (j2-noLpShift-k2 > energy.getMaxInternalLoopSize2()+1) break;
 					// check if (k1,k2) are valid left boundary
 					if ( E_isNotINF( hybridE_right(k1-i1,k2-i2) ) ) {
-						curMinE = std::min( curMinE,
-								(energy.getE_interLeft(k1,j1,k2,j2)
-										+ hybridE_right(k1-i1,k2-i2) )
+						curE = std::min( curE,
+								(hybridE_right(k1-i1,k2-i2)
+										+ energy.getE_interLeft(k1,j1-noLpShift,k2,j2-noLpShift)
+										+ iStackE )
 								);
 					}
 				} // k2
 			  } // k1
-
-				// store value
-				hybridE_right(j1-i1,j2-i2) = curMinE;
-			}
-		}
-	}
+			} // j is valid right bound
+		} // j2
+	} // j1
 
 }
 

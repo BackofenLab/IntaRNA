@@ -46,11 +46,6 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 		throw std::runtime_error("PredictorMfeEns2dSeedExtension : the enumeration of non-overlapping suboptimal interactions is not supported in this prediction mode");
 	}
 
-	// no-LP setup check
-	if (outConstraint.noLP) {
-		INTARNA_NOT_IMPLEMENTED("PredictorMfeEns2dSeedExtension : prediction without lonely base pairs is not implemented yet");
-	}
-
 #if INTARNA_IN_DEBUG_MODE
 	// check indices
 	if (!(r1.isAscending() && r2.isAscending()) )
@@ -208,6 +203,11 @@ fillHybridZ_left( const size_t j1, const size_t j2 )
 	// global vars to avoid reallocation
 	size_t i1,i2,k1,k2;
 
+	// determine whether or not lonely base pairs are allowed or if we have to
+	// ensure a stacking to the right of the left boundary (i1,i2)
+	const size_t noLpShift = outConstraint.noLP ? 1 : 0;
+	Z_type iStackZ = Z_type(0);
+
 	// iterate over all window starts i1 (seq1) and i2 (seq2)
 	for (i1=j1; j1-i1 < hybridZ_left.size1(); i1-- ) {
 		for (i2=j2; j2-i2 < hybridZ_left.size2(); i2-- ) {
@@ -221,17 +221,28 @@ fillHybridZ_left( const size_t j1, const size_t j2 )
 			// check if complementary (use global sequence indexing)
 			if( i1<j1 && i2<j2 && energy.areComplementary(i1,i2) ) {
 
+				// left-stacking of j if no-LP
+				if (outConstraint.noLP) {
+					// skip if no stacking possible
+					if (!energy.areComplementary(i1+noLpShift,i2+noLpShift)) {
+						continue;
+					}
+					// get stacking energy to avoid recomputation in recursion below
+					iStackZ = energy.getBoltzmannWeight(energy.getE_interLeft(i1,i1+noLpShift,i2,i2+noLpShift));
+				}
+
 				// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
-				for (k1=i1; k1++ < j1; ) {
+				for (k1=i1+noLpShift; k1++ < j1; ) {
 					// ensure maximal loop length
-					if (k1-i1 > energy.getMaxInternalLoopSize1()+1) break;
-					for (k2=i2; k2++ < j2; ) {
+					if (k1-i1-noLpShift > energy.getMaxInternalLoopSize1()+1) break;
+					for (k2=i2+noLpShift; k2++ < j2; ) {
 						// ensure maximal loop length
-						if (k2-i2 > energy.getMaxInternalLoopSize2()+1) break;
+						if (k2-i2-noLpShift > energy.getMaxInternalLoopSize2()+1) break;
 						// check if (k1,k2) are valid left boundary
 						if ( ! Z_equal(hybridZ_left(j1-k1,j2-k2), 0.0) ) {
-							curZ += energy.getBoltzmannWeight(energy.getE_interLeft(i1,k1,i2,k2))
-									* hybridZ_left(j1-k1,j2-k2);
+							curZ += (iStackZ
+									* energy.getBoltzmannWeight(energy.getE_interLeft(i1+noLpShift,k1,i2+noLpShift,k2))
+									* hybridZ_left(j1-k1,j2-k2));
 						}
 					} // k2
 				} // k1
@@ -320,9 +331,13 @@ fillHybridZ_right( const size_t i1, const size_t i2 )
 		throw std::runtime_error("PredictorMfeEns2dSeedExtension::fillHybridZ_right("+toString(i1)+","+toString(i2)+",..) are not complementary");
 #endif
 
-
 	// global vars to avoid reallocation
 	size_t j1,j2,k1,k2;
+
+	// determine whether or not lonely base pairs are allowed or if we have to
+	// ensure a stacking to the right of the left boundary (i1,i2)
+	const size_t noLpShift = outConstraint.noLP ? 1 : 0;
+	Z_type iStackZ = Z_type(1);
 
 	// iterate over all window ends j1 (seq1) and j2 (seq2)
 	for (j1=i1; j1-i1 < hybridZ_right.size1(); j1++ ) {
@@ -337,17 +352,29 @@ fillHybridZ_right( const size_t i1, const size_t i2 )
 			// check if complementary free base pair
 			if( i1<j1 && i2<j2 && energy.areComplementary(j1,j2) ) {
 
+				// left-stacking of j if no-LP
+				if (outConstraint.noLP) {
+					// skip if no stacking possible
+					if (!energy.areComplementary(j1-noLpShift,j2-noLpShift)) {
+						continue;
+					}
+					// get stacking energy to avoid recomputation in recursion below
+					iStackZ = energy.getBoltzmannWeight(energy.getE_interLeft(j1-noLpShift,j1,j2-noLpShift,j2));
+				}
+
 				// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
-				for (k1=j1; k1-- > i1; ) {
+				for (k1=j1-noLpShift; k1-- > i1; ) {
 					// ensure maximal loop length
-					if (j1-k1 > energy.getMaxInternalLoopSize1()+1) break;
-					for (k2=j2; k2-- > i2; ) {
+					if (j1-noLpShift-k1 > energy.getMaxInternalLoopSize1()+1) break;
+					for (k2=j2-noLpShift; k2-- > i2; ) {
 						// ensure maximal loop length
-						if (j2-k2 > energy.getMaxInternalLoopSize2()+1) break;
+						if (j2-noLpShift-k2 > energy.getMaxInternalLoopSize2()+1) break;
 						// check if (k1,k2) are valid left boundary
 						if ( ! Z_equal(hybridZ_right(k1-i1,k2-i2), 0.0) ) {
 							// update partition function
-							curZ += energy.getBoltzmannWeight(energy.getE_interLeft(k1,j1,k2,j2)) * hybridZ_right(k1-i1,k2-i2);
+							curZ += ( hybridZ_right(k1-i1,k2-i2)
+									* energy.getBoltzmannWeight(energy.getE_interLeft(k1,j1-noLpShift,k2,j2-noLpShift))
+									* iStackZ );
 						}
 					} // k2
 				} // k1
