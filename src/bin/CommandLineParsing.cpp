@@ -1976,7 +1976,8 @@ parseSequencesFasta( const std::string & paramName,
 				// trim leading '>' plus successive and trailing whitespaces
 				trimStart = line.find_first_not_of(" \t",1);
 				line = line.substr( trimStart, std::max(0,(int)line.find_last_not_of(" \t\n\r")+1-trimStart) );
-				name = line;
+				// name = prefix up to first whitespace
+				name = line.substr( 0, line.find_first_of(" \t\n\r"));
 			}
 			// clear sequence data
 			sequence.clear();

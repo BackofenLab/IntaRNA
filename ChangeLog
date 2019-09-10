@@ -17,6 +17,7 @@
 * seed-extension-based prediction revised
 + --seedNoGUend : prohibit GU base pairs at seed ends
 + outNoLP support in all prediction modes
+* FASTA input: sequence id = prefix up to first whitespace from FASTA header
 
 # API
 * OutputHandler requires an OutputConstraint instances in construction
@@ -31,6 +32,9 @@
  * IntaRNA/PredictorMfe2d*SeedExtension :
    + noLP support
  + tests for noLP seed extension (model=X)
+ * bin/CommandLineParsing :
+   * parseSequencesFasta() :
+     * name = FASTA header prefix up to first whitespace
 
 190909 Martin Raden :
  * Makefile.am :
