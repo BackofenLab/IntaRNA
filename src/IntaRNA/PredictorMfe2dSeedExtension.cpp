@@ -313,6 +313,11 @@ traceBack( Interaction & interaction )
 
 	E_type fullE = interaction.energy;
 
+	// determine whether or not lonely base pairs are allowed or if we have to
+	// ensure a stacking to the right of the left boundary (i1,i2)
+	const size_t noLpShift = outConstraint.noLP ? 1 : 0;
+	E_type iStackE = E_type(0);
+
 	size_t si1 = RnaSequence::lastPos, si2 = RnaSequence::lastPos;
 	while( seedHandler.updateToNextSeed(si1,si2
 			, i1,j1+1-seedHandler.getConstraint().getBasePairs()
@@ -338,34 +343,27 @@ traceBack( Interaction & interaction )
 				// the currently traced value for i1-si1, i2-si2
 				E_type curE = hybridE_left(si1-i1, si2-i2);
 
-				// determine whether or not lonely base pairs are allowed or if we have to
-				// ensure a stacking to the right of the left boundary (i1,i2)
-				const size_t noLpShift = outConstraint.noLP ? 1 : 0;
-				E_type iStackE = E_type(0);
-
 				// trace back left
-				while( i1 != si1 ) {
+				while( i1 < si1 ) {
 
 					// right-stacking of i if no-LP
 					if (outConstraint.noLP) {
 						// assure stacking is possible
 						assert(energy.areComplementary(i1+noLpShift,i2+noLpShift));
 						// check if just stacking loop
-						if ( si1-i1==2 && si2-i2==2 )
-						{
+						if ( si1-i1==2 && si2-i2==2 ) {
 							interaction.basePairs.push_back( energy.getBasePair(i1+noLpShift,i2+noLpShift) );
 							break;
 						}
 						// get stacking energy to avoid recomputation in recursion below
-						iStackE = energy.getE_interLeft(i1,i1+noLpShift,j2,j2+noLpShift);
+						iStackE = energy.getE_interLeft(i1,i1+noLpShift,i2,i2+noLpShift);
 					}
 
 					// check if just internal loop
 					if ( E_equal( curE, (iStackE + energy.getE_interLeft(i1+noLpShift,si1,i2+noLpShift,si2) + hybridE_left(0,0)) ) )
 					{
 						// store noLP base pair
-						if ( outConstraint.noLP )
-						{
+						if ( outConstraint.noLP ) {
 							interaction.basePairs.push_back( energy.getBasePair(i1+noLpShift,i2+noLpShift) );
 						}
 						break;
@@ -400,6 +398,10 @@ traceBack( Interaction & interaction )
 							}
 						}
 						}
+						if (traceNotFound) {
+							LOG(ERROR) <<"left-not-found:  i "<<i1<<","<<i2<<"  si "<<si1<<","<<si2;
+							throw std::runtime_error("trace not found");
+						}
 					}
 
 				} // traceback left
@@ -417,7 +419,7 @@ traceBack( Interaction & interaction )
 				curE = hybridE_right(j1-sj1,j2-sj2);
 
 				// trace back right
-				while( j1 != sj1 ) {
+				while( j1 > sj1 ) {
 
 					// left-stacking of j if no-LP
 					if (outConstraint.noLP) {
@@ -433,7 +435,7 @@ traceBack( Interaction & interaction )
 					}
 
 					// check if just internal loop
-					if ( E_equal( curE, (hybridE_right(0,0) + energy.getE_interLeft(sj1,j1,sj2,j2) + iStackE) ) )
+					if ( E_equal( curE, (hybridE_right(0,0) + energy.getE_interLeft(sj1,j1-noLpShift,sj2,j2-noLpShift) + iStackE) ) )
 					{
 						// store no-LP base pair left of j
 						if (outConstraint.noLP) {
@@ -469,6 +471,10 @@ traceBack( Interaction & interaction )
 								}
 							}
 						}
+						}
+						if (traceNotFound) {
+							LOG(ERROR) <<"right-not-found:  sji "<<sj1<<","<<sj2<<"  j "<<j1<<","<<j2;
+							throw std::runtime_error("trace not found");
 						}
 					}
 				}  // traceback right
