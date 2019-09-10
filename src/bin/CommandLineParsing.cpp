@@ -1270,7 +1270,7 @@ parse(int argc, char** argv)
 			}
 
 			// check ensemble sanity
-			if (outMode.val != 'E') {
+			if (outMode.val == 'E') {
 				// check single sequence input
 				if (target.size() > 1 || query.size() > 1) {
 					throw error("outmode=E allows only single sequence input for query and target");
