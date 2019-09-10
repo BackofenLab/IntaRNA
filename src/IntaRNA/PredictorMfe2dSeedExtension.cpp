@@ -83,11 +83,11 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 		const size_t sl2 = seedHandler.getSeedLength2(si1, si2);
 		const size_t sj1 = si1+sl1-1;
 		const size_t sj2 = si2+sl2-1;
-		const size_t maxMatrixLen1 = energy.getAccessibility1().getMaxLength()-sl1+1;
-		const size_t maxMatrixLen2 = energy.getAccessibility2().getMaxLength()-sl2+1;
 		// check if seed fits into interaction range
 		if (sj1 > range_size1 || sj2 > range_size2)
 			continue;
+		const size_t maxMatrixLen1 = energy.getAccessibility1().getMaxLength()-sl1+1;
+		const size_t maxMatrixLen2 = energy.getAccessibility2().getMaxLength()-sl2+1;
 
 		// EL
 		hybridE_left.resize( std::min(si1+1, maxMatrixLen1), std::min(si2+1, maxMatrixLen2) );
@@ -132,6 +132,11 @@ fillHybridE_left( const size_t j1, const size_t j2 )
 {
 	// temporary access
 	const OutputConstraint & outConstraint = output.getOutputConstraint();
+#if INTARNA_IN_DEBUG_MODE
+	// check indices
+	if (!energy.areComplementary(j1,j2) )
+		throw std::runtime_error("PredictorMfe2dSeedExtension::fillHybridE_left("+toString(j1)+","+toString(j2)+",..) are not complementary");
+#endif
 
 	// global vars to avoid reallocation
 	size_t i1,i2,k1,k2;
@@ -143,7 +148,6 @@ fillHybridE_left( const size_t j1, const size_t j2 )
 
 	// iterate over all window starts j1 (seq1) and j2 (seq2)
 	for (i1=j1; j1-i1 < hybridE_left.size1(); i1--) {
-		// screen for right boundaries in seq2
 		for (i2=j2; j2-i2 < hybridE_left.size2(); i2--) {
 
 			// referencing cell access
@@ -154,14 +158,14 @@ fillHybridE_left( const size_t j1, const size_t j2 )
 			// check if complementary
 			if( i1<j1 && i2<j2 && energy.areComplementary(i1,i2) ) {
 
-				// left-stacking of j if no-LP
+				// right-stacking of i if no-LP
 				if (outConstraint.noLP) {
 					// skip if no stacking possible
 					if (!energy.areComplementary(i1+noLpShift,i2+noLpShift)) {
 						continue;
 					}
 					// get stacking energy to avoid recomputation in recursion below
-					iStackE = energy.getE_interLeft(i1,i1+noLpShift,j2,j2+noLpShift);
+					iStackE = energy.getE_interLeft(i1,i1+noLpShift,i2,i2+noLpShift);
 				}
 
 				// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
@@ -195,6 +199,11 @@ fillHybridE_right( const size_t i1, const size_t i2 )
 {
 	// temporary access
 	const OutputConstraint & outConstraint = output.getOutputConstraint();
+#if INTARNA_IN_DEBUG_MODE
+	// check indices
+	if (!energy.areComplementary(i1,i2) )
+		throw std::runtime_error("PredictorMfe2dSeedExtension::fillHybridE_right("+toString(i1)+","+toString(i2)+",..) are not complementary");
+#endif
 
 	// global vars to avoid reallocation
 	size_t j1,j2,k1,k2;
@@ -329,29 +338,58 @@ traceBack( Interaction & interaction )
 				// the currently traced value for i1-si1, i2-si2
 				E_type curE = hybridE_left(si1-i1, si2-i2);
 
+				// determine whether or not lonely base pairs are allowed or if we have to
+				// ensure a stacking to the right of the left boundary (i1,i2)
+				const size_t noLpShift = outConstraint.noLP ? 1 : 0;
+				E_type iStackE = E_type(0);
+
 				// trace back left
 				while( i1 != si1 ) {
 
+					// right-stacking of i if no-LP
+					if (outConstraint.noLP) {
+						// assure stacking is possible
+						assert(energy.areComplementary(i1+noLpShift,i2+noLpShift));
+						// check if just stacking loop
+						if ( si1-i1==2 && si2-i2==2 )
+						{
+							interaction.basePairs.push_back( energy.getBasePair(i1+noLpShift,i2+noLpShift) );
+							break;
+						}
+						// get stacking energy to avoid recomputation in recursion below
+						iStackE = energy.getE_interLeft(i1,i1+noLpShift,j2,j2+noLpShift);
+					}
+
 					// check if just internal loop
-					if ( E_equal( curE, (energy.getE_interLeft(i1,si1,i2,si2) + hybridE_left(0,0)) ) )
+					if ( E_equal( curE, (iStackE + energy.getE_interLeft(i1+noLpShift,si1,i2+noLpShift,si2) + hybridE_left(0,0)) ) )
 					{
+						// store noLP base pair
+						if ( outConstraint.noLP )
+						{
+							interaction.basePairs.push_back( energy.getBasePair(i1+noLpShift,i2+noLpShift) );
+						}
 						break;
 					}
 					// check all interval splits
-					if ( (si1-i1) > 1 && (si2-i2) > 1) {
+					if ( (si1-i1-noLpShift) > 1 && (si2-i2-noLpShift) > 1) {
+
 						// temp variables
 						size_t k1,k2;
 						bool traceNotFound = true;
-						// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
-						for (k1=std::min(si1-1,i1+energy.getMaxInternalLoopSize1()+1); traceNotFound && k1>i1; k1--) {
-						for (k2=std::min(si2-1,i2+energy.getMaxInternalLoopSize2()+1); traceNotFound && k2>i2; k2--) {
+						// check all combinations of decompositions into (i1,i2)..(k1,k2)-(si1,si2)
+						for (k1=std::min(si1-1,i1+noLpShift+energy.getMaxInternalLoopSize1()+1); traceNotFound && k1>i1+noLpShift; k1--) {
+						for (k2=std::min(si2-1,i2+noLpShift+energy.getMaxInternalLoopSize2()+1); traceNotFound && k2>i2+noLpShift; k2--) {
 							// check if (k1,k2) are valid left boundary
 							if ( E_isNotINF( hybridE_left(si1-k1,si2-k2) ) ) {
 								if ( E_equal( curE,
-										(energy.getE_interLeft(i1,k1,i2,k2) + hybridE_left(si1-k1,si2-k2)) ) )
+										(iStackE + energy.getE_interLeft(i1+noLpShift,k1,i2+noLpShift,k2) + hybridE_left(si1-k1,si2-k2)) ) )
 								{
 									// stop searching
 									traceNotFound = false;
+									// store no-LP base pair right of i
+									if (outConstraint.noLP) {
+										interaction.basePairs.push_back( energy.getBasePair(i1+noLpShift,i2+noLpShift) );
+									}
 									// store splitting base pair
 									interaction.basePairs.push_back( energy.getBasePair(k1,k2) );
 									// trace right part of split
@@ -364,7 +402,7 @@ traceBack( Interaction & interaction )
 						}
 					}
 
-			  } // traceback left
+				} // traceback left
 
 				// trace seed
 				if (si1 > i1 && si2 > i2) {
@@ -381,26 +419,47 @@ traceBack( Interaction & interaction )
 				// trace back right
 				while( j1 != sj1 ) {
 
+					// left-stacking of j if no-LP
+					if (outConstraint.noLP) {
+						// assure stacking is possible
+						assert (energy.areComplementary(j1-noLpShift,j2-noLpShift));
+						// handle stacking only
+						if (j1-sj1==2 && j2-sj2==2) {
+							interaction.basePairs.push_back( energy.getBasePair(j1-noLpShift,j2-noLpShift) );
+							break;
+						}
+						// get stacking energy to avoid recomputation in recursion below
+						iStackE = energy.getE_interLeft(j1-noLpShift,j1,j2-noLpShift,j2);
+					}
+
 					// check if just internal loop
-					if ( E_equal( curE, (energy.getE_interLeft(sj1,j1,sj2,j2) + hybridE_right(0,0)) ) )
+					if ( E_equal( curE, (hybridE_right(0,0) + energy.getE_interLeft(sj1,j1,sj2,j2) + iStackE) ) )
 					{
+						// store no-LP base pair left of j
+						if (outConstraint.noLP) {
+							interaction.basePairs.push_back( energy.getBasePair(j1-noLpShift,j2-noLpShift) );
+						}
 						break;
 					}
 					// check all interval splits
-					if ( (j1-sj1) > 1 && (j2-sj2) > 1) {
+					if ( (j1-noLpShift-sj1) > 1 && (j2-noLpShift-sj2) > 1) {
 						// temp variables
 						size_t k1,k2;
 						bool traceNotFound = true;
 						// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
-						for (k1=j1-1; traceNotFound && k1 > sj1 && (j1-k1 <= energy.getMaxInternalLoopSize1()+1); k1--) {
-						for (k2=j2-1; traceNotFound && k2 > sj2 && (j2-k2 <= energy.getMaxInternalLoopSize2()+1); k2--) {
+						for (k1=j1-noLpShift-1; traceNotFound && k1 > sj1 && (j1-noLpShift-k1 <= energy.getMaxInternalLoopSize1()+1); k1--) {
+						for (k2=j2-noLpShift-1; traceNotFound && k2 > sj2 && (j2-noLpShift-k2 <= energy.getMaxInternalLoopSize2()+1); k2--) {
 							// check if (k1,k2) are valid left boundary
 							if ( E_isNotINF( hybridE_right(k1-sj1,k2-sj2) ) ) {
 								if ( E_equal( curE,
-										(energy.getE_interLeft(k1,j1,k2,j2) + hybridE_right(k1-sj1,k2-sj2)) ) )
+										(iStackE + energy.getE_interLeft(k1,j1-noLpShift,k2,j2-noLpShift) + hybridE_right(k1-sj1,k2-sj2)) ) )
 								{
 									// stop searching
 									traceNotFound = false;
+									// store no-LP base pair left of j
+									if (outConstraint.noLP) {
+										interaction.basePairs.push_back( energy.getBasePair(j1-noLpShift,j2-noLpShift) );
+									}
 									// store splitting base pair
 									interaction.basePairs.push_back( energy.getBasePair(k1,k2) );
 									// trace right part of split
