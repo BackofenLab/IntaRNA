@@ -37,14 +37,14 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 #if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_omp_logOutput)
 #endif
-	{ VLOG(2) <<"predicting ensemble mfe interactions with seed heuristically in O(n^2) space and O(n^2) time..."; }
+	{ VLOG(2) <<"predicting ensemble mfe interactions with seed-extension heuristically in O(n^2) space and O(n^2) time..."; }
 	// measure timing
 	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
 
 #if INTARNA_IN_DEBUG_MODE
 	// check indices
 	if (!(r1.isAscending() && r2.isAscending()) )
-		throw std::runtime_error("PredictorMfe2d::predict("+toString(r1)+","+toString(r2)+") is not sane");
+		throw std::runtime_error("PredictorMfe2dHeuristicSeedExtension::predict("+toString(r1)+","+toString(r2)+") is not sane");
 #endif
 
 	// setup index offset

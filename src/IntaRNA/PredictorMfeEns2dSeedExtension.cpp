@@ -78,10 +78,8 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 			, 0, range_size1+1-seedHandler.getConstraint().getBasePairs()
 			, 0, range_size2+1-seedHandler.getConstraint().getBasePairs()) )
 	{
+		// get Z and boundaries of seed
 		const Z_type seedZ = energy.getBoltzmannWeight( seedHandler.getSeedE(si1, si2) );
-
-
-
 		const size_t sl1 = seedHandler.getSeedLength1(si1, si2);
 		const size_t sl2 = seedHandler.getSeedLength2(si1, si2);
 		const size_t sj1 = si1+sl1-1;
@@ -213,7 +211,7 @@ fillHybridZ_left( const size_t j1, const size_t j2 )
 			// check if complementary (use global sequence indexing)
 			if( i1<j1 && i2<j2 && energy.areComplementary(i1,i2) ) {
 
-				// left-stacking of j if no-LP
+				// right-stacking of i if no-LP
 				if (outConstraint.noLP) {
 					// skip if no stacking possible
 					if (!energy.areComplementary(i1+noLpShift,i2+noLpShift)) {

@@ -31,21 +31,21 @@ PredictorMfe2dHeuristicSeedExtension::
 
 void
 PredictorMfe2dHeuristicSeedExtension::
-predict( const IndexRange & r1, const IndexRange & r2  )
+predict( const IndexRange & r1, const IndexRange & r2 )
 {
 	// temporary access
 	const OutputConstraint & outConstraint = output.getOutputConstraint();
 #if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_omp_logOutput)
 #endif
-	{ VLOG(2) <<"predicting mfe interactions with seed in O(n^2) space and O(n^4) time..."; }
+	{ VLOG(2) <<"predicting mfe interactions with seed-extension heuristically in O(n^2) space and O(n^2) time..."; }
 	// measure timing
 	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
 
 #if INTARNA_IN_DEBUG_MODE
 	// check indices
 	if (!(r1.isAscending() && r2.isAscending()) )
-		throw std::runtime_error("PredictorMfe2d::predict("+toString(r1)+","+toString(r2)+") is not sane");
+		throw std::runtime_error("PredictorMfe2dHeuristicSeedExtension::predict("+toString(r1)+","+toString(r2)+") is not sane");
 #endif
 
 	// setup index offset
@@ -121,8 +121,7 @@ fillHybridE_right( const size_t i1, const size_t i2
 	// global vars to avoid reallocation
 	size_t j1,j2,k1,k2;
 
-	//////////  FIRST ROUND : COMPUTE HYBRIDIZATION ENERGIES ONLY  ////////////
-
+	// seed energy
 	const E_type seedE = seedHandler.getSeedE(si1, si2);
 
 	// determine whether or not lonely base pairs are allowed or if we have to
@@ -196,10 +195,14 @@ fillHybridE_left( const size_t si1, const size_t si2 )
 	// temporary access
 	const OutputConstraint & outConstraint = output.getOutputConstraint();
 
+#if INTARNA_IN_DEBUG_MODE
+	// check indices
+	if (!energy.areComplementary(si1,si2) )
+		throw std::runtime_error("PredictorMfe2dSeedExtension::fillHybridE_left("+toString(si1)+","+toString(si2)+",..) are not complementary");
+#endif
+
 	// global vars to avoid reallocation
 	size_t i1,i2,k1,k2;
-
-	//////////  FIRST ROUND : COMPUTE HYBRIDIZATION ENERGIES ONLY  ////////////
 
 	const E_type seedE = seedHandler.getSeedE(si1, si2);
 	const size_t sl1 = seedHandler.getSeedLength1(si1, si2);
