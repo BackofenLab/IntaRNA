@@ -3,8 +3,7 @@ dist: trusty
 language: minimal
 
 install:
-#  - wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
-  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
   - bash miniconda.sh -b -p $HOME/miniconda
   - export PATH="$HOME/miniconda/bin:$PATH"
   - hash -r
@@ -14,7 +13,6 @@ install:
   - conda info -a
   # create build environment
   - conda create -q -n build-IntaRNA -c bioconda gcc_linux-64 gxx_linux-64 boost-cpp viennarna pkgconfig
-#  - source activate build-IntaRNA
   - conda activate build-IntaRNA
 
 script:
