@@ -40,14 +40,6 @@ public:
 	virtual ~SeedHandlerIdxOffset();
 
 	/**
-	 * Access to the underlying interaction energy function
-	 * @return the used energy function
-	 */
-	virtual
-	const InteractionEnergy&
-	getInteractionEnergy() const;
-
-	/**
 	 * Access to the currently used index offset for sequence 1
 	 * @return the index offset for sequence 1 used
 	 */
@@ -82,6 +74,14 @@ public:
 	virtual
 	const SeedConstraint&
 	getConstraint() const;
+
+	/**
+	 * Access to the underlying interaction energy function
+	 * @return the used energy function
+	 */
+	virtual
+	const InteractionEnergy&
+	getInteractionEnergy() const;
 
 
 	/**
@@ -208,6 +208,48 @@ public:
 			, const size_t i2min = 0, const size_t i2max = RnaSequence::lastPos
 			) const;
 
+	/**
+	 * Adds all seeds to a given interaction that are completely covered by its
+	 * base pairs.
+	 *
+	 * @param i the interaction to update with indexing in global in-sequence
+	 *          order
+	 */
+	virtual
+	void
+	addSeeds( Interaction & i ) const;
+
+	/**
+	 * Checks whether or not two seeds are loop overlapping, ie. given i1 < k1, the
+	 * last x (>1) base pairs of seed(i1,i2) are equal to the first x base pairs of
+	 * seed(k1,k2), or vice versa if k1 < i1.
+	 *
+	 * @param i1 the left most interacting base of seq1 of seedA
+	 * @param i2 the left most interacting base of seq2 of seedA
+	 * @param k1 the left most interacting base of seq1 of seedB
+	 * @param k2 the left most interacting base of seq2 of seedB
+	 * @return true if seedA and seedB exist and they are loop overlapping;
+	 *         false otherwise
+	 */
+	virtual
+	bool
+	areLoopOverlapping( const size_t i1, const size_t i2
+					, const size_t k1, const size_t k2 ) const;
+
+	/**
+	 * Checks whether or not a given index pair is a valid seed base pair
+	 *
+	 * @param i1 the interacting base of seq1
+	 * @param i2 the interacting base of seq2
+	 * @param atEndOfSeed whether or not the (i1,i2) form the end of a seed
+	 * @return true if (i1,i2) are complementary, ED(i,i) < maxED, and both i1
+	 *              and i2 are in allowed regions; false otherwise
+	 */
+	virtual
+	bool
+	isFeasibleSeedBasePair( const size_t i1
+						, const size_t i2
+						, const bool atEndOfSeed = false ) const;
 
 protected:
 
@@ -438,6 +480,39 @@ updateToNextSeed( size_t & i1_out, size_t & i2_out
 		return true;
 	}
 	return false;
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+inline
+void
+SeedHandlerIdxOffset::
+addSeeds( Interaction & i ) const
+{
+	seedHandlerOriginal->addSeeds(i);
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+SeedHandlerIdxOffset::
+areLoopOverlapping( const size_t i1, const size_t i2
+				, const size_t k1, const size_t k2 ) const
+{
+	return seedHandlerOriginal->areLoopOverlapping(i1+idxOffset1, i2+idxOffset2, k1+idxOffset1, k2+idxOffset2);
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+SeedHandlerIdxOffset::
+isFeasibleSeedBasePair( const size_t i1
+					, const size_t i2
+					, const bool atEndOfSeed ) const
+{
+	return seedHandlerOriginal->isFeasibleSeedBasePair(i1+idxOffset1,i2+idxOffset2,atEndOfSeed);
 }
 
 //////////////////////////////////////////////////////////////////////////

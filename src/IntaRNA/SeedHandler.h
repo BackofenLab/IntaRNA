@@ -179,17 +179,6 @@ public:
 	areLoopOverlapping( const size_t i1, const size_t i2
 					, const size_t k1, const size_t k2 ) const;
 
-protected:
-
-	//! the used energy function
-	const InteractionEnergy& energy;
-
-	//! the seed constraint to be applied
-	const SeedConstraint & seedConstraint;
-
-
-protected:
-
 	/**
 	 * Checks whether or not a given index pair is a valid seed base pair
 	 *
@@ -199,10 +188,20 @@ protected:
 	 * @return true if (i1,i2) are complementary, ED(i,i) < maxED, and both i1
 	 *              and i2 are in allowed regions; false otherwise
 	 */
+	virtual
 	bool
 	isFeasibleSeedBasePair( const size_t i1
 						, const size_t i2
 						, const bool atEndOfSeed = false ) const;
+
+protected:
+
+	//! the used energy function
+	const InteractionEnergy& energy;
+
+	//! the seed constraint to be applied
+	const SeedConstraint & seedConstraint;
+
 
 
 };
