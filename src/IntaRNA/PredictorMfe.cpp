@@ -85,6 +85,7 @@ updateOptima( const size_t i1, const size_t j1
 		, const bool isHybridE
 		, const bool incrementZall )
 {
+	LOG_IF(energy.getBasePair(i1,i2)==Interaction::BasePair(240-1,88-1) && energy.getBasePair(j1,j2)==Interaction::BasePair(268-1,59-1),DEBUG) <<" found it! E="<<interE;
 	// ignore invalid reports
 	if (E_isINF(interE) || interE >= E_MAX) {
 		return;
