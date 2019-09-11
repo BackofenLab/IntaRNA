@@ -173,7 +173,9 @@ fillHybridE()
 							// check if this combination yields better energy
 							curEseedtotal = energy.getE(i1,rightExt->j1,i2,rightExt->j2,curE);
 							// update Zall
-							updateZall( i1,rightExt->j1,i2,rightExt->j2, curEseedtotal, false );
+							if (sj1 < rightExt->j1) {
+								updateZall( i1,rightExt->j1,i2,rightExt->j2, curEseedtotal, false );
+							}
 							// update optimum
 							if ( curEseedtotal < curCellSeedEtotal )
 							{
@@ -210,6 +212,9 @@ fillHybridE()
 							// iterate over all loop sizes w1 (seq1) and w2 (seq2) (minus 1)
 							for (w1=1; w1-1 <= energy.getMaxInternalLoopSize1() && sj1+w1<hybridE.size1(); w1++) {
 							for (w2=1; w2-1 <= energy.getMaxInternalLoopSize2() && sj2+w2<hybridE.size2(); w2++) {
+
+								// ensure there is at least one unpaired position in loop right after the seed
+								if (w1+w2==2) { continue; }
 
 								// direct cell access (const)
 								rightExt = &(hybridE(sj1+w1,sj2+w2));

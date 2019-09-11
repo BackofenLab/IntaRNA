@@ -153,6 +153,10 @@ fillHybridZ_right( const size_t sj1, const size_t sj2
 					}
 					// get stacking energy to avoid recomputation in recursion below
 					iStackZ = energy.getBoltzmannWeight(energy.getE_interLeft(j1-noLpShift,j1,j2-noLpShift,j2));
+					// check just stacked seed extension
+					if (j1-noLpShift==sj1 && j2-noLpShift==sj2) {
+						curZ += iStackZ * hybridZ_right(0,0);
+					}
 				}
 
 				// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
@@ -237,6 +241,10 @@ fillHybridZ_left( const size_t si1, const size_t si2 )
 					}
 					// get stacking energy to avoid recomputation in recursion below
 					iStackZ = energy.getBoltzmannWeight(energy.getE_interLeft(i1,i1+noLpShift,i2,i2+noLpShift));
+					// check just stacked seed extension
+					if (i1+noLpShift==si1 && i2+noLpShift==si2) {
+						curZ += iStackZ * hybridZ_left(0,0);
+					}
 				}
 
 				// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)

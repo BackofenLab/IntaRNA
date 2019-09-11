@@ -180,14 +180,14 @@ getNonOverlappingEnergy( const size_t si1, const size_t si2, const size_t si1p, 
 
 void
 PredictorMfeEns2dSeedExtension::
-fillHybridZ_left( const size_t j1, const size_t j2 )
+fillHybridZ_left( const size_t si1, const size_t si2 )
 {
 	// temporary access
 	const OutputConstraint & outConstraint = output.getOutputConstraint();
 #if INTARNA_IN_DEBUG_MODE
 	// check indices
-	if (!energy.areComplementary(j1,j2) )
-		throw std::runtime_error("PredictorMfeEns2dSeedExtension::fillHybridZ_left("+toString(j1)+","+toString(j2)+",..) are not complementary");
+	if (!energy.areComplementary(si1,si2) )
+		throw std::runtime_error("PredictorMfeEns2dSeedExtension::fillHybridZ_left("+toString(si1)+","+toString(si2)+",..) are not complementary");
 #endif
 
 	// global vars to avoid reallocation
@@ -199,17 +199,17 @@ fillHybridZ_left( const size_t j1, const size_t j2 )
 	Z_type iStackZ = Z_type(0);
 
 	// iterate over all window starts i1 (seq1) and i2 (seq2)
-	for (i1=j1; j1-i1 < hybridZ_left.size1(); i1-- ) {
-		for (i2=j2; j2-i2 < hybridZ_left.size2(); i2-- ) {
+	for (i1=si1; si1-i1 < hybridZ_left.size1(); i1-- ) {
+		for (i2=si2; si2-i2 < hybridZ_left.size2(); i2-- ) {
 
 			// referencing cell access
-			Z_type & curZ = hybridZ_left(j1-i1,j2-i2);
+			Z_type & curZ = hybridZ_left(si1-i1,si2-i2);
 
 			// init current cell (0 if not just right-most (j1,j2) base pair)
-			curZ = (i1==j1 && i2==j2) ? energy.getBoltzmannWeight(energy.getE_init()) : 0.0;
+			curZ = (i1==si1 && i2==si2) ? energy.getBoltzmannWeight(energy.getE_init()) : 0.0;
 
 			// check if complementary (use global sequence indexing)
-			if( i1<j1 && i2<j2 && energy.areComplementary(i1,i2) ) {
+			if( i1<si1 && i2<si2 && energy.areComplementary(i1,i2) ) {
 
 				// right-stacking of i if no-LP
 				if (outConstraint.noLP) {
@@ -219,44 +219,48 @@ fillHybridZ_left( const size_t j1, const size_t j2 )
 					}
 					// get stacking energy to avoid recomputation in recursion below
 					iStackZ = energy.getBoltzmannWeight(energy.getE_interLeft(i1,i1+noLpShift,i2,i2+noLpShift));
+					// check just stacked seed extension
+					if (i1+noLpShift==si1 && i2+noLpShift==si2) {
+						curZ += iStackZ * hybridZ_left(0,0);
+					}
 				}
 
 				// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
-				for (k1=i1+noLpShift; k1++ < j1; ) {
+				for (k1=i1+noLpShift; k1++ < si1; ) {
 					// ensure maximal loop length
 					if (k1-i1-noLpShift > energy.getMaxInternalLoopSize1()+1) break;
-					for (k2=i2+noLpShift; k2++ < j2; ) {
+					for (k2=i2+noLpShift; k2++ < si2; ) {
 						// ensure maximal loop length
 						if (k2-i2-noLpShift > energy.getMaxInternalLoopSize2()+1) break;
 						// check if (k1,k2) are valid left boundary
-						if ( ! Z_equal(hybridZ_left(j1-k1,j2-k2), 0.0) ) {
+						if ( ! Z_equal(hybridZ_left(si1-k1,si2-k2), 0.0) ) {
 							curZ += (iStackZ
 									* energy.getBoltzmannWeight(energy.getE_interLeft(i1+noLpShift,k1,i2+noLpShift,k2))
-									* hybridZ_left(j1-k1,j2-k2));
+									* hybridZ_left(si1-k1,si2-k2));
 						}
 					} // k2
 				} // k1
 
 				// correction for left seeds
-				if ( i1<j1 && i2<j2 && seedHandler.isSeedBound(i1, i2) ) {
+				if ( i1<si1 && i2<si2 && seedHandler.isSeedBound(i1, i2) ) {
 
 					// check if seed is to be processed:
 					bool substractThisSeed =
 							// check if left of anchor seed
-										( i1+seedHandler.getSeedLength1(i1,i2)-1 <= j1
-										&& i2+seedHandler.getSeedLength2(i1,i2)-1 <= j2 )
+										( i1+seedHandler.getSeedLength1(i1,i2)-1 <= si1
+										&& i2+seedHandler.getSeedLength2(i1,i2)-1 <= si2 )
 							// check if overlapping with anchor seed
-									||	seedHandler.areLoopOverlapping(i1,i2,j1,j2);
+									||	seedHandler.areLoopOverlapping(i1,i2,si1,si2);
 
 					if (substractThisSeed) {
 
 						// iterate seeds in S region
 						size_t sj1 = RnaSequence::lastPos, sj2 = RnaSequence::lastPos;
-						size_t si1overlap = j1+1, si2overlap = j2+1;
+						size_t si1overlap = si1+1, si2overlap = si2+1;
 						// find left-most loop-overlapping seed
 						while( seedHandler.updateToNextSeed(sj1,sj2
-								, i1, std::min(j1,i1+seedHandler.getSeedLength1(i1, i2)-2)
-								, i2, std::min(j2,i2+seedHandler.getSeedLength2(i1, i2)-2)) )
+								, i1, std::min(si1,i1+seedHandler.getSeedLength1(i1, i2)-2)
+								, i2, std::min(si2,i2+seedHandler.getSeedLength2(i1, i2)-2)) )
 						{
 							// check if right of i1,i2 and overlapping
 							if (sj1 > i1 && seedHandler.areLoopOverlapping(i1, i2, sj1, sj2)) {
@@ -269,14 +273,14 @@ fillHybridZ_left( const size_t j1, const size_t j2 )
 						}
 
 						// if we found an overlapping seed
-						if (si1overlap <= j1) {
+						if (si1overlap <= si1) {
 							// check if right side is non-empty
-							if ( ! E_equal(hybridZ_left( j1-si1overlap, j2-si2overlap),0) ) {
+							if ( ! E_equal(hybridZ_left( si1-si1overlap, si2-si2overlap),0) ) {
 								// compute Energy of loop S \ S'
 								E_type nonOverlapE = getNonOverlappingEnergy(i1, i2, si1overlap, si2overlap);
 								// substract energy.getBoltzmannWeight( nonOverlapE ) * hybridZ_left( si1overlap, si2overlap up to anchor seed [==1 if equal])
 								Z_type correctionTerm = energy.getBoltzmannWeight( nonOverlapE )
-														* hybridZ_left( j1-si1overlap, j2-si2overlap);
+														* hybridZ_left( si1-si1overlap, si2-si2overlap);
 								curZ -= correctionTerm;
 								// sanity ensurence
 								if (curZ < 0) {
@@ -289,8 +293,8 @@ fillHybridZ_left( const size_t j1, const size_t j2 )
 							// if no S'
 							// substract seedZ * hybridZ_left(right end seed up to anchor seed)
 							Z_type correctionTerm = energy.getBoltzmannWeight(seedE)
-									* hybridZ_left( j1-(i1+seedHandler.getSeedLength1(i1, i2)-1)
-												  , j2-(i2+seedHandler.getSeedLength2(i1, i2)-1));
+									* hybridZ_left( si1-(i1+seedHandler.getSeedLength1(i1, i2)-1)
+												  , si2-(i2+seedHandler.getSeedLength2(i1, i2)-1));
 							curZ -= correctionTerm;
 							// sanity ensurence
 							if (curZ < 0) {
@@ -311,14 +315,14 @@ fillHybridZ_left( const size_t j1, const size_t j2 )
 
 void
 PredictorMfeEns2dSeedExtension::
-fillHybridZ_right( const size_t i1, const size_t i2 )
+fillHybridZ_right( const size_t sj1, const size_t sj2 )
 {
 	// temporary access
 	const OutputConstraint & outConstraint = output.getOutputConstraint();
 #if INTARNA_IN_DEBUG_MODE
 	// check indices
-	if (!energy.areComplementary(i1,i2) )
-		throw std::runtime_error("PredictorMfeEns2dSeedExtension::fillHybridZ_right("+toString(i1)+","+toString(i2)+",..) are not complementary");
+	if (!energy.areComplementary(sj1,sj2) )
+		throw std::runtime_error("PredictorMfeEns2dSeedExtension::fillHybridZ_right("+toString(sj1)+","+toString(sj2)+",..) are not complementary");
 #endif
 
 	// global vars to avoid reallocation
@@ -330,17 +334,17 @@ fillHybridZ_right( const size_t i1, const size_t i2 )
 	Z_type iStackZ = Z_type(1);
 
 	// iterate over all window ends j1 (seq1) and j2 (seq2)
-	for (j1=i1; j1-i1 < hybridZ_right.size1(); j1++ ) {
-		for (j2=i2; j2-i2 < hybridZ_right.size2(); j2++ ) {
+	for (j1=sj1; j1-sj1 < hybridZ_right.size1(); j1++ ) {
+		for (j2=sj2; j2-sj2 < hybridZ_right.size2(); j2++ ) {
 
 			// referencing cell access
-			Z_type & curZ = hybridZ_right(j1-i1,j2-i2);
+			Z_type & curZ = hybridZ_right(j1-sj1,j2-sj2);
 
 			// init partition function for current cell -> (i1,i2) are complementary per definition
-			curZ = i1==j1 && i2==j2 ? energy.getBoltzmannWeight(0.0) : 0.0;
+			curZ = sj1==j1 && sj2==j2 ? energy.getBoltzmannWeight(0.0) : 0.0;
 
 			// check if complementary free base pair
-			if( i1<j1 && i2<j2 && energy.areComplementary(j1,j2) ) {
+			if( sj1<j1 && sj2<j2 && energy.areComplementary(j1,j2) ) {
 
 				// left-stacking of j if no-LP
 				if (outConstraint.noLP) {
@@ -350,19 +354,23 @@ fillHybridZ_right( const size_t i1, const size_t i2 )
 					}
 					// get stacking energy to avoid recomputation in recursion below
 					iStackZ = energy.getBoltzmannWeight(energy.getE_interLeft(j1-noLpShift,j1,j2-noLpShift,j2));
+					// check just stacked seed extension
+					if (j1-noLpShift==sj1 && j2-noLpShift==sj2) {
+						curZ += iStackZ * hybridZ_right(0,0);
+					}
 				}
 
 				// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
-				for (k1=j1-noLpShift; k1-- > i1; ) {
+				for (k1=j1-noLpShift; k1-- > sj1; ) {
 					// ensure maximal loop length
 					if (j1-noLpShift-k1 > energy.getMaxInternalLoopSize1()+1) break;
-					for (k2=j2-noLpShift; k2-- > i2; ) {
+					for (k2=j2-noLpShift; k2-- > sj2; ) {
 						// ensure maximal loop length
 						if (j2-noLpShift-k2 > energy.getMaxInternalLoopSize2()+1) break;
 						// check if (k1,k2) are valid left boundary
-						if ( ! Z_equal(hybridZ_right(k1-i1,k2-i2), 0.0) ) {
+						if ( ! Z_equal(hybridZ_right(k1-sj1,k2-sj2), 0.0) ) {
 							// update partition function
-							curZ += ( hybridZ_right(k1-i1,k2-i2)
+							curZ += ( hybridZ_right(k1-sj1,k2-sj2)
 									* energy.getBoltzmannWeight(energy.getE_interLeft(k1,j1-noLpShift,k2,j2-noLpShift))
 									* iStackZ );
 						}

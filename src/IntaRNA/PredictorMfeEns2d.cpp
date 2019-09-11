@@ -127,7 +127,7 @@ fillHybridZ( const size_t j1, const size_t j2
 		for (i2=j2+1; i2-- > i2start; ) {
 
 			// init: mark as invalid boundary
-			hybridZ(i1,i2) = 0.0;
+			hybridZ(i1,i2) = Z_type(0.0);
 
 			// check if this cell is to be computed (!=E_INF)
 			if( energy.isAccessible1(i1)
@@ -180,6 +180,10 @@ fillHybridZ( const size_t j1, const size_t j2
 					if (w1 > 2 && w2 > 2 && Z_isNotINF(iStackZ)) {
 						for (k1=std::min(j1-1,i1+energy.getMaxInternalLoopSize1()+1+noLpShift); k1>i1+noLpShift; k1--) {
 						for (k2=std::min(j2-1,i2+energy.getMaxInternalLoopSize2()+1+noLpShift); k2>i2+noLpShift; k2--) {
+							// ensure at least one unpaired base in connecting loop for noLP predictions
+							if (outConstraint.noLP && k1-1==i1+noLpShift && k2-1==i2+noLpShift) {
+								continue;
+							}
 							// check if (k1,k2) are valid left boundary
 							if ( ! Z_equal( hybridZ(k1,k2), 0.0 ) ) {
 								// update minimal value

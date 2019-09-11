@@ -128,14 +128,14 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 
 void
 PredictorMfe2dSeedExtension::
-fillHybridE_left( const size_t j1, const size_t j2 )
+fillHybridE_left( const size_t si1, const size_t si2 )
 {
 	// temporary access
 	const OutputConstraint & outConstraint = output.getOutputConstraint();
 #if INTARNA_IN_DEBUG_MODE
 	// check indices
-	if (!energy.areComplementary(j1,j2) )
-		throw std::runtime_error("PredictorMfe2dSeedExtension::fillHybridE_left("+toString(j1)+","+toString(j2)+",..) are not complementary");
+	if (!energy.areComplementary(si1,si2) )
+		throw std::runtime_error("PredictorMfe2dSeedExtension::fillHybridE_left("+toString(si1)+","+toString(si2)+",..) are not complementary");
 #endif
 
 	// global vars to avoid reallocation
@@ -147,16 +147,16 @@ fillHybridE_left( const size_t j1, const size_t j2 )
 	E_type iStackE = E_type(0);
 
 	// iterate over all window starts j1 (seq1) and j2 (seq2)
-	for (i1=j1; j1-i1 < hybridE_left.size1(); i1--) {
-		for (i2=j2; j2-i2 < hybridE_left.size2(); i2--) {
+	for (i1=si1; si1-i1 < hybridE_left.size1(); i1--) {
+		for (i2=si2; si2-i2 < hybridE_left.size2(); i2--) {
 
 			// referencing cell access
-			E_type & curE = hybridE_left(j1-i1,j2-i2);
+			E_type & curE = hybridE_left(si1-i1,si2-i2);
 			// init current cell (e_init if just left (i1,i2) base pair)
-			curE = (i1==j1 && i2==j2) ? energy.getE_init() : E_INF;
+			curE = (i1==si1 && i2==si2) ? energy.getE_init() : E_INF;
 
 			// check if complementary
-			if( i1<j1 && i2<j2 && energy.areComplementary(i1,i2) ) {
+			if( i1<si1 && i2<si2 && energy.areComplementary(i1,i2) ) {
 
 				// right-stacking of i if no-LP
 				if (outConstraint.noLP) {
@@ -166,21 +166,25 @@ fillHybridE_left( const size_t j1, const size_t j2 )
 					}
 					// get stacking energy to avoid recomputation in recursion below
 					iStackE = energy.getE_interLeft(i1,i1+noLpShift,i2,i2+noLpShift);
+					// check just stacked seed extension
+					if (i1+noLpShift==si1 && i2+noLpShift==si2) {
+						curE = std::min( curE, iStackE + hybridE_left(0,0) );
+					}
 				}
 
-				// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
-				for (k1=i1+noLpShift; k1++ < j1; ) {
+				// check all combinations of decompositions into (i1,i2)..(k1,k2)-(si1,si2)
+				for (k1=i1+noLpShift; k1++ < si1; ) {
 					// ensure maximal loop length
 					if (k1-i1-noLpShift > energy.getMaxInternalLoopSize1()+1) break;
-				for (k2=i2+noLpShift; k2++ < j2; ) {
+				for (k2=i2+noLpShift; k2++ < si2; ) {
 					// ensure maximal loop length
 					if (k2-i2-noLpShift > energy.getMaxInternalLoopSize2()+1) break;
 					// check if (k1,k2) are valid left boundary
-					if ( E_isNotINF( hybridE_left(j1-k1,j2-k2) ) ) {
+					if ( E_isNotINF( hybridE_left(si1-k1,si2-k2) ) ) {
 						curE = std::min( curE,
 								(iStackE
 										+ energy.getE_interLeft(i1+noLpShift,k1,i2+noLpShift,k2)
-										+ hybridE_left(j1-k1,j2-k2) )
+										+ hybridE_left(si1-k1,si2-k2) )
 								);
 					}
 				} // k2
@@ -195,14 +199,14 @@ fillHybridE_left( const size_t j1, const size_t j2 )
 
 void
 PredictorMfe2dSeedExtension::
-fillHybridE_right( const size_t i1, const size_t i2 )
+fillHybridE_right( const size_t sj1, const size_t sj2 )
 {
 	// temporary access
 	const OutputConstraint & outConstraint = output.getOutputConstraint();
 #if INTARNA_IN_DEBUG_MODE
 	// check indices
-	if (!energy.areComplementary(i1,i2) )
-		throw std::runtime_error("PredictorMfe2dSeedExtension::fillHybridE_right("+toString(i1)+","+toString(i2)+",..) are not complementary");
+	if (!energy.areComplementary(sj1,sj2) )
+		throw std::runtime_error("PredictorMfe2dSeedExtension::fillHybridE_right("+toString(sj1)+","+toString(sj2)+",..) are not complementary");
 #endif
 
 	// global vars to avoid reallocation
@@ -214,17 +218,17 @@ fillHybridE_right( const size_t i1, const size_t i2 )
 	E_type iStackE = E_type(0);
 
 	// iterate over all window starts j1 (seq1) and j2 (seq2)
-	for (j1=i1; j1-i1 < hybridE_right.size1(); j1++) {
+	for (j1=sj1; j1-sj1 < hybridE_right.size1(); j1++) {
 		// screen for right boundaries in seq2
-		for (j2=i2; j2-i2 < hybridE_right.size2(); j2++) {
+		for (j2=sj2; j2-sj2 < hybridE_right.size2(); j2++) {
 
 			// referencing access to cell
-			E_type & curE = hybridE_right(j1-i1,j2-i2);
+			E_type & curE = hybridE_right(j1-sj1,j2-sj2);
 			// init current cell (0 if just left (i1,i2) base pair)
-			curE = (i1==j1 && i2==j2) ? 0 : E_INF;
+			curE = (sj1==j1 && sj2==j2) ? 0 : E_INF;
 
 			// check if complementary
-			if( i1<j1 && i2<j2 && energy.areComplementary(j1,j2) ) {
+			if( sj1<j1 && sj2<j2 && energy.areComplementary(j1,j2) ) {
 
 				// left-stacking of j if no-LP
 				if (outConstraint.noLP) {
@@ -234,19 +238,23 @@ fillHybridE_right( const size_t i1, const size_t i2 )
 					}
 					// get stacking energy to avoid recomputation in recursion below
 					iStackE = energy.getE_interLeft(j1-noLpShift,j1,j2-noLpShift,j2);
+					// check just stacked seed extension
+					if (j1-noLpShift==sj1 && j2-noLpShift==sj2) {
+						curE = std::min( curE, iStackE + hybridE_right(0,0) );
+					}
 				}
 
 				// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
-				for (k1=j1-noLpShift; k1-- > i1; ) {
+				for (k1=j1-noLpShift; k1-- > sj1; ) {
 					// ensure maximal loop length
 					if (j1-noLpShift-k1 > energy.getMaxInternalLoopSize1()+1) break;
-				for (k2=j2-noLpShift; k2-- > i2; ) {
+				for (k2=j2-noLpShift; k2-- > sj2; ) {
 					// ensure maximal loop length
 					if (j2-noLpShift-k2 > energy.getMaxInternalLoopSize2()+1) break;
 					// check if (k1,k2) are valid left boundary
-					if ( E_isNotINF( hybridE_right(k1-i1,k2-i2) ) ) {
+					if ( E_isNotINF( hybridE_right(k1-sj1,k2-sj2) ) ) {
 						curE = std::min( curE,
-								(hybridE_right(k1-i1,k2-i2)
+								(hybridE_right(k1-sj1,k2-sj2)
 										+ energy.getE_interLeft(k1,j1-noLpShift,k2,j2-noLpShift)
 										+ iStackE )
 								);
@@ -344,7 +352,7 @@ traceBack( Interaction & interaction )
 				E_type curE = hybridE_left(si1-i1, si2-i2);
 
 				// trace back left
-				while( i1 < si1 ) {
+				while( i1+noLpShift < si1 ) {
 
 					// right-stacking of i if no-LP
 					if (outConstraint.noLP) {
@@ -421,7 +429,7 @@ traceBack( Interaction & interaction )
 				curE = hybridE_right(j1-sj1,j2-sj2);
 
 				// trace back right
-				while( j1 > sj1 ) {
+				while( j1-noLpShift > sj1 ) {
 
 					// left-stacking of j if no-LP
 					if (outConstraint.noLP) {

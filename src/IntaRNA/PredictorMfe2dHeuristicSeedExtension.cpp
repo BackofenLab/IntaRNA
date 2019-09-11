@@ -54,28 +54,27 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 	seedHandler.setOffset1(r1.from);
 	seedHandler.setOffset2(r2.from);
 
-	const size_t interaction_size1 = std::min( energy.size1()
+	const size_t range_size1 = std::min( energy.size1()
 			, (r1.to==RnaSequence::lastPos?energy.size1()-1:r1.to)-r1.from+1 );
-	const size_t interaction_size2 = std::min( energy.size2()
+	const size_t range_size2 = std::min( energy.size2()
 			, (r2.to==RnaSequence::lastPos?energy.size2()-1:r2.to)-r2.from+1 );
+
+	// initialize mfe interaction for updates
+	initOptima();
 
 	// compute seed interactions for whole range
 	// and check if any seed possible
-	if (seedHandler.fillSeed( 0, interaction_size1-1, 0, interaction_size2-1 ) == 0) {
+	if (seedHandler.fillSeed( 0, range_size1-1, 0, range_size2-1 ) == 0) {
 		// trigger empty interaction reporting
-		initOptima();
 		reportOptima();
 		// stop computation
 		return;
 	}
 
-	// initialize mfe interaction for updates
-	initOptima();
-
 	size_t si1 = RnaSequence::lastPos, si2 = RnaSequence::lastPos;
 	while( seedHandler.updateToNextSeed(si1,si2
-			, 0, interaction_size1+1-seedHandler.getConstraint().getBasePairs()
-			, 0, interaction_size2+1-seedHandler.getConstraint().getBasePairs()) )
+			, 0, range_size1+1-seedHandler.getConstraint().getBasePairs()
+			, 0, range_size2+1-seedHandler.getConstraint().getBasePairs()) )
 	{
 		E_type seedE = seedHandler.getSeedE(si1, si2);
 		const size_t sl1 = seedHandler.getSeedLength1(si1, si2);
@@ -85,7 +84,7 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 		const size_t maxMatrixLen1 = energy.getAccessibility1().getMaxLength()-sl1+1;
 		const size_t maxMatrixLen2 = energy.getAccessibility2().getMaxLength()-sl2+1;
 		// check if seed fits into interaction range
-		if (sj1 > interaction_size1 || sj2 > interaction_size2)
+		if (sj1 > range_size1 || sj2 > range_size2)
 			continue;
 
 		// init optimal right boundaries
@@ -94,7 +93,7 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 		energy_opt = E_INF;
 
 		// ER : update for seed + ER
-		hybridE_right.resize( std::min(interaction_size1-sj1, maxMatrixLen1), std::min(interaction_size2-sj2, maxMatrixLen2) );
+		hybridE_right.resize( std::min(range_size1-sj1, maxMatrixLen1), std::min(range_size2-sj2, maxMatrixLen2) );
 		fillHybridE_right(sj1, sj2, si1, si2);
 
 		// EL
@@ -112,7 +111,7 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 
 void
 PredictorMfe2dHeuristicSeedExtension::
-fillHybridE_right( const size_t i1, const size_t i2
+fillHybridE_right( const size_t sj1, const size_t sj2
 			, const size_t si1, const size_t si2 )
 {
 	// temporary access
@@ -132,18 +131,18 @@ fillHybridE_right( const size_t i1, const size_t i2
 	// current minimal value
 	E_type curMinE = E_INF;
 	// iterate over all window starts j1 (seq1) and j2 (seq2)
-	for (j1=i1; j1-i1 < hybridE_right.size1(); j1++) {
+	for (j1=sj1; j1-sj1 < hybridE_right.size1(); j1++) {
 		// screen for right boundaries in seq2
-		for (j2=i2; j2-i2 < hybridE_right.size2(); j2++) {
+		for (j2=sj2; j2-sj2 < hybridE_right.size2(); j2++) {
 
 			// referencing cell access
-			E_type & curMinE = hybridE_right(j1-i1,j2-i2);
+			E_type & curMinE = hybridE_right(j1-sj1,j2-sj2);
 
 			// init current cell (0 if just left (i1,i2) base pair)
-			curMinE = i1==j1 && i2==j2 ? 0 : E_INF;
+			curMinE = (sj1==j1 && sj2==j2) ? 0 : E_INF;
 
 			// check if complementary
-			if( i1<j1 && i2<j2 && energy.areComplementary(j1,j2) ) {
+			if( sj1<j1 && sj2<j2 && energy.areComplementary(j1,j2) ) {
 
 				// left-stacking of j if no-LP
 				if (outConstraint.noLP) {
@@ -153,19 +152,23 @@ fillHybridE_right( const size_t i1, const size_t i2
 					}
 					// get stacking energy to avoid recomputation in recursion below
 					iStackE = energy.getE_interLeft(j1-noLpShift,j1,j2-noLpShift,j2);
+					// check just stacked seed extension
+					if (j1-noLpShift==sj1 && j2-noLpShift==sj2) {
+						curMinE = std::min( curMinE, iStackE + hybridE_right(0,0) );
+					}
 				}
 
 				// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
-				for (k1=j1-noLpShift; k1-- > i1; ) {
+				for (k1=j1-noLpShift; k1-- > sj1; ) {
 					// ensure maximal loop length
 					if (j1-noLpShift-k1 > energy.getMaxInternalLoopSize1()+1) break;
-				for (k2=j2-noLpShift; k2-- > i2; ) {
+				for (k2=j2-noLpShift; k2-- > sj2; ) {
 					// ensure maximal loop length
 					if (j2-noLpShift-k2 > energy.getMaxInternalLoopSize2()+1) break;
 					// check if (k1,k2) are valid left boundary
-					if ( E_isNotINF( hybridE_right(k1-i1,k2-i2) ) ) {
+					if ( E_isNotINF( hybridE_right(k1-sj1,k2-sj2) ) ) {
 						curMinE = std::min( curMinE,
-								(hybridE_right(k1-i1,k2-i2) // left part
+								(hybridE_right(k1-sj1,k2-sj2) // left part
 								+ energy.getE_interLeft(k1,j1-noLpShift,k2,j2-noLpShift) // loop
 								+ iStackE) // right stack if no-LP
 								);
@@ -224,7 +227,7 @@ fillHybridE_left( const size_t si1, const size_t si2 )
 			// referencing cell access
 			E_type & curMinE = hybridE_left(si1-i1,si2-i2);
 			// init cell
-			curMinE = i1==si1 && i2==si2 ? energy.getE_init() : E_INF;
+			curMinE = (i1==si1 && i2==si2) ? energy.getE_init() : E_INF;
 			// check if complementary
 			if( i1<si1 && i2<si2 && energy.areComplementary(i1,i2) ) {
 
@@ -236,6 +239,10 @@ fillHybridE_left( const size_t si1, const size_t si2 )
 					}
 					// get stacking energy to avoid recomputation in recursion below
 					iStackE = energy.getE_interLeft(i1,i1+noLpShift,i2,i2+noLpShift);
+					// check just stacked seed extension
+					if (i1+noLpShift==si1 && i2+noLpShift==si2) {
+						curMinE = std::min( curMinE, iStackE + hybridE_left(0,0) );
+					}
 				}
 
 				// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
