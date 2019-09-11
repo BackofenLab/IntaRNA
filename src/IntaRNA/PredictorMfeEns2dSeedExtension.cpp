@@ -90,13 +90,13 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 		const size_t maxMatrixLen1 = energy.getAccessibility1().getMaxLength()-sl1+1;
 		const size_t maxMatrixLen2 = energy.getAccessibility2().getMaxLength()-sl2+1;
 
-		// EL
-		hybridZ_left.resize( std::min(si1+1, maxMatrixLen1), std::min(si2+1, maxMatrixLen2) );
-		fillHybridZ_left(si1, si2);
-
 		// ER
 		hybridZ_right.resize( std::min(range_size1-sj1, maxMatrixLen1), std::min(range_size2-sj2, maxMatrixLen2) );
 		fillHybridZ_right(sj1, sj2);
+
+		// EL
+		hybridZ_left.resize( std::min(si1+1, maxMatrixLen1), std::min(si2+1, maxMatrixLen2) );
+		fillHybridZ_left(si1, si2);
 
 		// updateZ for all boundary combinations
 		for (size_t l1 = 0; l1<hybridZ_left.size1(); l1++) {
@@ -104,10 +104,9 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 				// check complementarity of boundary
 				if ( Z_equal(hybridZ_left(l1,l2), 0.0) ) continue;
 				// ensure max interaction length in seq 1
-				const size_t r1max = std::min(hybridZ_right.size1(), energy.getAccessibility1().getMaxLength()+1-sl1-l1);
-				for (size_t r1 = 0; r1 < r1max ; r1++) {
+				for (size_t r1 = 0; r1 < hybridZ_right.size1() ; r1++) {
 					// check interaction length
-					assert(sj1+r1-si1+l1 < energy.getAccessibility1().getMaxLength());
+					if (sj1+r1-si1+l1 >= energy.getAccessibility1().getMaxLength()) break;
 					// ensure max interaction length in seq 2
 					for (size_t r2 = 0; r2 < hybridZ_right.size2() ; r2++) {
 						// check interaction length
@@ -116,6 +115,7 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 						if (Z_equal(hybridZ_right(r1,r2),0.0)) continue;
 						// compute partition function given the current seed
 						updateZ(si1-l1, sj1+r1, si2-l2, sj2+r2, hybridZ_left(l1,l2) * seedZ * hybridZ_right(r1,r2), true);
+
 					} // r2
 				} // l2
 			} // r1
@@ -196,7 +196,7 @@ fillHybridZ_left( const size_t si1, const size_t si2 )
 	// determine whether or not lonely base pairs are allowed or if we have to
 	// ensure a stacking to the right of the left boundary (i1,i2)
 	const size_t noLpShift = outConstraint.noLP ? 1 : 0;
-	Z_type iStackZ = Z_type(0);
+	Z_type iStackZ = Z_type(1);
 
 	// iterate over all window starts i1 (seq1) and i2 (seq2)
 	for (i1=si1; si1-i1 < hybridZ_left.size1(); i1-- ) {
@@ -278,23 +278,45 @@ fillHybridZ_left( const size_t si1, const size_t si2 )
 							if ( ! E_equal(hybridZ_left( si1-si1overlap, si2-si2overlap),0) ) {
 								// compute Energy of loop S \ S'
 								E_type nonOverlapE = getNonOverlappingEnergy(i1, i2, si1overlap, si2overlap);
-								// substract energy.getBoltzmannWeight( nonOverlapE ) * hybridZ_left( si1overlap, si2overlap up to anchor seed [==1 if equal])
+								// subtract energy.getBoltzmannWeight( nonOverlapE ) * hybridZ_left( si1overlap, si2overlap up to anchor seed [==1 if equal])
 								Z_type correctionTerm = energy.getBoltzmannWeight( nonOverlapE )
 														* hybridZ_left( si1-si1overlap, si2-si2overlap);
 								curZ -= correctionTerm;
-								// sanity ensurence
+							// sanity insurance
 								if (curZ < 0) {
 									curZ = Z_type(0.0);
 								}
 							}
 						} else {
-							// get energy of seed
-							E_type seedE = seedHandler.getSeedE(i1, i2);
+							// get data for seed to be removed
+							const Z_type seedZ_rm = energy.getBoltzmannWeight(seedHandler.getSeedE(i1, i2));
+							const size_t sj1_rm = i1+seedHandler.getSeedLength1(i1,i2)-1;
+							const size_t sj2_rm = i2+seedHandler.getSeedLength2(i1,i2)-1;
 							// if no S'
 							// substract seedZ * hybridZ_left(right end seed up to anchor seed)
-							Z_type correctionTerm = energy.getBoltzmannWeight(seedE)
-									* hybridZ_left( si1-(i1+seedHandler.getSeedLength1(i1, i2)-1)
-												  , si2-(i2+seedHandler.getSeedLength2(i1, i2)-1));
+							Z_type correctionTerm = seedZ_rm
+									* hybridZ_left( si1-sj1_rm
+												  , si2-sj2_rm );
+							// if noLP : handle explicit loop right of current seed
+							if (outConstraint.noLP) {
+								for (k1=sj1_rm; k1++ < si1; ) {
+									// ensure maximal loop length
+									if (k1-sj1_rm > energy.getMaxInternalLoopSize1()+1) break;
+									for (k2=sj2_rm; k2++ < si2; ) {
+										// ensure at least one unpaired base in interior loop following the seed to be removed
+										if (sj1_rm-k1 + sj2_rm-k2 == 2) {continue;}
+										// ensure maximal loop length
+										if (k2-sj2_rm > energy.getMaxInternalLoopSize2()+1) break;
+										// check if (k1,k2) are valid left boundary
+										if ( ! Z_equal(hybridZ_left(si1-k1,si2-k2), 0.0) ) {
+											correctionTerm += (seedZ_rm
+													* energy.getBoltzmannWeight(energy.getE_interLeft(sj1_rm,k1,sj2_rm,k2))
+													* hybridZ_left(si1-k1,si2-k2) );
+										}
+									} // k2
+								} // k1
+
+							}
 							curZ -= correctionTerm;
 							// sanity ensurence
 							if (curZ < 0) {
