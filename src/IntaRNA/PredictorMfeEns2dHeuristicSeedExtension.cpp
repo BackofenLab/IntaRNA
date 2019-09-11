@@ -83,11 +83,11 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 		const size_t sl2 = seedHandler.getSeedLength2(si1, si2);
 		const size_t sj1 = si1+sl1-1;
 		const size_t sj2 = si2+sl2-1;
-		const size_t maxMatrixLen1 = energy.getAccessibility1().getMaxLength()-sl1+1;
-		const size_t maxMatrixLen2 = energy.getAccessibility2().getMaxLength()-sl2+1;
 		// check if seed fits into interaction range
 		if (sj1 > range_size1 || sj2 > range_size2)
 			continue;
+		const size_t maxMatrixLen1 = energy.getAccessibility1().getMaxLength()-sl1+1;
+		const size_t maxMatrixLen2 = energy.getAccessibility2().getMaxLength()-sl2+1;
 
 		// init optimal right boundaries
 		j1opt = sj1;
@@ -126,21 +126,19 @@ fillHybridZ_right( const size_t sj1, const size_t sj2
 	PredictorMfeEns2dSeedExtension::fillHybridZ_right(sj1,sj2);
 
 	// update partition function information
-	for (size_t j1=sj1+1; j1-sj1 < hybridZ_right.size1(); j1++ ) {
-		for (size_t j2=sj2+1; j2-sj2 < hybridZ_right.size2(); j2++ ) {
+	for (size_t r1=1; r1 < hybridZ_right.size1(); r1++ ) {
+		for (size_t r2=1; r2 < hybridZ_right.size2(); r2++ ) {
 
 			// referencing cell access
-			Z_type & curZ = hybridZ_right(j1-sj1,j2-sj2);
+			Z_type & rightExtZ = hybridZ_right(r1,r2);
 
 			// update overall partition function
-			if (!Z_equal(curZ,Z_type(0))) {
+			if (!Z_equal(rightExtZ,Z_type(0))) {
 				// update optimal right extension if needed
-				updateOptRightZ( si1,j1,si2,j2, energy.getE(seedZ * curZ * initZ) );
+				updateOptRightZ( si1,sj1+r1,si2,sj2+r2, energy.getE(seedZ * rightExtZ * initZ) );
 				// update overall partition function information for true right-extensions of the current seed
-				// seed only not covered due to enclosing check
-				if (sj1 != j1) {
-					updateZ(si1, j1, si2, j2, seedZ * curZ * initZ, true);
-				}
+				// seed only not covered due to min-val of r1,r2
+				updateZ(si1, sj1+r1, si2, sj2+r2, seedZ * rightExtZ * initZ, true);
 			}
 
 		}
@@ -164,28 +162,28 @@ fillHybridZ_left( const size_t si1, const size_t si2 )
 	PredictorMfeEns2dSeedExtension::fillHybridZ_left(si1,si2);
 
 	// update partition function information
-	for (size_t i1=si1; si1-i1 < hybridZ_left.size1(); i1-- ) {
-		for (size_t i2=si2; si2-i2 < hybridZ_left.size2(); i2-- ) {
+	for (size_t l1=0; l1 < hybridZ_left.size1(); l1++ ) {
+		for (size_t l2=0; l2 < hybridZ_left.size2(); l2++ ) {
 
 			// referencing cell access
-			const Z_type & curZ = hybridZ_left(si1-i1,si2-i2);
+			const Z_type & curZ = hybridZ_left(l1,l2);
 
 			// update overall partition function information given the current seed
 			if ( !Z_equal(curZ,0.0) ) {
 
 				// Z( left + seed ); covers seed only
-				updateZ(i1, sj1, i2, sj2, curZ * seedZ, true);
+				updateZ(si1-l1, sj1, si2-l2, sj2, curZ * seedZ, true);
 
 				// Z( left + seed + rightOpt ) and rightOpt true seed extension
-				if (	i1 != si1 // true left seed extension
+				if (	l1 > 0 // true left seed extension
 					&&	j1opt != sj1 // true right seed extension
 					&&	!Z_equal(rightOptZ,0.0) // true right seed extension
 					// check if interaction width is within boundaries
-					&&	j1opt+1-i1 <= energy.getAccessibility1().getMaxLength()
-					&& 	j2opt+1-i2 <= energy.getAccessibility2().getMaxLength()
+					&&	j1opt+1-(si1-l1) <= energy.getAccessibility1().getMaxLength()
+					&& 	j2opt+1-(si2-l2) <= energy.getAccessibility2().getMaxLength()
 					)
 				{
-					updateZ(i1, j1opt, i2, j2opt, curZ * seedZ * rightOptZ, true);
+					updateZ(si1-l1, j1opt, si2-l2, j2opt, curZ * seedZ * rightOptZ, true);
 				}
 			}
 		} // i2
