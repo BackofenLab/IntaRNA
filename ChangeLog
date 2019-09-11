@@ -29,6 +29,14 @@
 ################################################################################  
 ################################################################################  
 
+190911 Martin Raden :
+ * IntaRNA/SeedHandler :
+   * isFeasibleSeedBasePair() : now virtual and public
+ * IntaRNA/SeedHandlerIdxOffset :
+   + addSeeds() 
+   + isFeasibleSeedBasePair()
+   + areLoopOverlapping()
+
 190910 Martin Raden :
  * IntaRNA/PredictorMfe2d*SeedExtension :
    + noLP support
