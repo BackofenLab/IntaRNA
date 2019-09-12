@@ -60,17 +60,18 @@ IntaRNApvalue(['--flag1', 'arg1'])
 
 ## Arguments:
 
-| Flag               | Value                  | Default | Description          |
-| ------------------ |:---------------------- | :------ | -------------------- |
-| -h, --help         | None                   | None    | Gives detailed command help.  |
-| -q, --query        | Sequence or FASTA file | None    | Query as a raw sequence or a file in FASTA format. Takes the first sequence from the file. |
-| -t, --target       | Sequence or FASTA file | None    | Target as a raw sequence or a file in FASTA format. Takes the first sequence from the file. |
-| -s, --scores       | Integer                | None    | How many scores are used from randomly permuted sequences for p-value calculation. |
-| -m, --shuffle-mode | {q, t, b}              | None    | Which sequence will be shuffled: Query, Target or both. |
-| -d, --distribution | {gev, gumbel, gauss}   | gev     | The distribution used for p-value calculation: Generalized Extreme Value Distribution, Gumbel Distribution or Gauss. |
-| -o, --output       | {pvalue, scores}       | pvalue  | If set to p-value, will only output p-value. If set to scores, will output every score from randomly generated sequences, but no p-value. |
-| --threads          | 0 - {max threads}      | 0       | How many threads IntaRNA uses for score calculation. If set to 0 it will use all available threads. |
-| --seed             | any                    | None    | The seed used for generating random sequences. |
+| Flag                | Value                  | Default | Description          |
+| ------------------  |:---------------------- | :------ | -------------------- |
+| -h, --help          |                        |         | Gives detailed command help.  |
+| -q, --query         | Sequence or FASTA file |         | Query as a raw sequence or a file in FASTA format. Takes the first sequence from the file. |
+| -t, --target        | Sequence or FASTA file |         | Target as a raw sequence or a file in FASTA format. Takes the first sequence from the file. |
+| -c, --cardinality   | Integer                |         | How many sequence pairs are randomly permuted and considered for p-value calculation. |
+| -m, --shuffle-mode  | {q, t, b}              |         | Which sequence will be shuffled: Query, Target or both. |
+| -d, --distribution  | {gev, gumbel, gauss}   | gev     | (optional) The distribution used for p-value calculation: Generalized Extreme Value Distribution, Gumbel Distribution or Gauss. |
+| -o, --output        | {pvalue, scores}       | pvalue  | (optional) If set to p-value, will only output p-value. If set to scores, will output every score from randomly generated sequences, but no p-value. |
+| --threads           | 0 - {max threads}      | 0       | (optional) How many threads IntaRNA uses for score calculation. If set to 0 it will use all available threads. |
+| --randSeed          | Integer                | None    | (optional) The seed used for generating random sequences. |
+| -p, --parameterFile | file name              | None    | (optional) parameter file to be used in IntaRNA calls to further guide predictions. |
 
 ## Example
 An example use-case could look like this with sequences in raw format:

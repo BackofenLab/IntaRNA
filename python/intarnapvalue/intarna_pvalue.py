@@ -22,12 +22,13 @@ class IntaRNApvalue:
         self.bin = self.find_binary()
         self.query = ''
         self.target = ''
-        self.n = 0
+        self.cardinality = 0
         self.shuffle_query = False
         self.shuffle_target = False
         self.threads = ''
         self.dist = ''
         self.output = ''
+        self.parameterFile = ''
         self.process_cmd_args(test_args)
         if not test_args:
             self.main()
@@ -76,13 +77,13 @@ class IntaRNApvalue:
     def process_cmd_args(self, test_args=None) -> None:
         """Processes all commandline args and sets them as instance variables.
 
-        >>> i = IntaRNApvalue(['-q', 'AGGAUG', '-t', 'UUUAUCGUU', '-n', '10', '-m', 'b', '-d', 'gauss',
+        >>> i = IntaRNApvalue(['-q', 'AGGAUG', '-t', 'UUUAUCGUU', '-s', '10', '-m', 'b', '-d', 'gauss',
         ... '--threads', '3'])
         >>> i.query
         'AGGAUG'
         >>> i.target
         'UUUAUCGUU'
-        >>> i.n
+        >>> i.cardinality
         10
         >>> i.shuffle_query
         True
@@ -94,13 +95,13 @@ class IntaRNApvalue:
         'gauss'
         >>> i.output
         'pvalue'
-        >>> i = IntaRNApvalue(['-q', 'Z', '-t', 'UUUAUCGUU', '-n', '10', '-m', 'b', '--threads', '3'])
+        >>> i = IntaRNApvalue(['-q', 'Z', '-t', 'UUUAUCGUU', '-s', '10', '-m', 'b', '--threads', '3'])
         Traceback (most recent call last):
         ...
         SystemExit: 1
         >>> open('test.fasta', 'w').write('>someseq\\nGACU')
         13
-        >>> i = IntaRNApvalue(['-q', 'test.fasta', '-t', 'UUUAUCGUU', '-n', '10', '-m', 'b', '--threads', '3'])
+        >>> i = IntaRNApvalue(['-q', 'test.fasta', '-t', 'UUUAUCGUU', '-s', '10', '-m', 'b', '--threads', '3'])
         >>> i.query
         'GACU'
         >>> os.remove('test.fasta')
@@ -108,17 +109,17 @@ class IntaRNApvalue:
         parser = argparse.ArgumentParser(description='Calculates p-values of IntaRNA energy scores.')
         parser.add_argument('-q', '--query', dest='query', type=str, help='Query sequence', required=True)
         parser.add_argument('-t', '--target', dest='target', type=str, help='Target sequence', required=True)
-        parser.add_argument('-n', '--scores', dest='n', type=int, required=True,
-                            help='How many randomly generated scores are used to calculate the p-value.')
-        parser.add_argument('-m', '--shuffle-mode', dest='sm', required=True, choices=['q', 't', 'b'],
+        parser.add_argument('-c', '--cardinality', dest='cardinality', type=int, required=True,
+                            help='How many sequence pairs are randomly permuted and considered for p-value calculation.')
+        parser.add_argument('-m', '--shuffle-mode', dest='shuffleMode', required=True, choices=['q', 't', 'b'],
                             help='Which sequences are going to be shuffled: both, query only or target only.')
         parser.add_argument('-p', '--parameterFile', dest='parameterFile', default="",
                             help='Optional parameter file for IntaRNA provide further IntaRNA parameters and prediction constraints.')
         parser.add_argument('-d', '--distribution', dest='dist', choices=['gev', 'gumbel', 'gauss'], default='gev',
-                            help='[gev] Which distribution is fitted and used to calculate the pvalue.')
+                            help='[gev] Which distribution is fitted and used to calculate the p-value.')
         parser.add_argument('-o', '--output', dest='output', choices=['pvalue', 'scores'], default='pvalue',
-                            help='[pvalue] If set to scores, outputs all IntaRNA scores from random sequences to STDOUT. '
-                                 'This is useful for pipeing the scores. Otherwise outputs just the pvalue.')
+                            help='[pvalue] If set to "scores", outputs all IntaRNA scores from random sequences to STDOUT. '
+                                 'This is useful for piping the scores. Otherwise outputs just the p-value.')
         parser.add_argument('--threads', type=str, default='0', help='[0] Sets the amount of threads used for IntaRNA.')
         parser.add_argument('--randSeed', type=str, default=None,
                             help='Random seed to make sequence shuffling and thus output deterministic.')
@@ -140,8 +141,8 @@ class IntaRNApvalue:
             print('A sequence you specified contains illegal characters, allowed: G, A, C, U (T)')
             sys.exit(1)
 
-        self.shuffle_query = True if args.sm in ['b', 'q'] else False
-        self.shuffle_target = True if args.sm in ['b', 't'] else False
+        self.shuffle_query = True if args.shuffleMode in ['b', 'q'] else False
+        self.shuffle_target = True if args.shuffleMode in ['b', 't'] else False
         for key, value in args.__dict__.items():
             self.__setattr__(key, value)
 
@@ -202,9 +203,9 @@ class IntaRNApvalue:
         return fasta_str
 
     def get_scores(self) -> Tuple[List[float], int]:
-        """Calculates n IntaRNA scores from random sequences with given parameters as class variables"""
+        """Calculates n IntaRNA energy scores from random sequences with given parameters as class variables"""
         scores = []
-        missing = self.n
+        missing = self.cardinality
         non_interactions = 0
         paramFile = ""
         if self.parameterFile :
@@ -233,7 +234,7 @@ class IntaRNApvalue:
             stdout = stdout.split('\n')  # split on newline
             del stdout[0], stdout[-1]  # remove first element aka 'E' and trailing newline element
             scores.extend(stdout)  # add elements to scores
-            missing = self.n - len(scores)
+            missing = self.cardinality - len(scores)
             non_interactions += missing  # count non-interactions
 
         # return list with all elements as float and amount of non-interactions
