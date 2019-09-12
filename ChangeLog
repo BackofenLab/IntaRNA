@@ -35,6 +35,8 @@
  * configure :
    + check for python >= 3.6
    + optional enabling of intarnapvalue installation (disabled by default)
+ * tests/data/Makefile.am :
+   + distribution of all tests ensured
 
 190911 Martin Raden :
  * IntaRNA/SeedHandler :
