@@ -41,6 +41,7 @@ AC_PROG_CXX
 AC_PROG_CC
 AC_PROG_LN_S
 AC_PROG_RANLIB
+AC_PROG_MKDIR_P
 # reset compiler flags to initial flags
 CXXFLAGS=$OLD_CXXFLAGS
 CFLAGS=$OLD_CFLAGS
@@ -274,8 +275,7 @@ intarnapvalue=no
 AC_ARG_ENABLE([intarnapvalue],
 	[AS_HELP_STRING([--enable-intarnapvalue],
 	    [build and install the intarnapvalue python3 module])],
-  	[intarnapvalue="$enableval"])
-AM_COND_IF([HAVE_PYTHON], [], [intarnapvalue="no (python not available)"])
+  	[AM_COND_IF([HAVE_PYTHON], [intarnapvalue="$enableval"], [intarnapvalue="no (python not available)"])])
 AC_MSG_RESULT([$intarnapvalue])
 
 AM_CONDITIONAL([INSTALL_INTARNAPVALUE],[test x"$intarnapvalue" = x"yes"])
