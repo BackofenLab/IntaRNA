@@ -60,13 +60,14 @@ class IntaRNApvalue:
     def find_binary() -> str:
         """Tries to find the IntaRNA executable and returns path to binary or exits with error code 1 if not found"""
         if not run('IntaRNA --version', shell=True, stdout=PIPE, stderr=PIPE).returncode:
-            print run('IntaRNA --version', shell=True, stdout=PIPE)
+            #print(run('IntaRNA --version', shell=True, stdout=PIPE).stdout)
             return 'IntaRNA'
 
         # if binary not found in path, search in parent of this script recursively
         bin_name = 'IntaRNA.exe' if os.name == 'nt' else 'IntaRNA'
         for dir_path, dir_name, file_names in os.walk(os.path.abspath(os.path.join(os.curdir, '..'))):
             if bin_name in file_names:
+                #print(run(os.path.join(dir_path, bin_name)+' --version', shell=True, stdout=PIPE).stdout)
                 return os.path.join(dir_path, bin_name)
 
         print('Error: Cannot find IntaRNA binary executable, please add it to your PATH')
@@ -178,7 +179,7 @@ class IntaRNApvalue:
         >>> IntaRNApvalue.shuffle_sequence('AGGAUGGGGGA', 5)
         ['AUGGAGGGGGA', 'AUGGGGAGGGA', 'AGGGGAUGGGA', 'AUGGGGGAGGA', 'AUGGGAGGGGA']
         """
-        return [dinucl_shuffle.dinucl_shuffle(upper(seq)) for _ in range(n)]
+        return [dinucl_shuffle.dinucl_shuffle(seq.upper()) for _ in range(n)]
 
     @staticmethod
     def to_fasta(sequences: List[str]) -> str:
