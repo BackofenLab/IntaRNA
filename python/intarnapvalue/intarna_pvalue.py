@@ -60,6 +60,7 @@ class IntaRNApvalue:
     def find_binary() -> str:
         """Tries to find the IntaRNA executable and returns path to binary or exits with error code 1 if not found"""
         if not run('IntaRNA --version', shell=True, stdout=PIPE, stderr=PIPE).returncode:
+            print run('IntaRNA --version', shell=True, stdout=PIPE)
             return 'IntaRNA'
 
         # if binary not found in path, search in parent of this script recursively
@@ -103,7 +104,7 @@ class IntaRNApvalue:
         'GACU'
         >>> os.remove('test.fasta')
         """
-        parser = argparse.ArgumentParser(description='Calculates p-values to IntaRNA scores.')
+        parser = argparse.ArgumentParser(description='Calculates p-values of IntaRNA energy scores.')
         parser.add_argument('-q', '--query', dest='query', type=str, help='Query sequence', required=True)
         parser.add_argument('-t', '--target', dest='target', type=str, help='Target sequence', required=True)
         parser.add_argument('-n', '--scores', dest='n', type=int, required=True,
@@ -177,7 +178,7 @@ class IntaRNApvalue:
         >>> IntaRNApvalue.shuffle_sequence('AGGAUGGGGGA', 5)
         ['AUGGAGGGGGA', 'AUGGGGAGGGA', 'AGGGGAUGGGA', 'AUGGGGGAGGA', 'AUGGGAGGGGA']
         """
-        return [dinucl_shuffle.dinucl_shuffle(seq) for _ in range(n)]
+        return [dinucl_shuffle.dinucl_shuffle(upper(seq)) for _ in range(n)]
 
     @staticmethod
     def to_fasta(sequences: List[str]) -> str:
