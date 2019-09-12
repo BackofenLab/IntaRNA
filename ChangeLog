@@ -29,6 +29,13 @@
 ################################################################################  
 ################################################################################  
 
+190912 Martin Raden :
+ + python/intarnapvalue : p-value computation for IntaRNA energy scores
+   (thanks to Fabio Gutmann)
+ * configure :
+   + check for python >= 3.6
+   + optional enabling of intarnapvalue installation (disabled by default)
+
 190911 Martin Raden :
  * IntaRNA/SeedHandler :
    * isFeasibleSeedBasePair() : now virtual and public
@@ -36,6 +43,11 @@
    + addSeeds() 
    + isFeasibleSeedBasePair()
    + areLoopOverlapping()
+ * IntaRNA/PredictorMfe2dSeedExtension :
+   * traceBack() :
+     * trace order optimized
+ * IntaRNA/PredictorMfeEns2dSeedExtensionHeuristic :
+   * fill*() : reduced to updateZ() calls to reduce code redundancy 
 
 190910 Martin Raden :
  * IntaRNA/PredictorMfe2d*SeedExtension :

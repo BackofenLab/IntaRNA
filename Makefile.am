@@ -5,7 +5,7 @@
 export GCC_COLORS ?= "error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01"
 
 # sub directories to check for Makefiles
-SUBDIRS = src perl tests doc .
+SUBDIRS = src python perl tests doc .
 
 # list of all personalities to be installed
 #PERSONALITIES = `grep -P "^\\s+case\\s+IntaRNA\\S+\\s*:\\s*return" $(abs_top_srcdir)/src/bin/CommandLineParsing.h | sed "s/^\\s*case\\s\\+\\(IntaRNA\\S*\\)\\s\\+:\\s\\+return.*/\\1/g"`
