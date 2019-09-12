@@ -6,10 +6,13 @@
 #include <set>
 #include <utility>
 
+#include <boost/functional/hash.hpp>
+
 #include "IntaRNA/general.h"
 #include "IntaRNA/IndexRangeList.h"
 #include "IntaRNA/RnaSequence.h"
 #include "IntaRNA/InteractionRange.h"
+
 
 namespace IntaRNA {
 
@@ -29,6 +32,64 @@ public:
 
 	//! type of a vector encoding base pair indices that are interacting
 	typedef std::vector<BasePair> PairingVec;
+
+	/**
+	 * Index 4-tuple each within an RNA sequence
+	 */
+	struct Boundary {
+		size_t i1;	//!< 1st index in first sequence
+		size_t j1;	//!< last index in first sequence
+		size_t i2;	//!< 1st index in second sequence
+		size_t j2;	//!< last index in second sequence
+
+		/**
+		 * Construction
+		 * @param i1 1st index in first sequence
+		 * @param j1 last index in first sequence
+		 * @param i2 1st index in second sequence
+		 * @param j2 last index in second sequence
+		 */
+		Boundary( const size_t i1=RnaSequence::lastPos, const size_t j1=RnaSequence::lastPos
+			 , const size_t i2=RnaSequence::lastPos, const size_t j2=RnaSequence::lastPos )
+			: i1(i1), j1(j1), i2(i2), j2(j2)
+		{}
+
+		//! hash value computation
+		struct Hash {
+			/**
+			 * Hash value computation for an instance
+			 * @param i instance to hash
+			 * @return the respective hash value
+			 */
+			size_t operator()(const Boundary &i ) const
+			{
+				size_t key = 0;
+				boost::hash_combine(key, i.i1);
+				boost::hash_combine(key, i.j1);
+				boost::hash_combine(key, i.i2);
+				boost::hash_combine(key, i.j2);
+				return key;
+			}
+		};
+
+		//! equality check
+		struct Equal {
+			/**
+			 * check equality of two instances
+			 * @param lhs instance 1
+			 * @param rhs instance 2
+			 * @param true if all indices are equal; false otherwise
+			 */
+			bool operator()( const Boundary & lhs, const Boundary & rhs ) const
+			{
+				return lhs.i1 == rhs.i1
+					&& lhs.i2 == rhs.i2
+					&& lhs.j1 == rhs.j1
+					&& lhs.j2 == rhs.j2 ;
+			}
+		};
+	};
+
 
 	/**
 	 * Provides the seed information of an Interaction.

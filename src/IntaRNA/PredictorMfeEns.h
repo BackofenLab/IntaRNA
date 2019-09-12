@@ -38,18 +38,8 @@ public:
 
 	virtual ~PredictorMfeEns();
 
-	/**
-	 * Access to the current overall partition function covering
-	 * all interactions of the last predict() call.
-	 *
-	 * @return the overall hybridization partition function
-	 */
-	Z_type
-	getOverallZ() const;
-
 protected:
 
-// TODO move to subclass ?!
 	//! data container to encode a site with respective partition function
 	struct ZPartition {
 		size_t i1;
@@ -68,36 +58,22 @@ protected:
 	//! access to the prediction tracker of the super class
 	using PredictorMfe::predTracker;
 
-	//! the overall partition function since initZ() was last called.
-	//! its value is updated by updateZ()
-	Z_type overallZ;
-
-// TODO move to subclass...
-	//! map storing Z partitions for a given interaction
-	std::unordered_map<size_t, ZPartition> Z_partitions;
+	//! map storing the partition of Zall for all considered interaction sites
+	std::unordered_map<Interaction::Boundary, Z_type, Interaction::Boundary::Hash, Interaction::Boundary::Equal> Z_partition;
 
 
 	/**
-	 * Initializes the overall hybridization partition function as well as
-	 * the global energy minimum storage. Will be called by predict().
-	 *
-	 * @param outConstraint constrains the interactions reported to the output handler
+	 * Initializes the hybridization partition functions.
+	 * Will be called by predict().
 	 */
 	virtual
 	void
-	initZ( const OutputConstraint & outConstraint );
+	initZ();
 
 	/**
-	 * Check if energy maxLength exceeds allowed limit for key generation
-	 * Throw runtime error if exceeding limit
-	 * @param maxLength the maximal length of considered subsequences
-	 */
-	static
-	void
-	checkKeyBoundaries( const size_t maxLength );
-
-	/**
-	 * Updates the overall hybridization partition function.
+	 * Updates the local hybridization partition functions as well as Zall.
+	 *
+	 * Note: avoid other Zall updates via updateOptima(.., incrementZall=false)!
 	 *
 	 * Note: if called multiple time for the same boundaries then the
 	 * reported partition functions have to represent disjoint interaction sets!
@@ -118,16 +94,30 @@ protected:
 				, const Z_type partFunct
 				, const bool isHybridZ );
 
-
 	/**
-	 * Reports the overall partition function and calls
-	 * PredictorMfe::reportOptima().
-	 *
-	 * @param outConstraint constrains the interactions reported to the output handler
+	 * Calls for the stored Z_partition information updateOptima() before
+	 * calling reportOptima() from its super class.
 	 */
 	virtual
 	void
-	reportOptima( const OutputConstraint & outConstraint );
+	reportOptima();
+
+	/**
+	 * Reports interaction boundaries only (no base pair tracking)
+	 * @param interaction the interaction to be traced
+	 */
+	virtual
+	void
+	traceBack( Interaction & interaction );
+
+private:
+
+	/**
+	 * Calls updateOptima() for each entry of Z_partition.
+	 */
+	virtual
+	void
+	updateOptimaUsingZ();
 
 };
 

@@ -123,7 +123,7 @@ TEST_CASE( "SeedHandlerExplicit", "[SeedHandlerExplicit]" ) {
 				, IndexRangeList("")
 				, IndexRangeList("")
 				, "1||&3||,2|.|&1||"
-				, false);
+				, false, false);
 
 		// create instance (triggers parsing)
 		SeedHandlerExplicit sh( energy, sC );

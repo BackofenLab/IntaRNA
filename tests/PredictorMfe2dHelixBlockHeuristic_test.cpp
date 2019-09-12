@@ -29,15 +29,15 @@ TEST_CASE( "PredictorMfe2dHelixBlockHeuristic", "[PredictorMfe2dHelixBlockHeuris
 
 		HelixConstraint hc(2, 4,  0, 999, 0, false);
 
-		OutputHandlerInteractionList out(1);
+		OutputConstraint outC(1,OutputConstraint::OVERLAP_SEQ2,0,100);
+		OutputHandlerInteractionList out(outC, 1);
 
 		PredictorMfe2dHelixBlockHeuristic pLSH(energy, out, NULL, hc);
 
 		IndexRange idx1(0,r1.lastPos);
 		IndexRange idx2(0,r2.lastPos);
-		OutputConstraint outC(1,OutputConstraint::OVERLAP_SEQ2,0,100);
 
-		pLSH.predict(idx1,idx2,outC);
+		pLSH.predict(idx1,idx2);
 
 		REQUIRE_FALSE(out.empty());
 		REQUIRE(out.reported() == 1);
@@ -63,15 +63,15 @@ TEST_CASE( "PredictorMfe2dHelixBlockHeuristic", "[PredictorMfe2dHelixBlockHeuris
 
 		HelixConstraint hc(2, 4,  0, 999, 0, false);
 
-		OutputHandlerInteractionList out(1);
+		OutputConstraint outC(1,OutputConstraint::OVERLAP_SEQ2,0,100);
+		OutputHandlerInteractionList out(outC,1);
 
 		PredictorMfe2dHelixBlockHeuristic pLSH(energy, out, NULL, hc);
 
 		IndexRange idx1(0,r1.lastPos);
 		IndexRange idx2(0,r2.lastPos);
-		OutputConstraint outC(1,OutputConstraint::OVERLAP_SEQ2,0,100);
 
-		pLSH.predict(idx1,idx2,outC);
+		pLSH.predict(idx1,idx2);
 
 		REQUIRE_FALSE(out.empty());
 		REQUIRE(out.reported() == 1);
@@ -97,18 +97,18 @@ TEST_CASE( "PredictorMfe2dHelixBlockHeuristic", "[PredictorMfe2dHelixBlockHeuris
 
 		HelixConstraint hc(2, 4,  0, 999, 0, false);
 
-		OutputHandlerInteractionList out(1);
+		OutputConstraint outC(1,OutputConstraint::OVERLAP_SEQ2
+				,Ekcal_2_E(0) // maxE
+				,Ekcal_2_E(1.0) // deltaE
+				);
+		OutputHandlerInteractionList out(outC,1);
 
 		PredictorMfe2dHelixBlockHeuristic pLSH(energy, out, NULL, hc);
 
 		IndexRange idx1(0,r1.lastPos);
 		IndexRange idx2(0,r2.lastPos);
-		OutputConstraint outC(1,OutputConstraint::OVERLAP_SEQ2
-				,Ekcal_2_E(0) // maxE
-				,Ekcal_2_E(1.0) // deltaE
-				);
 
-		pLSH.predict(idx1,idx2,outC);
+		pLSH.predict(idx1,idx2);
 
 		REQUIRE(out.empty());
 
@@ -125,18 +125,18 @@ TEST_CASE( "PredictorMfe2dHelixBlockHeuristic", "[PredictorMfe2dHelixBlockHeuris
 
 		HelixConstraint hc(2, 4,  0, 999, 0, false);
 
-		OutputHandlerInteractionList out(1);
+		OutputConstraint outC(1,OutputConstraint::OVERLAP_SEQ2
+				,Ekcal_2_E(0) // maxE
+				,Ekcal_2_E(1.0) // deltaE
+				);
+		OutputHandlerInteractionList out(outC,1);
 
 		PredictorMfe2dHelixBlockHeuristic pLSH(energy, out, NULL, hc);
 
 		IndexRange idx1(0,r1.lastPos);
 		IndexRange idx2(0,r2.lastPos);
-		OutputConstraint outC(1,OutputConstraint::OVERLAP_SEQ2
-				,Ekcal_2_E(0) // maxE
-				,Ekcal_2_E(1.0) // deltaE
-				);
 
-		pLSH.predict(idx1,idx2,outC);
+		pLSH.predict(idx1,idx2);
 
 		REQUIRE_FALSE(out.empty());
 		REQUIRE(out.reported() == 1);
@@ -162,19 +162,19 @@ TEST_CASE( "PredictorMfe2dHelixBlockHeuristic", "[PredictorMfe2dHelixBlockHeuris
 
 		HelixConstraint hc(2, 4, 2, 999, 0, false);
 
-		OutputHandlerInteractionList out(1);
-
-		PredictorMfe2dHelixBlockHeuristic pLSH(energy, out, NULL, hc);
-
-		IndexRange idx1(0,r1.lastPos);
-		IndexRange idx2(0,r2.lastPos);
 		OutputConstraint outC(1
 				,OutputConstraint::OVERLAP_SEQ2
 				,Ekcal_2_E(0) // maxE
 				,Ekcal_2_E(1.0) // deltaE
 				);
+		OutputHandlerInteractionList out(outC,1);
 
-		pLSH.predict(idx1,idx2,outC);
+		PredictorMfe2dHelixBlockHeuristic pLSH(energy, out, NULL, hc);
+
+		IndexRange idx1(0,r1.lastPos);
+		IndexRange idx2(0,r2.lastPos);
+
+		pLSH.predict(idx1,idx2);
 
 		REQUIRE_FALSE(out.empty());
 		REQUIRE(out.reported() == 1);
@@ -203,18 +203,18 @@ TEST_CASE( "PredictorMfe2dHelixBlockHeuristic", "[PredictorMfe2dHelixBlockHeuris
 
 		HelixConstraint hc(2, 5, 2, 999, 0, false);
 
-		OutputHandlerInteractionList out(1);
+		OutputConstraint outC(1,OutputConstraint::OVERLAP_SEQ2
+				,Ekcal_2_E(0) // maxE
+				,Ekcal_2_E(1.0) // deltaE
+				);
+		OutputHandlerInteractionList out(outC,1);
 
 		PredictorMfe2dHelixBlockHeuristic pLSH(energy, out, NULL, hc);
 
 		IndexRange idx1(0,r1.lastPos);
 		IndexRange idx2(0,r2.lastPos);
-		OutputConstraint outC(1,OutputConstraint::OVERLAP_SEQ2
-				,Ekcal_2_E(0) // maxE
-				,Ekcal_2_E(1.0) // deltaE
-				);
 
-		pLSH.predict(idx1,idx2,outC);
+		pLSH.predict(idx1,idx2);
 
 		REQUIRE_FALSE(out.empty());
 		REQUIRE(out.reported() == 1);
@@ -240,18 +240,18 @@ TEST_CASE( "PredictorMfe2dHelixBlockHeuristic", "[PredictorMfe2dHelixBlockHeuris
 
 		HelixConstraint hc(2, 4,  0, 999, 0, false);
 
-		OutputHandlerInteractionList out(1);
+		OutputConstraint outC(1,OutputConstraint::OVERLAP_SEQ2
+				,Ekcal_2_E(0) // maxE
+				,Ekcal_2_E(1.0) // deltaE
+				);
+		OutputHandlerInteractionList out(outC,1);
 
 		PredictorMfe2dHelixBlockHeuristic pLSH(energy, out, NULL, hc);
 
 		IndexRange idx1(0,r1.lastPos);
 		IndexRange idx2(0,r2.lastPos);
-		OutputConstraint outC(1,OutputConstraint::OVERLAP_SEQ2
-				,Ekcal_2_E(0) // maxE
-				,Ekcal_2_E(1.0) // deltaE
-				);
 
-		pLSH.predict(idx1,idx2,outC);
+		pLSH.predict(idx1,idx2);
 
 		REQUIRE_FALSE(out.empty());
 		REQUIRE(out.reported() == 1);

@@ -6,7 +6,198 @@
 #
 ################################################################################
 
-development version
+################################################################################
+# changes in development version since last release 
+################################################################################
+
+# IntaRNA
++ Zall (estimates) and derived output now available for all prediction models
++ outMode=E : report of ensemble information only
+* ensemble-based prediction revised
+* seed-extension-based prediction revised
++ --seedNoGUend : prohibit GU base pairs at seed ends
++ outNoLP support in all prediction modes
+* FASTA input: sequence id = prefix up to first whitespace from FASTA header
+* new default for outOverlap = B: overlapping output enabled 
+
+# API
+* OutputHandler requires an OutputConstraint instances in construction
+* Predictor objects now access OutputConstraint instances via the OutputHandler;
+  this simplifies the signature of the member functions
+* OutputConstraint now guides whether or not Zall is required for output
+
+################################################################################  
+################################################################################  
+
+190911 Martin Raden :
+ * IntaRNA/SeedHandler :
+   * isFeasibleSeedBasePair() : now virtual and public
+ * IntaRNA/SeedHandlerIdxOffset :
+   + addSeeds() 
+   + isFeasibleSeedBasePair()
+   + areLoopOverlapping()
+
+190910 Martin Raden :
+ * IntaRNA/PredictorMfe2d*SeedExtension :
+   + noLP support
+ + tests for noLP seed extension (model=X)
+ * bin/CommandLineParsing :
+   * parseSequencesFasta() :
+     * name = FASTA header prefix up to first whitespace
+ * IntaRNA/PredictorMfe :
+   + HashIdx2E : hash for base pair to BestInteractionE objects
+   + mfe4leftEnd : (optional) hash to store best interaction for left boundary;
+     filled by updateMfe4leftEnd()
+   + updateMfe4leftEnd() : updates mfe4leftEnd
+   * getNextBest() :
+     + default implementation based on mfe4leftEnd
+   * updateOptima() :
+     + calls updateMfe4leftEnd() if outconstraint.reportOverlap != BOTH
+   * exact + seed-extension predictors :
+     - getNextBest() dummy functions : obsolete
+     - outConstraint.reportOverlap != BOTH error : obsolete
+   * heuristic non-seed-extension predictors :
+     + updateMfe4leftEnd() : dummy function to avoid mfe4leftEnd updates; since
+       local getNextBest() is based on local data member 
+ + tests for outOverlap=NQTB (model=X)
+
+190909 Martin Raden :
+ * Makefile.am :
+   - explicit personality list for link generation; replaced by
+   + automatic link generation for each personality
+ * IntaRNA/OutputHandlerCsv : 
+   + 'w' = Boltzmann weight output
+ * IntaRNA/Predictor :
+   + updateZall() : updates Zall with a given interaction energy
+ * IntaRNA/PredictorMfe :
+   * updateOptima() :
+     + calls updateZall() if needed
+ * IntaRNA/PredictorMfe2dHeuristic :
+   + update of Zall
+ * IntaRNA/PredictorMfe2dHeuristicSeed :
+   * bugfix Zall update
+ * IntaRNA/PredictorMfe2dSeed :
+   * bugfix updateOptima() call
+ * IntaRNA/PredictorMfeEns2dHeuristic :
+   * bugfix total energy computation
+   + updateZ() call corrected
+ * IntaRNA/PredictorMfeEns2dSeedHeuristic :
+   * updateZ() call order changed to reduce for-loop iterations
+ * README.md :
+   + w CVS output documentation
+   + E_add CVS output documentation
+   + RT(37Celsius)=0.6163173043012 docu
+
+190906 Martin Raden :
+ * IntaRNA/Interaction
+   + Boundary : 4-tuple of indices to store boundaries of an interaction site
+ * tests/runIntaRNA.sh :
+   * tests are run for all data/*.parameter files (no explicit listing anymore)
+ + tests/*-modelX|S : explicitly testing model=X or =S
+ * IntaRNA/PredictorMfe2dHeuristicSeed :
+   * fillHybridE() : updateOptima() now called for all tested cases to reduce
+     heuristic bias in subopt listing
+ * IntaRNA/PredictorMfeEns :
+   * renaming Z_partitions to Z_partition
+   + updateOptimaUsingZ() : calls updateOptima() for all Z_partition entries
+   + reportOptima() : calls updateOptimaUsingZ() and super class reportOptima()
+   + traceBack() : central traceback for all ensemble-based predictors
+   + BestInteraction template class
+   + BestInteractionE|Z typedefs
+   * Z_partition now hash of Interaction::Boundary keys that map to Z_type
+   - checkKeyBoundaries() : obsolete
+ * IntaRNA/PredictorMfeEns2d :
+   - traceBack()
+   * predict() :
+     - explicit updateOptima() calls
+ * IntaRNA/PredictorMfeEns2dHeuristic :
+   * predict() :
+     - explicit updateOptima() calls
+   * fillHybridZ() :
+     + explicit updateZ() calls for all recursion cases to reduce heuristic bias
+   - BestInteraction : replaced by PredictorMfe::BestInteraction
+ * IntaRNA/PredictorMfe2dSeedExtension :
+   - updateOptima() : obsolete
+   * predict() :
+     + explicit j boundary computation to reduce considered index tuples when
+       updating optima
+ * IntaRNA/PredictorMfe2dSeedExtensionRIblast :
+   - updateOptima() : obsolete
+ * IntaRNA/PredictorMfe2dHeuristicSeedExtension :
+   * rename updateOptima() to updateOptimalRightExt()
+   + updateOptima() called for all tested right extensions
+   + updateOptima() called for all tested seed+leftExtension
+   + extended search range for seed+leftExtension (so far limited by jOptRight)
+ * IntaRNA/PredictorMfeEns2dSeedExtension :
+   - explicit updateOptima() calls
+   * traceBack() : reduced to super class traceBack() call seed addition
+ * IntaRNA/PredictorMfeEns2dHeuristicSeedExtension :
+   - explicit updateOptima() calls
+   + extended search range for seed+leftExtension (so far limited by jOptRight)
+   + updateZ() called for all tested right extensions
+   + updateZ() called for all tested seed+leftExtension
+ * bin/CommandLineParsing :
+   + check for outOverlap=B if window-based computation with subopt output (n>1)
+ * IntaRNA/PredictorMfe2dHeuristic :
+   - BestInteraction : replaced by PredictorMfe::BestInteraction
+ * IntaRNA/SeedConstraint :
+   + bpGUendAllowed + is*() : whether or not GU is allowed at seed ends
+ * IntaRNA/SeedHandler :
+   * isFeasibleBasePair() :
+     + atSeedEnd argument: to enable seed end check if needed
+     + explicit GU-end checks if atSeedEnd==true 
+ * IntaRNA/SeedHandlerMfe :
+   + check for GU ends
+ * IntaRNA/SeedHandlerNoBulge :
+   * storeSeed() : 
+     + check for GU ends
+ * README.md :
+   + seedNoGUend documentation
+ 
+190905 Martin Raden :
+ * IntaRNA/PredictorMfe2dHeuristicSeedExtension :
+   + updateOptima() also for left+seed called (less heuristic bias)
+ * IntaRNA/PredictorMfeEns* : ensemble-mfe prediction revised
+
+190830 Martin Raden :
+ + IntaRNA/OutputHandlerEnsemble : reports ensemble information only
+
+190828 Martin Raden :
+ * Makefile.am :
+   + show test log if tests failed
+ * IntaRNA/OutputHandler* :
+   * bugfix: outConstraint was reference instead of full object
+
+190827 Martin Raden :
+ * IntaRNA/OutputConstraint :
+   + needZall : whether or not Zall is needed for output generation
+ * IntaRNA/OutputHandler* :
+   + outConstraint : OutputConstraint to be heeded
+   * constructor : required OutputConstraint object
+   * add() : outConstraint parameter obsolete
+ * IntaRNA/OutputHandlerCsv :
+   + needsZall() : checks whether or not the requested column types require Zall
+ * IntaRNA/Predictor* :
+   * outConstraint parameter in member functions obsolete
+ * bin/CommandLineParsing :
+   + outNeedsZall : flag to check whether or not Zall is needed for output
+ * IntaRNA/Predictor :
+   + Zall : overall partition function
+   * updateOptima( ..., incrementZall = true ) : Zall is incremented
+     if output.outConstraint.needZall == true
+   + getZall() : access to overall partition function
+   + incrementZall() : increments Zall (+ overflow check in debug mode)
+   * reportOptima() :
+     + calls output.incrementZ()
+   * initOptima() :
+     + init of Zall if needed
+ * IntaRNA/PredictorMfeEns :
+   - overallZ : replaced by Predictor::Zall
+   - reportOptima() : obsolete
+ * IntaRNA/PredictorMfeEns* :
+   * call of updateOptima( ..., incrementZall = false ) to avoid duplicated Zall
+     updates
+   * initZ() : - no init of Zall
 
 ##### version 3.0.0
 

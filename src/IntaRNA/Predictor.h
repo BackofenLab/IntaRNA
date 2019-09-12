@@ -50,14 +50,12 @@ public:
 	 *
 	 * @param r1 the index range of the first sequence interacting with r2
 	 * @param r2 the index range of the second sequence interacting with r1
-	 * @param outConstraint constrains the interactions reported to the output handler
 	 *
 	 */
 	virtual
 	void
 	predict( const IndexRange & r1 = IndexRange(0,RnaSequence::lastPos)
-			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos)
-			, const OutputConstraint & outConstraint = OutputConstraint() ) = 0;
+			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos) ) = 0;
 
 	/**
 	 * Computes the maximal width of an interaction for a given site width and
@@ -72,6 +70,15 @@ public:
 	size_t
 	getMaxInteractionWidth( const size_t w, const size_t maxLoopSize );
 
+	/**
+	 * Access to the current overall partition function covering
+	 * all interactions of the last predict() call.
+	 *
+	 * @return the overall hybridization partition function
+	 */
+	Z_type
+	getZall() const;
+
 protected:
 
 	//! energy computation handler
@@ -83,15 +90,17 @@ protected:
 	//! prediction tracker to be used
 	PredictionTracker * predTracker;
 
+	//! the overall partition function since initZ() was last called.
+	//! its value is updated by updateZ()
+	Z_type Zall;
+
 
 	/**
 	 * Initializes the list of best solutions to be filled by updateOptima()
-	 *
-	 * @param outConstraint constrains the interactions reported to the output handler
 	 */
 	virtual
 	void
-	initOptima( const OutputConstraint & outConstraint ) = 0;
+	initOptima() = 0;
 
 	/**
 	 * Updates the global the list of best solutions found so far
@@ -103,26 +112,54 @@ protected:
 	 * @param energy the energy of the interaction site
 	 * @param isHybridE whether or not the given energy is only the
 	 *        hybridization energy (init+loops) or the total interaction energy
+	 * @param incrementZall whether or not Zall is to be incremented (if needed)
 	 */
 	virtual
 	void
 	updateOptima( const size_t i1, const size_t j1
 				, const size_t i2, const size_t j2
 				, const E_type energy
-				, const bool isHybridE ) = 0;
+				, const bool isHybridE
+				, const bool incrementZall = false ) = 0;
 
+	/**
+	 * Updates the global Zall partition function.
+	 *
+	 * Note: should not be called for interactions for which
+	 * updateOptima(..,incrementZall=true) is called. Otherwise, these
+	 * interactions are considered multiple times.
+	 *
+	 * @param i1 the index of the first sequence interacting with i2
+	 * @param j1 the index of the first sequence interacting with j2
+	 * @param i2 the index of the second sequence interacting with i1
+	 * @param j2 the index of the second sequence interacting with j1
+	 * @param energy the energy of the interaction site
+	 * @param isHybridE whether or not the given energy is only the
+	 *        hybridization energy (init+loops) or the total interaction energy
+	 * @param incrementZall whether or not Zall is to be incremented (if needed)
+	 */
+	virtual
+	void
+	updateZall( const size_t i1, const size_t j1
+				, const size_t i2, const size_t j2
+				, const E_type energy
+				, const bool isHybridE );
 
 
 
 	/**
 	 * Pushes the optimal and suboptimal solutions to the output handler.
-	 *
-	 * @param outConstraint constrains the interactions reported to the output handler
 	 */
 	virtual
 	void
-	reportOptima( const OutputConstraint & outConstraint ) = 0;
+	reportOptima() = 0;
 
+	/**
+	 * Increments the overall partition function Zall with the given value
+	 * @param partZ the increment for Zall
+	 */
+	void
+	incrementZall( const Z_type partZ );
 
 };
 
@@ -139,6 +176,7 @@ Predictor::Predictor( const InteractionEnergy & energy
 	energy(energy)
 	, output(output)
 	, predTracker(predTracker)
+	, Zall(0)
 {
 }
 
@@ -162,6 +200,60 @@ getMaxInteractionWidth( const size_t w, const size_t maxLoopSize )
 		return 0;
 	// compute maximal interaction width, ie each position pairs with max loop size
 	return 1 + ((w-1)*(maxLoopSize+1));
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+Z_type
+Predictor::
+getZall() const
+{
+	return Zall;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void
+Predictor::
+incrementZall( const Z_type partZ )
+{
+#if INTARNA_IN_DEBUG_MODE
+	if ( (std::numeric_limits<Z_type>::max() - partZ) <= Zall) {
+		LOG(WARNING) <<"PredictorMfeEns::incrementZall() : partition function overflow! Recompile with larger partition function data type!";
+	}
+#endif
+	// increment overall partition function
+	Zall += partZ;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void
+Predictor::
+updateZall( const size_t i1, const size_t j1
+		, const size_t i2, const size_t j2
+		, const E_type interE
+		, const bool isHybridE )
+{
+
+	// ignore invalid reports
+	if (E_isINF(interE) || interE >= E_MAX) {
+		return;
+	}
+
+	// increment Zall with BW of overall energy
+	incrementZall(
+			energy.getBoltzmannWeight(
+					isHybridE ?
+							energy.getE( i1,j1, i2,j2, interE )
+							: interE
+			));
 }
 
 ////////////////////////////////////////////////////////////////////////////

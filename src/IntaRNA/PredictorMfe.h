@@ -10,6 +10,8 @@
 #include <list>
 #include <utility>
 
+#include <boost/unordered_map.hpp>
+
 namespace IntaRNA {
 
 /**
@@ -20,6 +22,42 @@ namespace IntaRNA {
  *
  */
 class PredictorMfe : public Predictor {
+
+protected:
+
+	/**
+	 * Describes the currently best interaction found for a left interaction
+	 * boundary i1,i2
+	 */
+	template < class ValueType >
+	class BestInteraction {
+	public:
+
+		/**
+		 * Init object
+		 * @param val the value to be stored (default = INF [or MAX if not supported])
+		 * @param j1 first index
+		 * @param j1 second index
+		 */
+		BestInteraction( const ValueType val=(std::numeric_limits<ValueType>::has_infinity ? std::numeric_limits<ValueType>::infinity() : std::numeric_limits<ValueType>::max())
+				, const size_t j1=RnaSequence::lastPos, const size_t j2=RnaSequence::lastPos )
+			: val(val), j1(j1), j2(j2)
+		{}
+
+	public:
+		//! value to be stored for the interaction, e.g. energy
+		ValueType val;
+		//! right end of the interaction in seq1
+		size_t j1;
+		//! right end of the interaction in seq2
+		size_t j2;
+	};
+
+	//! BestInteraction that stores an energy value
+	typedef BestInteraction<E_type> BestInteractionE;
+	//! BestInteraction that stores a partition function value
+	typedef BestInteraction<Z_type> BestInteractionZ;
+
 
 
 public:
@@ -51,13 +89,18 @@ protected:
 	//! access to the prediction tracker of the super class
 	using Predictor::predTracker;
 
-	// TODO provide all data structures as arguments to make predict() call threadsafe
-
 	//! list of interactions
 	typedef std::list<Interaction> InteractionList;
 
 	//! mfe interaction boundaries
 	InteractionList mfeInteractions;
+
+	//! hash to map index pairs to BestInteractionE entries
+	typedef boost::unordered_map< Interaction::BasePair, BestInteractionE > HashIdx2E;
+
+	//! if non-overlapping output is required, this data structure is filled
+	//! to find non-overlapping interactions
+	HashIdx2E mfe4leftEnd;
 
 	//! index ranges of reported interactions to identify non-overlapping
 	//! interactions (first = seq1, second = seq2)
@@ -75,12 +118,10 @@ protected:
 
 	/**
 	 * Initializes the global energy minimum storage
-	 *
-	 * @param outConstraint constrains the interactions reported to the output handler
 	 */
 	virtual
 	void
-	initOptima( const OutputConstraint & outConstraint );
+	initOptima();
 
 	/**
 	 * updates the global optimum to be the mfe interaction if needed
@@ -92,13 +133,15 @@ protected:
 	 * @param energy the energy of the interaction
 	 * @param isHybridE whether or not the given energy is only the
 	 *        hybridization energy (init+loops) or the total interaction energy
+	 * @param incrementZall whether or not Zall is to be incremented (if needed)
 	 */
 	virtual
 	void
 	updateOptima( const size_t i1, const size_t j1
 				, const size_t i2, const size_t j2
 				, const E_type energy
-				, const bool isHybridE );
+				, const bool isHybridE
+				, const bool incrementZall = true );
 
 
 	/**
@@ -106,11 +149,10 @@ protected:
 	 * hybridizing base pairs.
 	 * Note, the
 	 * @param interaction IN/OUT the interaction to fill
-	 * @param outConstraint constrains the interactions reported to the output handler
 	 */
 	virtual
 	void
-	traceBack( Interaction & interaction, const OutputConstraint & outConstraint  ) = 0;
+	traceBack( Interaction & interaction ) = 0;
 
 
 	/**
@@ -125,19 +167,35 @@ protected:
 	 */
 	virtual
 	void
-	getNextBest( Interaction & curBest ) = 0;
+	getNextBest( Interaction & curBest );
+
+
+	/**
+	 * Updates the mfe4leftEnd data container.
+	 *
+	 * Overwrite, if no update is to be done.
+	 *
+	 * @param i1 interaction start in seq1
+	 * @param j1 interaction end in seq1
+	 * @param i2 interaction start in seq2
+	 * @param i2 interaction end in seq2
+	 * @param curInteraction the interaction information to be used for update
+	 */
+	virtual
+	void
+	updateMfe4leftEnd(const size_t i1, const size_t j1
+					, const size_t i2, const size_t j2
+					, const Interaction & curInteraction );
 
 	/**
 	 * Calls for the stored mfe and suboptimal solutions traceBack(i)
 	 * and pushes the according interactions to the output handler.
 	 * For non-overlapping interaction enumeration, getNextBest() is called
 	 * iteratively.
-	 *
-	 * @param outConstraint constrains the interactions reported to the output handler
 	 */
 	virtual
 	void
-	reportOptima( const OutputConstraint & outConstraint );
+	reportOptima();
 
 };
 

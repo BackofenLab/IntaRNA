@@ -47,14 +47,12 @@ public:
 	 *
 	 * @param r1 the index range of the first sequence interacting with r2
 	 * @param r2 the index range of the second sequence interacting with r1
-	 * @param outConstraint constrains the interactions reported to the output handler
 	 *
 	 */
 	virtual
 	void
 	predict( const IndexRange & r1 = IndexRange(0,RnaSequence::lastPos)
 			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos)
-			, const OutputConstraint & outConstraint = OutputConstraint()
 			);
 
 protected:
@@ -77,7 +75,6 @@ protected:
 	 *
 	 * @param j1 end of the interaction within seq 1
 	 * @param j2 end of the interaction within seq 2
-	 * @param outConstraint constrains the interactions reported to the output handler
 	 * @param i1init smallest value for i1
 	 * @param i2init smallest value for i2
 	 * @param callUpdateOptima whether or not updateOptima() is to be called
@@ -86,7 +83,6 @@ protected:
 	virtual
 	void
 	fillHybridE( const size_t j1, const size_t j2
-				, const OutputConstraint & outConstraint
 				, const size_t i1init, const size_t i2init
 				, const bool callUpdateOptima
 				);
@@ -95,25 +91,10 @@ protected:
 	 * Fills a given interaction (boundaries given) with the according
 	 * hybridizing base pairs.
 	 * @param interaction IN/OUT the interaction to fill
-	 * @param outConstraint constrains the interactions reported to the output handler
 	 */
 	virtual
 	void
-	traceBack( Interaction & interaction, const OutputConstraint & outConstraint  );
-
-	/**
-	 * Identifies the next best interaction with an energy equal to or higher
-	 * than the given interaction. The new interaction will not overlap any
-	 * index range stored in reportedInteractions.
-	 *
-	 * NOTE: this is not possible for this predictor (unless a full recomputation
-	 * of the matrices is done). Thus, calling this method raises an exception.
-	 *
-	 * @param curBest ignored (see method comment)
-	 */
-	virtual
-	void
-	getNextBest( Interaction & curBest );
+	traceBack( Interaction & interaction );
 
 };
 

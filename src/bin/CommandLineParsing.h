@@ -48,6 +48,7 @@ public:
 		NOT_PARSED_YET = 999
 	};
 
+	// TODO if extended: also extend both getPersonality() and getPersonalityName()
 	enum Personality {
 		IntaRNA,		// default
 		IntaRNA1,		// IntaRNA v1 like setup
@@ -60,7 +61,6 @@ public:
 		IntaRNAduplex,	// RNAhybrid/RNAduplex-like
 		IntaRNAexact	// RNAup-like exact predictions
 	};
-	// TODO if extended: also extend both getPersonality() and getPersonalityName()
 
 
 	/**
@@ -70,6 +70,9 @@ public:
 	std::string
 	getPersonalityName( Personality p ) {
 		switch(p) {
+		// the following case list is parsed by ROOT/Makefile.am to generate
+		// respective binary links for each personality
+		// thus: keep the one-line format!
 		case IntaRNA : return "IntaRNA";
 		case IntaRNA1 : return "IntaRNA1";
 		case IntaRNA2 : return "IntaRNA2";
@@ -197,6 +200,9 @@ public:
 
 	/**
 	 * Provides a newly allocated output handler according to the user request.
+	 *
+	 * Furthermore, it checks whether Zall has to be computed to generate the
+	 * output.
 	 *
 	 * @param energy the energy handler used for interaction computation
 	 *
@@ -561,6 +567,8 @@ protected:
 	NumberParameter<E_kcal_type> seedMaxEhybrid;
 	//! whether or not GU base pairs are allowed within seeds
 	bool seedNoGU;
+	//! whether or not GU base pairs are allowed at seed ends
+	bool seedNoGUend;
 	//! intervals in query for seed search
 	std::string seedQRange;
 	//! intervals in target for seed search
@@ -631,6 +639,8 @@ protected:
 	bool outPerRegion;
 	//! for SpotProb output : spots to be tracked
 	std::string outSpotProbSpots;
+	//! whether or not Zall is needed for output generation
+	mutable bool outNeedsZall;
 
 	//! (optional) file name for log output
 	std::string logFileName;

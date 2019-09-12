@@ -621,9 +621,12 @@ form a base pair, the one with maximal partition function `Z(S)`,  i.e.
 ```
 which sums the Boltzmann weights of all interactions `I` (hybridization terms only)
 for the given site `S` multiplied with the Boltzmann weights of the respective 
-accessibility penalties `ED1` and `ED2`. The site's partition function can be 
+accessibility penalties `ED1` and `ED2`.
+Here, `R` denotes the gas constant and `T` the temperature of the system.
+At `T=37` degree Celsius, the product `RT` is about `RT=0.6163173043012`. 
+The site's partition function can be 
 used to compute the ensemble energy of all interactions of a given site via
-`E(S) = -RT log(Z(S))`, which is reported for the optimal site 
+`E(S) = -RT log(Z(S))` (`log` = natural logarithm), which is reported for the optimal site 
 (see [CSV output](#outModeCsv)).  
 This abstracts from individual inter-molecular base pairing and incorporates the 
 dynamics and flexibility of the interactions formed by two regions.
@@ -1075,6 +1078,7 @@ by
 - `--seedQRange` : a list of index intervals where a seed in the query is allowed
 - `--seedTRange` : a list of index intervals where a seed in the target is allowed
 - `--seedNoGU` : if present, no GU base pairs are allowed within seeds
+- `--seedNoGUend` : if present, no GU base pairs are allowed at seed ends
 
 Alternatively, you can set
 
@@ -1339,6 +1343,8 @@ are
 - `E_hybrid` : energy of hybridization only = E - ED1 - ED2
 - `E_norm` : length normalized energy = E / ln(length(seq1)*length(seq2))
 - `E_hybridNorm` : length normalized energy of hybridization only = E_hybrid / ln(length(seq1)*length(seq2))
+- `E_add` : user defined energy correction term incorporated into `E`
+- `w` : Boltzmann weight of `E`, e.g. used for partition function computation
 - `seedStart1` : start index of the seed in seq1 (* see below)
 - `seedEnd1` : end index of the seed in seq1 (* see below)
 - `seedStart2` : start index of the seed in seq2 (* see below)
@@ -1348,9 +1354,9 @@ are
 - `seedED2` : ED value of seq2 of the seed only (excluding rest) (* see below)
 - `seedPu1` : probability of seed region to be accessible for seq1 (* see below)
 - `seedPu2` : probability of seed region to be accessible for seq2 (* see below)
-- `Eall` : ensemble energy of all considered interactions (-RT*log(Zall)) (see [model=P](#interactionModel-ssProbability))
-- `Zall` : partition function of all considered interactions (see [model=P](#interactionModel-ssProbability))
-- `P_E` : probability of an interaction (site) within the considered ensemble (see [model=P](#interactionModel-ssProbability))
+- `Eall` : ensemble energy of all considered interactions (-RT*log(Zall))
+- `Zall` : partition function of all considered interactions
+- `P_E` : probability of an interaction (site) within the considered ensemble
 
 (*) Note, since an interaction can cover more than one seed, all `seed*` columns
 might contain multiple entries separated by ':' symbols. In order to print only
@@ -1397,6 +1403,33 @@ Pu1;Pu2;subseqDB;hybridDB
 0.00135534;0.00135534;5ACCCCCGGUGGU&5ACCCCCGGUGGU;5|||.||||.|||&5|||.||||.|||
 0.00135534;0.00135534;6CCCCCGGUGGU&5ACCCCCGGUGG;6||.||||.|||&5|||.||||.||
 0.00137751;0.00135534;7CCCCGGUGGU&5ACCCCCGGUGG;7||||||.|||&5|||.||||.||
+```
+
+
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
+
+<a name="outModeEnsemble" />
+
+### Ensemble output of considered RNA-RNA interactions
+
+The output mode `--outMode=E` provides information on the ensemble of all 
+considered RNA-RNA interactions (e.g. compatible with the current seed constraints).
+This covers key-value pairs of the following information using 
+column labels introduced for the CVS output:
+
+- `id1` : id of first sequence (target)
+- `id2` : id of second sequence (query)
+- `Zall` : partition function of all considered interactions
+- `Eall` : ensemble energy of all considered interactions (-RT*log(Zall))
+
+Note, `Zall` depends on the selected 
+[prediction mode](#predModes) and 
+[RNA-RNA interaction model](#interactionModel).
+It holds `Zall(--model=S) <= Zall(--model=P)` as well as 
+`Zall(--mode=H) <= Zall(--mode=M)`.
+Thus, most accurate results are computed using
+```
+IntaRNA --model=P --mode=M --out=E ...
 ```
 
 

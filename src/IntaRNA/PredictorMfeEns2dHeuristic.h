@@ -10,7 +10,7 @@
 namespace IntaRNA {
 
 /**
- * Memory efficient interaction predictor that uses a heuristic to
+ * Memory efficient ensemble interaction predictor that uses a heuristic to
  * find the mfe or a close-to-mfe interaction.
  *
  * To this end, for each interaction start i1,i2 only the optimal right side
@@ -19,36 +19,16 @@ namespace IntaRNA {
  *
  * This yields a quadratic time and space complexity.
  *
- * @author Martin Mann
+ * @author Martin Raden
+ * @author Frank Gelhausen
  *
  */
 class PredictorMfeEns2dHeuristic: public PredictorMfeEns2d {
 
 protected:
 
-	/**
-	 * Describes the currently best interaction found for a left interaction
-	 * boundary i1,i2
-	 */
-	class BestInteraction {
-	public:
-
-		//! init data
-		BestInteraction( const Z_type Z=Z_INF, const size_t j1=RnaSequence::lastPos, const size_t j2=RnaSequence::lastPos )
-			: Z(Z), j1(j1), j2(j2)
-		{}
-
-	public:
-		//! energy of the interaction
-		Z_type Z;
-		//! right end of the interaction in seq1
-		size_t j1;
-		//! right end of the interaction in seq2
-		size_t j2;
-	};
-
 	//! matrix type to hold the mfe energies and boundaries for interaction site starts
-	typedef boost::numeric::ublas::matrix<BestInteraction> Z2dMatrix;
+	typedef boost::numeric::ublas::matrix<BestInteractionZ> Z2dMatrix;
 
 public:
 
@@ -74,14 +54,12 @@ public:
 	 *
 	 * @param r1 the index range of the first sequence interacting with r2
 	 * @param r2 the index range of the second sequence interacting with r1
-	 * @param outConstraint constrains the interactions reported to the output handler
 	 *
 	 */
 	virtual
 	void
 	predict( const IndexRange & r1 = IndexRange(0,RnaSequence::lastPos)
-			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos)
-			, const OutputConstraint & outConstraint = OutputConstraint() );
+			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos) );
 
 protected:
 
@@ -102,11 +80,10 @@ protected:
 	/**
 	 * Computes all entries of the hybridE matrix
 	 * and reports all valid interactions via updateOptima()
-	 * @param outConstraint constrains the interactions reported to the output handler
 	 */
 	virtual
 	void
-	fillHybridZ( const OutputConstraint & outConstraint );
+	fillHybridZ();
 
 	/**
 	 * Identifies the next best interaction (containing a seed)
@@ -122,6 +99,21 @@ protected:
 	virtual
 	void
 	getNextBest( Interaction & curBest );
+
+	/**
+	 * Overwrites function of super class to surpress the update.
+	 *
+	 * @param i1 interaction start in seq1
+	 * @param j1 interaction end in seq1
+	 * @param i2 interaction start in seq2
+	 * @param i2 interaction end in seq2
+	 * @param curInteraction the interaction information to be used for update
+	 */
+	virtual
+	void
+	updateMfe4leftEnd(const size_t i1, const size_t j1
+					, const size_t i2, const size_t j2
+					, const Interaction & curInteraction );
 
 };
 

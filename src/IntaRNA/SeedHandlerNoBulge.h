@@ -287,6 +287,13 @@ storeSeed( const size_t j1, const size_t j2, const StackingEnergyList & bpE )
 	if ( energy.getED1(j1+1-seedBP, j1) < seedConstraint.getMaxED()
 		&& energy.getED2(j2+1-seedBP, j2) < seedConstraint.getMaxED() )
 	{
+		// check seed boundaries if needed
+		if ( ! seedConstraint.isGUendAllowed()
+			&& (energy.isGU(j1,j2) || energy.isGU(j1+1-seedBP,j2+1-seedBP)) )
+		{
+			return;
+		}
+
 		// compute seed energy
 		for(auto e=bpE.begin(); e!=bpE.end(); e++) { seedEhybrid += *e; } // (left) stacking energies
 		// check hybridization energy bound (incl E_init)

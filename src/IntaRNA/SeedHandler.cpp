@@ -9,7 +9,7 @@ namespace IntaRNA {
 
 bool
 SeedHandler::
-isFeasibleSeedBasePair( const size_t i1, const size_t i2 ) const
+isFeasibleSeedBasePair( const size_t i1, const size_t i2, const bool atEndOfSeed ) const
 {
 #if INTARNA_IN_DEBUG_MODE
 	if ( i1 >= energy.size1() ) throw std::runtime_error("SeedHandler::isFeasibleSeedBasePair: i1("+toString(i1)+") >= energy.size1("+toString(energy.size1())+")");
@@ -23,6 +23,7 @@ isFeasibleSeedBasePair( const size_t i1, const size_t i2 ) const
 			&&	seedConstraint.getMaxED() >= energy.getED1( i1,i1 )
 			&&	seedConstraint.getMaxED() >= energy.getED2( i2,i2 )
 			&&  (seedConstraint.isGUallowed() || (!energy.isGU( i1, i2 ))) // check for GU bp constraint
+			&&  (!atEndOfSeed || (seedConstraint.isGUendAllowed() || (!energy.isGU( i1, i2 )))) // check for GU ends
 			&&	(seedConstraint.getRanges1().empty() || seedConstraint.getRanges1().covers(i1))
 			&&	(seedConstraint.getRanges2().empty() || seedConstraint.getRanges2().covers(i2))
 			;

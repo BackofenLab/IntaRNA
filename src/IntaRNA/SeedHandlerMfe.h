@@ -21,8 +21,6 @@ class SeedHandlerMfe : public SeedHandler
 {
 public:
 
-	// TODO replace with 2D array on sparse matrices since most entries not used
-
 	//! 5D matrix type to hold the mfe energies for seed interactions
 	//! of the ranges i1..(i1+bp+u1-1) with i2..(i2+bp+u2-1), with
 	//! i1,i2 = the start index of the seed in seq1/2

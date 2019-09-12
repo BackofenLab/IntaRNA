@@ -31,9 +31,10 @@ void
 PredictorMfe2dHelixBlockHeuristic::
 predict( const IndexRange & r1
 		, const IndexRange & r2
-		, const OutputConstraint & outConstraint
 )
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 #if INTARNA_MULITHREADING
 #pragma omp critical(intarna_omp_logOutput)
 #endif
@@ -66,8 +67,8 @@ predict( const IndexRange & r1
 
 	if (helixHandler.fillHelix( 0, hybridEsize1-1, 0, hybridEsize2-1 ) == 0) {
 		// trigger empty interaction reporting
-		initOptima(outConstraint);
-		reportOptima(outConstraint);
+		initOptima();
+		reportOptima();
 		// stop computation
 		return;
 	}
@@ -89,23 +90,23 @@ predict( const IndexRange & r1
 				&& energy.areComplementary(i1,i2) )
 		{
 			// set to interaction initiation with according boundary
-			hybridE(i1,i2) = BestInteraction(energy.getE_init(), i1, i2);
+			hybridE(i1,i2) = BestInteractionE(energy.getE_init(), i1, i2);
 		} else {
 			// set to infinity, ie not used
-			hybridE(i1,i2) = BestInteraction(E_INF, RnaSequence::lastPos, RnaSequence::lastPos);
+			hybridE(i1,i2) = BestInteractionE(E_INF, RnaSequence::lastPos, RnaSequence::lastPos);
 		}
 
 	} // i2
 	} // i1
 
 	// init mfe for later updates
-	initOptima( outConstraint );
+	initOptima();
 
 	// compute table and update mfeInteraction
 	fillHybridE();
 
 	// trace back and output handler update
-	reportOptima( outConstraint );
+	reportOptima();
 
 }
 
@@ -120,22 +121,21 @@ fillHybridE()
 	// current minimal value
 	E_type curE = E_INF, curEtotal = E_INF, curCellEtotal = E_INF;
 	size_t i1,i2,h1,h2,w1,w2;
-	BestInteraction * curCell = NULL;
-	const BestInteraction * rightExt = NULL;
+	BestInteractionE * curCell = NULL;
+	const BestInteractionE * rightExt = NULL;
 	// iterate (decreasingly) over all left interaction starts
 	for (i1=hybridE.size1(); i1-- > 0;) {
 	for (i2=hybridE.size2(); i2-- > 0;) {
-//		LOG(DEBUG) << "i1, i2: " << i1 << " " << i2;
 		// direct cell access
 		curCell = &(hybridE(i1,i2));
 
 		// check if left side can pair
-		if (E_isINF(curCell->E)) {
+		if (E_isINF(curCell->val)) {
 			continue;
 		}
 
 		// E_init initialization
-		curCellEtotal = energy.getE(i1,curCell->j1,i2,curCell->j2,curCell->E);
+		curCellEtotal = energy.getE(i1,curCell->j1,i2,curCell->j2,curCell->val);
 
 		// check if helix is possible for this left boundary
 		if ( E_isNotINF( helixHandler.getHelixE(i1,i2) ) ) {
@@ -143,10 +143,8 @@ fillHybridE()
 			h1 = helixHandler.getHelixLength1(i1,i2)-1; assert(i1+h1 < hybridE.size1());
 			h2 = helixHandler.getHelixLength2(i1,i2)-1; assert(i2+h2 < hybridE.size2());
 
-//			LOG(DEBUG) << "h1, h2: " << h1 << " " << h2;
 			curE = helixHandler.getHelixE(i1,i2) + energy.getE_init();
 
-//			LOG(DEBUG) << "Case 1: curE " << curE;
 			// check if this combination yields better energy
 			curEtotal = energy.getE(i1, i1+h1, i2, i2+h2, curE);
 			if ( !E_equal(curEtotal,curCellEtotal) && curEtotal < curCellEtotal )
@@ -157,7 +155,7 @@ fillHybridE()
 				curCell->j1 = i1+h1;
 				curCell->j2 = i2+h2;
 				// set new energy
-				curCell->E = curE;
+				curCell->val = curE;
 				// store total energy to avoid recomputation
 				curCellEtotal = curEtotal;
 			}
@@ -177,7 +175,7 @@ fillHybridE()
 				// direct cell access (const)
 				rightExt = &(hybridE(i1+h1+w1,i2+h2+w2));
 				// check if right side can pair
-				if (E_isINF(rightExt->E)) {
+				if (E_isINF(rightExt->val)) {
 					continue;
 				}
 
@@ -189,8 +187,7 @@ fillHybridE()
 				}
 
 				// compute energy for this loop sizes
-				curE = helixHandler.getHelixE(i1,i2) + energy.getE_interLeft(i1+h1,i1+h1+w1,i2+h2,i2+h2+w2) + rightExt->E;
-//				LOG(DEBUG) << "Case 2: curE " << curE;
+				curE = helixHandler.getHelixE(i1,i2) + energy.getE_interLeft(i1+h1,i1+h1+w1,i2+h2,i2+h2+w2) + rightExt->val;
 				// check if this combination yields better energy
 				curEtotal = energy.getE(i1,rightExt->j1,i2,rightExt->j2,curE);
 				if ( !E_equal(curEtotal, curCellEtotal) && curEtotal < curCellEtotal )
@@ -199,7 +196,7 @@ fillHybridE()
 					// copy right boundary
 					*curCell = *rightExt;
 					// set new energy
-					curCell->E = curE;
+					curCell->val = curE;
 					// store total energy to avoid recomputation
 					curCellEtotal = curEtotal;
 				}
@@ -207,7 +204,6 @@ fillHybridE()
 			} // w2
 			} // w1
 
-//			LOG(DEBUG) << "NEW VALUE!!!: i1, i2: " << i1 << " " << i2 << " " << curCellEtotal;
 			// update mfe if needed
 			updateOptima( i1,curCell->j1, i2,curCell->j2, curCellEtotal, false );
 		} // helix
@@ -219,8 +215,10 @@ fillHybridE()
 
 void
 PredictorMfe2dHelixBlockHeuristic::
-traceBack( Interaction & interaction, const OutputConstraint & outConstraint )
+traceBack( Interaction & interaction )
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 
 	// check if something to trace
 	if (interaction.basePairs.size() < 2) {
@@ -254,10 +252,8 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint )
 	const size_t j2 = energy.getIndex2(interaction.basePairs.at(1));
 
 
-//	LOG(DEBUG) << "TRACEBACK: " << i1 << " " << i2;
 	// the currently traced value for i1-j1, i2-j2
-	E_type curE = hybridE(i1,i2).E;
-//	LOG(DEBUG) << "curE: " << curE;
+	E_type curE = hybridE(i1,i2).val;
 	assert( hybridE(i1,i2).j1 == j1 );
 	assert( hybridE(i1,i2).j2 == j2 );
 	assert( i1 <= j1 );
@@ -270,7 +266,7 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint )
 	size_t h1,h2,k1,k2;
 	// do until only right boundary is left over
 	while( (j1-i1) > 1 ) {
-		const BestInteraction * curCell = NULL;
+		const BestInteractionE * curCell = NULL;
 		bool traceNotFound = true;
 
 		assert(E_isNotINF(helixHandler.getHelixE(i1,i2)));
@@ -295,7 +291,7 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint )
 			// check if right boundary is equal (part of the heuristic)
 			if ( curCell->j1 == j1 && curCell->j2 == j2 &&
 				 // and energy is the source of curE
-				 E_equal( curE, (helixHandler.getHelixE(i1,i2) + energy.getE_interLeft(i1+h1,k1,i2+h2,k2) + curCell->E ) ) )
+				 E_equal( curE, (helixHandler.getHelixE(i1,i2) + energy.getE_interLeft(i1+h1,k1,i2+h2,k2) + curCell->val ) ) )
 			{
  					// stop searching
 					traceNotFound = false;
@@ -312,10 +308,9 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint )
 					// trace right part of split
 					i1=k1;
 					i2=k2;
-					curE = curCell->E;
+					curE = curCell->val;
 
 			}
-//			LOG(DEBUG) << curE
 		} // w1
 		} // w2
 
@@ -359,15 +354,14 @@ getNextBest( Interaction & curBest )
 	// get original
 	const E_type curBestE = curBest.energy;
 
-	// TODO replace index iteration with something based on ranges from reportedInteractions
 
 	// identify cell with next best non-overlapping interaction site
 	// iterate (decreasingly) over all left interaction starts
 	size_t i1,i2;
-	BestInteraction * curBestCell = NULL;
+	BestInteractionE * curBestCell = NULL;
 	E_type curBestCellE = E_INF;
 	Interaction::BasePair curBestCellStart;
-	BestInteraction * curCell = NULL;
+	BestInteractionE * curCell = NULL;
 	E_type curCellE = E_INF;
 	IndexRange r1,r2;
 	for (i1=hybridE.size1(); i1-- > 0;) {
@@ -383,12 +377,12 @@ getNextBest( Interaction & curBest )
 			// direct cell access
 			curCell = &(hybridE(i1,i2));
 			// check if left side can pair
-			if (E_isINF(curCell->E))
+			if (E_isINF(curCell->val))
 			{
 				continue;
 			}
 			// get overall energy of the interaction
-			curCellE = energy.getE(i1,curCell->j1,i2,curCell->j2,curCell->E);
+			curCellE = energy.getE(i1,curCell->j1,i2,curCell->j2,curCell->val);
 			// or energy is too low to be considered
 			// or energy is higher than current best found so far
 			if (curCellE < curBestE || curCellE >= curBestCellE )
@@ -424,6 +418,17 @@ getNextBest( Interaction & curBest )
 		curBest.basePairs[1] = energy.getBasePair( curBestCell->j1, curBestCell->j2 );
 	}
 }
+////////////////////////////////////////////////////////////////////////////
+
+void
+PredictorMfe2dHelixBlockHeuristic::
+updateMfe4leftEnd(const size_t i1, const size_t j1
+				, const size_t i2, const size_t j2
+				, const Interaction & curInteraction )
+{
+	// do nothing since getNextBest() is based on local data structure
+}
+
 ////////////////////////////////////////////////////////////////////////////
 
 } // namespace

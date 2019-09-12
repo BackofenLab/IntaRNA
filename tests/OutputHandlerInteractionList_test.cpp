@@ -32,10 +32,10 @@ TEST_CASE( "OutputHandlerInteractionList", "[OutputHandlerInteractionList]" ) {
 		i1.energy = 0;
 		REQUIRE( i1.isValid() );
 
-		OutputHandlerInteractionList out(2);
+		OutputHandlerInteractionList out(oc, 2);
 		REQUIRE( out.empty() );
 
-		out.add(i1,oc);
+		out.add(i1);
 		REQUIRE( ! out.empty() );
 		auto outIt = out.begin();
 		REQUIRE( OHIL_equalInteraction( **outIt, i1) );
@@ -47,7 +47,7 @@ TEST_CASE( "OutputHandlerInteractionList", "[OutputHandlerInteractionList]" ) {
 		REQUIRE( i2.isValid() );
 
 		// insert (should be new first element)
-		out.add(i2,oc);
+		out.add(i2);
 		REQUIRE( ! out.empty() );
 		outIt = out.begin();
 		REQUIRE( OHIL_equalInteraction( **outIt, i2) );
@@ -68,10 +68,10 @@ TEST_CASE( "OutputHandlerInteractionList", "[OutputHandlerInteractionList]" ) {
 		i.energy = 0;
 		REQUIRE( i.isValid() );
 
-		OutputHandlerInteractionList out(2);
+		OutputHandlerInteractionList out(oc,2);
 		REQUIRE( out.empty() );
 
-		out.add(i,oc);
+		out.add(i);
 		REQUIRE( ! out.empty() );
 		auto outIt = out.begin();
 		REQUIRE( OHIL_equalInteraction( **outIt, i) );
@@ -79,7 +79,7 @@ TEST_CASE( "OutputHandlerInteractionList", "[OutputHandlerInteractionList]" ) {
 		REQUIRE( outIt == out.end() );
 
 		// insert a second time (should cause no insertion)
-		out.add(i,oc);
+		out.add(i);
 		REQUIRE( ! out.empty() );
 		outIt = out.begin();
 		REQUIRE( OHIL_equalInteraction( **outIt, i) );

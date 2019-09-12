@@ -7,15 +7,17 @@ export GCC_COLORS ?= "error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:
 # sub directories to check for Makefiles
 SUBDIRS = src perl tests doc .
 
-# create versioned binaries and tool links (to activate respective alias)
+# list of all personalities to be installed
+#PERSONALITIES = `grep -P "^\\s+case\\s+IntaRNA\\S+\\s*:\\s*return" $(abs_top_srcdir)/src/bin/CommandLineParsing.h | sed "s/^\\s*case\\s\\+\\(IntaRNA\\S*\\)\\s\\+:\\s\\+return.*/\\1/g"`
+PERSONALITIES=@PERSONALITIES@
+
+# create tool links to activate respective personalities
 install-exec-hook:
-	cd $(DESTDIR)$(bindir); \
-	$(LN_S) -f IntaRNA$(EXEEXT) IntaRNAens$(EXEEXT); \
-	$(LN_S) -f IntaRNA$(EXEEXT) IntaRNAseed$(EXEEXT); \
-	$(LN_S) -f IntaRNA$(EXEEXT) IntaRNAsTar$(EXEEXT); \
-	$(LN_S) -f IntaRNA$(EXEEXT) IntaRNAhelix$(EXEEXT); \
-	$(LN_S) -f IntaRNA$(EXEEXT) IntaRNAduplex$(EXEEXT); \
-	$(LN_S) -f IntaRNA$(EXEEXT) IntaRNAexact$(EXEEXT);
+	@echo " => creating personality links" 
+	@cd $(DESTDIR)$(bindir); \ 
+	for p in @PERSONALITIES@; do \
+		$(LN_S) -f IntaRNA$(EXEEXT) $$p$(EXEEXT); \
+	done
 
 ################################################################
 # doxygen
@@ -41,6 +43,6 @@ tests: all
 	@echo " => compiling and running tests ... will take a while ..."
 	@echo
 	@$(MAKE) clean-checkPROGRAMS -s -C tests
-	@$(MAKE) check -s -C tests
-
+	@$(MAKE) check -s -C tests || (cat tests/test-suite.log && false)
+	
 test: tests

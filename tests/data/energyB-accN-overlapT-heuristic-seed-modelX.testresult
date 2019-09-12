@@ -1,0 +1,3 @@
+id1;start1;end1;id2;start2;end2;subseqDP;hybridDP;E
+target;1;2;query;1;2;CC&GG;((&));-2
+target;1;2;query;3;4;CC&GG;((&));-2

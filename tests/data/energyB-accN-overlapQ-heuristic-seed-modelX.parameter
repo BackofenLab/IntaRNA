@@ -1,0 +1,15 @@
+model=X
+mode = H
+seedBP=2
+energy=B 
+tAcc=N
+qAcc=N
+tIntLenMax=2
+qIntLenMax=2
+target=CCAACCCACC
+query=GGGG
+outMode=C
+outNumber=10
+outOverlap=Q
+outDeltaE=0
+outNoLP=false

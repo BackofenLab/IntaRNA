@@ -28,10 +28,13 @@ public:
 
 	/**
 	 * construction
+	 * @param outConstraint the output constraint applied to find the reported
+	 *        interaction
 	 * @param deleteOutListOnDestruction whether or not the objects the hub is
 	 *        forwarding to are to be deleted on destruction
 	 */
-	OutputHandlerHub( const bool deleteOutListOnDestruction = true );
+	OutputHandlerHub( const OutputConstraint & outConstraint
+					, const bool deleteOutListOnDestruction = true );
 
 	/**
 	 * copy construction (will not delete the copied OutputHandler list!)
@@ -52,13 +55,10 @@ public:
 	 * instances.
 	 *
 	 * @param interaction the interaction to add
-	 * @param outConstraint the output constraint applied to find the reported
-	 *        interaction
 	 */
 	virtual
 	void
-	add( const Interaction & interaction
-		, const OutputConstraint & outConstraint );
+	add( const Interaction & interaction  );
 
 	/**
 	 * Returns the maximal number of reported interactions among all handlers
@@ -139,8 +139,9 @@ public:
 
 inline
 OutputHandlerHub
-::OutputHandlerHub( const bool deleteOnDestruction )
- : OutputHandler()
+::OutputHandlerHub( const OutputConstraint & outConstraint
+					, const bool deleteOnDestruction )
+ : OutputHandler(outConstraint)
 	, outList()
 	, deleteOutListOnDestruction(deleteOnDestruction)
 {
@@ -151,7 +152,7 @@ OutputHandlerHub
 inline
 OutputHandlerHub
 ::OutputHandlerHub( const OutputHandlerHub & toCopy )
- : OutputHandler()
+ : OutputHandler( toCopy.outConstraint )
 	, outList( toCopy.outList )
 	// dont delete on destruction (should be done by original) to avoid double cleanup
 	, deleteOutListOnDestruction(false)

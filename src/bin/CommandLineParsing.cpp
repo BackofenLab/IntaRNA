@@ -68,6 +68,7 @@ extern "C" {
 #include "IntaRNA/OutputStreamHandlerSortedCsv.h"
 
 #include "IntaRNA/OutputHandlerCsv.h"
+#include "IntaRNA/OutputHandlerEnsemble.h"
 #include "IntaRNA/OutputHandlerText.h"
 
 
@@ -158,6 +159,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	seedMinPu(0,1,0),
 	seedMaxEhybrid(-999,+999,999),
 	seedNoGU(false),
+	seedNoGUend(false),
 	seedQRange(""),
 	seedTRange(""),
 	seedConstraint(NULL),
@@ -179,9 +181,9 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 
 	out(),
 	outPrefix2streamName(),
-	outMode( "NDC", 'N' ),
+	outMode( "NDCE", 'N' ),
 	outNumber( 0, 1000, 1),
-	outOverlap( "NTQB", 'Q' ),
+	outOverlap( "NTQB", 'B' ),
 	outDeltaE( 0.0, 100.0, 100.0),
 	outMaxE( -999.0, +999.0, 0.0),
 	outMinPu( 0.0, 1.0, 0.0),
@@ -190,6 +192,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	outCsvCols(outCsvCols_default),
 	outPerRegion(false),
 	outSpotProbSpots(""),
+	outNeedsZall(false),
 
 	logFileName(""),
 	configFileName(""),
@@ -209,6 +212,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	case IntaRNA1 :
 		resetParamDefault<>(model, 'S', "model");
 		resetParamDefault<>(mode, 'H', "mode");
+		resetParamDefault<>(outOverlap, 'Q', "outOverlap");
 		resetParamDefault<>(qAccW, 0, "qAccW");
 		resetParamDefault<>(qAccL, 0, "qAccL");
 		resetParamDefault<>(qIntLenMax, 0, "qIntLenMax");
@@ -228,11 +232,13 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		resetParamDefault<>(seedMinPu, 0, "seedMinPu");
 		resetParamDefault<>(seedMaxEhybrid, 999, "seedMaxEhybrid");
 		resetParamDefault<>(seedNoGU, false, "seedNoGU");
+		resetParamDefault<>(seedNoGUend, false, "seedNoGUend");
 		break;
 	case IntaRNA2 :
 		// IntaRNA v2 parameters
 		resetParamDefault<>(model, 'S', "model");
 		resetParamDefault<>(mode, 'H', "mode");
+		resetParamDefault<>(outOverlap, 'Q', "outOverlap");
 		resetParamDefault<>(qAccW, 150, "qAccW");
 		resetParamDefault<>(qAccL, 100, "qAccL");
 		resetParamDefault<>(qIntLenMax, 0, "qIntLenMax");
@@ -252,6 +258,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		resetParamDefault<>(seedMinPu, 0, "seedMinPu");
 		resetParamDefault<>(seedMaxEhybrid, 999, "seedMaxEhybrid");
 		resetParamDefault<>(seedNoGU, false, "seedNoGU");
+		resetParamDefault<>(seedNoGUend, false, "seedNoGUend");
 		break;
 	case IntaRNAens :
 		// ensemble-based predictions
@@ -283,6 +290,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		resetParamDefault<>(mode, 'S', "mode");
 		break;
 	case IntaRNAsTar :
+		resetParamDefault<>(outOverlap, 'Q', "outOverlap");
 		// optimized parameters for sRNA-target prediction
 		resetParamDefault<>(seedNoGU, true, "seedNoGU");
 		resetParamDefault<>(seedMinPu, 0.001, "seedMinPu");
@@ -614,6 +622,10 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 						->default_value(seedNoGU)
 						->implicit_value(true)
 	    		, "if given (or true), no GU base pairs are allowed within seeds")
+	    ("seedNoGUend", value<bool>(&seedNoGUend)
+						->default_value(seedNoGUend)
+						->implicit_value(true)
+	    		, "if given (or true), no GU base pairs are allowed at seed ends")
 		;
 
 	////  SHAPE OPTIONS  ////////////////////////
@@ -775,6 +787,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 					"\n 'N' normal output (ASCII char + energy),"
 					"\n 'D' detailed output (ASCII char + energy/position details),"
 					"\n 'C' CSV output (see --outCsvCols),"
+					"\n 'E' ensemble information"
 					).c_str())
 	    ("outNumber,n"
 			, value<int>(&(outNumber.val))
@@ -925,7 +938,7 @@ parse(int argc, char** argv)
 						LOG(ERROR) <<"Parsing of 'parameterFile' : could not open file  '"<<paramFileName<<"'";
 						updateParsingCode( ReturnCode::STOP_PARSING_ERROR );
 					} else {
-						store( parse_config_file(paramfile, opts_cmdline_all), vm);
+						store( parse_config_file<char>(paramfile, opts_cmdline_all), vm);
 					}
 				} catch (std::exception & ex) {
 					LOG(ERROR) <<"error while parsing of 'parameterFile="<<paramFileName<<"' : "<<ex.what();
@@ -1059,6 +1072,7 @@ parse(int argc, char** argv)
 				if (!seedQRange.empty()) LOG(INFO) <<"no seed constraint wanted, but seedQRange provided (will be ignored)";
 				if (!seedTRange.empty()) LOG(INFO) <<"no seed constraint wanted, but seedTRange provided (will be ignored)";
 				if (seedNoGU) LOG(INFO) <<"no seed constraint wanted, but seedNoGU provided (will be ignored)";
+				if (seedNoGUend) LOG(INFO) <<"no seed constraint wanted, but seedNoGUend provided (will be ignored)";
 			} else {
 				// check query search ranges
 				if (!seedQRange.empty()) {
@@ -1106,6 +1120,7 @@ parse(int argc, char** argv)
 					if (!seedQRange.empty()) LOG(INFO) <<"explicit seeds defined, but seedQRange provided (will be ignored)";
 					if (!seedTRange.empty()) LOG(INFO) <<"explicit seeds defined, but seedTRange provided (will be ignored)";
 					if (seedNoGU) LOG(INFO) <<"explicit seeds defined, but seedNoGU provided (will be ignored)";
+					if (seedNoGUend) LOG(INFO) <<"explicit seeds defined, but seedNoGUend provided (will be ignored)";
 				}
 			}
 
@@ -1170,6 +1185,9 @@ parse(int argc, char** argv)
 				}
 				if (windowWidth.val <= windowOverlap.val) {
 					throw error("window-based computation: --windowWidth ("+toString(windowWidth.val)+") has to exceed --windowOverlap ("+toString(windowOverlap.val)+")");
+				}
+				if (outNumber.val > 1 && outOverlap.val != 'B') {
+					throw error("window-based computation: non-overlapping subopt output (-n > 1) only supported for --outOverlap=B");
 				}
 			}
 
@@ -1251,6 +1269,14 @@ parse(int argc, char** argv)
 				throw error("tAccL = " +toString(tAccL.val)+" : has to be <= tAccW (=" +toString(tAccW.val)+")");
 			}
 
+			// check ensemble sanity
+			if (outMode.val == 'E') {
+				// check single sequence input
+				if (target.size() > 1 || query.size() > 1) {
+					throw error("outmode=E allows only single sequence input for query and target");
+				}
+			}
+
 			// check CSV stuff
 			if (outCsvCols != outCsvCols_default && outMode.val != 'C') {
 				throw error("outCsvCols set but outMode != C ("+toString(outMode.val)+")");
@@ -1295,6 +1321,8 @@ parse(int argc, char** argv)
 			switch (model.val) {
 			// ensemble based predictions
 			case 'P' : {
+				// ensure Zall is computed
+				outNeedsZall = true;
 				// no window decomposition of regions (overlapping regions break overall partition function computation)
 				if (windowWidth.val != 0)  throw error("windowWidth not supported for --model=P");
 				break;}
@@ -1834,6 +1862,7 @@ getOutputConstraint()  const
 			, Ekcal_2_E(outDeltaE.val)
 			, outBestSeedOnly
 			, outNoLP
+			, outNeedsZall
 			);
 }
 
@@ -1948,7 +1977,8 @@ parseSequencesFasta( const std::string & paramName,
 				// trim leading '>' plus successive and trailing whitespaces
 				trimStart = line.find_first_not_of(" \t",1);
 				line = line.substr( trimStart, std::max(0,(int)line.find_last_not_of(" \t\n\r")+1-trimStart) );
-				name = line;
+				// name = prefix up to first whitespace
+				name = line.substr( 0, line.find_first_of(" \t\n\r"));
 			}
 			// clear sequence data
 			sequence.clear();
@@ -2240,11 +2270,18 @@ getOutputHandler( const InteractionEnergy & energy ) const
 {
 	switch (outMode.val) {
 	case 'N' :
-		return new OutputHandlerText( outStreamHandler->getOutStream(), energy, 10, false );
+		return new OutputHandlerText( getOutputConstraint(), outStreamHandler->getOutStream(), energy, 10, false );
 	case 'D' :
-		return new OutputHandlerText( outStreamHandler->getOutStream(), energy, 10, true );
+		return new OutputHandlerText( getOutputConstraint(), outStreamHandler->getOutStream(), energy, 10, true );
+	case 'E' :
+		// ensure that Zall is computed
+		outNeedsZall = true;
+		return new OutputHandlerEnsemble( getOutputConstraint(), outStreamHandler->getOutStream(), energy );
 	case 'C' :
-		return new OutputHandlerCsv( outStreamHandler->getOutStream(), energy, OutputHandlerCsv::string2list( outCsvCols ), outCsvColSep, false, outCsvLstSep );
+		// ensure that Zall is computed if needed
+		outNeedsZall = outNeedsZall || OutputHandlerCsv::needsZall(OutputHandlerCsv::string2list( outCsvCols ), outCsvColSep);
+		// create output handler
+		return new OutputHandlerCsv( getOutputConstraint(), outStreamHandler->getOutStream(), energy, OutputHandlerCsv::string2list( outCsvCols ), outCsvColSep, false, outCsvLstSep );
 	default :
 		INTARNA_NOT_IMPLEMENTED("Output mode "+toString(outMode.val)+" not implemented yet");
 	}
@@ -2300,6 +2337,7 @@ getSeedConstraint( const InteractionEnergy & energy ) const
 							, IndexRangeList( seedQRange ).shift(-1,energy.size2()-1).reverse(energy.size2())
 							, seedTQ
 							, seedNoGU
+							, seedNoGUend
 						);
 	}
 	return *seedConstraint;
