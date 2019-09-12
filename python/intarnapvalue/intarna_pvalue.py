@@ -112,14 +112,16 @@ class IntaRNApvalue:
                             help='How many randomly generated scores are used to calculate the p-value.')
         parser.add_argument('-m', '--shuffle-mode', dest='sm', required=True, choices=['q', 't', 'b'],
                             help='Which sequences are going to be shuffled: both, query only or target only.')
+        parser.add_argument('-p', '--parameterFile', dest='parameterFile', default="",
+                            help='Optional parameter file for IntaRNA provide further IntaRNA parameters and prediction constraints.')
         parser.add_argument('-d', '--distribution', dest='dist', choices=['gev', 'gumbel', 'gauss'], default='gev',
-                            help='Which distribution is fitted and used to calculate the pvalue.')
+                            help='[gev] Which distribution is fitted and used to calculate the pvalue.')
         parser.add_argument('-o', '--output', dest='output', choices=['pvalue', 'scores'], default='pvalue',
-                            help='If set to scores, outputs all IntaRNA scores from random sequences to STDOUT. '
+                            help='[pvalue] If set to scores, outputs all IntaRNA scores from random sequences to STDOUT. '
                                  'This is useful for pipeing the scores. Otherwise outputs just the pvalue.')
-        parser.add_argument('--threads', type=str, default='0', help='Sets the amount of threads used for IntaRNA.')
-        parser.add_argument('--seed', type=str, default=None,
-                            help='Random seed to make sequence generation deterministic.')
+        parser.add_argument('--threads', type=str, default='0', help='[0] Sets the amount of threads used for IntaRNA.')
+        parser.add_argument('--randSeed', type=str, default=None,
+                            help='Random seed to make sequence shuffling and thus output deterministic.')
 
         args = parser.parse_args(test_args)
 
@@ -130,6 +132,10 @@ class IntaRNApvalue:
         if os.path.exists(args.target):
             args.target = self.read_fasta_file(args.target)
 
+        if args.parameterFile && !os.path.exists(args.parameterFile):
+            print("Cannot find provided parameter file '"+args.parameterFile+"'")
+            sys.exit(1)
+
         if False in [n in allowed for n in args.query.upper()] or False in [n in allowed for n in args.target.upper()]:
             print('A sequence you specified contains illegal characters, allowed: G, A, C, U (T)')
             sys.exit(1)
@@ -139,7 +145,7 @@ class IntaRNApvalue:
         for key, value in args.__dict__.items():
             self.__setattr__(key, value)
 
-        random.seed(a=args.seed)
+        random.seed(a=args.randSeed)
 
     @staticmethod
     def read_fasta_file(filename: str) -> str:
