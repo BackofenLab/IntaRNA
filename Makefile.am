@@ -14,7 +14,7 @@ PERSONALITIES=@PERSONALITIES@
 # create tool links to activate respective personalities
 install-exec-hook:
 	@echo " => creating personality links" 
-	@cd $(DESTDIR)$(bindir); \ 
+	@cd $(DESTDIR)$(bindir); \
 	for p in @PERSONALITIES@; do \
 		$(LN_S) -f IntaRNA$(EXEEXT) $$p$(EXEEXT); \
 	done
