@@ -132,7 +132,7 @@ class IntaRNApvalue:
         if os.path.exists(args.target):
             args.target = self.read_fasta_file(args.target)
 
-        if args.parameterFile && !os.path.exists(args.parameterFile):
+        if args.parameterFile and not os.path.exists(args.parameterFile):
             print("Cannot find provided parameter file '"+args.parameterFile+"'")
             sys.exit(1)
 
@@ -206,6 +206,9 @@ class IntaRNApvalue:
         scores = []
         missing = self.n
         non_interactions = 0
+        paramFile = ""
+        if self.parameterFile :
+            paramFile = "--parameterFile="+self.parameterFile
 
         while missing > 0:
             if self.shuffle_query and self.shuffle_target:  # shuffle both
@@ -221,10 +224,11 @@ class IntaRNApvalue:
                 target = 'STDIN'
                 shuffles = self.to_fasta(self.shuffle_sequence(self.target, missing))
 
-            p = Popen([self.bin, '-q', query, '-t', target, '--outMode=C', '--outCsvCols=E', '--threads', self.threads],
+            p = Popen([self.bin, '-q', query, '-t', target, '--outMode=C', '--outCsvCols=E', '--threads', self.threads, paramFile],
                       stdout=PIPE, stdin=PIPE, universal_newlines=True)
             stdout, stderr = p.communicate(input=shuffles)  # send shuffles as STDIN
             if p.returncode:  # If IntaRNA exits with a returncode != 0, skip this iteration
+                print("IntaRNA failed (ret={})".format(p.returncode))
                 continue
             stdout = stdout.split('\n')  # split on newline
             del stdout[0], stdout[-1]  # remove first element aka 'E' and trailing newline element
