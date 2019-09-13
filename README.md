@@ -934,14 +934,18 @@ by thermodynamics.
 ### IntaRNAsTar
 
 **IntaRNAsTar** provides optimized parameters for large scale (genome-wide) sRNA
-target prediction identified via the benchmarking introduced in our publication 
+target prediction identified via the benchmark introduced in our publication 
 (Raden et al., 2019). This covers
 
 - [no GU base pairs in seeds](#seed)
 - [minimal unpaired probability of 0.001 of seed regions](#seed)
 - [maximal interaction length of 60](#interConstr)
 - [maximal interior loop size of 8](#energy)
-- [minimal unpaired probability of 0.001 of interacting reginos](#interConstr)
+- [minimal unpaired probability of 0.001 of interacting regions](#interConstr)
+
+Furthermore, it ensures 
+- [no GU base pairs at helix or interaction ends](#interConstr)
+- [no lonely base pairs](#interConstr)
 
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
@@ -1002,6 +1006,10 @@ Another stability constraint is `--outNoLP`, which forbids lonely, i.e. non-stac
 inter-molecular base pairs. These are typically not contributing much to the
 overall stability and can lead to instable subinteractions when e.g. enclosed
 by two large interior loops.
+
+In addition, with `--outNoGUend` one can prohibit weak `GU` base pairs at 
+interaction ends and within interior loops.
+That way, only stable inter-molecular helix ends are considered.
 
 If you are only interested in predictions for highly accessible regions, i.e.
 with a high probability to be unpaired, you can use the `--outMinPu` parameter.

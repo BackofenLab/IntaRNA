@@ -22,7 +22,7 @@ class IntaRNApvalue:
         self.bin = self.find_binary()
         self.query = ''
         self.target = ''
-        self.cardinality = 0
+        self.samples = 0
         self.shuffle_query = False
         self.shuffle_target = False
         self.threads = ''
@@ -83,7 +83,7 @@ class IntaRNApvalue:
         'AGGAUG'
         >>> i.target
         'UUUAUCGUU'
-        >>> i.cardinality
+        >>> i.samples
         10
         >>> i.shuffle_query
         True
@@ -109,7 +109,7 @@ class IntaRNApvalue:
         parser = argparse.ArgumentParser(description='Calculates p-values of IntaRNA energy scores.')
         parser.add_argument('-q', '--query', dest='query', type=str, help='Query sequence', required=True)
         parser.add_argument('-t', '--target', dest='target', type=str, help='Target sequence', required=True)
-        parser.add_argument('-c', '--cardinality', dest='cardinality', type=int, required=True,
+        parser.add_argument('-s', '--samples', dest='samples', type=int, required=True,
                             help='How many sequence pairs are randomly permuted and considered for p-value calculation.')
         parser.add_argument('-m', '--shuffle-mode', dest='shuffleMode', required=True, choices=['q', 't', 'b'],
                             help='Which sequences are going to be shuffled: both, query only or target only.')
@@ -205,7 +205,7 @@ class IntaRNApvalue:
     def get_scores(self) -> Tuple[List[float], int]:
         """Calculates n IntaRNA energy scores from random sequences with given parameters as class variables"""
         scores = []
-        missing = self.cardinality
+        missing = self.samples
         non_interactions = 0
         paramFile = ""
         if self.parameterFile :
@@ -234,7 +234,7 @@ class IntaRNApvalue:
             stdout = stdout.split('\n')  # split on newline
             del stdout[0], stdout[-1]  # remove first element aka 'E' and trailing newline element
             scores.extend(stdout)  # add elements to scores
-            missing = self.cardinality - len(scores)
+            missing = self.samples - len(scores)
             non_interactions += missing  # count non-interactions
 
         # return list with all elements as float and amount of non-interactions

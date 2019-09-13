@@ -82,7 +82,7 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 		if (j2 > seedLastPos2) continue;
 		const E_type seedEhybrid = seedHandler.getSeedE(i1,i2) + energy.getE_init();
 		// report seed energy (including initialization term)
-		updateOptima( i1, j1, i2, j2, seedEhybrid, true, false );
+		updateOptima( i1, j1, i2, j2, seedEhybrid, true, true );
 	}
 
 	// report mfe interaction

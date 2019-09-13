@@ -57,7 +57,74 @@ public:
 	void setOffset2(size_t offset2);
 
 
-	///////////////  OVERWRITTEN MEMBERS USING OFFSET  /////////////////
+	/**
+	 * Provides the overall energy for an interaction from [i1,j1] in the first
+	 * sequence and [i2,j2] in the second sequence given the hybridization
+	 * energy contribution.
+	 *
+	 * @param i1 the index of the first sequence interacting with i2
+	 * @param j1 the index of the first sequence interacting with j2 with i1<=j1
+	 * @param i2 the index of the second sequence interacting with i1
+	 * @param j2 the index of the second sequence interacting with j1 with i2<=j2
+	 * @param hybridE the hybridization energy for the interaction
+	 *
+	 * @return E = hybridE
+	 * 				+ ED1(i1,j1) + ED2(i2,j2)
+	 * 				+ Edangle(i1,i2) + Edangle(j1,j2)
+	 * 				+ Eend(i1,i2) + Eend(j1,j2)
+	 */
+	virtual
+	E_type
+	getE( const size_t i1, const size_t j1
+			, const size_t i2, const size_t j2
+			, const E_type hybridE ) const;
+
+	/**
+	 * Provides the ensemble energy for a given partition function Z.
+	 *
+	 * @param Z the ensemble's partition function to convert
+	 *
+	 * @return E = -RT * log( Z )
+	 */
+	virtual
+	E_type
+	getE( const Z_type Z ) const;
+
+	/**
+	 * Checks whether or not two positions (shifted by offset) can form a base pair
+	 * @param i1 index in first sequence
+	 * @param i2 index in second sequence
+	 * @return true if seq1(i1) can form a base pair with seq2(i2)
+	 */
+	virtual
+	bool
+	areComplementary( const size_t i1, const size_t i2 ) const;
+
+	/**
+	 * Checks whether or not two positions can form a GU base pair
+	 * @param i1 index in first sequence
+	 * @param i2 index in second sequence
+	 * @return true if seq1(i1) can form a GU base pair with seq2(i2)
+	 */
+	virtual
+	bool
+	isGU( const size_t i1, const size_t i2 ) const;
+
+	/**
+	 * Length of sequence 1 excluding the index offset
+	 * @return length of sequence 1 excluding index offset
+	 */
+	virtual
+	size_t
+	size1() const;
+
+	/**
+	 * Length of sequence 2 excluding index offset
+	 * @return length of sequence 2 excluding index offset
+	 */
+	virtual
+	size_t
+	size2() const;
 
 	/**
 	 * Provides the ED penalty for making a region with sequence 1 accessible
@@ -111,31 +178,26 @@ public:
 	isAccessible2( const size_t i ) const;
 
 	/**
-	 * Checks whether or not two positions (shifted by offset) can form a base pair
-	 * @param i1 index in first sequence
-	 * @param i2 index in second sequence
-	 * @return true if seq1(i1) can form a base pair with seq2(i2)
+	 * Provides the energy contribution of an interaction site gap, i.e. the
+	 * provided regions are without intermolecular base pairs but are considered
+	 * to be involved in intramolecular base pairs only. The multi-site gap is
+	 * scored according to a multiloop in a single structure prediction model.
+	 * The ends of the two regions are supposed to form an intermolecular base
+	 * pair each, i.e. (i1,i2) and (j1,j2) have to be complementary.
+	 *
+	 * @param i1 the start of the structured region of seq1
+	 * @param j1 the end of the structured region of seq1
+	 * @param i2 the start of the structured region of seq2
+	 * @param j2 the end of the structured region of seq2
+	 * @param ES_mode defines for which sequence intramolecular structure
+	 *          contributions are to be considered
+	 * @return the energy contribution of a multi-site interaction gap
 	 */
 	virtual
-	bool
-	areComplementary( const size_t i1, const size_t i2 ) const;
-
-
-	/**
-	 * Length of sequence 1 excluding the index offset
-	 * @return length of sequence 1 excluding index offset
-	 */
-	virtual
-	size_t
-	size1() const;
-
-	/**
-	 * Length of sequence 2 excluding index offset
-	 * @return length of sequence 2 excluding index offset
-	 */
-	virtual
-	size_t
-	size2() const;
+	E_type
+	getE_multi(  const size_t i1, const size_t j1
+				, const size_t i2, const size_t j2
+				, const ES_multi_mode ES_mode ) const;
 
 	/**
 	 * Provides the ensemble energy (ES) of all intramolecular substructures
@@ -347,6 +409,14 @@ public:
 	getPr_danglingRight( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const;
 
 
+
+	/**
+	 * Access to the normalized temperature for Boltzmann weight computation
+	 */
+	virtual
+	Z_type
+	getRT() const;
+
 	/**
 	 * Provides the base pair encoding for the given indices after shifting by
 	 * the used offset
@@ -380,41 +450,25 @@ public:
 
 
 	/**
-	 * Access to the normalized temperature for Boltzmann weight computation
+	 * Checks whether or not the given indices mark valid internal loop
+	 * boundaries, i.e.
+	 *  - (i1,i2) and (j1,j2) are complementary
+	 *  - i1..j1 and i2..j2 are allowed loop regions
+	 *  - no boundary overlap ( (j1-i1==0 && j2-i2==0) || (j1-i1>0 && j2-i2>0) )
+	 *  - if !internalLoopGU : both ends are no GU base pairs
+	 *
+	 * @param i1 the index of the first sequence interacting with i2
+	 * @param j1 the index of the first sequence interacting with j2 with i1<=j1
+	 * @param i2 the index of the second sequence interacting with i1
+	 * @param j2 the index of the second sequence interacting with j1 with i2<=j2
+	 *
+	 * @return true if the boundaries are sound for internal loop calculation;
+	 *         false otherwise
 	 */
 	virtual
-	Z_type
-	getRT() const;
+	bool
+	isValidInternalLoop( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const;
 
-
-	/**
-	 * Provides the best energy gain via stacking possible for this energy
-	 * model
-	 * @return the best stacking energy gain produced by getE_interLoop()
-	 */
-	virtual
-	E_type
-	getBestE_interLoop() const;
-
-	/**
-	 * Provides the best energy gain possible for left/right dangle
-	 * for this energy model
-	 * @return the best initiation energy gain produced by getE_danglingLeft() or
-	 *          getE_danglingRight()
-	 */
-	virtual
-	E_type
-	getBestE_dangling() const;
-
-	/**
-	 * Provides the best energy gain possible for left/right interaction ends
-	 * for this energy model
-	 * @return the best end energy gain produced by getE_endLeft() or
-	 *          getE_endRight()
-	 */
-	virtual
-	E_type
-	getBestE_end() const;
 
 protected:
 
@@ -552,6 +606,16 @@ InteractionEnergyIdxOffset::
 isAccessible2( const size_t i ) const
 {
 	return energyOriginal.isAccessible2(i+offset2);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+InteractionEnergyIdxOffset::
+isGU( const size_t i1, const size_t i2 ) const
+{
+	return energyOriginal.isGU( i1+offset1, i2+offset2);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -767,9 +831,9 @@ getRT() const
 inline
 E_type
 InteractionEnergyIdxOffset::
-getBestE_interLoop() const
+getE( const Z_type Z ) const
 {
-	return energyOriginal.getBestE_interLoop();
+	return energyOriginal.getE( Z );
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -777,9 +841,11 @@ getBestE_interLoop() const
 inline
 E_type
 InteractionEnergyIdxOffset::
-getBestE_dangling() const
+getE( const size_t i1, const size_t j1
+		, const size_t i2, const size_t j2
+		, const E_type hybridE ) const
 {
-	return energyOriginal.getBestE_dangling();
+	return energyOriginal.getE( i1+offset1, j1+offset1, i2+offset2, j2+offset2, hybridE );
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -787,12 +853,26 @@ getBestE_dangling() const
 inline
 E_type
 InteractionEnergyIdxOffset::
-getBestE_end() const
+getE_multi(  const size_t i1, const size_t j1
+			, const size_t i2, const size_t j2
+			, const ES_multi_mode ES_mode ) const
 {
-	return energyOriginal.getBestE_end();
+	return energyOriginal.getE_multi( i1+offset1, j1+offset1, i2+offset2, j2+offset2, ES_mode );
 }
 
 ////////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+InteractionEnergyIdxOffset::
+isValidInternalLoop( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const
+{
+	return energyOriginal.isValidInternalLoop( i1+offset1, j1+offset1, i2+offset2, j2+offset2 );
+}
+	
+
+////////////////////////////////////////////////////////////////////////////
+
 
 } // namespace
 

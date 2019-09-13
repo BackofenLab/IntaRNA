@@ -205,7 +205,7 @@ fillHybridE()
 			} // w1
 
 			// update mfe if needed
-			updateOptima( i1,curCell->j1, i2,curCell->j2, curCellEtotal, false );
+			updateOptima( i1,curCell->j1, i2,curCell->j2, curCellEtotal, false, true );
 		} // helix
 	} // i2
 	} // i1

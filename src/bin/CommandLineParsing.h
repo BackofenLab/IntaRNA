@@ -625,6 +625,8 @@ protected:
 	bool outBestSeedOnly;
 	//! whether or not only lonely (non-stacked) inter-molecular base pairs are allowed
 	bool outNoLP;
+	//! whether or not GU base pairs are allowed at interaction and helix ends
+	bool outNoGUend;
 	//! the CSV column separator
 	static const std::string outCsvColSep;
 	//! the CSV list separator within individual columns

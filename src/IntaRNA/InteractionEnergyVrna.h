@@ -61,6 +61,8 @@ public:
 	 *          constraints
 	 * @param energyWithDangles whether or not dangling end contributions are
 	 *          considered within overall energies
+	 * @param internalLoopGU whether or not GU base pairs are allowed within
+	 *          internal loops
 	 */
 	InteractionEnergyVrna( const Accessibility & accS1
 					, const ReverseAccessibility & accS2
@@ -70,6 +72,7 @@ public:
 					, const bool initES = false
 					, const E_type energyAdd = Ekcal_2_E(0.0)
 					, const bool energyWithDangles = true
+					, const bool internalLoopGU = true
 				);
 
 	virtual ~InteractionEnergyVrna();
@@ -245,35 +248,6 @@ public:
 	Z_type
 	getRT() const;
 
-	/**
-	 * Provides the minimal energy gain via stacking possible for this energy
-	 * model
-	 * @return the minimal energy possible for any stacking combination
-	 */
-	virtual
-	E_type
-	getBestE_interLoop() const;
-
-	/**
-	 * Provides the minimal energy gain possible for left/right dangling ends
-	 * for this energy model
-	 * @return the best initiation energy gain produced by getDanglingLef() or
-	 *          getE_danglingRight()
-	 */
-	virtual
-	E_type
-	getBestE_dangling() const;
-
-	/**
-	 * Provides the best energy gain possible for left/right interaction ends
-	 * for this energy model
-	 * @return the best end energy gain produced by getE_endLeft() or
-	 *          getE_endRight()
-	 */
-	virtual
-	E_type
-	getBestE_end() const;
-
 protected:
 
 
@@ -365,16 +339,6 @@ InteractionEnergyVrna::
 getRT() const
 {
 	return RT;
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-E_type
-InteractionEnergyVrna::
-getBestE_end() const
-{
-	return (E_type)std::min(0,Evrna_2_E(foldParams->TerminalAU));
 }
 
 ////////////////////////////////////////////////////////////////////////////

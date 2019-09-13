@@ -107,15 +107,6 @@ protected:
 	//! NOTE: the indices for seq2 are reversed
 	std::pair< IndexRangeList, IndexRangeList > reportedInteractions;
 
-	//! minimal stacking energy
-	const E_type minStackingEnergy;
-	//! minimal interaction initiation energy
-	const E_type minInitEnergy;
-	//! minimal dangling end energy
-	const E_type minDangleEnergy;
-	//! minimal interaction end energy
-	const E_type minEndEnergy;
-
 	/**
 	 * Initializes the global energy minimum storage
 	 */
@@ -141,7 +132,7 @@ protected:
 				, const size_t i2, const size_t j2
 				, const E_type energy
 				, const bool isHybridE
-				, const bool incrementZall = true );
+				, const bool incrementZall );
 
 
 	/**

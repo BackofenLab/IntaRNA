@@ -397,7 +397,7 @@ add( const Interaction & i )
 		} // detailed
 
 		// ensemble output if available
-		if (!Z_equal(Z,Z_type(0))) {
+		if (!Z_equal(Z,Z_type(0)) && Z_isNotINF(Z)) {
 		outTmp
 			<<"\n"
 			<<"ensemble energy    = "<<E_2_Ekcal(energy.getE(Z)) <<" kcal/mol\n"

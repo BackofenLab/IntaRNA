@@ -35,8 +35,6 @@
 ################################################################################  
 
 190913 Martin Raden :
- * README.md :
-   + gzip compression docu
  * configure.ac :
    * LIBS exended
  * IntaRNA/general :
@@ -44,8 +42,37 @@
      + gzip-compression support enabled
      * fstream replaced with boost::iostreams::filtering_ostream
    + new|deleteInStream : analog to outstream handling to enable gzip support
+ * IntaRNA/InteractionEnergy :
+   - getBestE*() : obsolete
+   * isValidInternalLoop() : now public
+   + internalLoopGU : whether or not GU is allowed in non-stacked interior loops
+   + isInternalLoopGUallowed() : returns internalLoopGU
+   * isValidInternalLoop() :
+     + check internalLoopGU constraint
+ * IntaRNA/Predictor :
+   * updateZall() :
+     + bugfix: additional check for outConstraint.needZall
+ * IntaRNA/PredictorMfe :
+   - min*Energy : obsolete
+ * IntaRNA/PredictorMfe2dHeuristicSeed :
+   * fillHybridE() :
+     * bugfix Zall update : seed-only also if !noLP
+ * IntaRNA/InteractionEnergyIdxOffset : 
+   + bugfix: adding missing offset-based overwrites
+ * IntaRNA/OutputConstraint :
+   + noGUend : whether or not GU is allowed at interaction ends
  * bin/CommandLineParsing :
    * input file handling replaced with new|deleteInStream
+   + outNoGUend : whether or not GU is allowed at interaction and helix ends
+   * IntaRNAsTar :
+     + outNoGUend
+     + outNoLP
+ * README.md :
+   + gzip compression docu
+   + outNoGUend docu
+   * IntaRNAsTar docu
+ * tests :
+   + outNoGUend
 
 190912 Martin Raden :
  + python/intarnapvalue : p-value computation for IntaRNA energy scores
@@ -55,7 +82,6 @@
    + optional enabling of intarnapvalue installation (disabled by default)
  * tests/data/Makefile.am :
    + distribution of all tests ensured
-   
 
 190911 Martin Raden :
  * IntaRNA/SeedHandler :
