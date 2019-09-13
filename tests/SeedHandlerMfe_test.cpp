@@ -29,7 +29,7 @@ TEST_CASE( "SeedHandlerMfe", "[SeedHandlerMfe]") {
 				, IndexRangeList("")
 				, IndexRangeList("")
 				, ""
-				, false
+				, false, false
 				);
 
 		SeedHandlerMfe sHM(energy, sC);

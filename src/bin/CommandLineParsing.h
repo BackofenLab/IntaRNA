@@ -48,16 +48,19 @@ public:
 		NOT_PARSED_YET = 999
 	};
 
+	// TODO if extended: also extend both getPersonality() and getPersonalityName()
 	enum Personality {
 		IntaRNA,		// default
+		IntaRNA1,		// IntaRNA v1 like setup
+		IntaRNA2,		// IntaRNA v2 like setup
+		IntaRNA3,		// default IntaRNA v3 setup
 		IntaRNAens,		// ensemble-based prediction
 		IntaRNAsTar,	// sRNA-target prediction (optimized parameter)
 		IntaRNAseed,  	// seed-only predictions
-		IntaRNAblock,  	// helix-block-based predictions
+		IntaRNAhelix,  	// helix-block-based predictions
 		IntaRNAduplex,	// RNAhybrid/RNAduplex-like
 		IntaRNAexact	// RNAup-like exact predictions
 	};
-	// TODO if extended: also extend both getPersonality() and getPersonalityName()
 
 
 	/**
@@ -67,11 +70,17 @@ public:
 	std::string
 	getPersonalityName( Personality p ) {
 		switch(p) {
+		// the following case list is parsed by ROOT/Makefile.am to generate
+		// respective binary links for each personality
+		// thus: keep the one-line format!
 		case IntaRNA : return "IntaRNA";
+		case IntaRNA1 : return "IntaRNA1";
+		case IntaRNA2 : return "IntaRNA2";
+		case IntaRNA3 : return "IntaRNA3";
 		case IntaRNAens : return "IntaRNAens";
 		case IntaRNAsTar : return "IntaRNAsTar";
 		case IntaRNAseed : return "IntaRNAseed";
-		case IntaRNAblock : return "IntaRNAblock";
+		case IntaRNAhelix : return "IntaRNAhelix";
 		case IntaRNAduplex : return "IntaRNAduplex";
 		case IntaRNAexact : return "IntaRNAexact";
 		default : return "unknown";
@@ -191,6 +200,9 @@ public:
 
 	/**
 	 * Provides a newly allocated output handler according to the user request.
+	 *
+	 * Furthermore, it checks whether Zall has to be computed to generate the
+	 * output.
 	 *
 	 * @param energy the energy handler used for interaction computation
 	 *
@@ -557,6 +569,8 @@ protected:
 	NumberParameter<E_kcal_type> seedMaxEhybrid;
 	//! whether or not GU base pairs are allowed within seeds
 	bool seedNoGU;
+	//! whether or not GU base pairs are allowed at seed ends
+	bool seedNoGUend;
 	//! intervals in query for seed search
 	std::string seedQRange;
 	//! intervals in target for seed search
@@ -627,6 +641,8 @@ protected:
 	bool outPerRegion;
 	//! for SpotProb output : spots to be tracked
 	std::string outSpotProbSpots;
+	//! whether or not Zall is needed for output generation
+	mutable bool outNeedsZall;
 
 	//! (optional) file name for log output
 	std::string logFileName;
@@ -647,6 +663,40 @@ protected:
 	 * @return true if stdinUsed was false so far; false otherwise (error logged)
 	 */
 	bool setStdinUsed();
+
+
+	/**
+	 * resets the default value of a parameter member to the given value.
+	 * if the value is changed, a respective VLOG output is produced.
+	 * @param param the parameter member to update
+	 * @param value the new default value to set
+	 * @param paramName the name of the parameter as used in the CLI
+	 */
+	template <typename Param, typename Value>
+	void
+	resetParamDefault( Param & param, Value value, const std::string & paramName ) {
+		if (param.def != value) {
+			param.def = value;
+			VLOG(1) <<"  "<<paramName<<"=" <<value;
+		}
+	}
+
+	/**
+	 * resets the default value of a parameter member to the given value.
+	 * if the value is changed, a respective VLOG output is produced.
+	 * @param param the parameter member to update
+	 * @param value the new default value to set
+	 * @param paramName the name of the parameter as used in the CLI
+	 */
+	template <typename ParamType>
+	void
+	resetParamDefault( ParamType & param, ParamType value, const std::string & paramName ) {
+		if (param != value) {
+			param = value;
+			VLOG(1) <<"  "<<paramName<<"=" <<value;
+		}
+	}
+
 
 	////////////  INDIVIDUAL TESTS  //////////////////
 

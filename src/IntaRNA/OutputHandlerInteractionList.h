@@ -31,9 +31,14 @@ public:
 
 public:
 
-	//! empty construction of empty container
-	//! @param maxToStore the maximal number of (best) elements to be stored
-	OutputHandlerInteractionList( const size_t maxToStore);
+	/**
+	 * construction of empty container
+	 * @param maxToStore the maximal number of (best) elements to be stored
+	 * @param outConstraint the output constraint applied to find the reported
+	 *        interaction
+	 */
+	OutputHandlerInteractionList( const OutputConstraint & outConstraint
+								, const size_t maxToStore);
 
 	//! destruction
 	virtual ~OutputHandlerInteractionList();
@@ -42,13 +47,10 @@ public:
 	 * Adds a given RNA-RNA interaction to the storage/output.
 	 *
 	 * @param interaction the interaction to add
-	 * @param outConstraint the output constraint applied to find the reported
-	 *        interaction
 	 */
 	virtual
 	void
-	add( const Interaction & interaction
-		, const OutputConstraint & outConstraint );
+	add( const Interaction & interaction );
 
 	//! whether or not the container is empty
 	//! @return true if no elements are stored

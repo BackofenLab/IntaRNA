@@ -11,7 +11,7 @@
 
 using namespace IntaRNA;
 
-TEST_CASE( "OutputHandlerCsvSorted", "[OutputHandlerCsvSorted]" ) {
+TEST_CASE( "OutputStreamHandlerSortedCsv", "[OutputStreamHandlerSortedCsv]" ) {
 
 	// setup easylogging++ stuff if not already done
 	#include "testEasyLoggingSetup.icc"

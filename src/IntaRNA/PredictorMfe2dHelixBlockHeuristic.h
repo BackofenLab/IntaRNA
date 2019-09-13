@@ -57,14 +57,12 @@ public:
 	 *
 	 * @param r1 the index range of the first sequence interacting with r2
 	 * @param r2 the index range of the second sequence interacting with r1
-	 * @param outConstraint constrains the interactions reported to the output handler
 	 *
 	 */
 	virtual
 	void
 	predict( const IndexRange & r1 = IndexRange(0,RnaSequence::lastPos)
-			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos)
-			, const OutputConstraint & outConstraint = OutputConstraint() );
+			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos) );
 
 protected:
 
@@ -100,7 +98,7 @@ protected:
 	 */
 	virtual
 	void
-	traceBack( Interaction & interaction, const OutputConstraint & outConstraint );
+	traceBack( Interaction & interaction );
 
 	/**
 	 * Identifies the next best interaction with an energy equal to or higher
@@ -115,6 +113,22 @@ protected:
 	virtual
 	void
 	getNextBest( Interaction & curBest );
+
+	/**
+	 * Overwrites function of super class to surpress the update.
+	 *
+	 * @param i1 interaction start in seq1
+	 * @param j1 interaction end in seq1
+	 * @param i2 interaction start in seq2
+	 * @param i2 interaction end in seq2
+	 * @param curInteraction the interaction information to be used for update
+	 */
+	virtual
+	void
+	updateMfe4leftEnd(const size_t i1, const size_t j1
+					, const size_t i2, const size_t j2
+					, const Interaction & curInteraction );
+
 };
 
 } // namespace

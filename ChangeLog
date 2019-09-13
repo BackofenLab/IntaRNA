@@ -6,7 +6,311 @@
 #
 ################################################################################
 
-development version
+################################################################################
+# changes in development version since last release 
+################################################################################
+
+# IntaRNA
++ Zall (estimates) and derived output now available for all prediction models
++ outMode=E : report of ensemble information only
+* ensemble-based prediction revised
+* seed-extension-based prediction revised
++ --seedNoGUend : prohibit GU base pairs at seed ends
++ outNoLP support in all prediction modes
+* FASTA input: sequence id = prefix up to first whitespace from FASTA header
+* new default for outOverlap = B: overlapping output enabled (was Q)
++ gzip-compressed file input/output if file name ends in '.gz'
+
+# package
++ (optional) intarnapvalue python3 module to compute p-values of IntaRNA mfe
+  predictions based on sequence shuffling and distribution fitting 
+
+# API
+* OutputHandler requires an OutputConstraint instances in construction
+* Predictor objects now access OutputConstraint instances via the OutputHandler;
+  this simplifies the signature of the member functions
+* OutputConstraint now guides whether or not Zall is required for output
+
+################################################################################  
+################################################################################  
+
+190913 Martin Raden :
+ * README.md :
+   + gzip compression docu
+ * configure.ac :
+   * LIBS exended
+ * IntaRNA/general :
+   * new|deleteOutStream :
+     + gzip-compression support enabled
+     * fstream replaced with boost::iostreams::filtering_ostream
+   + new|deleteInStream : analog to outstream handling to enable gzip support
+ * bin/CommandLineParsing :
+   * input file handling replaced with new|deleteInStream
+
+190912 Martin Raden :
+ + python/intarnapvalue : p-value computation for IntaRNA energy scores
+   (thanks to Fabio Gutmann)
+ * configure :
+   + check for python >= 3.6
+   + optional enabling of intarnapvalue installation (disabled by default)
+ * tests/data/Makefile.am :
+   + distribution of all tests ensured
+   
+
+190911 Martin Raden :
+ * IntaRNA/SeedHandler :
+   * isFeasibleSeedBasePair() : now virtual and public
+ * IntaRNA/SeedHandlerIdxOffset :
+   + addSeeds() 
+   + isFeasibleSeedBasePair()
+   + areLoopOverlapping()
+ * IntaRNA/PredictorMfe2dSeedExtension :
+   * traceBack() :
+     * trace order optimized
+ * IntaRNA/PredictorMfeEns2dSeedExtensionHeuristic :
+   * fill*() : reduced to updateZ() calls to reduce code redundancy 
+
+190910 Martin Raden :
+ * IntaRNA/PredictorMfe2d*SeedExtension :
+   + noLP support
+ + tests for noLP seed extension (model=X)
+ * bin/CommandLineParsing :
+   * parseSequencesFasta() :
+     * name = FASTA header prefix up to first whitespace
+ * IntaRNA/PredictorMfe :
+   + HashIdx2E : hash for base pair to BestInteractionE objects
+   + mfe4leftEnd : (optional) hash to store best interaction for left boundary;
+     filled by updateMfe4leftEnd()
+   + updateMfe4leftEnd() : updates mfe4leftEnd
+   * getNextBest() :
+     + default implementation based on mfe4leftEnd
+   * updateOptima() :
+     + calls updateMfe4leftEnd() if outconstraint.reportOverlap != BOTH
+   * exact + seed-extension predictors :
+     - getNextBest() dummy functions : obsolete
+     - outConstraint.reportOverlap != BOTH error : obsolete
+   * heuristic non-seed-extension predictors :
+     + updateMfe4leftEnd() : dummy function to avoid mfe4leftEnd updates; since
+       local getNextBest() is based on local data member 
+ + tests for outOverlap=NQTB (model=X)
+
+190909 Martin Raden :
+ * Makefile.am :
+   - explicit personality list for link generation; replaced by
+   + automatic link generation for each personality
+ * IntaRNA/OutputHandlerCsv : 
+   + 'w' = Boltzmann weight output
+ * IntaRNA/Predictor :
+   + updateZall() : updates Zall with a given interaction energy
+ * IntaRNA/PredictorMfe :
+   * updateOptima() :
+     + calls updateZall() if needed
+ * IntaRNA/PredictorMfe2dHeuristic :
+   + update of Zall
+ * IntaRNA/PredictorMfe2dHeuristicSeed :
+   * bugfix Zall update
+ * IntaRNA/PredictorMfe2dSeed :
+   * bugfix updateOptima() call
+ * IntaRNA/PredictorMfeEns2dHeuristic :
+   * bugfix total energy computation
+   + updateZ() call corrected
+ * IntaRNA/PredictorMfeEns2dSeedHeuristic :
+   * updateZ() call order changed to reduce for-loop iterations
+ * README.md :
+   + w CVS output documentation
+   + E_add CVS output documentation
+   + RT(37Celsius)=0.6163173043012 docu
+
+190906 Martin Raden :
+ * IntaRNA/Interaction
+   + Boundary : 4-tuple of indices to store boundaries of an interaction site
+ * tests/runIntaRNA.sh :
+   * tests are run for all data/*.parameter files (no explicit listing anymore)
+ + tests/*-modelX|S : explicitly testing model=X or =S
+ * IntaRNA/PredictorMfe2dHeuristicSeed :
+   * fillHybridE() : updateOptima() now called for all tested cases to reduce
+     heuristic bias in subopt listing
+ * IntaRNA/PredictorMfeEns :
+   * renaming Z_partitions to Z_partition
+   + updateOptimaUsingZ() : calls updateOptima() for all Z_partition entries
+   + reportOptima() : calls updateOptimaUsingZ() and super class reportOptima()
+   + traceBack() : central traceback for all ensemble-based predictors
+   + BestInteraction template class
+   + BestInteractionE|Z typedefs
+   * Z_partition now hash of Interaction::Boundary keys that map to Z_type
+   - checkKeyBoundaries() : obsolete
+ * IntaRNA/PredictorMfeEns2d :
+   - traceBack()
+   * predict() :
+     - explicit updateOptima() calls
+ * IntaRNA/PredictorMfeEns2dHeuristic :
+   * predict() :
+     - explicit updateOptima() calls
+   * fillHybridZ() :
+     + explicit updateZ() calls for all recursion cases to reduce heuristic bias
+   - BestInteraction : replaced by PredictorMfe::BestInteraction
+ * IntaRNA/PredictorMfe2dSeedExtension :
+   - updateOptima() : obsolete
+   * predict() :
+     + explicit j boundary computation to reduce considered index tuples when
+       updating optima
+ * IntaRNA/PredictorMfe2dSeedExtensionRIblast :
+   - updateOptima() : obsolete
+ * IntaRNA/PredictorMfe2dHeuristicSeedExtension :
+   * rename updateOptima() to updateOptimalRightExt()
+   + updateOptima() called for all tested right extensions
+   + updateOptima() called for all tested seed+leftExtension
+   + extended search range for seed+leftExtension (so far limited by jOptRight)
+ * IntaRNA/PredictorMfeEns2dSeedExtension :
+   - explicit updateOptima() calls
+   * traceBack() : reduced to super class traceBack() call seed addition
+ * IntaRNA/PredictorMfeEns2dHeuristicSeedExtension :
+   - explicit updateOptima() calls
+   + extended search range for seed+leftExtension (so far limited by jOptRight)
+   + updateZ() called for all tested right extensions
+   + updateZ() called for all tested seed+leftExtension
+ * bin/CommandLineParsing :
+   + check for outOverlap=B if window-based computation with subopt output (n>1)
+ * IntaRNA/PredictorMfe2dHeuristic :
+   - BestInteraction : replaced by PredictorMfe::BestInteraction
+ * IntaRNA/SeedConstraint :
+   + bpGUendAllowed + is*() : whether or not GU is allowed at seed ends
+ * IntaRNA/SeedHandler :
+   * isFeasibleBasePair() :
+     + atSeedEnd argument: to enable seed end check if needed
+     + explicit GU-end checks if atSeedEnd==true 
+ * IntaRNA/SeedHandlerMfe :
+   + check for GU ends
+ * IntaRNA/SeedHandlerNoBulge :
+   * storeSeed() : 
+     + check for GU ends
+ * README.md :
+   + seedNoGUend documentation
+ 
+190905 Martin Raden :
+ * IntaRNA/PredictorMfe2dHeuristicSeedExtension :
+   + updateOptima() also for left+seed called (less heuristic bias)
+ * IntaRNA/PredictorMfeEns* : ensemble-mfe prediction revised
+
+190830 Martin Raden :
+ + IntaRNA/OutputHandlerEnsemble : reports ensemble information only
+
+190828 Martin Raden :
+ * Makefile.am :
+   + show test log if tests failed
+ * IntaRNA/OutputHandler* :
+   * bugfix: outConstraint was reference instead of full object
+
+190827 Martin Raden :
+ * IntaRNA/OutputConstraint :
+   + needZall : whether or not Zall is needed for output generation
+ * IntaRNA/OutputHandler* :
+   + outConstraint : OutputConstraint to be heeded
+   * constructor : required OutputConstraint object
+   * add() : outConstraint parameter obsolete
+ * IntaRNA/OutputHandlerCsv :
+   + needsZall() : checks whether or not the requested column types require Zall
+ * IntaRNA/Predictor* :
+   * outConstraint parameter in member functions obsolete
+ * bin/CommandLineParsing :
+   + outNeedsZall : flag to check whether or not Zall is needed for output
+ * IntaRNA/Predictor :
+   + Zall : overall partition function
+   * updateOptima( ..., incrementZall = true ) : Zall is incremented
+     if output.outConstraint.needZall == true
+   + getZall() : access to overall partition function
+   + incrementZall() : increments Zall (+ overflow check in debug mode)
+   * reportOptima() :
+     + calls output.incrementZ()
+   * initOptima() :
+     + init of Zall if needed
+ * IntaRNA/PredictorMfeEns :
+   - overallZ : replaced by Predictor::Zall
+   - reportOptima() : obsolete
+ * IntaRNA/PredictorMfeEns* :
+   * call of updateOptima( ..., incrementZall = false ) to avoid duplicated Zall
+     updates
+   * initZ() : - no init of Zall
+
+##### version 3.0.0
+
++ personality
+  + IntaRNA1,2,3
+  + IntaRNAexact
+  + IntaRNAhelix
+  + IntaRNAduplex
++ outNoLP
++ outCsvSort
++ output of all putative seeds (unless outMode=N or outBestSeedOnly)
++ seed bps are highlighted with '+' in text output mode (minimal + detailed)
+* model=X : new default = seed-extension-based prediction
++ model=P
++ support for multi-precision Z (via GNU quadmath library) : configure
++ mode=S
++ energyNoDangles
++ parameterFile
++ seedNoGU
++ seedMaxEhybrid
++ helixMinPu (replaces helixMaxED)
++ helixFullE : replaces helixNoED
++ model=B (replaces L)
+* reporting best (mfe) seed per interaction
+* outMode=C
+  + sorting
+  + columns Eall, Zall, P_E
+  * marker "NAN" for not available values
+* outMode=D
+  * index ranges without whitespaces, i.e. "1--5" instead of "1 -- 5"
+  + highlighting of all bps part of putative seeds
+  * gaped loop positions now represented by '-'
+* E_type now int (was float)
+- IntaRNA v1 output support not continued
+
+###############################
+
+190809 Martin Raden :
+ * IntaRNA/general :
+   * deleteOutStream() :
+     * now reference to stream pointer to ensure update of original pointer
+   * E_INF = INTMAX / 8 (to ensure correct boundary checks in predictors)
+ * IntaRNA/OutputStreamHandlerSortedCsv :
+   * destructor() :
+     * BUGFIX: double deletion of outstream (fixes #157)
+ * IntaRNA/PredictorMfe2dSeed :
+   * traceback() :
+     * BUGFIX noLP traceback (fixes #153)
+ * IntaRNA/OutputHandlerText :
+   * add():
+     * non-existing positions in loops are now represented by '-' symbol (#155)
+     * always highlight seed bps with '+'
+ * bin/CommandLineParsing :
+   + resetParamDefault() : resets a parameter's default value and reports VLOG
+   + IntaRNA1 personality: defaults similar to v1
+   + IntaRNA2 personality: old v2 defaults
+   + IntaRNA3 personality: IntaRNA alias
+ * tests/data/*.parameter :
+   * adapt to new default model=X (was S)
+ + tests/data/Makefile.am : add test data to distribution
+
+190808 Martin Raden :
+ * renaming personality IntaRNAblock to IntaRNAhelix (since used in resp. paper)
+
+190716 Martin Raden :
+ * bin/CommandLineParsing :
+   * IntaRNAexact :
+     + model=X
+     + exact accessibility computation (*AccW = *AccL = 0)
+
+190716 Martin Raden :
+ * IntaRNA/Accessibility :
+   * decomposeByMaxED( ranges ) : 
+     + additional parameter for minimal range length
+ * bin/CommandLineParsing :
+   - high memory warning disabled
+   + set seedBP for minimal range length of range decomposition
+ * IntaRNA/IndexRange :
+   * overlappingWindows :
+     * bugfix: check for non-ascending was not using "!isAscending()"
 
 190607 Martin Raden :
  * IntaRNA/general :
@@ -571,13 +875,13 @@ development version
    * initHybridE() : 
      - E_MAX since it was masking global variable with wrong value
 
-version 2.4.1
+##### version 2.4.1
 
 190409 Martin Raden :
  * IntaRNA/Makefile :
    + add missing HelixConstraint.h (thanks to A. R. Garcia and M. Fuchs)
 
-version 2.4.0
+##### version 2.4.0
 
 190228 Martin Raden :
  * easylogging++ :
@@ -665,7 +969,7 @@ version 2.4.0
    * windowOverlap : default changed to 150 (was 0) to avoid the need to set for
      default q|tAccW values
 
-version 2.3.1
+##### version 2.3.1
 
 181108 Martin Raden :
  + IntaRNA/PredictionTrackerSpotProbAll : exhaustively computes and prints all
@@ -686,7 +990,7 @@ version 2.3.1
  * README.md : 
    + 'hybridD(P|B)full' documentation
 
-version 2.3.0
+##### version 2.3.0
 
 180906 Martin Raden :
  * bin/CommandLineParsing :
@@ -782,7 +1086,7 @@ version 2.3.0
  * README.md : 
    + docu of spot probability profiles 
  
-version 2.2.1
+##### version 2.2.1
 
 180627 Martin Raden / Milad Miladi :
  * adaptation to VRNA v2.4.8
@@ -800,7 +1104,7 @@ version 2.2.1
  * bin/CommandLineParsing :
    * "version" output extended with used VRNA and boost version
      
-version 2.2.0
+##### version 2.2.0
 
 180319 Martin Raden :
  * IntaRNA/PredictorMfe2dHeuristic :
@@ -1137,7 +1441,7 @@ version 2.2.0
    + log-file handling
    + flushing log streams on exit
 
-version 2.1.0
+##### version 2.1.0
 
 171010 Martin Raden :
  * README.md :
@@ -1212,7 +1516,7 @@ version 2.1.0
  * bin/IntaRNA : 
    * adaptation to new easylogging++ version and library
 
-version 2.0.5
+##### version 2.0.5
 
 170926 Martin Raden :
  * IntaRNA/PredictorMfe4d :
@@ -1230,7 +1534,7 @@ version 2.0.5
          seeded interactions and thus not complementary with the predicted
          interactions
 
-version 2.0.4
+##### version 2.0.4
 
 170706 Martin Raden :
  * IntaRNA/OutputHandlerCsv :
@@ -1253,7 +1557,7 @@ version 2.0.4
        (thanks to Milad Miladi)
      * sequence index now suffix of filename (added in front of file extension) 
 
-version 2.0.3
+##### version 2.0.3
 
 170503 Martin Mann :
  * README.md :
@@ -1291,7 +1595,7 @@ version 2.0.3
      * bugfix : reinit was not overwriting all hybridE_seed entries 
        (thanks to Alex Gawronski)
 
-version 2.0.2
+##### version 2.0.2
 
 170328 Martin Mann :
  * PredictorHeuristic* :

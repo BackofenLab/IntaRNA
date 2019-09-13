@@ -74,6 +74,8 @@ OutputStreamHandlerSortedCsv::
 	// flush output
 	outStream->flush();
 
+	// disconnect outstream to avoid double deletion
+	outStream = NULL;
 	// delete wrapped handler
 	INTARNA_CLEANUP(outStreamHandler);
 }

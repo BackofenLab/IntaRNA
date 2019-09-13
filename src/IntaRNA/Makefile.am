@@ -47,6 +47,7 @@ libIntaRNA_a_HEADERS =    \
 					OutputStreamHandlerSortedCsv.h \
 					OutputHandler.h \
 					OutputHandlerCsv.h \
+					OutputHandlerEnsemble.h \
 					OutputHandlerHub.h \
 					OutputHandlerInteractionList.h \
 					OutputHandlerText.h \
@@ -111,6 +112,7 @@ libIntaRNA_a_SOURCES =    \
 					OutputConstraint.cpp \
 					OutputStreamHandlerSortedCsv.cpp \
 					OutputHandler.cpp \
+					OutputHandlerEnsemble.cpp \
 					OutputHandlerCsv.cpp \
 					OutputHandlerInteractionList.cpp \
 					OutputHandlerText.cpp \

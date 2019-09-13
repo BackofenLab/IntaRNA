@@ -61,14 +61,12 @@ public:
 	 *
 	 * @param r1 the index range of the first sequence interacting with r2
 	 * @param r2 the index range of the second sequence interacting with r1
-	 * @param outConstraint constrains the interactions reported to the output handler
 	 *
 	 */
 	virtual
 	void
 	predict( const IndexRange & r1 = IndexRange(0,RnaSequence::lastPos)
-			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos)
-			, const OutputConstraint & outConstraint = OutputConstraint() );
+			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos) );
 
 
 protected:
@@ -92,7 +90,7 @@ protected:
 	using PredictorMfe2dSeedExtension::hybridE_right;
 
   //! optimal energy of the right extension
-	E_type energy_opt = E_INF;
+	E_type energy_opt;
 
 	//! boundaries of the right extension with the optimal energy
 	size_t j1opt, j2opt;
@@ -100,7 +98,7 @@ protected:
 protected:
 
 	/**
-	 * updates the mfe and j1opt/j2opt
+	 * updates j1opt/j2opt
 	 *
 	 * @param i1 the index of the first sequence interacting with i2
 	 * @param j1 the index of the first sequence interacting with j2
@@ -111,7 +109,7 @@ protected:
 	 */
 	virtual
 	void
-	updateOptima( const size_t i1, const size_t j1
+	updateOptimalRightExt( const size_t i1, const size_t j1
 			, const size_t i2, const size_t j2
 			, const E_type energy
 			, const bool isHybridE );
@@ -122,40 +120,22 @@ protected:
 	 *
 	 * @param i1 start of the interaction within seq 1
 	 * @param i2 start of the interaction within seq 2
-	 * @param outConstraint constrains the interactions reported to the output handler
 	 *
 	 */
 	void
 	fillHybridE_right( const size_t i1, const size_t i2
-				, const OutputConstraint & outConstraint
 				, const size_t si1, const size_t si2 );
 
 	/**
 	 * Computes all entries of the hybridE matrix for interactions ending in
 	 * p=j1 and q=j2 and report all valid interactions to updateOptima()
 	 *
-   * @param j1 start of the interaction within seq 1
+     * @param j1 start of the interaction within seq 1
 	 * @param j2 start of the interaction within seq 2
-	 * @param outConstraint constrains the interactions reported to the output handler
 	 *
 	 */
 	void
-	fillHybridE_left( const size_t j1, const size_t j2
-				, const OutputConstraint & outConstraint );
-
-	/**
-	 * Identifies the next best interaction with an energy equal to or higher
-	 * than the given interaction. The new interaction will not overlap any
-	 * index range stored in reportedInteractions.
-	 *
-	 * NOTE: this is not possible for this predictor (unless a full recomputation
-	 * of the matrices is done). Thus, calling this method raises an exception.
-	 *
-	 * @param curBest ignored (see method comment)
-	 */
-	virtual
-	void
-	getNextBest( Interaction & curBest );
+	fillHybridE_left( const size_t j1, const size_t j2 );
 
 	void
 	printMatrix( const E2dMatrix & matrix );
@@ -169,13 +149,11 @@ protected:
 inline
 void
 PredictorMfe2dHeuristicSeedExtension::
-updateOptima( const size_t i1, const size_t j1
+updateOptimalRightExt( const size_t i1, const size_t j1
 		, const size_t i2, const size_t j2
 		, const E_type energy
 		, const bool isHybridE )
 {
-	PredictorMfe2dSeedExtension::updateOptima(i1,j1,i2,j2,energy,isHybridE);
-
 	// store boundaries and energy of the optimal right extension
 	E_type fullE = isHybridE ? this->energy.getE(i1,j1,i2,j2,energy) : energy;
 	if (fullE < energy_opt) {

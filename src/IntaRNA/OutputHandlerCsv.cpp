@@ -23,6 +23,7 @@ const OutputHandlerCsv::ColTypeList OutputHandlerCsv::colTypeNumericSort(
 		OutputHandlerCsv::string2list(
 		"start1,end1,start2,end2"
 		",E,ED1,ED2,Pu1,Pu2,E_init,E_loops,E_dangleL,E_dangleR,E_endL,E_endR,E_hybrid,E_norm,E_hybridNorm,E_add"
+		",w"
 		",seedStart1,seedEnd1,seedStart2,seedEnd2,seedE,seedED1,seedED2,seedPu1,seedPu2"
 		",Eall,Zall,P_E"
 		));
@@ -30,14 +31,16 @@ const OutputHandlerCsv::ColTypeList OutputHandlerCsv::colTypeNumericSort(
 ////////////////////////////////////////////////////////////////////////
 
 OutputHandlerCsv::OutputHandlerCsv(
-		  std::ostream & out_
+		const OutputConstraint & outConstraint
+		,  std::ostream & out_
 		, const InteractionEnergy & energy
 		, const ColTypeList columns
 		, const std::string& colSep
 		, const bool printHeader
 		, const std::string& listSep
 		)
- :	out(out_)
+ :	OutputHandler(outConstraint)
+	, out(out_)
 	, energy(energy)
 	, columns(columns)
 	, colSep(colSep)
@@ -75,7 +78,7 @@ OutputHandlerCsv::~OutputHandlerCsv()
 
 void
 OutputHandlerCsv::
-add( const Interaction & i, const OutputConstraint & outConstraint )
+add( const Interaction & i )
 {
 #if INTARNA_IN_DEBUG_MODE
 	// debug checks
@@ -88,6 +91,9 @@ add( const Interaction & i, const OutputConstraint & outConstraint )
 	if (i.basePairs.size() == 0) {
 		return;
 	}
+
+	// count the interaction
+	reportedInteractions++;
 
 	// get interaction start/end per sequence
 	const size_t i1 = i.basePairs.begin()->first;
@@ -240,6 +246,10 @@ add( const Interaction & i, const OutputConstraint & outConstraint )
 
 			case E_add:
 				outTmp <<E_2_Ekcal(contr.energyAdd);
+				break;
+
+			case w:
+				outTmp <<energy.getBoltzmannWeight(i.energy);
 				break;
 
 			case seedStart1:

@@ -69,6 +69,7 @@ extern "C" {
 #include "IntaRNA/OutputStreamHandlerSortedCsv.h"
 
 #include "IntaRNA/OutputHandlerCsv.h"
+#include "IntaRNA/OutputHandlerEnsemble.h"
 #include "IntaRNA/OutputHandlerText.h"
 
 
@@ -132,7 +133,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	tAccConstr(""),
 	tAccFile(""),
 	tIntLenMax( 0, 99999, 0),
-	tIntLoopMax( 0, 30, 16),
+	tIntLoopMax( 0, 30, 10),
 	tRegionString(""),
 	tRegion(),
 	tRegionLenMax( 0, 99999, 0),
@@ -159,13 +160,14 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	seedMinPu(0,1,0),
 	seedMaxEhybrid(-999,+999,999),
 	seedNoGU(false),
+	seedNoGUend(false),
 	seedQRange(""),
 	seedTRange(""),
 	seedConstraint(NULL),
 
 	temperature(0,100,37),
 
-	model( "SPBX", 'S'),
+	model( "SPBX", 'X'),
 	mode( "HMSR", 'H'),  // R for RIblast heuristic only
 #if INTARNA_MULITHREADING
 	threads( 0, omp_get_max_threads(), 1),
@@ -180,9 +182,9 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 
 	out(),
 	outPrefix2streamName(),
-	outMode( "NDC", 'N' ),
+	outMode( "NDCE", 'N' ),
 	outNumber( 0, 1000, 1),
-	outOverlap( "NTQB", 'Q' ),
+	outOverlap( "NTQB", 'B' ),
 	outDeltaE( 0.0, 100.0, 100.0),
 	outMaxE( -999.0, +999.0, 0.0),
 	outMinPu( 0.0, 1.0, 0.0),
@@ -191,6 +193,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	outCsvCols(outCsvCols_default),
 	outPerRegion(false),
 	outSpotProbSpots(""),
+	outNeedsZall(false),
 
 	logFileName(""),
 	configFileName(""),
@@ -200,43 +203,103 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 
 {
 	// report the used personality
-	VLOG(1) <<"I am "<<getPersonalityName(personality)<<" right now ..";
+	VLOG(1) <<"You called me "<<getPersonalityName(personality)<<" ..";
 
 	switch (personality) {
 	case IntaRNA :
+	case IntaRNA3 :
 		// no changes
+		break;
+	case IntaRNA1 :
+		resetParamDefault<>(model, 'S', "model");
+		resetParamDefault<>(mode, 'H', "mode");
+		resetParamDefault<>(outOverlap, 'Q', "outOverlap");
+		resetParamDefault<>(qAccW, 0, "qAccW");
+		resetParamDefault<>(qAccL, 0, "qAccL");
+		resetParamDefault<>(qIntLenMax, 0, "qIntLenMax");
+		resetParamDefault<>(qIntLoopMax, 16, "qIntLoopMax");
+		resetParamDefault<>(tAccW, 0, "tAccW");
+		resetParamDefault<>(tAccL, 0, "tAccL");
+		resetParamDefault<>(tIntLoopMax, 16, "tIntLoopMax");
+#if INTARNA_MULITHREADING
+		resetParamDefault<>(threads, 1, "threads");
+#endif
+		resetParamDefault<>(outBestSeedOnly, true, "outBestSeedOnly");
+		resetParamDefault<>(seedBP, 6, "seedBP");
+		resetParamDefault<>(seedMaxUP, 0, "seedMaxUP");
+		resetParamDefault<>(seedQMaxUP, -1, "seedMaxQUP");
+		resetParamDefault<>(seedTMaxUP, -1, "seedMaxTUP");
+		resetParamDefault<>(seedMaxE, 999, "seedMaxE");
+		resetParamDefault<>(seedMinPu, 0, "seedMinPu");
+		resetParamDefault<>(seedMaxEhybrid, 999, "seedMaxEhybrid");
+		resetParamDefault<>(seedNoGU, false, "seedNoGU");
+		resetParamDefault<>(seedNoGUend, false, "seedNoGUend");
+		break;
+	case IntaRNA2 :
+		// IntaRNA v2 parameters
+		resetParamDefault<>(model, 'S', "model");
+		resetParamDefault<>(mode, 'H', "mode");
+		resetParamDefault<>(outOverlap, 'Q', "outOverlap");
+		resetParamDefault<>(qAccW, 150, "qAccW");
+		resetParamDefault<>(qAccL, 100, "qAccL");
+		resetParamDefault<>(qIntLenMax, 0, "qIntLenMax");
+		resetParamDefault<>(qIntLoopMax, 16, "qIntLoopMax");
+		resetParamDefault<>(tAccW, 150, "tAccW");
+		resetParamDefault<>(tAccL, 100, "tAccL");
+		resetParamDefault<>(tIntLoopMax, 16, "tIntLoopMax");
+#if INTARNA_MULITHREADING
+		resetParamDefault<>(threads, 1, "threads");
+#endif
+		resetParamDefault<>(outBestSeedOnly, true, "outBestSeedOnly");
+		resetParamDefault<>(seedBP, 7, "seedBP");
+		resetParamDefault<>(seedMaxUP, 0, "seedMaxUP");
+		resetParamDefault<>(seedQMaxUP, -1, "seedMaxQUP");
+		resetParamDefault<>(seedTMaxUP, -1, "seedMaxTUP");
+		resetParamDefault<>(seedMaxE, 0, "seedMaxE");
+		resetParamDefault<>(seedMinPu, 0, "seedMinPu");
+		resetParamDefault<>(seedMaxEhybrid, 999, "seedMaxEhybrid");
+		resetParamDefault<>(seedNoGU, false, "seedNoGU");
+		resetParamDefault<>(seedNoGUend, false, "seedNoGUend");
 		break;
 	case IntaRNAens :
 		// ensemble-based predictions
-		model.def = 'P'; VLOG(1) <<" --model=" <<model.def;
+		resetParamDefault<>(model, 'P', "model");
 		break;
-	case IntaRNAblock :
+	case IntaRNAhelix :
 		// helix-block-based predictions
-		model.def = 'B'; VLOG(1) <<" --model=" <<model.def;
+		resetParamDefault<>(model, 'B', "model");
 		break;
 	case IntaRNAduplex :
 		// RNAhybrid/RNAduplex-like optimizing hybrid only
-		qAcc.def = 'N'; VLOG(1) <<" --qAcc=" <<qAcc.def;
-		tAcc.def = 'N'; VLOG(1) <<" --tAcc=" <<tAcc.def;
+		resetParamDefault<>(qAcc, 'N', "qAcc");
+		resetParamDefault<>(tAcc, 'N', "tAcc");
 		break;
 	case IntaRNAexact :
 		// RNAup-like exact predictions
-		mode.def = 'M'; VLOG(1) <<" --mode=" <<mode.def;
-		outOverlap.def = 'B'; VLOG(1) <<" --outOverlap=" <<outOverlap.def;
+		resetParamDefault<>(model, 'X', "model");
+		resetParamDefault<>(mode, 'M', "mode");
+		resetParamDefault<>(outOverlap, 'B', "outOverlap");
+		resetParamDefault<>(qAccW, 0, "qAccW");
+		resetParamDefault<>(qAccL, 0, "qAccL");
+		resetParamDefault<>(qIntLenMax, 60, "qIntLenMax");
+		resetParamDefault<>(tAccW, 0, "tAccW");
+		resetParamDefault<>(tAccL, 0, "tAccL");
+		resetParamDefault<>(tIntLenMax, 60, "tIntLenMax");
 		break;
 	case IntaRNAseed :
-		// RNAup-like
-		mode.def = 'S'; VLOG(1) <<" --mode=" <<mode.def;
+		// seed-only prediction
+		resetParamDefault<>(mode, 'S', "mode");
 		break;
 	case IntaRNAsTar :
+		resetParamDefault<>(outOverlap, 'Q', "outOverlap");
 		// optimized parameters for sRNA-target prediction
-		seedNoGU = true; VLOG(1) <<" --seedNoGU";
-		seedMinPu.def = 0.001; VLOG(1) <<" --seedMinPu="<<seedMinPu.def;
-		tIntLenMax.def = 60; VLOG(1) <<" --tIntLenMax="<<tIntLenMax.def;
-		tIntLoopMax.def = 8; VLOG(1) <<" --tIntLoopMax="<<tIntLoopMax.def;
-		qIntLenMax.def = 60; VLOG(1) <<" --qIntLenMax="<<qIntLenMax.def;
-		qIntLoopMax.def = 8; VLOG(1) <<" --qIntLoopMax="<<qIntLoopMax.def;
-		outMinPu.def = 0.001; VLOG(1) <<" --outMinPu="<<outMinPu.def;
+		resetParamDefault<>(seedNoGU, true, "seedNoGU");
+		resetParamDefault<>(seedMinPu, 0.001, "seedMinPu");
+		resetParamDefault<>(tIntLenMax, 60, "tIntLenMax");
+		resetParamDefault<>(tIntLoopMax, 8, "tIntLoopMax");
+		resetParamDefault<>(qIntLenMax, 60, "qIntLenMax");
+		resetParamDefault<>(qIntLoopMax, 8, "qIntLoopMax");
+		resetParamDefault<>(outMinPu, 0.001, "outMinPu");
 		break;
 	default : // no changes
 		break;
@@ -560,6 +623,10 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 						->default_value(seedNoGU)
 						->implicit_value(true)
 	    		, "if given (or true), no GU base pairs are allowed within seeds")
+	    ("seedNoGUend", value<bool>(&seedNoGUend)
+						->default_value(seedNoGUend)
+						->implicit_value(true)
+	    		, "if given (or true), no GU base pairs are allowed at seed ends")
 		;
 
 	////  SHAPE OPTIONS  ////////////////////////
@@ -722,6 +789,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 					"\n 'N' normal output (ASCII char + energy),"
 					"\n 'D' detailed output (ASCII char + energy/position details),"
 					"\n 'C' CSV output (see --outCsvCols),"
+					"\n 'E' ensemble information"
 					).c_str())
 	    ("outNumber,n"
 			, value<int>(&(outNumber.val))
@@ -872,7 +940,7 @@ parse(int argc, char** argv)
 						LOG(ERROR) <<"Parsing of 'parameterFile' : could not open file  '"<<paramFileName<<"'";
 						updateParsingCode( ReturnCode::STOP_PARSING_ERROR );
 					} else {
-						store( parse_config_file(paramfile, opts_cmdline_all), vm);
+						store( parse_config_file<char>(paramfile, opts_cmdline_all), vm);
 					}
 				} catch (std::exception & ex) {
 					LOG(ERROR) <<"error while parsing of 'parameterFile="<<paramFileName<<"' : "<<ex.what();
@@ -982,12 +1050,17 @@ parse(int argc, char** argv)
 			parseSequences("query",queryArg,query,qSet);
 			parseSequences("target",targetArg,target,tSet);
 
-			// valide accessibility input from file (requires parsed sequences)
+			// validate accessibility input from file (requires parsed sequences)
 			validate_qAccFile( qAccFile );
 			validate_tAccFile( tAccFile );
 
 			// check seed setup
 			if (noSeedRequired) {
+				// reset model if needed
+				if (model.val == 'X') {
+					LOG(INFO) <<"Since no seed constraint needed: resetting model from 'X' to 'S'";
+					model.val='S';
+				}
 				if (mode.val == 'S') throw error("mode=S not applicable for non-seed predictions!");
 				// input sanity check : maybe seed constraints defined -> warn
 				if (!seedTQ.empty()) LOG(INFO) <<"no seed constraint wanted, but explicit seedTQ provided (will be ignored)";
@@ -1001,6 +1074,7 @@ parse(int argc, char** argv)
 				if (!seedQRange.empty()) LOG(INFO) <<"no seed constraint wanted, but seedQRange provided (will be ignored)";
 				if (!seedTRange.empty()) LOG(INFO) <<"no seed constraint wanted, but seedTRange provided (will be ignored)";
 				if (seedNoGU) LOG(INFO) <<"no seed constraint wanted, but seedNoGU provided (will be ignored)";
+				if (seedNoGUend) LOG(INFO) <<"no seed constraint wanted, but seedNoGUend provided (will be ignored)";
 			} else {
 				// check query search ranges
 				if (!seedQRange.empty()) {
@@ -1048,6 +1122,7 @@ parse(int argc, char** argv)
 					if (!seedQRange.empty()) LOG(INFO) <<"explicit seeds defined, but seedQRange provided (will be ignored)";
 					if (!seedTRange.empty()) LOG(INFO) <<"explicit seeds defined, but seedTRange provided (will be ignored)";
 					if (seedNoGU) LOG(INFO) <<"explicit seeds defined, but seedNoGU provided (will be ignored)";
+					if (seedNoGUend) LOG(INFO) <<"explicit seeds defined, but seedNoGUend provided (will be ignored)";
 				}
 			}
 
@@ -1113,6 +1188,9 @@ parse(int argc, char** argv)
 				if (windowWidth.val <= windowOverlap.val) {
 					throw error("window-based computation: --windowWidth ("+toString(windowWidth.val)+") has to exceed --windowOverlap ("+toString(windowOverlap.val)+")");
 				}
+				if (outNumber.val > 1 && outOverlap.val != 'B') {
+					throw error("window-based computation: non-overlapping subopt output (-n > 1) only supported for --outOverlap=B");
+				}
 			}
 
 			//////////////// ACCESSIBILITY CONSTRAINTS ///////////////////
@@ -1121,7 +1199,7 @@ parse(int argc, char** argv)
 			if (vm.count("qAccConstr") > 0) {
 				// only for single sequence input supported
 				if (!validateSequenceNumber("qAccConstr",query,1,1)) {
-					// TODO report error
+					// report error
 					INTARNA_NOT_IMPLEMENTED("--qAccConstr only supported for single sequence input");
 				}
 			} else {
@@ -1132,7 +1210,7 @@ parse(int argc, char** argv)
 			if (vm.count("tAccConstr") > 0) {
 				// only for single sequence input supported
 				if (!validateSequenceNumber("tAccConstr",target,1,1)) {
-					// TODO report error
+					// report error
 					INTARNA_NOT_IMPLEMENTED("--tAccConstr only supported for single sequence input");
 				}
 			} else {
@@ -1193,6 +1271,14 @@ parse(int argc, char** argv)
 				throw error("tAccL = " +toString(tAccL.val)+" : has to be <= tAccW (=" +toString(tAccW.val)+")");
 			}
 
+			// check ensemble sanity
+			if (outMode.val == 'E') {
+				// check single sequence input
+				if (target.size() > 1 || query.size() > 1) {
+					throw error("outmode=E allows only single sequence input for query and target");
+				}
+			}
+
 			// check CSV stuff
 			if (outCsvCols != outCsvCols_default && outMode.val != 'C') {
 				throw error("outCsvCols set but outMode != C ("+toString(outMode.val)+")");
@@ -1237,6 +1323,8 @@ parse(int argc, char** argv)
 			switch (model.val) {
 			// ensemble based predictions
 			case 'P' : {
+				// ensure Zall is computed
+				outNeedsZall = true;
 				// no window decomposition of regions (overlapping regions break overall partition function computation)
 				if (windowWidth.val != 0)  throw error("windowWidth not supported for --model=P");
 				break;}
@@ -1270,16 +1358,6 @@ parse(int argc, char** argv)
 			default:
 				break;
 			}
-
-#if INTARNA_MULITHREADING
-			// check if multi-threading
-			if (threads.val != 1 && getTargetSequences().size() > 1) {
-				// warn if >= 4D space prediction enabled
-				if (model.val != 'S' || mode.val == 'E') {
-					LOG(WARNING) <<"Multi-threading enabled in high-mem-prediction mode : ensure you have enough memory available!";
-				}
-			}
-#endif
 
 			// trigger initial output handler output
 			initOutputHandler();
@@ -1582,26 +1660,9 @@ getQueryAccessibility( const size_t sequenceNumber ) const
 
 	case 'E' : // drop to next handling
 	case 'P' : { // VRNA RNAplfold unpaired probability file output
-		std::istream * accStream = NULL;
-		std::ifstream * accFileStream = NULL;
-		if ( boost::iequals(qAccFile,"STDIN") ) {
-			accStream = &(std::cin);
-		} else {
-			// file support : add sequence-specific prefix (for multi-sequence input)
-			accFileStream = new std::ifstream( getFullFilename(qAccFile, NULL, &(seq)) );
-			try {
-				if(!accFileStream->good()){
-					accFileStream->close();
-					 INTARNA_CLEANUP(accFileStream);
-					throw std::runtime_error("accessibility parsing of --qAccFile : could not open file '"+qAccFile+"'");
-				}
-			} catch (std::exception & ex) {
-				accFileStream->close();
-				 INTARNA_CLEANUP(accFileStream);
-				throw std::runtime_error("accessibility parsing of --qAccFile : error while opening '"+qAccFile+"' : "+ex.what());
-			}
-			// set file stream as input stream
-			accStream = accFileStream;
+		std::istream * accStream = newInputStream( getFullFilename(qAccFile, NULL, &(seq)) );
+		if (accStream == NULL) {
+			throw std::runtime_error("accessibility parsing of --qAccFile : could not open file '"+qAccFile+"'");
 		}
 		Accessibility * acc = new AccessibilityFromStream( seq
 										, qIntLenMax.val
@@ -1610,10 +1671,7 @@ getQueryAccessibility( const size_t sequenceNumber ) const
 										, (qAcc.val == 'P' ? AccessibilityFromStream::Pu_RNAplfold_Text : AccessibilityFromStream::ED_RNAplfold_Text)
 										, vrnaHandler.getRT() );
 		// cleanup
-		if ( accFileStream != NULL ) {
-			accFileStream->close();
-			 INTARNA_CLEANUP( accFileStream );
-		}
+		deleteInputStream( accStream );
 		return acc;
 	}
 
@@ -1675,27 +1733,9 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 
 	case 'E' : // drop to next handling
 	case 'P' : { // VRNA RNAplfold unpaired probability file output
-		std::istream * accStream = NULL;
-		std::ifstream * accFileStream = NULL;
-		// select stream to read from
-		if ( boost::iequals(tAccFile,"STDIN") ) {
-			accStream = &(std::cin);
-		} else {
-			// file support : add sequence-specific prefix (for multi-sequence input)
-			accFileStream = new std::ifstream( getFullFilename(tAccFile, &(seq), NULL) );
-			try {
-				if(!accFileStream->good()){
-					accFileStream->close();
-					 INTARNA_CLEANUP(accFileStream);
-					throw std::runtime_error("accessibility parsing of --tAccFile : could not open file '"+tAccFile+"'");
-				}
-			} catch (std::exception & ex) {
-				accFileStream->close();
-				 INTARNA_CLEANUP(accFileStream);
-				throw std::runtime_error("accessibility parsing of --tAccFile : error while opening '"+tAccFile+"' : "+ex.what());
-			}
-			// set file stream as input stream
-			accStream = accFileStream;
+		std::istream * accStream = newInputStream( getFullFilename(tAccFile, &(seq), NULL) );
+		if (accStream == NULL) {
+			throw std::runtime_error("accessibility parsing of --tAccFile : could not open file '"+tAccFile+"'");
 		}
 		// read data
 		Accessibility * acc = new AccessibilityFromStream( seq
@@ -1705,10 +1745,7 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 										, ( tAcc.val == 'P' ? AccessibilityFromStream::Pu_RNAplfold_Text : AccessibilityFromStream::ED_RNAplfold_Text )
 										, vrnaHandler.getRT() );
 		// cleanup
-		if ( accFileStream != NULL ) {
-			accFileStream->close();
-			 INTARNA_CLEANUP( accFileStream );
-		}
+		deleteInputStream( accStream );
 		return acc;
 	}
 	case 'C' : // compute accessibilities
@@ -1786,6 +1823,7 @@ getOutputConstraint()  const
 			, Ekcal_2_E(outDeltaE.val)
 			, outBestSeedOnly
 			, outNoLP
+			, outNeedsZall
 			);
 }
 
@@ -1828,20 +1866,20 @@ parseSequences(const std::string & paramName,
 	} else
 	{
 		// open file handle
-		std::ifstream infile(paramArg);
+		std::istream * infile = newInputStream( paramArg );
 		try {
-			if(!infile.good()){
+			if (infile == NULL) {
 				LOG(ERROR) <<"FASTA parsing of "<<paramName<<" : could not open FASTA file  '"<<paramArg<<"'";
 				updateParsingCode( ReturnCode::STOP_PARSING_ERROR );
 			} else {
-				parseSequencesFasta(paramName, infile, sequences, seqSubset);
+				parseSequencesFasta(paramName, *infile, sequences, seqSubset);
 			}
 		} catch (std::exception & ex) {
 			LOG(ERROR) <<"error while FASTA parsing of "<<paramName<<" : "<<ex.what();
 			updateParsingCode( ReturnCode::STOP_PARSING_ERROR );
 		}
 		// close stream
-		infile.close();
+		deleteInputStream( infile );
 	}
 
 	// holds current validation status to supress checks once a validation failed
@@ -1900,7 +1938,8 @@ parseSequencesFasta( const std::string & paramName,
 				// trim leading '>' plus successive and trailing whitespaces
 				trimStart = line.find_first_not_of(" \t",1);
 				line = line.substr( trimStart, std::max(0,(int)line.find_last_not_of(" \t\n\r")+1-trimStart) );
-				name = line;
+				// name = prefix up to first whitespace
+				name = line.substr( 0, line.find_first_of(" \t\n\r"));
 			}
 			// clear sequence data
 			sequence.clear();
@@ -2201,11 +2240,18 @@ getOutputHandler( const InteractionEnergy & energy ) const
 {
 	switch (outMode.val) {
 	case 'N' :
-		return new OutputHandlerText( outStreamHandler->getOutStream(), energy, 10, false );
+		return new OutputHandlerText( getOutputConstraint(), outStreamHandler->getOutStream(), energy, 10, false );
 	case 'D' :
-		return new OutputHandlerText( outStreamHandler->getOutStream(), energy, 10, true );
+		return new OutputHandlerText( getOutputConstraint(), outStreamHandler->getOutStream(), energy, 10, true );
+	case 'E' :
+		// ensure that Zall is computed
+		outNeedsZall = true;
+		return new OutputHandlerEnsemble( getOutputConstraint(), outStreamHandler->getOutStream(), energy );
 	case 'C' :
-		return new OutputHandlerCsv( outStreamHandler->getOutStream(), energy, OutputHandlerCsv::string2list( outCsvCols ), outCsvColSep, false, outCsvLstSep );
+		// ensure that Zall is computed if needed
+		outNeedsZall = outNeedsZall || OutputHandlerCsv::needsZall(OutputHandlerCsv::string2list( outCsvCols ), outCsvColSep);
+		// create output handler
+		return new OutputHandlerCsv( getOutputConstraint(), outStreamHandler->getOutStream(), energy, OutputHandlerCsv::string2list( outCsvCols ), outCsvColSep, false, outCsvLstSep );
 	default :
 		INTARNA_NOT_IMPLEMENTED("Output mode "+toString(outMode.val)+" not implemented yet");
 	}
@@ -2261,6 +2307,7 @@ getSeedConstraint( const InteractionEnergy & energy ) const
 							, IndexRangeList( seedQRange ).shift(-1,energy.size2()-1).reverse(energy.size2())
 							, seedTQ
 							, seedNoGU
+							, seedNoGUend
 						);
 	}
 	return *seedConstraint;
@@ -2312,7 +2359,7 @@ getQueryRanges( const InteractionEnergy & energy, const size_t sequenceNumber, c
 		// check if computation is needed
 		if (qRegion.at(sequenceNumber).begin()->to - qRegion.at(sequenceNumber).begin()->from +1 > qRegionLenMax.val) {
 			// compute highly accessible regions using ED-window-size = seedBP and minRangeLength = seedBP
-			qRegion.at(sequenceNumber) = acc.decomposeByMaxED( qRegionLenMax.val, seedBP.val, seedBP.val);
+			qRegion[sequenceNumber] = acc.decomposeByMaxED( qRegionLenMax.val, seedBP.val, seedBP.val);
 			// inform user
 			VLOG(1) <<"detected accessible regions for query '"<<getQuerySequences().at(sequenceNumber).getId()<<"' : "<<qRegion.at(sequenceNumber);
 		}
@@ -2321,7 +2368,7 @@ getQueryRanges( const InteractionEnergy & energy, const size_t sequenceNumber, c
 	if (outMinPu.val > Z_type(0) && !Z_equal(outMinPu.val, Z_type(0))) {
 		// decompose ranges based in minimal unpaired probability value per position
 		// since all ranges covering a position will have a lower unpaired probability
-		acc.decomposeByMaxED( qRegion.at(sequenceNumber), energy.getE( outMinPu.val ) );
+		acc.decomposeByMaxED( qRegion[sequenceNumber], energy.getE( outMinPu.val ), (noSeedRequired ? RnaSequence::lastPos : seedBP.val ) );
 	}
 
 	return qRegion.at(sequenceNumber);
@@ -2346,7 +2393,7 @@ getTargetRanges( const InteractionEnergy & energy, const size_t sequenceNumber, 
 		// check if computation is needed
 		if (tRegion.at(sequenceNumber).begin()->to - tRegion.at(sequenceNumber).begin()->from +1 > tRegionLenMax.val) {
 			// compute highly accessible regions using ED-window-size = seedBP and minRangeLength = seedBP
-			tRegion.at(sequenceNumber) = acc.decomposeByMaxED( tRegionLenMax.val, seedBP.val, seedBP.val);
+			tRegion[sequenceNumber] = acc.decomposeByMaxED( tRegionLenMax.val, seedBP.val, seedBP.val);
 			// inform user
 			VLOG(1) <<"detected accessible regions for target '"<<getTargetSequences().at(sequenceNumber).getId()<<"' : "<<tRegion.at(sequenceNumber);
 		}
@@ -2355,7 +2402,7 @@ getTargetRanges( const InteractionEnergy & energy, const size_t sequenceNumber, 
 	if (outMinPu.val > Z_type(0) && !Z_equal(outMinPu.val, Z_type(0))) {
 		// decompose ranges based in minimal unpaired probability value per position
 		// since all ranges covering a position will have a lower unpaired probability
-		acc.decomposeByMaxED( tRegion.at(sequenceNumber), energy.getE( outMinPu.val ) );
+		acc.decomposeByMaxED( tRegion[sequenceNumber], energy.getE( outMinPu.val ), (noSeedRequired ? RnaSequence::lastPos : seedBP.val ) );
 	}
 
 	return tRegion.at(sequenceNumber);
@@ -2430,14 +2477,23 @@ getPersonality( int argc, char ** argv )
 	if (boost::regex_match(value,boost::regex("IntaRNAduplex"), boost::match_perl)) {
 		return Personality::IntaRNAduplex;
 	}
-	if (boost::regex_match(value,boost::regex("IntaRNAblock"), boost::match_perl)) {
-		return Personality::IntaRNAblock;
+	if (boost::regex_match(value,boost::regex("IntaRNAhelix"), boost::match_perl)) {
+		return Personality::IntaRNAhelix;
 	}
 	if (boost::regex_match(value,boost::regex("IntaRNAseed"), boost::match_perl)) {
 		return Personality::IntaRNAseed;
 	}
 	if (boost::regex_match(value,boost::regex("IntaRNAens"), boost::match_perl)) {
 		return Personality::IntaRNAens;
+	}
+	if (boost::regex_match(value,boost::regex("IntaRNA3"), boost::match_perl)) {
+		return Personality::IntaRNA3;
+	}
+	if (boost::regex_match(value,boost::regex("IntaRNA2"), boost::match_perl)) {
+		return Personality::IntaRNA2;
+	}
+	if (boost::regex_match(value,boost::regex("IntaRNA1"), boost::match_perl)) {
+		return Personality::IntaRNA1;
 	}
 	if (boost::regex_match(value,boost::regex("IntaRNAsTar"), boost::match_perl)) {
 		return Personality::IntaRNAsTar;

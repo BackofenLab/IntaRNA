@@ -1,13 +1,14 @@
-# this is example-file: configure.ac
 
 AC_PREREQ([2.65])
 # 5 argument version only available with aclocal >= 2.64
-AC_INIT([IntaRNA], [3.0.a], [], [intaRNA], [http://www.bioinf.uni-freiburg.de] )
+AC_INIT([IntaRNA], [3.0.1], [], [intaRNA], [http://www.bioinf.uni-freiburg.de] )
 
 # minimal required version of the boost library 
 BOOST_REQUIRED_VERSION=1.50.0
 # minimal required version of the Vienna RNA library
 VRNA_REQUIRED_VERSION=2.4.8
+# minimal required version of python interpreter
+PYTHON_REQUIRED_VERSION=3.6
 
 
 AC_CANONICAL_HOST
@@ -40,6 +41,7 @@ AC_PROG_CXX
 AC_PROG_CC
 AC_PROG_LN_S
 AC_PROG_RANLIB
+AC_PROG_MKDIR_P
 # reset compiler flags to initial flags
 CXXFLAGS=$OLD_CXXFLAGS
 CFLAGS=$OLD_CFLAGS
@@ -53,6 +55,10 @@ AC_LANG([C++])
 # ensure we are using c11 C++ standard
 AX_CXX_COMPILE_STDCXX([11], [noext], [mandatory])
 
+# check if python is available
+AM_PATH_PYTHON([$PYTHON_REQUIRED_VERSION],, [:])
+AM_CONDITIONAL([HAVE_PYTHON], [test "$PYTHON" != :])
+AM_COND_IF([HAVE_PYTHON], [HAVE_PYTHON_yesno=yes], [HAVE_PYTHON_yesno=no])
 
 ###############################################################################
 ###############################################################################
@@ -260,6 +266,22 @@ AS_IF([test x"$logColoring" = x"yes"], [
 
 
 
+#############################
+# P-VALUE SCRIPT
+#############################
+
+AC_MSG_CHECKING([whether to compile and install 'intarnapvalue' python module])
+intarnapvalue=no
+AC_ARG_ENABLE([intarnapvalue],
+	[AS_HELP_STRING([--enable-intarnapvalue],
+	    [build and install the intarnapvalue python3 module])],
+  	[AM_COND_IF([HAVE_PYTHON], [intarnapvalue="$enableval"], [intarnapvalue="no (python not available)"])])
+AC_MSG_RESULT([$intarnapvalue])
+
+AM_CONDITIONAL([INSTALL_INTARNAPVALUE],[test x"$intarnapvalue" = x"yes"])
+
+
+
 ###############################################################################
 
 ###############################################################################
@@ -296,7 +318,7 @@ AS_IF([test $want_boost = "no" || test $FOUND_BOOST != 1], [
 ], [
 	AM_CXXFLAGS="$BOOST_CPPFLAGS $AM_CXXFLAGS"
 	AM_LDFLAGS="$BOOST_LDFLAGS $AM_LDFLAGS"
-	LIBS="$LIBS -lboost_regex -lboost_program_options -lboost_filesystem -lboost_system"
+	LIBS="$LIBS -lboost_regex -lboost_program_options -lboost_filesystem -lboost_system -lboost_iostreams -lz"
 ])
 
 
@@ -382,6 +404,10 @@ AS_IF([test "$DEPENDENCYNOTFOUND" = "1"], [
 
 ##########################################################################
 
+# get available personalities
+AC_SUBST([PERSONALITIES],[`grep -P "^\\s+case\\s+IntaRNA\\S+\\s*:\\s*return" ./src/bin/CommandLineParsing.h | sed "s/^\\s*case\\s\\+\\(IntaRNA\\S*\\)\\s\\+:\\s\\+return.*/\\1/g" | tr "\\n" " "`])
+##########################################################################
+
 
 
 # distribute additional compiler and linker flags
@@ -400,7 +426,11 @@ AC_CONFIG_FILES([src/IntaRNA/Makefile])
 AC_CONFIG_FILES([src/IntaRNA/intarna_config.h])
 AC_CONFIG_FILES([src/bin/Makefile])
 AC_CONFIG_FILES([perl/Makefile])
+AC_CONFIG_FILES([python/Makefile])
+AC_CONFIG_FILES([python/bin/Makefile])
+AC_CONFIG_FILES([python/intarnapvalue/Makefile])
 AC_CONFIG_FILES([tests/Makefile])
+AC_CONFIG_FILES([tests/data/Makefile])
 AC_CONFIG_FILES([doc/Makefile])
 AC_CONFIG_FILES([IntaRNA.pc])
 
@@ -408,6 +438,7 @@ AC_CONFIG_FILES([IntaRNA.pc])
 AC_OUTPUT
 
 # get absolute directory paths
+eval _prefixdir=$(eval printf "%s" $prefix)
 eval _bindir=$(eval printf "%s" $bindir)
 eval _libdir=$(eval printf "%s" $libdir)
 eval _includedir=$(eval printf "%s" $includedir)
@@ -422,14 +453,19 @@ Features
 --------
   * log coloring              : $logColoring
   * OpenMP multi-threading    : $multithreadingEnabled
+  * intarnapvalue             : $intarnapvalue
 
-Install Directories
--------------------
+Install Directories for given 'prefix'
+--------------------------------------
+  * Install prefix            : $_prefixdir
   * Executables               : $_bindir
   * Libraries                 : $_libdir
   * Header files              : $_includedir
+  * Python modules            : $_pydir
 
 You can run 'make', 'make tests' and 'make install' now!
+
+Run 'make install prefix=XYZ' for installation in an alternative directory.
 
 ======================================
 ])

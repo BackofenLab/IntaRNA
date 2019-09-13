@@ -84,7 +84,7 @@ The following topics are covered by this documentation:
   - [Load arguments from file](#parameterFile)
 - [General things you should know](#generalInformation)
   - [Interaction Model](#interactionModel)
-    - [Single-site, unconstraint RNA-RNA interaction](#interactionModel-ssUnconstraintMfe)
+    - [Single-site, loop-based RNA-RNA interaction](#interactionModel-ssUnconstraintMfe)
     - [Single-site, ensemble-based RNA-RNA interaction](#interactionModel-ssProbability)
     - [Single-site, helix-based RNA-RNA interaction](#interactionModel-ssHelixBlockMfe)
   - [Prediction modes](#predModes)
@@ -92,7 +92,7 @@ The following topics are covered by this documentation:
     - [Limiting memory consumption - window-based prediction](#predWindowBased)
   - [IntaRNA's multiple personalities](#personality)
     - [IntaRNA - fast, heuristic RNA-RNA interaction prediction](#IntaRNA)
-    - [IntaRNAblock - helix-based predictions](#IntaRNAblock)
+    - [IntaRNAhelix - helix-based predictions](#IntaRNAhelix)
     - [IntaRNAexact - exact predictions like RNAup](#IntaRNAexact)
     - [IntaRNAduplex - hybrid-only optimization like RNAduplex](#IntaRNAduplex)
 - [How to constrain predicted interactions](#constraintSetup)
@@ -388,21 +388,21 @@ a (long) target RNA (using `-t` or `--target`) and a (short) query RNA
 You can either directly input the sequences
 ```bash
 # running IntaRNA with direct sequence input
-# call : IntaRNA -t CCCCCCCCGGGGGGGGGGGGGG -q CCCCCCC
+# call : IntaRNA -t CCCCCCCCGGGGGGGGGGGGGG -q AAAACCCCCCCUUUU
 
 target
              9     15
              |     |
   5'-CCCCCCCC       GGGGGGG-3'
              GGGGGGG
-             |||||||
+             +++++++
              CCCCCCC
-          3'-       -5'
+      3'-UUUU       AAAA-5'
              |     |
-             7     1
+            11     5
 query
 
-interaction energy = -10.71 kcal/mol
+interaction energy = -10.85 kcal/mol
 
 ```
 
@@ -425,6 +425,9 @@ sequences using the `--qSet` or `--tSet` parameter as shown in the following.
 # restrict prediction to the second load of 100 target sequences
 IntaRNA -t myTranscriptome.fasta --tSet=101-200 -q myQuery.fasta
 ```
+
+Furthermore, also gzip-compressed file input is supported and automatically
+decompressed if the file name ends in `.gz`. 
 
 Nucleotide encodings different from `ACGUT` are rewritten as `N` and the respective
 positions are not considered to form base pairs (and thus ignored).
@@ -505,7 +508,7 @@ from a parameter file. Thus, you can (silently) overwrite parameters that
 you have specified within the file.
 
 *Note further:* parameter parsing from parameter file is (in contrast to the
-command line parsing) case sensitive!
+command line parsing) **case sensitive**!
 
 
 
@@ -574,9 +577,9 @@ interaction pattern is available in our publications
 <br /><br />
 <a name="interactionModel-ssUnconstraintMfe" />
 
-### Unconstraint single-site RNA-RNA interaction with minimal free energy
+### Single-site, loop-based RNA-RNA interaction with minimal free energy
 
-This *default model* of IntaRNA (`--model=S`) predicts the single-site interaction `I` with 
+This *default model* of IntaRNA (`--model=X`) predicts the single-site interaction `I` with 
 minimal free energy. That is, it minimizes
 ```
    arg min (  E_hybrid(I) + ED1(I) + ED2(I)  )
@@ -587,7 +590,7 @@ where `E_hybrid` represents all energy terms of intermolecular base pairs and
 accessible for inter-molecular base pairing, i.e. removing any possible intra-molecular
 base pairs.
 
-The model considers inter-molecular base pair patterns that correspond to 
+The model considers inter-molecular base pair patterns (so called *loops*) that correspond to 
 (helical) stackings, bulges or interior loops, which are depicted in figure (b) from above.
 Since intra-molecular base pairs are not explicitely represented, any structural 
 context of single-site interactions is considered/possible within IntaRNA 
@@ -596,6 +599,12 @@ predictions.
 This model is used e.g. by the [IntaRNA](#IntaRNA) and [IntaRNAexact](#IntaRNAexact)
 personalities. 
 
+Note, the underlying computational model implements a seed-extension strategy
+(`--model=X`, version 3.0+), which first identifies putative seeds that are
+subsequently extended to identify the optimal interactions.
+Older versions of IntaRNA (version 1.* and 2.*) used a slower optimization 
+strategy (accessible via `--model=S`).
+
 
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
@@ -603,7 +612,7 @@ personalities.
 <a name="interactionModel-ssProbability" />
 
 
-### Ensemble-based, unconstraint single-site RNA-RNA interaction with minimal free ensemble energy
+### Single-site, ensemble-based RNA-RNA interaction with minimal free ensemble energy
 
 IntaRNA supports using `--model=P` an ensemble based interaction prediction that
 is based on partition function computation. To this end, the model computes among all
@@ -615,9 +624,12 @@ form a base pair, the one with maximal partition function `Z(S)`,  i.e.
 ```
 which sums the Boltzmann weights of all interactions `I` (hybridization terms only)
 for the given site `S` multiplied with the Boltzmann weights of the respective 
-accessibility penalties `ED1` and `ED2`. The site's partition function can be 
+accessibility penalties `ED1` and `ED2`.
+Here, `R` denotes the gas constant and `T` the temperature of the system.
+At `T=37` degree Celsius, the product `RT` is about `RT=0.6163173043012`. 
+The site's partition function can be 
 used to compute the ensemble energy of all interactions of a given site via
-`E(S) = -RT log(Z(S))`, which is reported for the optimal site 
+`E(S) = -RT log(Z(S))` (`log` = natural logarithm), which is reported for the optimal site 
 (see [CSV output](#outModeCsv)).  
 This abstracts from individual inter-molecular base pairing and incorporates the 
 dynamics and flexibility of the interactions formed by two regions.
@@ -634,7 +646,7 @@ interaction width, etc.) and do *not* take *all possible interactions* into acco
 Thus, if you are predicting interactions for a subregion only, the results are
 based on the respective subset of interactions!
 
-This model is used by the [IntaRNAens](#IntaRNAens) personalities. 
+This model is used by the [IntaRNAens](#IntaRNAens) personality. 
 
 
 
@@ -672,7 +684,7 @@ the prediction quality in genome wide screens. IntaRNA offers various
 [helix constraints](#helix) to guide which helices are considered for interaction 
 prediction.
 
-This model is used by the [IntaRNAblock](#IntaRNAblock) personality. 
+This model is used by the [IntaRNAhelix](#IntaRNAhelix) personality. 
 
 For further details on the model and the underlying algorithm, please refer to our respective publication
 
@@ -827,6 +839,18 @@ base pairs, since intra-molecular structure is implicitely considered via the
 accessibility penalties represented by the ED terms of the energy calculation
 (see detailed output).
 
+#### IntaRNA1 and IntaRNA2
+
+For backward compatibility, we also provide the personality *IntaRNA1* and *IntaRNA2*,
+which emulate the settings of the respective version with the currently
+available parameters.
+Both personalities make use of the slower `--model=S` 
+[prediction strategy](#interactionModel-ssUnconstraintMfe) first
+introduced for IntaRNA version 1.0.
+
+Note, since IntaRNA v1.* used the old `Turner99` energy parameters, you also
+have to provide the respective [energy file](#energy) when using *IntaRNA1*.
+
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
@@ -840,41 +864,44 @@ are used, and thus can provide [RNAup-like predictions](#predEmulateTools).
 
 **IntaRNAexact** therefore 
 
-- uses exact [prediction mode](#predModes) and 
+- uses exact [prediction mode](#predModes),
+- restricts the maximal [interaction length](#interConstr) to 60,
+- uses global [accessibility](#accLocalGlobal) values (reenable local computation respectively if needed, e.g. for mRNAs or genomic subsequences) and 
 - reports suboptimal interactions that can [overlap in both RNAs](#subopts).
 
 In contrast to RNAup, it also
 
 - enforces [seed constraints](#seed),
-- uses local [accessibility](#accLocalGlobal) values, and
-- does not [constrain interaction length](#interConstr) to subsequences of length 25.
+- uses a much faster [seed-extension-based computation model](#predModel),
+- allows longer interaction length (RNAup restricts ot length 25), and
+- enables much more flexible output options.
 
 If needed, you can disables these features.
 
-Thus, IntaRNAexact produces RNAup-like predictions with the extensive output 
+Thus, *IntaRNAexact* produces RNAup-like predictions with the extensive output 
 and constraint options of IntaRNA.
 Since exact computations are computationally much more demanding, IntaRNAexact is
-much slower than IntaRNA. 
-Therefore, you should use IntaRNAexact if you want to investigate the details of a
+slower than IntaRNA. 
+Therefore, you should use *IntaRNAexact* if you want to investigate the details of a
 single or few interactions unbiased by the heuristics applied in normal IntaRNA.
 If you are using long RNAs, you should constraint predictions to the [regions of
-interest](#interConstr). 
+interest](#interConstr) or [constraint the seed regions](#seed). 
 
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
-### IntaRNAblock
+### IntaRNAhelix
 
-**IntaRNAblock** provides helix-based RNA-RNA interaction prediction described
+**IntaRNAhelix** provides helix-based RNA-RNA interaction prediction described
 in [(Gelhausen et al., 2019)](http://www.bioinf.uni-freiburg.de/Subpages/publications.html?de#Gelhausen-helixLength-2019.abstract).
 It therefore enables per default 
 
 - the [helix-based single-site interaction model](#interactionModel-ssHelixBlockMfe)
 
 All other parameters are kept from the normal IntaRNA personality, such that
-IntaRNAblock predicts per default interactions heuristically based on optimal 
+*IntaRNAhelix* predicts per default interactions heuristically based on optimal 
 helix blocks, which is faster than the normal mode but applies more constraints.
-Thus, you should use IntaRNAblock if you want to focus predictions on stable
+Thus, you should use *IntaRNAhelix* if you want to focus predictions on stable
 subinteractions (helices) and need to do it fast.
 
 
@@ -893,10 +920,10 @@ subsequences are accessible. Furthermore, no seed constraint is taken into accou
 
 In constrast to other approaches, it
 
-- uses a fast heuristic [prediction mode](#predModes), and
+- uses a fast [heuristic prediction mode](#predModes), and
 - enforces [seed constraints](#seed).
 
-Thus, IntaRNAduplex is useful if you are not interested in the structuredness
+Thus, *IntaRNAduplex* is useful if you are not interested in the structuredness
 of the interacting molecules, either since they are very short or very long.
 The latter makes accessibility prediction difficult, since it is not only governed
 by thermodynamics.
@@ -924,7 +951,7 @@ target prediction identified via the benchmarking introduced in our publication
 **IntaRNAseed** only considers and reports putative seed interactions. 
 To this end, it
 
-- uses seed-only [prediction mode](#predModes).
+- uses [seed-only prediction mode](#predModes).
 
 
 
@@ -1013,8 +1040,9 @@ is completely removed.
 
 Finally, it is possible to restrict the overall length an interaction is allowed
 to have. This can be done independently for the query and target sequence using
-`--qIntLenMax` and `--tIntLenMax`, respectively. Both default to the full sequence
-length (by setting both to 0).
+`--qIntLenMax` and `--tIntLenMax`, respectively. By setting both to 0 (default),
+the smaller of the full sequence length and the maximal accessibility-window
+size (`--tAccW`, `--qAccW`) is used.
 
 
 
@@ -1054,6 +1082,7 @@ by
 - `--seedQRange` : a list of index intervals where a seed in the query is allowed
 - `--seedTRange` : a list of index intervals where a seed in the target is allowed
 - `--seedNoGU` : if present, no GU base pairs are allowed within seeds
+- `--seedNoGUend` : if present, no GU base pairs are allowed at seed ends
 
 Alternatively, you can set
 
@@ -1178,10 +1207,13 @@ you can either name a file or one of the stream names `STDOUT`|`STDERR`. Note,
 any string not matching one of the two stream names is considered a file name.
 The file will be overwritten by IntaRNA!
 
+If a file name ends in `.gz`, gzip-compressed binary output is generated.
+
 Besides interaction output, you can set the verbosity of computation information
 using the `-v` or `--verbose` arguments. To reduce the output to a minimum, you
 can redirect all logging output of user information, warnings or verbose output
-to a specific file using `--default-log-file=LOGFILENAME`.
+to a specific file using `--default-log-file=LOGFILENAME` (no gzip compression
+supported).
 If you are not interested in any logging output, redirect it to nirvana via
 `--default-log-file=/dev/null`. Note, error output is not redirected and always
 given on standard output streams.
@@ -1210,34 +1242,33 @@ various interaction details will be provided. An example is given below.
 ```bash
 # call: IntaRNA -t AAACACCCCCGGUGGUUUGG -q AAACACCCCCGGUGGUUUGG --outMode=D --seedBP=4
 
-
 target
-             5      12
-             |      |
-      5'-AAAC   C    UGGUUUGG-3'
-             ACC CCGG
-             ||| ++++
-             UGG GGCC
-      3'-GGUU   U    CCCACAAA-5'
-             |      |
-            16      9
+             5          16
+             |          |
+      5'-AAAC   C    U   UUGG-3'
+             ACC CCGG GGU
+             ||| ++++ |||
+             UGG GGCC CCA
+      3'-GGUU   U    C   CAAA-5'
+             |          |
+            16          5
 query
 
-interaction seq1   = 5--12
-interaction seq2   = 9--16
+interaction seq1   = 5--16
+interaction seq2   = 5--16
 
-interaction energy = -2.79 kcal/mol
+interaction energy = -6.76 kcal/mol
   = E(init)        = 4.1
-  + E(loops)       = -13.9
-  + E(dangleLeft)  = -0.46
-  + E(dangleRight) = -0.96
+  + E(loops)       = -18.8
+  + E(dangleLeft)  = -0.6
+  + E(dangleRight) = -0.6
   + E(endLeft)     = 0.5
-  + E(endRight)    = 0
-    : E(hybrid)    = -10.72
-  + ED(seq1)       = 3.91
-    : Pu(seq1)     = 0.00175709
-  + ED(seq2)       = 4.02
-    : Pu(seq2)     = 0.00146988
+  + E(endRight)    = 0.5
+    : E(hybrid)    = -14.9
+  + ED(seq1)       = 4.07
+    : Pu(seq1)     = 0.00135534
+  + ED(seq2)       = 4.07
+    : Pu(seq2)     = 0.00135534
 
 seed seq1   = 9--12
 seed seq2   = 9--12
@@ -1277,11 +1308,11 @@ information is listed with index `1` while query sequence information is given
 by index `2`.
 
 ```bash
-# call: IntaRNA -t AAACACCCCCGGUGGUUUGG -q AAACACCCCCGGUGGUUUGG --outMode=C --noSeed --outOverlap=B -n 3
+# call: /IntaRNA -t AAACACCCCCGGUGGUUUGG -q AAACACCCCCGGUGGUUUGG --outMode=C --seedBP=4 --outOverlap=B -n 3
 id1;start1;end1;id2;start2;end2;subseqDP;hybridDP;E
-target;4;14;query;4;14;CACCCCCGGUG&CACCCCCGGUG;((((...((((&))))...))));-4.16
-target;5;16;query;5;16;ACCCCCGGUGGU&ACCCCCGGUGGU;(((((.((.(((&))))).)).)));-4.06
-target;1;14;query;4;18;AAACACCCCCGGUG&CACCCCCGGUGGUUU;(((((((...((((&))))...)))).)));-2.96
+target;5;16;query;5;16;ACCCCCGGUGGU&ACCCCCGGUGGU;(((.((((.(((&))).)))).)));-6.76
+target;6;16;query;5;15;CCCCCGGUGGU&ACCCCCGGUGG;((.((((.(((&))).)))).));-5.56
+target;7;16;query;5;15;CCCCGGUGGU&ACCCCCGGUGG;((((((.(((&))).)))).));-5.55
 ```
 For each prediction, a row in the CSV is generated.
 
@@ -1319,6 +1350,8 @@ are
 - `E_hybrid` : energy of hybridization only = E - ED1 - ED2
 - `E_norm` : length normalized energy = E / ln(length(seq1)*length(seq2))
 - `E_hybridNorm` : length normalized energy of hybridization only = E_hybrid / ln(length(seq1)*length(seq2))
+- `E_add` : user defined energy correction term incorporated into `E`
+- `w` : Boltzmann weight of `E`, e.g. used for partition function computation
 - `seedStart1` : start index of the seed in seq1 (* see below)
 - `seedEnd1` : end index of the seed in seq1 (* see below)
 - `seedStart2` : start index of the seed in seq2 (* see below)
@@ -1328,9 +1361,9 @@ are
 - `seedED2` : ED value of seq2 of the seed only (excluding rest) (* see below)
 - `seedPu1` : probability of seed region to be accessible for seq1 (* see below)
 - `seedPu2` : probability of seed region to be accessible for seq2 (* see below)
-- `Eall` : ensemble energy of all considered interactions (-RT*log(Zall)) (see [model=P](#interactionModel-ssProbability))
-- `Zall` : partition function of all considered interactions (see [model=P](#interactionModel-ssProbability))
-- `P_E` : probability of an interaction (site) within the considered ensemble (see [model=P](#interactionModel-ssProbability))
+- `Eall` : ensemble energy of all considered interactions (-RT*log(Zall))
+- `Zall` : partition function of all considered interactions
+- `P_E` : probability of an interaction (site) within the considered ensemble
 
 (*) Note, since an interaction can cover more than one seed, all `seed*` columns
 might contain multiple entries separated by ':' symbols. In order to print only
@@ -1360,11 +1393,11 @@ with the start position of the respective interaction site.
 
 In the following, an altered CSV output for the example from above is generated.
 ```bash
-# call: IntaRNA --outCsvCols=Pu1,Pu2,subseqDB,hybridDB -t AAACACCCCCGGUGGUUUGG -q AAACACCCCCGGUGGUUUGG --outMode=C --noSeed --outOverlap=B -n 3
+# call: IntaRNA --outCsvCols=Pu1,Pu2,subseqDB,hybridDB -t AAACACCCCCGGUGGUUUGG -q AAACACCCCCGGUGGUUUGG --outMode=C --seedBP=4 --outOverlap=B -n 3
 Pu1;Pu2;subseqDB;hybridDB
-0.00135534;0.00135534;4CACCCCCGGUG&4CACCCCCGGUG;4||||...||||&4||||...||||
-0.00135534;0.00135534;5ACCCCCGGUGGU&5ACCCCCGGUGGU;5|||||.||.|||&5|||||.||.|||
-0.00135534;0.00135534;1AAACACCCCCGGUG&4CACCCCCGGUGGUUU;1|||||||...||||&4||||...||||.|||
+0.00135534;0.00135534;5ACCCCCGGUGGU&5ACCCCCGGUGGU;5|||.||||.|||&5|||.||||.|||
+0.00135534;0.00135534;6CCCCCGGUGGU&5ACCCCCGGUGG;6||.||||.|||&5|||.||||.||
+0.00137751;0.00135534;7CCCCGGUGGU&5ACCCCCGGUGG;7||||||.|||&5|||.||||.||
 ```
 
 
@@ -1372,11 +1405,38 @@ You can produce a *sorted CSV output* using the argument `--outCsvSort=..`,
 which provides the colId from the CSV output to be used for sorting.
 Below, you find the `hybridDB`-sorted output from above. 
 ```bash
-# call: IntaRNA --outCsvCols=Pu1,Pu2,subseqDB,hybridDB --outCsvSort=hybridDB -t AAACACCCCCGGUGGUUUGG -q AAACACCCCCGGUGGUUUGG --outMode=C --noSeed --outOverlap=B -n 3
+# call: IntaRNA --outCsvCols=Pu1,Pu2,subseqDB,hybridDB --outCsvSort=hybridDB -t AAACACCCCCGGUGGUUUGG -q AAACACCCCCGGUGGUUUGG --outMode=C --seedBP=4 --outOverlap=B -n 3
 Pu1;Pu2;subseqDB;hybridDB
-0.00135534;0.00135534;1AAACACCCCCGGUG&4CACCCCCGGUGGUUU;1|||||||...||||&4||||...||||.|||
-0.00135534;0.00135534;4CACCCCCGGUG&4CACCCCCGGUG;4||||...||||&4||||...||||
-0.00135534;0.00135534;5ACCCCCGGUGGU&5ACCCCCGGUGGU;5|||||.||.|||&5|||||.||.|||
+0.00135534;0.00135534;5ACCCCCGGUGGU&5ACCCCCGGUGGU;5|||.||||.|||&5|||.||||.|||
+0.00135534;0.00135534;6CCCCCGGUGGU&5ACCCCCGGUGG;6||.||||.|||&5|||.||||.||
+0.00137751;0.00135534;7CCCCGGUGGU&5ACCCCCGGUGG;7||||||.|||&5|||.||||.||
+```
+
+
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
+
+<a name="outModeEnsemble" />
+
+### Ensemble output of considered RNA-RNA interactions
+
+The output mode `--outMode=E` provides information on the ensemble of all 
+considered RNA-RNA interactions (e.g. compatible with the current seed constraints).
+This covers key-value pairs of the following information using 
+column labels introduced for the CVS output:
+
+- `id1` : id of first sequence (target)
+- `id2` : id of second sequence (query)
+- `Zall` : partition function of all considered interactions
+- `Eall` : ensemble energy of all considered interactions (-RT*log(Zall))
+
+Note, `Zall` depends on the selected 
+[prediction mode](#predModes) and 
+[RNA-RNA interaction model](#interactionModel).
+It holds `Zall(--model=S) <= Zall(--model=P)` as well as 
+`Zall(--mode=H) <= Zall(--mode=M)`.
+Thus, most accurate results are computed using
+```
+IntaRNA --model=P --mode=M --out=E ...
 ```
 
 
@@ -1390,10 +1450,9 @@ Pu1;Pu2;subseqDB;hybridDB
 Besides the identification of the optimal (e.g. minimum-free-energy) RNA-RNA
 interaction, IntaRNA enables the enumeration of suboptimal interactions. To this
 end, the argument `-n N` or `--outNumber=N` can be used to generate up to `N`
-interactions for each query-target pair (including the optimal one). Note, the
-suboptimal enumeration is increasingly sorted by energy.
+interactions for each query-target pair (including the optimal one).
 
-Note: suboptimal interaction enumeration is not exhaustive! That is, for each
+*Note*: suboptimal interaction enumeration is not exhaustive! That is, for each
 interaction site (defined by the left- and right-most intermolecular base pair)
 only the best interaction is reported! In heuristic prediction mode (default
 mode of IntaRNA), this is even less exhaustive, since only for each left-most
@@ -1404,12 +1463,18 @@ Furthermore, it is possible to *restrict (sub)optimal enumeration* using
 - `--outMaxE` : maximal energy for any interaction reported
 - `--outDeltaE` : maximal energy difference of suboptimal interactions' energy
   to the minimum free energy interaction
-- `--outOverlap` : defines if an where overlapping of reported interaction sites
+- `--outOverlap` : defines if and where overlapping of reported interaction sites
   is allowed:
   - 'N' : no overlap neither in target nor query allowed for reported interactions
   - 'B' : overlap allowed for interacting subsequences for both target and query
   - 'T' : overlap allowed for interacting subsequences in target only
   - 'Q' : overlap allowed for interacting subsequences in query only
+  
+*Note*: non-overlapping output (i) is heuristic by considering for each left 
+interaction site only the best right extension for overlap computation and 
+(ii) increases runtime. To get optimized results of non-overlapping suboptimals,
+rerun IntaRNA and mark the optimal (mfe) interaction region as 
+[blocked](#accConstraints).
 
 
 
@@ -1427,7 +1492,7 @@ supported by IntaRNA.
 
 The temperature can be set via `--temperature=C`to set a temperature `C` in
 degree Celsius. Note, this is important especially for predictions within plants
-etc., since the default temperature is 37°C.
+etc., since the default temperature is 37C.
 
 The energy model used can be specified using the `--energy` parameters using
 
@@ -1450,11 +1515,11 @@ If Vienna RNA package is used for energy computation (`--energy=V`), per default
 the default parameter set of the linked Vienna RNA package is used (e.g. the
 `Turner04` set for VRNA 3.0.0). If you want to use a different parameter set, you
 can provide an according parameter file via `--energyVRNA=MyParamFile`. The
-following example exemplifies the use of the old `Turner99` parameter set as
-used by IntaRNA v1.*.
+following example shows how to run an IntaRNA-v1-like prediction (via the 
+`IntaRNA1` personality) using the old `Turner99` parameter set (as used by IntaRNA v1.*).
 ```bash
 # IntaRNA v1.* like energy parameter setup
-IntaRNA --energyVRNA=/usr/local/share/Vienna/rna_turner1999.par --seedMaxE=999
+IntaRNA1 --energyVRNA=/usr/local/share/Vienna/rna_turner1999.par
 ```
 
 To increase prediction quality and to reduce the computational complexity, the
@@ -1486,7 +1551,7 @@ They can be ignored via `--energyNoDangles`.
 
 ## Additional output files
 
-IntaRNA v2 enables the generation of various additional information in dedicated
+IntaRNA enables the generation of various additional information in dedicated
 files/streams. The generation of such output is guided by an according (repeated)
 definition of the `--out` argument in combination with one of the following
 argument prefixes (case insensitive) that have to be colon-separated to the
@@ -1507,6 +1572,12 @@ Note further, `qPu:`|`tPu:` will report unpaired probability values based on rou
 Thus, these values will most likely differ from values eg. produced by RNAplfold.
 We therefore strongly recommend to store `qAcc:`|`tAcc:` values when you want to use them
 as input for subsequent IntaRNA calls!
+
+As for normal output, if the specified file name ends in `.gz`, gzip-compressed
+binary output is generated. This is especially useful for large output data like
+accessibility or unpaired probability information as well as pairwise energy
+or spot probability profiles.
+
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
@@ -1646,28 +1717,28 @@ can exclude the list from the call and only specify the output file/stream by
 probability for each index pair combination, as shown below.
 
 ```[bash]
-# call : IntaRNA  --out="spotProb:STDOUT" -t AAACACCCCCGGUGGUUUGG -q AAACACCCCCGGUGGUUUGG --energy=B -m M --noSeed --out=/dev/null
+# call : IntaRNA  --out="spotProb:STDOUT" -t AAACACCCCCGGUGGUUUGG -q AAACACCCCCGGUGGUUUGG --energy=B -m M --seedBP=3 --out=/dev/null
 spotProb;A_1;A_2;A_3;C_4;A_5;C_6;C_7;C_8;C_9;C_10;G_11;G_12;U_13;G_14;G_15;U_16;U_17;U_18;G_19;G_20
-A_1;3.27925e-07;1.04003e-06;1.88218e-06;3.92467e-06;6.01646e-06;1.09047e-05;1.9814e-05;3.27273e-05;4.98585e-05;6.42237e-05;0.00115204;0.0022092;0.00541192;0.00237559;0.00360987;0.00702197;0.00700707;0.00418399;0;0
-A_2;1.04003e-06;3.2985e-06;6.59941e-06;1.23303e-05;2.1545e-05;3.65661e-05;6.65744e-05;0.000109756;0.00016464;0.000211365;0.00273625;0.00524538;0.00907459;0.00468588;0.00761406;0.012269;0.0114184;0.00603926;0;0
-A_3;1.88218e-06;6.59941e-06;1.46812e-05;2.92463e-05;5.39293e-05;9.42852e-05;0.000179497;0.000298761;0.000440976;0.000560629;0.005528;0.0104523;0.0143537;0.00671781;0.0118909;0.0160121;0.0123616;0.00594539;0;0
-C_4;3.92467e-06;1.23303e-05;2.92463e-05;7.37969e-05;0.000144011;0.000298762;0.000620408;0.00102065;0.00145706;0.00177345;0.0102703;0.0153638;0.0153779;0.0123665;0.0148098;0.0126503;0.00889118;0.00670634;0.00974407;0.00748393
-A_5;6.01646e-06;2.1545e-05;5.39293e-05;0.000144011;0.000280018;0.000554028;0.00115898;0.00206682;0.00314274;0.00404332;0.0127655;0.0189695;0.0227345;0.012681;0.0146431;0.0153936;0.0102314;0.00796864;0.00691516;0.00473863
-C_6;1.09047e-05;3.65661e-05;9.42852e-05;0.000298762;0.000554028;0.00127715;0.0027877;0.00508869;0.0080379;0.0102657;0.0235425;0.027789;0.0219928;0.0173774;0.0181366;0.0126149;0.00713043;0.004456;0.0150319;0.0138705
-C_7;1.9814e-05;6.65744e-05;0.000179497;0.000620408;0.00115898;0.0027877;0.00612985;0.0115161;0.0187769;0.0246034;0.0392934;0.0366636;0.0245993;0.0258035;0.0195415;0.00880695;0.00692065;0.00881214;0.0299198;0.0270111
-C_8;3.27273e-05;0.000109756;0.000298761;0.00102065;0.00206682;0.00508869;0.0115161;0.0225036;0.0381075;0.0513864;0.071653;0.0588943;0.0346712;0.0430622;0.0267604;0.00717597;0.0091543;0.0184181;0.0585092;0.0520385
-C_9;4.98585e-05;0.00016464;0.000440976;0.00145706;0.00314274;0.0080379;0.0187769;0.0381075;0.0670908;0.0929687;0.11589;0.0832734;0.0451171;0.0573896;0.0333999;0.0068783;0.0139468;0.0358275;0.0859251;0.0735296
-C_10;6.42237e-05;0.000211365;0.000560629;0.00177345;0.00404332;0.0102657;0.0246034;0.0513864;0.0929687;0.1296;0.147163;0.0867195;0.0494233;0.0590265;0.0308867;0.00654962;0.0174692;0.048164;0.0858739;0.0664812
-G_11;0.00115204;0.00273625;0.005528;0.0102703;0.0127655;0.0235425;0.0392934;0.071653;0.11589;0.147163;0.136015;0.0741297;0.0512758;0.0439227;0.0218454;0.0118173;0.0219766;0.050111;0.0522475;0.0336484
-G_12;0.0022092;0.00524538;0.0104523;0.0153638;0.0189695;0.027789;0.0366636;0.0588943;0.0832734;0.0867195;0.0741297;0.0496741;0.0357395;0.0245576;0.0175498;0.0141141;0.0164713;0.0208562;0.022855;0.0156681
-U_13;0.00541192;0.00907459;0.0143537;0.0153779;0.0227345;0.0219928;0.0245993;0.0346712;0.0451171;0.0494233;0.0512758;0.0357395;0.0251549;0.0208016;0.0176201;0.0111401;0.0100454;0.0126594;0.0219107;0.0161147
-G_14;0.00237559;0.00468588;0.00671781;0.0123665;0.012681;0.0173774;0.0258035;0.0430622;0.0573896;0.0590265;0.0439227;0.0245576;0.0208016;0.0122621;0.00754378;0.00783629;0.0096686;0.0128886;0.0109294;0.00595406
-G_15;0.00360987;0.00761406;0.0118909;0.0148098;0.0146431;0.0181366;0.0195415;0.0267604;0.0333999;0.0308867;0.0218454;0.0175498;0.0176201;0.00754378;0.00842311;0.00966957;0.00776923;0.00626725;0.0044316;0.00259456
-U_16;0.00702197;0.012269;0.0160121;0.0126503;0.0153936;0.0126149;0.00880695;0.00717597;0.0068783;0.00654962;0.0118173;0.0141141;0.0111401;0.00783629;0.00966957;0.00686118;0.00366104;0.00196345;0.00764323;0.00704606
-U_17;0.00700707;0.0114184;0.0123616;0.00889118;0.0102314;0.00713043;0.00692065;0.0091543;0.0139468;0.0174692;0.0219766;0.0164713;0.0100454;0.0096686;0.00776923;0.00366104;0.00362573;0.00628385;0.0137985;0.0116972
-U_18;0.00418399;0.00603926;0.00594539;0.00670634;0.00796864;0.004456;0.00881214;0.0184181;0.0358275;0.048164;0.050111;0.0208562;0.0126594;0.0128886;0.00626725;0.00196345;0.00628385;0.0162565;0.0212729;0.0133281
-G_19;0;0;0;0.00974407;0.00691516;0.0150319;0.0299198;0.0585092;0.0859251;0.0858739;0.0522475;0.022855;0.0219107;0.0109294;0.0044316;0.00764323;0.0137985;0.0212729;0.015903;0.00811008
-G_20;0;0;0;0.00748393;0.00473863;0.0138705;0.0270111;0.0520385;0.0735296;0.0664812;0.0336484;0.0156681;0.0161147;0.00595406;0.00259456;0.00704606;0.0116972;0.0133281;0.00811008;0.00397977
+A_1;1.14168e-05;3.62052e-05;6.5358e-05;0.000125994;0.000196552;0.000328442;0.000553431;0.000824511;0.00120974;0.00133627;0.00134247;0.00135501;0.00140472;0.000700197;0.000700197;0.000700197;0.000488841;0.000264782;0;0
+A_2;3.62052e-05;0.000114814;0.000229225;0.00039447;0.000706437;0.00109931;0.00184489;0.00275296;0.00395164;0.00437528;0.00440057;0.00444726;0.0046156;0.00229778;0.00229778;0.00229778;0.00160785;0.000873259;0;0
+A_3;6.5358e-05;0.000229225;0.000508878;0.000924219;0.00175717;0.00281323;0.00496666;0.00757395;0.0106558;0.0116963;0.0117524;0.0118769;0.0122887;0.00552015;0.00552015;0.00552015;0.00356421;0.00147568;0;0
+C_4;0.000125994;0.00039447;0.000924219;0.00202415;0.00404467;0.00714106;0.0130565;0.0190823;0.0252285;0.0267963;0.0268554;0.0269861;0.0249678;0.0181993;0.00847111;0.0061239;0.00416796;0.00207943;0.000603754;0.000139873
+A_5;0.000196552;0.000706437;0.00175717;0.00404467;0.00820796;0.013931;0.0259249;0.0418595;0.0596996;0.0666565;0.0668406;0.0675258;0.067224;0.0307559;0.0210277;0.0186805;0.00878539;0.00352443;0.000603754;0.000139873
+C_6;0.000328442;0.00109931;0.00281323;0.00714106;0.013931;0.0247509;0.0449983;0.069822;0.101313;0.110441;0.110632;0.111336;0.0991588;0.0626907;0.0334127;0.0198717;0.00997658;0.00471562;0.00179495;0.000446343
+C_7;0.000553431;0.00184489;0.00496666;0.0130565;0.0259249;0.0449983;0.0786128;0.119909;0.175115;0.191833;0.192042;0.192809;0.159914;0.123446;0.0559382;0.0212691;0.011374;0.00611305;0.00319238;0.000889846
+C_8;0.000824511;0.00275296;0.00757395;0.0190823;0.0418595;0.069822;0.119909;0.184088;0.278008;0.309829;0.310077;0.310961;0.24368;0.207212;0.0711069;0.0228361;0.012941;0.00768002;0.00475935;0.00121992
+C_9;0.00120974;0.00395164;0.0106558;0.0252301;0.0597011;0.101316;0.175118;0.278011;0.442224;0.540951;0.541838;0.548287;0.314152;0.27952;0.134106;0.0307786;0.0390998;0.134187;0.131266;0.127646
+C_10;0.00133627;0.00437528;0.0116963;0.0267979;0.066658;0.110445;0.191836;0.309832;0.540951;0.639678;0.640565;0.549795;0.314804;0.280171;0.134243;0.0307985;0.0391198;0.134207;0.131286;0.127653
+G_11;0.00134247;0.00440057;0.0117524;0.026857;0.0668422;0.110635;0.192045;0.310081;0.541838;0.640565;0.641452;0.550681;0.31569;0.280274;0.134346;0.0309011;0.0391607;0.134221;0.131286;0.127653
+G_12;0.00135501;0.00444726;0.0118769;0.0269877;0.0675273;0.111339;0.192813;0.310965;0.548287;0.549795;0.550681;0.459911;0.244312;0.207938;0.0838498;0.0269663;0.0368367;0.0322818;0.0296791;0.0269458
+U_13;0.00140472;0.0046156;0.0122887;0.0249678;0.067224;0.0991588;0.159914;0.24368;0.314149;0.3148;0.315687;0.244309;0.149036;0.12523;0.0603534;0.0204676;0.0169076;0.0134034;0.0115843;0.00969977
+G_14;0.000700197;0.00229778;0.00552015;0.0181993;0.0307559;0.0626907;0.123446;0.207212;0.279517;0.280168;0.280271;0.207934;0.12523;0.0989915;0.0415884;0.013814;0.0112185;0.00810799;0.00642706;0.00506415
+G_15;0.000700197;0.00229778;0.00552015;0.00847111;0.0210277;0.0334127;0.0559382;0.0711069;0.134103;0.13424;0.134343;0.0838467;0.0603534;0.0415884;0.0198644;0.0078437;0.00499886;0.00303726;0.00193873;0.00115273
+U_16;0.000700197;0.00229778;0.00552015;0.0061239;0.0186805;0.0198717;0.0212691;0.0228361;0.0307754;0.0307954;0.030898;0.0269632;0.0204676;0.013814;0.0078437;0.00372948;0.00238196;0.0014955;0.000994685;0.000636301
+U_17;0.000488841;0.00160785;0.00356421;0.00416796;0.00878539;0.00997658;0.011374;0.012941;0.0390967;0.0391166;0.0391576;0.0368336;0.0169076;0.0112185;0.00499886;0.00238196;0.00153295;0.000941024;0.000584357;0.000391474
+U_18;0.000264782;0.000873259;0.00147568;0.00207943;0.00352443;0.00471562;0.00611305;0.00768002;0.134184;0.134204;0.134217;0.0322786;0.0134034;0.00810799;0.00303726;0.0014955;0.000941024;0.000539355;0.000275861;0.000181808
+G_19;0;0;0;0.000603754;0.000603754;0.00179495;0.00319238;0.00475935;0.131263;0.131283;0.131283;0.0296759;0.0115843;0.00642706;0.00193873;0.000994685;0.000584357;0.000275861;6.54789e-05;2.81631e-05
+G_20;0;0;0;0.000139873;0.000139873;0.000446343;0.000889846;0.00121992;0.127643;0.12765;0.12765;0.0269426;0.00969977;0.00506415;0.00115273;0.000636301;0.000391474;0.000181808;2.81631e-05;5.22605e-06
 ```
 
 This data can be visualized in heatmaps as discussed for the [minimal energy heatmap](#pairMinE).
@@ -1805,6 +1876,8 @@ formats
 | ---- | --- |
 | RNAplfold unpaired probabilities | `RNAplfold -u` or `IntaRNA --out=*Pu:` |
 | RNAplfold-styled ED values | `IntaRNA --out=*Acc:` |
+| ---- | --- |
+| .. with gzip-compression | `IntaRNA --out=*:*.gz` |
 
 The **RNAplfold** format is a table encoding of a banded upper triangular matrix
 with band width l. First row contains a header comment on the data starting with
@@ -1844,9 +1917,9 @@ Another option is to store the accessibility data computed by IntaRNA for
 successive calls using
 
 ```bash
-# storing and reusing (target) accessibility (Pu) data for successive IntaRNA calls
-IntaRNA [..] --out=tPu:intarna.target.pu
-IntaRNA [..] --tAcc=P --tAccFile=intarna.target.pu
+# storing and reusing compressed (target) accessibility (Pu) data for successive IntaRNA calls
+IntaRNA [..] --out=tPu:intarna.target.pu.gz
+IntaRNA [..] --tAcc=P --tAccFile=intarna.target.pu.gz
 # piping (target) accessibilities (ED values) between IntaRNA calls
 IntaRNA [..] --out=tAcc:STDOUT | IntaRNA [..] --tAcc=E --tAccFile=STDIN
 ```

@@ -30,9 +30,10 @@ PredictorMfe2dSeedExtensionRIblast::
 
 void
 PredictorMfe2dSeedExtensionRIblast::
-predict( const IndexRange & r1, const IndexRange & r2
-		, const OutputConstraint & outConstraint )
+predict( const IndexRange & r1, const IndexRange & r2  )
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 #if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_omp_logOutput)
 #endif
@@ -40,14 +41,9 @@ predict( const IndexRange & r1, const IndexRange & r2
 	// measure timing
 	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
 
-	// suboptimal setup check
-	if (outConstraint.reportMax>1 && outConstraint.reportOverlap != OutputConstraint::ReportOverlap::OVERLAP_BOTH) {
-		throw std::runtime_error("PredictorMfe2dSeedExtensionRIblast : the enumeration of non-overlapping suboptimal interactions is not supported in this prediction mode");
-	}
-
 	// no-LP setup check
 	if (outConstraint.noLP) {
-		INTARNA_NOT_IMPLEMENTED("PredictorMfe2dSeedExtensionRIblast : prediction without lonely base pairs is not implemented yet");
+		INTARNA_NOT_IMPLEMENTED("PredictorMfe2dSeedExtensionRIblast : prediction without lonely base pairs is not supported");
 	}
 
 #if INTARNA_IN_DEBUG_MODE
@@ -71,14 +67,14 @@ predict( const IndexRange & r1, const IndexRange & r2
 	// and check if any seed possible
 	if (seedHandler.fillSeed( 0, interaction_size1-1, 0, interaction_size2-1 ) == 0) {
 		// trigger empty interaction reporting
-		initOptima(outConstraint);
-		reportOptima(outConstraint);
+		initOptima();
+		reportOptima();
 		// stop computation
 		return;
 	}
 
 	// initialize mfe interaction for updates
-	initOptima( outConstraint );
+	initOptima();
 
 	size_t si1 = RnaSequence::lastPos, si2 = RnaSequence::lastPos;
 	while( seedHandler.updateToNextSeed(si1,si2
@@ -118,7 +114,7 @@ predict( const IndexRange & r1, const IndexRange & r2
 				hybridE_left(i, j) = E_INF;
 			}
 		}
-		fillHybridE_left(extension.i1, extension.i2, outConstraint);
+		fillHybridE_left(extension.i1, extension.i2);
 
 		// ER
 		hybridE_right.resize( std::min(interaction_size1-extension.j1, maxMatrixLen1), std::min(interaction_size2-extension.j2, maxMatrixLen2) );
@@ -127,7 +123,7 @@ predict( const IndexRange & r1, const IndexRange & r2
 				hybridE_right(i, j) = E_INF;
 			}
 		}
-		fillHybridE_right(extension.j1, extension.j2, outConstraint);
+		fillHybridE_right(extension.j1, extension.j2);
 
 		// update Optimum for all boundary combinations
 		for (int i1 = 0; i1 < hybridE_left.size1(); i1++) {
@@ -140,7 +136,7 @@ predict( const IndexRange & r1, const IndexRange & r2
 					for (int j2 = 0; j2 < hybridE_right.size2() ; j2++) {
 						if (extension.j2+j2-extension.i2+i2 > energy.getAccessibility2().getMaxLength()) continue;
 						if (E_isINF(hybridE_right(j1,j2))) continue;
-						PredictorMfe::updateOptima( extension.i1-i1, extension.j1+j1, extension.i2-i2, extension.j2+j2, extension.energy + hybridE_left(i1,i2) + hybridE_right(j1,j2), true );
+						updateOptima( extension.i1-i1, extension.j1+j1, extension.i2-i2, extension.j2+j2, extension.energy + hybridE_left(i1,i2) + hybridE_right(j1,j2), true );
 					} // j2
 				} // i2
 			} // j1
@@ -149,7 +145,7 @@ predict( const IndexRange & r1, const IndexRange & r2
 	} // si1 / si2
 
 	// report mfe interaction
-	reportOptima( outConstraint );
+	reportOptima();
 
 }
 
@@ -214,9 +210,10 @@ parallelExtension( PredictorMfe2dSeedExtensionRIblast::ExtendedSeed & seed
 
 void
 PredictorMfe2dSeedExtensionRIblast::
-fillHybridE_left( const size_t j1, const size_t j2
-			, const OutputConstraint & outConstraint )
+fillHybridE_left( const size_t j1, const size_t j2 )
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 
 	// global vars to avoid reallocation
 	size_t i1,i2,k1,k2;
@@ -269,9 +266,10 @@ fillHybridE_left( const size_t j1, const size_t j2
 
 void
 PredictorMfe2dSeedExtensionRIblast::
-fillHybridE_right( const size_t i1, const size_t i2
-			, const OutputConstraint & outConstraint )
+fillHybridE_right( const size_t i1, const size_t i2 )
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 
 	// global vars to avoid reallocation
 	size_t j1,j2,k1,k2;
@@ -325,7 +323,7 @@ fillHybridE_right( const size_t i1, const size_t i2
 
 void
 PredictorMfe2dSeedExtensionRIblast::
-traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
+traceBack( Interaction & interaction )
 {
 	// check if something to trace
 	if (interaction.basePairs.size() < 2) {
@@ -409,14 +407,14 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 				hybridE_left(i, j) = E_INF;
 			}
 		}
-		fillHybridE_left(extension.i1, extension.i2, outConstraint);
+		fillHybridE_left(extension.i1, extension.i2);
 		hybridE_right.resize( std::min(j1-extension.j1+1, maxMatrixLen1), std::min(j2-extension.j2+1, maxMatrixLen2) );
 		for (size_t i = 0; i < hybridE_right.size1(); i++) {
 			for (size_t j = 0; j < hybridE_right.size2(); j++) {
 				hybridE_right(i, j) = E_INF;
 			}
 		}
-		fillHybridE_right(extension.j1, extension.j2, outConstraint);
+		fillHybridE_right(extension.j1, extension.j2);
 
 		if ( E_equal( fullE,
 				(energy.getE(i1, j1, i2, j2, seedE + hybridE_left( extension.i1-i1, extension.i2-i2 ) + hybridE_right( j1-sj1, j2-sj2 )))))
@@ -524,15 +522,6 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 }
 
 ////////////////////////////////////////////////////////////////////////////
-
-void
-PredictorMfe2dSeedExtensionRIblast::
-getNextBest( Interaction & curBest )
-{
-	INTARNA_NOT_IMPLEMENTED("PredictorMfe2dSeedExtensionRIblast::getNextBest() not implemented yet");
-}
-
-//////////////////////////////////////////////////////////////////////////
 
 
 } // namespace

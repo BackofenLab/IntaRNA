@@ -1,5 +1,5 @@
-mode=M
-noSeed=false
+model=X
+mode = H
 seedBP=3
 energy=B 
 tAcc=N
@@ -10,4 +10,4 @@ outMode=C
 outNumber=10
 outOverlap=B
 outDeltaE=0
-outNoLP=true
+outNoLP=false

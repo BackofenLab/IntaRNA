@@ -22,6 +22,8 @@ public:
 	/**
 	 * Construct a simple text output handler for interaction reporting.
 	 *
+	 * @param outConstraint the output constraint applied to find the reported
+	 *        interaction
 	 * @param out the stream to write to
 	 * @param energy the interaction energy object used for computation
 	 * @param flankingLength maximal number of nucleotides flanking the
@@ -29,7 +31,8 @@ public:
 	 * @param detailedOutput if (true) detailed output is provided; normal
 	 *        reduced output otherwise
 	 */
-	OutputHandlerText( std::ostream & out
+	OutputHandlerText( const OutputConstraint & outConstraint
+				, std::ostream & out
 				, const InteractionEnergy & energy
 				, const size_t flankingLength = 10
 				, const bool detailedOutput = false
@@ -45,13 +48,10 @@ public:
 	 * stream.
 	 *
 	 * @param interaction the interaction to output
-	 * @param outConstraint the output constraint applied to find the reported
-	 *        interaction
 	 */
 	virtual
 	void
-	add( const Interaction & interaction
-		, const OutputConstraint & outConstraint );
+	add( const Interaction & interaction );
 
 protected:
 

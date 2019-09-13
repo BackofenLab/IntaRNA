@@ -29,8 +29,8 @@ fillHelix(const size_t i1min, const size_t i1max, const size_t i2min, const size
 
 	size_t minBP;
 	E_type maxE;
-	// TODO: Fix until better solution is found
-	// if no seedHandler is given use given values, else use default values to ensure they dont compromise the results of the helixSeed method
+	// if no seedHandler is given use given values,
+	// else use default values to ensure they dont compromise the results of the helixSeed method
 	if (seedHandler == NULL) {
 		minBP = helixConstraint.getMinBasePairs();
 		maxE = helixConstraint.getMaxE();

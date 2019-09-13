@@ -30,9 +30,10 @@ PredictorMfeEnsSeedOnly::
 
 void
 PredictorMfeEnsSeedOnly::
-predict( const IndexRange & r1, const IndexRange & r2
-		, const OutputConstraint & outConstraint )
+predict( const IndexRange & r1, const IndexRange & r2 )
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 #if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_omp_logOutput)
 #endif
@@ -59,13 +60,13 @@ predict( const IndexRange & r1, const IndexRange & r2
 			, (r2.to==RnaSequence::lastPos?energy.size2()-1:r2.to)-r2.from+1 ) -1;
 
 	// trigger empty interaction reporting
-	initOptima(outConstraint);
-	initZ(outConstraint);
+	initOptima();
+	initZ();
 
 	// compute seed interactions for whole range
 	// and check if any seed possible
 	if (seedHandler.fillSeed( 0, seedLastPos1, 0, seedLastPos2 ) == 0) {
-		reportOptima(outConstraint);
+		reportOptima();
 		// stop computation
 		return;
 	}
@@ -81,13 +82,13 @@ predict( const IndexRange & r1, const IndexRange & r2
 		if (j2 > seedLastPos2) continue;
 		const E_type seedEhybrid = seedHandler.getSeedE(i1,i2) + energy.getE_init();
 		// report seed energy (including initialization term)
-		updateOptima( i1, j1, i2, j2, seedEhybrid, true );
+		updateOptima( i1, j1, i2, j2, seedEhybrid, true, false );
 		// update partition function
 		updateZ( i1, j1, i2, j2, energy.getBoltzmannWeight(seedEhybrid) );
 	}
 
 	// report mfe interaction
-	reportOptima( outConstraint );
+	reportOptima();
 
 }
 
@@ -96,8 +97,10 @@ predict( const IndexRange & r1, const IndexRange & r2
 
 void
 PredictorMfeEnsSeedOnly::
-traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
+traceBack( Interaction & interaction )
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 	// check if something to trace
 	if (interaction.basePairs.size() < 2) {
 		return;
@@ -166,58 +169,6 @@ traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
 		(*bps.rbegin()) = energy.getBasePair( j1, j2 );
 	}
 
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-void
-PredictorMfeEnsSeedOnly::
-getNextBest( Interaction & curBest )
-{
-	INTARNA_NOT_IMPLEMENTED("PredictorMfeEnsSeedOnly::getNextBest() coming soon...");
-
-	size_t i1best = RnaSequence::lastPos, i2best = RnaSequence::lastPos;
-	// seed energy excluding initialization term (for comparison with seedHandler values)
-	E_type bestE = E_MAX, seedE = E_MAX;
-
-	// iterate over all seeds within range
-	// to find next best with E <= curBest and non-overlapping
-	size_t i1 = RnaSequence::lastPos, i2 = RnaSequence::lastPos;
-	size_t j1 = i1, j2 = i2;
-	while( seedHandler.updateToNextSeed( i1, i2, 0, seedLastPos1, 0, seedLastPos2) ) {
-		// check if seed start positions are already covered
-		if (reportedInteractions.first.covers(i1) || reportedInteractions.second.covers(i2)) continue;
-		// check of seed end is within range
-		j1 = i1 + seedHandler.getSeedLength1(i1,i2) -1;
-		if (j1 > seedLastPos1) continue;
-		j2 = i2 + seedHandler.getSeedLength2(i1,i2) -1;
-		if (j2 > seedLastPos2) continue;
-		// check if seed range is covered
-		if (reportedInteractions.first.covers(IndexRange(i1,j1)) || reportedInteractions.second.covers(IndexRange(i2,j2))) continue;
-		// compare energy
-		seedE = energy.getE(i1,j1,i2,j2, seedHandler.getSeedE(i1,i2)+energy.getE_init());
-		// ensure energy is above (or equal to) curBest and lower than bestE so far
-		if ( (E_equal(seedE,curBest.energy) || seedE > curBest.energy)
-				&& seedE < bestE )
-		{
-			// update current next-best seed
-			i1best = i1;
-			i2best = i2;
-			bestE = seedE;
-		}
-	}
-
-	if ( i1best == RnaSequence::lastPos ) {
-		// no better seed found
-		curBest.energy = E_INF;
-		curBest.basePairs.clear();
-	} else {
-		// store next-best seed interaction
-		curBest.energy = bestE;
-		curBest.basePairs.resize(2);
-		curBest.basePairs[0] = energy.getBasePair(i1,i2);
-		curBest.basePairs[1] = energy.getBasePair(j1,j2);
-	}
 }
 
 //////////////////////////////////////////////////////////////////////////

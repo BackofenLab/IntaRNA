@@ -148,9 +148,10 @@ public:
 	 *
 	 * @param ranges INOUT the list of ranges to decompose
 	 * @param maxED the maximal ED threshold (inclusive)
+	 * @param minRangeLength the minimal length of a resulting sequence region
 	 */
 	void
-	decomposeByMaxED( IndexRangeList & ranges, const E_type maxED ) const;
+	decomposeByMaxED( IndexRangeList & ranges, const E_type maxED, const size_t minRangeLength ) const;
 
 protected:
 

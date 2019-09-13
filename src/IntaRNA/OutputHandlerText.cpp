@@ -16,13 +16,14 @@ namespace IntaRNA {
 
 OutputHandlerText::
 OutputHandlerText(
+		const OutputConstraint & outConstraint,
 		std::ostream & out,
 		const InteractionEnergy & energy,
 		const size_t flankingLength_,
 		const bool detailedOutput
 		)
- :
-	out(out)
+ :	OutputHandler(outConstraint)
+	, out(out)
 	, energy(energy)
 	, flankingLength(flankingLength_)
 	, detailedOutput(detailedOutput)
@@ -63,7 +64,7 @@ OutputHandlerText::
 
 void
 OutputHandlerText::
-add( const Interaction & i, const OutputConstraint & outConstraint )
+add( const Interaction & i )
 {
 #if INTARNA_IN_DEBUG_MODE
 	// debug checks
@@ -141,7 +142,7 @@ add( const Interaction & i, const OutputConstraint & outConstraint )
 	s1Unbound.width(1);	 s1Unbound <<std::left <<' ';
 	s1Bound.width(1);	 s1Bound   <<std::left <<i.s1->asString().at(leftBP->first);
 	pairing.width(1);	 pairing   <<std::left;
-	if (detailedOutput && seedRanges1.covers(leftBP->first)) {
+	if (seedRanges1.covers(leftBP->first)) {
 		pairing   <<'+';
 	} else
 	if (energy.isGU(leftBP->first, leftBP->second)) {
@@ -166,22 +167,32 @@ add( const Interaction & i, const OutputConstraint & outConstraint )
 		// print unbound loop regions
 		if (loop>0) {
 			// unbound region s1
-			s1Unbound.width(loop);
 			if (loop1 > 0) {
 				s1Unbound <<i.s1->asString().substr( leftBP->first +1, loop1 );
+				// fill missing positions
+				if (loop1 < loop) {
+					s1Unbound.width(loop-loop1);
+					s1Unbound <<std::setfill('-') <<'-' <<std::setfill(' ');
+				}
 			} else {
-				s1Unbound <<' ';
+				s1Unbound.width(loop);
+				s1Unbound <<std::setfill('-') <<'-' <<std::setfill(' ');
 			}
 			// bound region
 			s1Bound.width(loop); s1Bound <<' ';
 			pairing.width(loop); pairing <<' ';
 			s2Bound.width(loop); s2Bound <<' ';
 			// unbound region s2
-			s2Unbound.width(loop);
 			if (loop2 > 0) {
 				s2Unbound <<reverse(i.s2->asString().substr( curBP->second +1, loop2 ));
+				// fill missing positions
+				if (loop2 < loop) {
+					s2Unbound.width(loop-loop2);
+					s2Unbound <<std::setfill('-') <<'-' <<std::setfill(' ');
+				}
 			} else {
-				s2Unbound <<' ';
+				s2Unbound.width(loop);
+				s2Unbound <<std::setfill('-') <<'-' <<std::setfill(' ');
 			}
 		}
 		interactionLength += loop;
@@ -190,7 +201,7 @@ add( const Interaction & i, const OutputConstraint & outConstraint )
 		s1Unbound.width(1);	 s1Unbound <<' ';
 		s1Bound.width(1);	 s1Bound   <<i.s1->asString().at(curBP->first);
 		pairing.width(1);
-		if (detailedOutput && seedRanges1.covers(curBP->first)) {
+		if (seedRanges1.covers(curBP->first)) {
 			pairing   <<'+';
 		} else
 		if (energy.isGU(curBP->first, curBP->second)) {

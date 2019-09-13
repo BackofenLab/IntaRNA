@@ -49,6 +49,9 @@ public:
 	//! whether or not lonely (non-stacked) inter-molecular base pairs are to be considered
 	const bool noLP;
 
+	//! whether or not Zall has to be computed for output generation
+	const bool needZall;
+
 public:
 
 	/**
@@ -62,13 +65,15 @@ public:
 	 * @param deltaE maximal energy difference of a reported interaction to mfe
 	 * @param bestSeedOnly whether or not only the best seed is to be reported
 	 * @param noLP whether or not lonely (non-stacked) inter-molecular bps are allowed
+	 * @param needZall whether or not Zall has to be computed for output generation
 	 */
 	OutputConstraint(	  const size_t reportMax = 1
 						, const ReportOverlap reportOverlap = OVERLAP_BOTH
 						, const E_type maxE = 0.0
 						, const E_type deltaE = E_INF
 						, const bool bestSeedOnly = false
-						, const bool noLP = false );
+						, const bool noLP = false
+						, const bool needZall = false );
 
 	//! destruction
 	virtual ~OutputConstraint();

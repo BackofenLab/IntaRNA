@@ -20,7 +20,7 @@
 
 ////////////////  GARBAGE COLLECTION  ///////////////////
 
-#define  INTARNA_CLEANUP(pointer) if (pointer != NULL) {delete pointer; pointer=NULL;}
+template<class T> void INTARNA_CLEANUP( T *& pointer) { if (pointer != NULL) {delete pointer; pointer=NULL;} }
 
 ////////////////  ABORT NON-IMPLEMENTED  ////////////////
 
@@ -79,7 +79,7 @@ namespace IntaRNA {
 
 	//! type for energy values (energy + accessibility [ED]) (internally)
 	typedef int E_type;
-	const E_type E_INF = (std::numeric_limits<E_type>::max() / 2) + 1;
+	const E_type E_INF = (std::numeric_limits<E_type>::max() / 8) + 1;
 	const E_type E_MAX = E_INF / 2;
 
 	//! type for probabilities, RT and Boltzmann values
@@ -193,6 +193,8 @@ namespace IntaRNA {
  * - & std::cerr : if outName == STDERR
  * - new std::fstream( outName ) : else if outName non-empty
  *
+ * If the filename ends in '.gz', gzip compression and binary output is enabled.
+ *
  * @param outName the name of the output to open. use STDOUT/STDERR for the
  *        respective output stream or otherwise a filename to be created.
  *
@@ -204,14 +206,42 @@ newOutputStream( const std::string & outName );
 
 
 /**
- * Deletes an output stream pointer returned by newOutputStream().
+ * Deletes an output stream pointer returned by newOutputStream() and sets it to NULL.
  * If it is a file stream, it is closed before deletion.
- * If it is pointing to std::cout or std::cerr, nothing is done.
+ * If it is pointing to std::cout or std::cerr, only the pointer is reset to NULL.
  *
- * @param outStream the pointer to the output stream to delete
+ * @param outStream the pointer to the output stream to delete; will be set to NULL
  */
 void
-deleteOutputStream( std::ostream * outStream );
+deleteOutputStream( std::ostream *& outStream );
+
+/**
+ * Returns an open input stream for the given input name, i.e.
+ *
+ * - & std::cin : if inName == STDIN
+ * - new std::fstream( inName ) : else inName non-empty
+ *
+ * If the filename ends in '.gz', gzip compression and binary input is enabled.
+ *
+ * @param inName the name of the input to open. use STDIN for the
+ *        respective input stream or otherwise a filename to be created.
+ *
+ * @return the open input stream, or NULL in error case
+ *
+ */
+std::istream *
+newInputStream( const std::string & inName );
+
+
+/**
+ * Deletes an input stream pointer returned by newInputStream() and sets it to NULL.
+ * If it is a file stream, it is closed before deletion.
+ * If it is pointing to std::cin, only the pointer is reset to NULL.
+ *
+ * @param inStream the pointer to the input stream to delete; will be set to NULL
+ */
+void
+deleteInputStream( std::istream *& inStream );
 
 } // namespace
 

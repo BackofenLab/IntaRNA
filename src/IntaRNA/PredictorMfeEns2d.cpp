@@ -15,7 +15,6 @@ PredictorMfeEns2d(
  : PredictorMfeEns(energy,output,predTracker)
 	, hybridZ( 0,0 )
 {
-	checkKeyBoundaries(std::max(energy.getAccessibility1().getMaxLength(), energy.getAccessibility2().getMaxLength()));
 }
 
 
@@ -33,20 +32,16 @@ PredictorMfeEns2d::
 void
 PredictorMfeEns2d::
 predict( const IndexRange & r1
-		, const IndexRange & r2
-		, const OutputConstraint & outConstraint )
+		, const IndexRange & r2 )
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 #if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_omp_logOutput)
 #endif
 	{ VLOG(2) <<"predicting ensemble mfe interactions in O(n^2) space..."; }
 	// measure timing
 	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
-
-	// suboptimal setup check
-	if (outConstraint.reportMax>1 && outConstraint.reportOverlap != OutputConstraint::ReportOverlap::OVERLAP_BOTH) {
-		throw std::runtime_error("PredictorMfeEns2d : the enumeration of non-overlapping suboptimal interactions is not supported in this prediction mode");
-	}
 
 #if INTARNA_IN_DEBUG_MODE
 	// check indices
@@ -65,9 +60,9 @@ predict( const IndexRange & r1
 						, (r2.to==RnaSequence::lastPos?energy.size2()-1:r2.to)-r2.from+1 ) );
 
 	// initialize mfe interaction for updates
-	initOptima( outConstraint );
+	initOptima();
 	// initialize overall partition function for updates
-	initZ( outConstraint );
+	initZ();
 
 	// for all right ends j1
 	for (size_t j1 = hybridZ.size1(); j1-- > 0; ) {
@@ -84,18 +79,8 @@ predict( const IndexRange & r1
 				continue;
 
 			// fill matrix and store best interaction
-			fillHybridZ( j1, j2, outConstraint, 0, 0, true );
+			fillHybridZ( j1, j2, 0, 0, true );
 
-		}
-	}
-
-	// update ensemble mfe
-	for (std::unordered_map<size_t, ZPartition >::const_iterator it = Z_partitions.begin(); it != Z_partitions.end(); ++it)
-	{
-		// if partition function is > 0
-		if (Z_isNotINF(it->second.partZ) && it->second.partZ > 0) {
-			//LOG(DEBUG) << "partZ: " << it->second.partZ;
-			PredictorMfe::updateOptima( it->second.i1, it->second.j1, it->second.i2, it->second.j2, energy.getE(it->second.partZ), true );
 		}
 	}
 
@@ -110,10 +95,11 @@ predict( const IndexRange & r1
 void
 PredictorMfeEns2d::
 fillHybridZ( const size_t j1, const size_t j2
-			, const OutputConstraint & outConstraint
 			, const size_t i1init, const size_t i2init
-			, const bool callUpdateOptima )
+			, const bool callUpdateZ )
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 #if INTARNA_IN_DEBUG_MODE
 	if (i1init > j1)
 		throw std::runtime_error("PredictorMfeEns2d::fillHybridZ() : i1init > j1 : "+toString(i1init)+" > "+toString(j1));
@@ -143,7 +129,7 @@ fillHybridZ( const size_t j1, const size_t j2
 		for (i2=j2+1; i2-- > i2start; ) {
 
 			// init: mark as invalid boundary
-			hybridZ(i1,i2) = 0.0;
+			hybridZ(i1,i2) = Z_type(0.0);
 
 			// check if this cell is to be computed (!=E_INF)
 			if( energy.isAccessible1(i1)
@@ -155,13 +141,13 @@ fillHybridZ( const size_t j1, const size_t j2
 				w2 = j2-i2+1;
 
 				// reference access to cell value
-				Z_type &curMinE = hybridZ(i1,i2);
+				Z_type &curZ = hybridZ(i1,i2);
 
 				// either interaction initiation
 				if ( i1==j1 && i2==j2)  {
 					if (noLpShift == 0) {
 						// single base pair
-						curMinE = energy.getBoltzmannWeight(energy.getE_init());
+						curZ = energy.getBoltzmannWeight(energy.getE_init());
 					}
 				}
 				else
@@ -172,7 +158,7 @@ fillHybridZ( const size_t j1, const size_t j2
 					if (noLpShift == 0) {
 						// test full-width internal loop energy (nothing between i and j)
 						// will be E_INF if loop is too large
-						curMinE = energy.getBoltzmannWeight(energy.getE_interLeft(i1,j1,i2,j2))
+						curZ = energy.getBoltzmannWeight(energy.getE_interLeft(i1,j1,i2,j2))
 								* hybridZ(j1,j2);
 					} else {
 						// no lp allowed
@@ -185,7 +171,7 @@ fillHybridZ( const size_t j1, const size_t j2
 							iStackZ = energy.getBoltzmannWeight(energy.getE_interLeft(i1,i1+noLpShift,i2,i2+noLpShift));
 
 							// init with stacking only
-							curMinE = iStackZ * ((w1==2&&w2==2) ? energy.getBoltzmannWeight(energy.getE_init()) : hybridZ(i1+noLpShift, i2+noLpShift) );
+							curZ = iStackZ * ((w1==2&&w2==2) ? energy.getBoltzmannWeight(energy.getE_init()) : hybridZ(i1+noLpShift, i2+noLpShift) );
 						} else {
 							//
 							iStackZ = Z_INF;
@@ -196,10 +182,14 @@ fillHybridZ( const size_t j1, const size_t j2
 					if (w1 > 2 && w2 > 2 && Z_isNotINF(iStackZ)) {
 						for (k1=std::min(j1-1,i1+energy.getMaxInternalLoopSize1()+1+noLpShift); k1>i1+noLpShift; k1--) {
 						for (k2=std::min(j2-1,i2+energy.getMaxInternalLoopSize2()+1+noLpShift); k2>i2+noLpShift; k2--) {
+							// ensure at least one unpaired base in connecting loop for noLP predictions
+							if (outConstraint.noLP && k1-1==i1+noLpShift && k2-1==i2+noLpShift) {
+								continue;
+							}
 							// check if (k1,k2) are valid left boundary
 							if ( ! Z_equal( hybridZ(k1,k2), 0.0 ) ) {
 								// update minimal value
-								curMinE += iStackZ * energy.getBoltzmannWeight(energy.getE_interLeft(i1+noLpShift,k1,i2+noLpShift,k2)) * hybridZ(k1,k2);
+								curZ += iStackZ * energy.getBoltzmannWeight(energy.getE_interLeft(i1+noLpShift,k1,i2+noLpShift,k2)) * hybridZ(k1,k2);
 							}
 						}
 						}
@@ -207,62 +197,14 @@ fillHybridZ( const size_t j1, const size_t j2
 				}
 
 				// update mfe if needed
-				if (callUpdateOptima) {
-					updateZ(i1, j1, i2, j2, curMinE);
+				if (callUpdateZ) {
+					updateZ(i1, j1, i2, j2, curZ, true);
 				}
 
 			} // complementary base pair
 		}
 	}
 
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-void
-PredictorMfeEns2d::
-traceBack( Interaction & interaction, const OutputConstraint & outConstraint  )
-{
-	// check if something to trace
-	if (interaction.basePairs.size() < 2) {
-		return;
-	}
-
-#if INTARNA_IN_DEBUG_MODE
-	// sanity checks
-	if ( interaction.basePairs.size() != 2 ) {
-		throw std::runtime_error("PredictorMfeEns2d::traceBack() : given interaction does not contain boundaries only");
-	}
-#endif
-
-	// ensure sorting
-	interaction.sort();
-
-	// check for single base pair interaction
-	if (interaction.basePairs.at(0).first == interaction.basePairs.at(1).first) {
-		// delete second boundary (identical to first)
-		interaction.basePairs.resize(1);
-		// update done
-		return;
-	}
-
-#if INTARNA_IN_DEBUG_MODE
-	// sanity checks
-	if ( ! interaction.isValid() ) {
-		throw std::runtime_error("PredictorMfeEns2d::traceBack() : given interaction is not valid");
-	}
-#endif
-
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-void
-PredictorMfeEns2d::
-getNextBest( Interaction & curBest )
-{
-	curBest.energy = E_INF;
-	curBest.basePairs.clear();
 }
 
 ////////////////////////////////////////////////////////////////////////////

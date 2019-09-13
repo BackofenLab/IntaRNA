@@ -50,8 +50,8 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 		// init according to no seed interaction
 		seed(i1-offset1,i2-offset2) = SeedMatrix::value_type( E_INF, 0 );
 
-		// skip non-complementary left seed boundaries
-		if (!isFeasibleSeedBasePair(i1,i2)) {
+		// skip non-complementary or infeasible left seed boundaries
+		if (!isFeasibleSeedBasePair(i1,i2,true)) {
 			continue; // go to next seedE index
 		}
 
@@ -71,9 +71,9 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 				// get right seed boundaries
 				j1 = i1+bpIn+1+u1;
 				j2 = i2+bpIn+1+u2;
-				// check if right boundary is complementary
+				// check if right boundary is complementary and feasible
 				// check if this index range is to be considered for seed search
-				bool validSeedSite = isFeasibleSeedBasePair(j1,j2);
+				bool validSeedSite = isFeasibleSeedBasePair(j1,j2,true);
 
 				// init current seed energy
 				curE = E_INF;
@@ -216,8 +216,6 @@ traceBackSeed( Interaction & interaction
 
 	// get energy of provided seed
 	E_type curE = getSeedE(i1_,i2_,bpInbetween,u1_,u2_);
-
-	// TODO: if (umax==0) just add remaining base pairs (no trace needed)
 
 	// trace seed
 	// trace each seed base pair (excluding right most)

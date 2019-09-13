@@ -57,9 +57,11 @@ if (!getopts("ht:q:l:n:o:", \%args) or (defined $args{h} && $args{h}==1)) {
 # setup example data
 
 # OxyS-fhlA
-$args{t} = "aguuagucaaugaccuuuugcaccgcuuugcggugcuuuccuggaacaacaaaaugucauauacaccgaugagugaucucggacaacaaggguuguucgacaucacucggaca"; # fhlA (from figure)
-$args{q} = "gaaacggagcggcaccucuuuuaacccuugaagucacugcccguuucgagaguuucucaacucgaauaacuaaagccaacgugaacuuuugcggaucuccaggauccgc"; # OxyS (from figure)
-$args{q} = "AGAATAGCAATGAACGATTATCCCTATCAAGCATTCTGACTGATAATTGCTCACAGAAACGGAGCGGCACCTCTTTTAACCCTTGAAGTCACTGCCCGTTTCGAGAGTTTCTCAACTCGAATAACTAAAGCCAACGTGAACTTTTGCGGATCTCCAGGATCCGCTTTTTTTTGCCATAAAAAA"; # OxyS (from Rfam)
+$args{t} = "aguuagucaaugaccuuuugcaccgcuuugcggugcuuuccuggaacaacaaaaugucauauacaccgaugagugaucucggacaacaaggguuguucgacaucacucggaca"; # fhlA (from figure doi:10.1006/jmbi.2000.3942:Fig7)
+$args{q} = "gaaacggagcggcaccucuuuuaacccuugaagucacugcccguuucgagaguuucucaacucgaauaacuaaagccaacgugaacuuuugcggaucuccaggauccgc"; # OxyS (from figure doi:10.1006/jmbi.2000.3942:Fig7) 
+$args{q} = "AGAAUAGCAAUGAACGAUUAUCCCUAUCAAGCAUUCUGACUGAUAAUUGCUCACAGAAACGGAGCGGCACCUCUUUUAACCCUUGAAGUCACUGCCCGUUUCGAGAGUUUCUCAACUCGAAUAACUAAAGCCAACGUGAACUUUUGCGGAUCUCCAGGAUCCGCUUUUUUUUGCCAUAAAAAA"; # OxyS (from Rfam)
+
+# Spot42 example https://www.embopress.org/cgi/doi/10.1038/emboj.2012.52
 
 # accessFold example
 #$args{t} = "AUGGUUGUAAUUCCGGCAAUCUGGAGGCGUUCUGGACAGGGGUUCGAUUCCCCUCACCUCCACCA"; # accessfold example from figure
