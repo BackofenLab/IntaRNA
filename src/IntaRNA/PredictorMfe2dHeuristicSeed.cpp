@@ -179,12 +179,8 @@ fillHybridE()
 							// update optimum
 							if ( curEseedtotal < curCellSeedEtotal )
 							{
-								// update current best for this left boundary
-								// right boundary
-								curCellSeed->j1 = sj1;
-								curCellSeed->j2 = sj2;
-								// set new energy
-								curCellSeed->val = curE;
+								// update current best to seed-only
+								*curCellSeed = BestInteractionE( curE, sj1, sj2 );
 								// store total energy
 								curCellSeedEtotal = curEseedtotal;
 							}
@@ -226,14 +222,14 @@ fillHybridE()
 							} } // w1 w2
 						}  // noLP
 
-						// check direct right extension of seed
+						// check direct true-right extension of seed
 						rightExt = &(hybridE(sj1,sj2));
 						if (E_isNotINF(rightExt->val)) {
 							// get energy of seed interaction with best right extension
 							curE = seedE + rightExt->val;
 							// check if this combination yields better energy
 							curEseedtotal = energy.getE(i1,rightExt->j1,i2,rightExt->j2,curE);
-							// update Zall
+							// update Zall (avoid duplicated consideration of seed-only)
 							if (sj1 < rightExt->j1) {
 								updateZall( i1,rightExt->j1,i2,rightExt->j2, curEseedtotal, false );
 							}
@@ -253,7 +249,7 @@ fillHybridE()
 					}
 				}
 
-
+				// if !noLP or stacking bp possible
 				if (E_isNotINF(iStackE))  {
 					// iterate over all loop sizes w1 (seq1) and w2 (seq2) (minus 1)
 					for (w1=1; w1-1 <= energy.getMaxInternalLoopSize1() && i1+noLpShift+w1<hybridE.size1(); w1++) {

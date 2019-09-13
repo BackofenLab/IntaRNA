@@ -54,6 +54,9 @@
      + bugfix: additional check for outConstraint.needZall
  * IntaRNA/PredictorMfe :
    - min*Energy : obsolete
+ * IntaRNA/PredictorMfe2dHeuristicSeed :
+   * fillHybridE() :
+     * bugfix Zall update : seed-only also if !noLP
  * IntaRNA/InteractionEnergyIdxOffset : 
    + bugfix: adding missing offset-based overwrites
  * IntaRNA/OutputConstraint :
