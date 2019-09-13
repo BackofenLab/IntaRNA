@@ -64,9 +64,13 @@
  * bin/CommandLineParsing :
    * input file handling replaced with new|deleteInStream
    + outNoGUend : whether or not GU is allowed at interaction and helix ends
+   * IntaRNAsTar :
+     + outNoGUend
+     + outNoLP
  * README.md :
    + gzip compression docu
    + outNoGUend docu
+   * IntaRNAsTar docu
  * tests :
    + outNoGUend
 

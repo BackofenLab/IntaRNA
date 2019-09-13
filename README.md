@@ -934,14 +934,18 @@ by thermodynamics.
 ### IntaRNAsTar
 
 **IntaRNAsTar** provides optimized parameters for large scale (genome-wide) sRNA
-target prediction identified via the benchmarking introduced in our publication 
+target prediction identified via the benchmark introduced in our publication 
 (Raden et al., 2019). This covers
 
 - [no GU base pairs in seeds](#seed)
 - [minimal unpaired probability of 0.001 of seed regions](#seed)
 - [maximal interaction length of 60](#interConstr)
 - [maximal interior loop size of 8](#energy)
-- [minimal unpaired probability of 0.001 of interacting reginos](#interConstr)
+- [minimal unpaired probability of 0.001 of interacting regions](#interConstr)
+
+Furthermore, it ensures 
+- [no GU base pairs at helix or interaction ends](#interConstr)
+- [no lonely base pairs](#interConstr)
 
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)

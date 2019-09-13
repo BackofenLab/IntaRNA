@@ -234,6 +234,8 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		resetParamDefault<>(seedMaxEhybrid, 999, "seedMaxEhybrid");
 		resetParamDefault<>(seedNoGU, false, "seedNoGU");
 		resetParamDefault<>(seedNoGUend, false, "seedNoGUend");
+		resetParamDefault<>(outNoLP, false, "outNoLP");
+		resetParamDefault<>(outNoGUend, false, "outNoGUend");
 		break;
 	case IntaRNA2 :
 		// IntaRNA v2 parameters
@@ -260,6 +262,8 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		resetParamDefault<>(seedMaxEhybrid, 999, "seedMaxEhybrid");
 		resetParamDefault<>(seedNoGU, false, "seedNoGU");
 		resetParamDefault<>(seedNoGUend, false, "seedNoGUend");
+		resetParamDefault<>(outNoLP, false, "outNoLP");
+		resetParamDefault<>(outNoGUend, false, "outNoGUend");
 		break;
 	case IntaRNAens :
 		// ensemble-based predictions
@@ -300,6 +304,9 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		resetParamDefault<>(qIntLenMax, 60, "qIntLenMax");
 		resetParamDefault<>(qIntLoopMax, 8, "qIntLoopMax");
 		resetParamDefault<>(outMinPu, 0.001, "outMinPu");
+		// new features added with 3.1.0
+		resetParamDefault<>(outNoLP, true, "outNoLP");
+		resetParamDefault<>(outNoGUend, true, "outNoGUend");
 		break;
 	default : // no changes
 		break;
