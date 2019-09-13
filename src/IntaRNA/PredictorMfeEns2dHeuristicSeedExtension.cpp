@@ -138,7 +138,7 @@ fillHybridZ_right( const size_t sj1, const size_t sj2
 				updateOptRightZ( si1,sj1+r1,si2,sj2+r2, energy.getE(seedZ * rightExtZ * initZ) );
 				// update overall partition function information for true right-extensions of the current seed
 				// seed only not covered due to min-val of r1,r2
-				updateZ(si1, sj1+r1, si2, sj2+r2, seedZ * rightExtZ * initZ, true);
+				updateZ(si1, sj1+r1, si2, sj2+r2, seedZ * rightExtZ * initZ);
 			}
 
 		}
@@ -172,7 +172,7 @@ fillHybridZ_left( const size_t si1, const size_t si2 )
 			if ( !Z_equal(curZ,0.0) ) {
 
 				// Z( left + seed ); covers seed only
-				updateZ(si1-l1, sj1, si2-l2, sj2, curZ * seedZ, true);
+				updateZ(si1-l1, sj1, si2-l2, sj2, curZ * seedZ);
 
 				// Z( left + seed + rightOpt ) and rightOpt true seed extension
 				if (	l1 > 0 // true left seed extension
@@ -183,7 +183,7 @@ fillHybridZ_left( const size_t si1, const size_t si2 )
 					&& 	j2opt+1-(si2-l2) <= energy.getAccessibility2().getMaxLength()
 					)
 				{
-					updateZ(si1-l1, j1opt, si2-l2, j2opt, curZ * seedZ * rightOptZ, true);
+					updateZ(si1-l1, j1opt, si2-l2, j2opt, curZ * seedZ * rightOptZ);
 				}
 			}
 		} // i2

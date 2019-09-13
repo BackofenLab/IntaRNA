@@ -73,15 +73,6 @@ public:
 	void
 	reportZ( SeedHandler *seedHandler );
 
-private:
-
-	/**
-	 * Generates key for storing values in map
-	 */
-	size_t
-	generateMapKey( const size_t i1, const size_t j1
-						, const size_t i2, const size_t j2 ) const;
-
 protected:
 
 	//! data container to encode a site with respective partition function

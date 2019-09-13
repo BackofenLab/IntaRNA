@@ -134,7 +134,7 @@ fillHybridZ()
 				// current best total energy value (covers to far E_init only)
 				curCellEtotal = energy.getE(i1,i1+noLpShift, i2,i2+noLpShift ,energy.getE(curCell->val));
 				// update overall partition function information for initial bps only
-				updateZ( i1,curCell->j1, i2,curCell->j2, curCell->val, true );
+				updateZ( i1,curCell->j1, i2,curCell->j2, curCell->val );
 
 				// iterate over all loop sizes w1 (seq1) and w2 (seq2) (minus 1)
 				for (w1=1; w1-1 <= energy.getMaxInternalLoopSize1() && i1+w1+noLpShift<hybridZ.size1(); w1++) {
@@ -156,7 +156,7 @@ fillHybridZ()
 					curZ = iStackZ * energy.getBoltzmannWeight(energy.getE_interLeft(i1+noLpShift,i1+noLpShift+w1,i2+noLpShift,i2+noLpShift+w2)) * rightExt->val;
 
 					// update overall partition function information for current right extension
-					updateZ( i1,rightExt->j1, i2,rightExt->j2, curZ, true );
+					updateZ( i1,rightExt->j1, i2,rightExt->j2, curZ );
 
 					// check if this combination yields better energy
 					curEtotal = energy.getE(i1,rightExt->j1, i2,rightExt->j2, energy.getE(curZ));
@@ -177,7 +177,7 @@ fillHybridZ()
 				} // w1
 
 				// update mfe if needed
-				updateZ( i1,curCell->j1, i2,curCell->j2, curCell->Z );
+				updateZ( i1,curCell->j1, i2,curCell->j2, curCell->val );
 
 			} // valid base pair
 

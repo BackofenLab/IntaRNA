@@ -85,7 +85,7 @@ predict( const IndexRange & r1
 	}
 
 	// report mfe interaction
-	reportOptima( outConstraint );
+	reportOptima();
 
 	reportZ( NULL );
 }
@@ -198,7 +198,7 @@ fillHybridZ( const size_t j1, const size_t j2
 
 				// update mfe if needed
 				if (callUpdateZ) {
-					updateZ(i1, j1, i2, j2, curZ, true);
+					updateZ(i1, j1, i2, j2, curZ);
 				}
 
 			} // complementary base pair
