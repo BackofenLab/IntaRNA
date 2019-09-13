@@ -149,7 +149,9 @@ updateOptRightZ( const size_t i1, const size_t j1
 {
 	// store boundaries and energy of the optimal right extension
 	E_type fullE = energy.getE( i1, j1, i2, j2, hybridE );
-	if (fullE < E_right_opt) {
+	if (fullE < E_right_opt
+			&& (!output.getOutputConstraint().noGUend || !energy.isGU(j1,j2)))
+	{
 		E_right_opt = fullE;
 		j1opt = j1;
 		j2opt = j2;

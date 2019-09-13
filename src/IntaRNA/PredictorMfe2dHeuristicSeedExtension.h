@@ -90,7 +90,7 @@ protected:
 	using PredictorMfe2dSeedExtension::hybridE_right;
 
   //! optimal energy of the right extension
-	E_type energy_opt;
+	E_type E_right_opt;
 
 	//! boundaries of the right extension with the optimal energy
 	size_t j1opt, j2opt;
@@ -154,10 +154,14 @@ updateOptimalRightExt( const size_t i1, const size_t j1
 		, const E_type energy
 		, const bool isHybridE )
 {
-	// store boundaries and energy of the optimal right extension
 	E_type fullE = isHybridE ? this->energy.getE(i1,j1,i2,j2,energy) : energy;
-	if (fullE < energy_opt) {
-		energy_opt = fullE;
+	// if energy lower
+	// if valid right boundary
+	if (fullE < E_right_opt
+			&& (!output.getOutputConstraint().noGUend || !this->energy.isGU(j1,j2)))
+	{
+		// store boundaries and energy of the optimal right extension
+		E_right_opt = fullE;
 		j1opt = j1;
 		j2opt = j2;
 	}

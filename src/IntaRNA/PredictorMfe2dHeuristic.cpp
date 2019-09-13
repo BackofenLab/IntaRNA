@@ -107,8 +107,8 @@ fillHybridE()
 					&& energy.isAccessible2(i2)
 					&& energy.areComplementary(i1,i2) )
 			{
-				// no lp allowed
-				if (noLpShift != 0) {
+				// no LP allowed
+				if (outConstraint.noLP) {
 					// check if right-side stacking of (i1,i2) is possible
 					if ( i1+noLpShift < energy.size1()
 						&& i2+noLpShift < energy.size2()
@@ -125,12 +125,15 @@ fillHybridE()
 				}
 
 				// set to interaction initiation with according boundary
-				*curCell = BestInteractionE(iStackE + energy.getE_init(), i1+noLpShift, i2+noLpShift);
-
-				// current best total energy value (covers to far E_init only)
-				curCellEtotal = energy.getE(i1,curCell->j1,i2,curCell->j2,curCell->val);
-				// update Zall
-				updateZall( i1,curCell->j1,i2,curCell->j2, curCellEtotal, false );
+				// if valid right boundary
+				if (!outConstraint.noGUend || !energy.isGU(i1+noLpShift,i2+noLpShift))
+				{
+					*curCell = BestInteractionE(iStackE + energy.getE_init(), i1+noLpShift, i2+noLpShift);
+					// current best total energy value (covers to far E_init only)
+					curCellEtotal = energy.getE(i1,curCell->j1,i2,curCell->j2,curCell->val);
+					// update Zall
+					updateZall( i1,curCell->j1,i2,curCell->j2, curCellEtotal, false );
+				}
 
 				// iterate over all loop sizes w1 (seq1) and w2 (seq2) (minus 1)
 				for (w1=1; w1-1 <= energy.getMaxInternalLoopSize1() && i1+w1+noLpShift<hybridE.size1(); w1++) {

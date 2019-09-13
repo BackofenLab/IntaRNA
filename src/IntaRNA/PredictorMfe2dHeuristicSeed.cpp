@@ -143,12 +143,15 @@ fillHybridE()
 				}
 
 				// set to interaction initiation with according boundary
-				if (E_isNotINF(iStackE))  {
+				// if valid iStackE value
+				// if valid right boundary
+				if (E_isNotINF(iStackE)
+						&& (!outConstraint.noGUend || !energy.isGU(i1+noLpShift,i2+noLpShift)))
+				{
 					*curCell = BestInteractionE(iStackE+energy.getE_init(), i1+noLpShift, i2+noLpShift);
+					// current best total energy value (covers to far E_init only)
+					curCellEtotal = energy.getE(i1,curCell->j1,i2,curCell->j2,curCell->val);
 				}
-
-				// current best total energy value (covers to far E_init only)
-				curCellEtotal = energy.getE(i1,curCell->j1,i2,curCell->j2,curCell->val);
 
 				// no base case with seed so far
 				curEseedtotal = E_INF;
