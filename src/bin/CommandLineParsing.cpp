@@ -1658,26 +1658,9 @@ getQueryAccessibility( const size_t sequenceNumber ) const
 
 	case 'E' : // drop to next handling
 	case 'P' : { // VRNA RNAplfold unpaired probability file output
-		std::istream * accStream = NULL;
-		std::ifstream * accFileStream = NULL;
-		if ( boost::iequals(qAccFile,"STDIN") ) {
-			accStream = &(std::cin);
-		} else {
-			// file support : add sequence-specific prefix (for multi-sequence input)
-			accFileStream = new std::ifstream( getFullFilename(qAccFile, NULL, &(seq)) );
-			try {
-				if(!accFileStream->good()){
-					accFileStream->close();
-					 INTARNA_CLEANUP(accFileStream);
-					throw std::runtime_error("accessibility parsing of --qAccFile : could not open file '"+qAccFile+"'");
-				}
-			} catch (std::exception & ex) {
-				accFileStream->close();
-				 INTARNA_CLEANUP(accFileStream);
-				throw std::runtime_error("accessibility parsing of --qAccFile : error while opening '"+qAccFile+"' : "+ex.what());
-			}
-			// set file stream as input stream
-			accStream = accFileStream;
+		std::istream * accStream = newInputStream( getFullFilename(qAccFile, NULL, &(seq)) );
+		if (accStream == NULL) {
+			throw std::runtime_error("accessibility parsing of --qAccFile : could not open file '"+qAccFile+"'");
 		}
 		Accessibility * acc = new AccessibilityFromStream( seq
 										, qIntLenMax.val
@@ -1686,10 +1669,7 @@ getQueryAccessibility( const size_t sequenceNumber ) const
 										, (qAcc.val == 'P' ? AccessibilityFromStream::Pu_RNAplfold_Text : AccessibilityFromStream::ED_RNAplfold_Text)
 										, vrnaHandler.getRT() );
 		// cleanup
-		if ( accFileStream != NULL ) {
-			accFileStream->close();
-			 INTARNA_CLEANUP( accFileStream );
-		}
+		deleteInputStream( accStream );
 		return acc;
 	}
 
@@ -1751,27 +1731,9 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 
 	case 'E' : // drop to next handling
 	case 'P' : { // VRNA RNAplfold unpaired probability file output
-		std::istream * accStream = NULL;
-		std::ifstream * accFileStream = NULL;
-		// select stream to read from
-		if ( boost::iequals(tAccFile,"STDIN") ) {
-			accStream = &(std::cin);
-		} else {
-			// file support : add sequence-specific prefix (for multi-sequence input)
-			accFileStream = new std::ifstream( getFullFilename(tAccFile, &(seq), NULL) );
-			try {
-				if(!accFileStream->good()){
-					accFileStream->close();
-					 INTARNA_CLEANUP(accFileStream);
-					throw std::runtime_error("accessibility parsing of --tAccFile : could not open file '"+tAccFile+"'");
-				}
-			} catch (std::exception & ex) {
-				accFileStream->close();
-				 INTARNA_CLEANUP(accFileStream);
-				throw std::runtime_error("accessibility parsing of --tAccFile : error while opening '"+tAccFile+"' : "+ex.what());
-			}
-			// set file stream as input stream
-			accStream = accFileStream;
+		std::istream * accStream = newInputStream( getFullFilename(tAccFile, &(seq), NULL) );
+		if (accStream == NULL) {
+			throw std::runtime_error("accessibility parsing of --tAccFile : could not open file '"+tAccFile+"'");
 		}
 		// read data
 		Accessibility * acc = new AccessibilityFromStream( seq
@@ -1781,10 +1743,7 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 										, ( tAcc.val == 'P' ? AccessibilityFromStream::Pu_RNAplfold_Text : AccessibilityFromStream::ED_RNAplfold_Text )
 										, vrnaHandler.getRT() );
 		// cleanup
-		if ( accFileStream != NULL ) {
-			accFileStream->close();
-			 INTARNA_CLEANUP( accFileStream );
-		}
+		deleteInputStream( accStream );
 		return acc;
 	}
 	case 'C' : // compute accessibilities
@@ -1905,20 +1864,20 @@ parseSequences(const std::string & paramName,
 	} else
 	{
 		// open file handle
-		std::ifstream infile(paramArg);
+		std::istream * infile = newInputStream( paramArg );
 		try {
-			if(!infile.good()){
+			if (infile == NULL) {
 				LOG(ERROR) <<"FASTA parsing of "<<paramName<<" : could not open FASTA file  '"<<paramArg<<"'";
 				updateParsingCode( ReturnCode::STOP_PARSING_ERROR );
 			} else {
-				parseSequencesFasta(paramName, infile, sequences, seqSubset);
+				parseSequencesFasta(paramName, *infile, sequences, seqSubset);
 			}
 		} catch (std::exception & ex) {
 			LOG(ERROR) <<"error while FASTA parsing of "<<paramName<<" : "<<ex.what();
 			updateParsingCode( ReturnCode::STOP_PARSING_ERROR );
 		}
 		// close stream
-		infile.close();
+		deleteInputStream( infile );
 	}
 
 	// holds current validation status to supress checks once a validation failed

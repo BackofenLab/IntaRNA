@@ -426,6 +426,9 @@ sequences using the `--qSet` or `--tSet` parameter as shown in the following.
 IntaRNA -t myTranscriptome.fasta --tSet=101-200 -q myQuery.fasta
 ```
 
+Furthermore, also gzip-compressed file input is supported and automatically
+decompressed if the file name ends in `.gz`. 
+
 Nucleotide encodings different from `ACGUT` are rewritten as `N` and the respective
 positions are not considered to form base pairs (and thus ignored).
 Thymine `T` encodings are replaced by uracil `U`, since we apply an RNA-only
@@ -505,7 +508,7 @@ from a parameter file. Thus, you can (silently) overwrite parameters that
 you have specified within the file.
 
 *Note further:* parameter parsing from parameter file is (in contrast to the
-command line parsing) case sensitive!
+command line parsing) **case sensitive**!
 
 
 
@@ -1037,8 +1040,9 @@ is completely removed.
 
 Finally, it is possible to restrict the overall length an interaction is allowed
 to have. This can be done independently for the query and target sequence using
-`--qIntLenMax` and `--tIntLenMax`, respectively. Both default to the full sequence
-length (by setting both to 0).
+`--qIntLenMax` and `--tIntLenMax`, respectively. By setting both to 0 (default),
+the smaller of the full sequence length and the maximal accessibility-window
+size (`--tAccW`, `--qAccW`) is used.
 
 
 
@@ -1203,10 +1207,13 @@ you can either name a file or one of the stream names `STDOUT`|`STDERR`. Note,
 any string not matching one of the two stream names is considered a file name.
 The file will be overwritten by IntaRNA!
 
+If a file name ends in `.gz`, gzip-compressed binary output is generated.
+
 Besides interaction output, you can set the verbosity of computation information
 using the `-v` or `--verbose` arguments. To reduce the output to a minimum, you
 can redirect all logging output of user information, warnings or verbose output
-to a specific file using `--default-log-file=LOGFILENAME`.
+to a specific file using `--default-log-file=LOGFILENAME` (no gzip compression
+supported).
 If you are not interested in any logging output, redirect it to nirvana via
 `--default-log-file=/dev/null`. Note, error output is not redirected and always
 given on standard output streams.
@@ -1443,10 +1450,9 @@ IntaRNA --model=P --mode=M --out=E ...
 Besides the identification of the optimal (e.g. minimum-free-energy) RNA-RNA
 interaction, IntaRNA enables the enumeration of suboptimal interactions. To this
 end, the argument `-n N` or `--outNumber=N` can be used to generate up to `N`
-interactions for each query-target pair (including the optimal one). Note, the
-suboptimal enumeration is increasingly sorted by energy.
+interactions for each query-target pair (including the optimal one).
 
-Note: suboptimal interaction enumeration is not exhaustive! That is, for each
+*Note*: suboptimal interaction enumeration is not exhaustive! That is, for each
 interaction site (defined by the left- and right-most intermolecular base pair)
 only the best interaction is reported! In heuristic prediction mode (default
 mode of IntaRNA), this is even less exhaustive, since only for each left-most
@@ -1457,12 +1463,18 @@ Furthermore, it is possible to *restrict (sub)optimal enumeration* using
 - `--outMaxE` : maximal energy for any interaction reported
 - `--outDeltaE` : maximal energy difference of suboptimal interactions' energy
   to the minimum free energy interaction
-- `--outOverlap` : defines if an where overlapping of reported interaction sites
+- `--outOverlap` : defines if and where overlapping of reported interaction sites
   is allowed:
   - 'N' : no overlap neither in target nor query allowed for reported interactions
   - 'B' : overlap allowed for interacting subsequences for both target and query
   - 'T' : overlap allowed for interacting subsequences in target only
   - 'Q' : overlap allowed for interacting subsequences in query only
+  
+*Note*: non-overlapping output (i) is heuristic by considering for each left 
+interaction site only the best right extension for overlap computation and 
+(ii) increases runtime. To get optimized results of non-overlapping suboptimals,
+rerun IntaRNA and mark the optimal (mfe) interaction region as 
+[blocked](#accConstraints).
 
 
 
@@ -1480,7 +1492,7 @@ supported by IntaRNA.
 
 The temperature can be set via `--temperature=C`to set a temperature `C` in
 degree Celsius. Note, this is important especially for predictions within plants
-etc., since the default temperature is 37°C.
+etc., since the default temperature is 37C.
 
 The energy model used can be specified using the `--energy` parameters using
 
@@ -1539,7 +1551,7 @@ They can be ignored via `--energyNoDangles`.
 
 ## Additional output files
 
-IntaRNA v2 enables the generation of various additional information in dedicated
+IntaRNA enables the generation of various additional information in dedicated
 files/streams. The generation of such output is guided by an according (repeated)
 definition of the `--out` argument in combination with one of the following
 argument prefixes (case insensitive) that have to be colon-separated to the
@@ -1560,6 +1572,12 @@ Note further, `qPu:`|`tPu:` will report unpaired probability values based on rou
 Thus, these values will most likely differ from values eg. produced by RNAplfold.
 We therefore strongly recommend to store `qAcc:`|`tAcc:` values when you want to use them
 as input for subsequent IntaRNA calls!
+
+As for normal output, if the specified file name ends in `.gz`, gzip-compressed
+binary output is generated. This is especially useful for large output data like
+accessibility or unpaired probability information as well as pairwise energy
+or spot probability profiles.
+
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
@@ -1858,6 +1876,8 @@ formats
 | ---- | --- |
 | RNAplfold unpaired probabilities | `RNAplfold -u` or `IntaRNA --out=*Pu:` |
 | RNAplfold-styled ED values | `IntaRNA --out=*Acc:` |
+| ---- | --- |
+| .. with gzip-compression | `IntaRNA --out=*:*.gz` |
 
 The **RNAplfold** format is a table encoding of a banded upper triangular matrix
 with band width l. First row contains a header comment on the data starting with
@@ -1897,9 +1917,9 @@ Another option is to store the accessibility data computed by IntaRNA for
 successive calls using
 
 ```bash
-# storing and reusing (target) accessibility (Pu) data for successive IntaRNA calls
-IntaRNA [..] --out=tPu:intarna.target.pu
-IntaRNA [..] --tAcc=P --tAccFile=intarna.target.pu
+# storing and reusing compressed (target) accessibility (Pu) data for successive IntaRNA calls
+IntaRNA [..] --out=tPu:intarna.target.pu.gz
+IntaRNA [..] --tAcc=P --tAccFile=intarna.target.pu.gz
 # piping (target) accessibilities (ED values) between IntaRNA calls
 IntaRNA [..] --out=tAcc:STDOUT | IntaRNA [..] --tAcc=E --tAccFile=STDIN
 ```
