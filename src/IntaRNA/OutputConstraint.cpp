@@ -12,6 +12,7 @@ OutputConstraint::OutputConstraint(
 		, const E_type deltaE
 		, const bool bestSeedOnly
 		, const bool noLP
+		, const bool noGUend
 		, const bool needZall
 		)
  :
@@ -21,6 +22,7 @@ OutputConstraint::OutputConstraint(
 	, deltaE(deltaE)
 	, bestSeedOnly(bestSeedOnly)
 	, noLP(noLP)
+	, noGUend(noGUend)
 	, needZall(needZall)
 {
 	if(deltaE < (E_type)0.0) throw std::runtime_error("OutputConstraint(deltaE="+toString(deltaE)+") not >= 0.0");

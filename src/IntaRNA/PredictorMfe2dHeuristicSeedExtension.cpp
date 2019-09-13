@@ -181,7 +181,7 @@ fillHybridE_right( const size_t sj1, const size_t sj2
 					// seedE + rightE + E_init (not covered by rightE)
 					updateOptimalRightExt( si1,j1,si2,j2, seedE + curMinE + energy.getE_init(), true );
 					// update mfe for seed+rightExt
-					updateOptima( si1,j1,si2,j2, seedE + curMinE + energy.getE_init(),true);
+					updateOptima( si1,j1,si2,j2, seedE + curMinE + energy.getE_init(),true,true);
 				}
 			}
 		}

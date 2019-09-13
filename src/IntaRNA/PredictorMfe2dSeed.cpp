@@ -262,7 +262,7 @@ fillHybridE( const size_t j1, const size_t j2
 
 				// update mfe if needed
 				if (callUpdateOptima) {
-					updateOptima( i1,j1,i2,j2, curMinEseed, true );
+					updateOptima( i1,j1,i2,j2, curMinEseed, true, true );
 				}
 
 			} // complementary base pair

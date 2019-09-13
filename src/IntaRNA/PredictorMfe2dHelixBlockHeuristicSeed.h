@@ -117,7 +117,7 @@ protected:
 	getNextBest( Interaction & curBest );
 
 	/**
-	 * does nothing but to ignore the calls from fillHybridE()
+	 * disables predictionTracker usage
 	 *
 	 * @param i1 the index of the first sequence interacting with i2
 	 * @param j1 the index of the first sequence interacting with j2
@@ -152,7 +152,7 @@ updateOptima( const size_t i1, const size_t j1
 	PredictionTracker * curPredTracker = this->predTracker;
 	this->predTracker = NULL;
 	// update optimum information, such that we might skip this sequence pair
-	PredictorMfe2dHeuristic::updateOptima(i1,j1,i2,j2,energy,isHybridE);
+	PredictorMfe2dHeuristic::updateOptima(i1,j1,i2,j2,energy,isHybridE,false);
 	// reenable tracker
 	this->predTracker = curPredTracker;
 }

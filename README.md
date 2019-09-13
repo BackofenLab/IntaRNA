@@ -1003,6 +1003,10 @@ inter-molecular base pairs. These are typically not contributing much to the
 overall stability and can lead to instable subinteractions when e.g. enclosed
 by two large interior loops.
 
+In addition, with `--outNoGUend` one can prohibit weak `GU` base pairs at 
+interaction ends and within interior loops.
+That way, only stable inter-molecular helix ends are considered.
+
 If you are only interested in predictions for highly accessible regions, i.e.
 with a high probability to be unpaired, you can use the `--outMinPu` parameter.
 If given, each individual position of the interacting subsequences has to have

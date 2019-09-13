@@ -189,6 +189,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	outMinPu( 0.0, 1.0, 0.0),
 	outBestSeedOnly(false),
 	outNoLP(false),
+	outNoGUend(false),
 	outCsvCols(outCsvCols_default),
 	outPerRegion(false),
 	outSpotProbSpots(""),
@@ -835,6 +836,11 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 				->default_value(outNoLP)
 				->implicit_value(true)
 			, std::string("if given (or true), no lonely (non-stacked) inter-molecular base pairs are allowed in predictions").c_str())
+	    ("outNoGUend"
+			, value<bool>(&(outNoGUend))
+				->default_value(outNoGUend)
+				->implicit_value(true)
+			, std::string("if given (or true), no GU inter-molecular base pairs are allowed at interaction ends and interior loops (helix ends)").c_str())
 		("outCsvCols"
 			, value<std::string>(&(outCsvCols))
 				->default_value(outCsvCols,"see text")
@@ -1790,8 +1796,8 @@ getEnergyHandler( const Accessibility& accTarget, const ReverseAccessibility& ac
 	case 'B' : return new InteractionEnergyBasePair( accTarget, accQuery
 						, tIntLoopMax.val, qIntLoopMax.val
 						, initES, Z_type(1.0), Ekcal_2_E(-1), 3
-						, Ekcal_2_E(energyAdd.val), !energyNoDangles );
-	case 'V' : return new InteractionEnergyVrna( accTarget, accQuery, vrnaHandler, tIntLoopMax.val, qIntLoopMax.val, initES, Ekcal_2_E(energyAdd.val), !energyNoDangles );
+						, Ekcal_2_E(energyAdd.val), !energyNoDangles, !outNoGUend );
+	case 'V' : return new InteractionEnergyVrna( accTarget, accQuery, vrnaHandler, tIntLoopMax.val, qIntLoopMax.val, initES, Ekcal_2_E(energyAdd.val), !energyNoDangles, !outNoGUend );
 	default :
 		INTARNA_NOT_IMPLEMENTED("CommandLineParsing::getEnergyHandler : energy = '"+toString(energy.val)+"' is not supported");
 	}
@@ -1821,6 +1827,7 @@ getOutputConstraint()  const
 			, Ekcal_2_E(outDeltaE.val)
 			, outBestSeedOnly
 			, outNoLP
+			, outNoGUend
 			, outNeedsZall
 			);
 }

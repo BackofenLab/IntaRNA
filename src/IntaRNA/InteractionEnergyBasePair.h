@@ -45,6 +45,8 @@ public:
 	 *          constraints
 	 * @param energyWithDangles whether or not dangling end contributions are
 	 *          considered within overall energies
+	 * @param internalLoopGU whether or not GU base pairs are allowed within
+	 *          internal loops
 	 */
 	InteractionEnergyBasePair( const Accessibility & accS1
 					, const ReverseAccessibility & accS2
@@ -56,6 +58,7 @@ public:
 					, const size_t minLoopLength = 3
 					, const E_type energyAdd = Ekcal_2_E(0.0)
 					, const bool energyWithDangles = true
+					, const bool internalLoopGU = true
 				);
 
 	virtual ~InteractionEnergyBasePair();
@@ -229,33 +232,6 @@ public:
 	virtual
 	Z_type
 	getRT() const;
-	
-	/**
-	 * Provides the best energy gain via stacking possible for this energy
-	 * model
-	 * @return -1
-	 */
-	virtual
-	E_type
-	getBestE_interLoop() const;
-
-	/**
-	 * Provides the best energy gain possible for left/right dangle
-	 * for this energy model
-	 * @return 0
-	 */
-	virtual
-	E_type
-	getBestE_dangling() const;
-
-	/**
-	 * Provides the best energy gain possible for left/right interaction ends
-	 * for this energy model
-	 * @return 0
-	 */
-	virtual
-	E_type
-	getBestE_end() const;
 
 	/**
 	 * Provides the (constant) energy contribution of a base pair (sequence independent)
@@ -310,11 +286,12 @@ InteractionEnergyBasePair::InteractionEnergyBasePair(
     , const size_t minLoopLen
     , const E_type energyAdd
     , const bool energyWithDangles
+    , const bool internalLoopGU
     )
  :
 	InteractionEnergy(accS1, accS2
 			, maxInternalLoopSize1, maxInternalLoopSize2
-			, energyAdd, energyWithDangles ),
+			, energyAdd, energyWithDangles,internalLoopGU ),
   RT(_RT),
   basePairEnergy(bpEnergy),
   minLoopLength(minLoopLen),
@@ -417,7 +394,7 @@ getE_interLeft( const size_t i1, const size_t j1, const size_t i2, const size_t 
 	// if valid internal loop
 	if ( isValidInternalLoop(i1,j1,i2,j2) ) {
 		// return negated number of gained base pairs by closing this loop = -1
-		return getBestE_interLoop();
+		return basePairEnergy;
 	} else {
 		return E_INF;
 	}
@@ -450,26 +427,6 @@ getE_danglingRight( const size_t j1, const size_t j2 ) const
 inline
 E_type
 InteractionEnergyBasePair::
-getBestE_interLoop() const
-{
-	return getE_init();
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-E_type
-InteractionEnergyBasePair::
-getBestE_dangling() const
-{
-	return E_type(0);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-E_type
-InteractionEnergyBasePair::
 getE_endLeft( const size_t i1, const size_t i2 ) const {
 	return E_type(0);
 }
@@ -481,15 +438,6 @@ E_type
 InteractionEnergyBasePair::
 getE_endRight( const size_t j1, const size_t j2 ) const {
 	return E_type(0);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-E_type
-InteractionEnergyBasePair::
-getBestE_end() const {
-	return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////

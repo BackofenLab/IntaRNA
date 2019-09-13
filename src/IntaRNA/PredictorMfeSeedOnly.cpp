@@ -80,7 +80,7 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 		j2 = i2 + seedHandler.getSeedLength2(i1,i2) -1;
 		if (j2 > seedLastPos2) continue;
 		// report seed energy (including initialization term)
-		updateOptima( i1, j1, i2, j2, seedHandler.getSeedE(i1,i2) + energy.getE_init(), true );
+		updateOptima( i1, j1, i2, j2, seedHandler.getSeedE(i1,i2) + energy.getE_init(), true, true );
 	}
 
 	// report mfe interaction
