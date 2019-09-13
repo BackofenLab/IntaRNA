@@ -115,7 +115,7 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 						// check complementarity of boundary
 						if (Z_equal(hybridZ_right(r1,r2),0.0)) continue;
 						// compute partition function given the current seed
-						updateZ(si1-l1, sj1+r1, si2-l2, sj2+r2, hybridZ_left(l1,l2) * seedZ * hybridZ_right(r1,r2));
+						updateZ(si1-l1, sj1+r1, si2-l2, sj2+r2, hybridZ_left(l1,l2) * seedZ * hybridZ_right(r1,r2), true);
 
 					} // r2
 				} // l2

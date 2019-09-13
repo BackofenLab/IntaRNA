@@ -117,13 +117,17 @@ protected:
 	 * @param j1 the index of the first sequence interacting with j2
 	 * @param i2 the index of the second sequence interacting with i1
 	 * @param j2 the index of the second sequence interacting with j1
-	 * @param partFunct the hybridization partition function of the interaction
+	 * @param partFunct the partition function of the interaction
+	 * @param isHybridZ whether or not the given Z is only covering
+	 *        hybridization energy terms (init+loops) or the total
+	 *        interaction energy
 	 */
 	virtual
 	void
 	updateZ( const size_t i1, const size_t j1
 				, const size_t i2, const size_t j2
-				, const Z_type partFunct );
+				, const Z_type partFunct
+				, const bool isHybridZ );
 
 	/**
 	 * Calls for the stored Z_partition information updateOptima() before

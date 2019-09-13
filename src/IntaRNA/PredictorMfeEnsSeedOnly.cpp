@@ -83,8 +83,6 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 		const E_type seedEhybrid = seedHandler.getSeedE(i1,i2) + energy.getE_init();
 		// report seed energy (including initialization term)
 		updateOptima( i1, j1, i2, j2, seedEhybrid, true, false );
-		// update partition function
-		updateZ( i1, j1, i2, j2, energy.getBoltzmannWeight(seedEhybrid) );
 	}
 
 	// report mfe interaction

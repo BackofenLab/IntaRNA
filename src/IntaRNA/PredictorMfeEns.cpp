@@ -90,31 +90,42 @@ void
 PredictorMfeEns::
 updateZ( const size_t i1, const size_t j1
 		, const size_t i2, const size_t j2
-		, const Z_type partZ )
+		, const Z_type partZ
+		, const bool isHybridZ )
 {
 	// check if something to be done
-	if (Z_equal(partZ,0))
+	if (Z_equal(partZ,0) || Z_isINF(Zall))
 		return;
 	// update overall partition function
+	if (isHybridZ) {
 #if INTARNA_IN_DEBUG_MODE
-	if ( (std::numeric_limits<Z_type>::max() - (partZ*energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, E_type(0))))) <= Zall) {
-		LOG(WARNING) <<"PredictorMfeEns::updateZ() : partition function overflow! Recompile with larger partition function data type!";
-	}
+		if ( (std::numeric_limits<Z_type>::max() - (partZ*energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, E_type(0))))) <= Zall) {
+			LOG(WARNING) <<"PredictorMfeEns::updateZ() : partition function overflow! Recompile with larger partition function data type!";
+		}
 #endif
-	// add ED penalties etc.
-	Zall += partZ * energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, E_type(0)));
+		// add ED penalties etc.
+		Zall += partZ*energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, E_type(0)));
+	} else {
+#if INTARNA_IN_DEBUG_MODE
+		if ( (std::numeric_limits<Z_type>::max() - partZ) <= Zall) {
+			LOG(WARNING) <<"PredictorMfeEns::updateZ() : partition function overflow! Recompile with larger partition function data type!";
+		}
+#endif
+		// just increase
+		Zall += partZ;
+	}
 
 	// store partial Z
-	Interaction::Boundary key(i1, j1, i2, j2);
+	Interaction::Boundary key(i1,j1,i2,j2);
+	auto keyEntry = Z_partition.find(key);
 	if ( Z_partition.find(key) == Z_partition.end() ) {
-		// create new entry
 		Z_partition[key] = partZ;
 	} else {
 		// update entry
-		Z_partition[key] += partZ;
+		keyEntry->second += partZ;
 	}
-}
 
+}
 
 ////////////////////////////////////////////////////////////////////////////
 
