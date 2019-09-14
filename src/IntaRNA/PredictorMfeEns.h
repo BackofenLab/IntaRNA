@@ -62,7 +62,7 @@ public:
 	 * Report Z information to the prediction trackers
 	 */
 	void
-	reportZ( SeedHandler *seedHandler );
+	reportZ( SeedHandler *seedHandler = NULL );
 
 protected:
 

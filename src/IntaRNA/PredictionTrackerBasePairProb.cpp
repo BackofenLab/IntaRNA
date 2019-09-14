@@ -62,9 +62,9 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 	// calculate initial probabilities (for max window length)
 	for (size_t i1 = 0; i1 < s1-n1+1; i1++) {
 		for (size_t i2 = 0; i2 < s2-n2+1; i2++) {
-			if (!Z_equal(predictor->getZ(1, i1 + n1 - 1, i2, i2 + n2 - 1), 0)) {
+			if (!Z_equal(predictor->getHybridZ(1, i1 + n1 - 1, i2, i2 + n2 - 1), 0)) {
 				Interaction::Boundary key(i1, i1 + n1 -1, i2, i2 + n2 - 1);
-				structureProbs[key] = predictor->getZ(i1, i1 + n1 - 1, i2, i2 + n2 - 1) / predictor->getZall();;
+				structureProbs[key] = predictor->getHybridZ(i1, i1 + n1 - 1, i2, i2 + n2 - 1) / predictor->getZall();;
 			}
 		}
 	}
@@ -82,7 +82,7 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 					Z_type prob = 0.0;
 
 					// if seed-based prediction, compute missing Z values
-					if (seedHandler != NULL && i1 != j1 && i2 != j2 && Z_equal(predictor->getZ(i1, j1, i2, j2), 0)) {
+					if (seedHandler != NULL && i1 != j1 && i2 != j2 && Z_equal(predictor->getHybridZ(i1, j1, i2, j2), 0)) {
 						LOG(DEBUG) << "missing Z at " << i1 << ":" << j1 << ":" << i2 << ":" << j2;
 						computeMissingZ(i1, j1, i2, j2, predictor, seedHandler);
 					} else {
@@ -100,11 +100,11 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 									if (r2-l2 > energy.getMaxInternalLoopSize2()+1) break;
 
 									if (l1 == i1 && l2 == i2 && j1 == r1 && j2 == r2) {
-										prob += predictor->getZ(i1, j1, i2, j2) / predictor->getZall();
+										prob += predictor->getHybridZ(i1, j1, i2, j2) / predictor->getZall();
 									} else {
 										// get outer probability
 										Interaction::Boundary key(l1, r1, l2, r2);
-										if ( structureProbs.find(key) != structureProbs.end() && !Z_equal(predictor->getZ(l1, r1, l2, r2), 0)) {
+										if ( structureProbs.find(key) != structureProbs.end() && !Z_equal(predictor->getHybridZ(l1, r1, l2, r2), 0)) {
 												prob += (structureProbs[key]
 																 * energy.getBoltzmannWeight(energy.getE_interLeft(l1,i1,l2,i2))
 																 * getHybridZ(i1, j1, i2, j2, predictor)
