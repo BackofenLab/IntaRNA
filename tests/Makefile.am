@@ -18,7 +18,7 @@ SH_LOG_COMPILER = $(SHELL)
 dist_check_SCRIPTS = runIntaRNA.sh
 
 # the program to build
-check_PROGRAMS = runApiTests 
+check_PROGRAMS = runApiTests
 
 # test sources
 runApiTests_SOURCES =	\
@@ -53,6 +53,7 @@ runApiTests_SOURCES =	\
 					SeedHandlerNoBulge_test.cpp \
 					SeedHandlerMfe_test.cpp \
 					SeedHandlerIdxOffset_test.cpp \
+					ZAll_test.cpp \
 					runApiTests.cpp
 
 # add IntaRNA lib for linking
@@ -64,6 +65,3 @@ LIBS= 	-L$(top_builddir)/src/IntaRNA -lIntaRNA \
 runApiTests_CXXFLAGS =	-I$(top_builddir)/src \
 						@AM_CXXFLAGS@ @CXXFLAGS@ \
 						-DELPP_NO_LOG_TO_FILE
-
-
-						
