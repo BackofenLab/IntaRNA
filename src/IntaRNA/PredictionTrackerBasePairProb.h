@@ -18,6 +18,9 @@ namespace IntaRNA {
  * and prints them as a dot plot
  *
  * The information is written to stream on destruction.
+ *
+ * @author Frank Gelhausen
+ *
  */
 class PredictionTrackerBasePairProb: public PredictionTracker
 {
@@ -162,23 +165,6 @@ public:
 
 protected:
 
-	struct StructureProb {
-		size_t i1;
-		size_t j1;
-		size_t i2;
-		size_t j2;
-		float prob;
-	};
-
-	//! data container to encode a site with respective partition function
-	struct ZPartition {
-		size_t i1;
-		size_t j1;
-		size_t i2;
-		size_t j2;
-		Z_type partZ;
-	};
-
 	//! energy handler used for predictions
 	const InteractionEnergy & energy;
 
@@ -189,18 +175,10 @@ protected:
 	const Z_type probabilityThreshold;
 
 	//! map storing structure probabilities
-	std::unordered_map<size_t, StructureProb> structureProbs;
+	std::unordered_map<Interaction::Boundary, Z_type, Interaction::Boundary::Hash, Interaction::Boundary::Equal> structureProbs;
 
 	//! map storing missing Z partitions for a given interaction
-	std::unordered_map<size_t, ZPartition> Z_partitions;
-
-	/**
-	 * Generates key for storing values in map
-	 */
-	virtual
-	size_t
-	generateMapKey( const size_t i1, const size_t j1
-						, const size_t i2, const size_t j2 ) const;
+	std::unordered_map<Interaction::Boundary, Z_type, Interaction::Boundary::Hash, Interaction::Boundary::Equal> Z_partition;
 
 };
 

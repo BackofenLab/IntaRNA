@@ -38,15 +38,6 @@ initZ()
 
 Z_type
 PredictorMfeEns::
-getOverallZ() const
-{
-	return Zall;
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-Z_type
-PredictorMfeEns::
 getHybridZ( const size_t i1, const size_t j1
 	 , const size_t i2, const size_t j2)
 {

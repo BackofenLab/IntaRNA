@@ -39,15 +39,6 @@ public:
 	virtual ~PredictorMfeEns();
 
 	/**
-	 * Access to the current overall partition function (including accessibility energies)
-   * covering all interactions of the last predict() call.
-	 *
-	 * @return the overall partition function
-	 */
-	Z_type
-	getOverallZ() const;
-
-	/**
 	 * Access to the current partition function covering
 	 * the interaction (i1, j1, i2, j2).
 	 *
@@ -74,15 +65,6 @@ public:
 	reportZ( SeedHandler *seedHandler );
 
 protected:
-
-	//! data container to encode a site with respective partition function
-	struct ZPartition {
-		size_t i1;
-		size_t j1;
-		size_t i2;
-		size_t j2;
-		Z_type partZ;
-	};
 
 	//! access to the interaction energy handler of the super class
 	using PredictorMfe::energy;
