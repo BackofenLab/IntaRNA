@@ -125,8 +125,7 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 										Interaction::Boundary key(l1, r1, l2, r2);
 										if ( structureProbs.find(key) != structureProbs.end()) {
 											if (!Z_equal(predictor->getHybridZ(l1, r1, l2, r2), 0)) {
-												Z_type temp = ( predictor->getHybridZ(l1, r1, l2, r2) * energy.getBoltzmannWeight(energy.getED1(l1, r1) + energy.getED2(l2, r2)) ) / predictor->getZall();
-												prob += (temp
+												prob += (( predictor->getHybridZ(l1, r1, l2, r2) * energy.getBoltzmannWeight(energy.getED1(l1, r1) + energy.getED2(l2, r2)) ) / predictor->getZall()
 																 * (l1 == i1 && l2 == i2 ? 1 : energy.getBoltzmannWeight(energy.getE_interLeft(l1,i1,l2,i2)))
 																 * getHybridZ(i1, j1, i2, j2, predictor)
 																 * (j1 == r1 && j2 == r2 ? 1 : energy.getBoltzmannWeight(energy.getE_interLeft(j1,r1,j2,r2)))
