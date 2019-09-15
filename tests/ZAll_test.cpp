@@ -94,4 +94,29 @@ TEST_CASE( "ZAll", "[ZAll]" ) {
 		REQUIRE(std::abs(predictor.getZall() - boltzmannSum) < std::pow(10, -12));
 	}
 
+	SECTION("case 4: check value") {
+		RnaSequence r1("r1", "GGC");
+		RnaSequence r2("r2", "GCC");
+		AccessibilityDisabled acc1(r1, 0, NULL);
+		AccessibilityDisabled acc2(r2, 0, NULL);
+		ReverseAccessibility racc(acc2);
+		InteractionEnergyBasePair energy(acc1, racc);
+
+    OutputConstraint outC(1,OutputConstraint::OVERLAP_SEQ2,0,100);
+		OutputHandlerInteractionList out(outC, 1);
+
+		PredictorMfeEns2d predictor(energy, out, NULL);
+
+		IndexRange idx1(0,r1.lastPos);
+		IndexRange idx2(0,r2.lastPos);
+
+		predictor.predict(idx1,idx2);
+
+		Z_type boltzmannSum = 5 * energy.getBoltzmannWeight(Ekcal_2_E(-1.0))
+		                    + 5 * energy.getBoltzmannWeight(Ekcal_2_E(-2.0))
+								        + 1 * energy.getBoltzmannWeight(Ekcal_2_E(-3.0));
+
+		REQUIRE(std::abs(predictor.getZall() - boltzmannSum) < std::pow(10, -13));
+	}
+
 }
