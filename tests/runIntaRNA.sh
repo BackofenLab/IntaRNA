@@ -34,13 +34,13 @@ function calltest {
 
     shift 2
     
-    testCall="$INTARNABINPATH/src/bin/IntaRNA --parameterFile=$datadir/$name.parameter"
+    testCall="$INTARNABINPATH/src/bin/IntaRNA --parameterFile=$datadir/$name.parameter --default-log-file=/dev/null"
 
     echo " IntaRNA TEST $name"
 	#	echo CALL $testCall
     #echo
     
-    $testCall 2>&1 > $resultfile
+    $testCall 2>&1 | grep -v INFO > $resultfile
 
 	if [ -e "$reference_resultsfile" ] ; then
 	    if ! diff "$reference_resultsfile" "$resultfile" "${diffopts}" > $difftmp; then
