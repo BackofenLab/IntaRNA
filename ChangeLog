@@ -20,6 +20,9 @@
 * FASTA input: sequence id = prefix up to first whitespace from FASTA header
 * new default for outOverlap = B: overlapping output enabled (was Q)
 + gzip-compressed file input/output if file name ends in '.gz'
++ --outNoGUend : omit interactions with GU-helix ends
++ --accNoLP : exclude lonely base pair in accessibility computation (energy==V) 
++ --accNoGUend : exclude GU-helix ends in accessibility computation (energy==V)
 
 # package
 + (optional) intarnapvalue python3 module to compute p-values of IntaRNA mfe

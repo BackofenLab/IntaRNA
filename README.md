@@ -1776,6 +1776,10 @@ Accessibility incorporation can be disabled for query or target sequences using
 A setup of `--qAcc=C` or `--tAcc=C` (default) enables accessibility computation
 using the selected [energy model](#energy) for query or target sequences, respectively.
 
+Using `--accNoLP` and `--accNoGUend`, the consideration of lonely base pairs
+and GU-helix ends can be disabled for accessibility computation (for default 
+[energy model](#energy) `V`).
+
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
 

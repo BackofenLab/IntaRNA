@@ -179,6 +179,9 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	energyAdd(-999,+999,0),
 	energyNoDangles(false),
 
+	accNoLP(false),
+	accNoGUend(false),
+
 	out(),
 	outPrefix2streamName(),
 	outMode( "NDCE", 'N' ),
@@ -236,6 +239,8 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		resetParamDefault<>(seedNoGUend, false, "seedNoGUend");
 		resetParamDefault<>(outNoLP, false, "outNoLP");
 		resetParamDefault<>(outNoGUend, false, "outNoGUend");
+		resetParamDefault<>(accNoLP, false, "accNoLP");
+		resetParamDefault<>(accNoGUend, false, "accNoGUend");
 		break;
 	case IntaRNA2 :
 		// IntaRNA v2 parameters
@@ -264,6 +269,8 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		resetParamDefault<>(seedNoGUend, false, "seedNoGUend");
 		resetParamDefault<>(outNoLP, false, "outNoLP");
 		resetParamDefault<>(outNoGUend, false, "outNoGUend");
+		resetParamDefault<>(accNoLP, false, "accNoLP");
+		resetParamDefault<>(accNoGUend, false, "accNoGUend");
 		break;
 	case IntaRNAens :
 		// ensemble-based predictions
@@ -734,6 +741,16 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 					->default_value(energyNoDangles)
 					->implicit_value(true)
 				, std::string("if given (or true), no dangling end contributions are considered within the overall interaction energy").c_str())
+		("accNoLP"
+				, value<bool>(&(accNoLP))
+					->default_value(accNoLP)
+					->implicit_value(true)
+				, std::string("if given (or true), no lonely base pairs are considered for accessibility computation").c_str())
+		("accNoGUend"
+				, value<bool>(&(accNoGUend))
+					->default_value(accNoGUend)
+					->implicit_value(true)
+				, std::string("if given (or true), no GU-helix-ends are considered for accessibility computation").c_str())
 		("energyAdd"
 			, value<E_kcal_type>(&(energyAdd.val))
 				->default_value(energyAdd.def)
@@ -1233,15 +1250,23 @@ parse(int argc, char** argv)
 			switch(qAcc.val) {
 			case 'C' : {
 				if (!qAccFile.empty()) LOG(INFO) <<"qAcc = "<<qAcc.val<<" : ignoring --qAccFile";
+				if (energy.val != 'V') {
+					if (!accNoLP) LOG(INFO) <<"ignoring --accNoLP, not supported for energy=="<<energy.val;
+					if (!accNoGUend) LOG(INFO) <<"ignoring --accNoGUend, not supported for energy=="<<energy.val;
+				}
 				break;
 			}
 			case 'E' : // drop to next handling
 			case 'P' : {
+				if (!accNoLP) LOG(INFO) <<"ignoring --accNoLP";
+				if (!accNoGUend) LOG(INFO) <<"ignoring --accNoGUend";
 				if (qAccFile.empty()) LOG(INFO) <<"qAcc = "<<qAcc.val<<" but no --qAccFile given";
 				if (vm.count("qAccConstr")>0) LOG(INFO) <<"qAcc = "<<qAcc.val<<" : accessibility constraints (--qAccConstr) possibly not used in computation of loaded ED values";
 				break;
 			}	// drop to next handling
 			case 'N' : {
+				if (!accNoLP) LOG(INFO) <<"ignoring --accNoLP";
+				if (!accNoGUend) LOG(INFO) <<"ignoring --accNoGUend";
 				if (qAccL.val != qAccL.def) LOG(INFO) <<"qAcc = "<<qAcc.val<<" : ignoring --qAccL";
 				if (qAccW.val != qAccW.def) LOG(INFO) <<"qAcc = "<<qAcc.val<<" : ignoring --qAccW";
 				if (qAcc.val != 'N' && !qAccFile.empty()) LOG(INFO) <<"qAcc = "<<qAcc.val<<" : ignoring --qAccFile";
@@ -1251,15 +1276,23 @@ parse(int argc, char** argv)
 			switch(tAcc.val) {
 			case 'C' : {
 				if (!tAccFile.empty()) LOG(INFO) <<"tAcc = "<<tAcc.val<<" : ignoring --tAccFile";
+				if (energy.val != 'V') {
+					if (!accNoLP) LOG(INFO) <<"ignoring --accNoLP, not supported for energy=="<<energy.val;
+					if (!accNoGUend) LOG(INFO) <<"ignoring --accNoGUend, not supported for energy=="<<energy.val;
+				}
 				break;
 			}
 			case 'E' : // drop to next handling
 			case 'P' : {
+				if (!accNoLP) LOG(INFO) <<"ignoring --accNoLP";
+				if (!accNoGUend) LOG(INFO) <<"ignoring --accNoGUend";
 				if (tAccFile.empty()) LOG(INFO) <<"tAcc = "<<tAcc.val<<" but no --tAccFile given";
 				if (vm.count("tAccConstr")>0) LOG(INFO) <<"tAcc = "<<tAcc.val<<" : accessibility constraints (--tAccConstr) possibly not used in computation of loaded ED values";
 				break;
 			}	// drop to next handling
 			case 'N' : {
+				if (!accNoLP) LOG(INFO) <<"ignoring --accNoLP";
+				if (!accNoGUend) LOG(INFO) <<"ignoring --accNoGUend";
 				if (tAccL.val != tAccL.def) LOG(INFO) <<"tAcc = "<<tAcc.val<<" : ignoring --tAccL";
 				if (tAccW.val != tAccW.def) LOG(INFO) <<"tAcc = "<<tAcc.val<<" : ignoring --tAccW";
 				if (tAcc.val=='N' && !tAccFile.empty()) LOG(INFO) <<"tAcc = "<<tAcc.val<<" : ignoring --tAccFile";
@@ -1384,7 +1417,7 @@ parse(int argc, char** argv)
 
 	// setup new VRNA handler with the given arguments
 	if ( energy.val == 'V') {
-		vrnaHandler = VrnaHandler( temperature.val, (energyFile.size() > 0 ? & energyFile : NULL) );
+		vrnaHandler = VrnaHandler( temperature.val, (energyFile.size() > 0 ? & energyFile : NULL), accNoGUend, accNoLP );
 	}
 
 

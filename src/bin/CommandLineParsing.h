@@ -602,6 +602,12 @@ protected:
 	//! whether or not the overall energy covers dangling end contributions
 	bool energyNoDangles;
 
+
+	//! whether or not lonely base pairs are allowed in accessibility computation
+	bool accNoLP;
+	//! whether or not GU base pairs are allowed to close loops in accessibility computation
+	bool accNoGUend;
+
 	//! where to write the output to and for each in what format
 //	std::string out;
 	std::vector< std::string > out;

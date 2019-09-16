@@ -35,10 +35,14 @@ public:
 	 * @param temperature Folding temperature in Celsius
 	 * @param vrnaParamFile name of a VRNA parameter file to be used for
 	 *        parameter setup or NULL if defaults are to be used
+	 * @param noGUclosue whether or not GU base pairs are allowed at helix ends
+	 * @param noLP whether or not lonely base pairs are considered
 	 */
 	VrnaHandler(
-			Z_type temperature = 37.0,
-			const std::string * const vrnaParamFile = NULL );
+			Z_type temperature = 37.0
+			, const std::string * const vrnaParamFile = NULL
+			, const bool noGUclosure = false
+			, const bool noLP = false );
 
 	/**
 	 * destruction
