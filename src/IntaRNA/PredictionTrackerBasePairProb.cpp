@@ -158,7 +158,7 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 		if (it->first.i1 == it->first.j1 && it->first.i2 == it->first.j2 && it->second > probabilityThreshold) {
 			LOG(DEBUG) << "prob at " << it->first.i1 << ":" << it->first.j1 << ":" << it->first.i2 << ":" << it->first.j2 << " = " << it->second;
 			plist[i].i = it->first.i1 + 1;
-			plist[i].j = it->first.i2 + 1;
+			plist[i].j = s2 - it->first.i2;
 			plist[i].p = it->second;
 			plist[i].type = 0; // base-pair prob
 			i++;
