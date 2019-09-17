@@ -163,6 +163,12 @@ public:
 						 	 , const size_t i2, const size_t j2
 							 , const Z_type partZ );
 
+  /**
+	*/
+	int
+	generateDotPlot( char *seq1, char *seq2, char *fileName
+	                ,plist *pl ,char *comment);
+
 protected:
 
 	//! energy handler used for predictions
