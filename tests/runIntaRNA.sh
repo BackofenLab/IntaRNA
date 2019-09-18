@@ -10,8 +10,8 @@ fi
 # subdirectory of test data
 datadir=data
 
-# list of all test names (parameter and output file in data subfolder) 
-IntaRNA_tests=`ls $datadir/*.parameter | sed "s/^$datadir\/\(\S*\).parameter$/\1/g"`
+# list of all test names (parameter file in data subfolder) 
+IntaRNA_tests=`cd $datadir; for f in *.parameter; do printf "${f%.*} "; done`
 
 DIFFERENCES=false
 
