@@ -31,6 +31,10 @@ def main(argv):
         elif opt == "--tConc":
             concT = float(arg)
 
+    if seqT == "" or seqQ == "":
+        print("intaRNAtube.py -q <seq> -t <seq> [--qConc <concentration>] [--tConc <concentration>]")
+        sys.exit(2)
+
     (ss, pfT) = RNA.fold_compound(seqT).pf()
     (ss, pfQ) = RNA.fold_compound(seqQ).pf()
 
