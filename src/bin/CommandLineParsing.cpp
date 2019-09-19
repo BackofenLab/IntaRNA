@@ -356,7 +356,6 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		(qAccW.name.c_str()
 			, value<int>(&(qAccW.val))
 				->default_value(qAccW.def)
-				->notifier(boost::bind(&CommandLineParsing::validate_numberArgument<int>,this,qAccW,_1))
 				->notifier(boost::bind(&CommandLineParsing::validate_qAccW,this,_1))
 			, std::string("accessibility computation : sliding window size for query accessibility computation"
 					" (arg in range ["+toString(qAccW.min)+","+toString(qAccW.max)+"];"
@@ -366,7 +365,6 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		(qAccL.name.c_str()
 			, value<int>(&(qAccL.val))
 				->default_value(qAccL.def)
-				->notifier(boost::bind(&CommandLineParsing::validate_numberArgument<int>,this,qAccL,_1))
 				->notifier(boost::bind(&CommandLineParsing::validate_qAccL,this,_1))
 			, std::string("accessibility computation : maximal loop length (base pair span) for query accessibility computation"
 					" (arg in range ["+toString(qAccL.min)+","+toString(qAccL.max)+"]; 0 will use to sliding window size 'qAccW')").c_str())
@@ -459,7 +457,6 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		(tAccW.name.c_str()
 			, value<int>(&(tAccW.val))
 				->default_value(tAccW.def)
-				->notifier(boost::bind(&CommandLineParsing::validate_numberArgument<int>,this,tAccW,_1))
 				->notifier(boost::bind(&CommandLineParsing::validate_tAccW,this,_1))
 			, std::string("accessibility computation : sliding window size for query accessibility computation"
 					" (arg in range ["+toString(tAccW.min)+","+toString(tAccW.max)+"];"
@@ -469,7 +466,6 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		(tAccL.name.c_str()
 			, value<int>(&(tAccL.val))
 				->default_value(tAccL.def)
-				->notifier(boost::bind(&CommandLineParsing::validate_numberArgument<int>,this,tAccL,_1))
 				->notifier(boost::bind(&CommandLineParsing::validate_tAccL,this,_1))
 			, std::string("accessibility computation : maximal loop size (base pair span) for query accessibility computation"
 					" (arg in range ["+toString(tAccL.min)+","+toString(tAccL.max)+"]; 0 will use the sliding window size 'tAccW')").c_str())

@@ -1147,6 +1147,8 @@ void CommandLineParsing::validate_qSet(const std::string & value) {
 inline
 void CommandLineParsing::validate_qAccW(const int & value)
 {
+	// standard check
+	validate_numberArgument<int>(qAccW,value);
 	// check lower bound
 	if (qAccW.val > 0 && qAccW.val < 3) {
 		LOG(ERROR) <<"\n qAccW = " <<value <<" : has to be 0 or > 3";
@@ -1159,6 +1161,8 @@ void CommandLineParsing::validate_qAccW(const int & value)
 inline
 void CommandLineParsing::validate_qAccL(const int & value)
 {
+	// standard check
+	validate_numberArgument<int>(qAccL,value);
 	// check lower bound
 	if (qAccL.val > 0 && qAccL.val < 3) {
 		LOG(ERROR) <<"qAccL = " <<value <<" : has to be 0 or > 3";
@@ -1277,6 +1281,8 @@ void CommandLineParsing::validate_tSet(const std::string & value) {
 inline
 void CommandLineParsing::validate_tAccW(const int & value)
 {
+	// standard check
+	validate_numberArgument<int>(tAccW,value);
 	// check lower bound
 	if (tAccW.val > 0 && tAccW.val < 3) {
 		LOG(ERROR) <<"tAccW = " <<value <<" : has to be 0 or > 3";
@@ -1289,6 +1295,8 @@ void CommandLineParsing::validate_tAccW(const int & value)
 inline
 void CommandLineParsing::validate_tAccL(const int & value)
 {
+	// standard check
+	validate_numberArgument<int>(tAccL,value);
 	// check lower bound
 	if (tAccL.val > 0 && tAccL.val < 3) {
 		LOG(ERROR) <<"tAccL = " <<value <<" : has to be 0 or > 3";
