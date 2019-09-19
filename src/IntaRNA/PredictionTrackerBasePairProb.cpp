@@ -485,32 +485,7 @@ generateDotPlot( char *seq1, char *seq2, char *fileName
   // comment
 
 	if (comment) {
-    char      *c, *ptr, *save_ptr, *ptr2;
-    unsigned  int i, l;
-    c   = strdup(comment);
-
-    ptr2  = c;
-    ptr   = strtok_r(c, "\n", &save_ptr);
-    l     = ptr - ptr2;
-
-    while (ptr != NULL) {
-      /* print empty newlines if they were present in input */
-      for (i = 1; i < l; i++)
-        fprintf(file, "\n");
-
-      /* print comment line */
-      fprintf(file, "%% %s\n", ptr);
-
-      ptr2  = ptr;
-      l     = strlen(ptr);
-      ptr   = strtok_r(NULL, "\n", &save_ptr);
-
-      /* compute number of delimiters between previous and current token */
-      l   = ptr - ptr2 - l;
-    }
-    free(c);
-
-    fprintf(file, "\n");
+    fprintf(file, "%%%% %s\n", comment);
   }
 
 	fprintf(file, "/DPdict 100 dict def\n");
@@ -518,14 +493,7 @@ generateDotPlot( char *seq1, char *seq2, char *fileName
 
 	// ps template
 
-	FILE *temp;
-	char ch;
-	temp = fopen("./dot_plot_template.ps", "r");
-	while( ( ch = fgetc(temp) ) != EOF ) {
-		fputc(ch, file);
-	}
-  fclose(temp);
-
+	fprintf(file, dotplotTemplate);
   fprintf(file, "end\n");
 	fprintf(file, "DPdict begin\n");
 

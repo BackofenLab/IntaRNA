@@ -186,6 +186,69 @@ protected:
 	//! map storing missing Z partitions for a given interaction
 	std::unordered_map<Interaction::Boundary, Z_type, Interaction::Boundary::Hash, Interaction::Boundary::Equal> Z_partition;
 
+	const char* dotplotTemplate =
+		"/box { %%size x y box - draws box centered on x,y\n\
+		   2 index 0.5 mul sub            %% x -= 0.5\n\
+		   exch 2 index 0.5 mul sub exch  %% y -= 0.5\n\
+		   3 -1 roll dup rectfill\n\
+		} bind def\n\
+		\n\
+		/drawseq1 { %% print sequence1\n\
+		[ [0.7 -0.3 ]\n\
+		  [0.7 0.7 len2 add]\n\
+		] {\n\
+		   gsave\n\
+		    aload pop translate\n\
+		    0 1 len 1 sub {\n\
+		     dup 0 moveto\n\
+		     sequence1 exch 1 getinterval\n\
+		     show\n\
+		    } for\n\
+		   grestore\n\
+		  } forall\n\
+		} bind def\n\
+    \n\
+		/drawseq2 { %% print sequence2\n\
+		[ [-0.3 len2 sub -0.4 -90]\n\
+		  [-0.3 len2 sub 0.7 len add -90]\n\
+		] {\n\
+		   gsave\n\
+		    aload pop rotate translate\n\
+		    0 1 len2 1 sub {\n\
+		     dup 0 moveto\n\
+		     sequence2 exch 1 getinterval\n\
+		     show\n\
+		    } for\n\
+		   grestore\n\
+		  } forall\n\
+		} bind def\n\
+    \n\
+		/drawgrid{\n\
+		  gsave\n\
+		  0.5 dup translate\n\
+		  0.01 setlinewidth\n\
+		  len log 0.9 sub cvi 10 exch exp %% grid spacing\n\
+		  dup 1 gt {\n\
+		     dup dup 20 div dup 2 array astore exch 40 div setdash\n\
+		  } { [0.3 0.7] 0.1 setdash } ifelse\n\
+		  0 exch len {\n\
+		     dup dup\n\
+		     0 moveto\n\
+		     len2 lineto %% vertical\n\
+		     stroke\n\
+		  } for\n\
+      \n\
+		  len log 0.9 sub cvi 10 exch exp %% grid spacing\n\
+		  0 exch len2 {\n\
+		     dup\n\
+		     len2 exch sub 0 exch moveto\n\
+		     len exch len2 exch sub lineto %% horizontal\n\
+		     stroke\n\
+		  } for\n\
+      \n\
+		  grestore\n\
+		} bind def\n";
+
 };
 
 //////////////////////////////////////////////////////////////////////
