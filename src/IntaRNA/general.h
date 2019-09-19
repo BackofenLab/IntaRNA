@@ -100,8 +100,7 @@ namespace IntaRNA {
 	#error IntaRNA_precisionEpsilon already defined
 #endif
 	//! the delta difference range to consider two floating point values equivalent
-    //! using sqrt(representable positive value closest to zero)
-#define IntaRNA_precisionEpsilon std::sqrt(std::numeric_limits<float>::min())
+#define IntaRNA_precisionEpsilon std::pow(10, -10)
 
 #ifdef E_2_Ekcal
   #error E_2_Ekcal already defined

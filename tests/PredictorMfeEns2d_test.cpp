@@ -14,12 +14,12 @@ using namespace IntaRNA;
 
 #include <sstream>
 
-TEST_CASE( "ZAll", "[ZAll]" ) {
+TEST_CASE( "PredictorMfeEns2d", "[PredictorMfeEns2d]" ) {
 
 	// setup easylogging++ stuff if not already done
 	#include "testEasyLoggingSetup.icc"
 
-	SECTION("case 1: check value") {
+	SECTION("Zall case 1: check value") {
 		RnaSequence r1("r1", "GG");
 		RnaSequence r2("r2", "CC");
 		AccessibilityDisabled acc1(r1, 0, NULL);
@@ -40,10 +40,10 @@ TEST_CASE( "ZAll", "[ZAll]" ) {
 		Z_type boltzmannSum = 4 * energy.getBoltzmannWeight(Ekcal_2_E(-1.0))
 		                    + 1 * energy.getBoltzmannWeight(Ekcal_2_E(-2.0));
 
-		REQUIRE(std::abs(predictor.getZall() - boltzmannSum) < std::pow(10, -13));
+		REQUIRE(Z_equal(predictor.getZall(), boltzmannSum));
 	}
 
-	SECTION("case 2: check value") {
+	SECTION("Zall case 2: check value") {
 		RnaSequence r1("r1", "GGG");
 		RnaSequence r2("r2", "CCC");
 		AccessibilityDisabled acc1(r1, 0, NULL);
@@ -65,10 +65,10 @@ TEST_CASE( "ZAll", "[ZAll]" ) {
 		                    + 9 * energy.getBoltzmannWeight(Ekcal_2_E(-2.0))
 								        + 1 * energy.getBoltzmannWeight(Ekcal_2_E(-3.0));
 
-		REQUIRE(std::abs(predictor.getZall() - boltzmannSum) < std::pow(10, -13));
+		REQUIRE(Z_equal(predictor.getZall(), boltzmannSum));
 	}
 
-	SECTION("case 3: check value") {
+	SECTION("Zall case 3: check value") {
 		RnaSequence r1("r1", "GGGG");
 		RnaSequence r2("r2", "CCCC");
 		AccessibilityDisabled acc1(r1, 0, NULL);
@@ -91,10 +91,10 @@ TEST_CASE( "ZAll", "[ZAll]" ) {
 								        + 16 * energy.getBoltzmannWeight(Ekcal_2_E(-3.0))
 												+ 1 * energy.getBoltzmannWeight(Ekcal_2_E(-4.0));
 
-		REQUIRE(std::abs(predictor.getZall() - boltzmannSum) < std::pow(10, -12));
+		REQUIRE(Z_equal(predictor.getZall(), boltzmannSum));
 	}
 
-	SECTION("case 4: check value") {
+	SECTION("Zall case 4: check value") {
 		RnaSequence r1("r1", "GGC");
 		RnaSequence r2("r2", "GCC");
 		AccessibilityDisabled acc1(r1, 0, NULL);
@@ -116,7 +116,7 @@ TEST_CASE( "ZAll", "[ZAll]" ) {
 		                    + 5 * energy.getBoltzmannWeight(Ekcal_2_E(-2.0))
 								        + 1 * energy.getBoltzmannWeight(Ekcal_2_E(-3.0));
 
-		REQUIRE(std::abs(predictor.getZall() - boltzmannSum) < std::pow(10, -13));
+		REQUIRE(Z_equal(predictor.getZall(), boltzmannSum));
 	}
 
 }
