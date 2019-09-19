@@ -63,9 +63,6 @@ protected:
 	//! the interaction energy handler used for the energy computations
 	const InteractionEnergy & energy;
 
-	//! flag to avoid duplicated output
-	bool outputDone;
-
 };
 
 

@@ -353,6 +353,8 @@ protected:
 	template <typename T>
 	class NumberParameter {
 	public:
+		//! name of the parameter
+	  std::string name;
 		//! the value of the parameter
 	  T val;
 		//! the minimally allowed value
@@ -363,12 +365,13 @@ protected:
 	  T def;
 		/**
 		 * construction feeding the members
+		 * @param name the name of the parameter within the CLI
 		 * @param min the minimally allowed value
 		 * @param max the maximally allowed value
 		 * @param def the default value
 		 */
-	  NumberParameter( const T min, const T max, const T def )
-	   : val(def), min(min), max(max), def(def)
+	  NumberParameter( const std::string& name, const T min, const T max, const T def )
+	   : name(name), val(def), min(min), max(max), def(def)
 	  {}
 	    //! checks if the given value is in the allowed range [min,max]
 	    //! @param value the value to check
@@ -381,6 +384,7 @@ protected:
 	  bool isInRange() const {
 		  return isInRange(val);
 	  }
+
 	};
 
 	/**
@@ -388,6 +392,8 @@ protected:
 	 */
 	class CharParameter {
 	public:
+		  //! the name of the parameter in the CLI
+		std::string name;
 		  //! the value of the parameter
 		char val;
 		  //! the set of allowed values for this parameter as a string
@@ -396,11 +402,12 @@ protected:
 		char def;
 		/**
 		 * Construction and member setup
+		 * @param name name of the parameter in the CLI
 		 * @param alphabet the allowed set of character values
 		 * @param def the default value (has to be part of the alphabet)
 		 */
-		CharParameter( const std::string& alphabet, const char def )
-		  : val(def), alphabet(alphabet), def(def)
+		CharParameter( const std::string& name, const std::string& alphabet, const char def )
+		  : name(name), val(def), alphabet(alphabet), def(def)
 		{
 			if (alphabet.find(def) == std::string::npos) {
 				throw std::runtime_error("CharParameter() : default value '"+toString(def)+"' is not within alphabet '"+alphabet+"'");
@@ -459,6 +466,8 @@ protected:
 	std::string queryArg;
 	//! the container holding all query sequences
 	RnaSequenceVec query;
+	//! in/output index of pos 0 (of all queries)
+	NumberParameter<long> qIdxPos0;
 	//! subset of query sequence indices to be processed
 	IndexRangeList qSet;
 	//! string encoding of qSet
@@ -498,6 +507,8 @@ protected:
 	std::string targetArg;
 	//! the container holding all target sequences
 	RnaSequenceVec target;
+	//! in/output index of pos 0 (of all targets)
+	NumberParameter<long> tIdxPos0;
 	//! subset of target sequence indices to be processed
 	IndexRangeList tSet;
 	//! string encoding of tSet
@@ -604,6 +615,12 @@ protected:
 	//! whether or not the overall energy covers dangling end contributions
 	bool energyNoDangles;
 
+
+	//! whether or not lonely base pairs are allowed in accessibility computation
+	bool accNoLP;
+	//! whether or not GU base pairs are allowed to close loops in accessibility computation
+	bool accNoGUend;
+
 	//! where to write the output to and for each in what format
 //	std::string out;
 	std::vector< std::string > out;
@@ -672,14 +689,13 @@ protected:
 	 * if the value is changed, a respective VLOG output is produced.
 	 * @param param the parameter member to update
 	 * @param value the new default value to set
-	 * @param paramName the name of the parameter as used in the CLI
 	 */
 	template <typename Param, typename Value>
 	void
-	resetParamDefault( Param & param, Value value, const std::string & paramName ) {
+	resetParamDefault( Param & param, Value value ) {
 		if (param.def != value) {
 			param.def = value;
-			VLOG(1) <<"  "<<paramName<<"=" <<value;
+			VLOG(1) <<"  "<<param.name<<"=" <<value;
 		}
 	}
 
@@ -692,7 +708,7 @@ protected:
 	 */
 	template <typename ParamType>
 	void
-	resetParamDefault( ParamType & param, ParamType value, const std::string & paramName ) {
+	resetParamDefault( ParamType & param, ParamType value, const std::string paramName ) {
 		if (param != value) {
 			param = value;
 			VLOG(1) <<"  "<<paramName<<"=" <<value;
@@ -713,12 +729,6 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_qSet(const std::string & value);
-
-	/**
-	 * Validates the query accessibility argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_qAcc(const char & value);
 
 	/**
 	 * Validates the query accessibility sliding window size argument.
@@ -745,28 +755,10 @@ protected:
 	void validate_qAccFile(const std::string & value);
 
 	/**
-	 * Validates the query's maximal accessibility argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_qIntLenMax(const int & value);
-
-	/**
-	 * Validates the query's maximal internal loop length argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_qIntLoopMax(const int & value);
-
-	/**
 	 * Validates the query's region argument.
 	 * @param value the argument value to validate
 	 */
 	void validate_qRegion(const std::string & value);
-
-	/**
-	 * Validates the query's region max length argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_qRegionLenMax(const int & value);
 
 	/**
 	 * Validates the query's SHAPE reactivity data file.
@@ -800,12 +792,6 @@ protected:
 	void validate_tSet(const std::string & value);
 
 	/**
-	 * Validates the target accessibility argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_tAcc(const char & value);
-
-	/**
 	 * Validates the target accessibility sliding window size argument.
 	 * @param value the argument value to validate
 	 */
@@ -830,59 +816,10 @@ protected:
 	void validate_tAccFile(const std::string & value);
 
 	/**
-	 * Validates the target's maximal accessibility argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_tIntLenMax(const int & value);
-
-	/**
-	 * Validates the target's maximal internal loop length argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_tIntLoopMax(const int & value);
-
-
-	/**
-	 * Validates the helixMinBP argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_helixMinBP(const int & value);
-
-	/**
-	 * Validates the helixMaxBP argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_helixMaxBP(const int & value);
-
-	/**
-	 * Validates the helixMaxIL argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_helixMaxIL(const int & value);
-
-	/**
-	 * Validates the helixMinPu argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_helixMinPu(const Z_type & value);
-
-	/**
-	 * Validates the helixMaxE argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_helixMaxE(const E_kcal_type & value);
-
-	/**
 	 * Validates the target's region argument.
 	 * @param value the argument value to validate
 	 */
 	void validate_tRegion(const std::string & value);
-
-	/**
-	 * Validates the target's region max length argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_tRegionLenMax(const int & value);
 
 	/**
 	 * Validates the target's SHAPE reactivity data file.
@@ -910,48 +847,6 @@ protected:
 	void validate_seedTQ(const std::string & value);
 
 	/**
-	 * Validates the seedBP argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_seedBP(const int & value);
-
-	/**
-	 * Validates the seedMaxUP argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_seedMaxUP(const int & value);
-
-	/**
-	 * Validates the seedQMaxUP argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_seedQMaxUP(const int & value);
-
-	/**
-	 * Validates the seedTMaxUP argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_seedTMaxUP(const int & value);
-
-	/**
-	 * Validates the seedMaxE argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_seedMaxE(const E_kcal_type & value);
-
-	/**
-	 * Validates the seedMaxEhybrid argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_seedMaxEhybrid(const E_kcal_type & value);
-
-	/**
-	 * Validates the seedMinPu argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_seedMinPu(const Z_type & value);
-
-	/**
 	 * Validates the seedQRange argument.
 	 * @param value the argument value to validate
 	 */
@@ -964,40 +859,10 @@ protected:
 	void validate_seedTRange(const std::string & value);
 
 	/**
-	 * Validates the temperature argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_temperature(const Z_type & value);
-
-	/**
-	 * Validates the prediction target argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_model(const char & value);
-
-	/**
-	 * Validates the prediction mode argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_mode(const char & value);
-
-	/**
-	 * Validates the temperature argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_energy(const char & value);
-
-	/**
 	 * Validates the energy parameter file argument.
 	 * @param value the argument value to validate
 	 */
 	void validate_energyFile(const std::string & value);
-
-	/**
-	 * Validates the energy shift argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_energyAdd(const E_kcal_type & value);
 
 	/**
 	 * Validates the out argument.
@@ -1007,42 +872,6 @@ protected:
 	 * @param list the list of argument values to validate
 	 */
 	void validate_out(const std::vector<std::string> & list);
-
-	/**
-	 * Validates the outMode argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_outMode(const char & value);
-
-	/**
-	 * Validates the outNumber argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_outNumber(const int & value);
-
-	/**
-	 * Validates the outOverlap argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_outOverlap(const char & value);
-
-	/**
-	 * Validates the outDeltaE argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_outDeltaE(const E_kcal_type & value);
-
-	/**
-	 * Validates the outMaxE argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_outMaxE(const E_kcal_type & value);
-
-	/**
-	 * Validates the outMinPu argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_outMinPu(const Z_type & value);
 
 	/**
 	 * Validates the outCsvCols argument.
@@ -1055,26 +884,6 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_outCsvSort(const std::string & value);
-
-#if INTARNA_MULITHREADING
-	/**
-	 * Validates the threads argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_threads( const int & value);
-#endif
-
-	/**
-	 * Validates the windowWidth argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_windowWidth( const int & value);
-
-	/**
-	 * Validates the windowOverlap argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_windowOverlap( const int & value);
 
 	/**
 	 * Validates the configFileName argument.
@@ -1090,21 +899,20 @@ protected:
 	 * @param param the parameter object
 	 * @param value the value of the parameter to validate
 	 */
-	void validate_charArgument(const std::string & argName, const CharParameter& param, const char & value);
+	void validate_charArgument(const CharParameter& param, const char & value);
 
 
 	/**
 	 * Validates a NumberParameter.
-	 * @param argName the name of the parameter (for exception handling)
 	 * @param param the parameter object
 	 * @param value the value of the parameter to validate
 	 */
 	template <typename T>
-	void validate_numberArgument(const std::string & name, const NumberParameter<T> & param, const T& value)
+	void validate_numberArgument(const NumberParameter<T> & param, const T& value)
 	{
 		// alphabet check
 		if ( ! param.isInRange(value) ) {
-			LOG(ERROR) <<name<<" = " <<value <<" : has to be in the range [" <<param.min <<","<<param.max<<"]";
+			LOG(ERROR) <<param.name<<" = " <<value <<" : has to be in the range [" <<param.min <<","<<param.max<<"]";
 			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 		}
 	}
@@ -1114,13 +922,12 @@ protected:
 	 * Validates the string encoding of an IndexRangeList encoding parameter
 	 * @param argName the name of the parameter (for exception handling)
 	 * @param value the value of the parameter to validate
-	 * @param indexMin the minimal value of an index allowed
-	 * @param indexMax the maximal value of an index allowed
+	 * @param seq the RnaSequence to be used for mapping in/output indices to
+	 *          internal index positions
 	 */
 	void validate_indexRangeList(const std::string & argName
 								, const std::string & value
-								, const size_t indexMin
-								, const size_t indexMax );
+								, const RnaSequence & seq );
 
 	/**
 	 * Validates a sequence arguments.
@@ -1146,11 +953,13 @@ protected:
 	 * @param sequences the container to fill
 	 * @param seqSubset the indices of the input sequences to store (all other
 	 *                  ignored)
+	 * @param idxPos0 input/output index of first sequence position to be used
 	 */
 	void parseSequences(const std::string & paramName,
 					const std::string& paramArg,
 					RnaSequenceVec& sequences,
-					const IndexRangeList & seqSubset );
+					const IndexRangeList & seqSubset,
+					const long idxPos0 );
 
 	/**
 	 * Parses the parameter input stream from FASTA format and returns all
@@ -1160,11 +969,13 @@ protected:
 	 * @param sequences the container to fill
 	 * @param seqSubset the indices of the input sequences to store (all other
 	 *                  ignored)
+	 * @param idxPos0 input/output index of first sequence position to be used
 	 */
 	void parseSequencesFasta( const std::string & paramName,
 					std::istream& input,
 					RnaSequenceVec& sequences,
-					const IndexRangeList & seqSubset );
+					const IndexRangeList & seqSubset,
+					const long idxPos0 );
 
 	/**
 	 * Checks whether or not a sequence container holds a specific number of
@@ -1336,37 +1147,10 @@ void CommandLineParsing::validate_qSet(const std::string & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_qIntLenMax(const int & value)
-{
-	// forward check to general method
-	validate_numberArgument("qIntW", qIntLenMax, value);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_qIntLoopMax(const int & value)
-{
-	// forward check to general method
-	validate_numberArgument("qIntL", qIntLoopMax, value);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_qAcc(const char & value)
-{
-	// forward check to general method
-	validate_charArgument("qAcc", qAcc, value);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
 void CommandLineParsing::validate_qAccW(const int & value)
 {
-	// forward check to general method
-	validate_numberArgument("qAccW", qAccW, value);
+	// standard check
+	validate_numberArgument<int>(qAccW,value);
 	// check lower bound
 	if (qAccW.val > 0 && qAccW.val < 3) {
 		LOG(ERROR) <<"\n qAccW = " <<value <<" : has to be 0 or > 3";
@@ -1379,8 +1163,8 @@ void CommandLineParsing::validate_qAccW(const int & value)
 inline
 void CommandLineParsing::validate_qAccL(const int & value)
 {
-	// forward check to general method
-	validate_numberArgument("qAccL", qAccL, value);
+	// standard check
+	validate_numberArgument<int>(qAccL,value);
 	// check lower bound
 	if (qAccL.val > 0 && qAccL.val < 3) {
 		LOG(ERROR) <<"qAccL = " <<value <<" : has to be 0 or > 3";
@@ -1431,15 +1215,6 @@ inline
 void CommandLineParsing::validate_qRegion(const std::string & value) {
 	// check and store region information
 	validateRegion( "qRegion", value );
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_qRegionLenMax(const int & value)
-{
-	// forward check to general method
-	validate_numberArgument("qRegionLenMax", qRegionLenMax, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1506,37 +1281,10 @@ void CommandLineParsing::validate_tSet(const std::string & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_tIntLenMax(const int & value)
-{
-	// forward check to general method
-	validate_numberArgument("tIntLenMax", tIntLenMax, value);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_tIntLoopMax(const int & value)
-{
-	// forward check to general method
-	validate_numberArgument("tIntLoopMax", tIntLoopMax, value);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_tAcc(const char & value)
-{
-	// forward check to general method
-	validate_charArgument("tAcc", tAcc, value);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
 void CommandLineParsing::validate_tAccW(const int & value)
 {
-	// forward check to general method
-	validate_numberArgument("tAccW", tAccW, value);
+	// standard check
+	validate_numberArgument<int>(tAccW,value);
 	// check lower bound
 	if (tAccW.val > 0 && tAccW.val < 3) {
 		LOG(ERROR) <<"tAccW = " <<value <<" : has to be 0 or > 3";
@@ -1549,8 +1297,8 @@ void CommandLineParsing::validate_tAccW(const int & value)
 inline
 void CommandLineParsing::validate_tAccL(const int & value)
 {
-	// forward check to general method
-	validate_numberArgument("tAccL", tAccL, value);
+	// standard check
+	validate_numberArgument<int>(tAccL,value);
 	// check lower bound
 	if (tAccL.val > 0 && tAccL.val < 3) {
 		LOG(ERROR) <<"tAccL = " <<value <<" : has to be 0 or > 3";
@@ -1605,15 +1353,6 @@ void CommandLineParsing::validate_tRegion(const std::string & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_tRegionLenMax(const int & value)
-{
-	// forward check to general method
-	validate_numberArgument("tRegionLenMax", tRegionLenMax, value);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
 void CommandLineParsing::validate_tShape( const std::string & value )
 {
 	if (!validateFile( value )) {
@@ -1643,46 +1382,6 @@ void CommandLineParsing::validate_tShapeConversion( const std::string & value )
 		LOG(ERROR) <<"Target's SHAPE conversion method encoding '" <<value <<"' is not valid.";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_helixMinBP(const int &value) {
-	// forward check to general method
-	validate_numberArgument("helixMinBP", helixMinBP, value);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_helixMaxBP(const int &value) {
-	// forward check to general method
-	validate_numberArgument("helixMaxBP", helixMaxBP, value);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_helixMaxIL(const int & value) {
-	// forward check to general method
-	validate_numberArgument("helixMaxIL", helixMaxIL, value);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_helixMinPu(const Z_type & value) {
-	// forward check to general method
-	validate_numberArgument("helixMinPu", helixMinPu, value);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_helixMaxE(const E_kcal_type & value) {
-	// forward check to general method
-	validate_numberArgument("helixMaxE", helixMaxE, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1719,62 +1418,6 @@ void CommandLineParsing::validate_seedTQ(const std::string & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_seedBP(const int & value) {
-	// forward check to general method
-	validate_numberArgument("seedBP", seedBP, value);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_seedMaxUP(const int & value) {
-	// forward check to general method
-	validate_numberArgument("seedMaxUP", seedMaxUP, value);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_seedQMaxUP(const int & value) {
-	// forward check to general method
-	validate_numberArgument("seedQMaxUP", seedQMaxUP, value);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_seedTMaxUP(const int & value) {
-	// forward check to general method
-	validate_numberArgument("seedTMaxUP", seedTMaxUP, value);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_seedMaxE(const E_kcal_type & value) {
-	// forward check to general method
-	validate_numberArgument("seedMaxE", seedMaxE, value);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_seedMaxEhybrid(const E_kcal_type & value) {
-	// forward check to general method
-	validate_numberArgument("seedMaxEhybrid", seedMaxEhybrid, value);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_seedMinPu(const Z_type & value) {
-	// forward check to general method
-	validate_numberArgument("seedMinPu", seedMinPu, value);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
 void CommandLineParsing::validate_seedQRange(const std::string & value) {
 	if (!value.empty()) {
 		// check regex
@@ -1801,41 +1444,6 @@ void CommandLineParsing::validate_seedTRange(const std::string & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_temperature(const Z_type & value) {
-	// forward check to general method
-	validate_numberArgument("temperature", temperature, value);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_model(const char & value)
-{
-	// forward check to general method
-	validate_charArgument("model", model, value);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_mode(const char & value)
-{
-	// forward check to general method
-	validate_charArgument("mode", mode, value);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_energy(const char & value)
-{
-	// forward check to general method
-	validate_charArgument("energy", energy, value);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
 void
 CommandLineParsing::
 validate_energyFile(const std::string & value)
@@ -1845,22 +1453,6 @@ validate_energyFile(const std::string & value)
 		LOG(ERROR) <<"provided VRNA energy parameter file '" <<value <<"' could not be processed.";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_energyAdd(const E_kcal_type & value) {
-	// forward check to general method
-	validate_numberArgument("energyAdd", energyAdd, value);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_outMode(const char & value) {
-	// forward check to general method
-	validate_charArgument("outMode", outMode, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1993,75 +1585,6 @@ void CommandLineParsing::validate_out(const std::vector<std::string> & list) {
 		}
 		} // switch curPrefCode
 	} // for all arguments
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_outNumber(const int & value) {
-	// forward check to general method
-	validate_numberArgument("oNumber", outNumber, value);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_outOverlap(const char & value) {
-	// forward check to general method
-	validate_charArgument("outOverlap", outOverlap, value);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_outDeltaE(const E_kcal_type & value) {
-	// forward check to general method
-	validate_numberArgument("outDeltaE", outDeltaE, value);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_outMaxE(const E_kcal_type & value) {
-	// forward check to general method
-	validate_numberArgument("outMaxE", outMaxE, value);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_outMinPu(const Z_type & value) {
-	// forward check to general method
-	validate_numberArgument("outMinPu", outMinPu, value);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-#if INTARNA_MULITHREADING
-inline
-void CommandLineParsing::validate_threads(const int & value)
-{
-	// forward check to general method
-	validate_numberArgument("threads", threads, value);
-}
-#endif
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_windowWidth(const int & value)
-{
-	// forward check to general method
-	validate_numberArgument("windowWidth", windowWidth, value);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_windowOverlap(const int & value)
-{
-	// forward check to general method
-	validate_numberArgument("windowOverlap", windowOverlap, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////

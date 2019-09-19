@@ -60,7 +60,7 @@ template<class T> void INTARNA_CLEANUP( T *& pointer) { if (pointer != NULL) {de
 	#ifdef numStringLength
 		#error numStringLength already defined
 	#endif
-	#define numStringLength( x ) ( (x==0) ? 1 : (1+std::floor(std::log10(x))) )
+	template< typename N > size_t numStringLength( const N x ) { N xx = ((x<0) ? -x : x); int chars = ((x<0) ? 2 : 1); N pten=10; while ( pten <= xx ) { chars++; pten*=10; }; return chars;}
 
 
 ////////////////  GLOBAL TYPEDEFS  //////////////////////

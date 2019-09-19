@@ -57,7 +57,7 @@ TEST_CASE( "IndexRange", "[IndexRange]" ) {
 		s <<range;
 
 		// parse from string
-		IndexRange r2(s.str());
+		IndexRange r2(s.str(),NULL);
 
 		// check
 		REQUIRE( range == r2 );

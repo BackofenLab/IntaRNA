@@ -111,26 +111,6 @@ protected:
 		 : idx1(idx1), idx2(idx2), Z(0.0)
 		{}
 
-		/* construction from string
-		 * @param spotString string encoding of a spot
-		 */
-		Spot(const std::string & spotString )
-		 : idx1(std::stol(spotString.substr(0,spotString.find('&'))))
-			, idx2(std::stol(spotString.substr(spotString.find('&')+1)))
-			, Z(0.0)
-		{
-#if INTARNA_IN_DEBUG_MODE
-			// check regex
-			if (!boost::regex_match( spotString, boost::regex(PredictionTrackerSpotProb::str_spot), boost::match_perl )) {
-				throw std::runtime_error("PredictionTrackerSpotProb::Spot("+spotString+") does not match its encoding regular expression");
-			}
-			assert(idx1 > 0);
-			assert(idx2 > 0);
-#endif
-			// correct user input by -1 to start indexing with 0
-			idx1--;
-			idx2--;
-		}
 	};
 
 
@@ -157,6 +137,12 @@ protected:
 protected:
 
 
+	/**
+	 * Creates spot information from string encoding
+	 * @param spotString the string to decode
+	 * @return the respective Spot object
+	 */
+	Spot fromString( std::string && spotString );
 
 };
 

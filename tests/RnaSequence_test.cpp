@@ -88,4 +88,30 @@ TEST_CASE( "RnaSequence", "[RNAsequence]" ) {
 		REQUIRE_FALSE( RnaSequence(id+"2",seq+"A") == rna );
 	}
 
+	SECTION( "getInOutIndex() + getIndex()" ) {
+
+		std::string id= "test", seq="AAAUUUGGGCCC";
+
+		RnaSequence rna(id, seq, 0);
+		// check index conversion
+		REQUIRE( rna.getInOutIndex(0) == 0 );
+		REQUIRE( rna.getIndex(rna.getInOutIndex(0)) == 0 );
+		REQUIRE( rna.getInOutIndex(3) == 3 );
+		REQUIRE( rna.getIndex(rna.getInOutIndex(3)) == 3 );
+
+		rna = RnaSequence(id, seq, -3);
+		// check index conversion
+		REQUIRE( rna.getInOutIndex(0) == -3 );
+		REQUIRE( rna.getIndex(rna.getInOutIndex(0)) == 0 );
+		REQUIRE( rna.getInOutIndex(3) == 1 );
+		REQUIRE( rna.getIndex(rna.getInOutIndex(3)) == 3 );
+
+		rna = RnaSequence(id, seq, 3);
+		// check index conversion
+		REQUIRE( rna.getInOutIndex(0) == 3 );
+		REQUIRE( rna.getIndex(rna.getInOutIndex(0)) == 0 );
+		REQUIRE( rna.getInOutIndex(3) == 6 );
+		REQUIRE( rna.getIndex(rna.getInOutIndex(3)) == 3 );
+	}
+
 }

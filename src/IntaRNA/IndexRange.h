@@ -4,6 +4,7 @@
 
 
 #include "IntaRNA/general.h"
+#include "IntaRNA/RnaSequence.h"
 
 #include <stdexcept>
 
@@ -34,6 +35,9 @@ public:
 	size_t to;
 
 	//! regular expression that matches valid IndexRange string encodings
+	static constexpr const char* regexString = "(0|-?[123456789]\\d*)-(0|-?[123456789]\\d*)";
+
+	//! regular expression that matches valid IndexRange string encodings
 	static const boost::regex regex;
 
 public:
@@ -53,11 +57,15 @@ public:
 	 * Creates a range from a string encoding
 	 * @param stringEncoding string encoding of the range as produced by the
 	 *  ostream operator
+	 * @param seq if not NULL, the RnaSequence to be used to shift the indices
+	 *            of the input string from in/output positions to internal
+	 *            indices
+	 *
 	 */
-	IndexRange(const std::string & stringEncoding)
+	IndexRange(const std::string & stringEncoding, const RnaSequence * seq )
 		: from(0), to(NA_INDEX)
 	{
-		fromString(stringEncoding);
+		fromString(stringEncoding,seq);
 	}
 
 	/**
@@ -163,7 +171,7 @@ public:
 	 * @throws std::runtime_error if stringEncoding does not match regex
 	 */
 	void
-	fromString( const std::string & stringEncoding )
+	fromString( const std::string & stringEncoding, const RnaSequence * seq )
 	{
 		if( ! boost::regex_match(stringEncoding, regex, boost::match_perl) ) {
 			throw std::runtime_error("IndexRange::fromString("+stringEncoding+") uses no valid index range string encoding");
@@ -171,8 +179,14 @@ public:
 		// find split position
 		const size_t splitPos = stringEncoding.find('-');
 		// parse interval boundaries
-		from = boost::lexical_cast<size_t>(stringEncoding.substr(0,splitPos));
-		to = boost::lexical_cast<size_t>(stringEncoding.substr(splitPos+1));
+		if (seq == NULL) {
+			from = boost::lexical_cast<size_t>(stringEncoding.substr(0,splitPos));
+			to = boost::lexical_cast<size_t>(stringEncoding.substr(splitPos+1));
+		} else {
+			// correct for shifted indexing within the input sequence
+			from = seq->getIndex(boost::lexical_cast<long>(stringEncoding.substr(0,splitPos)));
+			to = seq->getIndex(boost::lexical_cast<long>(stringEncoding.substr(splitPos+1)));
+		}
 	}
 	
 	/**

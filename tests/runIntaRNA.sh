@@ -10,8 +10,8 @@ fi
 # subdirectory of test data
 datadir=data
 
-# list of all test names (parameter and output file in data subfolder) 
-IntaRNA_tests=`ls $datadir/*.parameter | sed "s/^$datadir\/\(\S*\).parameter$/\1/g"`
+# list of all test names (parameter file in data subfolder) 
+IntaRNA_tests=`cd $datadir; for f in *.parameter; do printf "${f%.*} "; done`
 
 DIFFERENCES=false
 
@@ -34,13 +34,13 @@ function calltest {
 
     shift 2
     
-    testCall="$INTARNABINPATH/src/bin/IntaRNA --parameterFile=$datadir/$name.parameter"
+    testCall="$INTARNABINPATH/src/bin/IntaRNA --parameterFile=$datadir/$name.parameter --default-log-file=/dev/null"
 
     echo " IntaRNA TEST $name"
 	#	echo CALL $testCall
     #echo
     
-    $testCall 2>&1 > $resultfile
+    $testCall 2>&1 | grep -v INFO > $resultfile
 
 	if [ -e "$reference_resultsfile" ] ; then
 	    if ! diff "$reference_resultsfile" "$resultfile" "${diffopts}" > $difftmp; then
