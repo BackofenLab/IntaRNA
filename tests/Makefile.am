@@ -45,6 +45,7 @@ runApiTests_SOURCES =	\
 					PredictionTrackerSpotProb_test.cpp \
 					PredictorMfe2dHelixBlockHeuristic_test.cpp \
 					PredictorMfe2dHelixBlockHeuristicSeed_test.cpp \
+					PredictorMfeEns2d_test.cpp \
 					NussinovHandler_test.cpp \
 					RnaSequence_test.cpp \
 					OutputStreamHandlerSortedCsv_test.cpp \
@@ -53,7 +54,6 @@ runApiTests_SOURCES =	\
 					SeedHandlerNoBulge_test.cpp \
 					SeedHandlerMfe_test.cpp \
 					SeedHandlerIdxOffset_test.cpp \
-					ZAll_test.cpp \
 					runApiTests.cpp
 
 # add IntaRNA lib for linking
