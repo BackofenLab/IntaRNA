@@ -82,6 +82,8 @@ TEST_CASE( "SeedHandlerExplicit", "[SeedHandlerExplicit]" ) {
 		REQUIRE( SeedHandlerExplicit::checkSeedEncoding( "1|||&51|..|.|" ) == "" );
 		REQUIRE( SeedHandlerExplicit::checkSeedEncoding( "1|.|.|&51|..|.|" ) == "" );
 		REQUIRE( SeedHandlerExplicit::checkSeedEncoding( "1|.|.|&51|||" ) == "" );
+		REQUIRE( SeedHandlerExplicit::checkSeedEncoding( "3||&-2||" ) == "" );
+		REQUIRE( SeedHandlerExplicit::checkSeedEncoding( "-3||&2||" ) == "" );
 
 		// missing stuff
 		REQUIRE( SeedHandlerExplicit::checkSeedEncoding( "" ) != "" );
@@ -97,8 +99,8 @@ TEST_CASE( "SeedHandlerExplicit", "[SeedHandlerExplicit]" ) {
 		REQUIRE( SeedHandlerExplicit::checkSeedEncoding( "2|[|&2||" ) != "" );
 		REQUIRE( SeedHandlerExplicit::checkSeedEncoding( "a||&2||" ) != "" );
 		REQUIRE( SeedHandlerExplicit::checkSeedEncoding( "3||&2||2" ) != "" );
-		REQUIRE( SeedHandlerExplicit::checkSeedEncoding( "3||&-2||" ) != "" );
-		REQUIRE( SeedHandlerExplicit::checkSeedEncoding( "-3||&2||" ) != "" );
+		REQUIRE( SeedHandlerExplicit::checkSeedEncoding( "3||&--2||" ) != "" );
+		REQUIRE( SeedHandlerExplicit::checkSeedEncoding( "--3||&2||" ) != "" );
 
 		// base pair ends missing
 		REQUIRE( SeedHandlerExplicit::checkSeedEncoding( "2.||&2||" ) != "" );

@@ -116,8 +116,10 @@ writeData( std::ostream &out
 			, const std::string & NA_string )
 {
 	// direct access to sequence string information
-	const std::string & rna1 = energy.getAccessibility1().getSequence().asString();
-	const std::string & rna2 = energy.getAccessibility2().getSequence().asString();
+	const RnaSequence & rna1 = energy.getAccessibility1().getSequence();
+	const RnaSequence & rna2 = energy.getAccessibility2().getAccessibilityOrigin().getSequence();
+	const std::string & rna1Str = energy.getAccessibility1().getSequence().asString();
+	const std::string & rna2Str = energy.getAccessibility2().getSequence().asString();
 
 	// write in CSV-like format
 	// header = reversed seq2
@@ -127,13 +129,13 @@ writeData( std::ostream &out
 	// print header : spotProb; "nt_index" ... starting with index 1
 	out <<"spotProb";
 	for (size_t j=rna2.size(); j-- > 0; ) {
-		out <<';' <<rna2.at(j)<<"_"<<(energy.getAccessibility2().getReversedIndex(j)+1);
+		out <<';' <<rna2Str.at(j)<<"_"<<rna2.getInOutIndex(energy.getAccessibility2().getReversedIndex(j));
 	}
 	out <<'\n';
 	// print minE data
 	for (size_t i=0; i<pairZ.size1(); i++) {
 		// out nt in seq1 together with index
-		out <<rna1.at(i)<<"_"<<(i+1);
+		out <<rna1Str.at(i)<<"_"<<rna1.getInOutIndex(i);
 		for (size_t j=pairZ.size2(); j-- > 0; ) {
 			// out separator
 			out <<';';

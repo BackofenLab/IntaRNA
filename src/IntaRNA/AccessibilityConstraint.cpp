@@ -26,7 +26,7 @@ const std::string AccessibilityConstraint::dotBracketAlphabet =
 					;
 const std::string AccessibilityConstraint::regionIndexList =
 					"["+AccessibilityConstraint::dotBracket_constraints+"]:"
-					+"([123456789]\\d*-[123456789]\\d*,)*[123456789]\\d*-[123456789]\\d*"
+					+"(-?[123456789]\\d*--?[123456789]\\d*,)*-?[123456789]\\d*--?[123456789]\\d*"
 					;
 
 const boost::regex AccessibilityConstraint::regex(
@@ -55,7 +55,7 @@ const boost::regex AccessibilityConstraint::regexShapeConversion("^((M)|(C(\\d+|
 
 AccessibilityConstraint::
 AccessibilityConstraint(
-			  const size_t length_
+			  const RnaSequence & seq
 			, const std::string& stringEncoding
 			, const size_t maxBpSpan_
 			, const std::string & shapeFile_
@@ -63,7 +63,7 @@ AccessibilityConstraint(
 			, const std::string & shapeConversion_
 			)
 	:
-	length(length_),
+	length(seq.size()),
 	maxBpSpan( maxBpSpan_==0 ? length : std::min(maxBpSpan_,length) ),
 	shapeFile(shapeFile_),
 	shapeMethod(shapeFile_.empty() ? "" : shapeMethod_),
@@ -104,12 +104,7 @@ AccessibilityConstraint(
 			// deal with search result
 			end = (end == std::string::npos ? stringEncoding.size()+1 : end);
 			// parse index range encoding
-			IndexRangeList curRangeList(stringEncoding.substr(start+2,end-start-3));
-			if (curRangeList.begin()->from==0) {
-				throw std::runtime_error("AccessibilityConstraint() : lowest allowed index in range encoding is 1");
-			}
-			// shift provided ranges to start with 1
-			curRangeList = curRangeList.shift(-1, length-1);
+			IndexRangeList curRangeList(stringEncoding.substr(start+2,end-start-3), false, &seq);
 			// store range
 			switch( stringEncoding.at(start) ) {
 			case dotBracket_accessible :

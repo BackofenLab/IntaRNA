@@ -51,10 +51,14 @@ public:
 	 *
 	 * @param stringEncoding the string encoding to be parsed
 	 * @param allowOverlap whether or not overlapping ranges are allowed
+	 * @param seq if not NULL, the RnaSequence to be used to shift in/output
+	 *         indices to 0-based internal index positions
 	 *
 	 * @throws std::runtime_error if stringEncoding does not match regex
 	 */
-	IndexRangeList( const std::string & stringEncoding, const bool allowOverlap = false );
+	IndexRangeList( const std::string & stringEncoding
+					, const bool allowOverlap = false
+					, const RnaSequence * seq = NULL);
 
 	/**
 	 * copy construction
@@ -217,10 +221,12 @@ public:
 	/**
 	 * updates the range list data from a valid string encoding (matching regex)
 	 * @param stringEncoding the interval list string encoding
+	 * @param seq if not NULL, the RnaSequence to be used to shift in/output
+	 *         indices to 0-based internal index positions
 	 * @throws std::runtime_error if stringEncoding does not match regex
 	 */
 	void
-	fromString( const std::string & stringEncoding );
+	fromString( const std::string & stringEncoding, const RnaSequence * seq = NULL );
 
 	/**
 	 * shifts all indices by the given value and returns all intervals within
@@ -303,11 +309,13 @@ IndexRangeList::IndexRangeList( const bool allowOverlap_ )
 //////////////////////////////////////////////////////////////////////
 
 inline
-IndexRangeList::IndexRangeList( const std::string & stringEncoding, const bool allowOverlap_ )
+IndexRangeList::IndexRangeList( const std::string & stringEncoding
+							, const bool allowOverlap_
+							, const RnaSequence * seq )
 : allowOverlap(allowOverlap_)
 , list()
 {
-	fromString(stringEncoding);
+	fromString(stringEncoding, seq);
 }
 
 //////////////////////////////////////////////////////////////////////

@@ -457,6 +457,8 @@ protected:
 	std::string queryArg;
 	//! the container holding all query sequences
 	RnaSequenceVec query;
+	//! in/output index of pos 0 (of all queries)
+	NumberParameter<long> qIdxPos0;
 	//! subset of query sequence indices to be processed
 	IndexRangeList qSet;
 	//! string encoding of qSet
@@ -496,6 +498,8 @@ protected:
 	std::string targetArg;
 	//! the container holding all target sequences
 	RnaSequenceVec target;
+	//! in/output index of pos 0 (of all targets)
+	NumberParameter<long> tIdxPos0;
 	//! subset of target sequence indices to be processed
 	IndexRangeList tSet;
 	//! string encoding of tSet
@@ -713,6 +717,12 @@ protected:
 	void validate_query(const std::string & value);
 
 	/**
+	 * Validates the query accessibility sliding window size argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_qIdxPos0(const long & value);
+
+	/**
 	 * Validates the query's qSet argument.
 	 * @param value the argument value to validate
 	 */
@@ -796,6 +806,12 @@ protected:
 	 * @param value the argument value to validate
 	 */
 	void validate_target(const std::string & value);
+
+	/**
+	 * Validates the target accessibility sliding window size argument.
+	 * @param value the argument value to validate
+	 */
+	void validate_tIdxPos0(const long & value);
 
 	/**
 	 * Validates the target's tSet argument.
@@ -1118,13 +1134,12 @@ protected:
 	 * Validates the string encoding of an IndexRangeList encoding parameter
 	 * @param argName the name of the parameter (for exception handling)
 	 * @param value the value of the parameter to validate
-	 * @param indexMin the minimal value of an index allowed
-	 * @param indexMax the maximal value of an index allowed
+	 * @param seq the RnaSequence to be used for mapping in/output indices to
+	 *          internal index positions
 	 */
 	void validate_indexRangeList(const std::string & argName
 								, const std::string & value
-								, const size_t indexMin
-								, const size_t indexMax );
+								, const RnaSequence & seq );
 
 	/**
 	 * Validates a sequence arguments.
@@ -1150,11 +1165,13 @@ protected:
 	 * @param sequences the container to fill
 	 * @param seqSubset the indices of the input sequences to store (all other
 	 *                  ignored)
+	 * @param idxPos0 input/output index of first sequence position to be used
 	 */
 	void parseSequences(const std::string & paramName,
 					const std::string& paramArg,
 					RnaSequenceVec& sequences,
-					const IndexRangeList & seqSubset );
+					const IndexRangeList & seqSubset,
+					const long idxPos0 );
 
 	/**
 	 * Parses the parameter input stream from FASTA format and returns all
@@ -1164,11 +1181,13 @@ protected:
 	 * @param sequences the container to fill
 	 * @param seqSubset the indices of the input sequences to store (all other
 	 *                  ignored)
+	 * @param idxPos0 input/output index of first sequence position to be used
 	 */
 	void parseSequencesFasta( const std::string & paramName,
 					std::istream& input,
 					RnaSequenceVec& sequences,
-					const IndexRangeList & seqSubset );
+					const IndexRangeList & seqSubset,
+					const long idxPos0 );
 
 	/**
 	 * Checks whether or not a sequence container holds a specific number of
@@ -1316,6 +1335,15 @@ inline
 void CommandLineParsing::validate_query(const std::string & value)
 {
 	validate_sequenceArgument("query",value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_qIdxPos0(const long & value)
+{
+	// forward check to general method
+	validate_numberArgument("qIdxPos0", qIdxPos0, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1486,6 +1514,15 @@ inline
 void CommandLineParsing::validate_target(const std::string & value)
 {
 	validate_sequenceArgument("target",value);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_tIdxPos0(const long & value)
+{
+	// forward check to general method
+	validate_numberArgument("tIdxPos0", tIdxPos0, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////

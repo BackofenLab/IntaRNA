@@ -166,13 +166,13 @@ writeProfile( std::ostream &out
 	// print header : seq.ID ; minE
 	out <<"idx;"<<boost::replace_all_copy(rna.getId(), ";", "_")<<";minE" <<'\n';
 	// print minE data
-	size_t i=1;
+	size_t i=0;
 	for (MinEProfileIterator curE = begin; curE!=end; curE++) {
 		out
 			// out index
-			<<i<<';'
+			<<rna.getInOutIndex(i)<<';'
 			// out nucleotide (index starts with 0)
-			<<rna.asString().at(i-1)<<';'
+			<<rna.asString().at(i)<<';'
 			;
 		// out infinity replacement if needed
 		if ( E_isINF( *curE ) ) {

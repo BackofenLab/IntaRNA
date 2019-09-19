@@ -174,6 +174,9 @@ public:
 
 		/**
 		 * construction based on a given seed encoding
+		 *
+		 * Invalid encodings will produce an invalid Seed object (isValid()==false)
+		 *
 		 * @param seedEncoding the explicit seed to be parsed (has to be valid!)
 		 * @param energyFunction the energy function to be used for index and energy setup
 		 */

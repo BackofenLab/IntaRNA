@@ -149,27 +149,27 @@ add( const Interaction & i )
 				break;
 
 			case subseqDB:
-				outTmp <<(i1+1)
+				outTmp <<i.s1->getInOutIndex(i1)
 					<<energy.getAccessibility1().getSequence().asString().substr(i1, j1-i1+1)
 					<<'&'
-					<<(j2+1)
+					<<i.s2->getInOutIndex(j2)
 					<<energy.getAccessibility2().getAccessibilityOrigin().getSequence().asString().substr(j2, i2-j2+1);
 				break;
 
 			case start1:
-				outTmp <<(i1+1);
+				outTmp <<i.s1->getInOutIndex(i1);
 				break;
 
 			case end1:
-				outTmp <<(j1+1);
+				outTmp <<i.s1->getInOutIndex(j1);
 				break;
 
 			case start2:
-				outTmp <<(j2+1);
+				outTmp <<i.s2->getInOutIndex(j2);
 				break;
 
 			case end2:
-				outTmp <<(i2+1);
+				outTmp <<i.s2->getInOutIndex(i2);
 				break;
 
 			case hybridDP:
@@ -260,12 +260,12 @@ add( const Interaction & i )
 						// generate list
 						outTmp << std::accumulate( std::next( i.seed->begin() )
 										, i.seed->end()
-										, toString( i.seed->begin()->bp_i.first +1 ) // start with first element
+										, toString( i.s1->getInOutIndex(i.seed->begin()->bp_i.first) ) // start with first element
 										, [&](std::string a, Interaction::Seed s) {
-											 return std::move(a) + listSep + toString( s.bp_i.first +1 ); // extend list
+											 return std::move(a) + listSep + toString( i.s1->getInOutIndex(s.bp_i.first) ); // extend list
 										 });
 					} else {
-						outTmp <<i.seed->begin()->bp_i.first +1;
+						outTmp <<i.s1->getInOutIndex(i.seed->begin()->bp_i.first);
 					}
 				}
 				break;
@@ -278,12 +278,12 @@ add( const Interaction & i )
 						// generate list
 						outTmp << std::accumulate( std::next( i.seed->begin() )
 										, i.seed->end()
-										, toString( i.seed->begin()->bp_j.first +1 ) // start with first element
+										, toString( i.s1->getInOutIndex(i.seed->begin()->bp_j.first) ) // start with first element
 										, [&](std::string a, Interaction::Seed s) {
-											 return std::move(a) + listSep + toString( s.bp_j.first +1 ); // extend list
+											 return std::move(a) + listSep + toString( i.s1->getInOutIndex(s.bp_j.first) ); // extend list
 										 });
 					} else {
-						outTmp <<i.seed->begin()->bp_j.first +1;
+						outTmp <<i.s1->getInOutIndex(i.seed->begin()->bp_j.first);
 					}
 				}
 				break;
@@ -296,12 +296,12 @@ add( const Interaction & i )
 						// generate list
 						outTmp << std::accumulate( std::next( i.seed->begin() )
 										, i.seed->end()
-										, toString( i.seed->begin()->bp_j.second +1 ) // start with first element
+										, toString( i.s2->getInOutIndex(i.seed->begin()->bp_j.second) ) // start with first element
 										, [&](std::string a, Interaction::Seed s) {
-											 return std::move(a) + listSep + toString( s.bp_j.second +1 ); // extend list
+											 return std::move(a) + listSep + toString( i.s2->getInOutIndex(s.bp_j.second) ); // extend list
 										 });
 					} else {
-						outTmp <<i.seed->begin()->bp_j.second +1;
+						outTmp <<i.s2->getInOutIndex(i.seed->begin()->bp_j.second);
 					}
 				}
 				break;
@@ -314,12 +314,12 @@ add( const Interaction & i )
 						// generate list
 						outTmp << std::accumulate( std::next( i.seed->begin() )
 										, i.seed->end()
-										, toString( i.seed->begin()->bp_i.second +1 ) // start with first element
+										, toString( i.s2->getInOutIndex(i.seed->begin()->bp_i.second) ) // start with first element
 										, [&](std::string a, Interaction::Seed s) {
-											 return std::move(a) + listSep + toString( s.bp_i.second +1 ); // extend list
+											 return std::move(a) + listSep + toString( i.s2->getInOutIndex(s.bp_i.second) ); // extend list
 										 });
 					} else {
-						outTmp <<i.seed->begin()->bp_i.second +1;
+						outTmp <<i.s2->getInOutIndex(i.seed->begin()->bp_i.second);
 					}
 				}
 				break;

@@ -179,13 +179,13 @@ writeProfile( std::ostream &out
 	// print header : seq.ID ; spotProb
 	out <<"idx;"<<boost::replace_all_copy(rna.getId(), ";", "_")<<";spotProb" <<'\n';
 	// print spot probability data
-	size_t i=1;
+	size_t i=0;
 	for (ZProfileIterator curZ = begin; curZ!=end; curZ++) {
 		out
 			// out index
-			<<i<<';'
+			<<rna.getInOutIndex(i)<<';'
 			// out nucleotide (index starts with 0)
-			<<rna.asString().at(i-1)<<';'
+			<<rna.asString().at(i)<<';'
 			;
 		// out infinity replacement if needed
 		if ( noZ || Z_isINF( *curZ ) ) {
