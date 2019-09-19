@@ -39,6 +39,10 @@
 ################################################################################  
 ################################################################################  
 
+190919 Martin Raden :
+ * bin/CommandLineParsing :
+   * argument validation revised
+
 190918 Martin Raden :
  * IntaRNA/general :
    * numStringLength() : now template function
