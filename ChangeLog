@@ -10,6 +10,13 @@
 # changes in development version since last release 
 ################################################################################
 
+################################################################################  
+################################################################################  
+
+################################################################################
+### version 3.1.0  
+################################################################################  
+
 # IntaRNA
 + Zall (estimates) and derived output now available for all prediction models
 + outMode=E : report of ensemble information only
@@ -36,7 +43,6 @@
   this simplifies the signature of the member functions
 * OutputConstraint now guides whether or not Zall is required for output
 
-################################################################################  
 ################################################################################  
 
 190919 Martin Raden :
