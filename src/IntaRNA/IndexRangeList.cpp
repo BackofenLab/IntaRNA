@@ -8,7 +8,7 @@ namespace IntaRNA {
 
 //////////////////////////////////////////////////////////////////////
 
-const std::string IndexRangeList::regexString("((\\d|[123456789]\\d*)-(\\d|[123456789]\\d*),)*(\\d|[123456789]\\d*)-(\\d|[123456789]\\d*)");
+const std::string IndexRangeList::regexString("("+std::string(IndexRange::regexString)+",)*"+std::string(IndexRange::regexString));
 
 const boost::regex IndexRangeList::regex(IndexRangeList::regexString);
 
@@ -286,7 +286,7 @@ reverseInplace( const size_t seqLength )
 
 void
 IndexRangeList::
-fromString( const std::string & stringEncoding )
+fromString( const std::string & stringEncoding, const RnaSequence * seq )
 {
 	// clear current data
 	this->clear();
@@ -301,7 +301,7 @@ fromString( const std::string & stringEncoding )
 		while (startPos != splitPos) {
 			splitPos = stringEncoding.find(',',startPos);
 			// insert interval
-			this->insert( IndexRange(stringEncoding.substr(startPos,splitPos-(splitPos==std::string::npos?0:startPos))));
+			this->insert( IndexRange(stringEncoding.substr(startPos,splitPos-(splitPos==std::string::npos?0:startPos)),seq));
 			// update start of next interval encoding to parse
 			startPos = splitPos + (splitPos != std::string::npos ? 1 : 0);
 		}

@@ -103,6 +103,7 @@ The following topics are covered by this documentation:
   - [SHAPE reactivity data to enhance accessibility computation](#shape)
 - [Output Setup](#outputSetup)
   - [Output modes](#outmodes)
+  - [Sequence indexing](#idxPos0)
   - [Suboptimal RNA-RNA interaction prediction and output restrictions](#subopts)
   - [Energy parameters and temperature](#energy)
   - [Additional output files](#outFiles)
@@ -426,6 +427,9 @@ sequences using the `--qSet` or `--tSet` parameter as shown in the following.
 IntaRNA -t myTranscriptome.fasta --tSet=101-200 -q myQuery.fasta
 ```
 
+Furthermore, also gzip-compressed file input is supported and automatically
+decompressed if the file name ends in `.gz`. 
+
 Nucleotide encodings different from `ACGUT` are rewritten as `N` and the respective
 positions are not considered to form base pairs (and thus ignored).
 Thymine `T` encodings are replaced by uracil `U`, since we apply an RNA-only
@@ -505,7 +509,7 @@ from a parameter file. Thus, you can (silently) overwrite parameters that
 you have specified within the file.
 
 *Note further:* parameter parsing from parameter file is (in contrast to the
-command line parsing) case sensitive!
+command line parsing) **case sensitive**!
 
 
 
@@ -931,14 +935,18 @@ by thermodynamics.
 ### IntaRNAsTar
 
 **IntaRNAsTar** provides optimized parameters for large scale (genome-wide) sRNA
-target prediction identified via the benchmarking introduced in our publication 
+target prediction identified via the benchmark introduced in our publication 
 (Raden et al., 2019). This covers
 
 - [no GU base pairs in seeds](#seed)
 - [minimal unpaired probability of 0.001 of seed regions](#seed)
 - [maximal interaction length of 60](#interConstr)
 - [maximal interior loop size of 8](#energy)
-- [minimal unpaired probability of 0.001 of interacting reginos](#interConstr)
+- [minimal unpaired probability of 0.001 of interacting regions](#interConstr)
+
+Furthermore, it ensures 
+- [no GU base pairs at helix or interaction ends](#interConstr)
+- [no lonely base pairs](#interConstr)
 
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
@@ -1000,6 +1008,10 @@ inter-molecular base pairs. These are typically not contributing much to the
 overall stability and can lead to instable subinteractions when e.g. enclosed
 by two large interior loops.
 
+In addition, with `--outNoGUend` one can prohibit weak `GU` base pairs at 
+interaction ends and within interior loops.
+That way, only stable inter-molecular helix ends are considered.
+
 If you are only interested in predictions for highly accessible regions, i.e.
 with a high probability to be unpaired, you can use the `--outMinPu` parameter.
 If given, each individual position of the interacting subsequences has to have
@@ -1013,8 +1025,10 @@ Furthermore, the region where interactions are supposed to occur can be restrict
 for target and query independently. To this end, a list of according
 subregion-defining index pairs
 can be provided using `--qRegion` and `--tRegion`, respectively. The indexing
-starts with 1 and should be in the format `from1-end1,from2-end2,..` using
-integers. Note, if you want to have predictions individually for each region
+starts with 1 (or the value set via `--qIdxPos0` and `--tIdxPos0`) 
+and should be in the format `from1-end1,from2-end2,..` using
+integers. 
+Note, if you want to have predictions individually for each region
 combination (rather than just the best for each query-target combination) you
 want to add `--outPerRegion` to the call.
 
@@ -1037,8 +1051,9 @@ is completely removed.
 
 Finally, it is possible to restrict the overall length an interaction is allowed
 to have. This can be done independently for the query and target sequence using
-`--qIntLenMax` and `--tIntLenMax`, respectively. Both default to the full sequence
-length (by setting both to 0).
+`--qIntLenMax` and `--tIntLenMax`, respectively. By setting both to 0 (default),
+the smaller of the full sequence length and the maximal accessibility-window
+size (`--tAccW`, `--qAccW`) is used.
 
 
 
@@ -1203,10 +1218,13 @@ you can either name a file or one of the stream names `STDOUT`|`STDERR`. Note,
 any string not matching one of the two stream names is considered a file name.
 The file will be overwritten by IntaRNA!
 
+If a file name ends in `.gz`, gzip-compressed binary output is generated.
+
 Besides interaction output, you can set the verbosity of computation information
 using the `-v` or `--verbose` arguments. To reduce the output to a minimum, you
 can redirect all logging output of user information, warnings or verbose output
-to a specific file using `--default-log-file=LOGFILENAME`.
+to a specific file using `--default-log-file=LOGFILENAME` (no gzip compression
+supported).
 If you are not interested in any logging output, redirect it to nirvana via
 `--default-log-file=/dev/null`. Note, error output is not redirected and always
 given on standard output streams.
@@ -1273,7 +1291,8 @@ seed Pu2    = 0.0133541
 ```
 Note, within this output `seq1` and respective values refer to the target 
 sequence and `seq2` etc. to the query RNA. 
-Position annotations start indexing with 1 at the 5'-end of each RNA.
+Position annotations start indexing with 1 at the 5'-end of each RNA
+(or the respective value set via `--qIdxPos0` and `--tIdxPos0`).
 `ED` values are the energy penalties for reduced [accessibility](#accessibility)
 and `Pu` denote unpaired probabilities of the respective interacting subsequences.
 Note, `Pu` values are recomputed from rounded `ED` values and are thus not equal
@@ -1369,7 +1388,7 @@ to the RNAplfold values from which the ED values are derived from!
 Using `--outCsvCols ''`, all available columns are added to the output.
 
 Energies are provided in unit *kcal/mol*, probabilities in the interval [0,1].
-Position annotations start indexing with 1.
+Position annotations start indexing with 1 (or the values set via `--qIdxPos0` and `--tIdxPos0`).
 
 The `hybridDP` format is a dot-bracket notation as e.g. generated by **RNAup**.
 Here, for each target sequence position within the interaction,
@@ -1435,6 +1454,54 @@ IntaRNA --model=P --mode=M --out=E ...
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
+
+
+<br /><br />
+<a name="idxPos0" />
+
+## Sequence indexing
+
+Per default, IntaRNA assumes sequence indexing to be natural, i.e. starting with
+index 1 at the RNAs' 5'-ends.
+
+If needed, you can alter indexing (independently for query and target) using the
+`--qIdxPos0` and `--tIdxPos0` parameters, respectively. That way you can
+
+- *start indexing at an arbitrary position*, e.g. for subsequences of long RNAs or genomes,
+- get a *0-based indexing*  if needed by your down-stream processing, or
+- get *relative indexing*, e.g. relative to the start codon within an mRNA sequence.
+
+The latter, i.e. relative sequencing, starts increasing indexing with the given 
+first (negative) index but omits the '0' index. Thus, position '-1' is followed by '+1'.
+An example for a start-codon-related indexing is given below, where the start codon
+within the target is located at position 9.
+
+```
+# call: IntaRNA -t gacugguaAUGggac --tIdxPos0=-8 -q UCUUACCGUGAGUC --seedBP=5
+
+target
+            -8          1
+             |          |
+          5'-    ---     UGGGAC-3'
+             GACU   GGUAA
+             :|||   +++++
+             CUGA   CCAUU
+          3'-    GUG     CU-5'
+             |          |
+            14          3
+query
+
+interaction energy = -6.39 kcal/mol
+
+```
+ 
+
+
+
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
+
+
+
 <br /><br />
 <a name="subopts" />
 
@@ -1443,10 +1510,9 @@ IntaRNA --model=P --mode=M --out=E ...
 Besides the identification of the optimal (e.g. minimum-free-energy) RNA-RNA
 interaction, IntaRNA enables the enumeration of suboptimal interactions. To this
 end, the argument `-n N` or `--outNumber=N` can be used to generate up to `N`
-interactions for each query-target pair (including the optimal one). Note, the
-suboptimal enumeration is increasingly sorted by energy.
+interactions for each query-target pair (including the optimal one).
 
-Note: suboptimal interaction enumeration is not exhaustive! That is, for each
+*Note*: suboptimal interaction enumeration is not exhaustive! That is, for each
 interaction site (defined by the left- and right-most intermolecular base pair)
 only the best interaction is reported! In heuristic prediction mode (default
 mode of IntaRNA), this is even less exhaustive, since only for each left-most
@@ -1457,12 +1523,18 @@ Furthermore, it is possible to *restrict (sub)optimal enumeration* using
 - `--outMaxE` : maximal energy for any interaction reported
 - `--outDeltaE` : maximal energy difference of suboptimal interactions' energy
   to the minimum free energy interaction
-- `--outOverlap` : defines if an where overlapping of reported interaction sites
+- `--outOverlap` : defines if and where overlapping of reported interaction sites
   is allowed:
   - 'N' : no overlap neither in target nor query allowed for reported interactions
   - 'B' : overlap allowed for interacting subsequences for both target and query
   - 'T' : overlap allowed for interacting subsequences in target only
   - 'Q' : overlap allowed for interacting subsequences in query only
+  
+*Note*: non-overlapping output (i) is heuristic by considering for each left 
+interaction site only the best right extension for overlap computation and 
+(ii) increases runtime. To get optimized results of non-overlapping suboptimals,
+rerun IntaRNA and mark the optimal (mfe) interaction region as 
+[blocked](#accConstraints).
 
 
 
@@ -1480,7 +1552,7 @@ supported by IntaRNA.
 
 The temperature can be set via `--temperature=C`to set a temperature `C` in
 degree Celsius. Note, this is important especially for predictions within plants
-etc., since the default temperature is 37°C.
+etc., since the default temperature is 37C.
 
 The energy model used can be specified using the `--energy` parameters using
 
@@ -1539,7 +1611,7 @@ They can be ignored via `--energyNoDangles`.
 
 ## Additional output files
 
-IntaRNA v2 enables the generation of various additional information in dedicated
+IntaRNA enables the generation of various additional information in dedicated
 files/streams. The generation of such output is guided by an according (repeated)
 definition of the `--out` argument in combination with one of the following
 argument prefixes (case insensitive) that have to be colon-separated to the
@@ -1554,12 +1626,18 @@ targeted file/stream name:
 
 Note, for *multiple sequences* in FASTA input, the provided file names
 are suffixed with `-q#t#` (where `#` denotes the according sequence number
-within the input where indexing starts with 1).
+within the input where indexing starts with 1 or the values set via `--qIdxPos0` and `--tIdxPos0`).
 
 Note further, `qPu:`|`tPu:` will report unpaired probability values based on rounded accessibility (ED) values.
 Thus, these values will most likely differ from values eg. produced by RNAplfold.
 We therefore strongly recommend to store `qAcc:`|`tAcc:` values when you want to use them
 as input for subsequent IntaRNA calls!
+
+As for normal output, if the specified file name ends in `.gz`, gzip-compressed
+binary output is generated. This is especially useful for large output data like
+accessibility or unpaired probability information as well as pairwise energy
+or spot probability profiles.
+
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
@@ -1661,7 +1739,8 @@ RNAs (e.g. refer to [SHAPE data](#shape) or
 To this end, one can specify the spots of interest by intermolecular index pairs,
 e.g. using `5&67` to encode the fifth target RNA position (first number of the
 encoding) and the 67th query RNA
-position (second number of the encoding). Note, indexing starts with 1.
+position (second number of the encoding). Note, indexing starts with 1
+ (or the values set via `--qIdxPos0` and `--tIdxPos0`).
 Multiple spots can be provided as comma-separated list. The list in
 concert with an output stream/file name (colon-separated) can be passed via the
 `--out` argument using the `spotProb:` prefix, e.g.
@@ -1681,7 +1760,8 @@ the spots if spanned by `I`, the `noSpotZ` partition function is increased by
 `bw(I)`. The final probability of a spot is than given by `spotZ/overallZ` and
 the probability of interactions not covering any of the tracked spots is
 computed by `noSpotZ/overallZ` and reported for the pseudo-spot encoding `0&0`
-(since indexing starts with 1).
+(if indexing starts with 1) or (`--qIdxPos0`-1)`&`(`--tIdxPos0`-1) if the respective
+parameters for index shifting are set.
 
 *NOTE* and be aware that the probabilities are *only estimates* since IntaRNA
 is not considering (in default prediction mode) all possible interactions due
@@ -1749,6 +1829,10 @@ Accessibility incorporation can be disabled for query or target sequences using
 
 A setup of `--qAcc=C` or `--tAcc=C` (default) enables accessibility computation
 using the selected [energy model](#energy) for query or target sequences, respectively.
+
+Using `--accNoLP` and `--accNoGUend`, the consideration of lonely base pairs
+and GU-helix ends can be disabled for accessibility computation (for default 
+[energy model](#energy) `V`).
 
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
@@ -1858,6 +1942,8 @@ formats
 | ---- | --- |
 | RNAplfold unpaired probabilities | `RNAplfold -u` or `IntaRNA --out=*Pu:` |
 | RNAplfold-styled ED values | `IntaRNA --out=*Acc:` |
+| ---- | --- |
+| .. with gzip-compression | `IntaRNA --out=*:*.gz` |
 
 The **RNAplfold** format is a table encoding of a banded upper triangular matrix
 with band width l. First row contains a header comment on the data starting with
@@ -1897,9 +1983,9 @@ Another option is to store the accessibility data computed by IntaRNA for
 successive calls using
 
 ```bash
-# storing and reusing (target) accessibility (Pu) data for successive IntaRNA calls
-IntaRNA [..] --out=tPu:intarna.target.pu
-IntaRNA [..] --tAcc=P --tAccFile=intarna.target.pu
+# storing and reusing compressed (target) accessibility (Pu) data for successive IntaRNA calls
+IntaRNA [..] --out=tPu:intarna.target.pu.gz
+IntaRNA [..] --tAcc=P --tAccFile=intarna.target.pu.gz
 # piping (target) accessibilities (ED values) between IntaRNA calls
 IntaRNA [..] --out=tAcc:STDOUT | IntaRNA [..] --tAcc=E --tAccFile=STDIN
 ```

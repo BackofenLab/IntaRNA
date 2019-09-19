@@ -10,6 +10,13 @@
 # changes in development version since last release 
 ################################################################################
 
+################################################################################  
+################################################################################  
+
+################################################################################
+### version 3.1.0  
+################################################################################  
+
 # IntaRNA
 + Zall (estimates) and derived output now available for all prediction models
 + outMode=E : report of ensemble information only
@@ -18,7 +25,17 @@
 + --seedNoGUend : prohibit GU base pairs at seed ends
 + outNoLP support in all prediction modes
 * FASTA input: sequence id = prefix up to first whitespace from FASTA header
-* new default for outOverlap = B: overlapping output enabled 
+* new default for outOverlap = B: overlapping output enabled (was Q)
++ gzip-compressed file input/output if file name ends in '.gz'
++ --outNoGUend : omit interactions with GU-helix ends
++ --accNoLP : exclude lonely base pair in accessibility computation (energy==V) 
++ --accNoGUend : exclude GU-helix ends in accessibility computation (energy==V)
+* outMode=D : subsequence range now "START..END" instead of "START--END"
++ --q|tIdxPos0 : user defined sequence indexing for input parsing and output
+
+# package
++ (optional) intarnapvalue python3 module to compute p-values of IntaRNA mfe
+  predictions based on sequence shuffling and distribution fitting 
 
 # API
 * OutputHandler requires an OutputConstraint instances in construction
@@ -27,7 +44,121 @@
 * OutputConstraint now guides whether or not Zall is required for output
 
 ################################################################################  
-################################################################################  
+
+190919 Martin Raden :
+ * bin/CommandLineParsing :
+   * argument validation revised
+
+190918 Martin Raden :
+ * IntaRNA/general :
+   * numStringLength() : now template function
+ * IntaRNA/RnaSequence :
+   + idxPos0 : input/output index of first position
+   + getInOutIndex() : converts internal to in/out index
+   + getIndex() : converts in/out index to internal indexing
+   + getReversedIndex() : backward internal index
+ * IntaRNA/AccessibilityConstraint :
+   * construction from string now based on RnaSequence::getIndex()
+   * regionIndexList : allows for negative input indices
+ * IntaRNA/IndexRange :
+   + regexString : static string encoding of regex : allows for neg. in indices
+   * regex : init based on regexString
+   * construction from string now based on RnaSequence::getIndex()
+   * fromString() now based on RnaSequence::getIndex()
+ * IntaRNA/IndexRangeList :
+   * regexString : now based on IndexRange::regexString
+   * construction from string now based on RnaSequence::getIndex()
+   * fromString() now based on RnaSequence::getIndex()
+ * IntaRNA/InteractionEnergy :
+   * getE_contributions() 
+     * simplification using class members getIndex*()
+ * IntaRNA/OutputHandlerCsv :
+ * IntaRNA/OutputHandlerText :
+   * add() :
+     * index shifting for output based on RnaSequence::getInOutIndex()
+ * IntaRNA/OutputHandlerEnsemble :
+   - outputDone : obsolete
+ * IntaRNA/PredictionTrackerPairMinE :
+ * IntaRNA/PredictionTrackerSpotProbAll :
+   * writeData() :
+     * index shifting for output based on RnaSequence::getInOutIndex()
+ * IntaRNA/PredictionTrackerProfileMinE :
+ * IntaRNA/PredictionTrackerProfileSpotProb :
+   * writeProfile() :
+     * index shifting for output based on RnaSequence::getInOutIndex()
+ * IntaRNA/PredictionTrackerSpotProb :
+   * str_spot : allows for negative input indices
+   * destructor() :
+     * index shifting for output based on RnaSequence::getInOutIndex()
+     * "0&0" output changed to "idxPos0-1" to be more general
+   * Spot : 
+     - construction from string
+   + fromString() : creates a Spot from string using RnaSequence::getIndex()
+ * IntaRNA/ReverseAccessibility :
+   * getReversedIndex() : now based on RnaSequence::getReversedIndex()
+ * IntaRNA/SeedHandlerExplicit :
+   * checkSeedEncoding() : regex now allows for neg. input indices
+   * SeedData :
+     * construction from string now based on RnaSequence::getIndex()
+ * tests :
+   * adaptation of negative index input tests (now valid)
+   * RnaSequence :
+     + test for getInOutIndex() + getIndex()
+ * bin/CommandLineParsing :
+   + q|tIdxPos0 : start of indexing for query|target
+   * validate_indexRangeList(.., RnaSequence) : to get index shifting
+ * README.md :
+   + documentation of q|tIdxPos0 effects
+   + q|tIdxPos0 sequence indexing section
+
+190913 Martin Raden :
+ * configure.ac :
+   * LIBS exended
+ * IntaRNA/general :
+   * new|deleteOutStream :
+     + gzip-compression support enabled
+     * fstream replaced with boost::iostreams::filtering_ostream
+   + new|deleteInStream : analog to outstream handling to enable gzip support
+ * IntaRNA/InteractionEnergy :
+   - getBestE*() : obsolete
+   * isValidInternalLoop() : now public
+   + internalLoopGU : whether or not GU is allowed in non-stacked interior loops
+   + isInternalLoopGUallowed() : returns internalLoopGU
+   * isValidInternalLoop() :
+     + check internalLoopGU constraint
+ * IntaRNA/Predictor :
+   * updateZall() :
+     + bugfix: additional check for outConstraint.needZall
+ * IntaRNA/PredictorMfe :
+   - min*Energy : obsolete
+ * IntaRNA/PredictorMfe2dHeuristicSeed :
+   * fillHybridE() :
+     * bugfix Zall update : seed-only also if !noLP
+ * IntaRNA/InteractionEnergyIdxOffset : 
+   + bugfix: adding missing offset-based overwrites
+ * IntaRNA/OutputConstraint :
+   + noGUend : whether or not GU is allowed at interaction ends
+ * bin/CommandLineParsing :
+   * input file handling replaced with new|deleteInStream
+   + outNoGUend : whether or not GU is allowed at interaction and helix ends
+   * IntaRNAsTar :
+     + outNoGUend
+     + outNoLP
+ * README.md :
+   + gzip compression docu
+   + outNoGUend docu
+   * IntaRNAsTar docu
+ * tests :
+   + outNoGUend
+
+190912 Martin Raden :
+ + python/intarnapvalue : p-value computation for IntaRNA energy scores
+   (thanks to Fabio Gutmann)
+ * configure :
+   + check for python >= 3.6
+   + optional enabling of intarnapvalue installation (disabled by default)
+ * tests/data/Makefile.am :
+   + distribution of all tests ensured
 
 190911 Martin Raden :
  * IntaRNA/SeedHandler :
@@ -36,6 +167,11 @@
    + addSeeds() 
    + isFeasibleSeedBasePair()
    + areLoopOverlapping()
+ * IntaRNA/PredictorMfe2dSeedExtension :
+   * traceBack() :
+     * trace order optimized
+ * IntaRNA/PredictorMfeEns2dSeedExtensionHeuristic :
+   * fill*() : reduced to updateZ() calls to reduce code redundancy 
 
 190910 Martin Raden :
  * IntaRNA/PredictorMfe2d*SeedExtension :
@@ -199,7 +335,10 @@
      updates
    * initZ() : - no init of Zall
 
+
+################################################################################  
 ##### version 3.0.0
+################################################################################  
 
 + personality
   + IntaRNA1,2,3
@@ -233,7 +372,7 @@
 * E_type now int (was float)
 - IntaRNA v1 output support not continued
 
-###############################
+################################################################################  
 
 190809 Martin Raden :
  * IntaRNA/general :

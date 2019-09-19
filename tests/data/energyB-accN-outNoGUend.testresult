@@ -1,0 +1,14 @@
+
+target
+             8       16
+             |       |
+   5'-UUUUUUC  UAAAU  UUCUUU-3'
+             CC     CC
+             ||     ||
+             GG     GG
+3'-GGG...GGGG  -----  GGG-5'
+             |       |
+             7       4
+query
+
+interaction energy = -4 kcal/mol

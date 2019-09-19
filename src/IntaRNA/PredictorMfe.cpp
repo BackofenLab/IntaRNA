@@ -17,10 +17,6 @@ PredictorMfe::PredictorMfe(
 	, mfeInteractions()
 	, mfe4leftEnd()
 	, reportedInteractions()
-	, minStackingEnergy( energy.getBestE_interLoop() )
-	, minInitEnergy( energy.getE_init() )
-	, minDangleEnergy( energy.getBestE_dangling() )
-	, minEndEnergy( energy.getBestE_end() )
 {
 
 }
@@ -91,8 +87,13 @@ updateOptima( const size_t i1, const size_t j1
 		return;
 	}
 
+	// check GU ends if needed
+	if (output.getOutputConstraint().noGUend && (energy.isGU(i1,i2) || energy.isGU(j1,j2)) ) {
+		return;
+	}
+
 	// update Zall if needed
-	if (incrementZall && output.getOutputConstraint().needZall) {
+	if (incrementZall) {
 		updateZall( i1,j1, i2,j2, interE, isHybridE );
 	}
 

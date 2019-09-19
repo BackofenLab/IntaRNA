@@ -8,7 +8,7 @@ namespace IntaRNA {
 
 //////////////////////////////////////////////////////////////////////
 
-const std::string PredictionTrackerSpotProb::str_spot ="[123456789]\\d*&[123456789]\\d*";
+const std::string PredictionTrackerSpotProb::str_spot ="(0|-?[123456789]\\d*)&(0|-?[123456789]\\d*)";
 const boost::regex PredictionTrackerSpotProb::regexSpotString("\\s*|"+str_spot+"(,"+str_spot+")*");
 
 //////////////////////////////////////////////////////////////////////
@@ -48,7 +48,7 @@ PredictionTrackerSpotProb(
 	while (startPos != splitPos) {
 		splitPos = spotString.find(',',startPos);
 		// insert interval
-		spots.push_back( Spot(spotString.substr(startPos,splitPos-(splitPos==std::string::npos?0:startPos))));
+		spots.push_back( fromString(spotString.substr(startPos,splitPos-(splitPos==std::string::npos?0:startPos))));
 		// update start of next interval encoding to parse
 		startPos = splitPos + (splitPos != std::string::npos ? 1 : 0);
 	}
@@ -83,7 +83,7 @@ PredictionTrackerSpotProb(
 	while (startPos != splitPos) {
 		splitPos = spotString.find(',',startPos);
 		// insert interval
-		spots.push_back( Spot(spotString.substr(startPos,splitPos-(splitPos==std::string::npos?0:startPos))));
+		spots.push_back( fromString(spotString.substr(startPos,splitPos-(splitPos==std::string::npos?0:startPos))));
 		// update start of next interval encoding to parse
 		startPos = splitPos + (splitPos != std::string::npos ? 1 : 0);
 	}
@@ -94,6 +94,8 @@ PredictionTrackerSpotProb(
 PredictionTrackerSpotProb::
 ~PredictionTrackerSpotProb()
 {
+	const RnaSequence & rna1 = energy.getAccessibility1().getSequence();
+	const RnaSequence & rna2 = energy.getAccessibility2().getAccessibilityOrigin().getSequence();
 	// write probabilities to streams
 	// probability of interactions covering no tracked spot
 	(*outStream) <<"spot;probability\n";
@@ -102,10 +104,14 @@ PredictionTrackerSpotProb::
 		overallZ = 1.0;
 	}
 	// probability of interactions covering no tracked spot
-	(*outStream) <<"0&0;"<<(noSpotZ / overallZ)<<'\n';
+	(*outStream)
+			<<(rna1.getInOutIndex(0)-1)
+			<<"&"
+			<<(rna2.getInOutIndex(0)-1)
+			<<";"<<(noSpotZ / overallZ)<<'\n';
 	// probabilities of tracked spots
 	for( Spot & s : spots) {
-		(*outStream) <<(s.idx1+1)<<'&'<<(s.idx2+1)<<';'<<(s.Z/overallZ)<<'\n';
+		(*outStream) <<rna1.getInOutIndex(s.idx1)<<'&'<<rna2.getInOutIndex(s.idx2)<<';'<<(s.Z/overallZ)<<'\n';
 	}
 	outStream->flush();
 
@@ -159,6 +165,25 @@ updateOptimumCalled( const size_t i1, const size_t j1
 	}
 }
 
+
+////////////////////////////////////////////////////////////////////////////
+
+PredictionTrackerSpotProb::Spot
+PredictionTrackerSpotProb::
+fromString( std::string && spotString )
+{
+#if INTARNA_IN_DEBUG_MODE
+	// check regex
+	if (!boost::regex_match( spotString, boost::regex(PredictionTrackerSpotProb::str_spot), boost::match_perl )) {
+		throw std::runtime_error("PredictionTrackerSpotProb::fromString("+spotString+") does not match its encoding regular expression");
+	}
+#endif
+
+	// construction from string
+	return Spot( energy.getAccessibility1().getSequence().getIndex(std::stol(spotString.substr(0,spotString.find('&'))))
+			, energy.getAccessibility2().getAccessibilityOrigin().getSequence().getIndex(std::stol(spotString.substr(spotString.find('&')+1))));
+
+}
 
 ////////////////////////////////////////////////////////////////////////////
 

@@ -13,7 +13,7 @@ PredictorMfe2dHeuristicSeedExtension(
 		, SeedHandler * seedHandlerInstance )
  :
 	PredictorMfe2dSeedExtension(energy,output,predTracker,seedHandlerInstance)
-	, energy_opt(E_INF)
+	, E_right_opt(E_INF)
 	, j1opt(0)
 	, j2opt(0)
 {
@@ -90,15 +90,18 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 		// init optimal right boundaries
 		j1opt = sj1;
 		j2opt = sj2;
-		energy_opt = E_INF;
+		E_right_opt = E_INF;
 
 		// ER : update for seed + ER
 		hybridE_right.resize( std::min(range_size1-sj1, maxMatrixLen1), std::min(range_size2-sj2, maxMatrixLen2) );
 		fillHybridE_right(sj1, sj2, si1, si2);
 
-		// EL
-		hybridE_left.resize( std::min(si1+1, maxMatrixLen1), std::min(si2+1, maxMatrixLen2) );
-		fillHybridE_left(si1, si2);
+		// ensure there is a valid right-extension
+		if (!output.getOutputConstraint().noGUend || (!E_isINF(E_right_opt) || !energy.isGU(sj1,sj2))) {
+			// EL
+			hybridE_left.resize( std::min(si1+1, maxMatrixLen1), std::min(si2+1, maxMatrixLen2) );
+			fillHybridE_left(si1, si2);
+		}
 
 	} // si1 / si2
 
@@ -181,7 +184,7 @@ fillHybridE_right( const size_t sj1, const size_t sj2
 					// seedE + rightE + E_init (not covered by rightE)
 					updateOptimalRightExt( si1,j1,si2,j2, seedE + curMinE + energy.getE_init(), true );
 					// update mfe for seed+rightExt
-					updateOptima( si1,j1,si2,j2, seedE + curMinE + energy.getE_init(),true);
+					updateOptima( si1,j1,si2,j2, seedE + curMinE + energy.getE_init(),true,true);
 				}
 			}
 		}

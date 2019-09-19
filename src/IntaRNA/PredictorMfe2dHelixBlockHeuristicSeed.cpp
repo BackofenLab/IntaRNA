@@ -276,7 +276,7 @@ predict( const IndexRange & r1
 		} // helix
 
 		// update mfe if needed (call superclass update routine)
-		PredictorMfe2dHelixBlockHeuristic::updateOptima( i1,curCell->j1, i2,curCell->j2, curCellEtotal, false );
+		PredictorMfe2dHelixBlockHeuristic::updateOptima( i1,curCell->j1, i2,curCell->j2, curCellEtotal, false, true );
 
 	} // i2
 	} // i1

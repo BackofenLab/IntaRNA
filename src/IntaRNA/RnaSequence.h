@@ -62,10 +62,11 @@ public:
 	 * Creates a sequence.
 	 * @param id the name of the sequence
 	 * @param seqString the nucleotide string encoding the sequence
-	 *
+	 * @param idxPos0 input/output index of the first sequence position
 	 */
 	RnaSequence(const std::string& id
-			, const std::string & seqString );
+			, const std::string & seqString
+			, const long idxPos0 = 1 );
 
 	/**
 	 * Destruction and garbage collection
@@ -88,6 +89,31 @@ public:
 	 */
 	size_t
 	size() const;
+
+	/**
+	 * Provides the input/output index of a given sequence position.
+	 * @param i the position of interest
+	 * @return the input/output index shifted by idxPos0
+	 */
+	long
+	getInOutIndex( const size_t i ) const;
+
+	/**
+	 * Provides the internal sequence position of an input/output index given
+	 * that the first position represents idxPos0.
+	 * @param i the input/output index of interest
+	 * @return the internal position, i.e. i shifted by idxPos0
+	 */
+	size_t
+	getIndex( const long i ) const;
+
+	/**
+	 * Provides the reverse index of a given sequence position.
+	 * @param i the index of interest
+	 * @return the reverse index, i.e. (seq.size()-i-1)
+	 */
+	size_t
+	getReversedIndex( const size_t i ) const;
 
 	/**
 	 * Access to the sequence in character encoding.
@@ -255,6 +281,9 @@ protected:
 	//! Whether or not the sequence contains ambiguous nucleotide encodings
 	bool ambiguous;
 
+	//! Input/output index of the first sequence position
+	long idxPos0;
+
 };
 
 
@@ -266,12 +295,14 @@ protected:
 inline
 RnaSequence::RnaSequence(
 		const std::string & id
-		, const std::string & seqString )
+		, const std::string & seqString
+		, const long idxPos0 )
  :
 	id(id)
 	, seqString(getUpperCase(seqString))
 	, seqCode(getCodeForString(this->seqString))
 	, ambiguous(this->seqString.find('N')!=std::string::npos)
+	, idxPos0(idxPos0)
 {
 #if INTARNA_IN_DEBUG_MODE
 	if (id.size() == 0) {
@@ -309,6 +340,70 @@ RnaSequence::
 size() const
 {
 	return seqString.size();
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+inline
+long
+RnaSequence::
+getInOutIndex( const size_t i ) const
+{
+#if INTARNA_IN_DEBUG_MODE
+	if (i >= size()) {
+		throw std::runtime_error("RnaSequence::getInOutIndex : index "+toString(i)+" >= length "+toString(size()));
+	}
+#endif
+	// get in/out index
+	long p = idxPos0 + (long)i;
+	// check for -+1 index transition
+	if (idxPos0<0 && p>=0) {
+		p++;
+	}
+	// final in/out index
+	return p;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+inline
+size_t
+RnaSequence::
+getIndex( const long i ) const
+{
+	// check lower bounds
+	if (i < idxPos0) {
+		throw std::runtime_error("RnaSequence::getIndex : index "+toString(i)+" < idxPos0 "+toString(idxPos0));
+	}
+	// shift to internal indexing
+	size_t p = (size_t)(i - idxPos0);
+	// check for -+1 index transition
+	if (idxPos0<0 && i>=0) {
+		assert(i>0);
+		p--;
+	}
+	// check upper bound
+	if (p >= size()) {
+		throw std::runtime_error("RnaSequence::getIndex : index "+toString(i)+" relates to "+toString(p)+" >= length "+toString(size()));
+	}
+	// return internal index
+	return p;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+inline
+size_t
+RnaSequence::
+getReversedIndex( const size_t i ) const
+{
+#if INTARNA_IN_DEBUG_MODE
+	if (i >= size()) {
+		throw std::runtime_error("RnaSequence::getReversedIndex : index "+toString(i)+" >= seq.length "+toString(size()));
+	}
+#endif
+
+	return this->size() -i -1;
 }
 
 /////////////////////////////////////////////////////////////////////////////

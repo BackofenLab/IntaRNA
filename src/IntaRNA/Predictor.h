@@ -120,7 +120,7 @@ protected:
 				, const size_t i2, const size_t j2
 				, const E_type energy
 				, const bool isHybridE
-				, const bool incrementZall = false ) = 0;
+				, const bool incrementZall ) = 0;
 
 	/**
 	 * Updates the global Zall partition function.
@@ -241,9 +241,18 @@ updateZall( const size_t i1, const size_t j1
 		, const E_type interE
 		, const bool isHybridE )
 {
+	// ignore if not needed
+	if (!output.getOutputConstraint().needZall) {
+		return;
+	}
 
 	// ignore invalid reports
 	if (E_isINF(interE) || interE >= E_MAX) {
+		return;
+	}
+
+	// check GU ends if needed
+	if (output.getOutputConstraint().noGUend && (energy.isGU(i1,i2) || energy.isGU(j1,j2)) ) {
 		return;
 	}
 

@@ -60,6 +60,13 @@ tmp/*
 tests/logs
 tests/logs/*
 
+# python dir
+python/build
+python/dist
+python/intarnapvalue.*
+
+
+
 /1
 /RNAup
 /IntaRNA-1
@@ -71,3 +78,4 @@ tests/logs/*
 /t2.fasta
 /IntaRNA.pc
 /IntaRNA.exe.stackdump
+/py-compile

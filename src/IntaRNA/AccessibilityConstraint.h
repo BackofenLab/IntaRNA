@@ -86,7 +86,7 @@ public:
 
 	/**
 	 * Constraint construction based on VRNA-like dot-bracket encoding
-	 * @param length length of the constrained sequence
+	 * @param seq the constrained sequence
 	 * @param dotBracket the constraint encoding in VRNA-like dot-bracket encoding
 	 * @param maxBpSpan the maximal base pair span to be used for accessibility
 	 *        computation; set to 0 for full sequence length
@@ -97,7 +97,7 @@ public:
 	 * @param shapeConversion if non-empty: encoding of the method to be used to
 	 *        convert SHAPE reactivity data to pairing probabilities
 	 */
-	AccessibilityConstraint( const size_t length
+	AccessibilityConstraint( const RnaSequence & seq
 							, const std::string& dotBracket
 							, const size_t maxBpSpan
 							, const std::string & shapeFile

@@ -1,0 +1,8 @@
+query = ggggggggggggggggggggg 
+target = uuuuuucccuaaauccuucuuu 
+energy=B 
+noSeed = true
+tAcc=N 
+outNoGUend = true
+tRegion=8-17 
+qRegion=4-14

@@ -16,10 +16,10 @@ getE_contributions( const Interaction & interaction ) const
 {
 
 	// temporary access to range indices
-	const size_t i1 = interaction.basePairs.begin()->first;
-	const size_t i2 = getAccessibility2().getReversedIndex(interaction.basePairs.begin()->second);
-	const size_t j1 = interaction.basePairs.rbegin()->first;
-	const size_t j2 = getAccessibility2().getReversedIndex(interaction.basePairs.rbegin()->second);
+	const size_t i1 = getIndex1(*interaction.basePairs.begin());
+	const size_t i2 = getIndex2(*interaction.basePairs.begin());
+	const size_t j1 = getIndex1(*interaction.basePairs.rbegin());
+	const size_t j2 = getIndex2(*interaction.basePairs.rbegin());
 
 	// fill contribution data structure
 	EnergyContributions contr;

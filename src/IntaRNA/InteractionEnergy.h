@@ -81,6 +81,8 @@ public:
 	 *          constraints
 	 * @param energyWithDangle whether or not danling end energy contributions
 	 *          are taken into account for the overall energy computation
+	 * @param internalLoopGU whether or not GU base pairs are allowed within
+	 *          internal loops
 	 */
 	InteractionEnergy( const Accessibility & accS1
 			, const ReverseAccessibility & accS2
@@ -88,6 +90,7 @@ public:
 			, const size_t maxInternalLoopSize2
 			, const E_type energyAdd
 			, const bool energyWithDangle
+			, const bool internalLoopGU
 			);
 
 	/**
@@ -475,37 +478,6 @@ public:
 	Z_type
 	getRT() const = 0;
 
-
-	/**
-	 * Provides the best energy gain via stacking possible for this energy
-	 * model
-	 * @return the best stacking energy gain produced by getE_interLoop()
-	 */
-	virtual
-	E_type
-	getBestE_interLoop() const = 0;
-
-	/**
-	 * Provides the best energy gain possible for left/right dangle
-	 * for this energy model
-	 * @return the best initiation energy gain produced by getE_danglingLeft() or
-	 *          getE_danglingRight()
-	 */
-	virtual
-	E_type
-	getBestE_dangling() const = 0;
-
-	/**
-	 * Provides the best energy gain possible for left/right interaction ends
-	 * for this energy model
-	 * @return the best end energy gain produced by getE_endLeft() or
-	 *          getE_endRight()
-	 */
-	virtual
-	E_type
-	getBestE_end() const = 0;
-
-
 	/**
 	 * Provides the Boltzmann weight for a given energy.
 	 * @param energy the energy the Boltzmann weight is to be computed for
@@ -553,6 +525,34 @@ public:
 	E_type
 	getEnergyAdd() const;
 
+	/**
+	 * Checks whether or not the given indices mark valid internal loop
+	 * boundaries, i.e.
+	 *  - (i1,i2) and (j1,j2) are complementary
+	 *  - i1..j1 and i2..j2 are allowed loop regions
+	 *  - no boundary overlap ( (j1-i1==0 && j2-i2==0) || (j1-i1>0 && j2-i2>0) )
+	 *  - if !internalLoopGU : both ends are no GU base pairs
+	 *
+	 * @param i1 the index of the first sequence interacting with i2
+	 * @param j1 the index of the first sequence interacting with j2 with i1<=j1
+	 * @param i2 the index of the second sequence interacting with i1
+	 * @param j2 the index of the second sequence interacting with j1 with i2<=j2
+	 *
+	 * @return true if the boundaries are sound for internal loop calculation;
+	 *         false otherwise
+	 */
+	virtual
+	bool
+	isValidInternalLoop( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const;
+
+	/**
+	 * Whether or not GU base pairs are allowed within internal loops.
+	 *
+	 * @param true if GU base pairs are allowed; false otherwise
+	 */
+	bool
+	isInternalLoopGUallowed() const;
+
 
 protected:
 
@@ -576,6 +576,9 @@ protected:
 	//! whether or not dangling end energy contributions are to be added
 	const bool energyWithDangles;
 
+	//! whether or not GU base pairs allowed in internal loops
+	const bool internalLoopGU;
+
 	/**
 	 * Checks whether or not the given indices are valid index region within the
 	 * sequence for an intermolecular loop and do not violate the maximal
@@ -594,24 +597,6 @@ protected:
 	bool
 	isAllowedLoopRegion( const RnaSequence& seq, const size_t i, const size_t j, const size_t maxInternalLoopSize );
 
-	/**
-	 * Checks whether or not the given indices mark valid internal loop
-	 * boundaries, i.e.
-	 *  - (i1,i2) and (j1,j2) are complementary
-	 *  - i1..j1 and i2..j2 are allowed loop regions
-	 *  - no boundary overlap ( (j1-i1==0 && j2-i2==0) || (j1-i1>0 && j2-i2>0) )
-	 *
-	 * @param i1 the index of the first sequence interacting with i2
-	 * @param j1 the index of the first sequence interacting with j2 with i1<=j1
-	 * @param i2 the index of the second sequence interacting with i1
-	 * @param j2 the index of the second sequence interacting with j1 with i2<=j2
-	 *
-	 * @return true if the boundaries are sound for internal loop calculation;
-	 *         false otherwise
-	 */
-	bool
-	isValidInternalLoop( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const;
-
 };
 
 
@@ -629,6 +614,7 @@ InteractionEnergy::InteractionEnergy( const Accessibility & accS1
 				, const size_t maxInternalLoopSize2
 				, const E_type energyAdd
 				, const bool energyWithDangles
+				, const bool internalLoopGU
 		)
   :
 	accS1(accS1)
@@ -637,6 +623,7 @@ InteractionEnergy::InteractionEnergy( const Accessibility & accS1
 	, maxInternalLoopSize2(maxInternalLoopSize2)
 	, energyAdd(energyAdd)
 	, energyWithDangles(energyWithDangles)
+	, internalLoopGU(internalLoopGU)
 {
 }
 
@@ -717,7 +704,18 @@ isValidInternalLoop( const size_t i1, const size_t j1, const size_t i2, const si
 		&& areComplementary( j1, j2)
 		&& InteractionEnergy::isAllowedLoopRegion(accS1.getSequence(), i1, j1, maxInternalLoopSize1)
 		&& InteractionEnergy::isAllowedLoopRegion(accS2.getSequence(), i2, j2, maxInternalLoopSize2)
+		&& ( internalLoopGU || (i1+1==j1 && i2+1==j2) || (!isGU(i1,i2) && !isGU(j1,j2)) ) // GU-allowed or stacking or no GU
 		;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+InteractionEnergy::
+isInternalLoopGUallowed() const
+{
+	return internalLoopGU;
 }
 
 ////////////////////////////////////////////////////////////////////////////

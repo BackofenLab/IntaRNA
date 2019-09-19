@@ -251,22 +251,22 @@ add( const Interaction & i )
 	// position information (first and last interacting positions in sequence)
 	// start indexing with 1 instead of 0
 	std::ostringstream pos1, pos1tag;
-	pos1	<<std::setw(flankingLength+3+1) <<std::right <<(i1+1);
+	pos1	<<std::setw(flankingLength+3+1) <<std::right <<i.s1->getInOutIndex(i1);
 	pos1tag	<<std::setw(flankingLength+3+1) <<'|';
-	size_t numberSize = numStringLength(i1);
+	size_t numberSize = numStringLength(i.s1->getInOutIndex(i1));
 	// put right (3') end only if not overlapping with 5' start position (left)
 	if (i1+1 < j1 && numberSize+2 < flankingLength+3+interactionLength) {
 		pos1 <<std::setw(interactionLength -2) <<' '
-				<<std::setw(1) <<std::left <<(j1+1);
+				<<std::setw(1) <<std::left <<i.s1->getInOutIndex(j1);
 		pos1tag	<<std::setw(interactionLength - 1) <<'|';
 	}
 	std::ostringstream pos2, pos2tag;
-	numberSize = numStringLength(i.s2->size()-i2-1);
+	numberSize = numStringLength(i.s2->getInOutIndex(i2));
 	// put left (3') end only if not overlapping with 5' start position (right)
 	pos2	<<std::setw(flankingLength+3+1);
 	pos2tag	<<std::setw(flankingLength+3+1);
 	if (i2==j2 || numberSize+2 < (flankingLength+3+interactionLength)) {
-		pos2	 <<std::right <<(i2+1);
+		pos2	 <<std::right <<i.s2->getInOutIndex(i2);
 		pos2tag	 <<'|';
 	} else {
 		pos2	 <<' ';
@@ -274,7 +274,7 @@ add( const Interaction & i )
 	}
 	if (i2 > j2) {
 		pos2 <<std::setw(interactionLength - 2) <<' '
-				<<std::setw(1) <<std::left <<(j2+1);
+				<<std::setw(1) <<std::left <<i.s2->getInOutIndex(j2);
 		pos2tag	<<std::setw(interactionLength - 1) <<'|';
 	}
 
@@ -309,8 +309,8 @@ add( const Interaction & i )
 			outTmp
 				// interaction range
 				<<"\n"
-				<<"interaction seq1   = "<<(i.basePairs.begin()->first +1)<<"--"<<(i.basePairs.rbegin()->first +1) <<'\n'
-				<<"interaction seq2   = "<<(i.basePairs.rbegin()->second +1)<<"--"<<(i.basePairs.begin()->second +1) <<'\n'
+				<<"interaction seq1   = "<<i.s1->getInOutIndex(i.basePairs.begin()->first)<<".."<<i.s1->getInOutIndex(i.basePairs.rbegin()->first) <<'\n'
+				<<"interaction seq2   = "<<i.s2->getInOutIndex(i.basePairs.rbegin()->second)<<".."<<i.s2->getInOutIndex(i.basePairs.begin()->second) <<'\n'
 				;
 		} // detailed
 			// print energy
@@ -342,50 +342,50 @@ add( const Interaction & i )
 			// print seed information if available
 			if (i.seed != NULL) {
 				const std::string listSep = " | ";
-				const auto s1 = i.seed->begin();
+				const auto bestSeed = i.seed->begin();
 				// print via std::for_each instead of std::accumulate due to rounding issues of boost::lexical_cast or std::to_string
 				// since sometimes (float(int)/100.0) gives strings with 10-5 deviations of expected value
 				outTmp
-					<<"\nseed seq1   = "<<(s1->bp_i.first +1)<<"--"<<(s1->bp_j.first +1);
+					<<"\nseed seq1   = "<<i.s1->getInOutIndex(bestSeed->bp_i.first)<<".."<<i.s1->getInOutIndex(bestSeed->bp_j.first);
 				if (!outConstraint.bestSeedOnly)
 					std::for_each( ++(i.seed->begin()), i.seed->end(), [&]( const Interaction::Seed & s) {
-								 outTmp << listSep <<(s.bp_i.first +1)<<"--"<<(s.bp_j.first +1);
+								 outTmp << listSep <<i.s1->getInOutIndex(s.bp_i.first)<<".."<<i.s1->getInOutIndex(s.bp_j.first);
 								});
 				outTmp
-					<<"\nseed seq2   = "<<(s1->bp_j.second +1)<<"--"<<(s1->bp_i.second +1);
+					<<"\nseed seq2   = "<<i.s2->getInOutIndex(bestSeed->bp_j.second)<<".."<<i.s2->getInOutIndex(bestSeed->bp_i.second);
 				if (!outConstraint.bestSeedOnly)
 					std::for_each( ++(i.seed->begin()), i.seed->end(), [&]( const Interaction::Seed & s) {
-								 outTmp << listSep <<(s.bp_j.second +1)<<"--"<<(s.bp_i.second +1);
+								 outTmp << listSep <<i.s2->getInOutIndex(s.bp_j.second)<<".."<<i.s2->getInOutIndex(s.bp_i.second);
 								});
 				outTmp
-					<<"\nseed energy = "<<E_2_Ekcal(s1->energy);
+					<<"\nseed energy = "<<E_2_Ekcal(bestSeed->energy);
 				if (!outConstraint.bestSeedOnly)
 					std::for_each( ++(i.seed->begin()), i.seed->end(), [&]( const Interaction::Seed & s) {
 								 outTmp << listSep << E_2_Ekcal(s.energy);
 								});
 				outTmp
 //						<<" kcal/mol"
-					<<"\nseed ED1    = "<<E_2_Ekcal(energy.getED1( s1->bp_i.first, s1->bp_j.first ));
+					<<"\nseed ED1    = "<<E_2_Ekcal(energy.getED1( bestSeed->bp_i.first, bestSeed->bp_j.first ));
 				if (!outConstraint.bestSeedOnly)
 					std::for_each( ++(i.seed->begin()), i.seed->end(), [&]( const Interaction::Seed & s) {
 								 outTmp << listSep << E_2_Ekcal(energy.getED1( s.bp_i.first, s.bp_j.first ));
 								});
 				outTmp
 //						<<" kcal/mol"
-					<<"\nseed ED2    = "<<E_2_Ekcal(energy.getAccessibility2().getAccessibilityOrigin().getED( s1->bp_j.second, s1->bp_i.second ));
+					<<"\nseed ED2    = "<<E_2_Ekcal(energy.getAccessibility2().getAccessibilityOrigin().getED( bestSeed->bp_j.second, bestSeed->bp_i.second ));
 				if (!outConstraint.bestSeedOnly)
 					std::for_each( ++(i.seed->begin()), i.seed->end(), [&]( const Interaction::Seed & s) {
 								 outTmp << listSep << E_2_Ekcal(energy.getAccessibility2().getAccessibilityOrigin().getED( s.bp_j.second, s.bp_i.second ));
 								});
 				outTmp
 //						<<" kcal/mol"
-					<<"\nseed Pu1    = "<<(E_equal(energy.getED1( s1->bp_i.first, s1->bp_j.first ),0) ? 1 : energy.getBoltzmannWeight(energy.getED1( s1->bp_i.first, s1->bp_j.first )));
+					<<"\nseed Pu1    = "<<(E_equal(energy.getED1( bestSeed->bp_i.first, bestSeed->bp_j.first ),0) ? 1 : energy.getBoltzmannWeight(energy.getED1( bestSeed->bp_i.first, bestSeed->bp_j.first )));
 				if (!outConstraint.bestSeedOnly)
 					std::for_each( ++(i.seed->begin()), i.seed->end(), [&]( const Interaction::Seed & s) {
 								 outTmp << listSep <<(E_equal(energy.getED1( s.bp_i.first, s.bp_j.first ),0) ? 1 : energy.getBoltzmannWeight(energy.getED1( s.bp_i.first, s.bp_j.first )));
 								});
 				outTmp
-					<<"\nseed Pu2    = " <<(E_equal(energy.getAccessibility2().getAccessibilityOrigin().getED( s1->bp_j.second, s1->bp_i.second ),0) ? 1 : energy.getBoltzmannWeight(energy.getAccessibility2().getAccessibilityOrigin().getED( s1->bp_j.second, s1->bp_i.second )));
+					<<"\nseed Pu2    = " <<(E_equal(energy.getAccessibility2().getAccessibilityOrigin().getED( bestSeed->bp_j.second, bestSeed->bp_i.second ),0) ? 1 : energy.getBoltzmannWeight(energy.getAccessibility2().getAccessibilityOrigin().getED( bestSeed->bp_j.second, bestSeed->bp_i.second )));
 				if (!outConstraint.bestSeedOnly)
 					std::for_each( ++(i.seed->begin()), i.seed->end(), [&]( const Interaction::Seed & s) {
 								 outTmp << listSep <<(E_equal(energy.getAccessibility2().getAccessibilityOrigin().getED( s.bp_j.second, s.bp_i.second ),0) ? 1 : energy.getBoltzmannWeight(energy.getAccessibility2().getAccessibilityOrigin().getED( s.bp_j.second, s.bp_i.second )));
@@ -397,7 +397,7 @@ add( const Interaction & i )
 		} // detailed
 
 		// ensemble output if available
-		if (!Z_equal(Z,Z_type(0))) {
+		if (!Z_equal(Z,Z_type(0)) && Z_isNotINF(Z)) {
 		outTmp
 			<<"\n"
 			<<"ensemble energy    = "<<E_2_Ekcal(energy.getE(Z)) <<" kcal/mol\n"

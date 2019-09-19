@@ -42,7 +42,7 @@ SeedHandlerExplicit(
 			LOG(WARNING) <<"explicit seed '"<<seed.substr(s,length)<<"' not valid and will be ignored";
 		} else {
 			// generate hash key element for storing
-			Interaction::BasePair leftBP(seedData.start1,seedData.start2);
+			Interaction::BasePair leftBP = Interaction::BasePair(seedData.start1,seedData.start2);
 			// check if left boundary already known
 			if (seedForLeftEnd.find(leftBP) != seedForLeftEnd.end()) {
 				// warn if multiple seeds for left boundary (currently not supported, only mfe saved)
@@ -111,7 +111,7 @@ checkSeedEncoding( const std::string & seed )
 	}
 
 	// check general encoding
-	if ( ! boost::regex_match(seed,boost::regex("^\\d+[|\\.]+&\\d+[|\\.]+$"), boost::match_perl) ) {
+	if ( ! boost::regex_match(seed,boost::regex("^-?\\d+[|\\.]+&-?\\d+[|\\.]+$"), boost::match_perl) ) {
 		return "is not of regular expression format start1dotbar1&start2dotbar2, e.g. '3|||.|&6||.||'";
 	}
 
@@ -311,7 +311,10 @@ SeedData( const std::string & seedEncoding, const InteractionEnergy & energyFunc
 	// get start 1
 	size_t p1 = 0;
 	size_t p2 = seedEncoding.find('|');
-	start1 = boost::lexical_cast<unsigned int>(seedEncoding.substr(p1, p2-p1));
+	// index shift to internal indexing
+	try {
+		start1 = energyFunction.getAccessibility1().getSequence().getIndex(boost::lexical_cast<long>(seedEncoding.substr(p1, p2-p1)));
+	} catch (std::runtime_error & e) {}
 	// get dotbar 1
 	p1 = p2;
 	p2 = seedEncoding.find_last_of('|', seedEncoding.find('&'));
@@ -319,15 +322,14 @@ SeedData( const std::string & seedEncoding, const InteractionEnergy & energyFunc
 	// get start 2
 	p1 = p2+2; // skip ampersand
 	p2 = seedEncoding.find('|',p1+1);
-	start2 = boost::lexical_cast<unsigned int>(seedEncoding.substr(p1, p2-p1));
+	// index shift to internal indexing
+	try {
+		start2 = energyFunction.getAccessibility2().getAccessibilityOrigin().getSequence().getIndex(boost::lexical_cast<long>(seedEncoding.substr(p1, p2-p1)));
+	} catch (std::runtime_error & e) {}
 	// get dotbar 2
 	p1 = p2;
 	p2 = seedEncoding.find_last_of('|');
 	dotBar2 = seedEncoding.substr(p1, p2-p1+1);
-
-	// index shift by -1 for user input to internal indexing
-	start1 = (start1 == 0 ? std::string::npos : start1-1);
-	start2 = (start2 == 0 ? std::string::npos : start2-1);
 	// correct start1
 	if (start1 != std::string::npos && start1 >= energyFunction.getAccessibility1().getSequence().size()) {
 		start1 = std::string::npos;
@@ -343,7 +345,7 @@ SeedData( const std::string & seedEncoding, const InteractionEnergy & energyFunc
 			if (start2+1 >= dotBar2.size()) {
 				start2 = start2+1-dotBar2.size();
 			} else {
-				// seed leaves sequence end
+				// seed exceeds sequence end
 				start2 = std::string::npos;
 			}
 		}

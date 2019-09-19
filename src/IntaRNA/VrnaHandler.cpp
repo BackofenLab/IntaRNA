@@ -20,7 +20,10 @@ namespace IntaRNA {
 ////////////////////////////////////////////////////////////////////////////
 
 VrnaHandler::
-VrnaHandler( Z_type temperature, const std::string * const vrnaParamFile )
+VrnaHandler( Z_type temperature
+			, const std::string * const vrnaParamFile
+			, const bool noGUclosure
+			, const bool noLP )
 	:
 	model()
 	, RT(getRT(temperature))
@@ -38,37 +41,36 @@ VrnaHandler( Z_type temperature, const std::string * const vrnaParamFile )
 
 	// set model details according to command line arguments
 
-	model.temperature = (double)temperature;
-//	model.temperature = this->temperature;
 //	  double  temperature;                  /**<  @brief  The temperature used to scale the thermodynamic parameters */
+	model.temperature = (double)temperature;
 //	  double  betaScale;                    /**<  @brief  A scaling factor for the thermodynamic temperature of the Boltzmann factors */
-	model.dangles = 2;
 //	  int     dangles;                      /**<  @brief  Specifies the dangle model used in any energy evaluation (0,1,2 or 3) */
+	model.dangles = 2;
 //	  int     special_hp;                   /**<  @brief  Include special hairpin contributions for tri, tetra and hexaloops */
-	model.noLP = 0;
 //	  int     noLP;                         /**<  @brief  Only consider canonical structures, i.e. no 'lonely' base pairs */
-	model.noGU = 0;
+	model.noLP = (noLP ? 1 : 0);
 //	  int     noGU;                         /**<  @brief  Do not allow GU pairs */
-	model.noGUclosure = 0;
+	model.noGU = 0;
 //	  int     noGUclosure;                  /**<  @brief  Do not allow loops to be closed by GU pair */
+	model.noGUclosure = (noGUclosure ? 1 : 0);
 //	  int     logML;                        /**<  @brief  Use logarithmic scaling for multi loops */
-	model.circ = 0;
 //	  int     circ;                         /**<  @brief  Assume RNA to be circular instead of linear */
-	model.gquad = 0;
+	model.circ = 0;
 //	  int     gquad;                        /**<  @brief  Include G-quadruplexes in structure prediction */
+	model.gquad = 0;
 //	  int     canonicalBPonly;              /**<  @brief  remove non-canonical bp's from constraint structures  */
 //	  int     uniq_ML;                      /**<  @brief  Flag to ensure unique multibranch loop decomposition during folding */
 //	  int     energy_set;                   /**<  @brief  Specifies the energy set that defines set of compatible base pairs */
 //	  int     backtrack;                    /**<  @brief  Specifies whether or not secondary structures should be backtraced */
 //	  char    backtrack_type;               /**<  @brief  Specifies in which matrix to backtrack */
-	model.compute_bpp = 1;
 //	  int     compute_bpp;                  /**<  @brief  Specifies whether or not backward recursions for base pair probability (bpp) computation will be performed */
+	model.compute_bpp = 1;
 //	  char    nonstandards[64];             /**<  @brief  contains allowed non standard bases */
-	model.max_bp_span = -1;
 //	  int     max_bp_span;                  /**<  @brief  maximum allowed base pair span */
+	model.max_bp_span = -1;
 //	  int     min_loop_size;                /**<  @brief  Minimum size of hairpin loops */
-	model.window_size = -1;
 //	  int     window_size;                  /**<  @brief  Size of the sliding window for locally optimal structure predition */
+	model.window_size = -1;
 //	  int     oldAliEn;                     /**<  @brief  Use old alifold energy model */
 //	  int     ribo;                         /**<  @brief  Use ribosum scoring table in alifold energy model */
 //	  double  cv_fact;                      /**<  @brief  Covariance scaling factor for consensus structure prediction */
@@ -78,9 +80,6 @@ VrnaHandler( Z_type temperature, const std::string * const vrnaParamFile )
 //	  short   alias[MAXALPHA+1];            /**<  @brief  alias of an integer nucleotide representation */
 //	  int     pair[MAXALPHA+1][MAXALPHA+1]; /**<  @brief  Integer representation of a base pair */
 
-
-	// might need to be called to broadcast model changes globally
-	//vrna_md_defaults_reset(model);
 
 }
 

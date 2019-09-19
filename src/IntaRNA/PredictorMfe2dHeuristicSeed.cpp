@@ -143,12 +143,15 @@ fillHybridE()
 				}
 
 				// set to interaction initiation with according boundary
-				if (E_isNotINF(iStackE))  {
+				// if valid iStackE value
+				// if valid right boundary
+				if (E_isNotINF(iStackE)
+						&& (!outConstraint.noGUend || !energy.isGU(i1+noLpShift,i2+noLpShift)))
+				{
 					*curCell = BestInteractionE(iStackE+energy.getE_init(), i1+noLpShift, i2+noLpShift);
+					// current best total energy value (covers to far E_init only)
+					curCellEtotal = energy.getE(i1,curCell->j1,i2,curCell->j2,curCell->val);
 				}
-
-				// current best total energy value (covers to far E_init only)
-				curCellEtotal = energy.getE(i1,curCell->j1,i2,curCell->j2,curCell->val);
 
 				// no base case with seed so far
 				curEseedtotal = E_INF;
@@ -165,47 +168,22 @@ fillHybridE()
 					size_t sj2 = i2 + seedHandler.getSeedLength2(i1,i2)-1;
 					E_type seedE = seedHandler.getSeedE(i1,i2);
 					if (sj1 < hybridE.size1() && sj2 < hybridE.size2()) {
-						// check direct right extension of seed
-						rightExt = &(hybridE(sj1,sj2));
-						if (E_isNotINF(rightExt->val)) {
-							// get energy of seed interaction with best right extension
-							curE = seedE + rightExt->val;
-							// check if this combination yields better energy
-							curEseedtotal = energy.getE(i1,rightExt->j1,i2,rightExt->j2,curE);
-							// update Zall
-							if (sj1 < rightExt->j1) {
-								updateZall( i1,rightExt->j1,i2,rightExt->j2, curEseedtotal, false );
-							}
-							// update optimum
-							if ( curEseedtotal < curCellSeedEtotal )
-							{
-								// update current best for this left boundary
-								// copy right boundary
-								*curCellSeed = *rightExt;
-								// set new energy
-								curCellSeed->val = curE;
-								// store total energy
-								curCellSeedEtotal = curEseedtotal;
-							}
-						}
+
+						// get energy of seed only explicitly
+						curE = seedE + energy.getE_init();
+						// check if this combination yields better energy
+						curEseedtotal = energy.getE(i1,sj1,i2,sj2,curE);
+						// update Zall for seed only (if otherwise stacking enforced)
+						updateZall( i1,sj1,i2,sj2, curEseedtotal, false );
+
 						// for noLP : check for explicit interior loop after seed
 						// assumption: seed fulfills noLP
 						if (outConstraint.noLP) {
-							// get energy of seed only explicitly
-							curE = seedE + energy.getE_init();
-							// check if this combination yields better energy
-							curEseedtotal = energy.getE(i1,sj1,i2,sj2,curE);
-							// update Zall for seed only (if otherwise stacking enforced)
-							updateZall( i1,sj1,i2,sj2, curEseedtotal, false );
 							// update optimum
 							if ( curEseedtotal < curCellSeedEtotal )
 							{
-								// update current best for this left boundary
-								// right boundary
-								curCellSeed->j1 = sj1;
-								curCellSeed->j2 = sj2;
-								// set new energy
-								curCellSeed->val = curE;
+								// update current best to seed-only
+								*curCellSeed = BestInteractionE( curE, sj1, sj2 );
 								// store total energy
 								curCellSeedEtotal = curEseedtotal;
 							}
@@ -245,11 +223,36 @@ fillHybridE()
 								}
 
 							} } // w1 w2
-						}
+						}  // noLP
+
+						// check direct true-right extension of seed
+						rightExt = &(hybridE(sj1,sj2));
+						if (E_isNotINF(rightExt->val)) {
+							// get energy of seed interaction with best right extension
+							curE = seedE + rightExt->val;
+							// check if this combination yields better energy
+							curEseedtotal = energy.getE(i1,rightExt->j1,i2,rightExt->j2,curE);
+							// update Zall (avoid duplicated consideration of seed-only)
+							if (sj1 < rightExt->j1) {
+								updateZall( i1,rightExt->j1,i2,rightExt->j2, curEseedtotal, false );
+							}
+							// update optimum
+							if ( curEseedtotal < curCellSeedEtotal )
+							{
+								// update current best for this left boundary
+								// copy right boundary
+								*curCellSeed = *rightExt;
+								// set new energy
+								curCellSeed->val = curE;
+								// store total energy
+								curCellSeedEtotal = curEseedtotal;
+							}
+						} // direct right extension
+
 					}
 				}
 
-
+				// if !noLP or stacking bp possible
 				if (E_isNotINF(iStackE))  {
 					// iterate over all loop sizes w1 (seq1) and w2 (seq2) (minus 1)
 					for (w1=1; w1-1 <= energy.getMaxInternalLoopSize1() && i1+noLpShift+w1<hybridE.size1(); w1++) {
