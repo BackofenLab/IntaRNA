@@ -327,12 +327,32 @@ getNextBest( Interaction & curBest )
 		curCellE = energy.getE(curLeftBound->first.first, curLeftBound->second.j1
 							, curLeftBound->first.second, curLeftBound->second.j2
 							, curLeftBound->second.val );
+		// deal with degeneracy of energy model, ie. multiple sites with bestE
+		if (E_equal(curCellE,curBestCellE)) {
+			// select left most to be deterministic in output
+			if (curLeftBound->first.first > curBestCellStart.first
+					|| (curLeftBound->first.first == curBestCellStart.first
+							&& curLeftBound->first.second > curBestCellStart.second)
+					|| (curLeftBound->first.first == curBestCellStart.first
+							&& curLeftBound->first.second == curBestCellStart.second
+							&& curLeftBound->second.j1 > curBestCell->j1)
+					|| (curLeftBound->first.first == curBestCellStart.first
+							&& curLeftBound->first.second == curBestCellStart.second
+							&& curLeftBound->second.j1 == curBestCell->j1
+							&& curLeftBound->second.j2 > (curBestCell->j2))
+				)
+			{
+				// right of curBest
+				continue;
+			}
+		} else
 		// or energy is too low to be considered
 		// or energy is higher than current best found so far
-		if (curCellE < curBestE || curCellE >= curBestCellE )
+		if (curCellE < curBestE || curCellE > curBestCellE)
 		{
 			continue;
 		}
+
 		//// FOUND THE NEXT BETTER SOLUTION
 		// overwrite current best found so far
 		curBestCell = curCell;
