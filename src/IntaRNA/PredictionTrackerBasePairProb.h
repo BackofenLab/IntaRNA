@@ -167,7 +167,8 @@ public:
 	*/
 	int
 	generateDotPlot( char *seq1, char *seq2, char *fileName
-	                ,plist *pl ,char *comment);
+	               , plist *pl, const char *comment
+								 , Interaction::Boundary maxBoundary );
 
 protected:
 
@@ -223,6 +224,14 @@ protected:
 		  } forall\n\
 		} bind def\n\
     \n\
+		/rectangle {%% x y w h RT -\n\
+			   %% draw a rectangle size w h at x y\n\
+				 4 -2 roll moveto %% lower left corner\n\
+				 dup 0 exch rlineto %% to upper left\n\
+				 exch 0 rlineto %% to upper right\n\
+				 neg 0 exch rlineto %% to lower right\n\
+				 closepath\n\
+		} def\n\
 		/drawgrid{\n\
 		  gsave\n\
 		  0.5 dup translate\n\
