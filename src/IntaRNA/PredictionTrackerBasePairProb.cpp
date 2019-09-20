@@ -93,8 +93,6 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 
 					LOG(DEBUG) << " -- window " << i1 << ":"  << j1 << ":"  << i2 << ":"  << j2;
 
-					size_t oldbps = std::min(j1-i1+1, j2-i2+1);
-
 					for (size_t l1 = i1+1; l1-- > 0; ) {
 						if (i1-l1 > energy.getMaxInternalLoopSize1()) break;
 						for (size_t l2 = i2+1; l2-- > 0; ) {
@@ -108,29 +106,24 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 										prob += ( getHybridZ(i1, j1, i2, j2, predictor) * energy.getBoltzmannWeight(energy.getED1(i1, j1) + energy.getED2(i2, j2)) ) / predictor->getZall();
                     LOG(DEBUG) << "PE: "<< ( getHybridZ(i1, j1, i2, j2, predictor) * energy.getBoltzmannWeight(energy.getED1(i1, j1) + energy.getED2(i2, j2)) ) / predictor->getZall();
 									} else {
-										// check if outer region is valid
-
-										size_t newbps = std::min(r1-l1+1, r2-l2+1);
-										if (newbps - oldbps > 1) break;
-
 										// get outer probability
 										if (!Z_equal(getHybridZ(l1, r1, l2, r2, predictor), Z_type(0))) {
 											Interaction::Boundary key(l1, r1, l2, r2);
-											//if ( structureProbs.find(key) != structureProbs.end()) {
-												prob += ((l1 == i1 && l2 == i2 ? 1 : energy.getBoltzmannWeight(energy.getE_interLeft(l1,i1,l2,i2)))
+											if ( structureProbs.find(key) != structureProbs.end()) {
+												prob += structureProbs[key] * ((l1 == i1 && l2 == i2 ? 1 : energy.getBoltzmannWeight(energy.getE_interLeft(l1,i1,l2,i2)))
 																	 * getHybridZ(i1, j1, i2, j2, predictor)
 																	 * (j1 == r1 && j2 == r2 ? 1 : energy.getBoltzmannWeight(energy.getE_interLeft(j1,r1,j2,r2)))
 																	 //* energy.getBoltzmannWeight(energy.getED1(l1, r1) + energy.getED2(l2, r2))
-																 ) / predictor->getZall();
-												LOG(DEBUG)<< "Psbi: "<< ((l1 == i1 && l2 == i2 ? 1 : energy.getBoltzmannWeight(energy.getE_interLeft(l1,i1,l2,i2)))
+																 ) / getHybridZ(l1, r1, l2, r2, predictor);
+												LOG(DEBUG)<< "Psbi: "<< structureProbs[key] * ((l1 == i1 && l2 == i2 ? 1 : energy.getBoltzmannWeight(energy.getE_interLeft(l1,i1,l2,i2)))
 																	 * getHybridZ(i1, j1, i2, j2, predictor)
 																	 * (j1 == r1 && j2 == r2 ? 1 : energy.getBoltzmannWeight(energy.getE_interLeft(j1,r1,j2,r2)))
 																	 //* energy.getBoltzmannWeight(energy.getED1(l1, r1) + energy.getED2(l2, r2))
-																 ) / predictor->getZall();
+																 ) / getHybridZ(l1, r1, l2, r2, predictor);
 											  LOG(DEBUG) << "at: "<< l1 << ":"  << r1 << ":"  << l2 << ":"  << r2;
-											//} else {
-											//	throw std::runtime_error("Missing outer structure probability at: " + toString(l1) + ":" + toString(r1) + ":" + toString(l2) + ":" + toString(r2));
-											//}
+											} else {
+												throw std::runtime_error("Missing outer structure probability at: " + toString(l1) + ":" + toString(r1) + ":" + toString(l2) + ":" + toString(r2));
+											}
 										}
 									}
 								} // r2
