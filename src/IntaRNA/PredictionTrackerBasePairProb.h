@@ -150,6 +150,22 @@ public:
 	          , PredictorMfeEns *predictor);
 
 	/**
+	 * Access to the base pair probability
+	 * at region (i1, j1, i2, j2).
+	 * @param i1 region index
+	 * @param j1 region index
+	 * @param i2 region index
+	 * @param j2 region index
+	 * @param predictor the predictor providing the probability information
+	 *
+	 * @return the base pair probability at given region
+	 */
+	Z_type
+	getBasePairProb( const size_t i1, const size_t j1
+	               , const size_t i2, const size_t j2
+	               , PredictorMfeEns *predictor);
+
+	/**
 	 * Set the current partition function covering
 	 * the interaction at region (i1, j1, i2, j2).
 	 * @param i1 region index

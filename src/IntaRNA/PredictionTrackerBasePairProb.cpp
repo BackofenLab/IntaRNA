@@ -166,8 +166,8 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 			plist[i].type = 0; // base-pair prob
 			i++;
 		}
-		if (it->second > maxZ) {
-			maxZ = it->second;
+		if (getHybridZ(it->first.i1, it->first.j1, it->first.i2, it->first.j2, predictor) > maxZ) {
+			maxZ = getHybridZ(it->first.i1, it->first.j1, it->first.i2, it->first.j2, predictor);
 			maxBoundary = it->first;
 		}
 	}
@@ -445,6 +445,22 @@ getHybridZ( const size_t i1, const size_t j1
 		}
 	}
 	return partZ;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+Z_type
+PredictionTrackerBasePairProb::
+getBasePairProb( const size_t i1, const size_t j1
+				       , const size_t i2, const size_t j2
+					     , PredictorMfeEns *predictor)
+{
+	Interaction::Boundary key(i1, j1, i2, j2);
+	if ( structureProbs.find(key) == structureProbs.end() ) {
+		return Z_type(0);
+	} else {
+		return structureProbs[key];
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////

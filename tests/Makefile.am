@@ -41,6 +41,7 @@ runApiTests_SOURCES =	\
 					Interaction_test.cpp  \
 					InteractionEnergyBasePair_test.cpp  \
 					InteractionRange_test.cpp  \
+					PredictionTrackerBasePairProb_test.cpp \
 					PredictionTrackerProfileMinE_test.cpp \
 					PredictionTrackerSpotProb_test.cpp \
 					PredictorMfe2dHelixBlockHeuristic_test.cpp \
