@@ -102,7 +102,20 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 								for (size_t r2 = j2; r2 < s2; r2++) {
 									if (r2-j2 > energy.getMaxInternalLoopSize2()) break;
 
-									if (l1 == i1 && l2 == i2 && j1 == r1 && j2 == r2) {
+
+									if (!Z_equal(getHybridZ(i1, j1, i2, j2, predictor), Z_type(0))) {
+										Z_type newProb = getHybridZ(l1, i1, l2, i2, predictor)
+										      * getHybridZ(j1, r1, j2, r2, predictor)
+													* energy.getBoltzmannWeight(energy.getED1(i1, j1) + energy.getED2(i2, j2));
+
+										if (i1 == j1 && i2 == j2) {
+											newProb /= getHybridZ(i1, j1, i2, j2, predictor);
+										}
+
+										prob += newProb;
+									}
+
+									/*if (l1 == i1 && l2 == i2 && j1 == r1 && j2 == r2) {
 										prob += ( getHybridZ(i1, j1, i2, j2, predictor) * energy.getBoltzmannWeight(energy.getED1(i1, j1) + energy.getED2(i2, j2)) ) / predictor->getZall();
                     LOG(DEBUG) << "PE: "<< ( getHybridZ(i1, j1, i2, j2, predictor) * energy.getBoltzmannWeight(energy.getED1(i1, j1) + energy.getED2(i2, j2)) ) / predictor->getZall();
 									} else {
@@ -125,7 +138,8 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 												throw std::runtime_error("Missing outer structure probability at: " + toString(l1) + ":" + toString(r1) + ":" + toString(l2) + ":" + toString(r2));
 											}
 										}
-									}
+									}*/
+
 								} // r2
 							} // r1
 						} // l2
@@ -134,7 +148,7 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 					// store structure probability
 					if (!Z_equal(prob, Z_type(0))) {
 						Interaction::Boundary key(i1, j1, i2, j2);
-	 					structureProbs[key] = prob;
+	 					structureProbs[key] = (1 / predictor->getZall()) * prob;
 					}
 
 				} // i2
@@ -148,6 +162,7 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 	Z_type maxZ = 0.0;
 	Interaction::Boundary maxBoundary;
 
+	LOG(DEBUG) << ((energy.getBoltzmannWeight(Ekcal_2_E(-1.0)) + 6 * energy.getBoltzmannWeight(Ekcal_2_E(-2.0)) + 5 * energy.getBoltzmannWeight(Ekcal_2_E(-3.0)) + energy.getBoltzmannWeight(Ekcal_2_E(-4.0))) / predictor->getZall());
 	for (auto it = structureProbs.begin(); it != structureProbs.end(); ++it)
 	{
 		LOG(DEBUG) << "prob at " << it->first.i1 << ":" << it->first.j1 << ":" << it->first.i2 << ":" << it->first.j2 << " = " << it->second;
