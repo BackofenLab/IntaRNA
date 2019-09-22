@@ -62,12 +62,10 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 	// calculate initial probabilities (for max window length)
 	for (size_t i1 = 0; i1 < s1-n1+1; i1++) {
 		for (size_t i2 = 0; i2 < s2-n2+1; i2++) {
-			LOG(DEBUG) << i1 << ":" << i1 + n1 - 1 << ":" << i2 << ":" << i2 + n2 - 1 << " = " << getHybridZ(i1, i1 + n1 - 1, i2, i2 + n2 - 1, predictor);
-			//if (!Z_equal(getHybridZ(i1, i1 + n1 - 1, i2, i2 + n2 - 1), 0)) {
+			if (!Z_equal(getHybridZ(i1, i1 + n1 - 1, i2, i2 + n2 - 1, predictor), 0)) {
 				Interaction::Boundary key(i1, i1 + n1 -1, i2, i2 + n2 - 1);
-				LOG(DEBUG) << ( getHybridZ(i1, i1 + n1 - 1, i2, i2 + n2 - 1, predictor) * energy.getBoltzmannWeight(energy.getED1(i1, i1 + n1 - 1) + energy.getED2(i2, i2 + n2 - 1)) ) / predictor->getZall();
 				structureProbs[key] = ( getHybridZ(i1, i1 + n1 - 1, i2, i2 + n2 - 1, predictor) * energy.getBoltzmannWeight(energy.getED1(i1, i1 + n1 - 1) + energy.getED2(i2, i2 + n2 - 1)) ) / predictor->getZall();
-			//}
+			}
 		}
 	}
 
@@ -91,7 +89,7 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 						LOG(DEBUG) << "found Z at " << i1 << ":" << j1 << ":" << i2 << ":" << j2 << " with Z = " << getHybridZ(i1, j1, i2, j2, predictor);
 					}*/
 
-					LOG(DEBUG) << " -- window " << i1 << ":"  << j1 << ":"  << i2 << ":"  << j2;
+					// LOG(DEBUG) << " -- window " << i1 << ":"  << j1 << ":"  << i2 << ":"  << j2;
 
 					for (size_t l1 = i1+1; l1-- > 0; ) {
 						if (i1-l1 > energy.getMaxInternalLoopSize1()) break;
@@ -102,11 +100,10 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 								for (size_t r2 = j2; r2 < s2; r2++) {
 									if (r2-j2 > energy.getMaxInternalLoopSize2()) break;
 
-
 									if (!Z_equal(getHybridZ(i1, j1, i2, j2, predictor), Z_type(0))) {
 										Z_type newProb = getHybridZ(l1, i1, l2, i2, predictor)
 										      * getHybridZ(j1, r1, j2, r2, predictor)
-													* energy.getBoltzmannWeight(energy.getED1(i1, j1) + energy.getED2(i2, j2));
+													* energy.getBoltzmannWeight(energy.getE(l1,r1,l2,r2, E_type(0)));
 
 										if (i1 == j1 && i2 == j2) {
 											newProb /= getHybridZ(i1, j1, i2, j2, predictor);
@@ -114,31 +111,6 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 
 										prob += newProb;
 									}
-
-									/*if (l1 == i1 && l2 == i2 && j1 == r1 && j2 == r2) {
-										prob += ( getHybridZ(i1, j1, i2, j2, predictor) * energy.getBoltzmannWeight(energy.getED1(i1, j1) + energy.getED2(i2, j2)) ) / predictor->getZall();
-                    LOG(DEBUG) << "PE: "<< ( getHybridZ(i1, j1, i2, j2, predictor) * energy.getBoltzmannWeight(energy.getED1(i1, j1) + energy.getED2(i2, j2)) ) / predictor->getZall();
-									} else {
-										// get outer probability
-										if (!Z_equal(getHybridZ(l1, r1, l2, r2, predictor), Z_type(0))) {
-											Interaction::Boundary key(l1, r1, l2, r2);
-											if ( structureProbs.find(key) != structureProbs.end()) {
-												prob += structureProbs[key] * ((l1 == i1 && l2 == i2 ? 1 : energy.getBoltzmannWeight(energy.getE_interLeft(l1,i1,l2,i2)))
-																	 * getHybridZ(i1, j1, i2, j2, predictor)
-																	 * (j1 == r1 && j2 == r2 ? 1 : energy.getBoltzmannWeight(energy.getE_interLeft(j1,r1,j2,r2)))
-																	 //* energy.getBoltzmannWeight(energy.getED1(l1, r1) + energy.getED2(l2, r2))
-																 ) / getHybridZ(l1, r1, l2, r2, predictor);
-												LOG(DEBUG)<< "Psbi: "<< structureProbs[key] * ((l1 == i1 && l2 == i2 ? 1 : energy.getBoltzmannWeight(energy.getE_interLeft(l1,i1,l2,i2)))
-																	 * getHybridZ(i1, j1, i2, j2, predictor)
-																	 * (j1 == r1 && j2 == r2 ? 1 : energy.getBoltzmannWeight(energy.getE_interLeft(j1,r1,j2,r2)))
-																	 //* energy.getBoltzmannWeight(energy.getED1(l1, r1) + energy.getED2(l2, r2))
-																 ) / getHybridZ(l1, r1, l2, r2, predictor);
-											  LOG(DEBUG) << "at: "<< l1 << ":"  << r1 << ":"  << l2 << ":"  << r2;
-											} else {
-												throw std::runtime_error("Missing outer structure probability at: " + toString(l1) + ":" + toString(r1) + ":" + toString(l2) + ":" + toString(r2));
-											}
-										}
-									}*/
 
 								} // r2
 							} // r1
@@ -162,11 +134,8 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 	Z_type maxZ = 0.0;
 	Interaction::Boundary maxBoundary;
 
-	LOG(DEBUG) << ((energy.getBoltzmannWeight(Ekcal_2_E(-1.0)) + 6 * energy.getBoltzmannWeight(Ekcal_2_E(-2.0)) + 5 * energy.getBoltzmannWeight(Ekcal_2_E(-3.0)) + energy.getBoltzmannWeight(Ekcal_2_E(-4.0))) / predictor->getZall());
 	for (auto it = structureProbs.begin(); it != structureProbs.end(); ++it)
 	{
-		LOG(DEBUG) << "prob at " << it->first.i1 << ":" << it->first.j1 << ":" << it->first.i2 << ":" << it->first.j2 << " = " << it->second;
-		LOG(DEBUG) << "-- " << getHybridZ(it->first.i1, it->first.j1, it->first.i2, it->first.j2, predictor);
 		if (it->first.i1 == it->first.j1 && it->first.i2 == it->first.j2 && it->second > probabilityThreshold) {
 			plist[i].i = it->first.i1 + 1;
 			plist[i].j = it->first.i2 + 1;
@@ -174,8 +143,9 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 			plist[i].type = 0; // base-pair prob
 			i++;
 		}
-		if (getHybridZ(it->first.i1, it->first.j1, it->first.i2, it->first.j2, predictor) > maxZ) {
-			maxZ = getHybridZ(it->first.i1, it->first.j1, it->first.i2, it->first.j2, predictor);
+		Z_type Zstruct = getHybridZ(it->first.i1, it->first.j1, it->first.i2, it->first.j2, predictor) * energy.getBoltzmannWeight(energy.getE(it->first.i1, it->first.j1, it->first.i2, it->first.j2, E_type(0)));;
+		if (Zstruct > maxZ) {
+			maxZ = Zstruct;
 			maxBoundary = it->first;
 		}
 	}
