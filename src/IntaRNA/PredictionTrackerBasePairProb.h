@@ -203,6 +203,20 @@ protected:
 	//! map storing missing Z partitions for a given interaction
 	std::unordered_map<Interaction::Boundary, Z_type, Interaction::Boundary::Hash, Interaction::Boundary::Equal> Z_partition;
 
+	//! left side index
+	struct key_hash
+	{
+	 size_t operator()(const Interaction::BasePair &i ) const
+	 {
+		 size_t key = 0;
+		 boost::hash_combine(key, i.first);
+		 boost::hash_combine(key, i.second);
+		 return key;
+	 }
+	};
+	std::unordered_map<Interaction::BasePair, std::vector<Interaction::BasePair>, key_hash> leftIndex;
+
+	//! postscript template for dotplots
 	const char* dotplotTemplate =
 		"/box { %%size x y box - draws box centered on x,y\n\
 		   2 index 0.5 mul sub            %% x -= 0.5\n\
@@ -255,7 +269,7 @@ protected:
 		  len log 0.9 sub cvi 10 exch exp %% grid spacing\n\
 		  dup 1 gt {\n\
 		     dup dup 20 div dup 2 array astore exch 40 div setdash\n\
-		  } { [0.3 0.7] 0.1 setdash } ifelse\n\
+		  } { [0.3 0.7] 0.15 setdash } ifelse\n\
 		  0 exch len {\n\
 		     dup dup\n\
 		     0 moveto\n\

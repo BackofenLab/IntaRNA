@@ -69,6 +69,26 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 		}
 	}
 
+	// build left side index
+	for (size_t i1 = 0; i1 < s1; i1++) {
+		for (size_t i2 = 0; i2 < s2; i2++) {
+			for (size_t j1 = i1; j1 < s1; j1++) {
+				for (size_t j2 = i2; j2 < s2; j2++) {
+					if (!Z_equal(getHybridZ(i1, j1, i2, j2, predictor), 0)) {
+						Interaction::BasePair key(i1, i2);
+						Interaction::BasePair entry(j1, j2);
+						if ( leftIndex.find(key) == leftIndex.end() ) {
+							std::vector<Interaction::BasePair> vect{ entry };
+							leftIndex[key] = vect;
+						} else {
+							leftIndex[key].push_back(entry);
+						}
+					}
+			  }
+			}
+	  }
+	}
+
 	// loop over window lengths
 	for (size_t w1 = n1; w1 > 0; w1--) {
 		for (size_t w2 = n2; w2 > 0; w2--) {
