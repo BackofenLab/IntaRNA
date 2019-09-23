@@ -232,12 +232,12 @@ dotBar( const Interaction & i, const bool fullLength )
 		throw std::runtime_error("Interaction::dotBar("+toString(i)+") not valid!");
 #endif
 	// compile dot-bar representation
-	return (fullLength?"1":toString(i.basePairs.begin()->first +1))
+	return toString(i.s1->getInOutIndex(fullLength?0:i.basePairs.begin()->first))
 			+ (fullLength?std::string(i.basePairs.begin()->first, '.' ):"") // leading unpaired s1
 			+ dotSomething(i.basePairs.begin(), i.basePairs.end(), true, '|') // s1 structure
 			+ (fullLength?std::string(i.s1->size() - i.basePairs.rbegin()->first -1, '.' ):"") // trailing unpaired s1
 			+ "&"
-			+ (fullLength?"1":toString(i.basePairs.rbegin()->second +1))
+			+ toString(i.s2->getInOutIndex(fullLength?0:i.basePairs.rbegin()->second))
 			+ (fullLength?std::string(i.basePairs.rbegin()->second, '.' ):"") // trailing unpaired s2
 			+ dotSomething(i.basePairs.rbegin(), i.basePairs.rend(), false, '|') // s2 structure
 			+ (fullLength?std::string( i.s2->size() - i.basePairs.begin()->second -1, '.' ):"") // leading unpaired s2
