@@ -216,6 +216,9 @@ protected:
 	};
 	std::unordered_map<Interaction::BasePair, std::vector<Interaction::BasePair>, key_hash> leftIndex;
 
+	//! Zall used for seed based predictions (needs to be precomputed)
+	Z_type fixedZall;
+
 	//! postscript template for dotplots
 	const char* dotplotTemplate =
 		"/box { %%size x y box - draws box centered on x,y\n\

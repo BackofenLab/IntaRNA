@@ -59,16 +59,45 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 	size_t n1 = energy.getAccessibility1().getMaxLength();
 	size_t n2 = energy.getAccessibility2().getMaxLength();
 
+	fixedZall = predictor->getZall();
+
+	// compute missing Z values in case of a seed based prediction
+	if (seedHandler != NULL) {
+		// loop over window lengths
+		for (size_t w1 = n1; w1 > 0; w1--) {
+			for (size_t w2 = n2; w2 > 0; w2--) {
+				// skip initial probabilities
+				if (w1 == n1 && w2 == n2) continue;
+				// shift window over sequence length
+				for (size_t i1 = 0; i1 < s1-w1+1; i1++) {
+					for (size_t i2 = 0; i2 < s2-w2+1; i2++) {
+						size_t j1 = i1 + w1 - 1;
+						size_t j2 = i2 + w2 - 1;
+
+						// if seed-based prediction, compute missing Z values
+						if (Z_equal(getHybridZ(i1, j1, i2, j2, predictor), 0)) {
+							LOG(DEBUG) << "missing Z at " << i1 << ":" << j1 << ":" << i2 << ":" << j2;
+							computeMissingZ(i1, j1, i2, j2, predictor, seedHandler);
+						} else {
+							LOG(DEBUG) << "found Z at " << i1 << ":" << j1 << ":" << i2 << ":" << j2 << " with Z = " << getHybridZ(i1, j1, i2, j2, predictor);
+						}
+					} // i1
+				} // i2
+			} // w1
+		} // w2
+	}
+
 	// calculate initial probabilities (for max window length)
 	for (size_t i1 = 0; i1 < s1-n1+1; i1++) {
 		for (size_t i2 = 0; i2 < s2-n2+1; i2++) {
 			if (!Z_equal(getHybridZ(i1, i1 + n1 - 1, i2, i2 + n2 - 1, predictor), 0)) {
 				Interaction::Boundary key(i1, i1 + n1 -1, i2, i2 + n2 - 1);
-				structureProbs[key] = ( getHybridZ(i1, i1 + n1 - 1, i2, i2 + n2 - 1, predictor) * energy.getBoltzmannWeight(energy.getED1(i1, i1 + n1 - 1) + energy.getED2(i2, i2 + n2 - 1)) ) / predictor->getZall();
+				structureProbs[key] = ( getHybridZ(i1, i1 + n1 - 1, i2, i2 + n2 - 1, predictor) * energy.getBoltzmannWeight(energy.getE(i1,i2,i1+n1-1,i2+n2-1, E_type(0))) ) / fixedZall;
 			}
 		}
 	}
 
+	/*
 	// build left side index
 	for (size_t i1 = 0; i1 < s1; i1++) {
 		for (size_t i2 = 0; i2 < s2; i2++) {
@@ -88,6 +117,7 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 			}
 	  }
 	}
+	*/
 
 	// loop over window lengths
 	for (size_t w1 = n1; w1 > 0; w1--) {
@@ -100,14 +130,6 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 					size_t j1 = i1 + w1 - 1;
 					size_t j2 = i2 + w2 - 1;
 					Z_type prob = 0.0;
-
-					// if seed-based prediction, compute missing Z values
-					/*if (seedHandler != NULL && i1 != j1 && i2 != j2 && Z_equal(getHybridZ(i1, j1, i2, j2), 0)) {
-						LOG(DEBUG) << "missing Z at " << i1 << ":" << j1 << ":" << i2 << ":" << j2;
-						computeMissingZ(i1, j1, i2, j2, predictor, seedHandler);
-					} else {
-						LOG(DEBUG) << "found Z at " << i1 << ":" << j1 << ":" << i2 << ":" << j2 << " with Z = " << getHybridZ(i1, j1, i2, j2, predictor);
-					}*/
 
 					// LOG(DEBUG) << " -- window " << i1 << ":"  << j1 << ":"  << i2 << ":"  << j2;
 
@@ -140,7 +162,7 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 					// store structure probability
 					if (!Z_equal(prob, Z_type(0))) {
 						Interaction::Boundary key(i1, j1, i2, j2);
-	 					structureProbs[key] = (1 / predictor->getZall()) * prob;
+	 					structureProbs[key] = (1 / fixedZall) * prob;
 					}
 
 				} // i2
@@ -193,14 +215,19 @@ computeMissingZ( const size_t i1, const size_t j1
 							, PredictorMfeEns *predictor
 							, SeedHandler* seedHandler )
 {
+	// ignore if invalid interation
+	if ((i1 == j1 && i2 < j2) || (i2 == j2 && i1 < j1)) {
+		LOG(DEBUG) << "ignoring invalid interaction";
+		return;
+	}
 
 	// search for known partition
 	bool foundOuter = false;
 	size_t l1, r1, l2, r2;
 	for (l1 = i1+1; !foundOuter && l1-- > 0;) {
 		for (l2 = i2+1; !foundOuter && l2-- > 0;) {
-			for (r1 = j1-1; !foundOuter && r1++ < energy.size1()-1;) {
-				for (r2 = j2-1; !foundOuter && r2++ < energy.size2()-1;) {
+			for (r1 = j1; !foundOuter && r1 < energy.size1(); r1++) {
+				for (r2 = j2; !foundOuter && r2 < energy.size2(); r2++) {
 					if (!Z_equal(getHybridZ(l1, r1, l2, r2, predictor), 0)) {
 						foundOuter = true;
 					}
@@ -208,11 +235,15 @@ computeMissingZ( const size_t i1, const size_t j1
 			}
 		}
 	}
+	r1--;
+	r2--;
 
 	if (!foundOuter) {
 		throw std::runtime_error("Could not compute missing Z: no outer region found");
 		return;
 	}
+
+	LOG(DEBUG) << l1 << ":" << r1 << ":" << l2 << ":" << r2;
 
 	Z_type partZ = 0.0;
 
@@ -226,17 +257,17 @@ computeMissingZ( const size_t i1, const size_t j1
 
 		if (Z_equal(getHybridZ(l1, i1, l2, i2, predictor), 0)) {
 			partZ = (
-					Z_equal(getHybridZ(l1, r1, l2, r2, predictor), 0)
-				/ Z_equal(getHybridZ(i1, r1, i2, r2, predictor), 0)
-			) * energy.getBoltzmannWeight(energy.getED1(l1, i1) + energy.getED2(l2, i2));
+					getHybridZ(l1, r1, l2, r2, predictor)
+				/ getHybridZ(i1, r1, i2, r2, predictor)
+			) * energy.getBoltzmannWeight(energy.getE(l1,i1,l2,i2, E_type(0)));
 		}
 		updateHybridZ(l1, i1, l2, i2, partZ);
 
 		if (Z_equal(getHybridZ(j1, r1, j2, r2, predictor), 0)) {
 			partZ = (
-					Z_equal(getHybridZ(l1, r1, l2, r2, predictor), 0)
-				/ Z_equal(getHybridZ(l1, j1, l2, j2, predictor), 0)
-			) * energy.getBoltzmannWeight(energy.getED1(j1, r1) + energy.getED2(j2, r2));
+					getHybridZ(l1, r1, l2, r2, predictor)
+				/ getHybridZ(l1, j1, l2, j2, predictor)
+			) * energy.getBoltzmannWeight(energy.getE(j1,r1,j2,r2, E_type(0)));
 		}
 		updateHybridZ(j1, r1, j2, r2, partZ);
 
@@ -249,11 +280,11 @@ computeMissingZ( const size_t i1, const size_t j1
 			// Case 2.1 (left)
 			LOG(DEBUG) << "case2.1 left";
 
-			if (!Z_equal(getHybridZ(i1, j1, i2, j2, predictor), 0)) return;
 			partZ = (
-				  Z_equal(getHybridZ(l1, r1, l2, r2, predictor), 0)
-				/ Z_equal(getHybridZ(l1, i1, l2, i2, predictor), 0)
-			) * energy.getBoltzmannWeight(energy.getED1(i1, j1) + energy.getED2(i2, j2));
+				  getHybridZ(l1, r1, l2, r2, predictor)
+				/ getHybridZ(l1, i1, l2, i2, predictor)
+			) * energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, E_type(0)))
+			* energy.getBoltzmannWeight(energy.getE_init());
 			updateHybridZ(i1, j1, i2, j2, partZ);
 
 		} else if (isFullSeedinRegion(j1, r1, j2, r2, seedHandler)) {
@@ -262,11 +293,11 @@ computeMissingZ( const size_t i1, const size_t j1
 			// Case 2.1 (right)
 			LOG(DEBUG) << "case2.1 right";
 
-			if (!Z_equal(getHybridZ(i1, j1, i2, j2, predictor), 0)) return;
 			partZ = (
-				  Z_equal(getHybridZ(l1, r1, l2, r2, predictor), 0)
-				/ Z_equal(getHybridZ(j1, r1, j2, r2, predictor), 0)
-			) * energy.getBoltzmannWeight(energy.getED1(i1, j1) + energy.getED2(i2, j2));
+				  getHybridZ(l1, r1, l2, r2, predictor)
+				/ getHybridZ(j1, r1, j2, r2, predictor)
+			) * energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, E_type(0)))
+			* energy.getBoltzmannWeight(energy.getE_init());
 			updateHybridZ(i1, j1, i2, j2, partZ);
 
 		} else {
@@ -298,13 +329,12 @@ computeMissingZ( const size_t i1, const size_t j1
 				const size_t sl2 = seedHandler->getSeedLength2(it->first, it->second);
 				if (kOnRight) {
 					partZ += (
-						getHybridZ(i1, it->first+sl1-1, i2, it->second+sl2-1, predictor)
+						(E_isNotINF(energy.getE_interLeft(l1, it->first+sl1-1, l2, it->second+sl2-1)) ? getHybridZ(l1, it->first+sl1-1, l2, it->second+sl2-1, predictor) : 1)
 						* energy.getBoltzmannWeight(energy.getED1(i1, k1) + energy.getED2(i2, k2))
 					) / energy.getBoltzmannWeight(getPartialSeedEnergy(it->first,it->second,k1,r1,k2,r2,seedHandler));
-					//partZ *= energy.getBoltzmannWeight(energy.getE_init());
 				} else {
 					partZ += (
-						getHybridZ(it->first, j1, it->second, j2, predictor)
+						(E_isNotINF(energy.getE_interLeft(it->first, r1, it->second, r2)) ? getHybridZ(it->first, r1, it->second, r2, predictor) : 1)
 						* energy.getBoltzmannWeight(energy.getED1(k1, j1) + energy.getED2(k2, j2))
 					) / energy.getBoltzmannWeight(getPartialSeedEnergy(it->first,it->second,l1,k1,l2,k2,seedHandler));
 				}
@@ -470,8 +500,8 @@ updateHybridZ( const size_t i1, const size_t j1
 						 , const Z_type partZ )
 {
 	Interaction::Boundary key(i1,j1,i2,j2);
-	auto keyEntry = Z_partition.find(key);
-	keyEntry->second = partZ;
+	Z_partition[key] = partZ;
+	fixedZall += partZ;
 }
 
 ////////////////////////////////////////////////////////////////////////////
