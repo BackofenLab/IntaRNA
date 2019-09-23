@@ -10,8 +10,26 @@
 # changes in development version since last release 
 ################################################################################
 
+- base pairs details only computed if needed for output (speedup for large -n)
+
 ################################################################################  
 ################################################################################  
+  
+190923 Martin Raden
+ * IntaRNA/OutputConstraint :
+   + needBPs : whether or not traceback of interaction base pairs is needed
+ * IntaRNA/PredictorMfe :
+   * reportOptima() :
+     + traceback now optional based on OutputConstraint::needBPs
+ * IntaRNA/OutputHandlerCsv :
+   + needBPs() : checks whether or not base pair information is needed for the
+     CSV columns to print
+ * bin/CommandLineParsing :
+   + outNeedsBPs : whether or not output requires interaction traceback
+   * getOutputHandler() :
+     + setup of outNeedsBPs
+ * IntaRNA/Interaction :
+   * dotBar : indexing based on RnaSequence::getInOutIndex()
 
 ################################################################################
 ### version 3.1.0.2  

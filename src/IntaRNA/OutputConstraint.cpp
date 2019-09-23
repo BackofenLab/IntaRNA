@@ -14,6 +14,7 @@ OutputConstraint::OutputConstraint(
 		, const bool noLP
 		, const bool noGUend
 		, const bool needZall
+		, const bool needBPs
 		)
  :
 	  reportMax(reportMax)
@@ -24,6 +25,7 @@ OutputConstraint::OutputConstraint(
 	, noLP(noLP)
 	, noGUend(noGUend)
 	, needZall(needZall)
+	, needBPs(needBPs)
 {
 	if(deltaE < (E_type)0.0) throw std::runtime_error("OutputConstraint(deltaE="+toString(deltaE)+") not >= 0.0");
 }

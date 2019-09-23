@@ -199,6 +199,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	outPerRegion(false),
 	outSpotProbSpots(""),
 	outNeedsZall(false),
+	outNeedsBPs(true),
 
 	logFileName(""),
 	configFileName(""),
@@ -316,6 +317,10 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		// new features added with 3.1.0
 		resetParamDefault<>(outNoLP, true, "outNoLP");
 		resetParamDefault<>(outNoGUend, true, "outNoGUend");
+		// ensure CSV output
+		resetParamDefault<>(outMode, 'C');
+		// avoid interaction traceback to speedup
+		resetParamDefault<>(outCsvCols, std::string("id1,id2,start1,end1,start2,end2,E"), "outCsvCols");
 		break;
 	default : // no changes
 		break;
@@ -1883,6 +1888,7 @@ getOutputConstraint()  const
 			, outNoLP
 			, outNoGUend
 			, outNeedsZall
+			, outNeedsBPs
 			);
 }
 
@@ -2298,10 +2304,14 @@ getOutputHandler( const InteractionEnergy & energy ) const
 	case 'E' :
 		// ensure that Zall is computed
 		outNeedsZall = true;
+		// no interaction details needed
+		outNeedsBPs = false;
 		return new OutputHandlerEnsemble( getOutputConstraint(), outStreamHandler->getOutStream(), energy );
 	case 'C' :
 		// ensure that Zall is computed if needed
 		outNeedsZall = outNeedsZall || OutputHandlerCsv::needsZall(OutputHandlerCsv::string2list( outCsvCols ), outCsvColSep);
+		// check whether interaction details are needed
+		outNeedsBPs = OutputHandlerCsv::needBPs(OutputHandlerCsv::string2list( outCsvCols ), outCsvColSep);;
 		// create output handler
 		return new OutputHandlerCsv( getOutputConstraint(), outStreamHandler->getOutStream(), energy, OutputHandlerCsv::string2list( outCsvCols ), outCsvColSep, false, outCsvLstSep );
 	default :

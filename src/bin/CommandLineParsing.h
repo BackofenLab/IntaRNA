@@ -660,6 +660,8 @@ protected:
 	std::string outSpotProbSpots;
 	//! whether or not Zall is needed for output generation
 	mutable bool outNeedsZall;
+	//! whether or not interaction BPs are needed for output generation
+	mutable bool outNeedsBPs;
 
 	//! (optional) file name for log output
 	std::string logFileName;
