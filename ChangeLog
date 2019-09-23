@@ -17,8 +17,12 @@
 ################################################################################  
   
 190923 Martin Raden
+ + m4/m4-ax_boost_iostreams.m4
+ + m4/m4-ax_check_zlib.m4
  * configure.ac :
    * ViennaRNA version >= 2.4.14
+   + check for boost::iostreams library
+   + check for zlib library
  * IntaRNA/OutputConstraint :
    + needBPs : whether or not traceback of interaction base pairs is needed
  * IntaRNA/PredictorMfe :
