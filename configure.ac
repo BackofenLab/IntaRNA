@@ -1,12 +1,12 @@
 
 AC_PREREQ([2.65])
 # 5 argument version only available with aclocal >= 2.64
-AC_INIT([IntaRNA], [3.1.0.2], [], [intaRNA], [http://www.bioinf.uni-freiburg.de] )
+AC_INIT([IntaRNA], [3.1.1], [], [intaRNA], [http://www.bioinf.uni-freiburg.de] )
 
 # minimal required version of the boost library 
 BOOST_REQUIRED_VERSION=1.50.0
 # minimal required version of the Vienna RNA library
-VRNA_REQUIRED_VERSION=2.4.8
+VRNA_REQUIRED_VERSION=2.4.14
 # minimal required version of python interpreter
 PYTHON_REQUIRED_VERSION=3.6
 
@@ -24,6 +24,8 @@ m4_include([m4/m4-ax_boost_system.m4])
 m4_include([m4/m4-ax_boost_filesystem.m4])
 m4_include([m4/m4-ax_boost_program_options.m4])
 m4_include([m4/m4-ax_boost_regex.m4])
+m4_include([m4/m4-ax_boost_iostreams.m4])
+m4_include([m4/m4-ax_check_zlib.m4])
 
 lt_enable_auto_import=""
 case "$host_os" in 
@@ -293,6 +295,8 @@ AX_BOOST_SYSTEM
 AX_BOOST_FILESYSTEM
 AX_BOOST_PROGRAM_OPTIONS
 AX_BOOST_REGEX
+AX_BOOST_IOSTREAMS
+AX_CHECK_ZLIB([], [])
 
 
 ############  CHECKS  ############################################

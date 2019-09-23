@@ -200,6 +200,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	outPerRegion(false),
 	outSpotProbSpots(""),
 	outNeedsZall(false),
+	outNeedsBPs(true),
 
 	logFileName(""),
 	configFileName(""),
@@ -244,6 +245,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		resetParamDefault<>(outNoGUend, false, "outNoGUend");
 		resetParamDefault<>(accNoLP, false, "accNoLP");
 		resetParamDefault<>(accNoGUend, false, "accNoGUend");
+		resetParamDefault<>(energyFile, std::string(VrnaHandler::Turner99), "energyVRNA");
 		break;
 	case IntaRNA2 :
 		// IntaRNA v2 parameters
@@ -257,6 +259,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		resetParamDefault<>(tAccW, 150);
 		resetParamDefault<>(tAccL, 100);
 		resetParamDefault<>(tIntLoopMax, 16);
+		resetParamDefault<>(energyFile, std::string(VrnaHandler::Turner04), "energyVRNA");
 #if INTARNA_MULITHREADING
 		resetParamDefault<>(threads, 1);
 #endif
@@ -317,6 +320,10 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		// new features added with 3.1.0
 		resetParamDefault<>(outNoLP, true, "outNoLP");
 		resetParamDefault<>(outNoGUend, true, "outNoGUend");
+		// ensure CSV output
+		resetParamDefault<>(outMode, 'C');
+		// avoid interaction traceback to speedup
+		resetParamDefault<>(outCsvCols, std::string("id1,id2,start1,end1,start2,end2,E"), "outCsvCols");
 		break;
 	default : // no changes
 		break;
@@ -753,8 +760,14 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 					"\n 'V' VRNA-based computation (Nearest-Neighbor model, see also --energVRNA)").c_str())
 		("energyVRNA"
 			, value<std::string>(&energyFile)
+				->default_value("Turner04")
 				->notifier(boost::bind(&CommandLineParsing::validate_energyFile,this,_1))
-			, std::string("energy parameter file of VRNA package to be used. If not provided, the default parameter set of the linked Vienna RNA package is used.").c_str())
+			, std::string("energy parameter file of VRNA package to be used."
+					" Directly provided models are \n"
+					" - Turner99\n"
+					" - Turner04\n"
+					" - Andronescu07\n"
+					" If not provided, the 'Turner04' parameter set of the linked Vienna RNA package is used.").c_str())
 		("energyNoDangles"
 				, value<bool>(&(energyNoDangles))
 					->default_value(energyNoDangles)
@@ -1312,10 +1325,6 @@ parse(int argc, char** argv)
 			}
 			} // switch
 
-			// check energy setup
-			if (vm.count("energyVRNA") > 0 && energy.val != 'V') {
-				throw error("--energyVRNA provided but no VRNA energy computation (V) requested (--energy = "+toString(energy.val)+")");
-			}
 
 			// check qAcc upper bound
 			if (qAccL.val > qAccW.val && qAccW.val != 0) {
@@ -1429,7 +1438,7 @@ parse(int argc, char** argv)
 
 	// setup new VRNA handler with the given arguments
 	if ( energy.val == 'V') {
-		vrnaHandler = VrnaHandler( temperature.val, (energyFile.size() > 0 ? & energyFile : NULL), accNoGUend, accNoLP );
+		vrnaHandler = VrnaHandler( temperature.val, (energyFile.size() > 0 ? energyFile : "Turner04"), accNoGUend, accNoLP );
 	}
 
 
@@ -1885,6 +1894,7 @@ getOutputConstraint()  const
 			, outNoLP
 			, outNoGUend
 			, outNeedsZall
+			, outNeedsBPs
 			);
 }
 
@@ -2309,10 +2319,14 @@ getOutputHandler( const InteractionEnergy & energy ) const
 	case 'E' :
 		// ensure that Zall is computed
 		outNeedsZall = true;
+		// no interaction details needed
+		outNeedsBPs = false;
 		return new OutputHandlerEnsemble( getOutputConstraint(), outStreamHandler->getOutStream(), energy );
 	case 'C' :
 		// ensure that Zall is computed if needed
 		outNeedsZall = outNeedsZall || OutputHandlerCsv::needsZall(OutputHandlerCsv::string2list( outCsvCols ), outCsvColSep);
+		// check whether interaction details are needed
+		outNeedsBPs = OutputHandlerCsv::needBPs(OutputHandlerCsv::string2list( outCsvCols ), outCsvColSep);;
 		// create output handler
 		return new OutputHandlerCsv( getOutputConstraint(), outStreamHandler->getOutStream(), energy, OutputHandlerCsv::string2list( outCsvCols ), outCsvColSep, false, outCsvLstSep );
 	default :

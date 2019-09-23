@@ -145,7 +145,7 @@ add( const Interaction & i )
 	if (seedRanges1.covers(leftBP->first)) {
 		pairing   <<'+';
 	} else
-	if (energy.isGU(leftBP->first, leftBP->second)) {
+	if (energy.isGU(energy.getIndex1(*leftBP), energy.getIndex2(*leftBP))) {
 		pairing   <<':';
 	} else {
 		pairing   <<'|';
@@ -204,7 +204,7 @@ add( const Interaction & i )
 		if (seedRanges1.covers(curBP->first)) {
 			pairing   <<'+';
 		} else
-		if (energy.isGU(curBP->first, curBP->second)) {
+		if (energy.isGU(energy.getIndex1(*curBP), energy.getIndex2(*curBP))) {
 			pairing   <<':';
 		} else {
 			pairing   <<'|';

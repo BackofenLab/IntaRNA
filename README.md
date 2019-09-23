@@ -1575,12 +1575,21 @@ If Vienna RNA package is used for energy computation (`--energy=V`), per default
 the default parameter set of the linked Vienna RNA package is used (e.g. the
 `Turner04` set for VRNA 3.0.0). If you want to use a different parameter set, you
 can provide an according parameter file via `--energyVRNA=MyParamFile`. The
-following example shows how to run an IntaRNA-v1-like prediction (via the 
+following example shows how to run an IntaRNA-v1-like prediction (default for the 
 `IntaRNA1` personality) using the old `Turner99` parameter set (as used by IntaRNA v1.*).
 ```bash
 # IntaRNA v1.* like energy parameter setup
-IntaRNA1 --energyVRNA=/usr/local/share/Vienna/rna_turner1999.par
+IntaRNA --energyVRNA=Turner99
+# alternative IntaRNA v1.* like energy parameter setup with explicit file
+IntaRNA --energyVRNA=/usr/local/share/Vienna/rna_turner1999.par
 ```
+IntaRNA provides the following predefined `--energyVRNA` values that load respective
+parameter sets from the Vienna RNA package without explicit file specification:
+- `Turner04` = `rna_turner2004.par`
+- `Turner99` = `rna_turner1999.par`
+- `Andronescu07` = `rna_andronescu2007.par`
+If no value for `--energyVRNA` is provided, the default model of the underlying
+Vienna RNA package is used (see respective documentation).
 
 To increase prediction quality and to reduce the computational complexity, the
 number of unpaired bases between intermolecular base pairs is restricted

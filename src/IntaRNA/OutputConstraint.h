@@ -55,6 +55,9 @@ public:
 	//! whether or not Zall has to be computed for output generation
 	const bool needZall;
 
+	//! whether or not interaction base pairs have to be traced for output generation
+	const bool needBPs;
+
 public:
 
 	/**
@@ -70,6 +73,7 @@ public:
 	 * @param noLP whether or not lonely (non-stacked) inter-molecular bps are allowed
 	 * @param noGUend whether or not inter-molecular UG base pairs are allowed at interaction ends
 	 * @param needZall whether or not Zall has to be computed for output generation
+	 * @param needBPs whether or not interaction base pairs have to be traced for output generation
 	 */
 	OutputConstraint(	  const size_t reportMax = 1
 						, const ReportOverlap reportOverlap = OVERLAP_BOTH
@@ -78,7 +82,8 @@ public:
 						, const bool bestSeedOnly = false
 						, const bool noLP = false
 						, const bool noGUend = false
-						, const bool needZall = false );
+						, const bool needZall = false
+						, const bool needBPs = true );
 
 	//! destruction
 	virtual ~OutputConstraint();
