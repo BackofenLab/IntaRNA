@@ -100,7 +100,7 @@ TEST_CASE( "PredictionTrackerBasePairProb", "[PredictionTrackerBasePairProb]" ) 
 
 	SECTION("base pair probs - case 3") {
 		RnaSequence r1("r1", "GGCGC");
-		RnaSequence r2("r2", "CCGG");
+		RnaSequence r2("r2", "GGCC");
 		AccessibilityDisabled acc1(r1, 0, NULL);
 		AccessibilityDisabled acc2(r2, 0, NULL);
 		ReverseAccessibility racc(acc2);
@@ -120,7 +120,7 @@ TEST_CASE( "PredictionTrackerBasePairProb", "[PredictionTrackerBasePairProb]" ) 
 
 		tracker->updateZ(&predictor, NULL);
 
-		REQUIRE(Z_equal(tracker->getBasePairProb(1, 1, 1, 1, &predictor), (energy.getBoltzmannWeight(Ekcal_2_E(-1.0)) + 6 * energy.getBoltzmannWeight(Ekcal_2_E(-2.0)) + 5 * energy.getBoltzmannWeight(Ekcal_2_E(-3.0)) + energy.getBoltzmannWeight(Ekcal_2_E(-4.0))) / predictor.getZall()));
+		REQUIRE(Z_equal(tracker->getBasePairProb(1, 1, 1, 1, &predictor), (energy.getBoltzmannWeight(Ekcal_2_E(-1.0)) + 5 * energy.getBoltzmannWeight(Ekcal_2_E(-2.0)) + 5 * energy.getBoltzmannWeight(Ekcal_2_E(-3.0)) + energy.getBoltzmannWeight(Ekcal_2_E(-4.0))) / predictor.getZall()));
 	}
 
 }

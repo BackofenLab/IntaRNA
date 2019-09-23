@@ -121,7 +121,7 @@ TEST_CASE( "PredictorMfeEns2d", "[PredictorMfeEns2d]" ) {
 
 	SECTION("Zall case 5: check value") {
 		RnaSequence r1("r1", "GGCGC");
-		RnaSequence r2("r2", "CCGG");
+		RnaSequence r2("r2", "GGCC");
 		AccessibilityDisabled acc1(r1, 0, NULL);
 		AccessibilityDisabled acc2(r2, 0, NULL);
 		ReverseAccessibility racc(acc2);
@@ -138,8 +138,8 @@ TEST_CASE( "PredictorMfeEns2d", "[PredictorMfeEns2d]" ) {
 		predictor.predict(idx1,idx2);
 
 		Z_type boltzmannSum = 10 * energy.getBoltzmannWeight(Ekcal_2_E(-1.0))
-		                    + 11 * energy.getBoltzmannWeight(Ekcal_2_E(-2.0))
-								        + 4 * energy.getBoltzmannWeight(Ekcal_2_E(-3.0))
+		                    + 24 * energy.getBoltzmannWeight(Ekcal_2_E(-2.0))
+								        + 12 * energy.getBoltzmannWeight(Ekcal_2_E(-3.0))
 												+ 1 * energy.getBoltzmannWeight(Ekcal_2_E(-4.0));
 
 		REQUIRE(Z_equal(predictor.getZall(), boltzmannSum));
