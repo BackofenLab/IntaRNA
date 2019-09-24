@@ -59,7 +59,8 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 	size_t n1 = energy.getAccessibility1().getMaxLength();
 	size_t n2 = energy.getAccessibility2().getMaxLength();
 
-	fixedZall = predictor->getZall();
+	LOG(DEBUG) << getHybridZ(3, 7, 6, 10, predictor);
+	Zall = predictor->getZall();
 
 	// compute missing Z values in case of a seed based prediction
 	if (seedHandler != NULL) {
@@ -92,7 +93,7 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 		for (size_t i2 = 0; i2 < s2-n2+1; i2++) {
 			if (!Z_equal(getHybridZ(i1, i1 + n1 - 1, i2, i2 + n2 - 1, predictor), 0)) {
 				Interaction::Boundary key(i1, i1 + n1 -1, i2, i2 + n2 - 1);
-				structureProbs[key] = ( getHybridZ(i1, i1 + n1 - 1, i2, i2 + n2 - 1, predictor) * energy.getBoltzmannWeight(energy.getE(i1,i2,i1+n1-1,i2+n2-1, E_type(0))) ) / fixedZall;
+				structureProbs[key] = ( getHybridZ(i1, i1 + n1 - 1, i2, i2 + n2 - 1, predictor) * energy.getBoltzmannWeight(energy.getE(i1,i2,i1+n1-1,i2+n2-1, E_type(0))) ) / Zall;
 			}
 		}
 	}
@@ -162,7 +163,7 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 					// store structure probability
 					if (!Z_equal(prob, Z_type(0))) {
 						Interaction::Boundary key(i1, j1, i2, j2);
-	 					structureProbs[key] = (1 / fixedZall) * prob;
+	 					structureProbs[key] = (1 / Zall) * prob;
 					}
 
 				} // i2
@@ -174,10 +175,11 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 	struct vrna_elem_prob_s plist[s1*s2+1];
 	size_t i = 0;
 	Z_type maxZ = 0.0;
-	Interaction::Boundary maxBoundary;
+	Interaction::Boundary interactionBoundary;
 
 	for (auto it = structureProbs.begin(); it != structureProbs.end(); ++it)
 	{
+		LOG(DEBUG) << "Z - prob: " << it->first.i1 << ":" << it->first.j1 << ":" << it->first.i2 << ":" << it->first.j2 << " - " << getHybridZ(it->first.i1, it->first.j1, it->first.i2, it->first.j2, predictor) << " = " << it->second;
 		if (it->first.i1 == it->first.j1 && it->first.i2 == it->first.j2 && it->second > probabilityThreshold) {
 			plist[i].i = it->first.i1 + 1;
 			plist[i].j = it->first.i2 + 1;
@@ -188,7 +190,7 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 		Z_type Zstruct = getHybridZ(it->first.i1, it->first.j1, it->first.i2, it->first.j2, predictor) * energy.getBoltzmannWeight(energy.getE(it->first.i1, it->first.j1, it->first.i2, it->first.j2, E_type(0)));;
 		if (Zstruct > maxZ) {
 			maxZ = Zstruct;
-			maxBoundary = it->first;
+			interactionBoundary = it->first;
 		}
 	}
 
@@ -202,7 +204,7 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
     " using Vienna RNA package "
     VRNA_VERSION;
 
-	generateDotPlot(strdup(rna1.c_str()), strdup(reverseRna2.c_str()), name, plist, comment.c_str(), maxBoundary);
+	generateDotPlot(strdup(rna1.c_str()), strdup(reverseRna2.c_str()), name, plist, comment.c_str(), interactionBoundary);
 
 }
 
@@ -239,7 +241,7 @@ computeMissingZ( const size_t i1, const size_t j1
 	r2--;
 
 	if (!foundOuter) {
-		throw std::runtime_error("Could not compute missing Z: no outer region found");
+		//throw std::runtime_error("Could not compute missing Z: no outer region found");
 		return;
 	}
 
@@ -327,14 +329,17 @@ computeMissingZ( const size_t i1, const size_t j1
 				// calculate missing partition function
 				const size_t sl1 = seedHandler->getSeedLength1(it->first, it->second);
 				const size_t sl2 = seedHandler->getSeedLength2(it->first, it->second);
-				if (kOnRight) {
+				if (kOnRight && E_isNotINF(energy.getE_interLeft(k1, r1, k2, r2))) {
+					LOG(DEBUG) << getHybridZ(l1, it->first+sl1-1, l2, it->second+sl2-1, predictor);
+					LOG(DEBUG) << energy.getBoltzmannWeight(energy.getED1(i1, k1) + energy.getED2(i2, k2));
+					LOG(DEBUG) << energy.getBoltzmannWeight(getPartialSeedEnergy(it->first,it->second,k1,r1,k2,r2,seedHandler));
 					partZ += (
-						(E_isNotINF(energy.getE_interLeft(l1, it->first+sl1-1, l2, it->second+sl2-1)) ? getHybridZ(l1, it->first+sl1-1, l2, it->second+sl2-1, predictor) : 1)
+						getHybridZ(l1, it->first+sl1-1, l2, it->second+sl2-1, predictor)
 						* energy.getBoltzmannWeight(energy.getED1(i1, k1) + energy.getED2(i2, k2))
 					) / energy.getBoltzmannWeight(getPartialSeedEnergy(it->first,it->second,k1,r1,k2,r2,seedHandler));
-				} else {
+				} else if (E_isNotINF(energy.getE_interLeft(l1, k1, l2, k2))) {
 					partZ += (
-						(E_isNotINF(energy.getE_interLeft(it->first, r1, it->second, r2)) ? getHybridZ(it->first, r1, it->second, r2, predictor) : 1)
+						getHybridZ(it->first, r1, it->second, r2, predictor)
 						* energy.getBoltzmannWeight(energy.getED1(k1, j1) + energy.getED2(k2, j2))
 					) / energy.getBoltzmannWeight(getPartialSeedEnergy(it->first,it->second,l1,k1,l2,k2,seedHandler));
 				}
@@ -436,6 +441,8 @@ getPartialSeedEnergy( const size_t si1, const size_t si2
 	size_t i1old = i1;
 	size_t i2old = i2;
 
+	LOG(DEBUG) << "search seed at: " << si1 << ":" << si2 << ":" << i1 << ":" << j1 << ":" << i2 << ":" << j2;
+
 	for (size_t i = 0; i < interaction.basePairs.size(); i++) {
 		// get index of current base pair
 		size_t s1 = energy.getIndex1(interaction.basePairs[i]);
@@ -443,6 +450,8 @@ getPartialSeedEnergy( const size_t si1, const size_t si2
 
 		if (s1 < i1 || s2 < i2) continue;
 		if (s1 > j1 && s2 < j2) break;
+
+		LOG(DEBUG) << "seed: " << i1old << ":" << s1 << ":" << i2old << ":" << s2;
 
 		if (!E_isINF(energy.getE_interLeft(i1old,s1,i2old,s2))) {
 			// add hybridization energy
@@ -452,6 +461,7 @@ getPartialSeedEnergy( const size_t si1, const size_t si2
 			i2old = s2;
 		}
 	}
+
 	return partE;
 }
 
@@ -501,20 +511,29 @@ updateHybridZ( const size_t i1, const size_t j1
 {
 	Interaction::Boundary key(i1,j1,i2,j2);
 	Z_partition[key] = partZ;
-	fixedZall += partZ;
+	Zall += partZ;
 }
 
 ////////////////////////////////////////////////////////////////////////////
 
-int
+Z_type
+PredictionTrackerBasePairProb::
+getZall()
+{
+	return Zall;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+bool
 PredictionTrackerBasePairProb::
 generateDotPlot( char *seq1, char *seq2, char *fileName
 							 , plist *pl, const char *comment
-						   , Interaction::Boundary maxBoundary )
+						   , Interaction::Boundary interactionBoundary )
 {
 	FILE *file;
 	file = fopen(fileName,"w");
-	if (file == NULL) return 0; /* return 0 for failure */
+	if (file == NULL) return false; /* failure */
 
 	int bbox[4];
 	bbox[0] = 0;
@@ -599,14 +618,14 @@ generateDotPlot( char *seq1, char *seq2, char *fileName
 		      "0.03 setlinewidth\n\
            %1.1f %1.1f %zu %zu rectangle\n\
 					 1 0 0 setrgbcolor\n\
-           stroke\n", (float)maxBoundary.i1 + 0.5, (float)maxBoundary.i2 + 0.5, maxBoundary.j1 - maxBoundary.i1 + 1, maxBoundary.j2 - maxBoundary.i2 + 1);
+           stroke\n", (float)interactionBoundary.i1 + 0.5, (float)interactionBoundary.i2 + 0.5, interactionBoundary.j1 - interactionBoundary.i1 + 1, interactionBoundary.j2 - interactionBoundary.i2 + 1);
 
 	fprintf(file, "showpage\n"
 	            "end\n"
               "%%%%EOF\n");
 
 	fclose(file);
-	return 1; /* success */
+	return true; /* success */
 }
 
 ////////////////////////////////////////////////////////////////////////////

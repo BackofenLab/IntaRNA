@@ -180,11 +180,28 @@ public:
 							 , const Z_type partZ );
 
   /**
-	*/
-	int
+	 * Generates a dotplot of the given base pair probabilities
+	 * @param seq1 first RNA sequence
+	 * @param seq2 second RNA sequence
+	 * @param fileName name of the output file
+	 * @param pl plist containing base pair probabilities
+	 * @param comment comment to include in postscript
+	 * @param interactionBoundary boundary of the predicted interaction
+	 *
+	 * @return false in case of failure
+	 */
+	bool
 	generateDotPlot( char *seq1, char *seq2, char *fileName
 	               , plist *pl, const char *comment
-								 , Interaction::Boundary maxBoundary );
+								 , Interaction::Boundary interactionBoundary );
+
+	/**
+	 * Returns the Zall adjusted for seed-based predictions
+   *
+   * @return Zall
+	 */
+	Z_type
+	getZall();
 
 protected:
 
@@ -216,8 +233,8 @@ protected:
 	};
 	std::unordered_map<Interaction::BasePair, std::vector<Interaction::BasePair>, key_hash> leftIndex;
 
-	//! Zall used for seed based predictions (needs to be precomputed)
-	Z_type fixedZall;
+	//! Zall adjusted for seed based predictions (needs to be precomputed)
+	Z_type Zall;
 
 	//! postscript template for dotplots
 	const char* dotplotTemplate =
