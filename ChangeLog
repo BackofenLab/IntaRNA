@@ -16,6 +16,12 @@
 ################################################################################  
 ################################################################################  
   
+190924 Martin Raden
+ * IntaRNA/general :
+   - numStringLength() : obsolete
+ * IntaRNA/OutputHandlerText : 
+   + explicit '+' for positive indices if relative indexing enabled
+  
 190923 Martin Raden
  + m4/m4-ax_boost_iostreams.m4
  + m4/m4-ax_check_zlib.m4
