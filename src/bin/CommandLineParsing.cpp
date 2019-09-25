@@ -1513,13 +1513,13 @@ validate_indexRangeList(const std::string & argName, const std::string & value
 				}
 				// check if boundaries in range (given they are ascending)
 				if (i->to >= seq.size() ) {
-					LOG(ERROR)  <<argName<<" : subrange " <<*i <<" is out of bounds [,"<<(seq.size()-1)<<"]";
+					LOG(ERROR)  <<argName<<" : subrange " <<*i <<" is out of bounds [,"<<(seq.size()-1)<<"] of sequence "<<seq.getId();
 					updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 					return;
 				}
 			}
 		} catch (std::runtime_error & e) {
-			LOG(ERROR)  <<argName<<" : '" <<value <<"' can not be parsed for sequence index range ["<<seq.getInOutIndex(0)<<","<<seq.getInOutIndex(seq.size()-1)<<"]";
+			LOG(ERROR)  <<argName<<" : '" <<value <<"' can not be parsed for sequence index range ["<<seq.getInOutIndex(0)<<","<<seq.getInOutIndex(seq.size()-1)<<"] of sequence "<<seq.getId();
 			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 			return;
 		}
@@ -1626,35 +1626,30 @@ void
 CommandLineParsing::
 parseRegion( const std::string & argName, const std::string & value, const RnaSequenceVec & sequences, IndexRangeListVec & rangeList )
 {
+	// ensure range list size sufficient
+	rangeList.resize( sequences.size() );
 	// check if nothing given
 	if (value.empty()) {
-		// ensure range list size sufficient
-		rangeList.resize( sequences.size() );
-		size_t s=0;
-		for( IndexRangeList & r : rangeList ) {
-			// clear old data if any
-			r.clear();
-			assert(sequences.at(s).size()>0);
-			// push full range
-			r.push_back( IndexRange(0,sequences.at(s++).size()-1) );
+		for( size_t i=0; i<sequences.size(); i++) {
+			// clear if any datathere
+			rangeList[i].clear();
+			// set sequence-specific full-length range
+			rangeList[i].push_back( IndexRange(0,sequences.at(i).size()-1) );
 		}
 		return;
 	} else
 	// check direct range input
 	if (boost::regex_match( value, IndexRangeList::regex, boost::match_perl )) {
-		// ensure single sequence input
-		if(sequences.size() != 1) {
-			throw boost::program_options::error(argName +" : string range list encoding provided but more than one sequence present.");
+		for( size_t i=0; i<sequences.size(); i++) {
+			// validate range encodings for current sequence
+			validate_indexRangeList(argName, value, sequences.at(i));
+			// fill range list from string using index correction from first sequence
+			rangeList[i] = IndexRangeList( value, false, &(sequences.at(i)) );
 		}
-		// validate range encodings
-		validate_indexRangeList(argName, value, *sequences.begin());
-		// ensure range list size sufficient
-		rangeList.resize(1);
-		// fill range list from string using index correction from first sequence
-		rangeList[0] = IndexRangeList( value, false, &(*sequences.begin()) );
 		return;
+	} else {
+		throw boost::program_options::error(argName+" is not a comma-separated list of index ranges.");
 	}
-	throw boost::program_options::error(argName+" is not a comma-separated list of index ranges.");
 }
 
 ////////////////////////////////////////////////////////////////////////////
