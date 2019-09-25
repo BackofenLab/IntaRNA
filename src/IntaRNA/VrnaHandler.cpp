@@ -8,11 +8,14 @@
 #include "IntaRNA/VrnaHandler.h"
 #include "IntaRNA/general.h"
 
+#include <stdexcept>
 #include <iostream>
 
 extern "C" {
+	#include <ViennaRNA/vrna_config.h>
 	#include <ViennaRNA/energy_const.h>
 	#include <ViennaRNA/read_epars.h>
+	#include <ViennaRNA/params/io.h>
 }
 
 namespace IntaRNA {
@@ -21,7 +24,7 @@ namespace IntaRNA {
 
 VrnaHandler::
 VrnaHandler( Z_type temperature
-			, const std::string * const vrnaParamFile
+			, const std::string & vrnaParamFile
 			, const bool noGUclosure
 			, const bool noLP )
 	:
@@ -29,12 +32,27 @@ VrnaHandler( Z_type temperature
 	, RT(getRT(temperature))
 {
 
-	// init parameters from file if needed
-	if (vrnaParamFile != NULL) {
-		// read parameters from file
-		read_parameter_file( vrnaParamFile->c_str() );
+	// load parameters
+	if ( !vrnaParamFile.empty() ) {
+		int vrna_params_load_result = 0;
+		if ( vrnaParamFile == std::string(Turner04)) {
+			// default in ViennaRNA 2.* (hopefully)
+			if (VRNA_VERSION_MAJOR != 2) {
+				vrna_params_load_result = vrna_params_load_RNA_Turner2004();
+			}
+			vrna_params_load_result = 1;
+		} else if ( vrnaParamFile == std::string(Turner99)) {
+			vrna_params_load_result = vrna_params_load_RNA_Turner1999();
+		} else if ( vrnaParamFile == std::string(Andronescu07)) {
+			vrna_params_load_result = vrna_params_load_RNA_Andronescu2007();
+		} else {
+			// read parameters from file
+			vrna_params_load_result = vrna_params_load( vrnaParamFile.c_str(), VRNA_PARAMETER_FORMAT_DEFAULT);
+		}
+		if (vrna_params_load_result == 0) {
+			throw std::runtime_error(std::string("VrnaHandler: could not load energy model data for ")+vrnaParamFile);
+		}
 	}
-
 
 	// get default model data
 	vrna_md_set_default( &model );

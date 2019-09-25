@@ -660,6 +660,8 @@ protected:
 	std::string outSpotProbSpots;
 	//! whether or not Zall is needed for output generation
 	mutable bool outNeedsZall;
+	//! whether or not interaction BPs are needed for output generation
+	mutable bool outNeedsBPs;
 
 	//! (optional) file name for log output
 	std::string logFileName;
@@ -1446,6 +1448,12 @@ void
 CommandLineParsing::
 validate_energyFile(const std::string & value)
 {
+	// check for supported default models
+	if (value == std::string(VrnaHandler::Turner99)
+		|| value == std::string(VrnaHandler::Turner04) )
+	{
+		return;
+	}
 	// check if file exists and is readable
 	if (!validateFile( value )) {
 		LOG(ERROR) <<"provided VRNA energy parameter file '" <<value <<"' could not be processed.";

@@ -218,8 +218,10 @@ reportOptima()
 				&& reported < outConstraint.reportMax )
 		{
 			// report current best
-			// fill interaction with according base pairs
-			traceBack( curBest );
+			if (outConstraint.needBPs) {
+				// fill interaction with according base pairs
+				traceBack( curBest );
+			}
 			// report mfe interaction
 #if INTARNA_MULITHREADING
 			#pragma omp critical(intarna_omp_predictorOutputAdd)
@@ -266,8 +268,10 @@ reportOptima()
 			if ( i->energy < outConstraint.maxE
 					&& (i->energy < mfeDeltaE || E_equal(i->energy,mfeDeltaE))) {
 
-				// fill mfe interaction with according base pairs
-				traceBack( *i );
+				if (outConstraint.needBPs) {
+					// fill mfe interaction with according base pairs
+					traceBack( *i );
+				}
 				// report mfe interaction
 #if INTARNA_MULITHREADING
 				#pragma omp critical(intarna_omp_predictorOutputAdd)

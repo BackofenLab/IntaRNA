@@ -19,6 +19,12 @@ namespace IntaRNA {
  */
 class VrnaHandler {
 
+public:
+
+	static constexpr const char* Turner99 = "Turner99";
+	static constexpr const char* Turner04 = "Turner04";
+	static constexpr const char* Andronescu07 = "Andronescu07";
+
 protected:
 
 	//! VRNA parameter model
@@ -32,15 +38,15 @@ public:
 	/**
 	 * Construction with global VRNA folding parameter setup
 	 *
-	 * @param temperature Folding temperature in Celsius
 	 * @param vrnaParamFile name of a VRNA parameter file to be used for
-	 *        parameter setup or NULL if defaults are to be used
+	 *        parameter setup
+	 * @param temperature Folding temperature in Celsius
 	 * @param noGUclosue whether or not GU base pairs are allowed at helix ends
 	 * @param noLP whether or not lonely base pairs are considered
 	 */
 	VrnaHandler(
 			Z_type temperature = 37.0
-			, const std::string * const vrnaParamFile = NULL
+			, const std::string & vrnaParamFile = std::string(Turner04)
 			, const bool noGUclosure = false
 			, const bool noLP = false );
 

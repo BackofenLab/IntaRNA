@@ -53,16 +53,6 @@ template<class T> void INTARNA_CLEANUP( T *& pointer) { if (pointer != NULL) {de
 	#define toString( x ) boost::lexical_cast<std::string>(x)
 
 
-////////////////  NUMBER STRING LENGTH  ////////////////////
-
-#include <cmath>
-
-	#ifdef numStringLength
-		#error numStringLength already defined
-	#endif
-	template< typename N > size_t numStringLength( const N x ) { N xx = ((x<0) ? -x : x); int chars = ((x<0) ? 2 : 1); N pten=10; while ( pten <= xx ) { chars++; pten*=10; }; return chars;}
-
-
 ////////////////  GLOBAL TYPEDEFS  //////////////////////
 
 #include <cmath>

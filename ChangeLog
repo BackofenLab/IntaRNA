@@ -10,8 +10,67 @@
 # changes in development version since last release 
 ################################################################################
 
+# IntaRNA
+- base pairs details only computed if needed for output (speedup for large -n)
+- predefined parameter sets for loading (Turner04, Turner99, Andronescu07)
+- 'tRegion' and 'qRegion' now available for and applied to multi-sequence input
+
 ################################################################################  
 ################################################################################  
+  
+190924 Martin Raden
+ * IntaRNA/general :
+   - numStringLength() : obsolete
+ * IntaRNA/OutputHandlerText : 
+   + explicit '+' for positive indices if relative indexing enabled
+ * bin/CommandLineParsing :
+   * validate_indexRangeList() :
+     + sequence id in error message
+   * parseRegion() :
+     + range check per sequence with sequence-specific error message
+     - single sequence input condition removed : ranges applied on all sequences
+ * IntaRNA/AccessibilityVrna :
+   * construction() : 
+     + bugfix: only call VRNA routines if seq.size() > 4
+  
+190923 Martin Raden
+ + m4/m4-ax_boost_iostreams.m4
+ + m4/m4-ax_check_zlib.m4
+ * configure.ac :
+   * ViennaRNA version >= 2.4.14
+   + check for boost::iostreams library
+   + check for zlib library
+ * IntaRNA/OutputConstraint :
+   + needBPs : whether or not traceback of interaction base pairs is needed
+ * IntaRNA/PredictorMfe :
+   * reportOptima() :
+     + traceback now optional based on OutputConstraint::needBPs
+ * IntaRNA/OutputHandlerCsv :
+   + needBPs() : checks whether or not base pair information is needed for the
+     CSV columns to print
+ * IntaRNA/VrnaHandler :
+   + Turner99 : const string representing RNA-Turner-1999 energy file
+   + Turner04 : const string representing RNA-Turner-2004 energy file
+   + Andronescu07 : const string representing RNA-Andronescu-2007 energy file
+   * constructor() :
+     * Turner04 = default parameter set
+     + load of Turner99/04 and Andronescu07 parameters via new VRNA-2.4.14 API
+ * bin/CommandLineParsing :
+   + outNeedsBPs : whether or not output requires interaction traceback
+   * energyVRNA :
+     + docu of Turner99/04 and Andronescu07 predefined models for loading
+     + default value = Turner04
+   * IntaRNA1 :
+     + default energyVRNA = Turner99
+   * getOutputHandler() :
+     + setup of outNeedsBPs
+ * IntaRNA/Interaction :
+   * dotBar : indexing based on RnaSequence::getInOutIndex()
+ * IntaRNA/OutputHandlerText :
+   * add() : 
+     * bugfix: isGU() test was using non-transformed bp indices
+ * README.md :
+   + docu of predefined parameter sets 
 
 ################################################################################
 ### version 3.1.0.2  

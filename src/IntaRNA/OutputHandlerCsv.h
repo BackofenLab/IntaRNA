@@ -231,6 +231,17 @@ public:
 	needsZall( const ColTypeList & colTypes, const std::string & colSep = ";" );
 
 	/**
+	 * Checks whether or not interaction base pairs are needed to generate all colTypes
+	 * @param colTypes the list of column types to consider
+	 * @param colSep the column separator to be used
+	 * @return true if one of the colTypes requires Zall computation;
+	 *         false otherwise.
+	 */
+	static
+	bool
+	needBPs( const ColTypeList & colTypes, const std::string & colSep = ";" );
+
+	/**
 	 * Generates the header line for a given list of columns
 	 * @param colTypes the list of column types to consider
 	 * @param colSep the column separator to be used
@@ -359,6 +370,26 @@ needsZall( const ColTypeList & colTypes, const std::string & colSep )
 		case Eall:
 		case Zall:
 		case P_E:
+			return true;
+		}
+	}
+	return false;
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+OutputHandlerCsv::
+needBPs( const ColTypeList & colTypes, const std::string & colSep )
+{
+	for (auto it = colTypes.begin(); it != colTypes.end(); it++ ) {
+		// check if type requires Zall computation
+		switch ( *it ) {
+		case hybridDB:
+		case hybridDBfull:
+		case hybridDP:
+		case hybridDPfull:
 			return true;
 		}
 	}
