@@ -49,12 +49,14 @@ AccessibilityVrna::AccessibilityVrna(
 	Accessibility( seq, maxLength, accConstraint ),
 	edValues( getSequence().size(), getSequence().size(), 0, getMaxLength() )
 {
-
-	// window-based accessibility computation
-	fillByRNAplfold(vrnaHandler
-			, (plFoldW==0? getSequence().size() : std::min(plFoldW,getSequence().size()))
-			, getAccConstraint().getMaxBpSpan()
-			);
+	// if sequence shows minimal length
+	if (seq.size() > 4) {
+		// window-based accessibility computation
+		fillByRNAplfold(vrnaHandler
+				, (plFoldW==0? getSequence().size() : std::min(plFoldW,getSequence().size()))
+				, getAccConstraint().getMaxBpSpan()
+				);
+	}
 
 }
 
