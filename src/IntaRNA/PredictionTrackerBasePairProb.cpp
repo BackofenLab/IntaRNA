@@ -59,7 +59,6 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 	size_t n1 = energy.getAccessibility1().getMaxLength();
 	size_t n2 = energy.getAccessibility2().getMaxLength();
 
-	LOG(DEBUG) << getHybridZ(3, 7, 6, 10, predictor);
 	Zall = predictor->getZall();
 
 	// compute missing Z values in case of a seed based prediction

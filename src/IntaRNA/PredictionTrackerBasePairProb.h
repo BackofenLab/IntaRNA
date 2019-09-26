@@ -285,13 +285,16 @@ protected:
 		/drawgrid{\n\
 		  gsave\n\
 		  0.5 dup translate\n\
-		  0.01 setlinewidth\n\
 		  len log 0.9 sub cvi 10 exch exp %% grid spacing\n\
-		  dup 1 gt {\n\
-		     dup dup 20 div dup 2 array astore exch 40 div setdash\n\
-		  } { [0.3 0.7] 0.15 setdash } ifelse\n\
 		  0 exch len {\n\
-		     dup dup\n\
+		     dup\n\
+				 dup cvi 10 mod 0 eq {\n\
+				   0.01 setlinewidth\n\
+					 [1 0] 0 setdash\n\
+				 } {\n\
+				   0.01 setlinewidth\n\
+					 [0.3 0.7] 0.15 setdash\n\
+				 } ifelse\n\
 		     0 moveto\n\
 		     len2 lineto %% vertical\n\
 		     stroke\n\
@@ -300,6 +303,13 @@ protected:
 		  len log 0.9 sub cvi 10 exch exp %% grid spacing\n\
 		  0 exch len2 {\n\
 		     dup\n\
+				 dup cvi 10 mod 0 eq {\n\
+				   0.01 setlinewidth\n\
+					 [1 0] 0 setdash\n\
+				 } {\n\
+				   0.01 setlinewidth\n\
+					 [0.3 0.7] 0.15 setdash\n\
+				 } ifelse\n\
 		     len2 exch sub 0 exch moveto\n\
 		     len exch len2 exch sub lineto %% horizontal\n\
 		     stroke\n\
