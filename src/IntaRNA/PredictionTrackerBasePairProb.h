@@ -195,14 +195,6 @@ public:
 	               , plist *pl, const char *comment
 								 , Interaction::Boundary interactionBoundary );
 
-	/**
-	 * Returns the Zall adjusted for seed-based predictions
-   *
-   * @return Zall
-	 */
-	Z_type
-	getZall();
-
 protected:
 
 	//! energy handler used for predictions
@@ -232,9 +224,6 @@ protected:
 	 }
 	};
 	std::unordered_map<Interaction::BasePair, std::vector<Interaction::BasePair>, key_hash> leftIndex;
-
-	//! Zall adjusted for seed based predictions (needs to be precomputed)
-	Z_type Zall;
 
 	//! postscript template for dotplots
 	const char* dotplotTemplate =

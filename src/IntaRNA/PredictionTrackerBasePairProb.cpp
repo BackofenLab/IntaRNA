@@ -59,8 +59,6 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 	size_t n1 = energy.getAccessibility1().getMaxLength();
 	size_t n2 = energy.getAccessibility2().getMaxLength();
 
-	Zall = predictor->getZall();
-
 	// compute missing Z values in case of a seed based prediction
 	if (seedHandler != NULL) {
 		// loop over window lengths
@@ -92,7 +90,7 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 		for (size_t i2 = 0; i2 < s2-n2+1; i2++) {
 			if (!Z_equal(getHybridZ(i1, i1 + n1 - 1, i2, i2 + n2 - 1, predictor), 0)) {
 				Interaction::Boundary key(i1, i1 + n1 -1, i2, i2 + n2 - 1);
-				structureProbs[key] = ( getHybridZ(i1, i1 + n1 - 1, i2, i2 + n2 - 1, predictor) * energy.getBoltzmannWeight(energy.getE(i1,i2,i1+n1-1,i2+n2-1, E_type(0))) ) / Zall;
+				structureProbs[key] = ( getHybridZ(i1, i1 + n1 - 1, i2, i2 + n2 - 1, predictor) * energy.getBoltzmannWeight(energy.getE(i1,i2,i1+n1-1,i2+n2-1, E_type(0))) ) / predictor->getZall();
 			}
 		}
 	}
@@ -162,7 +160,7 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 					// store structure probability
 					if (!Z_equal(prob, Z_type(0))) {
 						Interaction::Boundary key(i1, j1, i2, j2);
-	 					structureProbs[key] = (1 / Zall) * prob;
+	 					structureProbs[key] = (1 / predictor->getZall()) * prob;
 					}
 
 				} // i2
@@ -510,16 +508,6 @@ updateHybridZ( const size_t i1, const size_t j1
 {
 	Interaction::Boundary key(i1,j1,i2,j2);
 	Z_partition[key] = partZ;
-	Zall += partZ;
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-Z_type
-PredictionTrackerBasePairProb::
-getZall()
-{
-	return Zall;
 }
 
 ////////////////////////////////////////////////////////////////////////////
