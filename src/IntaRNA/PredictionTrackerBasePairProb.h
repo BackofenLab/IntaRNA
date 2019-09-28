@@ -134,6 +134,15 @@ public:
 											, SeedHandler* seedHandler );
 
 	/**
+	 * Access to Z_partition
+	 * @param predictor the predictor providing the probability information
+	 *
+	 * @return Z_partition
+	 */
+	std::unordered_map<Interaction::Boundary, Z_type, Interaction::Boundary::Hash, Interaction::Boundary::Equal>
+	getZPartition( PredictorMfeEns *predictor );
+
+	/**
 	 * Access to the current partition function covering
 	 * the interaction at region (i1, j1, i2, j2).
 	 * @param i1 region index

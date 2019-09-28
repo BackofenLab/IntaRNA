@@ -39,6 +39,14 @@ public:
 	virtual ~PredictorMfeEns();
 
 	/**
+	 * Access to Z_partition
+	 *
+	 * @return Z_partition
+	 */
+	std::unordered_map<Interaction::Boundary, Z_type, Interaction::Boundary::Hash, Interaction::Boundary::Equal>
+	getZPartition();
+
+	/**
 	 * Access to the current partition function covering
 	 * the interaction (i1, j1, i2, j2).
 	 *

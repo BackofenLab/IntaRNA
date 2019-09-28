@@ -41,7 +41,6 @@ TEST_CASE( "PredictionTrackerBasePairProb", "[PredictionTrackerBasePairProb]" ) 
 
 		predictor.predict(idx1,idx2);
 
-		REQUIRE(Z_equal(tracker->getBasePairProb(0, 1, 0, 1, &predictor), energy.getBoltzmannWeight(Ekcal_2_E(-2.0)) / predictor.getZall()));
 		REQUIRE(Z_equal(tracker->getBasePairProb(0, 0, 1, 1, &predictor), energy.getBoltzmannWeight(Ekcal_2_E(-1.0)) / predictor.getZall()));
 		REQUIRE(Z_equal(tracker->getBasePairProb(1, 1, 0, 0, &predictor), energy.getBoltzmannWeight(Ekcal_2_E(-1.0)) / predictor.getZall()));
 		REQUIRE(Z_equal(tracker->getBasePairProb(0, 0, 0, 0, &predictor), (energy.getBoltzmannWeight(Ekcal_2_E(-1.0)) + energy.getBoltzmannWeight(Ekcal_2_E(-2.0))) / predictor.getZall()));
@@ -76,7 +75,6 @@ TEST_CASE( "PredictionTrackerBasePairProb", "[PredictionTrackerBasePairProb]" ) 
 		PredictorMfeEns2dSeedExtension predictor(energy, out, tracker, sHM);
 		predictor.predict(idx1,idx2);
 
-		REQUIRE(Z_equal(tracker->getBasePairProb(0, 1, 0, 1, &predictor), 1));
 		REQUIRE(Z_equal(tracker->getBasePairProb(0, 0, 1, 1, &predictor), 0));
 		REQUIRE(Z_equal(tracker->getBasePairProb(1, 1, 0, 0, &predictor), 0));
 		REQUIRE(Z_equal(tracker->getBasePairProb(0, 0, 0, 0, &predictor), 1));
@@ -102,23 +100,10 @@ TEST_CASE( "PredictionTrackerBasePairProb", "[PredictionTrackerBasePairProb]" ) 
 
 		predictor.predict(idx1,idx2);
 
-		REQUIRE(Z_equal(tracker->getBasePairProb(0, 2, 0, 2, &predictor), (energy.getBoltzmannWeight(Ekcal_2_E(-2.0)) + energy.getBoltzmannWeight(Ekcal_2_E(-3.0))) / predictor.getZall()));
-
-		REQUIRE(Z_equal(tracker->getBasePairProb(1, 2, 0, 2, &predictor), energy.getBoltzmannWeight(Ekcal_2_E(-2.0)) / predictor.getZall()));
-		REQUIRE(Z_equal(tracker->getBasePairProb(0, 2, 0, 1, &predictor), energy.getBoltzmannWeight(Ekcal_2_E(-2.0)) / predictor.getZall()));
-		REQUIRE(Z_equal(tracker->getBasePairProb(0, 1, 0, 2, &predictor), energy.getBoltzmannWeight(Ekcal_2_E(-2.0)) / predictor.getZall()));
-		REQUIRE(Z_equal(tracker->getBasePairProb(0, 2, 1, 2, &predictor), energy.getBoltzmannWeight(Ekcal_2_E(-2.0)) / predictor.getZall()));
-
-		REQUIRE(Z_equal(tracker->getBasePairProb(0, 1, 0, 1, &predictor), (energy.getBoltzmannWeight(Ekcal_2_E(-2.0)) + energy.getBoltzmannWeight(Ekcal_2_E(-3.0))) / predictor.getZall()));
-		REQUIRE(Z_equal(tracker->getBasePairProb(1, 2, 1, 2, &predictor), (energy.getBoltzmannWeight(Ekcal_2_E(-2.0)) + energy.getBoltzmannWeight(Ekcal_2_E(-3.0))) / predictor.getZall()));
-
 		REQUIRE(Z_equal(tracker->getBasePairProb(0, 0, 1, 1, &predictor), (energy.getBoltzmannWeight(Ekcal_2_E(-1.0)) + 2 * energy.getBoltzmannWeight(Ekcal_2_E(-2.0))) / predictor.getZall()));
 		REQUIRE(Z_equal(tracker->getBasePairProb(1, 1, 0, 0, &predictor), (energy.getBoltzmannWeight(Ekcal_2_E(-1.0)) + 2 * energy.getBoltzmannWeight(Ekcal_2_E(-2.0))) / predictor.getZall()));
 		REQUIRE(Z_equal(tracker->getBasePairProb(2, 2, 1, 1, &predictor), (energy.getBoltzmannWeight(Ekcal_2_E(-1.0)) + 2 * energy.getBoltzmannWeight(Ekcal_2_E(-2.0))) / predictor.getZall()));
 		REQUIRE(Z_equal(tracker->getBasePairProb(1, 1, 2, 2, &predictor), (energy.getBoltzmannWeight(Ekcal_2_E(-1.0)) + 2 * energy.getBoltzmannWeight(Ekcal_2_E(-2.0))) / predictor.getZall()));
-
-		REQUIRE(Z_equal(tracker->getBasePairProb(1, 2, 0, 1, &predictor), energy.getBoltzmannWeight(Ekcal_2_E(-2.0)) / predictor.getZall()));
-		REQUIRE(Z_equal(tracker->getBasePairProb(0, 1, 1, 2, &predictor), energy.getBoltzmannWeight(Ekcal_2_E(-2.0)) / predictor.getZall()));
 
 		REQUIRE(Z_equal(tracker->getBasePairProb(0, 0, 2, 2, &predictor), energy.getBoltzmannWeight(Ekcal_2_E(-1.0)) / predictor.getZall()));
 		REQUIRE(Z_equal(tracker->getBasePairProb(2, 2, 0, 0, &predictor), energy.getBoltzmannWeight(Ekcal_2_E(-1.0)) / predictor.getZall()));
@@ -156,23 +141,10 @@ TEST_CASE( "PredictionTrackerBasePairProb", "[PredictionTrackerBasePairProb]" ) 
 		PredictorMfeEns2dSeedExtension predictor(energy, out, tracker, sHM);
 		predictor.predict(idx1,idx2);
 
-		REQUIRE(Z_equal(tracker->getBasePairProb(0, 2, 0, 2, &predictor), energy.getBoltzmannWeight(Ekcal_2_E(-3.0)) / predictor.getZall()));
-
-		REQUIRE(Z_equal(tracker->getBasePairProb(1, 2, 0, 2, &predictor), 0));
-		REQUIRE(Z_equal(tracker->getBasePairProb(0, 2, 0, 1, &predictor), 0));
-		REQUIRE(Z_equal(tracker->getBasePairProb(0, 1, 0, 2, &predictor), 0));
-		REQUIRE(Z_equal(tracker->getBasePairProb(0, 2, 1, 2, &predictor), 0));
-
-		REQUIRE(Z_equal(tracker->getBasePairProb(0, 1, 0, 1, &predictor), (energy.getBoltzmannWeight(Ekcal_2_E(-2.0)) + energy.getBoltzmannWeight(Ekcal_2_E(-3.0))) / predictor.getZall()));
-		REQUIRE(Z_equal(tracker->getBasePairProb(1, 2, 1, 2, &predictor), (energy.getBoltzmannWeight(Ekcal_2_E(-2.0)) + energy.getBoltzmannWeight(Ekcal_2_E(-3.0))) / predictor.getZall()));
-
 		REQUIRE(Z_equal(tracker->getBasePairProb(0, 0, 1, 1, &predictor), 0));
 		REQUIRE(Z_equal(tracker->getBasePairProb(1, 1, 0, 0, &predictor), 0));
 		REQUIRE(Z_equal(tracker->getBasePairProb(2, 2, 1, 1, &predictor), 0));
 		REQUIRE(Z_equal(tracker->getBasePairProb(1, 1, 2, 2, &predictor), 0));
-
-		REQUIRE(Z_equal(tracker->getBasePairProb(1, 2, 0, 1, &predictor), 0));
-		REQUIRE(Z_equal(tracker->getBasePairProb(0, 1, 1, 2, &predictor), 0));
 
 		REQUIRE(Z_equal(tracker->getBasePairProb(0, 0, 2, 2, &predictor), 0));
 		REQUIRE(Z_equal(tracker->getBasePairProb(2, 2, 0, 0, &predictor), 0));

@@ -36,6 +36,14 @@ initZ()
 
 ////////////////////////////////////////////////////////////////////////////
 
+std::unordered_map<Interaction::Boundary, Z_type, Interaction::Boundary::Hash, Interaction::Boundary::Equal>
+PredictorMfeEns::
+getZPartition() {
+	return Z_partition;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
 Z_type
 PredictorMfeEns::
 getHybridZ( const size_t i1, const size_t j1

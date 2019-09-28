@@ -85,88 +85,47 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 		} // w2
 	}
 
-	// calculate initial probabilities (for max window length)
-	for (size_t i1 = 0; i1 < s1-n1+1; i1++) {
-		for (size_t i2 = 0; i2 < s2-n2+1; i2++) {
-			if (!Z_equal(getHybridZ(i1, i1 + n1 - 1, i2, i2 + n2 - 1, predictor), 0)) {
-				Interaction::Boundary key(i1, i1 + n1 -1, i2, i2 + n2 - 1);
-				structureProbs[key] = ( getHybridZ(i1, i1 + n1 - 1, i2, i2 + n2 - 1, predictor) * energy.getBoltzmannWeight(energy.getE(i1,i2,i1+n1-1,i2+n2-1, E_type(0))) ) / predictor->getZall();
+	// build left side index
+	auto partitions = getZPartition(predictor);
+	for (auto it = partitions.begin(); it != partitions.end(); ++it) {
+		size_t i1 = it->first.i1;
+		size_t i2 = it->first.i2;
+		Interaction::BasePair key(i1, i2);
+		if ( leftIndex.find(key) == leftIndex.end() ) {
+			std::vector<Interaction::BasePair> basePairs;
+			for (auto it2 = partitions.begin(); it2 != partitions.end(); ++it2) {
+				if (it2->first.i1 == i1 && it2->first.i2 == i2) {
+					Interaction::BasePair entry(it2->first.j1, it2->first.j2);
+					basePairs.push_back(entry);
+				}
 			}
+			leftIndex[key] = basePairs;
 		}
 	}
 
-	/*
-	// build left side index
-	for (size_t i1 = 0; i1 < s1; i1++) {
-		for (size_t i2 = 0; i2 < s2; i2++) {
-			for (size_t j1 = i1; j1 < s1; j1++) {
-				for (size_t j2 = i2; j2 < s2; j2++) {
-					if (!Z_equal(getHybridZ(i1, j1, i2, j2, predictor), 0)) {
-						Interaction::BasePair key(i1, i2);
-						Interaction::BasePair entry(j1, j2);
-						if ( leftIndex.find(key) == leftIndex.end() ) {
-							std::vector<Interaction::BasePair> vect{ entry };
-							leftIndex[key] = vect;
-						} else {
-							leftIndex[key].push_back(entry);
-						}
+	// compute basepair probabilities
+	for (size_t k1 = 0; k1 < s1; k1++) {
+		for (size_t k2 = 0; k2 < s2; k2++) {
+			// TODO: check loop length
+			Z_type bpProb = 0.0;
+			for (auto it = partitions.begin(); it != partitions.end(); ++it) {
+				if (k1 == it->first.j1 && k2 == it->first.j2) {
+					Z_type extendedProb = 0.0;
+					Interaction::BasePair key(it->first.j1, it->first.j2);
+					for (auto it2 = leftIndex[key].begin(); it2 != leftIndex[key].end(); ++it2) {
+						extendedProb += getHybridZ(k1, it2->first, k2, it2->second, predictor)
+						             * energy.getBoltzmannWeight(energy.getE(it->first.i1, it2->first, it->first.i2, it2->second, E_type(0)));
 					}
-			  }
+					bpProb += getHybridZ(it->first.i1, it->first.j1, it->first.i2, it->first.j2, predictor)
+					       / getHybridZ(it->first.j1, it->first.j1, it->first.j2, it->first.j2, predictor)
+								 * extendedProb;
+				}
 			}
-	  }
-	}
-	*/
 
-	// loop over window lengths
-	for (size_t w1 = n1; w1 > 0; w1--) {
-		for (size_t w2 = n2; w2 > 0; w2--) {
-			// skip initial probabilities
-			if (w1 == n1 && w2 == n2) continue;
-			// shift window over sequence length
-			for (size_t i1 = 0; i1 < s1-w1+1; i1++) {
-				for (size_t i2 = 0; i2 < s2-w2+1; i2++) {
-					size_t j1 = i1 + w1 - 1;
-					size_t j2 = i2 + w2 - 1;
-					Z_type prob = 0.0;
-
-					// LOG(DEBUG) << " -- window " << i1 << ":"  << j1 << ":"  << i2 << ":"  << j2;
-
-					for (size_t l1 = i1+1; l1-- > 0; ) {
-						if (i1-l1 > energy.getMaxInternalLoopSize1()) break;
-						for (size_t l2 = i2+1; l2-- > 0; ) {
-							if (i2-l2 > energy.getMaxInternalLoopSize2()) break;
-							for (size_t r1 = j1; r1 < s1; r1++) {
-								if (r1-j1 > energy.getMaxInternalLoopSize1()) break;
-								for (size_t r2 = j2; r2 < s2; r2++) {
-									if (r2-j2 > energy.getMaxInternalLoopSize2()) break;
-
-									if (!Z_equal(getHybridZ(i1, j1, i2, j2, predictor), Z_type(0))) {
-										Z_type newProb = getHybridZ(l1, i1, l2, i2, predictor)
-										      * getHybridZ(j1, r1, j2, r2, predictor)
-													* energy.getBoltzmannWeight(energy.getE(l1,r1,l2,r2, E_type(0)));
-
-										if (i1 == j1 && i2 == j2) {
-											newProb /= getHybridZ(i1, j1, i2, j2, predictor);
-										}
-
-										prob += newProb;
-									}
-
-								} // r2
-							} // r1
-						} // l2
-					} // l1
-
-					// store structure probability
-					if (!Z_equal(prob, Z_type(0))) {
-						Interaction::Boundary key(i1, j1, i2, j2);
-	 					structureProbs[key] = (1 / predictor->getZall()) * prob;
-					}
-
-				} // i2
-			} // i1
-		} // w2
-	} // w1
+			Interaction::Boundary probKey(k1, k1, k2, k2);
+			structureProbs[probKey] = (1 / predictor->getZall()) * bpProb;
+		} // k2
+	} // k1
 
 	// create plist
 	struct vrna_elem_prob_s plist[s1*s2+1];
@@ -174,8 +133,17 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 	Z_type maxZ = 0.0;
 	Interaction::Boundary interactionBoundary;
 
-	for (auto it = structureProbs.begin(); it != structureProbs.end(); ++it)
-	{
+	// search best interaction boundary
+  for (auto it = partitions.begin(); it != partitions.end(); ++it) {
+		Z_type Zstruct = it->second * energy.getBoltzmannWeight(energy.getE(it->first.i1, it->first.j1, it->first.i2, it->first.j2, E_type(0)));
+		if (Zstruct > maxZ) {
+			maxZ = Zstruct;
+			interactionBoundary = it->first;
+		}
+	}
+
+	// build plist
+	for (auto it = structureProbs.begin(); it != structureProbs.end(); ++it) {
 		LOG(DEBUG) << "Z - prob: " << it->first.i1 << ":" << it->first.j1 << ":" << it->first.i2 << ":" << it->first.j2 << " - " << getHybridZ(it->first.i1, it->first.j1, it->first.i2, it->first.j2, predictor) << " = " << it->second;
 		if (it->first.i1 == it->first.j1 && it->first.i2 == it->first.j2 && it->second > probabilityThreshold) {
 			plist[i].i = it->first.i1 + 1;
@@ -183,11 +151,6 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 			plist[i].p = it->second;
 			plist[i].type = 0; // base-pair prob
 			i++;
-		}
-		Z_type Zstruct = getHybridZ(it->first.i1, it->first.j1, it->first.i2, it->first.j2, predictor) * energy.getBoltzmannWeight(energy.getE(it->first.i1, it->first.j1, it->first.i2, it->first.j2, E_type(0)));;
-		if (Zstruct > maxZ) {
-			maxZ = Zstruct;
-			interactionBoundary = it->first;
 		}
 	}
 
@@ -460,6 +423,14 @@ getPartialSeedEnergy( const size_t si1, const size_t si2
 	}
 
 	return partE;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+std::unordered_map<Interaction::Boundary, Z_type, Interaction::Boundary::Hash, Interaction::Boundary::Equal>
+PredictionTrackerBasePairProb::
+getZPartition( PredictorMfeEns *predictor ) {
+	return predictor->getZPartition();
 }
 
 ////////////////////////////////////////////////////////////////////////////
