@@ -55,7 +55,7 @@ TEST_CASE( "PredictionTrackerBasePairProb", "[PredictionTrackerBasePairProb]" ) 
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		OutputConstraint outC(1,OutputConstraint::OVERLAP_SEQ2,0,100);
+		OutputConstraint outC(1,OutputConstraint::OVERLAP_SEQ2,0,10000,0,0,0,1,1);
 		OutputHandlerInteractionList out(outC, 1);
 
 		IndexRange idx1(0,r1.lastPos);
@@ -70,9 +70,8 @@ TEST_CASE( "PredictionTrackerBasePairProb", "[PredictionTrackerBasePairProb]" ) 
 				, ""
 				, false, false
 				);
-		SeedHandlerMfe *sHM = new SeedHandlerMfe(energy, sC);
 
-		PredictorMfeEns2dSeedExtension predictor(energy, out, tracker, sHM);
+		PredictorMfeEns2dSeedExtension predictor(energy, out, tracker, new SeedHandlerMfe(energy, sC));
 		predictor.predict(idx1,idx2);
 
 		REQUIRE(Z_equal(tracker->getBasePairProb(0, 0, 1, 1, &predictor), 0));
@@ -121,7 +120,7 @@ TEST_CASE( "PredictionTrackerBasePairProb", "[PredictionTrackerBasePairProb]" ) 
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		OutputConstraint outC(1,OutputConstraint::OVERLAP_SEQ2,0,100);
+		OutputConstraint outC(1,OutputConstraint::OVERLAP_SEQ2,0,10000,0,0,0,1,1);
 		OutputHandlerInteractionList out(outC, 1);
 
 		IndexRange idx1(0,r1.lastPos);
@@ -136,9 +135,8 @@ TEST_CASE( "PredictionTrackerBasePairProb", "[PredictionTrackerBasePairProb]" ) 
 				, ""
 				, false, false
 				);
-		SeedHandlerMfe *sHM = new SeedHandlerMfe(energy, sC);
 
-		PredictorMfeEns2dSeedExtension predictor(energy, out, tracker, sHM);
+		PredictorMfeEns2dSeedExtension predictor(energy, out, tracker, new SeedHandlerMfe(energy, sC));
 		predictor.predict(idx1,idx2);
 
 		REQUIRE(Z_equal(tracker->getBasePairProb(0, 0, 1, 1, &predictor), 0));
@@ -149,9 +147,9 @@ TEST_CASE( "PredictionTrackerBasePairProb", "[PredictionTrackerBasePairProb]" ) 
 		REQUIRE(Z_equal(tracker->getBasePairProb(0, 0, 2, 2, &predictor), 0));
 		REQUIRE(Z_equal(tracker->getBasePairProb(2, 2, 0, 0, &predictor), 0));
 
-		REQUIRE(Z_equal(tracker->getBasePairProb(0, 0, 0, 0, &predictor), (energy.getBoltzmannWeight(Ekcal_2_E(-1.0)) + energy.getBoltzmannWeight(Ekcal_2_E(-2.0)) + energy.getBoltzmannWeight(Ekcal_2_E(-3.0))) / predictor.getZall()));
-		REQUIRE(Z_equal(tracker->getBasePairProb(2, 2, 2, 2, &predictor), (energy.getBoltzmannWeight(Ekcal_2_E(-1.0)) + energy.getBoltzmannWeight(Ekcal_2_E(-2.0)) + energy.getBoltzmannWeight(Ekcal_2_E(-3.0))) / predictor.getZall()));
-		REQUIRE(Z_equal(tracker->getBasePairProb(1, 1, 1, 1, &predictor), (energy.getBoltzmannWeight(Ekcal_2_E(-1.0)) + energy.getBoltzmannWeight(Ekcal_2_E(-2.0)) + energy.getBoltzmannWeight(Ekcal_2_E(-3.0))) / predictor.getZall()));
+		REQUIRE(Z_equal(tracker->getBasePairProb(0, 0, 0, 0, &predictor), 1));
+		REQUIRE(Z_equal(tracker->getBasePairProb(2, 2, 2, 2, &predictor), 1));
+		REQUIRE(Z_equal(tracker->getBasePairProb(1, 1, 1, 1, &predictor), 1));
 	}
 
 	SECTION("base pair probs - case 3") {

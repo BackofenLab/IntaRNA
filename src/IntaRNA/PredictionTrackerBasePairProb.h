@@ -204,6 +204,18 @@ public:
 	               , plist *pl, const char *comment
 								 , Interaction::Boundary interactionBoundary );
 
+	/**
+	 * Returns true if given basepair is part of a seed
+	 * @param i1 basepair index
+	 * @param i2 basepair index
+	 * @param seedHandler the seedHandler of the predictor
+	 *
+	 * @return true if basepair part of seed
+	 */
+	bool
+	isSeedBp( const size_t i1, const size_t i2
+	        , SeedHandler* seedHandler );
+
 protected:
 
 	//! energy handler used for predictions
