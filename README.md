@@ -95,6 +95,9 @@ The following topics are covered by this documentation:
     - [IntaRNAhelix - helix-based predictions](#IntaRNAhelix)
     - [IntaRNAexact - exact predictions like RNAup](#IntaRNAexact)
     - [IntaRNAduplex - hybrid-only optimization like RNAduplex](#IntaRNAduplex)
+    - [IntaRNAsTar - optimized for sRNA-target prediction](#IntaRNAsTar)
+    - [IntaRNAseed - identifys and reports seed interactions only](#IntaRNAseed)
+    - [IntaRNAens - ensemble-based prediction and partition function computation](#IntaRNAens)
 - [How to constrain predicted interactions](#constraintSetup)
   - [Interaction restrictions](#interConstr)
   - [Seed constraints](#seed)
@@ -849,8 +852,8 @@ Both personalities make use of the slower `--model=S`
 [prediction strategy](#interactionModel-ssUnconstraintMfe) first
 introduced for IntaRNA version 1.0.
 
-Note, since IntaRNA v1.* used the old `Turner99` energy parameters, you also
-have to provide the respective [energy file](#energy) when using *IntaRNA1*.
+Note, IntaRNA v1.* used the old `Turner99` energy parameters, such that the 
+`--energyVRNA=Turner99` [energy set](#energy) is preset, when using *IntaRNA1*.
 
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
@@ -874,7 +877,7 @@ In contrast to RNAup, it also
 
 - enforces [seed constraints](#seed),
 - uses a much faster [seed-extension-based computation model](#predModel),
-- allows longer interaction length (RNAup restricts ot length 25), and
+- allows longer interaction length, and
 - enables much more flexible output options.
 
 If needed, you can disables these features.
