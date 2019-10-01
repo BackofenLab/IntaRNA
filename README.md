@@ -1636,9 +1636,10 @@ targeted file/stream name:
 - `qAcc:`/`tAcc:` the [query/target's ED accessibility values](#accessibility) (RNAplfold-like format), respectively
 - `qPu:`/`tPu:` the [query/target's unpaired probabilities](#accessibility) (RNAplfold format; rounded!!), respectively
 
-Note, for *multiple sequences* in FASTA input, the provided file names
-are suffixed with `-q#t#` (where `#` denotes the according sequence number
-within the input where indexing starts with 1 or the values set via `--qIdxPos0` and `--tIdxPos0`).
+Note, for *multiple sequences* in FASTA input, the provided file names for pairwise
+output are suffixed with `-q#t#` while single-sequence profiles are 
+suffixed with `-s#` (where `#` denotes the according sequence number
+within the input where numbering starts with 1).
 
 Note further, `qPu:`|`tPu:` will report unpaired probability values based on rounded accessibility (ED) values.
 Thus, these values will most likely differ from values eg. produced by RNAplfold.
