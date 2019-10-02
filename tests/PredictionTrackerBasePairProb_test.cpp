@@ -41,10 +41,13 @@ TEST_CASE( "PredictionTrackerBasePairProb", "[PredictionTrackerBasePairProb]" ) 
 
 		predictor.predict(idx1,idx2);
 
-		REQUIRE(Z_equal(tracker->getBasePairProb(0, 0, 1, 1, &predictor), energy.getBoltzmannWeight(Ekcal_2_E(-1.0)) / predictor.getZall()));
-		REQUIRE(Z_equal(tracker->getBasePairProb(1, 1, 0, 0, &predictor), energy.getBoltzmannWeight(Ekcal_2_E(-1.0)) / predictor.getZall()));
-		REQUIRE(Z_equal(tracker->getBasePairProb(0, 0, 0, 0, &predictor), (energy.getBoltzmannWeight(Ekcal_2_E(-1.0)) + energy.getBoltzmannWeight(Ekcal_2_E(-2.0))) / predictor.getZall()));
-		REQUIRE(Z_equal(tracker->getBasePairProb(1, 1, 1, 1, &predictor), (energy.getBoltzmannWeight(Ekcal_2_E(-1.0)) + energy.getBoltzmannWeight(Ekcal_2_E(-2.0))) / predictor.getZall()));
+		const Z_type wBP = energy.getBoltzmannWeight(Ekcal_2_E(energy.getE_basePair()));
+		const Z_type wBP2 = energy.getBoltzmannWeight(Ekcal_2_E(2*energy.getE_basePair()));
+
+		REQUIRE(Z_equal(tracker->getBasePairProb(0, 0, 1, 1, &predictor), wBP / predictor.getZall()));
+		REQUIRE(Z_equal(tracker->getBasePairProb(1, 1, 0, 0, &predictor), wBP / predictor.getZall()));
+		REQUIRE(Z_equal(tracker->getBasePairProb(0, 0, 0, 0, &predictor), (wBP + wBP2) / predictor.getZall()));
+		REQUIRE(Z_equal(tracker->getBasePairProb(1, 1, 1, 1, &predictor), (wBP + wBP2) / predictor.getZall()));
 	}
 
 	SECTION("base pair probs - case 1 seed") {
@@ -55,7 +58,7 @@ TEST_CASE( "PredictionTrackerBasePairProb", "[PredictionTrackerBasePairProb]" ) 
 		ReverseAccessibility racc(acc2);
 		InteractionEnergyBasePair energy(acc1, racc);
 
-		OutputConstraint outC(1,OutputConstraint::OVERLAP_SEQ2,0,10000,0,0,0,1,1);
+		OutputConstraint outC(1,OutputConstraint::OVERLAP_SEQ2,0,10000,0,0,0,true,false);
 		OutputHandlerInteractionList out(outC, 1);
 
 		IndexRange idx1(0,r1.lastPos);
@@ -65,8 +68,8 @@ TEST_CASE( "PredictionTrackerBasePairProb", "[PredictionTrackerBasePairProb]" ) 
 		SeedConstraint sC(2,0,0,0,0
 				, AccessibilityDisabled::ED_UPPER_BOUND
 				, 0
-				, IndexRangeList("")
-				, IndexRangeList("")
+				, idx1
+				, idx2
 				, ""
 				, false, false
 				);
