@@ -141,9 +141,8 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 		}
 
 		if (!Z_equal(getHybridZ(it->first.j1, it->first.j1, it->first.j2, it->first.j2, predictor), 0)) {
-			bpProb += getHybridZ(it->first.i1, it->first.j1, it->first.i2, it->first.j2, predictor)
-			       / getHybridZ(it->first.j1, it->first.j1, it->first.j2, it->first.j2, predictor)
-						 * extendedProb;
+			bpProb += it->second * extendedProb
+						/ getHybridZ(it->first.j1, it->first.j1, it->first.j2, it->first.j2, predictor);
 		}
 
 		Interaction::Boundary probKey(it->first.j1, it->first.j1, it->first.j2, it->first.j2);
