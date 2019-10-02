@@ -219,6 +219,7 @@ protected:
 	const Z_type probabilityThreshold;
 
 	//! map storing structure probabilities
+	// TODO replace with 2D-hash
 	PredictorMfeEns::Site2Z_hash structureProbs;
 
 	//! map storing missing Z partitions for a given interaction

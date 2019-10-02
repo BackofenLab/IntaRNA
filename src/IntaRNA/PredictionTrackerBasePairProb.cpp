@@ -94,7 +94,7 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 	}
 
 
-	// build left side index
+	// build left side index of all true
 	// TODO : iterate o
 	for (auto it = Z_partition.begin(); it != Z_partition.end(); ++it) {
 		size_t i1 = it->first.i1;
@@ -103,7 +103,9 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 		if ( leftIndex.find(key) == leftIndex.end() ) {
 			std::vector<Interaction::BasePair> basePairs;
 			for (auto it2 = Z_partition.begin(); it2 != Z_partition.end(); ++it2) {
-				if (it2->first.i1 == i1 && it2->first.i2 == i2) {
+				if (it2->first.i1 == i1 && it2->first.i2 == i2
+					&& it2->first.j1 != i1 && it2->first.j2 != i2)
+				{
 					Interaction::BasePair entry(it2->first.j1, it2->first.j2);
 					basePairs.push_back(entry);
 				}
@@ -130,8 +132,9 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 
 	// TODO iterate over both
 	for (auto it = Z_partition.begin(); it != Z_partition.end(); ++it) {
+		// full Z of this site only
+		Z_type bpProb = it->second * energy.getBoltzmannWeight(energy.getE(it->first.i1, it->first.j1, it->first.i2, it->first.j2, E_type(0)));;
 		// TODO : refactor to function + iterate over both Z_partition and Z_partitionMissing
-		Z_type bpProb = 0.0;
 		Z_type extendedProb = 0.0;
 		Interaction::BasePair key(it->first.j1, it->first.j2);
 		for (auto it2 = leftIndex[key].begin(); it2 != leftIndex[key].end(); ++it2) {
@@ -144,11 +147,13 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 			}
 		}
 
-		if (!Z_equal(getHybridZ(it->first.j1, it->first.j1, it->first.j2, it->first.j2, predictor), 0)) {
-			bpProb += it->second * extendedProb
-						/ getHybridZ(it->first.j1, it->first.j1, it->first.j2, it->first.j2, predictor);
+		if (!Z_equal(extendedProb, 0)) {
+			// all right extensions
+			bpProb += it->second * extendedProb / energy.getBoltzmannWeight(energy.getE_init());
 		}
 
+		// final partition function
+		// todo reuse "key" as key
 		Interaction::Boundary probKey(it->first.j1, it->first.j1, it->first.j2, it->first.j2);
 		structureProbs[probKey] += (1 / predictor->getZall()) * bpProb;
 	}
@@ -460,10 +465,6 @@ getHybridZ( const size_t i1, const size_t j1
 					, const size_t i2, const size_t j2
 					, PredictorMfeEns *predictor)
 {
-	if (i1==j1 && i2==j2) {
-		// TODO replace with constant member...
-		return energy.getBoltzmannWeight(energy.getE_init());
-	}
 	Z_type partZ = predictor->getHybridZ(i1, j1, i2, j2);
 	if (Z_equal(partZ, 0)) {
 		Interaction::Boundary key(i1, j1, i2, j2);
