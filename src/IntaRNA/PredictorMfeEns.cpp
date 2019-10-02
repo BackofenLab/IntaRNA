@@ -36,9 +36,9 @@ initZ()
 
 ////////////////////////////////////////////////////////////////////////////
 
-std::unordered_map<Interaction::Boundary, Z_type, Interaction::Boundary::Hash, Interaction::Boundary::Equal>
+const PredictorMfeEns::Site2Z_hash &
 PredictorMfeEns::
-getZPartition() {
+getZPartition() const {
 	return Z_partition;
 }
 

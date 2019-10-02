@@ -25,6 +25,7 @@ namespace IntaRNA {
 class PredictionTrackerBasePairProb: public PredictionTracker
 {
 
+
 public:
 
 	/**
@@ -132,16 +133,6 @@ public:
 		                  , const size_t i1, const size_t j1
 											, const size_t i2, const size_t j2
 											, SeedHandler* seedHandler );
-
-	/**
-	 * Access to Z_partition
-	 * @param predictor the predictor providing the probability information
-	 *
-	 * @return Z_partition
-	 */
-	std::unordered_map<Interaction::Boundary, Z_type, Interaction::Boundary::Hash, Interaction::Boundary::Equal>
-	getZPartition( PredictorMfeEns *predictor );
-
 	/**
 	 * Access to the current partition function covering
 	 * the interaction at region (i1, j1, i2, j2).
@@ -228,10 +219,10 @@ protected:
 	const Z_type probabilityThreshold;
 
 	//! map storing structure probabilities
-	std::unordered_map<Interaction::Boundary, Z_type, Interaction::Boundary::Hash, Interaction::Boundary::Equal> structureProbs;
+	PredictorMfeEns::Site2Z_hash structureProbs;
 
 	//! map storing missing Z partitions for a given interaction
-	std::unordered_map<Interaction::Boundary, Z_type, Interaction::Boundary::Hash, Interaction::Boundary::Equal> Z_partition;
+	PredictorMfeEns::Site2Z_hash Z_partitionMissing;
 
 	//! left side index
 	struct key_hash

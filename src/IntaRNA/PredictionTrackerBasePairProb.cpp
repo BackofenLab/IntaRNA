@@ -60,10 +60,14 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 	size_t n2 = energy.getAccessibility2().getMaxLength();
 
 	// initialize Z_partition
-	Z_partition = getZPartition(predictor);
+	const PredictorMfeEns::Site2Z_hash & Z_partition = predictor->getZPartition();
+	// cleanup additional data
+	Z_partitionMissing.clear();
 
 	// compute missing Z values in case of a seed based prediction
 	if (seedHandler != NULL) {
+		// TODO replace with something iterating over elements of Z_partition
+		// TODO generate list of BP inside seeds : AFTERWARDS: handle seed-BP computation
 		// loop over window lengths
 		for (size_t w1 = n1; w1 > 0; w1--) {
 			for (size_t w2 = n2; w2 > 0; w2--) {
@@ -89,6 +93,7 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 	}
 
 	// build left side index
+	// TODO : iterate o
 	for (auto it = Z_partition.begin(); it != Z_partition.end(); ++it) {
 		size_t i1 = it->first.i1;
 		size_t i2 = it->first.i2;
@@ -119,13 +124,20 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 				}
 			}*/
 
+	// TODO iterate over both
 	for (auto it = Z_partition.begin(); it != Z_partition.end(); ++it) {
+		// TODO : refactor to function + iterate over both Z_partition and Z_partitionMissing
 		Z_type bpProb = 0.0;
 		Z_type extendedProb = 0.0;
 		Interaction::BasePair key(it->first.j1, it->first.j2);
 		for (auto it2 = leftIndex[key].begin(); it2 != leftIndex[key].end(); ++it2) {
-			extendedProb += getHybridZ(it->first.j1, it2->first, it->first.j2, it2->second, predictor)
+			// ensure extension is a valid (present in original Z data)
+			if (Z_partition.find( Interaction::Boundary(it->first.i1, it2->first, it->first.i2, it2->second) != Z_partition.end())) {
+				extendedProb
+						+= getHybridZ(it->first.j1, it2->first, it->first.j2, it2->second, predictor)
+							// ED penalty
 			             * energy.getBoltzmannWeight(energy.getE(it->first.i1, it2->first, it->first.i2, it2->second, E_type(0)));
+			}
 		}
 
 		if (!Z_equal(getHybridZ(it->first.j1, it->first.j1, it->first.j2, it->first.j2, predictor), 0)) {
@@ -439,27 +451,29 @@ getPartialSeedEnergy( const size_t si1, const size_t si2
 
 ////////////////////////////////////////////////////////////////////////////
 
-std::unordered_map<Interaction::Boundary, Z_type, Interaction::Boundary::Hash, Interaction::Boundary::Equal>
-PredictionTrackerBasePairProb::
-getZPartition( PredictorMfeEns *predictor ) {
-	return predictor->getZPartition();
-}
-
-////////////////////////////////////////////////////////////////////////////
-
 Z_type
 PredictionTrackerBasePairProb::
 getHybridZ( const size_t i1, const size_t j1
 					, const size_t i2, const size_t j2
 					, PredictorMfeEns *predictor)
 {
+	if (i1==j1 && i2==j2) {
+		// TODO replace with constant member...
+		return energy.getBoltzmannWeight(energy.getE_init());
+	}
 	Z_type partZ = predictor->getHybridZ(i1, j1, i2, j2);
 	if (Z_equal(partZ, 0)) {
 		Interaction::Boundary key(i1, j1, i2, j2);
-		if ( Z_partition.find(key) == Z_partition.end() ) {
-			partZ = Z_type(0);
+		// check in original data
+		if ( predictor->getZPartition().find(key) != predictor->getZPartition().end() ) {
+			partZ = predictor->getZPartition().find(key)->second;
+		} else
+		// check in additional data
+		if ( Z_partitionMissing.find(key) != Z_partitionMissing.end() ) {
+			partZ = Z_partitionMissing[key];
 		} else {
-			partZ = Z_partition[key];
+			// fall back
+			partZ = Z_type(0);
 		}
 	}
 	return partZ;
@@ -491,7 +505,7 @@ updateHybridZ( const size_t i1, const size_t j1
 {
 	LOG(DEBUG) << "update HybridZ: " << partZ;
 	Interaction::Boundary key(i1,j1,i2,j2);
-	Z_partition[key] = partZ;
+	Z_partitionMissing[key] = partZ;
 }
 
 ////////////////////////////////////////////////////////////////////////////

@@ -20,6 +20,9 @@ namespace IntaRNA {
  */
 class PredictorMfeEns : public PredictorMfe {
 
+public:
+
+	typedef std::unordered_map<Interaction::Boundary, Z_type, Interaction::Boundary::Hash, Interaction::Boundary::Equal> Site2Z_hash;
 
 public:
 
@@ -43,8 +46,8 @@ public:
 	 *
 	 * @return Z_partition
 	 */
-	std::unordered_map<Interaction::Boundary, Z_type, Interaction::Boundary::Hash, Interaction::Boundary::Equal>
-	getZPartition();
+	const Site2Z_hash &
+	getZPartition() const;
 
 	/**
 	 * Access to the current partition function covering
