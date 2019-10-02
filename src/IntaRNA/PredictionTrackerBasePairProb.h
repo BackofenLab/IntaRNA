@@ -226,6 +226,7 @@ protected:
 	PredictorMfeEns::Site2Z_hash Z_partitionMissing;
 
 	//! left side index
+	// todo: shift into Interaction::BasePair
 	struct key_hash
 	{
 	 size_t operator()(const Interaction::BasePair &i ) const
