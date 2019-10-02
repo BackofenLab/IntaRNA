@@ -236,7 +236,9 @@ protected:
 		 return key;
 	 }
 	};
+	// TODO typedef und ggf. std::list verwenden
 	std::unordered_map<Interaction::BasePair, std::vector<Interaction::BasePair>, key_hash> leftIndex;
+	// TODO rightIndex hash
 
 	//! postscript template for dotplots
 	const char* dotplotTemplate =
