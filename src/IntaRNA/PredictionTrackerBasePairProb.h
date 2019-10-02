@@ -25,6 +25,11 @@ namespace IntaRNA {
 class PredictionTrackerBasePairProb: public PredictionTracker
 {
 
+public:
+
+	typedef std::unordered_map<Interaction::BasePair, Z_type, Interaction::BasePairHash> BasePair2Prob_hash;
+
+	typedef std::unordered_map<Interaction::BasePair, std::list<Interaction::BasePair>, Interaction::BasePairHash> BasePairIndex;
 
 public:
 
@@ -151,18 +156,15 @@ public:
 
 	/**
 	 * Access to the base pair probability
-	 * at region (i1, j1, i2, j2).
-	 * @param i1 region index
-	 * @param j1 region index
-	 * @param i2 region index
-	 * @param j2 region index
+	 * of basepair (i1, i2)
+	 * @param i1 index in first sequence
+	 * @param i2 index in second sequence
 	 * @param predictor the predictor providing the probability information
 	 *
-	 * @return the base pair probability at given region
+	 * @return the base pair probability of given basepair
 	 */
 	Z_type
-	getBasePairProb( const size_t i1, const size_t j1
-	               , const size_t i2, const size_t j2
+	getBasePairProb( const size_t i1, const size_t i2
 	               , PredictorMfeEns *predictor);
 
 	/**
@@ -219,27 +221,16 @@ protected:
 	const Z_type probabilityThreshold;
 
 	//! map storing structure probabilities
-	// TODO replace with 2D-hash
-	PredictorMfeEns::Site2Z_hash structureProbs;
+	BasePair2Prob_hash structureProbs;
 
 	//! map storing missing Z partitions for a given interaction
 	PredictorMfeEns::Site2Z_hash Z_partitionMissing;
 
 	//! left side index
-	// todo: shift into Interaction::BasePair
-	struct key_hash
-	{
-	 size_t operator()(const Interaction::BasePair &i ) const
-	 {
-		 size_t key = 0;
-		 boost::hash_combine(key, i.first);
-		 boost::hash_combine(key, i.second);
-		 return key;
-	 }
-	};
-	// TODO typedef und ggf. std::list verwenden
-	std::unordered_map<Interaction::BasePair, std::vector<Interaction::BasePair>, key_hash> leftIndex;
-	// TODO rightIndex hash
+	BasePairIndex leftIndex;
+
+	//! right side index
+	BasePairIndex rightIndex;
 
 	//! postscript template for dotplots
 	const char* dotplotTemplate =

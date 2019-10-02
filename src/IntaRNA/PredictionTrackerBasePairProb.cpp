@@ -95,13 +95,13 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 
 
 	// build left side index of all true
-	// TODO : iterate o
+	// TODO : iterate over both
 	for (auto it = Z_partition.begin(); it != Z_partition.end(); ++it) {
 		size_t i1 = it->first.i1;
 		size_t i2 = it->first.i2;
 		Interaction::BasePair key(i1, i2);
 		if ( leftIndex.find(key) == leftIndex.end() ) {
-			std::vector<Interaction::BasePair> basePairs;
+			std::list<Interaction::BasePair> basePairs;
 			for (auto it2 = Z_partition.begin(); it2 != Z_partition.end(); ++it2) {
 				if (it2->first.i1 == i1 && it2->first.i2 == i2
 					&& it2->first.j1 != i1 && it2->first.j2 != i2)
@@ -116,19 +116,6 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 
 	// TODO iterate all seeds : handle seed-BP computation if needed (update leftindex)
 
-			// check if basepair is part of seed
-			/*if (seedHandler != NULL) {
-				auto seeds = getLeftMostSeedsAtK(k1, k2, seedHandler);
-				if (seeds.size() > 0) {
-					Interaction::Boundary probKey(k1, k1, k2, k2);
-					const size_t sl1 = seedHandler->getSeedLength1(seeds[0].first, seeds[0].second);
-					const size_t sl2 = seedHandler->getSeedLength2(seeds[0].first, seeds[0].second);
-					const size_t sj1 = seeds[0].first+sl1-1;
-					const size_t sj2 = seeds[0].second+sl2-1;
-					structureProbs[probKey] = (getHybridZ(seeds[0].first, sj1, seeds[0].second, sj2, predictor) / predictor->getZall());
-					continue;
-				}
-			}*/
 
 	// TODO iterate over both
 	for (auto it = Z_partition.begin(); it != Z_partition.end(); ++it) {
@@ -139,7 +126,7 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 		Interaction::BasePair key(it->first.j1, it->first.j2);
 		for (auto it2 = leftIndex[key].begin(); it2 != leftIndex[key].end(); ++it2) {
 			// ensure extension is a valid (present in original Z data)
-			if (Z_partition.find( Interaction::Boundary(it->first.i1, it2->first, it->first.i2, it2->second) != Z_partition.end())) {
+			if (Z_partition.find( Interaction::Boundary(it->first.i1, it2->first, it->first.i2, it2->second)) != Z_partition.end()) {
 				extendedProb
 						+= getHybridZ(it->first.j1, it2->first, it->first.j2, it2->second, predictor)
 							// ED penalty
@@ -153,9 +140,7 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 		}
 
 		// final partition function
-		// todo reuse "key" as key
-		Interaction::Boundary probKey(it->first.j1, it->first.j1, it->first.j2, it->first.j2);
-		structureProbs[probKey] += (1 / predictor->getZall()) * bpProb;
+		structureProbs[key] += (1 / predictor->getZall()) * bpProb;
 	}
 
 	// create plist
@@ -175,10 +160,10 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 
 	// build plist
 	for (auto it = structureProbs.begin(); it != structureProbs.end(); ++it) {
-		LOG(DEBUG) << "Z - prob: " << it->first.i1 << ":" << it->first.j1 << ":" << it->first.i2 << ":" << it->first.j2 << " - " << getHybridZ(it->first.i1, it->first.j1, it->first.i2, it->first.j2, predictor) << " = " << it->second;
-		if (it->first.i1 == it->first.j1 && it->first.i2 == it->first.j2 && it->second > probabilityThreshold) {
-			plist[i].i = it->first.i1 + 1;
-			plist[i].j = it->first.i2 + 1;
+		LOG(DEBUG) << "Z - prob: " << it->first.first << ":" << it->first.second << ":" << it->first.first << ":" << it->first.second << " - " << getHybridZ(it->first.first, it->first.second, it->first.first, it->first.second, predictor) << " = " << it->second;
+		if (it->second > probabilityThreshold) {
+			plist[i].i = it->first.first + 1;
+			plist[i].j = it->first.second + 1;
 			plist[i].p = it->second;
 			plist[i].type = 0; // base-pair prob
 			i++;
@@ -487,11 +472,10 @@ getHybridZ( const size_t i1, const size_t j1
 
 Z_type
 PredictionTrackerBasePairProb::
-getBasePairProb( const size_t i1, const size_t j1
-				       , const size_t i2, const size_t j2
+getBasePairProb( const size_t i1, const size_t i2
 					     , PredictorMfeEns *predictor)
 {
-	Interaction::Boundary key(i1, j1, i2, j2);
+	Interaction::BasePair key(i1, i2);
 	if ( structureProbs.find(key) == structureProbs.end() ) {
 		return Z_type(0);
 	} else {

@@ -30,6 +30,18 @@ public:
 	//! type of a base pair index encoding
 	typedef std::pair<size_t,size_t> BasePair;
 
+  //! basepair hash value computation
+	struct BasePairHash
+	{
+	  size_t operator()(const BasePair &i ) const
+	  {
+		  size_t key = 0;
+		  boost::hash_combine(key, i.first);
+		  boost::hash_combine(key, i.second);
+		  return key;
+	  }
+	};
+
 	//! type of a vector encoding base pair indices that are interacting
 	typedef std::vector<BasePair> PairingVec;
 
