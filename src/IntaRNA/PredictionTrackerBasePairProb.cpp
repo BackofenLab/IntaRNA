@@ -177,7 +177,7 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 	struct vrna_elem_prob_s plist[structureProbs.size()+1];
 	size_t i = 0;
 	for (auto it = structureProbs.begin(); it != structureProbs.end(); ++it) {
-		LOG(DEBUG) << "Z - prob: " << it->first.first << ":" << it->first.second << ":" << it->first.first << ":" << it->first.second << " - " << getHybridZ(it->first.first, it->first.second, it->first.first, it->first.second, predictor) << " = " << it->second;
+		LOG(DEBUG) << "prob: " << it->first.first << ":" << it->first.second << ":" << it->first.first << ":" << it->first.second << " = " << it->second;
 		if (it->second > probabilityThreshold) {
 			plist[i].i = it->first.first + 1;
 			plist[i].j = it->first.second + 1;

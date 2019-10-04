@@ -11,7 +11,7 @@
 #include "IntaRNA/PredictorMfeEns2d.h"
 #include "IntaRNA/PredictorMfeEns2dSeedExtension.h"
 #include "IntaRNA/OutputHandlerInteractionList.h"
-#include "IntaRNA/SeedHandlerMfe.h"
+#include "IntaRNA/SeedHandlerNoBulge.h"
 
 #include <stdexcept>
 
@@ -83,7 +83,7 @@ TEST_CASE( "PredictionTrackerBasePairProb", "[PredictionTrackerBasePairProb]" ) 
 				, false, false
 				);
 
-		PredictorMfeEns2dSeedExtension predictor(energy, out, tracker, new SeedHandlerMfe(energy, sC));
+		PredictorMfeEns2dSeedExtension predictor(energy, out, tracker, new SeedHandlerNoBulge(energy, sC));
 		predictor.predict(idx1,idx2);
 
 		REQUIRE(Z_equal(tracker->getBasePairProb(0, 1, &predictor), 0));
@@ -150,7 +150,7 @@ TEST_CASE( "PredictionTrackerBasePairProb", "[PredictionTrackerBasePairProb]" ) 
 				, false, false
 				);
 
-		PredictorMfeEns2dSeedExtension predictor(energy, out, tracker, new SeedHandlerMfe(energy, sC));
+		PredictorMfeEns2dSeedExtension predictor(energy, out, tracker, new SeedHandlerNoBulge(energy, sC));
 		predictor.predict(idx1,idx2);
 
 		REQUIRE(Z_equal(tracker->getBasePairProb(0, 1, &predictor), 0));
