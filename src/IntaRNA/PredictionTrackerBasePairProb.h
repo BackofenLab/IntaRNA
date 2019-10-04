@@ -222,8 +222,7 @@ public:
 	computeBasePairProbs( PredictorMfeEns *predictor
 		                  , const PredictorMfeEns::Site2Z_hash & Z_partition
 		                  , const PredictorMfeEns::Site2Z_hash::const_iterator first
-	                    , const PredictorMfeEns::Site2Z_hash::const_iterator last
-										  , const bool missingZ );
+	                    , const PredictorMfeEns::Site2Z_hash::const_iterator last );
 
 protected:
 

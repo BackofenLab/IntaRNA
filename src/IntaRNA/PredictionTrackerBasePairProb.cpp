@@ -76,7 +76,7 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 		}
 
 		// create left and right index
-		//if (it->first.i1 != it->first.j1 && it->first.i2 != it->first.j2) {
+		if (it->first.i1 != it->first.j1 && it->first.i2 != it->first.j2) {
 			Interaction::BasePair key(it->first.i1, it->first.i2);
 			Interaction::BasePair entry(it->first.j1, it->first.j2);
 			leftIndex[key].push_back(entry);
@@ -87,7 +87,7 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 				Interaction::BasePair entry(it->first.i1, it->first.i2);
 				rightIndex[key].push_back(entry);
 			}
-		//}
+		}
 
 	} // it (Z_partition)
 
@@ -168,9 +168,9 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 
 	// Compute basepair probabilities
 	LOG(DEBUG) << "----------------------------------------------";
-  computeBasePairProbs(predictor, Z_partition, Z_partition.begin(), Z_partition.end(), false);
+  computeBasePairProbs(predictor, Z_partition, Z_partition.begin(), Z_partition.end());
 	LOG(DEBUG) << "----------------------------------------------";
-	computeBasePairProbs(predictor, Z_partition, Z_partitionMissing.begin(), Z_partitionMissing.end(), true);
+	computeBasePairProbs(predictor, Z_partition, Z_partitionMissing.begin(), Z_partitionMissing.end());
 	LOG(DEBUG) << "----------------------------------------------";
 
 	// build plist
@@ -208,43 +208,40 @@ PredictionTrackerBasePairProb::
 computeBasePairProbs( PredictorMfeEns *predictor
 										, const PredictorMfeEns::Site2Z_hash & Z_partition
 										, const PredictorMfeEns::Site2Z_hash::const_iterator first
-										, const PredictorMfeEns::Site2Z_hash::const_iterator last
-									  , const bool missingZ )
+										, const PredictorMfeEns::Site2Z_hash::const_iterator last )
 {
 	for (auto it = first; it != last; ++it) {
 		// full Z of this site only
-		Z_type bpProb = it->second;
-		Z_type extendedProb = 0.0;
+		Z_type bpProb = it->second * energy.getBoltzmannWeight(energy.getE(it->first.i1, it->first.j1, it->first.i2, it->first.j2, E_type(0)));
 		Interaction::BasePair key(it->first.j1, it->first.j2);
 		LOG(DEBUG) << " - key: " << it->first.j1 << ":" << it->first.j2;
+
+		// no extension
+		if (Z_partition.find( Interaction::Boundary(it->first.i1, it->first.j1, it->first.i2, it->first.j2)) != Z_partition.end()) {
+			LOG(DEBUG) << "add " << bpProb;
+			structureProbs[key] += (1 / predictor->getZall()) * bpProb;
+		}
+
+		// extensions
 		for (auto it2 = leftIndex[key].begin(); it2 != leftIndex[key].end(); ++it2) {
 			// ensure extension is valid (present in original Z data)
 			if (Z_partition.find( Interaction::Boundary(it->first.i1, it2->first, it->first.i2, it2->second)) != Z_partition.end()) {
-				extendedProb
-						+= getHybridZ(it->first.j1, it2->first, it->first.j2, it2->second, predictor)
-							// ED penalty
-									 * energy.getBoltzmannWeight(energy.getE(it->first.i1, it2->first, it->first.i2, it2->second, E_type(0)));
+				if (Z_equal(it->second, 0)) {
+					bpProb = getHybridZ(it->first.j1, it2->first, it->first.j2, it2->second, predictor)
+								// ED penalty
+										 * energy.getBoltzmannWeight(energy.getE(it->first.i1, it2->first, it->first.i2, it2->second, E_type(0)));
+				} else {
+					bpProb = it->second * getHybridZ(it->first.j1, it2->first, it->first.j2, it2->second, predictor)
+								// ED penalty
+										 * energy.getBoltzmannWeight(energy.getE(it->first.i1, it2->first, it->first.i2, it2->second, E_type(0)))
+										 / energy.getBoltzmannWeight(energy.getE_init());
+				}
+
+				structureProbs[key] += (1 / predictor->getZall()) * bpProb;
+				LOG(DEBUG) << "add " << bpProb;
 			}
 		}
 
-		LOG(DEBUG) << "normal: " << bpProb;
-		LOG(DEBUG) << "extended: " << extendedProb;
-
-		if (!Z_equal(extendedProb, 0)) {
-			// all right extensions
-			if (Z_equal(bpProb, 0)) {
-				bpProb = extendedProb;
-			} else {
-				bpProb *= extendedProb / energy.getBoltzmannWeight(energy.getE_init());
-			}
-		} else if (missingZ == true) {
-			continue;
-		}
-
-		LOG(DEBUG) << "prob: " << bpProb;
-
-		// final partition function
-		structureProbs[key] += (1 / predictor->getZall()) * bpProb;
 	}
 }
 
