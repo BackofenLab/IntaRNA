@@ -92,6 +92,8 @@ public:
 	void
 	computeMissingZ( const size_t i1, const size_t j1
 								, const size_t i2, const size_t j2
+								, const size_t l1, const size_t r1
+								, const size_t l2, const size_t r2
 								, PredictorMfeEns *predictor
 								, SeedHandler* seedHandler );
 
@@ -208,6 +210,20 @@ public:
 	bool
 	isSeedBp( const size_t i1, const size_t i2
 	        , SeedHandler* seedHandler );
+
+	/**
+	 * Compute basepair probabilities and store in structureProbs
+	 * @param predictor the predictor providing the probability information
+	 * @param Z_partition the initial partition function provided by a predictor
+	 * @param iterator start of partition function
+	 * @param iterator end of partition function
+	 */
+	void
+	computeBasePairProbs( PredictorMfeEns *predictor
+		                  , const PredictorMfeEns::Site2Z_hash & Z_partition
+		                  , const PredictorMfeEns::Site2Z_hash::const_iterator first
+	                    , const PredictorMfeEns::Site2Z_hash::const_iterator last
+										  , const bool missingZ );
 
 protected:
 
