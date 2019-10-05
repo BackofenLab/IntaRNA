@@ -284,7 +284,7 @@ protected:
 		/drawgrid{\n\
 		  gsave\n\
 		  0.5 dup translate\n\
-		  len log 0.9 sub cvi 10 exch exp %% grid spacing\n\
+		  1 %% len log 0.9 sub cvi 10 exch exp %% grid spacing\n\
 		  0 exch len {\n\
 		     dup\n\
 				 dup cvi 10 mod 0 eq {\n\
@@ -299,7 +299,7 @@ protected:
 		     stroke\n\
 		  } for\n\
       \n\
-		  len log 0.9 sub cvi 10 exch exp %% grid spacing\n\
+		  1 %% len log 0.9 sub cvi 10 exch exp %% grid spacing\n\
 		  0 exch len2 {\n\
 		     dup\n\
 				 dup cvi 10 mod 0 eq {\n\
