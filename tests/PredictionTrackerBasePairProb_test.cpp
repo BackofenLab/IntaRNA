@@ -166,7 +166,7 @@ TEST_CASE( "PredictionTrackerBasePairProb", "[PredictionTrackerBasePairProb]" ) 
 		REQUIRE(Z_equal(tracker->getBasePairProb(1, 1, &predictor), 1));
 	}
 
-	SECTION("base pair probs - case 3") {
+	SECTION("base pair probs - case 3 noseed") {
 		RnaSequence r1("r1", "GGCGC");
 		RnaSequence r2("r2", "GGCC");
 		AccessibilityDisabled acc1(r1, 0, NULL);
@@ -188,6 +188,49 @@ TEST_CASE( "PredictionTrackerBasePairProb", "[PredictionTrackerBasePairProb]" ) 
 		std::vector<Z_type> wBP = getBPWeights(energy, 4);
 
 		REQUIRE(Z_equal(tracker->getBasePairProb(1, 1, &predictor), (wBP[1] + 5 * wBP[2] + 5 * wBP[3] + wBP[4]) / predictor.getZall()));
+	}
+
+	SECTION("base pair probs - case 4 seed") {
+		RnaSequence r1("r1", "GGGG");
+		RnaSequence r2("r2", "CCCC");
+		AccessibilityDisabled acc1(r1, 0, NULL);
+		AccessibilityDisabled acc2(r2, 0, NULL);
+		ReverseAccessibility racc(acc2);
+		InteractionEnergyBasePair energy(acc1, racc);
+
+		OutputConstraint outC(1,OutputConstraint::OVERLAP_SEQ2,0,10000,0,0,0,1,1);
+		OutputHandlerInteractionList out(outC, 1);
+
+		IndexRange idx1(0,r1.lastPos);
+		IndexRange idx2(0,r2.lastPos);
+
+		PredictionTrackerBasePairProb * tracker = new PredictionTrackerBasePairProb(energy, "");
+		SeedConstraint sC(3,0,0,0,0
+				, AccessibilityDisabled::ED_UPPER_BOUND
+				, 0
+				, IndexRangeList("")
+				, IndexRangeList("")
+				, ""
+				, false, false
+				);
+
+		PredictorMfeEns2dSeedExtension predictor(energy, out, tracker, new SeedHandlerNoBulge(energy, sC));
+		predictor.predict(idx1,idx2);
+
+		std::vector<Z_type> wBP = getBPWeights(energy, 4);
+
+		REQUIRE(Z_equal(tracker->getBasePairProb(0, 0, &predictor), (wBP[3] + wBP[4]) / predictor.getZall()));
+		REQUIRE(Z_equal(tracker->getBasePairProb(1, 1, &predictor), (2 * wBP[3] + wBP[4]) / predictor.getZall()));
+		REQUIRE(Z_equal(tracker->getBasePairProb(2, 2, &predictor), (2 * wBP[3] + wBP[4]) / predictor.getZall()));
+		REQUIRE(Z_equal(tracker->getBasePairProb(3, 3, &predictor), (wBP[3] + wBP[4]) / predictor.getZall()));
+
+		REQUIRE(Z_equal(tracker->getBasePairProb(0, 1, &predictor), wBP[3] / predictor.getZall()));
+		REQUIRE(Z_equal(tracker->getBasePairProb(1, 2, &predictor), wBP[3] / predictor.getZall()));
+		REQUIRE(Z_equal(tracker->getBasePairProb(2, 3, &predictor), wBP[3] / predictor.getZall()));
+
+		REQUIRE(Z_equal(tracker->getBasePairProb(3, 2, &predictor), wBP[3] / predictor.getZall()));
+		REQUIRE(Z_equal(tracker->getBasePairProb(2, 1, &predictor), wBP[3] / predictor.getZall()));
+		REQUIRE(Z_equal(tracker->getBasePairProb(1, 0, &predictor), wBP[3] / predictor.getZall()));
 	}
 
 }
