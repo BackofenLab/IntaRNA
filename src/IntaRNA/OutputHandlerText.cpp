@@ -251,22 +251,42 @@ add( const Interaction & i )
 	// position information (first and last interacting positions in sequence)
 	// start indexing with 1 instead of 0
 	std::ostringstream pos1, pos1tag;
-	pos1	<<std::setw(flankingLength+3+1) <<std::right <<i.s1->getInOutIndex(i1);
+	std::string i1Str = toString(i.s1->getInOutIndex(i1));
+	std::string j1Str = toString(i.s1->getInOutIndex(j1));
+	if (i.s1->getInOutIndex(0)<0) {
+		// explicit "+" annotation of positive indices in relative indexing
+		if (i.s1->getInOutIndex(i1)>0) {
+			i1Str = "+" + i1Str;
+		}
+		if (i.s1->getInOutIndex(j1)>0) {
+			j1Str = "+" + j1Str;
+		}
+	}
+	pos1	<<std::setw(flankingLength+3+1) <<std::right <<i1Str;
 	pos1tag	<<std::setw(flankingLength+3+1) <<'|';
-	size_t numberSize = numStringLength(i.s1->getInOutIndex(i1));
 	// put right (3') end only if not overlapping with 5' start position (left)
-	if (i1+1 < j1 && numberSize+2 < flankingLength+3+interactionLength) {
+	if (i1+1 < j1 && i1Str.size()+2 < flankingLength+3+interactionLength) {
 		pos1 <<std::setw(interactionLength -2) <<' '
-				<<std::setw(1) <<std::left <<i.s1->getInOutIndex(j1);
+				<<std::setw(1) <<std::left <<j1Str;
 		pos1tag	<<std::setw(interactionLength - 1) <<'|';
 	}
 	std::ostringstream pos2, pos2tag;
-	numberSize = numStringLength(i.s2->getInOutIndex(i2));
+	std::string i2Str = toString(i.s2->getInOutIndex(i2));
+	std::string j2Str = toString(i.s2->getInOutIndex(j2));
+	if (i.s2->getInOutIndex(0)<0) {
+		// explicit "+" annotation of positive indices in relative indexing
+		if (i.s2->getInOutIndex(i2)>0) {
+			i2Str = "+" + i2Str;
+		}
+		if (i.s2->getInOutIndex(j2)>0) {
+			j2Str = "+" + j2Str;
+		}
+	}
 	// put left (3') end only if not overlapping with 5' start position (right)
 	pos2	<<std::setw(flankingLength+3+1);
 	pos2tag	<<std::setw(flankingLength+3+1);
-	if (i2==j2 || numberSize+2 < (flankingLength+3+interactionLength)) {
-		pos2	 <<std::right <<i.s2->getInOutIndex(i2);
+	if (i2==j2 || i2Str.size()+2 < (flankingLength+3+interactionLength)) {
+		pos2	 <<std::right <<i2Str;
 		pos2tag	 <<'|';
 	} else {
 		pos2	 <<' ';
@@ -274,7 +294,7 @@ add( const Interaction & i )
 	}
 	if (i2 > j2) {
 		pos2 <<std::setw(interactionLength - 2) <<' '
-				<<std::setw(1) <<std::left <<i.s2->getInOutIndex(j2);
+				<<std::setw(1) <<std::left <<j2Str;
 		pos2tag	<<std::setw(interactionLength - 1) <<'|';
 	}
 
