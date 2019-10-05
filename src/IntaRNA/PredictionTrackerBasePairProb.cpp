@@ -91,14 +91,7 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 
 	} // it (Z_partition)
 
-	// print indexes
-
-	for (auto it = rightIndex.begin(); it != rightIndex.end(); ++it) {
-		LOG(DEBUG) << "right: (" << it->first.first << ":" << it->first.second << ") " << it->second.size();
-	}
-
-	// ============
-
+	// compute missing Z values for seed-based predictions
 	if (seedHandler != NULL) {
 		// iterate seeds
 		size_t si1 = RnaSequence::lastPos, si2 = RnaSequence::lastPos;
@@ -149,29 +142,10 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 
 	}
 
-	for (auto it = leftIndex.begin(); it != leftIndex.end(); ++it) {
-		for (auto it2 = it->second.begin(); it2 != it->second.end(); ++it2) {
-		  LOG(DEBUG) << "left: (" << it->first.first << ":" << it->first.second << ") " << it2->first << ":" << it2->second;
-		}
-	}
-
-	// print partitions
-
-	for (auto it = Z_partition.begin(); it != Z_partition.end(); ++it) {
-		LOG(DEBUG) << "Z: (" << it->first.i1 << ":" << it->first.j1 << ":" << it->first.i2 << ":" << it->first.j2 << ") " << it->second;
-	}
-	for (auto it = Z_partitionMissing.begin(); it != Z_partitionMissing.end(); ++it) {
-		LOG(DEBUG) << "Zmissing: (" << it->first.i1 << ":" << it->first.j1 << ":" << it->first.i2 << ":" << it->first.j2 << ") " << it->second;
-	}
-
-	// ============
-
 	// Compute basepair probabilities
-	LOG(DEBUG) << "----------------------------------------------";
   computeBasePairProbs(predictor, Z_partition, Z_partition.begin(), Z_partition.end());
 	LOG(DEBUG) << "----------------------------------------------";
 	computeBasePairProbs(predictor, Z_partition, Z_partitionMissing.begin(), Z_partitionMissing.end());
-	LOG(DEBUG) << "----------------------------------------------";
 
 	// build plist
 	struct vrna_elem_prob_s plist[structureProbs.size()+1];
@@ -269,57 +243,9 @@ computeMissingZ( const size_t i1, const size_t j1
 		return;
 	}
 
-	// search for known partition
-	/*bool foundOuter = false;
-	size_t l1, r1, l2, r2;
-	for (l1 = i1+1; !foundOuter && l1-- > 0;) {
-		for (l2 = i2+1; !foundOuter && l2-- > 0;) {
-			for (r1 = j1; !foundOuter && r1 < energy.size1(); r1++) {
-				for (r2 = j2; !foundOuter && r2 < energy.size2(); r2++) {
-					if (!Z_equal(getHybridZ(l1, r1, l2, r2, predictor), 0)) {
-						foundOuter = true;
-					}
-				}
-			}
-		}
-	}
-	r1--;
-	r2--;
-
-	if (!foundOuter) {
-		//throw std::runtime_error("Could not compute missing Z: no outer region found");
-		return;
-	}*/
-
-	LOG(DEBUG) << l1 << ":" << r1 << ":" << l2 << ":" << r2;
-
 	Z_type partZ = 0.0;
 
-	if (isFullSeedinRegion(i1, j1, i2, j2, seedHandler)) {
-		// Full seed in subregion
-
-		// Case 1
-		LOG(DEBUG) << "case1";
-
-		// compute Z(l-i), Z(j-r)
-
-		if (!Z_equal(getHybridZ(l1, i1, l2, i2, predictor), 0)) {
-			partZ = (
-					getHybridZ(l1, r1, l2, r2, predictor)
-				/ getHybridZ(i1, r1, i2, r2, predictor)
-			) * energy.getBoltzmannWeight(energy.getE(l1,i1,l2,i2, E_type(0)));
-		}
-		updateHybridZ(l1, i1, l2, i2, partZ);
-
-		if (!Z_equal(getHybridZ(j1, r1, j2, r2, predictor), 0)) {
-			partZ = (
-					getHybridZ(l1, r1, l2, r2, predictor)
-				/ getHybridZ(l1, j1, l2, j2, predictor)
-			) * energy.getBoltzmannWeight(energy.getE(j1,r1,j2,r2, E_type(0)));
-		}
-		updateHybridZ(j1, r1, j2, r2, partZ);
-
-	} else {
+	if (!isFullSeedinRegion(i1, j1, i2, j2, seedHandler)) {
 
 		// check if full seed outside of subregion (left or right)
 		if (isFullSeedinRegion(l1, i1, l2, i2, seedHandler)) {
@@ -396,9 +322,6 @@ computeMissingZ( const size_t i1, const size_t j1
 			} else {
 				updateHybridZ(k1, j1, k2, j2, partZ);
 			}
-
-			// TODO: if no overlapping seeds
-			// what now? :|
 
 		}
 
@@ -566,26 +489,6 @@ updateHybridZ( const size_t i1, const size_t j1
 	LOG(DEBUG) << "update HybridZ: " << partZ;
 	Interaction::Boundary key(i1,j1,i2,j2);
 	Z_partitionMissing[key] = partZ;
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-bool
-PredictionTrackerBasePairProb::
-isSeedBp( const size_t i1, const size_t i2
-        , SeedHandler* seedHandler )
-{
-	size_t si1 = RnaSequence::lastPos, si2 = RnaSequence::lastPos;
-	size_t l1 = (i1 <= seedHandler->getConstraint().getBasePairs()) ? 0 : i1 - seedHandler->getConstraint().getBasePairs();
-	size_t l2 = (i2 <= seedHandler->getConstraint().getBasePairs()) ? 0 : i2 - seedHandler->getConstraint().getBasePairs();
-	while( seedHandler->updateToNextSeed(si1, si2, l1, i1, l2, i2) ) {
-		// found seed overlapping basepair
-		// check if basepair part of seed
-		if (i1 - si1 == i2 - si2) {
-			return true;
-		}
-	}
-	return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////

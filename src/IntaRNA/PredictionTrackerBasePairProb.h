@@ -200,18 +200,6 @@ public:
 								 , Interaction::Boundary interactionBoundary );
 
 	/**
-	 * Returns true if given basepair is part of a seed
-	 * @param i1 basepair index
-	 * @param i2 basepair index
-	 * @param seedHandler the seedHandler of the predictor
-	 *
-	 * @return true if basepair part of seed
-	 */
-	bool
-	isSeedBp( const size_t i1, const size_t i2
-	        , SeedHandler* seedHandler );
-
-	/**
 	 * Compute basepair probabilities and store in structureProbs
 	 * @param predictor the predictor providing the probability information
 	 * @param Z_partition the initial partition function provided by a predictor
