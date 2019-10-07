@@ -27,6 +27,7 @@ runApiTests_SOURCES =	\
 					AccessibilityConstraint_test.cpp \
 					AccessibilityFromStream_test.cpp \
 					AccessibilityBasePair_test.cpp \
+					AccessibilityVrna_test.cpp \
 					HelixConstraint_test.cpp \
 					HelixHandlerNoBulgeMax_test.cpp \
 					HelixHandlerNoBulgeMaxSeed_test.cpp \
