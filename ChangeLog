@@ -9,6 +9,20 @@
 ################################################################################
 # changes in development version since last release 
 ################################################################################
+  
+191007 Martin Raden
+ * bin/CommandLineParsing :
+   * bugfix accNoLP and accNoGUend checks for energy!=V
+ * IntaRNA/NussinovHandler :
+   * getQ() :
+     * fix: return 1 if (i==j)
+ * IntaRNA/AccessibilityVrna :
+   * construction() : 
+     + bugfix: missing ED initialization for short sequences
+ * tests/AccessibilityBasePair :
+   + short sequence test
+ + tests/AccessibilityVrna  :
+   + short sequence test to validate ED initialization
 
 ################################################################################  
 ################################################################################  

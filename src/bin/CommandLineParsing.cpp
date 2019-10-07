@@ -1284,8 +1284,8 @@ parse(int argc, char** argv)
 			case 'C' : {
 				if (!qAccFile.empty()) LOG(INFO) <<"qAcc = "<<qAcc.val<<" : ignoring --qAccFile";
 				if (energy.val != 'V') {
-					if (!accNoLP) LOG(INFO) <<"ignoring --accNoLP, not supported for energy=="<<energy.val;
-					if (!accNoGUend) LOG(INFO) <<"ignoring --accNoGUend, not supported for energy=="<<energy.val;
+					if (accNoLP) LOG(INFO) <<"ignoring --accNoLP, not supported for energy=="<<energy.val;
+					if (accNoGUend) LOG(INFO) <<"ignoring --accNoGUend, not supported for energy=="<<energy.val;
 				}
 				break;
 			}
@@ -1306,8 +1306,8 @@ parse(int argc, char** argv)
 			case 'C' : {
 				if (!tAccFile.empty()) LOG(INFO) <<"tAcc = "<<tAcc.val<<" : ignoring --tAccFile";
 				if (energy.val != 'V') {
-					if (!accNoLP) LOG(INFO) <<"ignoring --accNoLP, not supported for energy=="<<energy.val;
-					if (!accNoGUend) LOG(INFO) <<"ignoring --accNoGUend, not supported for energy=="<<energy.val;
+					if (accNoLP) LOG(INFO) <<"ignoring --accNoLP, not supported for energy=="<<energy.val;
+					if (accNoGUend) LOG(INFO) <<"ignoring --accNoGUend, not supported for energy=="<<energy.val;
 				}
 				break;
 			}
