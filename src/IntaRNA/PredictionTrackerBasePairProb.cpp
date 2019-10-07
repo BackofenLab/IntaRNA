@@ -144,7 +144,6 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 
 	// Compute basepair probabilities
   computeBasePairProbs(predictor, Z_partition, Z_partition.begin(), Z_partition.end());
-	LOG(DEBUG) << "----------------------------------------------";
 	computeBasePairProbs(predictor, Z_partition, Z_partitionMissing.begin(), Z_partitionMissing.end());
 
 	// build plist
@@ -185,14 +184,11 @@ computeBasePairProbs( PredictorMfeEns *predictor
 										, const PredictorMfeEns::Site2Z_hash::const_iterator last )
 {
 	for (auto it = first; it != last; ++it) {
-		// full Z of this site only
-		Z_type bpProb = it->second * energy.getBoltzmannWeight(energy.getE(it->first.i1, it->first.j1, it->first.i2, it->first.j2, E_type(0)));
+		Z_type bpProb = it->second;
 		Interaction::BasePair key(it->first.j1, it->first.j2);
-		LOG(DEBUG) << " - key: " << it->first.j1 << ":" << it->first.j2;
 
 		// no extension
 		if (Z_partition.find( Interaction::Boundary(it->first.i1, it->first.j1, it->first.i2, it->first.j2)) != Z_partition.end()) {
-			LOG(DEBUG) << "add " << bpProb;
 			structureProbs[key] += (1 / predictor->getZall()) * bpProb;
 		}
 
@@ -212,7 +208,6 @@ computeBasePairProbs( PredictorMfeEns *predictor
 				}
 
 				structureProbs[key] += (1 / predictor->getZall()) * bpProb;
-				LOG(DEBUG) << "add " << bpProb;
 			}
 		}
 
@@ -230,8 +225,7 @@ computeMissingZ( const size_t i1, const size_t j1
 							, PredictorMfeEns *predictor
 							, SeedHandler* seedHandler )
 {
-	LOG(DEBUG) << "compute missing: " << i1 << ":" << j1 << ":" << i2 << ":" << j2;
-
+  // single basepair
 	if (i1 == j1 && i2 == j2) {
 		updateHybridZ(i1, j1, i2, j2, 0);
 		return;
@@ -252,7 +246,6 @@ computeMissingZ( const size_t i1, const size_t j1
 			// full seed left of subregion
 
 			// Case 2.1 (left)
-			LOG(DEBUG) << "case2.1 left";
 
 			partZ = (
 				  getHybridZ(l1, r1, l2, r2, predictor)
@@ -265,7 +258,6 @@ computeMissingZ( const size_t i1, const size_t j1
 			// full seed right of subregion
 
 			// Case 2.1 (right)
-			LOG(DEBUG) << "case2.1 right";
 
 			partZ = (
 				  getHybridZ(l1, r1, l2, r2, predictor)
@@ -277,7 +269,6 @@ computeMissingZ( const size_t i1, const size_t j1
 		} else {
 
 			// Case 2.2
-			LOG(DEBUG) << "case2.2";
 
 			// check side of k
 			size_t k1, k2;
@@ -302,9 +293,6 @@ computeMissingZ( const size_t i1, const size_t j1
 				const size_t sl1 = seedHandler->getSeedLength1(it->first, it->second);
 				const size_t sl2 = seedHandler->getSeedLength2(it->first, it->second);
 				if (kOnRight && E_isNotINF(energy.getE_interLeft(k1, r1, k2, r2))) {
-					LOG(DEBUG) << getHybridZ(l1, it->first+sl1-1, l2, it->second+sl2-1, predictor);
-					LOG(DEBUG) << energy.getBoltzmannWeight(energy.getED1(i1, k1) + energy.getED2(i2, k2));
-					LOG(DEBUG) << energy.getBoltzmannWeight(getPartialSeedEnergy(it->first,it->second,k1,r1,k2,r2,seedHandler));
 					partZ += (
 						getHybridZ(l1, it->first+sl1-1, l2, it->second+sl2-1, predictor)
 						* energy.getBoltzmannWeight(energy.getED1(i1, k1) + energy.getED2(i2, k2))
@@ -326,8 +314,6 @@ computeMissingZ( const size_t i1, const size_t j1
 		}
 
 	}
-
-	LOG(DEBUG) << "Z: " << partZ;
 
 }
 
@@ -411,8 +397,6 @@ getPartialSeedEnergy( const size_t si1, const size_t si2
 	size_t i1old = i1;
 	size_t i2old = i2;
 
-	LOG(DEBUG) << "search seed at: " << si1 << ":" << si2 << ":" << i1 << ":" << j1 << ":" << i2 << ":" << j2;
-
 	for (size_t i = 0; i < interaction.basePairs.size(); i++) {
 		// get index of current base pair
 		size_t s1 = energy.getIndex1(interaction.basePairs[i]);
@@ -420,8 +404,6 @@ getPartialSeedEnergy( const size_t si1, const size_t si2
 
 		if (s1 < i1 || s2 < i2) continue;
 		if (s1 > j1 && s2 > j2) break;
-
-		LOG(DEBUG) << "seed: " << i1old << ":" << s1 << ":" << i2old << ":" << s2;
 
 		if (!E_isINF(energy.getE_interLeft(i1old,s1,i2old,s2))) {
 			// add hybridization energy
@@ -431,8 +413,6 @@ getPartialSeedEnergy( const size_t si1, const size_t si2
 			i2old = s2;
 		}
 	}
-
-	LOG(DEBUG) << "partE: " << energy.getBoltzmannWeight(partE);
 
 	return partE;
 }
@@ -486,7 +466,6 @@ updateHybridZ( const size_t i1, const size_t j1
 						 , const size_t i2, const size_t j2
 						 , const Z_type partZ )
 {
-	LOG(DEBUG) << "update HybridZ: " << partZ;
 	Interaction::Boundary key(i1,j1,i2,j2);
 	Z_partitionMissing[key] = partZ;
 }
