@@ -56,6 +56,13 @@ AccessibilityVrna::AccessibilityVrna(
 				, (plFoldW==0? getSequence().size() : std::min(plFoldW,getSequence().size()))
 				, getAccConstraint().getMaxBpSpan()
 				);
+	} else {
+		// init ED values for short sequences
+		for (auto row = edValues.begin1(); row != edValues.end1(); row++) {
+			for (auto ed = row.begin(); ed != row.end(); ed++) {
+				*ed = 0;
+			}
+		}
 	}
 
 }
