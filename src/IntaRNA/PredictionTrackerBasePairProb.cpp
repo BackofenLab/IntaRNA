@@ -52,7 +52,7 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 
 	// sequence strings
 	const std::string & rna1 = energy.getAccessibility1().getSequence().asString();
-	const std::string & rna2 = energy.getAccessibility2().getSequence().asString();
+	const std::string & reverseRna2 = energy.getAccessibility2().getAccessibilityOrigin().getSequence().asString();
 
 	size_t s1 = energy.size1();
 	size_t s2 = energy.size2();
@@ -77,35 +77,41 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 
 		// create left and right index
 		if (it->first.i1 != it->first.j1 && it->first.i2 != it->first.j2) {
-			Interaction::BasePair key(it->first.i1, it->first.i2);
-			Interaction::BasePair entry(it->first.j1, it->first.j2);
-			leftIndex[key].push_back(entry);
-
+			// encode left/right boundary
+			Interaction::BasePair left(it->first.i1, it->first.i2);
+			Interaction::BasePair right(it->first.j1, it->first.j2);
+			// create left index
+			leftIndex[left].push_back(right);
+			// create right index
 			if (seedHandler != NULL) {
-	      // create right index
-				Interaction::BasePair key(it->first.j1, it->first.j2);
-				Interaction::BasePair entry(it->first.i1, it->first.i2);
-				rightIndex[key].push_back(entry);
+				rightIndex[right].push_back(left);
 			}
 		}
 
 	} // it (Z_partition)
 
 	// compute missing Z values for seed-based predictions
-	if (seedHandler != NULL) {
-		// iterate seeds
+	if (seedHandler != NULL
+			&& ( ! seedHandler->getConstraint().getExplicitSeeds().empty()
+					|| seedHandler->getConstraint().getBasePairs() > 2) )
+	{
+		// iterate all seeds
 		size_t si1 = RnaSequence::lastPos, si2 = RnaSequence::lastPos;
-		while( seedHandler->updateToNextSeed(si1, si2
-				  , 0, s1-seedHandler->getConstraint().getBasePairs()
-			  	, 0, s2-seedHandler->getConstraint().getBasePairs() ) )
+		while( seedHandler->updateToNextSeed(si1, si2) )
 		{
-			// compute missing Z values for seed basepairs
-			// and update left index
-			size_t sl = seedHandler->getConstraint().getBasePairs();
+			// compute missing Z values for seed base pairs
+
+			// TODO trace all seed base pairs
+			// TODO iterate all internal seed base pairs
+			// TODO update if internal seed base pair is not already known as left boundary
+			size_t sl = seedHandler->getConstraint().getBasePairs(); // TODO: BUG: this is not working for seeds with bulge/interior loops !!!
 			Interaction::BasePair seedKey(si1+sl-1, si2+sl-1);
 			for (size_t i = 0; i < sl; i++ ) {
 
+				// TODO given current seed base pair sk1,sk2
+
 				// right extensions
+				// TODO iterate all r=leftIndex[si] to computeMissingZ(si,sk,r) and update leftIndex[sk].push(r)
 				for (auto it = leftIndex[seedKey].begin(); it != leftIndex[seedKey].end(); ++it) {
 					if (si1+i < it->first && si2+i < it->second && Z_equal(getHybridZ(si1+i, it->first, si2+i, it->second, predictor), 0)) {
 						computeMissingZ(si1+i, it->first, si2+i, it->second, si1, it->first, si2, it->second, predictor, seedHandler);
@@ -116,6 +122,7 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 				}
 
 				// left extensions
+				// TODO iterate all l=rightIndex[sj] to computeMissingZ(l,sk,sj) and update rightIndex[sk].push(l)
 				for (auto it = rightIndex[seedKey].begin(); it != rightIndex[seedKey].end(); ++it) {
 					if (si1+i > it->first && si2+i > it->second && Z_equal(getHybridZ(it->first, si1+i, it->second, si2+i, predictor), 0)) {
 						computeMissingZ(it->first, si1+i, it->second, si2+i, it->first, si1+sl-1, it->second, si2+sl-1, predictor, seedHandler);
@@ -125,25 +132,27 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 					}
 				}
 
-				// inside seed
-				for (size_t j = i; j < seedHandler->getConstraint().getBasePairs(); j++ ) {
-					if (Z_equal(getHybridZ(si1+i, si1+j, si2+i, si2+j, predictor), 0)) {
-						computeMissingZ(si1+i, si1+j, si2+i, si2+j, si1, si1+sl-1, si2, si2+sl-1, predictor, seedHandler);
-						if (j != i) {
-							Interaction::BasePair key(si1+i, si2+i);
-							Interaction::BasePair entry(si1+j, si2+j);
-							leftIndex[key].push_back(entry);
-						}
-					}
-				}
+//				TODO OBSOLETE ?!!
+//				// inside seed
+//				for (size_t j = i; j < seedHandler->getConstraint().getBasePairs(); j++ ) {
+//					if (Z_equal(getHybridZ(si1+i, si1+j, si2+i, si2+j, predictor), 0)) {
+//						computeMissingZ(si1+i, si1+j, si2+i, si2+j, si1, si1+sl-1, si2, si2+sl-1, predictor, seedHandler);
+//						if (j != i) {
+//							Interaction::BasePair key(si1+i, si2+i);
+//							Interaction::BasePair entry(si1+j, si2+j);
+//							leftIndex[key].push_back(entry);
+//						}
+//					}
+//				}
 
 			}
 		}
 
 	}
 
-	// Compute basepair probabilities
-  computeBasePairProbs(predictor, Z_partition, Z_partition.begin(), Z_partition.end());
+	// Compute base-pair probabilities outside seeds
+	computeBasePairProbs(predictor, Z_partition, Z_partition.begin(), Z_partition.end());
+	// Compute base-pair probabilities within seeds
 	computeBasePairProbs(predictor, Z_partition, Z_partitionMissing.begin(), Z_partitionMissing.end());
 
 	// build plist
@@ -161,8 +170,6 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 	}
 
 	// create dot plot
-	std::string reverseRna2(rna2);
-	std::reverse(reverseRna2.begin(), reverseRna2.end());
 	char *name = strdup(fileName.c_str());
 	std::string comment =
 	  "Intermolecular base-pair probabilities generated by "
