@@ -642,9 +642,9 @@ protected:
 	bool outNoLP;
 	//! whether or not GU base pairs are allowed at interaction and helix ends
 	bool outNoGUend;
-	//! the CSV column separator
-	static const std::string outCsvColSep;
-	//! the CSV list separator within individual columns
+	//! the column separator to be used for tabular output
+	std::string outSep;
+	//! the list separator within individual columns of tabular output
 	static const std::string outCsvLstSep;
 	//! the CSV column selection
 	std::string outCsvCols;
@@ -872,6 +872,13 @@ protected:
 	 * @param list the list of argument values to validate
 	 */
 	void validate_out(const std::vector<std::string> & list);
+
+	/**
+	 * Validates the tabular column separator argument.
+	 *
+	 * @param sep the argument value to validate
+	 */
+	void validate_outSep(const std::string & sep);
 
 	/**
 	 * Validates the outCsvCols argument.
@@ -1510,6 +1517,27 @@ void CommandLineParsing::validate_outputTarget(
 			return;
 		}
 	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_outSep(const std::string & outSep) {
+
+	// check if empty
+	if ( outSep.empty() ) {
+		LOG(ERROR) <<"no column separator for tabular CSV output defined (empty)";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+		return;
+	}
+
+	// check if distinct from value list separator
+	if ( outSep == outCsvLstSep ) {
+		LOG(ERROR) <<"the selected column separator '"<<outSep<<"' for tabular CSV output equals the value separator used to multi-value output. Please change!";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+		return;
+	}
+
 }
 
 ////////////////////////////////////////////////////////////////////////////

@@ -9,6 +9,23 @@
 ################################################################################
 # changes in development version since last release 
 ################################################################################
+
+# IntaRNA
+- `--outSep` = user-defined column separator for tabular CSV output
+
+################################################################################  
+################################################################################  
+
+191008 Martin Raden
+ * bin/CommandLineParsing :
+   + 'outSep' argument to set column separator for tabular CSV output
+   * outSep applied to PredictionTracker*
+ * IntaRNA/PredictionTracker* : 
+   + explicit output column separator
+ * IntaRNA/OutputHandlerCsv :
+   * needsZall() :
+   * needBPs() :
+     - colSep argument : obsolete
   
 191007 Martin Raden
  * bin/CommandLineParsing :
@@ -23,10 +40,6 @@
    + short sequence test
  + tests/AccessibilityVrna  :
    + short sequence test to validate ED initialization
-
-################################################################################  
-################################################################################  
-
 
 ################################################################################
 ### version 3.1.1 

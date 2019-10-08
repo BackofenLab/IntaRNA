@@ -1,7 +1,7 @@
 
 AC_PREREQ([2.65])
 # 5 argument version only available with aclocal >= 2.64
-AC_INIT([IntaRNA], [3.1.1], [], [intaRNA], [http://www.bioinf.uni-freiburg.de] )
+AC_INIT([IntaRNA], [3.1.2], [], [intaRNA], [http://www.bioinf.uni-freiburg.de] )
 
 # minimal required version of the boost library 
 BOOST_REQUIRED_VERSION=1.50.0
