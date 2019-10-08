@@ -10,7 +10,8 @@ PredictionTrackerProfileSpotProb(
 		const InteractionEnergy & energy
 		, const std::string & seq1streamName
 		, const std::string & seq2streamName
-		, const std::string NA_string
+		, const std::string & NA_string
+		, const std::string & sep
 	)
  :	PredictionTracker()
 	, energy(energy)
@@ -18,10 +19,17 @@ PredictionTrackerProfileSpotProb(
 	, seq1stream(NULL)
 	, seq2stream(NULL)
 	, NA_string(NA_string)
+	, sep(sep)
 	, seq1Z( seq1streamName.empty() ? 0 : energy.size1(), Z_INF ) // init Z_INF
 	, seq2Z( seq2streamName.empty() ? 0 : energy.size2(), Z_INF ) // init Z_INF
 	, overallZ( 0.0 )
 {
+#if INTARNA_IN_DEBUG_MODE
+	// check separator
+	if (sep.empty()) {
+		throw std::runtime_error("PredictionTrackerProfileSpotProb() empty separator provided");
+	}
+#endif
 	// open streams
 	if (!seq1streamName.empty()) {
 		seq1stream = newOutputStream( seq1streamName );
@@ -48,7 +56,8 @@ PredictionTrackerProfileSpotProb(
 		const InteractionEnergy & energy
 		, std::ostream * seq1stream
 		, std::ostream * seq2stream
-		, const std::string NA_string
+		, const std::string & NA_string
+		, const std::string & sep
 	)
  :	PredictionTracker()
 	, energy(energy)
@@ -56,10 +65,17 @@ PredictionTrackerProfileSpotProb(
 	, seq1stream(seq1stream)
 	, seq2stream(seq2stream)
 	, NA_string(NA_string)
+	, sep(sep)
 	, seq1Z( seq1stream==NULL ? 0 : energy.size1(), Z_INF ) // init Z_INF
 	, seq2Z( seq2stream==NULL ? 0 : energy.size2(), Z_INF ) // init Z_INF
 	, overallZ( 0.0 )
 {
+#if INTARNA_IN_DEBUG_MODE
+	// check separator
+	if (sep.empty()) {
+		throw std::runtime_error("PredictionTrackerProfileSpotProb() empty separator provided");
+	}
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -74,7 +90,9 @@ PredictionTrackerProfileSpotProb::
 					, seq1Z.end()
 					, overallZ
 					, energy.getAccessibility1().getSequence()
-					, NA_string );
+					, NA_string
+					, sep
+					);
 	}
 	if (seq2stream != NULL) {
 		writeProfile( *seq2stream
@@ -82,7 +100,9 @@ PredictionTrackerProfileSpotProb::
 					, seq2Z.end()
 					, overallZ
 					, energy.getAccessibility2().getAccessibilityOrigin().getSequence()
-					, NA_string );
+					, NA_string
+					, sep
+					);
 	}
 
 	// clean up if file pointers were created in constructor

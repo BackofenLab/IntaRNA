@@ -40,12 +40,14 @@ public:
 	 *        if empty, no data for seq2 is collected
 	 * @param NA_string the output string representation if a value is not available
 	 *        for profile output
+	 * @param sep the column separator to be used in profile output
 	 */
 	PredictionTrackerProfileSpotProb(
 				const InteractionEnergy & energy
 				, const std::string & seq1streamName
 				, const std::string & seq2streamName
-				, const std::string NA_string = "NA"
+				, const std::string & NA_string = "NA"
+				, const std::string & sep = ";"
 			);
 
 	/**
@@ -60,12 +62,14 @@ public:
 	 *        is to be written to; if NULL, no data for seq2 is collected
 	 * @param NA_string the output string representation if a value is not available
 	 *        for profile output
+	 * @param sep the column separator to be used in profile output
 	 */
 	PredictionTrackerProfileSpotProb(
 				const InteractionEnergy & energy
 				, std::ostream * seq1stream
 				, std::ostream * seq2stream
-				, const std::string NA_string = "NA"
+				, const std::string & NA_string = "NA"
+				, const std::string & sep = ";"
 			);
 
 	/**
@@ -108,6 +112,9 @@ protected:
 	//! the output string representation if a value is not available for profile output
 	const std::string NA_string;
 
+	//! the output string representation of a column separator
+	const std::string sep;
+
 	//! container definition for partition function profile data
 	typedef std::vector<Z_type> ZProfile;
 
@@ -145,6 +152,7 @@ protected:
 	 *           normalization
 	 * @param rna the RNA the data is about
 	 * @param NA_string the string to be used for missing entries
+	 * @param sep the column separator to be used in profile output
 	 */
 	template < typename ZProfileIterator >
 	static
@@ -154,7 +162,9 @@ protected:
 				, const ZProfileIterator & end
 				, const Z_type overallZ
 				, const RnaSequence & rna
-				, const std::string & NA_string );
+				, const std::string & NA_string
+				, const std::string & sep
+				);
 
 
 };
@@ -170,22 +180,24 @@ writeProfile( std::ostream &out
 			, const ZProfileIterator & end
 			, const Z_type overallZ
 			, const RnaSequence & rna
-			, const std::string & NA_string )
+			, const std::string & NA_string
+			, const std::string & sep
+			)
 {
 	// write in CSV-like format (column data)
 
 	const bool noZ = (overallZ==0.0);
 
 	// print header : seq.ID ; spotProb
-	out <<"idx;"<<boost::replace_all_copy(rna.getId(), ";", "_")<<";spotProb" <<'\n';
+	out <<"idx"<<sep<<boost::replace_all_copy(rna.getId(), sep, "_")<<sep<<"spotProb" <<'\n';
 	// print spot probability data
 	size_t i=0;
 	for (ZProfileIterator curZ = begin; curZ!=end; curZ++) {
 		out
 			// out index
-			<<rna.getInOutIndex(i)<<';'
+			<<rna.getInOutIndex(i)<<sep
 			// out nucleotide (index starts with 0)
-			<<rna.asString().at(i)<<';'
+			<<rna.asString().at(i)<<sep
 			;
 		// out infinity replacement if needed
 		if ( noZ || Z_isINF( *curZ ) ) {

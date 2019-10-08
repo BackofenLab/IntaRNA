@@ -18,12 +18,14 @@ PredictionTrackerSpotProb(
 		const InteractionEnergy & energy
 		, const std::string & spotString
 		, const std::string & outStreamName
+		, const std::string & sep
 	)
  :	PredictionTracker()
 	, energy(energy)
 	, outStream(NULL)
 	, deleteOutStream(true)
 	, spots()
+	, sep(sep)
 	, noSpotZ(0.0)
 	, overallZ(0.0)
 {
@@ -31,6 +33,10 @@ PredictionTrackerSpotProb(
 	// check spot encoding via regex
 	if (!boost::regex_match( spotString, regexSpotString, boost::match_perl )) {
 		throw std::runtime_error("PredictionTrackerSpotProb(spots="+spotString+") does not match its encoding regular expression");
+	}
+	// check separator
+	if (sep.empty()) {
+		throw std::runtime_error("PredictionTrackerSpotProb() empty separator provided");
 	}
 #endif
 
@@ -61,12 +67,14 @@ PredictionTrackerSpotProb(
 		const InteractionEnergy & energy
 		, const std::string & spotString
 		, std::ostream & outStream
+		, const std::string & sep
 	)
  :	PredictionTracker()
 	, energy(energy)
 	, outStream(&outStream)
 	, deleteOutStream(false)
 	, spots()
+	, sep(sep)
 	, noSpotZ(0.0)
 	, overallZ(0.0)
 {
@@ -108,10 +116,10 @@ PredictionTrackerSpotProb::
 			<<(rna1.getInOutIndex(0)-1)
 			<<"&"
 			<<(rna2.getInOutIndex(0)-1)
-			<<";"<<(noSpotZ / overallZ)<<'\n';
+			<<sep<<(noSpotZ / overallZ)<<'\n';
 	// probabilities of tracked spots
 	for( Spot & s : spots) {
-		(*outStream) <<rna1.getInOutIndex(s.idx1)<<'&'<<rna2.getInOutIndex(s.idx2)<<';'<<(s.Z/overallZ)<<'\n';
+		(*outStream) <<rna1.getInOutIndex(s.idx1)<<'&'<<rna2.getInOutIndex(s.idx2)<<sep<<(s.Z/overallZ)<<'\n';
 	}
 	outStream->flush();
 
