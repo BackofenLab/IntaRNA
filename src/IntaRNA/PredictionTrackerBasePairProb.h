@@ -183,6 +183,21 @@ public:
 						 	 , const size_t i2, const size_t j2
 							 , const Z_type partZ );
 
+	/**
+	 * Counts the number of non-overlapping seeds in a given region
+	 * @param i1 region index
+	 * @param j1 region index
+	 * @param i2 region index
+	 * @param j2 region index
+	 * @param seedHandler the seedHandler of the predictor
+	 *
+	 * @return number of seeds in region
+	 */
+	size_t
+	countNonOverlappingSeeds( const size_t i1, const size_t j1
+						              , const size_t i2, const size_t j2
+					                , SeedHandler *seedHandler );
+
   /**
 	 * Generates a dotplot of the given base pair probabilities
 	 * @param seq1 first RNA sequence

@@ -262,7 +262,7 @@ TEST_CASE( "PredictionTrackerBasePairProb", "[PredictionTrackerBasePairProb]" ) 
 
 		std::vector<Z_type> wBP = getBPWeights(energy, 5);
 
-		REQUIRE(Z_equal(tracker->getBasePairProb(3, 3, &predictor), (3 * wBP[3] + 8 * wBP[4] + wBP[5]) / predictor.getZall()));
+		REQUIRE(Z_equal(tracker->getBasePairProb(2, 2, &predictor), (3 * wBP[3] + 6 * wBP[4] + wBP[5]) / predictor.getZall()));
 	}
 
 	SECTION("base pair probs - case 6 seed") {
@@ -294,7 +294,7 @@ TEST_CASE( "PredictionTrackerBasePairProb", "[PredictionTrackerBasePairProb]" ) 
 
 		std::vector<Z_type> wBP = getBPWeights(energy, 7);
 
-		REQUIRE(Z_equal(tracker->getBasePairProb(3, 3, &predictor), (3 * wBP[5] + 8 * wBP[6] + wBP[7]) / predictor.getZall()));
+		REQUIRE(Z_equal(tracker->getBasePairProb(3, 3, &predictor), (3 * wBP[5] + 6 * wBP[6] + wBP[7]) / predictor.getZall()));
 	}
 
 }

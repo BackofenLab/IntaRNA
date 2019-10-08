@@ -115,11 +115,6 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 				size_t sk1 = energy.getIndex1(interaction.basePairs[i]);
 				size_t sk2 = energy.getIndex2(interaction.basePairs[i]);
 
-				// TODO update if internal seed base pair is not already known as left boundary
-				/*if (leftIndex.find( Interaction::BasePair(sk1, sk2)) != leftIndex.end()) {
-					continue;
-				}*/
-
 				// no extension
 				if (Z_equal(getHybridZ(sk1, si1+sl1-1, sk2, si2+sl2-1, predictor), 0)) {
 					computeMissingZ(sk1, si1+sl1-1, sk2, si2+sl2-1, si1, si1+sl1-1, si2, si2+sl2-1, predictor, seedHandler);
@@ -129,8 +124,6 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 						leftIndex[key].push_back(entry);
 					}
 				}
-
-				// TODO given current seed base pair sk1,sk2
 
 				// right extensions
 				// iterate all r=leftIndex[si] to computeMissingZ(si,sk,r) and update leftIndex[sk].push(r)
@@ -174,17 +167,6 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 	// Compute base-pair probabilities within seeds
 	computeBasePairProbs(predictor, Z_partitionMissing.begin(), Z_partitionMissing.end());
 
-
-	/*for (auto it = leftIndex.begin(); it != leftIndex.end(); ++it) {
-		for (auto it2 = it->second.begin(); it2 != it->second.end(); ++it2) {
-		  LOG(DEBUG) << it->first.first << ":" << it2->first << ":" << it->first.second << ":" << it2->second;
-		}
-	}*/
-
-	/*for (auto it = Z_partitionMissing.begin(); it != Z_partitionMissing.end(); ++it) {
-	  LOG(DEBUG) << it->first.i1 << ":" << it->first.j1 << ":" << it->first.i2 << ":" << it->first.j2 << "= " << it->second;
-	}*/
-
 	// build plist
 	struct vrna_elem_prob_s plist[structureProbs.size()+1];
 	size_t i = 0;
@@ -222,35 +204,35 @@ computeBasePairProbs( PredictorMfeEns *predictor
 	for (auto it = first; it != last; ++it) {
 		Z_type bpProb = it->second * energy.getBoltzmannWeight(energy.getE(it->first.i1, it->first.j1, it->first.i2, it->first.j2, E_type(0)));
 		Interaction::BasePair key(it->first.j1, it->first.j2);
-		if (it->first.j1 == 2 && it->first.j2 == 2) LOG(DEBUG) << " <- " << it->first.i1 << ":" << it->first.i2;
 
 		// no extension
 		if (predictor->getZPartition().find( Interaction::Boundary(it->first.i1, it->first.j1, it->first.i2, it->first.j2)) != predictor->getZPartition().end()) {
 			structureProbs[key] += (1 / predictor->getZall()) * bpProb;
-			if (it->first.j1 == 2 && it->first.j2 == 2) LOG(DEBUG) << "no ext. " << bpProb;
 		}
 
 		// extensions
 		for (auto it2 = leftIndex[key].begin(); it2 != leftIndex[key].end(); ++it2) {
-			/*if (it2->first <= it->first.j1 || it2->second <= it->first.j2) {
-				continue;
-			}*/
+
 			// ensure extension is valid (present in original Z data)
-			if (it->first.j1 == 2 && it->first.j2 == 2) LOG(DEBUG) << "check ext at: " << it->first.i1 << ":" << it2->first << ":" << it->first.i2 << ":" << it2->second;
 			if (predictor->getZPartition().find( Interaction::Boundary(it->first.i1, it2->first, it->first.i2, it2->second)) != predictor->getZPartition().end()) {
+
+				// exclude wrong extensions of type /|/ given /|
+				if (it2->first - it->first.i1 == it2->second - it->first.i2 &&
+				  !(it2->first - it->first.j1 == it2->second - it->first.j2)) {
+				  continue;
+				}
+
 				if (Z_equal(it->second, 0)) {
 					bpProb = getHybridZ(it->first.j1, it2->first, it->first.j2, it2->second, predictor)
 								// ED penalty
 										 * energy.getBoltzmannWeight(energy.getE(it->first.i1, it2->first, it->first.i2, it2->second, E_type(0)));
 				} else {
-					if (it->first.j1 == 2 && it->first.j2 == 2) LOG(DEBUG) << "hybrid: " << getHybridZ(it->first.j1, it2->first, it->first.j2, it2->second, predictor);
 					bpProb = it->second * getHybridZ(it->first.j1, it2->first, it->first.j2, it2->second, predictor)
 								// ED penalty
 										 * energy.getBoltzmannWeight(energy.getE(it->first.i1, it2->first, it->first.i2, it2->second, E_type(0)))
 										 / energy.getBoltzmannWeight(energy.getE_init());
 				}
 
-				if (it->first.j1 == 2 && it->first.j2 == 2) LOG(DEBUG) << "ext. at " << it2->first << ":" << it2->second << " = " << it->second << " __ "<< bpProb;
 				structureProbs[key] += (1 / predictor->getZall()) * bpProb;
 			}
 		}
@@ -285,24 +267,28 @@ computeMissingZ( const size_t i1, const size_t j1
 			// full seed left of subregion
 
 			// Case 2.1 (left)
+			size_t seedCount = countNonOverlappingSeeds(l1, r1, l2, r2, seedHandler);
 
 			partZ = (
 				  getHybridZ(l1, r1, l2, r2, predictor)
 				/ getHybridZ(l1, i1, l2, i2, predictor)
 			) * energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, E_type(0)))
-			* energy.getBoltzmannWeight(energy.getE_init());
+			* energy.getBoltzmannWeight(energy.getE_init())
+			/ seedCount;
 			updateHybridZ(i1, j1, i2, j2, partZ);
 
 		} else if (isFullSeedinRegion(j1, r1, j2, r2, seedHandler)) {
 			// full seed right of subregion
 
 			// Case 2.1 (right)
+			size_t seedCount = countNonOverlappingSeeds(l1, r1, l2, r2, seedHandler);
 
 			partZ = (
 				  getHybridZ(l1, r1, l2, r2, predictor)
 				/ getHybridZ(j1, r1, j2, r2, predictor)
 			) * energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, E_type(0)))
-			* energy.getBoltzmannWeight(energy.getE_init());
+			* energy.getBoltzmannWeight(energy.getE_init())
+			/ seedCount;
 			updateHybridZ(i1, j1, i2, j2, partZ);
 
 		} else {
@@ -326,36 +312,30 @@ computeMissingZ( const size_t i1, const size_t j1
 			// find leftmost overlapping seeds
 			std::vector< std::pair <size_t, size_t> > overlappingSeeds = getLeftMostSeedsAtK(j1, j2, seedHandler);
 
-			//LOG(DEBUG) << i1 << ":" << j1 << ":" << i2 << ":" << j2 << " outer: " << l1 << ":" << r1 << ":" << l2 << ":" << r2;
-
 			// loop over overlapping seeds
 			for(std::vector< std::pair <size_t, size_t> >::iterator it = overlappingSeeds.begin(); it != overlappingSeeds.end(); ++it) {
 				// calculate missing partition function
 				const size_t sl1 = seedHandler->getSeedLength1(it->first, it->second);
 				const size_t sl2 = seedHandler->getSeedLength2(it->first, it->second);
 				if (kOnRight) {
-					if (it->first < l1 && it->second < l2) {
+					if (it->first <= l1 && it->second <= l2) {
 						// region completely inside seed
-						partZ = energy.getBoltzmannWeight(energy.getE_init()) * energy.getBoltzmannWeight(getPartialSeedEnergy(it->first,it->second,l1,k1,l2,k2,seedHandler));
-						//LOG(DEBUG) << "A: " << partZ;
+						partZ = energy.getBoltzmannWeight(getPartialSeedEnergy(it->first,it->second,l1,k1,l2,k2,seedHandler));
 					} else {
 						partZ += (
 							getHybridZ(l1, it->first+sl1-1, l2, it->second+sl2-1, predictor)
 							* energy.getBoltzmannWeight(energy.getED1(i1, k1) + energy.getED2(i2, k2))
 						) / energy.getBoltzmannWeight(getPartialSeedEnergy(it->first,it->second,k1,it->first+sl1-1,k2,it->second+sl2-1,seedHandler));
-						//LOG(DEBUG) << "B: " << partZ;
 					}
 				} else {
-					if (j1 < it->first+sl1-1 && j2 < it->second+sl2-1) {
+					if (j1 <= it->first+sl1-1 && j2 <= it->second+sl2-1) {
 						// region completely inside seed
-						partZ = energy.getBoltzmannWeight(energy.getE_init()) * energy.getBoltzmannWeight(getPartialSeedEnergy(it->first,it->second,k1,j1,k2,j2,seedHandler));
-						//LOG(DEBUG) << "C: " << partZ;
+						partZ = energy.getBoltzmannWeight(getPartialSeedEnergy(it->first,it->second,k1,j1,k2,j2,seedHandler));
 					} else {
 						partZ += (
 							getHybridZ(it->first, j1, it->second, j2, predictor)
 							* energy.getBoltzmannWeight(energy.getED1(k1, j1) + energy.getED2(k2, j2))
 						) / energy.getBoltzmannWeight(getPartialSeedEnergy(it->first,it->second,it->first,k1,it->second,k2,seedHandler));
-						//LOG(DEBUG) << "D: " << partZ;
 					}
 				}
 	    }
@@ -370,6 +350,47 @@ computeMissingZ( const size_t i1, const size_t j1
 
 	}
 
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+size_t
+PredictionTrackerBasePairProb::
+countNonOverlappingSeeds( const size_t i1, const size_t j1
+				                , const size_t i2, const size_t j2
+				                , SeedHandler *seedHandler )
+{
+	size_t count = 0;
+	std::vector<Interaction::BasePair> seeds;
+	size_t si1 = RnaSequence::lastPos, si2 = RnaSequence::lastPos;
+	while( seedHandler->updateToNextSeed(si1,si2
+			, i1, j1+1-seedHandler->getConstraint().getBasePairs()
+			, i2, j2+1-seedHandler->getConstraint().getBasePairs()) )
+	{
+		const size_t sl1 = seedHandler->getSeedLength1(si1, si2);
+		const size_t sl2 = seedHandler->getSeedLength2(si1, si2);
+
+		// ignore seeds that are conflicting with region borders
+		if ((si1 == i1 && si2 != i2) ||
+		     (si1 != i1 && si2 == i2) ||
+				 (si1+sl1-1 == j1 && si2+sl2-1 != j2) ||
+				 (si1+sl1-1 != j1 && si2+sl2-1 == j2)) continue;
+
+		Interaction::BasePair seed(si1, si2);
+		bool found = false;
+		for (auto it = seeds.begin(); it != seeds.end(); ++it) {
+			if (seedHandler->areLoopOverlapping(si1, si2, it->first, it->second)) {
+				found = true;
+				break;
+			}
+		}
+
+		if (!found) {
+			seeds.push_back(seed);
+			count++;
+		}
+	}
+	return count;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -418,7 +439,7 @@ getLeftMostSeedsAtK( const size_t k1, const size_t k2
 
 		// check if a loop-overlapping seed already exists
 		bool found = false;
-		for(std::vector< std::pair <size_t, size_t> >::iterator it = seeds.begin(); it != seeds.end(); ++it) {
+		for (auto it = seeds.begin(); it != seeds.end(); ++it) {
 			if (seedHandler->areLoopOverlapping(si1, si2, it->first, it->second)) {
 				// replace if new seed is more left
 				if (si1 < it->first && si2 < it->second) {
@@ -444,6 +465,11 @@ getPartialSeedEnergy( const size_t si1, const size_t si2
 										, const size_t i2, const size_t j2
 										, SeedHandler* seedHandler )
 {
+	// ignore if invalid interation
+	if ((i1 == j1 && i2 < j2) || (i2 == j2 && i1 < j1)) {
+		return energy.getE_init();
+	}
+
 	// trace S
 	Interaction interaction = Interaction(energy.getAccessibility1().getSequence(), energy.getAccessibility2().getAccessibilityOrigin().getSequence());
 	const size_t sl1 = seedHandler->getSeedLength1(si1, si2);
@@ -467,15 +493,13 @@ getPartialSeedEnergy( const size_t si1, const size_t si2
 		if (!E_isINF(energy.getE_interLeft(i1old,s1,i2old,s2))) {
 			// add hybridization energy
 			partE += energy.getE_interLeft(i1old,s1,i2old,s2);
-			//LOG(DEBUG) << " --- " <<i1old << ":" << s1 << ":" << i2old << ":" << s2 << " = " << partE;
 			// store
 			i1old = s1;
 			i2old = s2;
 		}
 	}
 
-  //LOG(DEBUG) << "partial: " << si1 << ":" << si2 << " at " << i1 << ":" << j1 << ":" << i2 << ":" << j2 << " = " << partE;
-	return partE;
+	return partE + energy.getE_init();
 }
 
 ////////////////////////////////////////////////////////////////////////////
