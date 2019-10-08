@@ -202,13 +202,11 @@ public:
 	/**
 	 * Compute basepair probabilities and store in structureProbs
 	 * @param predictor the predictor providing the probability information
-	 * @param Z_partition the initial partition function provided by a predictor
 	 * @param iterator start of partition function
 	 * @param iterator end of partition function
 	 */
 	void
 	computeBasePairProbs( PredictorMfeEns *predictor
-		                  , const PredictorMfeEns::Site2Z_hash & Z_partition
 		                  , const PredictorMfeEns::Site2Z_hash::const_iterator first
 	                    , const PredictorMfeEns::Site2Z_hash::const_iterator last );
 

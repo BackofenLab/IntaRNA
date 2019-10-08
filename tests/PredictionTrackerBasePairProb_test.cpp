@@ -233,4 +233,68 @@ TEST_CASE( "PredictionTrackerBasePairProb", "[PredictionTrackerBasePairProb]" ) 
 		REQUIRE(Z_equal(tracker->getBasePairProb(1, 0, &predictor), wBP[3] / predictor.getZall()));
 	}
 
+	SECTION("base pair probs - case 5 seed") {
+		RnaSequence r1("r1", "GGGGG");
+		RnaSequence r2("r2", "CCCCC");
+		AccessibilityDisabled acc1(r1, 0, NULL);
+		AccessibilityDisabled acc2(r2, 0, NULL);
+		ReverseAccessibility racc(acc2);
+		InteractionEnergyBasePair energy(acc1, racc);
+
+		OutputConstraint outC(1,OutputConstraint::OVERLAP_SEQ2,0,10000,0,0,0,1,1);
+		OutputHandlerInteractionList out(outC, 1);
+
+		IndexRange idx1(0,r1.lastPos);
+		IndexRange idx2(0,r2.lastPos);
+
+		PredictionTrackerBasePairProb * tracker = new PredictionTrackerBasePairProb(energy, "");
+		SeedConstraint sC(3,0,0,0,0
+				, AccessibilityDisabled::ED_UPPER_BOUND
+				, 0
+				, IndexRangeList("")
+				, IndexRangeList("")
+				, ""
+				, false, false
+				);
+
+		PredictorMfeEns2dSeedExtension predictor(energy, out, tracker, new SeedHandlerNoBulge(energy, sC));
+		predictor.predict(idx1,idx2);
+
+		std::vector<Z_type> wBP = getBPWeights(energy, 5);
+
+		REQUIRE(Z_equal(tracker->getBasePairProb(3, 3, &predictor), (3 * wBP[3] + 8 * wBP[4] + wBP[5]) / predictor.getZall()));
+	}
+
+	SECTION("base pair probs - case 6 seed") {
+		RnaSequence r1("r1", "GGGGGGG");
+		RnaSequence r2("r2", "CCCCCCC");
+		AccessibilityDisabled acc1(r1, 0, NULL);
+		AccessibilityDisabled acc2(r2, 0, NULL);
+		ReverseAccessibility racc(acc2);
+		InteractionEnergyBasePair energy(acc1, racc);
+
+		OutputConstraint outC(1,OutputConstraint::OVERLAP_SEQ2,0,10000,0,0,0,1,1);
+		OutputHandlerInteractionList out(outC, 1);
+
+		IndexRange idx1(0,r1.lastPos);
+		IndexRange idx2(0,r2.lastPos);
+
+		PredictionTrackerBasePairProb * tracker = new PredictionTrackerBasePairProb(energy, "");
+		SeedConstraint sC(5,0,0,0,0
+				, AccessibilityDisabled::ED_UPPER_BOUND
+				, 0
+				, IndexRangeList("")
+				, IndexRangeList("")
+				, ""
+				, false, false
+				);
+
+		PredictorMfeEns2dSeedExtension predictor(energy, out, tracker, new SeedHandlerNoBulge(energy, sC));
+		predictor.predict(idx1,idx2);
+
+		std::vector<Z_type> wBP = getBPWeights(energy, 7);
+
+		REQUIRE(Z_equal(tracker->getBasePairProb(3, 3, &predictor), (3 * wBP[5] + 8 * wBP[6] + wBP[7]) / predictor.getZall()));
+	}
+
 }
