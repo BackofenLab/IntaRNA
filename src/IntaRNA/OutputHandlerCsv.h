@@ -222,24 +222,22 @@ public:
 	/**
 	 * Checks whether or not Zall needs to be computed to generate all colTypes
 	 * @param colTypes the list of column types to consider
-	 * @param colSep the column separator to be used
 	 * @return true if one of the colTypes requires Zall computation;
 	 *         false otherwise.
 	 */
 	static
 	bool
-	needsZall( const ColTypeList & colTypes, const std::string & colSep = ";" );
+	needsZall( const ColTypeList & colTypes );
 
 	/**
 	 * Checks whether or not interaction base pairs are needed to generate all colTypes
 	 * @param colTypes the list of column types to consider
-	 * @param colSep the column separator to be used
 	 * @return true if one of the colTypes requires Zall computation;
 	 *         false otherwise.
 	 */
 	static
 	bool
-	needBPs( const ColTypeList & colTypes, const std::string & colSep = ";" );
+	needBPs( const ColTypeList & colTypes );
 
 	/**
 	 * Generates the header line for a given list of columns
@@ -249,7 +247,7 @@ public:
 	 */
 	static
 	std::string
-	getHeader( const ColTypeList & colTypes, const std::string& colSep = ";" );
+	getHeader( const ColTypeList & colTypes, const std::string& colSep );
 
 
 protected:
@@ -362,7 +360,7 @@ string2list( const std::string & stringEncoding )
 inline
 bool
 OutputHandlerCsv::
-needsZall( const ColTypeList & colTypes, const std::string & colSep )
+needsZall( const ColTypeList & colTypes )
 {
 	for (auto it = colTypes.begin(); it != colTypes.end(); it++ ) {
 		// check if type requires Zall computation
@@ -381,7 +379,7 @@ needsZall( const ColTypeList & colTypes, const std::string & colSep )
 inline
 bool
 OutputHandlerCsv::
-needBPs( const ColTypeList & colTypes, const std::string & colSep )
+needBPs( const ColTypeList & colTypes )
 {
 	for (auto it = colTypes.begin(); it != colTypes.end(); it++ ) {
 		// check if type requires Zall computation
