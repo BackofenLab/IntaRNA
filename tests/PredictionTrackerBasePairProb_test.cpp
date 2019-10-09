@@ -297,4 +297,37 @@ TEST_CASE( "PredictionTrackerBasePairProb", "[PredictionTrackerBasePairProb]" ) 
 		REQUIRE(Z_equal(tracker->getBasePairProb(3, 3, &predictor), (3 * wBP[5] + 6 * wBP[6] + wBP[7]) / predictor.getZall()));
 	}
 
+	SECTION("base pair probs - case 7 seed") {
+		RnaSequence r1("r1", "GGGGGG");
+		RnaSequence r2("r2", "CCCCCC");
+		AccessibilityDisabled acc1(r1, 0, NULL);
+		AccessibilityDisabled acc2(r2, 0, NULL);
+		ReverseAccessibility racc(acc2);
+		InteractionEnergyBasePair energy(acc1, racc);
+
+		OutputConstraint outC(1,OutputConstraint::OVERLAP_SEQ2,0,10000,0,0,0,1,1);
+		OutputHandlerInteractionList out(outC, 1);
+
+		IndexRange idx1(0,r1.lastPos);
+		IndexRange idx2(0,r2.lastPos);
+
+		PredictionTrackerBasePairProb * tracker = new PredictionTrackerBasePairProb(energy, "");
+		SeedConstraint sC(4,0,0,0,0
+				, AccessibilityDisabled::ED_UPPER_BOUND
+				, 0
+				, IndexRangeList("")
+				, IndexRangeList("")
+				, ""
+				, false, false
+				);
+
+		PredictorMfeEns2dSeedExtension predictor(energy, out, tracker, new SeedHandlerNoBulge(energy, sC));
+		predictor.predict(idx1,idx2);
+
+		std::vector<Z_type> wBP = getBPWeights(energy, 6);
+
+		REQUIRE(Z_equal(tracker->getBasePairProb(2, 2, &predictor), (3 * wBP[4] + 6 * wBP[5] + wBP[6]) / predictor.getZall()));
+		REQUIRE(Z_equal(tracker->getBasePairProb(3, 3, &predictor), (3 * wBP[4] + 6 * wBP[5] + wBP[6]) / predictor.getZall()));
+	}
+
 }

@@ -204,10 +204,12 @@ computeBasePairProbs( PredictorMfeEns *predictor
 	for (auto it = first; it != last; ++it) {
 		Z_type bpProb = it->second * energy.getBoltzmannWeight(energy.getE(it->first.i1, it->first.j1, it->first.i2, it->first.j2, E_type(0)));
 		Interaction::BasePair key(it->first.j1, it->first.j2);
+		if (it->first.j1 == 2 && it->first.j2 == 2) LOG(DEBUG) << " i: " << it->first.i1 << ":" << it->first.i2;
 
 		// no extension
 		if (predictor->getZPartition().find( Interaction::Boundary(it->first.i1, it->first.j1, it->first.i2, it->first.j2)) != predictor->getZPartition().end()) {
 			structureProbs[key] += (1 / predictor->getZall()) * bpProb;
+			if (it->first.j1 == 2 && it->first.j2 == 2) LOG(DEBUG) << " - no ext: " << bpProb;
 		}
 
 		// extensions
@@ -234,6 +236,7 @@ computeBasePairProbs( PredictorMfeEns *predictor
 				}
 
 				structureProbs[key] += (1 / predictor->getZall()) * bpProb;
+				if (it->first.j1 == 2 && it->first.j2 == 2) LOG(DEBUG) << " - ext at: " << it2->first << ":" << it2->second << "=" << bpProb << " | left: " << it->second << " | right = " << getHybridZ(it->first.j1, it2->first, it->first.j2, it2->second, predictor);
 			}
 		}
 
@@ -267,6 +270,7 @@ computeMissingZ( const size_t i1, const size_t j1
 			// full seed left of subregion
 
 			// Case 2.1 (left)
+			// TODO: not working -> see test case 7
 			size_t seedCount = countNonOverlappingSeeds(l1, r1, l2, r2, seedHandler);
 
 			partZ = (
@@ -281,7 +285,14 @@ computeMissingZ( const size_t i1, const size_t j1
 			// full seed right of subregion
 
 			// Case 2.1 (right)
+			// TODO: not working -> see test case 7
 			size_t seedCount = countNonOverlappingSeeds(l1, r1, l2, r2, seedHandler);
+			if (i1 == 0 && i2 == 0 && j1 == 2 && j2 == 2) {
+				LOG(DEBUG) << "seeds: " << seedCount;
+				LOG(DEBUG) << getHybridZ(l1, r1, l2, r2, predictor);
+				LOG(DEBUG) << getHybridZ(j1, r1, j2, r2, predictor);
+			}
+
 
 			partZ = (
 				  getHybridZ(l1, r1, l2, r2, predictor)
@@ -645,7 +656,14 @@ generateDotPlot( char *seq1, char *seq2, char *fileName
 
   fprintf(file, "] def\n");
 
-	// print outline
+	// print frame
+	fprintf(file,
+		      "0.03 setlinewidth\n\
+           %1.1f %1.1f %zu %zu rectangle\n\
+					 0 0 0 setrgbcolor\n\
+           stroke\n", 0.5, 0.5, strlen(seq1), strlen(seq2));
+
+	// print best interaction outline
 	fprintf(file,
 		      "0.03 setlinewidth\n\
            %1.1f %1.1f %zu %zu rectangle\n\
