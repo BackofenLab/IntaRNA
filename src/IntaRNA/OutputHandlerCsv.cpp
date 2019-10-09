@@ -118,42 +118,42 @@ add( const Interaction & i )
 
 			case id1:
 				// ensure no colSeps are contained
-				outTmp <<boost::replace_all_copy(energy.getAccessibility1().getSequence().getId(), colSep, "_");
+				outTmp <<boost::replace_all_copy(i.s1->getId(), colSep, "_");
 				break;
 
 			case id2:
 				// ensure no colSeps are contained
-				outTmp <<boost::replace_all_copy(energy.getAccessibility2().getSequence().getId(), colSep, "_");
+				outTmp <<boost::replace_all_copy(i.s2->getId(), colSep, "_");
 				break;
 
 			case seq1:
-				outTmp <<energy.getAccessibility1().getSequence().asString();
+				outTmp <<i.s1->asString();
 				break;
 
 			case seq2:
-				outTmp <<energy.getAccessibility2().getAccessibilityOrigin().getSequence().asString();
+				outTmp <<i.s2->asString();
 				break;
 
 			case subseq1:
-				outTmp <<energy.getAccessibility1().getSequence().asString().substr(i1, j1-i1+1);
+				outTmp <<i.s1->asString().substr(i1, j1-i1+1);
 				break;
 
 			case subseq2:
-				outTmp <<energy.getAccessibility2().getAccessibilityOrigin().getSequence().asString().substr(j2, i2-j2+1);
+				outTmp <<i.s2->asString().substr(j2, i2-j2+1);
 				break;
 
 			case subseqDP:
-				outTmp <<energy.getAccessibility1().getSequence().asString().substr(i1, j1-i1+1)
+				outTmp <<i.s1->asString().substr(i1, j1-i1+1)
 					<<'&'
-					<<energy.getAccessibility2().getAccessibilityOrigin().getSequence().asString().substr(j2, i2-j2+1);
+					<<i.s2->asString().substr(j2, i2-j2+1);
 				break;
 
 			case subseqDB:
 				outTmp <<i.s1->getInOutIndex(i1)
-					<<energy.getAccessibility1().getSequence().asString().substr(i1, j1-i1+1)
+					<<i.s1->asString().substr(i1, j1-i1+1)
 					<<'&'
 					<<i.s2->getInOutIndex(j2)
-					<<energy.getAccessibility2().getAccessibilityOrigin().getSequence().asString().substr(j2, i2-j2+1);
+					<<i.s2->asString().substr(j2, i2-j2+1);
 				break;
 
 			case start1:
@@ -187,6 +187,14 @@ add( const Interaction & i )
 			case hybridDBfull:
 				outTmp <<Interaction::dotBar( i, true );
 				break;
+
+			case bpList: {
+				auto bp = i.basePairs.begin();
+				outTmp <<'(' <<i.s1->getInOutIndex(bp->first) <<',' <<i.s2->getInOutIndex(bp->second) <<')' ;
+				for( ++bp; bp != i.basePairs.end(); bp++ ) {
+					outTmp << listSep <<'(' <<i.s1->getInOutIndex(bp->first) <<',' <<i.s2->getInOutIndex(bp->second) <<')';
+				};
+				break;}
 
 			case E:
 				outTmp <<E_2_Ekcal(i.energy);

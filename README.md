@@ -1329,7 +1329,9 @@ target;5;16;query;5;16;ACCCCCGGUGGU&ACCCCCGGUGGU;(((.((((.(((&))).)))).)));-6.76
 target;6;16;query;5;15;CCCCCGGUGGU&ACCCCCGGUGG;((.((((.(((&))).)))).));-5.56
 target;7;16;query;5;15;CCCCGGUGGU&ACCCCCGGUGG;((((((.(((&))).)))).));-5.55
 ```
-For each prediction, a row in the CSV is generated.
+For each prediction, a row in the CSV is generated. The column separator within
+the tabular CSV output can be changed using `--outSep`, e.g. to produce tab-separated
+`.tsv` output.
 
 Using the argument `--outCsvCols`, the user can specify what columns are
 printed to the output using a comma-separated list of colIds. Available colIds
@@ -1351,6 +1353,7 @@ are
 - `hybridDPfull` : hybrid in VRNA dot-bracket notation (full sequence length)
 - `hybridDB` : hybrid in dot-bar notation (interactin sites only)
 - `hybridDBfull` : hybrid in dot-bar notation (full sequence length)
+- `bpList` : list of hybrid base pairs, e.g. '(4,3):(5,2):(7,1)'
 - `E` : overall interaction energy
 - `ED1` : ED value of seq1
 - `ED2` : ED value of seq2
@@ -1642,8 +1645,11 @@ Note, for *multiple sequences* in FASTA input, the provided file names are suffi
 where `#` denotes the according target/query sequence number
 within the input where numbering starts with 1.
 
+The column separator within tabular CSV output (defaulting to `;`) can be changed 
+using `--outSep`, e.g. to produce tab-separated `.tsv` output.
+
 Note further, `qPu:`|`tPu:` will report unpaired probability values based on rounded accessibility (ED) values.
-Thus, these values will most likely differ from values eg. produced by RNAplfold.
+Thus, these values will most likely differ from values eg. produced by the program RNAplfold.
 We therefore strongly recommend to store `qAcc:`|`tAcc:` values when you want to use them
 as input for subsequent IntaRNA calls!
 

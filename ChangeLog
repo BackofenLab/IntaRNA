@@ -17,6 +17,13 @@
 ################################################################################  
 
 191008 Martin Raden
+ * IntaRNA/OutputHandlerCsv :
+   + bpList output : list of base pairs
+ * README.md :
+   + bpList 
+   + outSep
+
+191008 Martin Raden
  * bin/CommandLineParsing :
    + 'outSep' argument to set column separator for tabular CSV output
    * outSep applied to PredictionTracker*
