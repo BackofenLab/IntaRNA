@@ -67,6 +67,7 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 	// cleanup additional data
 	Z_partitionMissing.clear();
 
+	// create index of left/right boundaries
 	for (auto it = Z_partition.begin(); it != Z_partition.end(); ++it) {
 		// identify best interaction boundary
 		Z_type Zstruct = it->second * energy.getBoltzmannWeight(energy.getE(it->first.i1, it->first.j1, it->first.i2, it->first.j2, E_type(0)));
@@ -81,14 +82,38 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 			Interaction::BasePair left(it->first.i1, it->first.i2);
 			Interaction::BasePair right(it->first.j1, it->first.j2);
 			// create left index
-			leftIndex[left].push_back(right);
+			rightExt[left].push_back(right);
 			// create right index
 			if (seedHandler != NULL) {
-				rightIndex[right].push_back(left);
+				leftExt[right].push_back(left);
 			}
 		}
 
 	} // it (Z_partition)
+
+	// compute all parts outside of seeds
+	for (auto it = Z_partition.begin(); it != Z_partition.end(); ++it) {
+		Interaction::BasePair leftEnd(it->first.i1, it->first.i2);
+		for (auto k = rightExt[leftEnd].begin(); k != rightExt[leftEnd].end(); ++k) {
+			if (k->first < it->first.j1 && k->second < it->first.j2) {
+				computeMissingZ(	it->first.i1, k->first, it->first.i2, k->second
+									, it->first.i1, it->first.j1, it->first.i2, it->first.j2
+									, predictor, seedHandler);
+			}
+		}
+		Interaction::BasePair rightEnd(it->first.j1, it->first.j2);
+		for (auto k = leftExt[rightEnd].begin(); k != leftExt[rightEnd].end(); ++k) {
+			if (k->first > it->first.i1 && k->second > it->first.i2) {
+				computeMissingZ(	it->first.i1, k->first, it->first.i2, k->second
+									, it->first.i1, it->first.j1, it->first.i2, it->first.j2
+									, predictor, seedHandler);
+			}
+		}
+	} // it (Z_partition)
+
+	for (auto z = Z_partitionMissing.begin(); z != Z_partitionMissing.end(); z++) {
+		LOG(DEBUG) <<" newZ( "<<z->first.i1<<":"<<z->first.i2<<", "<<z->first.j1<<":"<<z->first.j2 <<" ) = "<<z->second;
+	}
 
 	// compute missing Z values for seed-based predictions
 	if (seedHandler != NULL
@@ -101,60 +126,64 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 		{
 			// compute missing Z values for seed base pairs
 
-			// trace all seed base pairs
-			Interaction interaction = Interaction(energy.getAccessibility1().getSequence(), energy.getAccessibility2().getAccessibilityOrigin().getSequence());
 			const size_t sl1 = seedHandler->getSeedLength1(si1, si2);
 			const size_t sl2 = seedHandler->getSeedLength2(si1, si2);
-			interaction.basePairs.push_back( energy.getBasePair(si1, si2) );
+			const size_t sj1 = si1+sl1-1;
+			const size_t sj2 = si2+sl2-1;
+			const Interaction::BasePair siBP(si1, si2);
+			const Interaction::BasePair sjBP(sj1, sj2);
+
+			LOG(DEBUG)<<" internal of seed "<<si1<<":"<<si2;
+
+			// trace all inner seed base pairs
+			Interaction interaction = Interaction(energy.getAccessibility1().getSequence(), energy.getAccessibility2().getAccessibilityOrigin().getSequence());
 			seedHandler->traceBackSeed( interaction, si1, si2 );
-			interaction.basePairs.push_back( energy.getBasePair(si1+sl1-1, si2+sl2-1) );
 
 			// iterate all internal seed base pairs
 			for (size_t i = 0; i < interaction.basePairs.size(); i++) {
 				// get index of current base pair
-				size_t sk1 = energy.getIndex1(interaction.basePairs[i]);
-				size_t sk2 = energy.getIndex2(interaction.basePairs[i]);
+				const size_t sk1 = energy.getIndex1(interaction.basePairs[i]);
+				const size_t sk2 = energy.getIndex2(interaction.basePairs[i]);
+				const Interaction::BasePair skBP(sk1, sk2);
+			LOG(DEBUG)<<"   >> "<<sk1<<":"<<sk2<<"  Z "<<getHybridZ(sk1, sj1, sk2, sj2, predictor);
 
 				// no extension
-				if (Z_equal(getHybridZ(sk1, si1+sl1-1, sk2, si2+sl2-1, predictor), 0)) {
-					computeMissingZ(sk1, si1+sl1-1, sk2, si2+sl2-1, si1, si1+sl1-1, si2, si2+sl2-1, predictor, seedHandler);
-					Interaction::BasePair key(sk1, sk2);
-					Interaction::BasePair entry(si1+sl1-1, si2+sl2-1);
-					if (std::find(leftIndex[key].begin(), leftIndex[key].end(), entry) == leftIndex[key].end()) {
-						leftIndex[key].push_back(entry);
-					}
+//				if (Z_equal(getHybridZ(sk1, sj1, sk2, sj2, predictor), 0)
+//					|| Z_equal(getHybridZ(si1,sk1, si2, sk2, predictor), 0))
+//				{
+//			LOG(DEBUG)<<"  missing "<<sk1<<":"<<sk2<<" j "<<sj1<<":"<<sj2;
+//				}
+				computeMissingZ(sk1, sj1, sk2, sj2, si1, sj1, si2, sj2, predictor, seedHandler);
+				// update right extension index
+				if (std::find(rightExt[skBP].begin(), rightExt[skBP].end(), sjBP) == rightExt[skBP].end()) {
+					rightExt[skBP].push_back(sjBP);
 				}
 
 				// right extensions
-				// iterate all r=leftIndex[si] to computeMissingZ(si,sk,r) and update leftIndex[sk].push(r)
-				Interaction::BasePair seedKey(si1, si2);
-				for (auto it = leftIndex[seedKey].begin(); it != leftIndex[seedKey].end(); ++it) {
-					if (sk1 < it->first && sk2 < it->second && Z_equal(getHybridZ(sk1, it->first, sk2, it->second, predictor), 0)) {
-						computeMissingZ(sk1, it->first, sk2, it->second, si1, it->first, si2, it->second, predictor, seedHandler);
-						Interaction::BasePair key(sk1, sk2);
-						Interaction::BasePair entry(it->first, it->second);
-						if (std::find(leftIndex[key].begin(), leftIndex[key].end(), entry) == leftIndex[key].end()) {
-							leftIndex[key].push_back(entry);
+				// iterate all r=rightExt[si] to computeMissingZ(si,sk,r) and update rightExt[sk].push(r)
+				for (auto seedRightExt = rightExt[siBP].begin(); seedRightExt != rightExt[siBP].end(); ++seedRightExt) {
+					if (sk1 < seedRightExt->first && sk2 < seedRightExt->second
+//						&& Z_equal(getHybridZ(sk1, seedRightExt->first, sk2, seedRightExt->second, predictor), 0)
+					)
+					{
+						computeMissingZ(sk1, seedRightExt->first, sk2, seedRightExt->second, si1, seedRightExt->first, si2, seedRightExt->second, predictor, seedHandler);
+						// update right extension index
+						if (std::find(rightExt[skBP].begin(), rightExt[skBP].end(), *seedRightExt) == rightExt[skBP].end()) {
+							rightExt[skBP].push_back(*seedRightExt);
 						}
 					}
 				}
 
 				// left extensions
-				// iterate all l=rightIndex[sj] to computeMissingZ(l,sk,sj) and update leftIndex[l].push(sk)  ///////////rightIndex[sk].push(l)
-				Interaction::BasePair seedKey2(si1+sl1-1, si2+sl2-1);
-				for (auto it = rightIndex[seedKey2].begin(); it != rightIndex[seedKey2].end(); ++it) {
-					if (it->first < sk1 && it->second < sk2 && Z_equal(getHybridZ(it->first, sk1, it->second, sk2, predictor), 0)) {
-						computeMissingZ(it->first, sk1, it->second, sk2, it->first, si1+sl1-1, it->second, si2+sl2-1, predictor, seedHandler);
-						Interaction::BasePair entry(sk1, sk2);
-						Interaction::BasePair key(it->first, it->second);
-						if (std::find(leftIndex[key].begin(), leftIndex[key].end(), entry) == leftIndex[key].end()) {
-							leftIndex[key].push_back(entry);
-						}
+				// iterate all l=leftEx[sj] to computeMissingZ(l,sk,sj)
+				for (auto seedLeftExt = leftExt[sjBP].begin(); seedLeftExt != leftExt[sjBP].end(); ++seedLeftExt) {
+					if (seedLeftExt->first < sk1 && seedLeftExt->second < sk2
+//						&& Z_equal(getHybridZ(seedLeftExt->first, sk1, seedLeftExt->second, sk2, predictor), 0)
+						)
+					{
+						computeMissingZ(seedLeftExt->first, sk1, seedLeftExt->second, sk2, seedLeftExt->first, sj1, seedLeftExt->second, sj2, predictor, seedHandler);
 					}
 				}
-
-				// init basepair hybridZ
-				updateHybridZ(sk1, sk1, sk2, sk2, 0);
 
 			}
 
@@ -201,45 +230,64 @@ computeBasePairProbs( PredictorMfeEns *predictor
 										, const PredictorMfeEns::Site2Z_hash::const_iterator first
 										, const PredictorMfeEns::Site2Z_hash::const_iterator last )
 {
+	const Z_type Zinit = energy.getBoltzmannWeight(energy.getE_init());
+
 	for (auto it = first; it != last; ++it) {
 		Z_type bpProb = it->second * energy.getBoltzmannWeight(energy.getE(it->first.i1, it->first.j1, it->first.i2, it->first.j2, E_type(0)));
-		Interaction::BasePair key(it->first.j1, it->first.j2);
-		if (it->first.j1 == 2 && it->first.j2 == 2) LOG(DEBUG) << " i: " << it->first.i1 << ":" << it->first.i2;
+//		LOG_IF((it->first.j1 == 2 && it->first.j2 == 2), DEBUG)
+		LOG(DEBUG)
+				<< " i: " << it->first.i1 << ":" << it->first.i2
+				<< " j: " << it->first.j1 << ":" << it->first.j2
+				;
 
-		// no extension
-		if (predictor->getZPartition().find( Interaction::Boundary(it->first.i1, it->first.j1, it->first.i2, it->first.j2)) != predictor->getZPartition().end()) {
-			structureProbs[key] += (1 / predictor->getZall()) * bpProb;
-			if (it->first.j1 == 2 && it->first.j2 == 2) LOG(DEBUG) << " - no ext: " << bpProb;
+		Interaction::BasePair iBP(it->first.i1, it->first.i2);
+		Interaction::BasePair jBP(it->first.j1, it->first.j2);
+
+		// init
+		if (structureProbs.find(jBP) == structureProbs.end()) {
+			structureProbs[jBP] = 0;
+		}
+		if (structureProbs.find(iBP) == structureProbs.end()) {
+			structureProbs[iBP] = 0;
 		}
 
+		// no extension
+		if (predictor->getZPartition().find( it->first ) != predictor->getZPartition().end()) {
+			structureProbs[jBP] += (1 / predictor->getZall()) * bpProb;
+			if (iBP != jBP) {
+				structureProbs[iBP] += (1 / predictor->getZall()) * bpProb;
+				LOG(DEBUG) <<"("<<iBP.first<<":"<<iBP.second<<")" << " - no ext: " << bpProb;
+			}
+//			if (it->first.j1 == 2 && it->first.j2 == 2)
+				LOG(DEBUG) <<"("<<jBP.first<<":"<<jBP.second<<")" << " - no ext: " << bpProb;
+		}
+
+		assert( !Z_equal(it->second,0) );
+
 		// extensions
-		for (auto it2 = leftIndex[key].begin(); it2 != leftIndex[key].end(); ++it2) {
+		if (iBP != jBP) {
+		for (auto it2 = rightExt[jBP].begin(); it2 != rightExt[jBP].end(); ++it2) {
+
+			LOG(DEBUG) <<" rightExt("<<jBP.first<<":"<<jBP.second<<") = "<<it2->first<<":"<<it2->second;
+
+			assert( !Z_equal(getHybridZ(it->first.j1, it2->first, it->first.j2, it2->second, predictor),0) );
 
 			// ensure extension is valid (present in original Z data)
 			if (predictor->getZPartition().find( Interaction::Boundary(it->first.i1, it2->first, it->first.i2, it2->second)) != predictor->getZPartition().end()) {
 
-				// exclude wrong extensions of type /|/ given /|
-				if (it2->first - it->first.i1 == it2->second - it->first.i2 &&
-				  !(it2->first - it->first.j1 == it2->second - it->first.j2)) {
-				  continue;
-				}
+				assert( !Z_equal(it->second, 0) );
+				bpProb = it->second * getHybridZ(it->first.j1, it2->first, it->first.j2, it2->second, predictor)
+							// ED penalty
+									 * energy.getBoltzmannWeight(energy.getE(it->first.i1, it2->first, it->first.i2, it2->second, E_type(0)))
+									 / Zinit;
 
-				if (Z_equal(it->second, 0)) {
-					bpProb = getHybridZ(it->first.j1, it2->first, it->first.j2, it2->second, predictor)
-								// ED penalty
-										 * energy.getBoltzmannWeight(energy.getE(it->first.i1, it2->first, it->first.i2, it2->second, E_type(0)));
-				} else {
-					bpProb = it->second * getHybridZ(it->first.j1, it2->first, it->first.j2, it2->second, predictor)
-								// ED penalty
-										 * energy.getBoltzmannWeight(energy.getE(it->first.i1, it2->first, it->first.i2, it2->second, E_type(0)))
-										 / energy.getBoltzmannWeight(energy.getE_init());
-				}
-
-				structureProbs[key] += (1 / predictor->getZall()) * bpProb;
-				if (it->first.j1 == 2 && it->first.j2 == 2) LOG(DEBUG) << " - ext at: " << it2->first << ":" << it2->second << "=" << bpProb << " | left: " << it->second << " | right = " << getHybridZ(it->first.j1, it2->first, it->first.j2, it2->second, predictor);
+				structureProbs[jBP] += (1 / predictor->getZall()) * bpProb;
+//				LOG_IF((it->first.j1 == 1 && it->first.j2 == 1), DEBUG)
+				LOG(DEBUG)
+				<<"("<<jBP.first<<":"<<jBP.second<<")" << " - ext at: " << it2->first << ":" << it2->second << "=" << bpProb << " | left: " << it->second << " | right = " << getHybridZ(it->first.j1, it2->first, it->first.j2, it2->second, predictor);
 			}
 		}
-
+		} // if not single base pair
 	}
 }
 
@@ -261,105 +309,174 @@ computeMissingZ( const size_t i1, const size_t j1
 		return;
 	}
 
+//	// check if unknown
+//	if ( !Z_equal(getHybridZ(i1,j1,i2,j2,predictor),0) && !Z_equal(getHybridZ(i1,j1,i2,j2,predictor),0)) {
+//		return;
+//	}
+
 	Z_type partZ = 0.0;
+	const Z_type fullZ = getHybridZ(l1,r1,l2,r2,predictor);
+	assert(!Z_equal(fullZ,0));
 
-	if (!isFullSeedinRegion(i1, j1, i2, j2, seedHandler)) {
+	const Z_type Zinit = energy.getBoltzmannWeight(energy.getE_init());
 
-		// check if full seed outside of subregion (left or right)
-		if (isFullSeedinRegion(l1, i1, l2, i2, seedHandler)) {
-			// full seed left of subregion
+	// check if one side is existing -> easy computation
+	if (j1==r1 && j2==r2) {
+		partZ = getHybridZ(i1,r1,i2,r2,predictor);
+		if (!Z_equal(partZ,0)) {
+			updateHybridZ(l1, i1, l2, i2, fullZ/partZ*Zinit, predictor);
+			return;
+		}
+		partZ = getHybridZ(l1, i1, l2, i2,predictor);
+		if (!Z_equal(partZ,0)) {
+			updateHybridZ(i1,r1,i2,r2, fullZ/partZ*Zinit, predictor);
+			return;
+		}
+	}
+	if (i1==l1 && i2==l2) {
+		partZ = getHybridZ(l1,j1,l2,j2,predictor);
+		if (!Z_equal(partZ,0)) {
+			updateHybridZ(j1, r1, j2, r2, fullZ/partZ*Zinit, predictor);
+			return;
+		}
+		partZ = getHybridZ(j1, r1, j2, r2,predictor);
+		if (!Z_equal(partZ,0)) {
+			updateHybridZ(l1,j1,l2,j2, fullZ/partZ*Zinit, predictor);
+			return;
+		}
+	}
 
-			// Case 2.1 (left)
-			// TODO: not working -> see test case 7
-			size_t seedCount = countNonOverlappingSeeds(l1, r1, l2, r2, seedHandler);
+//	if (!isFullSeedinRegion(i1, j1, i2, j2, seedHandler)) {
 
-			partZ = (
-				  getHybridZ(l1, r1, l2, r2, predictor)
-				/ getHybridZ(l1, i1, l2, i2, predictor)
-			) * energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, E_type(0)))
-			* energy.getBoltzmannWeight(energy.getE_init())
-			/ seedCount;
-			updateHybridZ(i1, j1, i2, j2, partZ);
-
-		} else if (isFullSeedinRegion(j1, r1, j2, r2, seedHandler)) {
-			// full seed right of subregion
-
-			// Case 2.1 (right)
-			// TODO: not working -> see test case 7
-			size_t seedCount = countNonOverlappingSeeds(l1, r1, l2, r2, seedHandler);
-			if (i1 == 0 && i2 == 0 && j1 == 2 && j2 == 2) {
-				LOG(DEBUG) << "seeds: " << seedCount;
-				LOG(DEBUG) << getHybridZ(l1, r1, l2, r2, predictor);
-				LOG(DEBUG) << getHybridZ(j1, r1, j2, r2, predictor);
-			}
-
-
-			partZ = (
-				  getHybridZ(l1, r1, l2, r2, predictor)
-				/ getHybridZ(j1, r1, j2, r2, predictor)
-			) * energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, E_type(0)))
-			* energy.getBoltzmannWeight(energy.getE_init())
-			/ seedCount;
-			updateHybridZ(i1, j1, i2, j2, partZ);
-
-		} else {
+//		// check if full seed outside of subregion (left or right)
+//		if (isFullSeedinRegion(l1, i1, l2, i2, seedHandler)) {
+//			// full seed left of subregion
+//
+//			// Case 2.1 (left)
+//			// TODO: not working -> see test case 7
+//			size_t seedCount = countNonOverlappingSeeds(l1, r1, l2, r2, seedHandler);
+//
+//			partZ = (
+//				  getHybridZ(l1, r1, l2, r2, predictor)
+//				/ getHybridZ(l1, i1, l2, i2, predictor)
+//			) * energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, E_type(0)))
+//			* Zinit
+//			/ seedCount;
+//			updateHybridZ(i1, j1, i2, j2, partZ);
+//
+//		} else if (isFullSeedinRegion(j1, r1, j2, r2, seedHandler)) {
+//			// full seed right of subregion
+//
+//			// Case 2.1 (right)
+//			// TODO: not working -> see test case 7
+//			size_t seedCount = countNonOverlappingSeeds(l1, r1, l2, r2, seedHandler);
+//			if (i1 == 0 && i2 == 0 && j1 == 2 && j2 == 2) {
+//				LOG(DEBUG) << "seeds: " << seedCount;
+//				LOG(DEBUG) << getHybridZ(l1, r1, l2, r2, predictor);
+//				LOG(DEBUG) << getHybridZ(j1, r1, j2, r2, predictor);
+//			}
+//
+//
+//			partZ = (
+//				  getHybridZ(l1, r1, l2, r2, predictor)
+//				/ getHybridZ(j1, r1, j2, r2, predictor)
+//			) * energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, E_type(0)))
+//			* Zinit
+//			/ seedCount;
+//			updateHybridZ(i1, j1, i2, j2, partZ);
+//
+//		} else {
 
 			// Case 2.2
 
+	if( (l1==i1 && l2==i2) || (r1==j2 && r2==j2) ) {
+
 			// check side of k
 			size_t k1, k2;
-			bool kOnRight;
-			if (i1 != l1 || i2 != l2) {
+//			bool kOnRight;
+			if (i1 != l1) {
 				// k at the left of region
-				kOnRight = false;
+//				kOnRight = false;
 				k1 = i1;
 				k2 = i2;
 			} else {
-				kOnRight = true;
+//				kOnRight = true;
 				k1 = j1;
 				k2 = j2;
 			}
 
+			LOG(DEBUG) <<" split seed "<<l1<<":"<<l2<<" k "<<k1<<":"<<k2<<" "<<r1<<":"<<r2;
 			// find leftmost overlapping seeds
-			std::vector< std::pair <size_t, size_t> > overlappingSeeds = getLeftMostSeedsAtK(j1, j2, seedHandler);
+			std::vector< std::pair <size_t, size_t> > overlappingSeeds = getLeftMostSeedsAtK(k1, k2, l1,l2, seedHandler);
 
 			// loop over overlapping seeds
-			for(std::vector< std::pair <size_t, size_t> >::iterator it = overlappingSeeds.begin(); it != overlappingSeeds.end(); ++it) {
+			for(std::vector< std::pair <size_t, size_t> >::iterator seedLeft = overlappingSeeds.begin(); seedLeft != overlappingSeeds.end(); ++seedLeft) {
 				// calculate missing partition function
-				const size_t sl1 = seedHandler->getSeedLength1(it->first, it->second);
-				const size_t sl2 = seedHandler->getSeedLength2(it->first, it->second);
-				if (kOnRight) {
-					if (it->first <= l1 && it->second <= l2) {
-						// region completely inside seed
-						partZ = energy.getBoltzmannWeight(getPartialSeedEnergy(it->first,it->second,l1,k1,l2,k2,seedHandler));
-					} else {
-						partZ += (
-							getHybridZ(l1, it->first+sl1-1, l2, it->second+sl2-1, predictor)
-							* energy.getBoltzmannWeight(energy.getED1(i1, k1) + energy.getED2(i2, k2))
-						) / energy.getBoltzmannWeight(getPartialSeedEnergy(it->first,it->second,k1,it->first+sl1-1,k2,it->second+sl2-1,seedHandler));
-					}
-				} else {
-					if (j1 <= it->first+sl1-1 && j2 <= it->second+sl2-1) {
-						// region completely inside seed
-						partZ = energy.getBoltzmannWeight(getPartialSeedEnergy(it->first,it->second,k1,j1,k2,j2,seedHandler));
-					} else {
-						partZ += (
-							getHybridZ(it->first, j1, it->second, j2, predictor)
-							* energy.getBoltzmannWeight(energy.getED1(k1, j1) + energy.getED2(k2, j2))
-						) / energy.getBoltzmannWeight(getPartialSeedEnergy(it->first,it->second,it->first,k1,it->second,k2,seedHandler));
-					}
-				}
-	    }
+				const size_t sl1 = seedHandler->getSeedLength1(seedLeft->first, seedLeft->second);
+				const size_t sl2 = seedHandler->getSeedLength2(seedLeft->first, seedLeft->second);
 
-			if (kOnRight) {
-				updateHybridZ(i1, k1, i2, k2, partZ);
-			} else {
-				updateHybridZ(k1, j1, k2, j2, partZ);
+				LOG(DEBUG)<<"  >> seed "<<seedLeft->first<<":"<<seedLeft->second;
+
+				// check if out of right boundary
+				if ( seedLeft->first + sl1 -1 > r1 || seedLeft->first + sl2 -1 > r2 ) {
+					continue;
+				}
+
+
+				// left part of seed until k
+				partZ = energy.getBoltzmannWeight(getPartialSeedEnergy(seedLeft->first,seedLeft->second,seedLeft->first,k1,seedLeft->second,k2,seedHandler));
+				// compute right part k-r
+				assert( !Z_equal(getHybridZ(seedLeft->first,seedLeft->second,r1,r2,predictor),0));
+				partZ = getHybridZ(seedLeft->first,seedLeft->second,r1,r2,predictor) / partZ;
+				// store
+				updateHybridZ(k1, r1, k2, r2, partZ, predictor);
+				updateHybridZ(l1, k1, l2, k2, fullZ/partZ*Zinit, predictor);
+
+//				if (i1==l1 && i2==l2) {
+//					updateHybridZ(i1, k1, i2, k2, partZ, predictor);
+//					updateHybridZ(l1, k1, l2, k2, partZ, predictor);
+//					updateHybridZ(k1, j1, k2, j2, partZ, predictor);
+//
+//				} else
+//				if (j1==r1 && j2==r2) {
+//
+//				}
+
+
+//				if (kOnRight) {
+//					if (seedLeft->first <= l1 && seedLeft->second <= l2) {
+//						// region completely inside seed
+//						partZ = energy.getBoltzmannWeight(getPartialSeedEnergy(seedLeft->first,seedLeft->second,l1,k1,l2,k2,seedHandler));
+//					} else {
+//						partZ += (
+//							getHybridZ(l1, seedLeft->first+sl1-1, l2, seedLeft->second+sl2-1, predictor)
+//							* energy.getBoltzmannWeight(energy.getED1(i1, k1) + energy.getED2(i2, k2))
+//						) / energy.getBoltzmannWeight(getPartialSeedEnergy(seedLeft->first,seedLeft->second,k1,seedLeft->first+sl1-1,k2,seedLeft->second+sl2-1,seedHandler));
+//					}
+//				} else {
+//					if (j1 <= seedLeft->first+sl1-1 && j2 <= seedLeft->second+sl2-1) {
+//						// region completely inside seed
+//						partZ = energy.getBoltzmannWeight(getPartialSeedEnergy(seedLeft->first,seedLeft->second,k1,j1,k2,j2,seedHandler));
+//					} else {
+//						partZ += (
+//							getHybridZ(seedLeft->first, j1, seedLeft->second, j2, predictor)
+//							* energy.getBoltzmannWeight(energy.getED1(k1, j1) + energy.getED2(k2, j2))
+//						) / energy.getBoltzmannWeight(getPartialSeedEnergy(seedLeft->first,seedLeft->second,seedLeft->first,k1,seedLeft->second,k2,seedHandler));
+//					}
+//				}
 			}
 
+//			if (kOnRight) {
+//				updateHybridZ(i1, k1, i2, k2, partZ);
+//			} else {
+//				updateHybridZ(k1, j1, k2, j2, partZ);
+//			}
+
+//		} else {
+//			assert( false /* i-j not left/right bound */ );
 		}
 
-	}
+//	}
 
 }
 
@@ -433,18 +550,37 @@ isFullSeedinRegion( const size_t i1, const size_t j1
 std::vector< std::pair <size_t, size_t> >
 PredictionTrackerBasePairProb::
 getLeftMostSeedsAtK( const size_t k1, const size_t k2
+				, const size_t i1min, const size_t i2min
 									 , SeedHandler* seedHandler )
 {
   std::vector< std::pair <size_t, size_t> > seeds;
 	size_t maxSeedLength = seedHandler->getConstraint().getBasePairs();
 
-	size_t i1 = (k1 < maxSeedLength) ? 0 : k1 - maxSeedLength + 1;
-	size_t i2 = (k2 < maxSeedLength) ? 0 : k2 - maxSeedLength + 1;
+	size_t i1 = std::max( i1min, k1 - std::min(k1, maxSeedLength-1));
+	size_t i2 = std::max( i2min, k2 - std::min(k2, maxSeedLength-1));
+
+	Interaction tmpInter(energy.getAccessibility1().getSequence(),energy.getAccessibility2().getAccessibilityOrigin().getSequence());
+	// TODO works only for seedNoBulge : add "getMaxSeedLength1|2() to SeedHandler with implementations in subclasses"
 
 	size_t si1 = RnaSequence::lastPos, si2 = RnaSequence::lastPos;
 	while( seedHandler->updateToNextSeed(si1, si2, i1, k1, i2, k2) ) {
-		// check if k is part of seed
-		if (k1 - si1 != k2 - si2) {
+		// check if k is part of seed (inner base pair)
+		if (   si1>=k1
+			|| si2>=k2
+			|| (k1 >= si1+seedHandler->getSeedLength1(si1,si2)-1)
+			|| (k2 >= si2+seedHandler->getSeedLength2(si1,si2)-1) )
+		{
+			continue;
+		}
+
+		// check if k is truely bp of seed
+		tmpInter.basePairs.clear();
+		seedHandler->traceBackSeed(tmpInter,si1,si2);
+		bool seedBpNotFound = true;
+		for( auto bp = tmpInter.basePairs.begin(); seedBpNotFound && bp!=tmpInter.basePairs.end(); bp++) {
+			seedBpNotFound = (bp->first != k1) || (bp->second != k2);
+		}
+		if (seedBpNotFound) {
 			continue;
 		}
 
@@ -459,7 +595,7 @@ getLeftMostSeedsAtK( const size_t k1, const size_t k2
 				found = true;
 				break;
 			}
-    }
+		}
 		if (!found) {
 			seeds.push_back(std::make_pair(si1, si2));
 		}
@@ -560,10 +696,14 @@ void
 PredictionTrackerBasePairProb::
 updateHybridZ( const size_t i1, const size_t j1
 						 , const size_t i2, const size_t j2
-						 , const Z_type partZ )
+						 , const Z_type partZ
+						 , PredictorMfeEns *predictor )
 {
-	Interaction::Boundary key(i1,j1,i2,j2);
-	Z_partitionMissing[key] = partZ;
+	// store if unknown
+	if (Z_equal(getHybridZ(i1,j1,i2,j2,predictor),0)) {
+		Interaction::Boundary key(i1,j1,i2,j2);
+		Z_partitionMissing[key] = partZ;
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////

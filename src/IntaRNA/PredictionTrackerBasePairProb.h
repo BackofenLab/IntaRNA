@@ -116,6 +116,8 @@ public:
 	 * Get leftmost seeds containing basepair (k1, k2)
 	 * @param k1 base pair index
 	 * @param k2 base pair index
+	 * @param i1min minimal base pair index for seed starts
+	 * @param i2min minimal base pair index for seed starts
 	 * @param seedHandler the seedHandler of the predictor
 	 *
 	 * @return vector of pairs containing the left-most seed of each
@@ -123,6 +125,7 @@ public:
 	 */
 	std::vector< std::pair <size_t, size_t> >
 	getLeftMostSeedsAtK( const size_t k1, const size_t k2
+					, const size_t i1min, const size_t i2min
 					           , SeedHandler* seedHandler );
 
 	/**
@@ -177,11 +180,13 @@ public:
 	 * @param i2 region index
 	 * @param j2 region index
 	 * @param partZ the new partition function for givent region
+	 * @param predictor the predictor providing the probability information
 	 */
 	void
 	updateHybridZ( const size_t i1, const size_t j1
 						 	 , const size_t i2, const size_t j2
-							 , const Z_type partZ );
+							 , const Z_type partZ
+							 , PredictorMfeEns * predictor );
 
 	/**
 	 * Counts the number of non-overlapping seeds in a given region
@@ -243,10 +248,10 @@ protected:
 	PredictorMfeEns::Site2Z_hash Z_partitionMissing;
 
 	//! left side index
-	BasePairIndex leftIndex;
+	BasePairIndex rightExt;
 
 	//! right side index
-	BasePairIndex rightIndex;
+	BasePairIndex leftExt;
 
 	//! postscript template for dotplots
 	const char* dotplotTemplate =
