@@ -78,8 +78,13 @@ public:
 		 */
 		const bool
 		operator <  ( const BasePair &bp ) const {
-			return first < bp.first
-				&& second < bp.second;
+			if (first < bp.first)
+			  return true;
+			else if (bp.first < first)
+			  return false;
+			else if (second < bp.second)
+			  return true;
+			return false;
 		}
 
 		/**
