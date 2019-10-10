@@ -199,12 +199,12 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 	// build plist
 	struct vrna_elem_prob_s plist[structureProbs.size()+1];
 	size_t i = 0;
-	for (auto it = structureProbs.begin(); it != structureProbs.end(); ++it) {
-		LOG(DEBUG) << "prob: " << it->first.first << ":" << it->first.second << ":" << it->first.first << ":" << it->first.second << " = " << it->second;
-		if (it->second > probabilityThreshold) {
-			plist[i].i = it->first.first + 1;
-			plist[i].j = it->first.second + 1;
-			plist[i].p = it->second;
+	for (auto sp = structureProbs.begin(); sp != structureProbs.end(); ++sp) {
+		LOG(DEBUG) << "prob: " << sp->first.first << ":" << sp->first.second << ":" << sp->first.first << ":" << sp->first.second << " = " << sp->second;
+		if (sp->second > probabilityThreshold) {
+			plist[i].i = sp->first.first + 1;
+			plist[i].j = sp->first.second + 1;
+			plist[i].p = sp->second;
 			plist[i].type = 0; // base-pair prob
 			i++;
 		}
@@ -235,7 +235,7 @@ computeBasePairProbs( PredictorMfeEns *predictor
 	for (auto it = first; it != last; ++it) {
 		Z_type bpProb = it->second * energy.getBoltzmannWeight(energy.getE(it->first.i1, it->first.j1, it->first.i2, it->first.j2, E_type(0)));
 //		LOG_IF((it->first.j1 == 2 && it->first.j2 == 2), DEBUG)
-		LOG_IF((it->first.j1 == 1 && it->first.j2 == 1), DEBUG)
+		LOG_IF((it->first.j1 == 2 && it->first.j2 == 2), DEBUG)
 				<< " i: " << it->first.i1 << ":" << it->first.i2
 				<< " j: " << it->first.j1 << ":" << it->first.j2
 				;
@@ -254,10 +254,10 @@ computeBasePairProbs( PredictorMfeEns *predictor
 		// no extension
 		if (predictor->getZPartition().find( it->first ) != predictor->getZPartition().end()) {
 			structureProbs[jBP] += (1 / predictor->getZall()) * bpProb;
-			LOG_IF((it->first.j1 == 1 && it->first.j2 == 1), DEBUG) <<"("<<jBP.first<<":"<<jBP.second<<")" << " - no ext at j: " << bpProb;
+			LOG_IF((it->first.j1 == 2 && it->first.j2 == 2), DEBUG) <<"("<<jBP.first<<":"<<jBP.second<<")" << " - no ext at j: " << bpProb;
 			if (iBP != jBP) {
 				structureProbs[iBP] += (1 / predictor->getZall()) * bpProb;
-				LOG_IF((it->first.i1 == 1 && it->first.i2 == 1), DEBUG) <<"("<<iBP.first<<":"<<iBP.second<<")" << " - no ext at i: " << bpProb;
+				LOG_IF((it->first.i1 == 2 && it->first.i2 == 2), DEBUG) <<"("<<iBP.first<<":"<<iBP.second<<")" << " - no ext at i: " << bpProb;
 			}
 		}
 
@@ -265,25 +265,25 @@ computeBasePairProbs( PredictorMfeEns *predictor
 
 		// extensions
 		if (iBP != jBP) {
-		for (auto it2 = rightExt[jBP].begin(); it2 != rightExt[jBP].end(); ++it2) {
+		for (auto right = rightExt[jBP].begin(); right != rightExt[jBP].end(); ++right) {
 
-			LOG_IF((it->first.j1 == 1 && it->first.j2 == 1), DEBUG) <<" rightExt("<<jBP.first<<":"<<jBP.second<<") = "<<it2->first<<":"<<it2->second;
+			LOG_IF((it->first.j1 == 2 && it->first.j2 == 2), DEBUG) <<" rightExt("<<jBP.first<<":"<<jBP.second<<") = "<<right->first<<":"<<right->second;
 
-			assert( !Z_equal(getHybridZ(it->first.j1, it2->first, it->first.j2, it2->second, predictor),0) );
+			assert( !Z_equal(getHybridZ(it->first.j1, right->first, it->first.j2, right->second, predictor),0) );
 
 			// ensure extension is valid (present in original Z data)
-			if (predictor->getZPartition().find( Interaction::Boundary(it->first.i1, it2->first, it->first.i2, it2->second)) != predictor->getZPartition().end()) {
+			if (predictor->getZPartition().find( Interaction::Boundary(it->first.i1, right->first, it->first.i2, right->second)) != predictor->getZPartition().end()) {
 
 				assert( !Z_equal(it->second, 0) );
-				bpProb = it->second * getHybridZ(it->first.j1, it2->first, it->first.j2, it2->second, predictor)
+				bpProb = it->second * getHybridZ(it->first.j1, right->first, it->first.j2, right->second, predictor)
 							// ED penalty
-									 * energy.getBoltzmannWeight(energy.getE(it->first.i1, it2->first, it->first.i2, it2->second, E_type(0)))
+									 * energy.getBoltzmannWeight(energy.getE(it->first.i1, right->first, it->first.i2, right->second, E_type(0)))
 									 / Zinit;
 
 				structureProbs[jBP] += (1 / predictor->getZall()) * bpProb;
 //				LOG_IF((it->first.j1 == 1 && it->first.j2 == 1), DEBUG)
-				LOG_IF((it->first.j1 == 1 && it->first.j2 == 1), DEBUG)
-				<<"("<<jBP.first<<":"<<jBP.second<<")" << " - ext at: " << it2->first << ":" << it2->second << "=" << bpProb << " | left: " << it->second << " | right = " << getHybridZ(it->first.j1, it2->first, it->first.j2, it2->second, predictor);
+				LOG_IF((it->first.j1 == 2 && it->first.j2 == 2), DEBUG)
+				<<"("<<jBP.first<<":"<<jBP.second<<")" << " - ext at: " << right->first << ":" << right->second << "=" << bpProb << " | left: " << it->second << " | right = " << getHybridZ(it->first.j1, right->first, it->first.j2, right->second, predictor);
 			}
 		}
 		} // if not single base pair
@@ -531,14 +531,14 @@ getHybridZ( const size_t i1, const size_t j1
 {
 	Z_type partZ = predictor->getHybridZ(i1, j1, i2, j2);
 	if (Z_equal(partZ, 0)) {
-		Interaction::Boundary key(i1, j1, i2, j2);
+		Interaction::Boundary boundary(i1, j1, i2, j2);
 		// check in original data
-		if ( predictor->getZPartition().find(key) != predictor->getZPartition().end() ) {
-			partZ = predictor->getZPartition().find(key)->second;
+		if ( predictor->getZPartition().find(boundary) != predictor->getZPartition().end() ) {
+			partZ = predictor->getZPartition().find(boundary)->second;
 		} else
 		// check in additional data
-		if ( Z_partitionMissing.find(key) != Z_partitionMissing.end() ) {
-			partZ = Z_partitionMissing[key];
+		if ( Z_partitionMissing.find(boundary) != Z_partitionMissing.end() ) {
+			partZ = Z_partitionMissing[boundary];
 		} else {
 			// fall back
 			partZ = Z_type(0);
@@ -554,11 +554,11 @@ PredictionTrackerBasePairProb::
 getBasePairProb( const size_t i1, const size_t i2
 					     , PredictorMfeEns *predictor)
 {
-	Interaction::BasePair key(i1, i2);
-	if ( structureProbs.find(key) == structureProbs.end() ) {
+	Interaction::BasePair bp(i1, i2);
+	if ( structureProbs.find(bp) == structureProbs.end() ) {
 		return Z_type(0);
 	} else {
-		return structureProbs[key];
+		return structureProbs[bp];
 	}
 }
 
@@ -573,8 +573,8 @@ updateHybridZ( const size_t i1, const size_t j1
 {
 	// store if unknown
 	if (Z_equal(getHybridZ(i1,j1,i2,j2,predictor),0)) {
-		Interaction::Boundary key(i1,j1,i2,j2);
-		Z_partitionMissing[key] = partZ;
+		Interaction::Boundary boundary(i1,j1,i2,j2);
+		Z_partitionMissing[boundary] = partZ;
 	}
 }
 
