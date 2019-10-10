@@ -129,7 +129,7 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 			const Interaction::BasePair siBP(si1, si2);
 			const Interaction::BasePair sjBP(sj1, sj2);
 
-			LOG(DEBUG)<<" internal of seed "<<si1<<":"<<si2;
+			//LOG(DEBUG)<<" internal of seed "<<si1<<":"<<si2;
 
 			// trace all inner seed base pairs
 			Interaction interaction = Interaction(energy.getAccessibility1().getSequence(), energy.getAccessibility2().getAccessibilityOrigin().getSequence());
@@ -141,7 +141,7 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 				const size_t sk1 = energy.getIndex1(interaction.basePairs[i]);
 				const size_t sk2 = energy.getIndex2(interaction.basePairs[i]);
 				const Interaction::BasePair skBP(sk1, sk2);
-			LOG(DEBUG)<<"   >> "<<sk1<<":"<<sk2<<"  Z "<<getHybridZ(sk1, sj1, sk2, sj2, predictor);
+			//LOG(DEBUG)<<"   >> "<<sk1<<":"<<sk2<<"  Z "<<getHybridZ(sk1, sj1, sk2, sj2, predictor);
 
 				// no extension
 //				if (Z_equal(getHybridZ(sk1, sj1, sk2, sj2, predictor), 0)
@@ -183,8 +183,18 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 
 	}
 
+	for (auto z = Z_partition.begin(); z != Z_partitionMissing.end(); z++) {
+		LOG(DEBUG) <<" initZ: "<<z->first<<" = "<<z->second;
+	}
+
 	for (auto z = Z_partitionMissing.begin(); z != Z_partitionMissing.end(); z++) {
-		LOG(DEBUG) <<" newZ( "<<z->first.i1<<":"<<z->first.i2<<", "<<z->first.j1<<":"<<z->first.j2 <<" ) = "<<z->second;
+		LOG(DEBUG) <<" newZ: "<<z->first <<" = "<<z->second;
+	}
+
+	for (auto right = rightExt.begin(); right != rightExt.end(); right++) {
+		for (auto bp = right->second.begin(); bp != right->second.end(); bp++) {
+	  	LOG(DEBUG) <<" RightExt at: "<<right->first <<": "<<*bp;
+		}
 	}
 
 	// Compute base-pair probabilities outside seeds

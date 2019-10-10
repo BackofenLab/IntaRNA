@@ -104,15 +104,6 @@ public:
 				|| second != bp.second;
 		}
 
-		/**
-		 * ostream operator
-		 */
-		std::ostream&
-		operator <<  (std::ostream& out)
-		{
-			out <<"("<<first<<"-"<<second<<")";
-			return out;
-		}
 	};
 
 	//! type of a vector encoding base pair indices that are interacting
@@ -173,6 +164,7 @@ public:
 					&& lhs.j2 == rhs.j2 ;
 			}
 		};
+
 	};
 
 
@@ -396,7 +388,15 @@ public:
 	 * @param bp the Interaction base pair object to add
 	 * @return the altered stream out
 	 */
-	friend std::ostream& operator<<(std::ostream& out, const Interaction::BasePair& bp);
+	friend std::ostream& operator<<(std::ostream& out, const BasePair& bp);
+
+	/**
+	 * Prints the interaction boundary to stream
+	 * @param out the ostream to write to
+	 * @param b the Boundary object to add
+	 * @return the altered stream out
+	 */
+	friend std::ostream& operator<<(std::ostream& out, const Boundary& b);
 
 	/**
 	 * Prints the interacting base pairs to stream
