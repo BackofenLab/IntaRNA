@@ -238,6 +238,9 @@ protected:
 	//! right side index
 	BasePairIndex leftExt;
 
+	//! flag for seedHandler
+	bool hasSeedhandler;
+
 	//! postscript template for dotplots
 	const char* dotplotTemplate =
 		"/box { %%size x y box - draws box centered on x,y\n\

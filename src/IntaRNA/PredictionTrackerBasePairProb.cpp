@@ -49,6 +49,7 @@ void
 PredictionTrackerBasePairProb::
 updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 {
+	hasSeedhandler = (seedHandler != NULL);
 
 	// sequence strings
 	const std::string & rna1 = energy.getAccessibility1().getSequence().asString();
@@ -134,7 +135,7 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 	} // it (Z_partition)
 
 	// compute missing Z values for seed-based predictions
-	if (seedHandler != NULL
+	if (hasSeedhandler
 			&& ( ! seedHandler->getConstraint().getExplicitSeeds().empty()
 					|| seedHandler->getConstraint().getBasePairs() >= 2) )
 	{
@@ -282,11 +283,11 @@ computeBasePairProbs( PredictorMfeEns *predictor
 		// no extension
 		if (predictor->getZPartition().find( z->first ) != predictor->getZPartition().end()) {
 			structureProbs[jBP] += (1 / predictor->getZall()) * bpProb;
-			LOG_IF((z->first.j1 == 1 && z->first.j2 == 1), DEBUG) <<"("<<jBP.first<<":"<<jBP.second<<")" << " - no ext at j: " << bpProb;
-			//if (iBP != jBP) {
+			LOG_IF((z->first.j1 == 0 && z->first.j2 == 0), DEBUG) <<"("<<jBP.first<<":"<<jBP.second<<")" << " - no ext at j: " << bpProb;
+			if (iBP != jBP && hasSeedhandler) {
 				structureProbs[iBP] += (1 / predictor->getZall()) * bpProb;
-				LOG_IF((z->first.i1 == 1 && z->first.i2 == 1), DEBUG) <<"("<<iBP.first<<":"<<iBP.second<<")" << " - no ext at i: " << bpProb;
-			//}
+				LOG_IF((z->first.i1 == 0 && z->first.i2 == 0), DEBUG) <<"("<<iBP.first<<":"<<iBP.second<<")" << " - no ext at i: " << bpProb;
+			}
 		}
 
 		assert( !Z_equal(z->second,0) );
@@ -308,7 +309,7 @@ computeBasePairProbs( PredictorMfeEns *predictor
 									 / Zinit;
 
 				structureProbs[jBP] += (1 / predictor->getZall()) * bpProb;
-				LOG_IF((z->first.j1 == 1 && z->first.j2 == 1), DEBUG)
+				LOG_IF((z->first.j1 == 0 && z->first.j2 == 0), DEBUG)
 				<<"("<<jBP.first<<":"<<jBP.second<<")" << " - ext at: " << right->first << ":" << right->second << "=" << bpProb << " | left: " << z->second << " | right = " << getHybridZ(z->first.j1, right->first, z->first.j2, right->second, predictor);
 
 
