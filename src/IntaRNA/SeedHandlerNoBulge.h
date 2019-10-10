@@ -26,7 +26,7 @@ protected:
 	typedef std::vector<E_type> StackingEnergyList;
 
 	//! container type for sparse seed information
-	typedef boost::unordered_map< Interaction::BasePair, E_type > SeedHash;
+	typedef boost::unordered_map< Interaction::BasePair, E_type, Interaction::BasePair::Hash, Interaction::BasePair::Equal > SeedHash;
 
 	//! container to store seeds' hybridization energies
 	SeedHash seedForLeftEnd;

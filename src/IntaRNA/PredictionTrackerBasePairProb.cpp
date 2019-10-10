@@ -82,10 +82,10 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 			Interaction::BasePair left(it->first.i1, it->first.i2);
 			Interaction::BasePair right(it->first.j1, it->first.j2);
 			// create left index
-			rightExt[left].push_back(right);
+			rightExt[left].insert(right);
 			// create right index
 			if (seedHandler != NULL) {
-				leftExt[right].push_back(left);
+				leftExt[right].insert(left);
 			}
 		}
 
@@ -151,9 +151,7 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 //				}
 				computeMissingZ(sk1, sj1, sk2, sj2, si1, sj1, si2, sj2, predictor, seedHandler);
 				// update right extension index
-				if (std::find(rightExt[skBP].begin(), rightExt[skBP].end(), sjBP) == rightExt[skBP].end()) {
-					rightExt[skBP].push_back(sjBP);
-				}
+				rightExt[skBP].insert(sjBP);
 
 				// right extensions
 				// iterate all r=rightExt[si] to computeMissingZ(si,sk,r) and update rightExt[sk].push(r)
@@ -164,9 +162,7 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 					{
 						computeMissingZ(sk1, seedRightExt->first, sk2, seedRightExt->second, si1, seedRightExt->first, si2, seedRightExt->second, predictor, seedHandler);
 						// update right extension index
-						if (std::find(rightExt[skBP].begin(), rightExt[skBP].end(), *seedRightExt) == rightExt[skBP].end()) {
-							rightExt[skBP].push_back(*seedRightExt);
-						}
+						rightExt[skBP].insert(*seedRightExt);
 					}
 				}
 
@@ -362,11 +358,11 @@ computeMissingZ( const size_t i1, const size_t j1
 
 			LOG(DEBUG) <<" split seed "<<l1<<":"<<l2<<" k "<<k1<<":"<<k2<<" "<<r1<<":"<<r2;
 			// find leftmost overlapping seeds
-			std::vector< std::pair <size_t, size_t> > overlappingSeeds = getLeftMostSeedsAtK(k1, k2, l1,l2, seedHandler);
+			std::vector< Interaction::BasePair > overlappingSeeds = getLeftMostSeedsAtK(k1, k2, l1,l2, seedHandler);
 			LOG(DEBUG) << " seedCount: " << overlappingSeeds.size();
 
 			// loop over overlapping seeds
-			for(std::vector< std::pair <size_t, size_t> >::iterator seedLeft = overlappingSeeds.begin(); seedLeft != overlappingSeeds.end(); ++seedLeft) {
+			for (auto seedLeft = overlappingSeeds.begin(); seedLeft != overlappingSeeds.end(); ++seedLeft) {
 				// calculate missing partition function
 				const size_t sl1 = seedHandler->getSeedLength1(seedLeft->first, seedLeft->second);
 				const size_t sl2 = seedHandler->getSeedLength2(seedLeft->first, seedLeft->second);
@@ -418,7 +414,7 @@ isFullSeedinRegion( const size_t i1, const size_t j1
 
 ////////////////////////////////////////////////////////////////////////////
 
-std::vector< std::pair <size_t, size_t> >
+std::vector< Interaction::BasePair >
 PredictionTrackerBasePairProb::
 getLeftMostSeedsAtK( const size_t k1, const size_t k2
 				, const size_t i1min, const size_t i2min
@@ -461,7 +457,7 @@ getLeftMostSeedsAtK( const size_t k1, const size_t k2
 			if (seedHandler->areLoopOverlapping(si1, si2, it->first, it->second)) {
 				// replace if new seed is more left
 				if (si1 < it->first && si2 < it->second) {
-					*it = std::make_pair(si1, si2);
+					*it = Interaction::BasePair(si1, si2);
 				}
 				found = true;
 				break;

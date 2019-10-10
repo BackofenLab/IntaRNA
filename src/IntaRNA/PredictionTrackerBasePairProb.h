@@ -27,9 +27,9 @@ class PredictionTrackerBasePairProb: public PredictionTracker
 
 public:
 
-	typedef std::unordered_map<Interaction::BasePair, Z_type, Interaction::BasePairHash> BasePair2Prob_hash;
+	typedef std::unordered_map<Interaction::BasePair, Z_type, Interaction::BasePair::Hash, Interaction::BasePair::Equal> BasePair2Prob_hash;
 
-	typedef std::unordered_map<Interaction::BasePair, std::list<Interaction::BasePair>, Interaction::BasePairHash> BasePairIndex;
+	typedef std::unordered_map<Interaction::BasePair, std::set<Interaction::BasePair>, Interaction::BasePair::Hash, Interaction::BasePair::Equal> BasePairIndex;
 
 public:
 
@@ -123,7 +123,7 @@ public:
 	 * @return vector of pairs containing the left-most seed of each
 	 *         loop-overlapping cluster of seeds containing base pair k
 	 */
-	std::vector< std::pair <size_t, size_t> >
+	std::vector< Interaction::BasePair >
 	getLeftMostSeedsAtK( const size_t k1, const size_t k2
 					, const size_t i1min, const size_t i2min
 					           , SeedHandler* seedHandler );
