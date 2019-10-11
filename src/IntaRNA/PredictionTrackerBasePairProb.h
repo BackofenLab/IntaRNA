@@ -90,13 +90,15 @@ public:
 	 * @param seedHandler the seedHandler of the predictor
 	 */
 	void
-	computeMissingZ( const size_t i1, const size_t j1
-								, const size_t i2, const size_t j2
-								, const size_t l1, const size_t r1
-								, const size_t l2, const size_t r2
-								, PredictorMfeEns *predictor
-								, SeedHandler* seedHandler );
+	computeMissingZ( const Interaction::Boundary & boundFull
+					, const Interaction::BasePair & k
+					, PredictorMfeEns *predictor , SeedHandler* seedHandler );
 
+	std::pair< Z_type, Z_type >
+	computeMissingZseed( const size_t l1, const size_t k1, const size_t r1
+						, const size_t l2 , const size_t k2, const size_t r2
+						, PredictorMfeEns *predictor
+						, SeedHandler* seedHandler );
 	/**
 	 * Check if full seed exists in the region (i1, j1, i2, j2)
 	 * @param i1 region index
@@ -158,6 +160,17 @@ public:
 	getHybridZ( const size_t i1, const size_t j1
 	          , const size_t i2, const size_t j2
 	          , PredictorMfeEns *predictor);
+	/**
+	 * Access to the current partition function covering
+	 * the interaction at region (i1, j1, i2, j2).
+	 * @param boundary the region of interest
+	 * @param predictor the predictor providing the probability information
+	 *
+	 * @return the hybridization partition function at given region
+	 */
+	Z_type
+	getHybridZ(  const Interaction::Boundary & boundary
+	          , PredictorMfeEns *predictor);
 
 	/**
 	 * Access to the base pair probability
@@ -186,7 +199,28 @@ public:
 	updateHybridZ( const size_t i1, const size_t j1
 						 	 , const size_t i2, const size_t j2
 							 , const Z_type partZ
-							 , PredictorMfeEns * predictor );
+							 , const PredictorMfeEns & predictor );
+
+	/**
+	 * Set the current partition function covering
+	 * the interaction at region (i1, j1, i2, j2).
+	 * @param boundary the region of interest
+	 * @param partZ the new partition function for givent region
+	 * @param predictor the predictor providing the probability information
+	 */
+	void
+	updateHybridZ( const Interaction::Boundary & boundary
+				 , const Z_type partZ
+	         	, const PredictorMfeEns & predictor );
+
+	void
+	updateProb( const Interaction::BasePair & bp, const Z_type prob ) {
+		if (structureProbs.find(bp)==structureProbs.end()) {
+			structureProbs[bp] = prob;
+		} else {
+			structureProbs[bp] += prob;
+		}
+	}
 
   /**
 	 * Generates a dotplot of the given base pair probabilities
