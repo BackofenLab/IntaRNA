@@ -596,7 +596,7 @@ getBasePairProb( const size_t i1, const size_t i2
 	if ( structureProbs.find(bp) == structureProbs.end() ) {
 		return Z_type(0);
 	} else {
-		return structureProbs[bp];
+		return structureProbs[bp] / predictor->getZall();
 	}
 }
 
