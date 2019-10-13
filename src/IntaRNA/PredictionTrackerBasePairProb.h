@@ -91,14 +91,15 @@ public:
 	 */
 	void
 	computeMissingZ( const Interaction::Boundary & boundFull
-					, const Interaction::BasePair & k
-					, PredictorMfeEns *predictor , SeedHandler* seedHandler );
+					       , const Interaction::BasePair & k
+				         , const PredictorMfeEns *predictor
+					       , const SeedHandler* seedHandler );
 
 	std::pair< Z_type, Z_type >
 	computeMissingZseed( const size_t l1, const size_t k1, const size_t r1
-						, const size_t l2 , const size_t k2, const size_t r2
-						, PredictorMfeEns *predictor
-						, SeedHandler* seedHandler );
+						         , const size_t l2 , const size_t k2, const size_t r2
+					           , const PredictorMfeEns *predictor
+					           , const SeedHandler* seedHandler );
 	/**
 	 * Check if full seed exists in the region (i1, j1, i2, j2)
 	 * @param i1 region index
@@ -112,7 +113,7 @@ public:
 	bool
 	isFullSeedinRegion( const size_t i1, const size_t j1
 					        	, const size_t i2, const size_t j2
-					        	, SeedHandler* seedHandler );
+					        	, const SeedHandler* seedHandler );
 
 	/**
 	 * Get leftmost seeds containing basepair (k1, k2)
@@ -127,8 +128,8 @@ public:
 	 */
 	std::vector< Interaction::BasePair >
 	getLeftMostSeedsAtK( const size_t k1, const size_t k2
-					, const size_t i1min, const size_t i2min
-					           , SeedHandler* seedHandler );
+					           , const size_t i1min, const size_t i2min
+					           , const SeedHandler* seedHandler );
 
 	/**
 	 * Get partial energy of seed (si1, si2) at region (i1, j1, i2, j2)
@@ -144,7 +145,7 @@ public:
 	getPartialSeedEnergy( const size_t si1, const size_t si2
 		                  , const size_t i1, const size_t j1
 											, const size_t i2, const size_t j2
-											, SeedHandler* seedHandler );
+											, const SeedHandler* seedHandler );
 	/**
 	 * Access to the current partition function covering
 	 * the interaction at region (i1, j1, i2, j2).
@@ -159,7 +160,7 @@ public:
 	Z_type
 	getHybridZ( const size_t i1, const size_t j1
 	          , const size_t i2, const size_t j2
-	          , PredictorMfeEns *predictor);
+	          , const PredictorMfeEns *predictor);
 	/**
 	 * Access to the current partition function covering
 	 * the interaction at region (i1, j1, i2, j2).
@@ -170,7 +171,7 @@ public:
 	 */
 	Z_type
 	getHybridZ(  const Interaction::Boundary & boundary
-	          , PredictorMfeEns *predictor);
+	           , const PredictorMfeEns *predictor);
 
 	/**
 	 * Access to the base pair probability
@@ -183,7 +184,7 @@ public:
 	 */
 	Z_type
 	getBasePairProb( const size_t i1, const size_t i2
-	               , PredictorMfeEns *predictor);
+	               , const PredictorMfeEns *predictor);
 
 	/**
 	 * Set the current partition function covering
@@ -210,8 +211,8 @@ public:
 	 */
 	void
 	updateHybridZ( const Interaction::Boundary & boundary
-				 , const Z_type partZ
-	         	, const PredictorMfeEns & predictor );
+				       , const Z_type partZ
+	         	   , const PredictorMfeEns & predictor );
 
 	void
 	updateProb( const Interaction::BasePair & bp, const Z_type prob ) {
@@ -234,9 +235,9 @@ public:
 	 * @return false in case of failure
 	 */
 	bool
-	generateDotPlot( char *seq1, char *seq2, char *fileName
-	               , plist *pl, const char *comment
-								 , Interaction::Boundary interactionBoundary );
+	generateDotPlot( const char *seq1, const char *seq2, const char *fileName
+	               , const plist *pl, const char *comment
+								 , const Interaction::Boundary interactionBoundary );
 
 	/**
 	 * Compute basepair probabilities and store in structureProbs
@@ -245,9 +246,16 @@ public:
 	 * @param iterator end of partition function
 	 */
 	void
-	computeBasePairProbs( PredictorMfeEns *predictor
+	computeBasePairProbs( const PredictorMfeEns *predictor
 		                  , const PredictorMfeEns::Site2Z_hash::const_iterator first
 	                    , const PredictorMfeEns::Site2Z_hash::const_iterator last );
+
+	/**
+	 * Compute basepair probabilities for no-seed predictions and store in structureProbs
+	 * @param predictor the predictor providing the probability information
+	 */
+	void
+	computeBasePairProbsNoSeed( const PredictorMfeEns *predictor );
 
 protected:
 
