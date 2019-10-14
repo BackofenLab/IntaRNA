@@ -288,8 +288,6 @@ void
 PredictionTrackerBasePairProb::
 computeBasePairProbsNoSeed( const PredictorMfeEns *predictor )
 {
-	const Z_type Zinit = energy.getBoltzmannWeight(energy.getE_init());
-
 	for (auto z = predictor->getZPartition().begin(); z != predictor->getZPartition().end(); ++z) {
 		assert( !Z_equal(z->second, 0) );
 
@@ -305,11 +303,10 @@ computeBasePairProbsNoSeed( const PredictorMfeEns *predictor )
 			// right end
 			updateProb(jBP, bpProb);
 
-			// inner
+			// inner (rightExt > jBP)
 			for (auto right = rightExt[jBP].begin(); right != rightExt[jBP].end(); ++right) {
 				Z_type innerProb = z->second * getHybridZ(z->first.j1, right->first, z->first.j2, right->second, predictor)
-									 * energy.getBoltzmannWeight(energy.getE(z->first.i1, right->first, z->first.i2, right->second, E_type(0)))
-									 / Zinit;
+									 * energy.getBoltzmannWeight(energy.getE(z->first.i1, right->first, z->first.i2, right->second, -energy.getE_init());
 				updateProb(jBP, innerProb);
 			}
 		}
