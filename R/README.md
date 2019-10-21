@@ -31,5 +31,5 @@ b0005;281;295;query;5;22
 ```
 
 will produce the output
-[!plotRegions.R example](plotRegions.example.png)
+![plotRegions.R example](plotRegions.example.png)
 
