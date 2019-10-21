@@ -13,8 +13,17 @@
 # IntaRNA
 - `--outSep` = user-defined column separator for tabular CSV output
 
+# auxiliary R scripts
+- plotRegions.py - visualization of sequence regions covered by IntaRNA 
+  predictions, similar to the IntaRNA webserver output (thanks to @dgelsin)
+
 ################################################################################  
-################################################################################  
+################################################################################
+
+191021 Martin Raden
+ + R/plotRegions.R :  visualization of sequence regions covered by RRI
+ + R/README.md : plotRegions docu
+ * README.md : link to R/README.md
 
 191008 Martin Raden
  * IntaRNA/OutputHandlerCsv :
