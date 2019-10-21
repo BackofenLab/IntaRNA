@@ -119,7 +119,8 @@ The following topics are covered by this documentation:
       - [Constrain regions to be accessible or blocked](#accConstraints)
       - [Read/write accessibility from/to file or stream](#accFromFile)
 - [Library for integration in external tools](#lib)
-- [Auxiliary R scripts for output visualization etc.](/R/README.md)
+- [Auxiliary R scripts for output visualization etc.](/R)
+- [Auxiliary python scripts for IntaRNA-based pipelines](/python)
 
 
 <br /><br /><br /><br />
