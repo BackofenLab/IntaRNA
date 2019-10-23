@@ -306,7 +306,7 @@ computeBasePairProbsNoSeed( const PredictorMfeEns *predictor )
 			// inner (rightExt > jBP)
 			for (auto right = rightExt[jBP].begin(); right != rightExt[jBP].end(); ++right) {
 				Z_type innerProb = z->second * getHybridZ(z->first.j1, right->first, z->first.j2, right->second, predictor)
-									 * energy.getBoltzmannWeight(energy.getE(z->first.i1, right->first, z->first.i2, right->second, -energy.getE_init());
+									 * energy.getBoltzmannWeight(energy.getE(z->first.i1, right->first, z->first.i2, right->second, -energy.getE_init()));
 				updateProb(jBP, innerProb);
 			}
 		}
