@@ -26,6 +26,11 @@
    * getNextBest() :
      * bugfix: energy check was applying duplicated ED values 
        (thanks to Jens Georg)
+ * IntaRNA/PredictorMfe2dSeedExtension :
+ * IntaRNA/PredictorMfe2dHeuristicSeedExtension :
+ * IntaRNA/PredictorMfeEns2dSeedExtension :
+   * fillHybrid*_left() + traceBack() : 
+     * bugfix: missing case in noLP mode (direct left-stack extension) 
 
 191021 Martin Raden
  + R/plotRegions.R :  visualization of sequence regions covered by RRI
