@@ -12,6 +12,7 @@
 
 # IntaRNA
 - `--outSep` = user-defined column separator for tabular CSV output
+- bugfix non-overlapping suboptimal enumeration
 
 # auxiliary R scripts
 - plotRegions.py - visualization of sequence regions covered by IntaRNA 
@@ -19,6 +20,12 @@
 
 ################################################################################  
 ################################################################################
+
+191029 Martin Raden
+ * IntaRNA/PredictorMfe :
+   * getNextBest() :
+     * bugfix: energy check was applying duplicated ED values 
+       (thanks to Jens Georg)
 
 191021 Martin Raden
  + R/plotRegions.R :  visualization of sequence regions covered by RRI

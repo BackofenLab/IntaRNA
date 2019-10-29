@@ -142,7 +142,7 @@ updateOptima( const size_t i1, const size_t j1
 	tmp.basePairs[1] = energy.getBasePair(j1,j2);
 	// handle single bp interactions
 	if (tmp.basePairs[0] == tmp.basePairs[1]) { tmp.basePairs.resize(1); }
-	INTARNA_CLEANUP(tmp.seed); tmp.seed=NULL;
+	INTARNA_CLEANUP(tmp.seed);
 
 	if (mfeInteractions.size() == 1) {
 		if ( tmp < *(mfeInteractions.begin()) ) {
@@ -308,6 +308,11 @@ getNextBest( Interaction & curBest )
 
 	// get original
 	const E_type curBestE = curBest.energy;
+	// clear seed information if present
+	if (curBest.seed != NULL) {
+		curBest.seed->clear();
+		INTARNA_CLEANUP(curBest.seed);
+	}
 
 	// identify cell with next best non-overlapping interaction site
 	// iterate (decreasingly) over all left interaction starts
@@ -328,9 +333,7 @@ getNextBest( Interaction & curBest )
 		// pointer access to cell value
 		curCell = &(curLeftBound->second);
 		// get overall energy of the interaction
-		curCellE = energy.getE(curLeftBound->first.first, curLeftBound->second.j1
-							, curLeftBound->first.second, curLeftBound->second.j2
-							, curLeftBound->second.val );
+		curCellE = curLeftBound->second.val;
 		// deal with degeneracy of energy model, ie. multiple sites with bestE
 		if (E_equal(curCellE,curBestCellE)) {
 			// select left most to be deterministic in output
