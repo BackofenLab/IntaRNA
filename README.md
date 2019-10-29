@@ -1381,8 +1381,14 @@ are
 - `seedED2` : ED value of seq2 of the seed only (excluding rest) (* see below)
 - `seedPu1` : probability of seed region to be accessible for seq1 (* see below)
 - `seedPu2` : probability of seed region to be accessible for seq2 (* see below)
-- `Eall` : ensemble energy of all considered interactions (-RT*log(Zall))
+- `Eall` : ensemble energy of all considered interactions (-RT*log(`Zall`))
 - `Zall` : partition function of all considered interactions
+- `Eall1` : ensemble energy of all considered intra-molecular structures of seq1 (given its accessibility constraints)
+- `Eall2` : ensemble energy of all considered intra-molecular structures of seq2 (given its accessibility constraints)
+- `EallTotal` : total ensemble energy of all considered interactions including the ensemble energies of intra-molecular structure formation (`Eall+Eall1+Eall2`)
+- `Etotal` : total energy of an interaction including the ensemble energies of intra-molecular structure formation (`E+Eall1+Eall2`)
+- `Zall1` : partition function represented by `Eall1` (exp(-`Eall1`/RT))
+- `Zall2` : partition function represented by `Eall2` (exp(-`Eall2`/RT))
 - `P_E` : probability of an interaction (site) within the considered ensemble
 
 (*) Note, since an interaction can cover more than one seed, all `seed*` columns
@@ -1446,8 +1452,11 @@ column labels introduced for the CVS output:
 
 - `id1` : id of first sequence (target)
 - `id2` : id of second sequence (query)
-- `Zall` : partition function of all considered interactions
+- `RT`: the scaled temperature used for Boltzmann-weight computation
 - `Eall` : ensemble energy of all considered interactions (-RT*log(Zall))
+- `Eall1` : ensemble energy of all considered intra-molecular structures of seq1 (given its accessibility constraints)
+- `Eall2` : ensemble energy of all considered intra-molecular structures of seq2 (given its accessibility constraints)
+- `EallTotal` : total ensemble energy of all considered interactions including the ensemble energies of intra-molecular structure formation (`Eall+Eall1+Eall2`)
 
 Note, `Zall` depends on the selected 
 [prediction mode](#predModes) and 
@@ -1456,7 +1465,7 @@ It holds `Zall(--model=S) <= Zall(--model=P)` as well as
 `Zall(--mode=H) <= Zall(--mode=M)`.
 Thus, most accurate results are computed using
 ```
-IntaRNA --model=P --mode=M --out=E ...
+IntaRNA --model=P --mode=M --outMode=E ...
 ```
 
 

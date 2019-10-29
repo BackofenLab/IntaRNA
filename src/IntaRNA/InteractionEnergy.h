@@ -122,11 +122,12 @@ public:
 			, const E_type hybridE ) const;
 
 	/**
-	 * Provides the ensemble energy for a given partition function Z.
+	 * Provides the ensemble energy (in internal energy representation)
+	 * for a given partition function Z.
 	 *
 	 * @param Z the ensemble's partition function to convert
 	 *
-	 * @return E = -RT * log( Z )
+	 * @return E = -RT * log( Z ) in internal energy representation
 	 */
 	virtual
 	E_type
@@ -480,12 +481,21 @@ public:
 
 	/**
 	 * Provides the Boltzmann weight for a given energy.
-	 * @param energy the energy the Boltzmann weight is to be computed for
+	 * @param energy the energy (internal representation) the Boltzmann weight is to be computed for
 	 * @return the Boltzmann weight, i.e. exp( - energy / RT );
 	 */
 	virtual
 	Z_type
 	getBoltzmannWeight( const E_type energy ) const ;
+
+	/**
+	 * Provides the Boltzmann weight for a given energy.
+	 * @param energy the energy (in kcal/mol) the Boltzmann weight is to be computed for
+	 * @return the Boltzmann weight, i.e. exp( - energy / RT );
+	 */
+	virtual
+	Z_type
+	getBoltzmannWeight( const Z_type energy ) const ;
 
 
 	/**
@@ -553,6 +563,23 @@ public:
 	bool
 	isInternalLoopGUallowed() const;
 
+	/**
+	 * Provides the overall ensemble energy for sequence 1
+	 * given its accessibility constraints
+	 * @return Eall(constraint-conform intra-molecular structures for seq1)
+	 */
+	virtual
+	E_type
+	getEall1() const = 0;
+
+	/**
+	 * Provides the overall ensemble energy for sequence 2
+	 * given its accessibility constraints
+	 * @return Eall(constraint-conform intra-molecular structures for seq2)
+	 */
+	virtual
+	E_type
+	getEall2() const = 0;
 
 protected:
 
@@ -762,6 +789,17 @@ getBoltzmannWeight( const E_type e ) const
 ////////////////////////////////////////////////////////////////////////////
 
 inline
+Z_type
+InteractionEnergy::
+getBoltzmannWeight( const Z_type e ) const
+{
+	// TODO can be optimized when using exp-energies from VRNA
+	return Z_exp( - e / getRT() );
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
 Interaction::BasePair
 InteractionEnergy::
 getBasePair( const size_t i1, const size_t i2 ) const
@@ -953,7 +991,6 @@ getE( const Z_type Z ) const
 	// convert to E_type
 	return Z_2_E( - getRT() * Z_log( Z ) );
 }
-
 
 ////////////////////////////////////////////////////////////////////////////
 

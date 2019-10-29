@@ -67,6 +67,20 @@ public:
 	E_type
 	getED( const size_t from, const size_t to ) const;
 
+
+	/**
+	 * Adds constraints to the VRNA fold compound that correspond to the present
+	 * AccessibilityConstraints
+	 * @param fold_compound INOUT the object to extend
+	 * @param acc the accessibility handler to get constraint information from
+	 */
+	static
+	void
+	addConstraints( vrna_fold_compound_t & fold_compound
+				, const Accessibility & acc );
+
+
+
 protected:
 
 	//! type for the ED value matrix (upper triangular matrix banded by maxLength)

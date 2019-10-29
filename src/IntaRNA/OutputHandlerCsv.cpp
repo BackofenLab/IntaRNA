@@ -25,7 +25,10 @@ const OutputHandlerCsv::ColTypeList OutputHandlerCsv::colTypeNumericSort(
 		",E,ED1,ED2,Pu1,Pu2,E_init,E_loops,E_dangleL,E_dangleR,E_endL,E_endR,E_hybrid,E_norm,E_hybridNorm,E_add"
 		",w"
 		",seedStart1,seedEnd1,seedStart2,seedEnd2,seedE,seedED1,seedED2,seedPu1,seedPu2"
-		",Eall,Zall,P_E"
+		",Eall,Eall1,Eall2"
+		",Zall,Zall1,Zall2"
+		",Etotal,EallTotal"
+		",P_E"
 		));
 
 ////////////////////////////////////////////////////////////////////////
@@ -198,6 +201,13 @@ add( const Interaction & i )
 
 			case E:
 				outTmp <<E_2_Ekcal(i.energy);
+				break;
+
+			case Etotal:
+				if ( E_isINF(energy.getEall1()) || E_isINF(energy.getEall2()) )
+					outTmp << notAvailable;
+				else
+					outTmp <<E_2_Ekcal( i.energy + energy.getEall1() + energy.getEall2() );
 				break;
 
 			case ED1:
@@ -416,8 +426,31 @@ add( const Interaction & i )
 				if ( Z_equal(Z,Z_type(0)) ) outTmp << notAvailable; else outTmp <<E_2_Ekcal(energy.getE(Z));
 				break;
 
+			case Eall1:
+				if ( E_isINF(energy.getEall1()) ) outTmp << notAvailable; else outTmp <<E_2_Ekcal(energy.getEall1());
+				break;
+
+			case Eall2:
+				if ( E_isINF(energy.getEall2()) ) outTmp << notAvailable; else outTmp <<E_2_Ekcal(energy.getEall2());
+				break;
+
+			case EallTotal:
+				if ( Z_equal(Z,Z_type(0)) || E_isINF(energy.getEall1()) || E_isINF(energy.getEall2()) )
+					outTmp << notAvailable;
+				else
+					outTmp <<E_2_Ekcal( energy.getE(Z) + energy.getEall1() + energy.getEall2() );
+				break;
+
 			case Zall:
 				if ( Z_equal(Z,Z_type(0)) ) outTmp << notAvailable; else outTmp <<Z;
+				break;
+
+			case Zall1:
+				if ( E_isINF(energy.getEall1()) ) outTmp << notAvailable; else outTmp <<energy.getBoltzmannWeight(energy.getEall1());
+				break;
+
+			case Zall2:
+				if ( E_isINF(energy.getEall2()) ) outTmp << notAvailable; else outTmp <<energy.getBoltzmannWeight(energy.getEall2());
 				break;
 
 			case P_E:

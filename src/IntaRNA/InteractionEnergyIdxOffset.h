@@ -469,6 +469,24 @@ public:
 	bool
 	isValidInternalLoop( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const;
 
+	/**
+	 * Provides the overall ensemble energy for sequence 1
+	 * given its accessibility constraints
+	 * @return Eall(constraint-conform intra-molecular structures for seq1)
+	 */
+	virtual
+	E_type
+	getEall1() const;
+
+	/**
+	 * Provides the overall ensemble energy for sequence 2
+	 * given its accessibility constraints
+	 * @return Eall(constraint-conform intra-molecular structures for seq2)
+	 */
+	virtual
+	E_type
+	getEall2() const;
+
 
 protected:
 
@@ -869,7 +887,26 @@ isValidInternalLoop( const size_t i1, const size_t j1, const size_t i2, const si
 {
 	return energyOriginal.isValidInternalLoop( i1+offset1, j1+offset1, i2+offset2, j2+offset2 );
 }
-	
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+InteractionEnergyIdxOffset::
+getEall1() const
+{
+	return energyOriginal.getEall1();
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+InteractionEnergyIdxOffset::
+getEall2() const
+{
+	return energyOriginal.getEall2();
+}
 
 ////////////////////////////////////////////////////////////////////////////
 

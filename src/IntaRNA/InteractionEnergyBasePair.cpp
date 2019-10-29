@@ -3,6 +3,8 @@
 
 namespace IntaRNA {
 
+////////////////////////////////////////////////////////////////////////////
+
 void InteractionEnergyBasePair::computeES(const RnaSequence &seq,
     NussinovHandler::E2dMatrix &logQ) {
   const size_t N = seq.size();
@@ -29,5 +31,27 @@ void InteractionEnergyBasePair::computeES(const RnaSequence &seq,
     }
   }
 }
+
+////////////////////////////////////////////////////////////////////////////
+
+E_type
+InteractionEnergyBasePair::
+getEall1() const
+{
+	INTARNA_NOT_IMPLEMENTED("intra-molecular ensemble energy computation for base pair energies not implemented yet")
+	return 0.0;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+E_type
+InteractionEnergyBasePair::
+getEall2() const
+{
+	INTARNA_NOT_IMPLEMENTED("intra-molecular ensemble energy computation for base pair energies not implemented yet")
+	return 0.0;
+}
+
+////////////////////////////////////////////////////////////////////////////
 
 }  // namespace IntaRNA

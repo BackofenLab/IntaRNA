@@ -242,6 +242,24 @@ public:
 	E_type
 	getE_basePair() const;
 
+	/**
+	 * Provides the overall ensemble energy for sequence 1
+	 * given its accessibility constraints
+	 * @return Eall(constraint-conform intra-molecular structures for seq1)
+	 */
+	virtual
+	E_type
+	getEall1() const;
+
+	/**
+	 * Provides the overall ensemble energy for sequence 2
+	 * given its accessibility constraints
+	 * @return Eall(constraint-conform intra-molecular structures for seq2)
+	 */
+	virtual
+	E_type
+	getEall2() const;
+
 
 private:
 
