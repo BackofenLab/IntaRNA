@@ -907,7 +907,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 				->default_value(outCsvCols,"see text")
 				->notifier(boost::bind(&CommandLineParsing::validate_outCsvCols,this,_1))
 			, std::string("output : comma separated list of CSV column IDs to print if outMode=C."
-					" An empty argument (using '') prints all possible columns from the following available ID list: "
+					" Using '*' or an empty argument ('') prints all possible columns from the following available ID list: "
 					+ OutputHandlerCsv::list2string(OutputHandlerCsv::string2list(""),", ")+"."
 					+ "\nDefault = '"+outCsvCols+"'."
 					).c_str())
@@ -1357,7 +1357,7 @@ parse(int argc, char** argv)
 					throw error("outCsvSort set but outMode != C ("+toString(outMode.val)+")");
 				}
 				// check if column to sort is within output list
-				std::string curCsvCols = (outCsvCols.empty() ? OutputHandlerCsv::list2string(OutputHandlerCsv::string2list(""),",") : outCsvCols);
+				std::string curCsvCols = (outCsvCols.empty() || outCsvCols=="*" ? OutputHandlerCsv::list2string(OutputHandlerCsv::string2list(""),",") : outCsvCols);
 				if ( ("," + curCsvCols + ",").find(","+outCsvSort+",") == std::string::npos ) {
 					throw error("outCsvSort column ID '"+outCsvSort+"' is not within outCsvCols list");
 				}

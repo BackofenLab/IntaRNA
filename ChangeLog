@@ -16,9 +16,10 @@
 - bugfix noLP optimization (missing case of direct left-stack extension)
 - CSV output
   - new ensemble energy and partition function output for intra-molecular 
-    structures formed by seq1 and seq2 (Eall1, Eall2, Zall1, Zall2)
-  - new total energy output Etotal = (E+Eall1+Eall2) and 
-    EallTotal = (Eall+Eall1+Eall2)
+    structures formed by seq1 and seq2 (`Eall1, Eall2, Zall1, Zall2`)
+  - new total energy output `Etotal` = (E+Eall1+Eall2) and 
+    `EallTotal` = (Eall+Eall1+Eall2)
+  - new `RT` output
 
 # auxiliary R scripts
 - plotRegions.py - visualization of sequence regions covered by IntaRNA 
@@ -26,6 +27,16 @@
 
 ################################################################################  
 ################################################################################
+
+191030 Martin Raden
+ * IntaRNA/OutputHandlerCsv :
+   + RT
+   * string2list() :
+     + support of '*' encoding to generate full list
+ * bin/CommandLineParsing :
+   + docu and implementation of '*' outCsvCol behaviour  
+ * README.md
+   + RT CSV col
 
 191029 Martin Raden
  * IntaRNA/PredictorMfe :

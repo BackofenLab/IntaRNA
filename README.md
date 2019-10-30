@@ -1390,6 +1390,7 @@ are
 - `Zall1` : partition function represented by `Eall1` (exp(-`Eall1`/RT))
 - `Zall2` : partition function represented by `Eall2` (exp(-`Eall2`/RT))
 - `P_E` : probability of an interaction (site) within the considered ensemble
+- `RT` : normalized temperature used for Boltzmann weight computation
 
 (*) Note, since an interaction can cover more than one seed, all `seed*` columns
 might contain multiple entries separated by ':' symbols. In order to print only
@@ -1399,7 +1400,7 @@ to the call.
 Note further, `Pu` values are recomputed from rounded `ED` values and are thus not equal
 to the RNAplfold values from which the ED values are derived from!
 
-Using `--outCsvCols ''`, all available columns are added to the output.
+Using `--outCsvCols '*'`, all available columns are added to the output.
 
 Energies are provided in unit *kcal/mol*, probabilities in the interval [0,1].
 Position annotations start indexing with 1 (or the values set via `--qIdxPos0` and `--tIdxPos0`).

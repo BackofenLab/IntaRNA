@@ -29,6 +29,7 @@ const OutputHandlerCsv::ColTypeList OutputHandlerCsv::colTypeNumericSort(
 		",Zall,Zall1,Zall2"
 		",Etotal,EallTotal"
 		",P_E"
+		",RT"
 		));
 
 ////////////////////////////////////////////////////////////////////////
@@ -455,6 +456,10 @@ add( const Interaction & i )
 
 			case P_E:
 				if ( Z_equal(Z,Z_type(0)) ) outTmp << notAvailable; else outTmp <<(energy.getBoltzmannWeight(i.energy)/Z);
+				break;
+
+			case RT:
+				outTmp << energy.getRT();
 				break;
 
 			default : throw std::runtime_error("OutputHandlerCsv::add() : unhandled ColType '"+colType2string[*col]+"'");

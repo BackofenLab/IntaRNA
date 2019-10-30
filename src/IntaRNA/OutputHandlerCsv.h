@@ -82,6 +82,7 @@ public:
 		Zall2, //!< partition function of all intra-molecular structures of seq2
 		EallTotal, //!< total ensemble energy (Eall+Eall1+Eall2) of all interactions including the intra-molecular ensemble energies (outConstraint.needZall)
 		P_E, //!< probability of mfe within interaction ensemble (outConstraint.needZall)
+		RT, //!< the scaled temperature used for Boltzmann weight computation
 		ColTypeNumber //!< number of column types
 	};
 
@@ -162,6 +163,7 @@ protected:
 			colType2string[Zall1] = "Zall1";
 			colType2string[Zall2] = "Zall2";
 			colType2string[P_E] = "P_E";
+			colType2string[RT] = "RT";
 			// ensure filling is complete
 			for (size_t i=0; i<ColTypeNumber; i++) {
 				if ( colType2string.find( static_cast<ColType>(i) ) == colType2string.end() ) {
@@ -223,6 +225,9 @@ public:
 	/**
 	 * Converts string representation of a list of Coltypes to the respective
 	 * list.
+	 *
+	 * If the provided string encoding is empty or equals '*', all available
+	 * columns are returned
 	 *
 	 * @param listString the string representation of the list
 	 * @return the parsed list
@@ -334,7 +339,7 @@ string2list( const std::string & stringEncoding )
 
 	ColTypeList list;
 	// empty string : give full list
-	if (stringEncoding.empty()) {
+	if (stringEncoding.empty() || stringEncoding == "*") {
 		// generate list of all types
 		for (size_t c = 0; c < (size_t)ColTypeNumber; c++) {
 			list.push_back( static_cast<ColType>(c) );
