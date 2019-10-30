@@ -27,6 +27,7 @@
   - new total energy output `Etotal` = (E+Eall1+Eall2) and 
     `EallTotal` = (Eall+Eall1+Eall2)
   - new `RT` output
+  - new `bpList` output
 
 # auxiliary R scripts
 - plotRegions.py - visualization of sequence regions covered by IntaRNA 
