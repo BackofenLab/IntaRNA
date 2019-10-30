@@ -17,7 +17,7 @@ the given order)
 
 An example is given below, when calling
 ```bash
-Rscript --slave -f plotRegions.R --args pred.csv 1 regions.png
+Rscript --vanilla plotRegions.R pred.csv 1 regions.png
 ```
 
 with `pred.csv` containing
