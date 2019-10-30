@@ -10,6 +10,13 @@
 # changes in development version since last release 
 ################################################################################
 
+################################################################################  
+################################################################################
+
+################################################################################
+### version 3.1.2
+################################################################################  
+
 # IntaRNA
 - `--outSep` = user-defined column separator for tabular CSV output
 - bugfix non-overlapping suboptimal enumeration
@@ -25,7 +32,6 @@
 - plotRegions.py - visualization of sequence regions covered by IntaRNA 
   predictions, similar to the IntaRNA webserver output (thanks to @dgelsin)
 
-################################################################################  
 ################################################################################
 
 191030 Martin Raden
