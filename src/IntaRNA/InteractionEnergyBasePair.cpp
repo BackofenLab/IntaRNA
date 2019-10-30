@@ -34,7 +34,6 @@ void InteractionEnergyBasePair::computeES(const RnaSequence &seq,
 
 ////////////////////////////////////////////////////////////////////////////
 
-inline
 E_type
 InteractionEnergyBasePair::
 getEall1() const
@@ -48,7 +47,6 @@ getEall1() const
 
 ////////////////////////////////////////////////////////////////////////////
 
-inline
 E_type
 InteractionEnergyBasePair::
 getEall2() const
