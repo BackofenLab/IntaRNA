@@ -35,6 +35,9 @@
      + support of '*' encoding to generate full list
  * bin/CommandLineParsing :
    + docu and implementation of '*' outCsvCol behaviour  
+ * IntaRNA/InteractionEnergyBasePair :
+   + computeIntraEall() : computes Eall1|2 via NussinovHandler
+   * getEall1|2() : call computeIntraEall if needed
  * README.md
    + RT CSV col
 

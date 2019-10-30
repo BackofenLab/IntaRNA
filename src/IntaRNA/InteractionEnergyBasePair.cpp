@@ -34,22 +34,64 @@ void InteractionEnergyBasePair::computeES(const RnaSequence &seq,
 
 ////////////////////////////////////////////////////////////////////////////
 
+inline
 E_type
 InteractionEnergyBasePair::
 getEall1() const
 {
-	INTARNA_NOT_IMPLEMENTED("intra-molecular ensemble energy computation for base pair energies not implemented yet")
-	return 0.0;
+	// compute Z if needed
+	if (E_isINF(Eall1)) {
+		Eall1 = computeIntraEall( accS1 );
+	}
+	return Eall1;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+InteractionEnergyBasePair::
+getEall2() const
+{
+	// compute Z if needed
+	if (E_isINF(Eall2)) {
+		Eall2 = computeIntraEall( accS2.getAccessibilityOrigin() );
+	}
+	return Eall2;
 }
 
 ////////////////////////////////////////////////////////////////////////////
 
 E_type
 InteractionEnergyBasePair::
-getEall2() const
+computeIntraEall( const Accessibility & acc ) const
 {
-	INTARNA_NOT_IMPLEMENTED("intra-molecular ensemble energy computation for base pair energies not implemented yet")
-	return 0.0;
+	if ( !acc.getAccConstraint().isEmpty() ) {
+		INTARNA_NOT_IMPLEMENTED("InteractionEnergyBasePair: accessibility constraints for ensemble energy computation not supported");
+	}
+
+	const size_t N = acc.getSequence().size();
+
+	// check if any base pair can be formed
+	if (N < minLoopLength) {
+		return 0;
+	}
+
+	// create temporary matrices for ED computation
+	NussinovHandler::Z2dMatrix Q(N, N);
+	NussinovHandler::Z2dMatrix Qb(N, N);
+
+	// init temporary matrices
+	for (size_t i = 0u; i < N; ++i) {
+		for (size_t j = i; j < N; ++j) {
+			Q(i, j) = -1.0;
+			Qb(i, j) = -1.0;
+		}
+	}
+
+	// compute partition function and convert to ensemble energy
+	return getE( NussinovHandler::getQ( 0, N-1, acc.getSequence(), basePairWeight, minLoopLength, Q, Qb) );
+
 }
 
 ////////////////////////////////////////////////////////////////////////////
