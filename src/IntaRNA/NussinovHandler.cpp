@@ -71,7 +71,7 @@ Z_type
 NussinovHandler::getQ(const size_t i, const size_t j, const RnaSequence &seq,
     const Z_type bpWeight, const size_t minLoopLength,
     NussinovHandler::Z2dMatrix &Q, NussinovHandler::Z2dMatrix &Qb) {
-  if (i > j || j >= seq.size()) {
+  if (i >= j || j >= seq.size()) {
     return 1.0;
   }
   Z_type &ret = Q(i, j);
@@ -156,19 +156,20 @@ NussinovHandler::getPu(const size_t i, const size_t j, const RnaSequence &seq,
   if (i > j || j >= seq.size()) {
     return 0.0;
   }
-  Z_type &ret = Pu(i, j);
+  // referencing cell access to enable Pu update if needed
+  Z_type &curPu = Pu(i, j);
   // If value is already computed, return it
-  if (ret > -0.5) {
-    return ret;
+  if (curPu > -0.5) {
+    return curPu;
   }
   // Else compute Pu
-  ret = ((i>0?getQ(0, i - 1, seq, bpWeight, minLoopLength, Q, Qb):1.0) *
+  curPu = ((i>0?getQ(0, i - 1, seq, bpWeight, minLoopLength, Q, Qb):1.0) *
          getQ(j + 1, seq.size() - 1, seq, bpWeight, minLoopLength, Q, Qb) /
          getQ(0, seq.size() - 1, seq, bpWeight, minLoopLength, Q, Qb));
   for (size_t p = 0; p < i; ++p) {
     for (size_t q = j + 1; q < seq.size(); ++q) {
       if (p+minLoopLength<q && RnaSequence::areComplementary(seq, seq, p, q)) {
-        ret += (bpWeight *
+        curPu += (bpWeight *
                 getPbp(p, q, seq, bpWeight, minLoopLength, Q, Qb, Pbp) *
                 getQ(p + 1, i - 1, seq, bpWeight, minLoopLength, Q, Qb) *
                 getQ(j + 1, q - 1, seq, bpWeight, minLoopLength, Q, Qb) /
@@ -176,7 +177,7 @@ NussinovHandler::getPu(const size_t i, const size_t j, const RnaSequence &seq,
       }
     }
   }
-  return ret;
+  return curPu;
 }
 
 void

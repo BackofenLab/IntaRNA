@@ -10,12 +10,124 @@
 # changes in development version since last release 
 ################################################################################
 
+################################################################################  
+################################################################################
+
+################################################################################
+### version 3.1.2
+################################################################################  
+
+# IntaRNA
+- `--outSep` = user-defined column separator for tabular CSV output
+- bugfix non-overlapping suboptimal enumeration
+- bugfix noLP optimization (missing case of direct left-stack extension)
+- CSV output
+  - new ensemble energy and partition function output for intra-molecular 
+    structures formed by seq1 and seq2 (`Eall1, Eall2, Zall1, Zall2`)
+  - new total energy output `Etotal` = (E+Eall1+Eall2) and 
+    `EallTotal` = (Eall+Eall1+Eall2)
+  - new `RT` output
+
+# auxiliary R scripts
+- plotRegions.py - visualization of sequence regions covered by IntaRNA 
+  predictions, similar to the IntaRNA webserver output (thanks to @dgelsin)
+
+################################################################################
+
+191030 Martin Raden
+ * IntaRNA/OutputHandlerCsv :
+   + RT
+   * string2list() :
+     + support of '*' encoding to generate full list
+ * bin/CommandLineParsing :
+   + docu and implementation of '*' outCsvCol behaviour  
+ * IntaRNA/InteractionEnergyBasePair :
+   + computeIntraEall() : computes Eall1|2 via NussinovHandler
+   * getEall1|2() : call computeIntraEall if needed
+ * README.md
+   + RT CSV col
+
+191029 Martin Raden
+ * IntaRNA/PredictorMfe :
+   * getNextBest() :
+     * bugfix: energy check was applying duplicated ED values 
+       (thanks to Jens Georg)
+ * IntaRNA/PredictorMfe2dSeedExtension :
+ * IntaRNA/PredictorMfe2dHeuristicSeedExtension :
+ * IntaRNA/PredictorMfeEns2dSeedExtension :
+   * fillHybrid*_left() : 
+   * traceBack() : 
+     * bugfix: missing case in noLP mode (direct left-stack extension)
+ * IntaRNA/AccessibilityVrna :
+   + addConstraints() : dedicated function to add constraint to VrnaFoldCompound
+   * fillByRNAplfold() : using addConstraints()
+ * IntaRNA/InteractionEnergy :
+   + getBoltzmannWeight( Z_type ) : conversion from kcal/mol-based energies
+   + getEall1|2() : ensemble energy for seq1|2
+ * IntaRNA/InteractionEnergyBasePair :
+   + getEall1|2() : NOT IMPLEMENTED YET
+ * IntaRNA/InteractionEnergyIdxOffset :
+   + getEall1|2() : forward to wrapped energy handler
+ * IntaRNA/InteractionEnergyVrna :
+   + Eall1|2 : ensemble energies for seq1|2
+   + getEall1|2() : lazy computation of Eall1|2 using computeIntraEall()
+   + computeIntraEall() : Eall* computation via vrna_pf() using the respective
+     accessibility constraints
+ * IntaRNA/OutputHandlerEnsemble :
+   - no output of Zall
+   + output of RT, Eall1, Eall2, EallTotal 
+ * IntaRNA/OutputHandlerCsv :
+   + Eall1, Eall2, EallTotal, Etotal, Zall1, Zall2
+ * README.md :
+   + docu of new CSV columns (Eall1, Eall2, Zall1, Zall2, Etotal, EallTotal)
+   * ensemble output docu updated
+
+191021 Martin Raden
+ + R/plotRegions.R :  visualization of sequence regions covered by RRI
+ + R/README.md : plotRegions docu
+ * README.md : link to R/README.md
+
+191008 Martin Raden
+ * IntaRNA/OutputHandlerCsv :
+   + bpList output : list of base pairs
+ * README.md :
+   + bpList 
+   + outSep
+
+191008 Martin Raden
+ * bin/CommandLineParsing :
+   + 'outSep' argument to set column separator for tabular CSV output
+   * outSep applied to PredictionTracker*
+ * IntaRNA/PredictionTracker* : 
+   + explicit output column separator
+ * IntaRNA/OutputHandlerCsv :
+   * needsZall() :
+   * needBPs() :
+     - colSep argument : obsolete
+  
+191007 Martin Raden
+ * bin/CommandLineParsing :
+   * bugfix accNoLP and accNoGUend checks for energy!=V
+ * IntaRNA/NussinovHandler :
+   * getQ() :
+     * fix: return 1 if (i==j)
+ * IntaRNA/AccessibilityVrna :
+   * construction() : 
+     + bugfix: missing ED initialization for short sequences
+ * tests/AccessibilityBasePair :
+   + short sequence test
+ + tests/AccessibilityVrna  :
+   + short sequence test to validate ED initialization
+
+################################################################################
+### version 3.1.1 
+################################################################################  
+
 # IntaRNA
 - base pairs details only computed if needed for output (speedup for large -n)
 - predefined parameter sets for loading (Turner04, Turner99, Andronescu07)
 - 'tRegion' and 'qRegion' now available for and applied to multi-sequence input
 
-################################################################################  
 ################################################################################  
   
 190924 Martin Raden

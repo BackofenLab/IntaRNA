@@ -25,7 +25,11 @@ const OutputHandlerCsv::ColTypeList OutputHandlerCsv::colTypeNumericSort(
 		",E,ED1,ED2,Pu1,Pu2,E_init,E_loops,E_dangleL,E_dangleR,E_endL,E_endR,E_hybrid,E_norm,E_hybridNorm,E_add"
 		",w"
 		",seedStart1,seedEnd1,seedStart2,seedEnd2,seedE,seedED1,seedED2,seedPu1,seedPu2"
-		",Eall,Zall,P_E"
+		",Eall,Eall1,Eall2"
+		",Zall,Zall1,Zall2"
+		",Etotal,EallTotal"
+		",P_E"
+		",RT"
 		));
 
 ////////////////////////////////////////////////////////////////////////
@@ -118,42 +122,42 @@ add( const Interaction & i )
 
 			case id1:
 				// ensure no colSeps are contained
-				outTmp <<boost::replace_all_copy(energy.getAccessibility1().getSequence().getId(), colSep, "_");
+				outTmp <<boost::replace_all_copy(i.s1->getId(), colSep, "_");
 				break;
 
 			case id2:
 				// ensure no colSeps are contained
-				outTmp <<boost::replace_all_copy(energy.getAccessibility2().getSequence().getId(), colSep, "_");
+				outTmp <<boost::replace_all_copy(i.s2->getId(), colSep, "_");
 				break;
 
 			case seq1:
-				outTmp <<energy.getAccessibility1().getSequence().asString();
+				outTmp <<i.s1->asString();
 				break;
 
 			case seq2:
-				outTmp <<energy.getAccessibility2().getAccessibilityOrigin().getSequence().asString();
+				outTmp <<i.s2->asString();
 				break;
 
 			case subseq1:
-				outTmp <<energy.getAccessibility1().getSequence().asString().substr(i1, j1-i1+1);
+				outTmp <<i.s1->asString().substr(i1, j1-i1+1);
 				break;
 
 			case subseq2:
-				outTmp <<energy.getAccessibility2().getAccessibilityOrigin().getSequence().asString().substr(j2, i2-j2+1);
+				outTmp <<i.s2->asString().substr(j2, i2-j2+1);
 				break;
 
 			case subseqDP:
-				outTmp <<energy.getAccessibility1().getSequence().asString().substr(i1, j1-i1+1)
+				outTmp <<i.s1->asString().substr(i1, j1-i1+1)
 					<<'&'
-					<<energy.getAccessibility2().getAccessibilityOrigin().getSequence().asString().substr(j2, i2-j2+1);
+					<<i.s2->asString().substr(j2, i2-j2+1);
 				break;
 
 			case subseqDB:
 				outTmp <<i.s1->getInOutIndex(i1)
-					<<energy.getAccessibility1().getSequence().asString().substr(i1, j1-i1+1)
+					<<i.s1->asString().substr(i1, j1-i1+1)
 					<<'&'
 					<<i.s2->getInOutIndex(j2)
-					<<energy.getAccessibility2().getAccessibilityOrigin().getSequence().asString().substr(j2, i2-j2+1);
+					<<i.s2->asString().substr(j2, i2-j2+1);
 				break;
 
 			case start1:
@@ -188,8 +192,23 @@ add( const Interaction & i )
 				outTmp <<Interaction::dotBar( i, true );
 				break;
 
+			case bpList: {
+				auto bp = i.basePairs.begin();
+				outTmp <<'(' <<i.s1->getInOutIndex(bp->first) <<',' <<i.s2->getInOutIndex(bp->second) <<')' ;
+				for( ++bp; bp != i.basePairs.end(); bp++ ) {
+					outTmp << listSep <<'(' <<i.s1->getInOutIndex(bp->first) <<',' <<i.s2->getInOutIndex(bp->second) <<')';
+				};
+				break;}
+
 			case E:
 				outTmp <<E_2_Ekcal(i.energy);
+				break;
+
+			case Etotal:
+				if ( E_isINF(energy.getEall1()) || E_isINF(energy.getEall2()) )
+					outTmp << notAvailable;
+				else
+					outTmp <<E_2_Ekcal( i.energy + energy.getEall1() + energy.getEall2() );
 				break;
 
 			case ED1:
@@ -408,12 +427,39 @@ add( const Interaction & i )
 				if ( Z_equal(Z,Z_type(0)) ) outTmp << notAvailable; else outTmp <<E_2_Ekcal(energy.getE(Z));
 				break;
 
+			case Eall1:
+				if ( E_isINF(energy.getEall1()) ) outTmp << notAvailable; else outTmp <<E_2_Ekcal(energy.getEall1());
+				break;
+
+			case Eall2:
+				if ( E_isINF(energy.getEall2()) ) outTmp << notAvailable; else outTmp <<E_2_Ekcal(energy.getEall2());
+				break;
+
+			case EallTotal:
+				if ( Z_equal(Z,Z_type(0)) || E_isINF(energy.getEall1()) || E_isINF(energy.getEall2()) )
+					outTmp << notAvailable;
+				else
+					outTmp <<E_2_Ekcal( energy.getE(Z) + energy.getEall1() + energy.getEall2() );
+				break;
+
 			case Zall:
 				if ( Z_equal(Z,Z_type(0)) ) outTmp << notAvailable; else outTmp <<Z;
 				break;
 
+			case Zall1:
+				if ( E_isINF(energy.getEall1()) ) outTmp << notAvailable; else outTmp <<energy.getBoltzmannWeight(energy.getEall1());
+				break;
+
+			case Zall2:
+				if ( E_isINF(energy.getEall2()) ) outTmp << notAvailable; else outTmp <<energy.getBoltzmannWeight(energy.getEall2());
+				break;
+
 			case P_E:
 				if ( Z_equal(Z,Z_type(0)) ) outTmp << notAvailable; else outTmp <<(energy.getBoltzmannWeight(i.energy)/Z);
+				break;
+
+			case RT:
+				outTmp << energy.getRT();
 				break;
 
 			default : throw std::runtime_error("OutputHandlerCsv::add() : unhandled ColType '"+colType2string[*col]+"'");

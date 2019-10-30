@@ -37,12 +37,14 @@ public:
 	 *        if empty, no data for seq2 is collected
 	 * @param E_INF_string the output string representation of E_INF values in
 	 *        the profile output
+	 * @param sep the column separator to be used in profile output
 	 */
 	PredictionTrackerProfileMinE(
 				const InteractionEnergy & energy
 				, const std::string & seq1streamName
 				, const std::string & seq2streamName
-				, const std::string E_INF_string = "NA"
+				, const std::string & E_INF_string = "NA"
+				, const std::string & sep = ";"
 			);
 
 	/**
@@ -56,12 +58,14 @@ public:
 	 *        is to be written to; if NULL, no data for seq2 is collected
 	 * @param E_INF_string the output string representation of E_INF values in
 	 *        the profile output
+	 * @param sep the column separator to be used in profile output
 	 */
 	PredictionTrackerProfileMinE(
 				const InteractionEnergy & energy
 				, std::ostream * seq1stream
 				, std::ostream * seq2stream
-				, const std::string E_INF_string = "NA"
+				, const std::string & E_INF_string = "NA"
+				, const std::string & sep = ";"
 			);
 
 	/**
@@ -104,6 +108,9 @@ protected:
 	//! the output string representation of E_INF values in the profile output
 	const std::string E_INF_string;
 
+	//! the output string representation of column separators
+	const std::string sep_string;
+
 	//! container definition for minE profile data
 	typedef std::vector<E_type> MinEProfile;
 
@@ -144,7 +151,9 @@ protected:
 				, const MinEProfileIterator & begin
 				, const MinEProfileIterator & end
 				, const RnaSequence & rna
-				, const std::string & E_INF_string );
+				, const std::string & E_INF_string
+				, const std::string & sep_string
+				);
 
 
 };
@@ -159,20 +168,22 @@ writeProfile( std::ostream &out
 			, const MinEProfileIterator & begin
 			, const MinEProfileIterator & end
 			, const RnaSequence & rna
-			, const std::string & E_INF_string )
+			, const std::string & E_INF_string
+			, const std::string & sep_string
+			)
 {
 	// write in CSV-like format (column data)
 
 	// print header : seq.ID ; minE
-	out <<"idx;"<<boost::replace_all_copy(rna.getId(), ";", "_")<<";minE" <<'\n';
+	out <<"idx"<<sep_string<<boost::replace_all_copy(rna.getId(), sep_string, "_")<<sep_string<<"minE" <<'\n';
 	// print minE data
 	size_t i=0;
 	for (MinEProfileIterator curE = begin; curE!=end; curE++) {
 		out
 			// out index
-			<<rna.getInOutIndex(i)<<';'
+			<<rna.getInOutIndex(i)<<sep_string
 			// out nucleotide (index starts with 0)
-			<<rna.asString().at(i)<<';'
+			<<rna.asString().at(i)<<sep_string
 			;
 		// out infinity replacement if needed
 		if ( E_isINF( *curE ) ) {

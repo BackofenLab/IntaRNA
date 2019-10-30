@@ -242,29 +242,60 @@ public:
 	E_type
 	getE_basePair() const;
 
+	/**
+	 * Provides the overall ensemble energy for sequence 1
+	 * given its accessibility constraints
+	 * @return Eall(constraint-conform intra-molecular structures for seq1)
+	 */
+	virtual
+	E_type
+	getEall1() const;
+
+	/**
+	 * Provides the overall ensemble energy for sequence 2
+	 * given its accessibility constraints
+	 * @return Eall(constraint-conform intra-molecular structures for seq2)
+	 */
+	virtual
+	E_type
+	getEall2() const;
+
 
 private:
 
 	//! energy of an individual base pair
-  const E_type basePairEnergy;
+	const E_type basePairEnergy;
 	//! temperature constant for normalization
-  const Z_type RT;
-  //! Boltzmann Energy weight
-  const Z_type basePairWeight;
-  //! minimum length of loops within intramolecular structures (for ES values etc.)
-  const size_t minLoopLength;
+	const Z_type RT;
+	//! Boltzmann Energy weight
+	const Z_type basePairWeight;
+	//! minimum length of loops within intramolecular structures (for ES values etc.)
+	const size_t minLoopLength;
+	//! ensemble energy of seq1 (lazy computation if needed)
+	mutable E_type Eall1;
+	//! ensemble energy of seq2 (lazy computation if needed)
+	mutable E_type Eall2;
 
-  //! ES values for seq1
-  NussinovHandler::E2dMatrix logQ1;
-  //! ES values for seq2
-  NussinovHandler::E2dMatrix logQ2;
+	//! ES values for seq1
+	NussinovHandler::E2dMatrix logQ1;
+	//! ES values for seq2
+	NussinovHandler::E2dMatrix logQ2;
 
-  /***
-   * Compute the ES for a given sequence and store it in the given lookup table.
-   * @param seq RNASequence
-   * @param logQ The resulting lookuptable
-   */
-  void computeES(const RnaSequence &seq, NussinovHandler::E2dMatrix &logQ);
+	/***
+	 * Compute the ES for a given sequence and store it in the given lookup table.
+	 * @param seq RNASequence
+	 * @param logQ The resulting lookuptable
+	 */
+	void computeES(const RnaSequence &seq, NussinovHandler::E2dMatrix &logQ);
+
+	/**
+	 * Computes the ensemble energy of all intra-molecular structures that
+	 * are conform to the accessibility constraints
+	 * @param acc the Accessibility object to access sequence and constraints
+	 * @return the computed ensemble energy
+	 */
+	E_type
+	computeIntraEall( const Accessibility & acc ) const;
 
 };
 
@@ -296,6 +327,8 @@ InteractionEnergyBasePair::InteractionEnergyBasePair(
   basePairEnergy(bpEnergy),
   minLoopLength(minLoopLen),
   basePairWeight(Z_exp(E_2_Z(-bpEnergy) / _RT)),
+  Eall1(E_INF),
+  Eall2(E_INF),
   logQ1(),
   logQ2()
 {

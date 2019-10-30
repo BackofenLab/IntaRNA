@@ -37,11 +37,13 @@ public:
 	 *        Otherwise, an according file is created (has to be non-empty)
 	 * @param NA_string the output string representation if a value is not available
 	 *        for profile output
+	 * @param sep the column separator to be used in profile output
 	 */
 	PredictionTrackerSpotProbAll(
 				const InteractionEnergy & energy
 				, const std::string & streamName
-				, const std::string NA_string = "NA"
+				, const std::string & NA_string = "NA"
+				, const std::string & sep = ";"
 			);
 
 	/**
@@ -55,11 +57,13 @@ public:
 	 *        is to be written to (has to be non-null)
 	 * @param NA_string the output string representation if a value is not available
 	 *        for profile output
+	 * @param sep the column separator to be used in profile output
 	 */
 	PredictionTrackerSpotProbAll(
 				const InteractionEnergy & energy
 				, std::ostream * outStream
-				, const std::string NA_string = "NA"
+				, const std::string & NA_string = "NA"
+				, const std::string & sep = ";"
 			);
 
 	/**
@@ -100,6 +104,9 @@ protected:
 	//! the output string representation if a value is not available for output
 	const std::string NA_string;
 
+	//! the output string representation of column separators
+	const std::string sep;
+
 	//! overall partition function
 	Z_type overallZ;
 
@@ -119,6 +126,7 @@ protected:
 	 * @param overallZ the overall partition function for pairZ
 	 * @param energy the energy function used
 	 * @param NA_string the string to be used for missing entries
+	 * @param sep the column separator to be used in profile output
 	 */
 	static
 	void
@@ -126,7 +134,9 @@ protected:
 				, const Z2dMatrix & pairZ
 				, const Z_type & overallZ
 				, const InteractionEnergy & energy
-				, const std::string & NA_string );
+				, const std::string & NA_string
+				, const std::string & sep
+				);
 
 
 };

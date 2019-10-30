@@ -81,8 +81,7 @@ const std::string CommandLineParsing::outCsvCols_default = "id1,start1,end1,id2,
 
 ////////////////////////////////////////////////////////////////////////////
 
-const std::string CommandLineParsing::outCsvColSep = ";";
-const std::string CommandLineParsing::outCsvLstSep = ",";
+const std::string CommandLineParsing::outCsvLstSep = ":";
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -195,6 +194,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	outBestSeedOnly(false),
 	outNoLP(false),
 	outNoGUend(false),
+	outSep(";"),
 	outCsvCols(outCsvCols_default),
 	outPerRegion(false),
 	outSpotProbSpots(""),
@@ -835,6 +835,12 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 					"\n 'spotProb:' (target+query) tracks for a given set of interaction spots their probability to be covered by an interaction. If no spots are provided, probabilities for all index combinations are computed. Spots are encoded by comma-separated 'idxT&idxQ' pairs (target-query). For each spot a probability is provided in concert with the probability that none of the spots (encoded by '0&0') is covered (CSV format). The spot encoding is followed colon-separated by the output stream/file name, eg. '--out=\"spotProb:3&76,59&2:STDERR\"'. NOTE: value has to be quoted due to '&' symbol!"
 					"\nFor each, provide a file name or STDOUT/STDERR to write to the respective output stream."
 					).c_str())
+		("outSep"
+			, value< std::string >(&(outSep))
+				->composing()
+				->default_value(outSep.c_str())
+				->notifier(boost::bind(&CommandLineParsing::validate_outSep,this,_1))
+			, std::string("column separator to be used in tabular CSV output").c_str())
 		(outMode.name.c_str()
 			, value<char>(&(outMode.val))
 				->default_value(outMode.def)
@@ -901,7 +907,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 				->default_value(outCsvCols,"see text")
 				->notifier(boost::bind(&CommandLineParsing::validate_outCsvCols,this,_1))
 			, std::string("output : comma separated list of CSV column IDs to print if outMode=C."
-					" An empty argument (using '') prints all possible columns from the following available ID list: "
+					" Using '*' or an empty argument ('') prints all possible columns from the following available ID list: "
 					+ OutputHandlerCsv::list2string(OutputHandlerCsv::string2list(""),", ")+"."
 					+ "\nDefault = '"+outCsvCols+"'."
 					).c_str())
@@ -1282,8 +1288,8 @@ parse(int argc, char** argv)
 			case 'C' : {
 				if (!qAccFile.empty()) LOG(INFO) <<"qAcc = "<<qAcc.val<<" : ignoring --qAccFile";
 				if (energy.val != 'V') {
-					if (!accNoLP) LOG(INFO) <<"ignoring --accNoLP, not supported for energy=="<<energy.val;
-					if (!accNoGUend) LOG(INFO) <<"ignoring --accNoGUend, not supported for energy=="<<energy.val;
+					if (accNoLP) LOG(INFO) <<"ignoring --accNoLP, not supported for energy=="<<energy.val;
+					if (accNoGUend) LOG(INFO) <<"ignoring --accNoGUend, not supported for energy=="<<energy.val;
 				}
 				break;
 			}
@@ -1304,8 +1310,8 @@ parse(int argc, char** argv)
 			case 'C' : {
 				if (!tAccFile.empty()) LOG(INFO) <<"tAcc = "<<tAcc.val<<" : ignoring --tAccFile";
 				if (energy.val != 'V') {
-					if (!accNoLP) LOG(INFO) <<"ignoring --accNoLP, not supported for energy=="<<energy.val;
-					if (!accNoGUend) LOG(INFO) <<"ignoring --accNoGUend, not supported for energy=="<<energy.val;
+					if (accNoLP) LOG(INFO) <<"ignoring --accNoLP, not supported for energy=="<<energy.val;
+					if (accNoGUend) LOG(INFO) <<"ignoring --accNoGUend, not supported for energy=="<<energy.val;
 				}
 				break;
 			}
@@ -1351,7 +1357,7 @@ parse(int argc, char** argv)
 					throw error("outCsvSort set but outMode != C ("+toString(outMode.val)+")");
 				}
 				// check if column to sort is within output list
-				std::string curCsvCols = (outCsvCols.empty() ? OutputHandlerCsv::list2string(OutputHandlerCsv::string2list(""),",") : outCsvCols);
+				std::string curCsvCols = (outCsvCols.empty() || outCsvCols=="*" ? OutputHandlerCsv::list2string(OutputHandlerCsv::string2list(""),",") : outCsvCols);
 				if ( ("," + curCsvCols + ",").find(","+outCsvSort+",") == std::string::npos ) {
 					throw error("outCsvSort column ID '"+outCsvSort+"' is not within outCsvCols list");
 				}
@@ -1364,7 +1370,7 @@ parse(int argc, char** argv)
 				bool sortLexOrder = (std::find( OutputHandlerCsv::colTypeNumericSort.begin(), OutputHandlerCsv::colTypeNumericSort.end(), outCsvColType) == OutputHandlerCsv::colTypeNumericSort.end());
 				// setup sorted CSV output
 				OutputStreamHandler * tmpOSH = outStreamHandler;
-				outStreamHandler = new OutputStreamHandlerSortedCsv( tmpOSH, outCsvSortIdx, sortLexOrder, outCsvColSep, true, outCsvLstSep );
+				outStreamHandler = new OutputStreamHandlerSortedCsv( tmpOSH, outCsvSortIdx, sortLexOrder, outSep, true, outCsvLstSep );
 			}
 
 			// check output sanity
@@ -2132,7 +2138,7 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 						, getFullFilename( outPrefix2streamName.at(OutPrefixCode::OP_qMinE)
 								, &(energy.getAccessibility1().getSequence())
 								, &(energy.getAccessibility2().getAccessibilityOrigin().getSequence()))
-						, "NA") );
+						, "NA", outSep ) );
 	}
 
 	// check if spotProb-profile is to be generated
@@ -2147,7 +2153,7 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 						, getFullFilename( outPrefix2streamName.at(OutPrefixCode::OP_qSpotProb)
 								, &(energy.getAccessibility1().getSequence())
 								, &(energy.getAccessibility2().getAccessibilityOrigin().getSequence()))
-						, "0") );
+						, "0", outSep ) );
 	}
 
 	// check if minE-pairs are to be generated
@@ -2158,7 +2164,7 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 						, getFullFilename( outPrefix2streamName.at(OutPrefixCode::OP_pMinE)
 								, &(energy.getAccessibility1().getSequence())
 								, &(energy.getAccessibility2().getAccessibilityOrigin().getSequence()))
-						, "NA") );
+						, "NA", outSep ) );
 	}
 
 	// check if specific spotProbs are to be tracked
@@ -2168,7 +2174,8 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 				new PredictionTrackerSpotProb( energy
 								// get encoding
 								, outSpotProbSpots
-								, outPrefix2streamName.at(OutPrefixCode::OP_spotProb) )
+								, outPrefix2streamName.at(OutPrefixCode::OP_spotProb)
+								, outSep )
 							);
 	}
 
@@ -2181,7 +2188,7 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 						, getFullFilename( outPrefix2streamName.at(OutPrefixCode::OP_spotProbAll)
 								, &(energy.getAccessibility1().getSequence())
 								, &(energy.getAccessibility2().getAccessibilityOrigin().getSequence()))
-						, "0") );
+						, "0", outSep ) );
 	}
 
 	// check if any tracker registered
@@ -2283,7 +2290,7 @@ initOutputHandler()
 	switch (outMode.val) {
 	case 'C' :
 		outStreamHandler->getOutStream()
-		<<OutputHandlerCsv::getHeader( OutputHandlerCsv::string2list( outCsvCols ) )
+		<<OutputHandlerCsv::getHeader( OutputHandlerCsv::string2list( outCsvCols ), outSep )
 		; break;
 	}
 
@@ -2308,11 +2315,11 @@ getOutputHandler( const InteractionEnergy & energy ) const
 		return new OutputHandlerEnsemble( getOutputConstraint(), outStreamHandler->getOutStream(), energy );
 	case 'C' :
 		// ensure that Zall is computed if needed
-		outNeedsZall = outNeedsZall || OutputHandlerCsv::needsZall(OutputHandlerCsv::string2list( outCsvCols ), outCsvColSep);
+		outNeedsZall = outNeedsZall || OutputHandlerCsv::needsZall(OutputHandlerCsv::string2list( outCsvCols ));
 		// check whether interaction details are needed
-		outNeedsBPs = OutputHandlerCsv::needBPs(OutputHandlerCsv::string2list( outCsvCols ), outCsvColSep);;
+		outNeedsBPs = OutputHandlerCsv::needBPs(OutputHandlerCsv::string2list( outCsvCols ));;
 		// create output handler
-		return new OutputHandlerCsv( getOutputConstraint(), outStreamHandler->getOutStream(), energy, OutputHandlerCsv::string2list( outCsvCols ), outCsvColSep, false, outCsvLstSep );
+		return new OutputHandlerCsv( getOutputConstraint(), outStreamHandler->getOutStream(), energy, OutputHandlerCsv::string2list( outCsvCols ), outSep, false, outCsvLstSep );
 	default :
 		INTARNA_NOT_IMPLEMENTED("Output mode "+toString(outMode.val)+" not implemented yet");
 	}

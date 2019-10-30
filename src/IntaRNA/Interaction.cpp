@@ -164,8 +164,9 @@ operator= ( const Interaction & toCopy )
 	if (toCopy.seed != NULL) {
 		// create seed info if not existing
 		if (seed == NULL) { seed = new SeedSet(); }
+		else { seed->clear(); }
 		// copy data
-		*seed = *(toCopy.seed);
+		seed->insert(toCopy.seed->begin(), toCopy.seed->end());
 	} else {
 		// remove seed information if present
 		INTARNA_CLEANUP(seed);

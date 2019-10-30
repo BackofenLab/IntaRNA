@@ -40,11 +40,13 @@ public:
 	 * @param outStreamName the stream name where the probability data
 	 *        is to be written to. use STDOUT/STDERR for the respective stream.
 	 *        Otherwise, an according file is created
+	 * @param sep the column separator to be used in profile output
 	 */
 	PredictionTrackerSpotProb(
 				const InteractionEnergy & energy
 				, const std::string & spots
 				, const std::string & outStreamName
+				, const std::string & sep = ";"
 			);
 
 	/**
@@ -56,11 +58,13 @@ public:
 	 * @param spots the interaction spots to track for their probabilities
 	 * @param outStream the stream where the probability data
 	 *        is to be written to.
+	 * @param sep the column separator to be used in profile output
 	 */
 	PredictionTrackerSpotProb(
 				const InteractionEnergy & energy
 				, const std::string & spots
 				, std::ostream & outStream
+				, const std::string & sep = ";"
 			);
 
 
@@ -127,6 +131,9 @@ protected:
 
 	//! tracking information for each spot
 	std::vector<Spot> spots;
+
+	//! the output column separator to be used
+	const std::string sep;
 
 	//! partition function of all interaction not covering a tracked spot
 	Z_type noSpotZ;

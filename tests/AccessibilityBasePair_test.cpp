@@ -8,7 +8,6 @@
 
 using namespace IntaRNA;
 
-const std::string seq = "gguccacguccaa";
 
 
 TEST_CASE("AccessibilityBasePair", "[AccessibilityBasePair]") {
@@ -16,10 +15,11 @@ TEST_CASE("AccessibilityBasePair", "[AccessibilityBasePair]") {
 	// setup easylogging++ stuff if not already done
 	#include "testEasyLoggingSetup.icc"
 
-  RnaSequence rna("test", seq);
+  SECTION("ED test long") {
 
-  SECTION("Basepair Energy difference") {
-    AccessibilityBasePair acc(rna, 10, NULL);
+	const std::string seq = "gguccacguccaa";
+	RnaSequence rna("test", seq);
+	AccessibilityBasePair acc(rna, 10, NULL);
 
 //    std::cout <<"\n\n########\n";
 //    for (int i =0; i<acc.getSequence().size(); i++) {
@@ -47,6 +47,18 @@ TEST_CASE("AccessibilityBasePair", "[AccessibilityBasePair]") {
     REQUIRE( E_equal( acc.getED(6, 6), 13 ) );
     REQUIRE( E_equal( acc.getED(10, 11), 55 ) );
     REQUIRE( E_equal( acc.getED(11, 12), 19 ) );
+
+  }
+
+  SECTION("ED test short") {
+
+	const std::string seq = "GG";
+	RnaSequence rna("test", seq);
+	AccessibilityBasePair acc(rna, 2, NULL);
+
+	REQUIRE( E_equal( acc.getED(0, 0), 0 ) );
+	REQUIRE( E_equal( acc.getED(1, 1), 0 ) );
+	REQUIRE( E_equal( acc.getED(0, 1), 0 ) );
 
   }
 }

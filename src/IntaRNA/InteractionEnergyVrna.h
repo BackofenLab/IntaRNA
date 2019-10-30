@@ -239,10 +239,28 @@ public:
 	E_type
 	getE_endRight( const size_t j1, const size_t j2 ) const;
 
+	/**
+	 * Provides the overall ensemble energy for sequence 1
+	 * given its accessibility constraints
+	 * @return Eall(constraint-conform intra-molecular structures for seq1)
+	 */
+	virtual
+	E_type
+	getEall1() const;
 
 	/**
-	 * Returns the normalized energy in mol/kcal unit
-	 * @return R*temperature
+	 * Provides the overall ensemble energy for sequence 2
+	 * given its accessibility constraints
+	 * @return Eall(constraint-conform intra-molecular structures for seq2)
+	 */
+	virtual
+	E_type
+	getEall2() const;
+
+	/**
+	 * Provides the overall partition function for sequence 2
+	 * given its accessibility constraints
+	 * @return Z(constraint-conform intra-molecular structures for seq2)
 	 */
 	virtual
 	Z_type
@@ -276,6 +294,12 @@ protected:
 	//! the ES values for seq2 if computed (otherwise NULL)
 	EsMatrix * esValues2;
 
+	//! ensemble energy of intra-molecular structures of seq1
+	mutable E_type Eall1;
+
+	//! ensemble energy of intra-molecular structures of seq2
+	mutable E_type Eall2;
+
 	/**
 	 * Checks whether or not a given base pair is a GC base pair
 	 * @param i1 the index in the first sequence
@@ -293,6 +317,14 @@ protected:
 	void
 	computeES( const Accessibility & acc, EsMatrix & esToFill );
 
+	/**
+	 * Computes the ensemble energy of all intra-molecular structures that
+	 * are conform to the accessibility constraints
+	 * @param acc the Accessibility object to access sequence and constraints
+	 * @return the computed ensemble energy
+	 */
+	E_type
+	computeIntraEall( const Accessibility & acc ) const;
 };
 
 
@@ -479,6 +511,34 @@ InteractionEnergyVrna::
 getE_multiClosing() const
 {
 	return (Evrna_2_E(foldParams->MLclosing));
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+InteractionEnergyVrna::
+getEall1() const
+{
+	// compute Z if needed
+	if (E_isINF(Eall1)) {
+		Eall1 = computeIntraEall( accS1 );
+	}
+	return Eall1;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+InteractionEnergyVrna::
+getEall2() const
+{
+	// compute Z if needed
+	if (E_isINF(Eall2)) {
+		Eall2 = computeIntraEall( accS2.getAccessibilityOrigin() );
+	}
+	return Eall2;
 }
 
 ////////////////////////////////////////////////////////////////////////////

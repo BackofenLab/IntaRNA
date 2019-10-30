@@ -37,11 +37,13 @@ public:
 	 *        Otherwise, an according file is created (has to be non-empty)
 	 * @param E_INF_string the output string representation of E_INF values in
 	 *        the profile output
+	 * @param sep the column separator to be used in profile output
 	 */
 	PredictionTrackerPairMinE(
 				const InteractionEnergy & energy
 				, const std::string & streamName
-				, const std::string E_INF_string = "NA"
+				, const std::string & E_INF_string = "NA"
+				, const std::string & sep = ";"
 			);
 
 	/**
@@ -55,11 +57,13 @@ public:
 	 *        is to be written to (has to be non-null)
 	 * @param E_INF_string the output string representation of E_INF values in
 	 *        the profile output
+	 * @param sep the column separator to be used in profile output
 	 */
 	PredictionTrackerPairMinE(
 				const InteractionEnergy & energy
 				, std::ostream * outStream
-				, const std::string E_INF_string = "NA"
+				, const std::string & E_INF_string = "NA"
+				, const std::string & sep = ";"
 			);
 
 	/**
@@ -99,6 +103,9 @@ protected:
 	//! the output string representation of E_INF values in the profile output
 	const std::string E_INF_string;
 
+	//! the output string representation of column separators
+	const std::string sep_string;
+
 	//! matrix type to hold the mfe energies and boundaries for interaction site starts
 	typedef boost::numeric::ublas::matrix<E_type> E2dMatrix;
 
@@ -112,13 +119,15 @@ protected:
 	 * @param pairMinE the minE data to write
 	 * @param energy the energy function used
 	 * @param E_INF_string the string to be used for E_INF entries
+	 * @param sep_string the output string representation of column separators
 	 */
 	static
 	void
 	writeData( std::ostream &out
 				, const E2dMatrix & pairMinE
 				, const InteractionEnergy & energy
-				, const std::string & E_INF_string );
+				, const std::string & E_INF_string
+				, const std::string & sep_string );
 
 
 };

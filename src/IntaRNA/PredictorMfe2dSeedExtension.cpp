@@ -99,12 +99,12 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 
 		// update Optimum for all boundary combinations
 		for (int i1 = 0; i1 < hybridE_left.size1(); i1++) {
-			const size_t j1max = std::min(maxMatrixLen1-i1, hybridE_right.size1());
-			// ensure max interaction length in seq 1
-			for (int j1 = 0; j1 < j1max; j1++) {
-				assert(sj1+j1-si1+i1 < energy.getAccessibility1().getMaxLength());
-				for (int i2 = 0; i2 < hybridE_left.size2(); i2++) {
-					if (E_isINF(hybridE_left(i1,i2))) continue;
+			for (int i2 = 0; i2 < hybridE_left.size2(); i2++) {
+				if (E_isINF(hybridE_left(i1,i2))) continue;
+				const size_t j1max = std::min(maxMatrixLen1-i1, hybridE_right.size1());
+				// ensure max interaction length in seq 1
+				for (int j1 = 0; j1 < j1max; j1++) {
+					assert(sj1+j1-si1+i1 < energy.getAccessibility1().getMaxLength());
 					const size_t j2max = std::min(maxMatrixLen2-i2, hybridE_right.size2());
 					// ensure max interaction length in seq 2
 					for (int j2 = 0; j2 < j2max; j2++) {
@@ -147,14 +147,15 @@ fillHybridE_left( const size_t si1, const size_t si2 )
 	E_type iStackE = E_type(0);
 
 	// iterate over all window starts j1 (seq1) and j2 (seq2)
-	for (i1=si1; si1-i1 < hybridE_left.size1(); i1--) {
-		for (i2=si2; si2-i2 < hybridE_left.size2(); i2--) {
+	for (size_t l1=0; l1 < hybridE_left.size1(); l1++) {
+		for (size_t l2=0; l2 < hybridE_left.size2(); l2++) {
+			i1 = si1-l1;
+			i2 = si2-l2;
 
 			// referencing cell access
-			E_type & curE = hybridE_left(si1-i1,si2-i2);
-			// init current cell (e_init if just left (i1,i2) base pair)
+			E_type & curE = hybridE_left(l1,l2);
+			// init current cell (e_init if just left (i1,i2) base pair; assuming seed is internally stacked on the left end if noLP)
 			curE = (i1==si1 && i2==si2) ? energy.getE_init() : E_INF;
-
 			// check if complementary
 			if( i1<si1 && i2<si2 && energy.areComplementary(i1,i2) ) {
 
@@ -166,29 +167,27 @@ fillHybridE_left( const size_t si1, const size_t si2 )
 					}
 					// get stacking energy to avoid recomputation in recursion below
 					iStackE = energy.getE_interLeft(i1,i1+noLpShift,i2,i2+noLpShift);
-					// check just stacked seed extension
-					if (i1+noLpShift==si1 && i2+noLpShift==si2) {
-						curE = std::min( curE, iStackE + hybridE_left(0,0) );
-					}
+					// check just stacked
+					curE = std::min( curE, iStackE + hybridE_left(l1-noLpShift,l2-noLpShift));
 				}
 
 				// check all combinations of decompositions into (i1,i2)..(k1,k2)-(si1,si2)
 				for (k1=i1+noLpShift; k1++ < si1; ) {
 					// ensure maximal loop length
 					if (k1-i1-noLpShift > energy.getMaxInternalLoopSize1()+1) break;
-				for (k2=i2+noLpShift; k2++ < si2; ) {
-					// ensure maximal loop length
-					if (k2-i2-noLpShift > energy.getMaxInternalLoopSize2()+1) break;
-					// check if (k1,k2) are valid left boundary
-					if ( E_isNotINF( hybridE_left(si1-k1,si2-k2) ) ) {
-						curE = std::min( curE,
-								(iStackE
-										+ energy.getE_interLeft(i1+noLpShift,k1,i2+noLpShift,k2)
-										+ hybridE_left(si1-k1,si2-k2) )
-								);
-					}
-				} // k2
-			  } // k1
+					for (k2=i2+noLpShift; k2++ < si2; ) {
+						// ensure maximal loop length
+						if (k2-i2-noLpShift > energy.getMaxInternalLoopSize2()+1) break;
+						// check if (k1,k2) are valid left boundary
+						if ( E_isNotINF( hybridE_left(si1-k1,si2-k2) ) ) {
+							curE = std::min( curE,
+									(iStackE
+											+ energy.getE_interLeft(i1+noLpShift,k1,i2+noLpShift,k2)
+											+ hybridE_left(si1-k1,si2-k2) )
+							);
+						}
+					} // k2
+				} // k1
 			} // i is valid right end
 		} // i2
 	} // i1
@@ -379,14 +378,22 @@ traceBack( Interaction & interaction )
 					// check all interval splits
 					if ( (si1-i1-noLpShift) > 1 && (si2-i2-noLpShift) > 1) {
 
-						// temp variables
-						size_t k1,k2;
 						bool traceNotFound = true;
+						// temp variables
+						size_t k1=i1+noLpShift,k2=i2+noLpShift;
+						if (outConstraint.noLP && E_equal( curE, (iStackE + hybridE_left(si1-k1,si2-k2)) )) {
+							traceNotFound = false;
+							interaction.basePairs.push_back( energy.getBasePair(k1,k2) );
+							// trace right part of stack
+							i1=k1;
+							i2=k2;
+							curE = hybridE_left(si1-i1,si2-i2);
+						}
 						// check all combinations of decompositions into (i1,i2)..(k1,k2)-(si1,si2)
 						const size_t k1max = std::min(si1-1,i1+noLpShift+energy.getMaxInternalLoopSize1()+1);
 						const size_t k2max = std::min(si2-1,i2+noLpShift+energy.getMaxInternalLoopSize2()+1);
-						for (k1=i1+noLpShift+1; traceNotFound && k1<=k1max; k1++) {
-						for (k2=i2+noLpShift+1; traceNotFound && k2<=k2max; k2++) {
+						for (k1++; traceNotFound && k1<=k1max; k1++) {
+						for (k2++; traceNotFound && k2<=k2max; k2++) {
 							// check if (k1,k2) are valid left boundary
 							if ( E_isNotINF( hybridE_left(si1-k1,si2-k2) ) ) {
 								if ( E_equal( curE,
