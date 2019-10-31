@@ -15,7 +15,6 @@ const size_t IndexRange::LAST_INDEX = IndexRange::NA_INDEX-1;
 
 ////////////////////////////////////////////////////////////////
 
-//const std::string IndexRange::regexString("(0|-?[123456789]\\d*)-(0|-?[123456789]\\d*)");
 const boost::regex IndexRange::regex("^"+std::string(IndexRange::regexString)+"$");
 
 ////////////////////////////////////////////////////////////////

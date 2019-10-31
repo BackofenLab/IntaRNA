@@ -8,8 +8,8 @@ namespace IntaRNA {
 
 //////////////////////////////////////////////////////////////////////
 
-const std::string PredictionTrackerSpotProb::str_spot ="(0|-?[123456789]\\d*)&(0|-?[123456789]\\d*)";
-const boost::regex PredictionTrackerSpotProb::regexSpotString("\\s*|"+str_spot+"(,"+str_spot+")*");
+const std::string PredictionTrackerSpotProb::str_spot = R"((0|-?[123456789]\d*)&(0|-?[123456789]\d*))";
+const boost::regex PredictionTrackerSpotProb::regexSpotString(R"(\s*|)"+str_spot+"(,"+str_spot+")*");
 
 //////////////////////////////////////////////////////////////////////
 

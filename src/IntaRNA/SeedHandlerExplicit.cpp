@@ -111,7 +111,7 @@ checkSeedEncoding( const std::string & seed )
 	}
 
 	// check general encoding
-	if ( ! boost::regex_match(seed,boost::regex("^-?\\d+[|\\.]+&-?\\d+[|\\.]+$"), boost::match_perl) ) {
+	if ( ! boost::regex_match(seed,boost::regex(R"(^-?\d+[|\.]+&-?\d+[|\.]+$)"), boost::match_perl) ) {
 		return "is not of regular expression format start1dotbar1&start2dotbar2, e.g. '3|||.|&6||.||'";
 	}
 

@@ -26,8 +26,7 @@ const std::string AccessibilityConstraint::dotBracketAlphabet =
 					;
 const std::string AccessibilityConstraint::regionIndexList =
 					"["+AccessibilityConstraint::dotBracket_constraints+"]:"
-					+"(-?[123456789]\\d*--?[123456789]\\d*,)*-?[123456789]\\d*--?[123456789]\\d*"
-					;
+					+ R"((-?[123456789]\d*--?[123456789]\d*,)*-?[123456789]\d*--?[123456789]\d*)";
 
 const boost::regex AccessibilityConstraint::regex(
 					"(["
@@ -41,14 +40,14 @@ const boost::regex AccessibilityConstraint::regex(
 // D | Dm1.9 | Db-0.7 | Dm1.9b-0.7
 // Z | Zb0.8
 // W
-const boost::regex AccessibilityConstraint::regexShapeMethod("^((D(m-?(\\d+|\\d+.\\d+))?(b-?(\\d+|\\d+.\\d+))?)|(Z(b(\\d+|\\d+.\\d+))?)|(W))$");
+const boost::regex AccessibilityConstraint::regexShapeMethod(R"(^((D(m-?(\d+|\d+.\d+))?(b-?(\d+|\d+.\d+))?)|(Z(b(\d+|\d+.\d+))?)|(W))$)");
 
 // M
 // C0.2
 // S
 // Ls0.5i0.5
 // Os0.5i-0.5
-const boost::regex AccessibilityConstraint::regexShapeConversion("^((M)|(C(\\d+|\\d+.\\d+)?)|(S)|((L|O)(s-?(\\d+|\\d+.\\d+)i-?(\\d+|\\d+.\\d+))?))$");
+const boost::regex AccessibilityConstraint::regexShapeConversion(R"(^((M)|(C(\d+|\d+.\d+)?)|(S)|((L|O)(s-?(\d+|\d+.\d+)i-?(\d+|\d+.\d+))?))$)");
 
 
 ////////////////////////////////////////////////////////////////////////

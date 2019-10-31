@@ -17,7 +17,7 @@ std::ostream *
 newOutputStream( const std::string & out )
 {
 	// check if empty or whitespace string
-	if (boost::regex_match( out, boost::regex("^\\s*$"), boost::match_perl)) {
+	if (boost::regex_match( out, boost::regex(R"(^\s*$)"), boost::match_perl)) {
 		return NULL;
 	}
 	// open according stream
@@ -87,7 +87,7 @@ std::istream *
 newInputStream( const std::string & in )
 {
 	// check if empty or whitespace string
-	if (boost::regex_match( in, boost::regex("^\\s*$"), boost::match_perl)) {
+	if (boost::regex_match( in, boost::regex(R"(^\s*$)"), boost::match_perl)) {
 		return NULL;
 	}
 	// open according stream
