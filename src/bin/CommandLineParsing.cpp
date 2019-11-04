@@ -6,6 +6,7 @@
 #include <cmath>
 #include <stdexcept>
 #include <fstream>
+#include <cstdio>
 
 #if INTARNA_MULITHREADING
 	#include <omp.h>
@@ -1098,6 +1099,11 @@ parse(int argc, char** argv)
 	// if parsing was successful, continue with final parsing
 	if (parsingCode == ReturnCode::KEEP_GOING) {
 		try {
+
+
+			// parsing escape literals
+			outSep = unescaped_string<std::string::const_iterator>::getUnescaped( outSep );
+
 
 			// open output stream
 			{
@@ -2511,7 +2517,7 @@ getPersonality( int argc, char ** argv )
 	// default : check via call name
 	std::string value(argv[0]);
 	// strip path if present
-	size_t cutPos = value.find_last_of("/\\");
+	size_t cutPos = value.find_last_of(R"(/\)");
 	if (cutPos != std::string::npos) {
 		value = value.substr(cutPos+1);
 	}
@@ -2519,7 +2525,7 @@ getPersonality( int argc, char ** argv )
 	// check if respective parameter provided
 	// --> overwrites default from call name
 	const boost::regex paramNameRegex("^--personality.*", boost::regex::icase);
-	const boost::regex paramRegex("^--personality=\\S+$", boost::regex::icase);
+	const boost::regex paramRegex(R"(^--personality=\S+$)", boost::regex::icase);
 	bool setViaParameter = false;
 	for (int i=1; i<argc; i++) {
 		std::string argi(argv[i]);

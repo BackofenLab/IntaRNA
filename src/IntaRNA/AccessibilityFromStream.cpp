@@ -73,7 +73,7 @@ parseRNAplfold_text( std::istream & inStream, const Z_type RT, const bool parseP
 	if ( !std::getline( inStream, line ) ) {
 		throw std::runtime_error("AccessibilityFromStream::parseRNAplfold_text() : nothing readable");
 	}
-	if ( ! boost::regex_match(line,boost::regex("^#[\\w\\s]+$"), boost::match_perl) ) {
+	if ( ! boost::regex_match(line,boost::regex(R"(^#[\w\s]+$)"), boost::match_perl) ) {
 		throw std::runtime_error("AccessibilityFromStream::parseRNAplfold_text() : first line != expected header line starting with '#'");
 	}
 
@@ -81,7 +81,7 @@ parseRNAplfold_text( std::istream & inStream, const Z_type RT, const bool parseP
 	if ( !std::getline( inStream, line ) ) {
 		throw std::runtime_error("AccessibilityFromStream::parseRNAplfold_text() : length header (2nd line) not found");
 	}
-	if ( ! boost::regex_match(line,boost::regex("^\\s*#i.\\s+l=1(\\s+\\d+)*\\s*$"), boost::match_perl) ) {
+	if ( ! boost::regex_match(line,boost::regex(R"(^\s*#i.\s+l=1(\s+\d+)*\s*$)"), boost::match_perl) ) {
 		throw std::runtime_error("AccessibilityFromStream::parseRNAplfold_text() : second line is no proper lengths header");
 	}
 	// check if maxLength <= max available length

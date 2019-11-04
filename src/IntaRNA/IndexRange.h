@@ -35,7 +35,7 @@ public:
 	size_t to;
 
 	//! regular expression that matches valid IndexRange string encodings
-	static constexpr const char* regexString = "(0|-?[123456789]\\d*)-(0|-?[123456789]\\d*)";
+	static constexpr const char* regexString = R"((0|-?[123456789]\d*)-(0|-?[123456789]\d*))";
 
 	//! regular expression that matches valid IndexRange string encodings
 	static const boost::regex regex;

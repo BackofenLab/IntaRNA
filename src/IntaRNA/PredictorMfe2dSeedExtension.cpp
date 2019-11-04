@@ -392,8 +392,8 @@ traceBack( Interaction & interaction )
 						// check all combinations of decompositions into (i1,i2)..(k1,k2)-(si1,si2)
 						const size_t k1max = std::min(si1-1,i1+noLpShift+energy.getMaxInternalLoopSize1()+1);
 						const size_t k2max = std::min(si2-1,i2+noLpShift+energy.getMaxInternalLoopSize2()+1);
-						for (k1++; traceNotFound && k1<=k1max; k1++) {
-						for (k2++; traceNotFound && k2<=k2max; k2++) {
+						for (k1=i1+noLpShift+1; traceNotFound && k1<=k1max; k1++) {
+						for (k2=i2+noLpShift+1; traceNotFound && k2<=k2max; k2++) {
 							// check if (k1,k2) are valid left boundary
 							if ( E_isNotINF( hybridE_left(si1-k1,si2-k2) ) ) {
 								if ( E_equal( curE,
@@ -411,10 +411,10 @@ traceBack( Interaction & interaction )
 									i1=k1;
 									i2=k2;
 									curE = hybridE_left(si1-i1,si2-i2);
-								}
-							}
-						}
-						}
+								} // found trace step
+							} // (k1,k2) complementary
+						} // k2
+						} // k1
 						if (traceNotFound) {
 							LOG(ERROR) <<"left-not-found:  i "<<i1<<","<<i2<<"  si "<<si1<<","<<si2;
 							throw std::runtime_error("trace not found");
