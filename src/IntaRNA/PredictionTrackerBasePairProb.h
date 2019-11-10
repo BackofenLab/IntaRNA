@@ -283,12 +283,23 @@ protected:
 	//! flag for seedHandler
 	bool hasSeedhandler;
 
+	//! maximum postscript width/height in ps units
+	const size_t maxDotPlotSize;
+
 	//! postscript template for dotplots
 	const char* dotplotTemplate =
 		"/box { %%size x y box - draws box centered on x,y\n\
 		   2 index 0.5 mul sub            %% x -= 0.5\n\
 		   exch 2 index 0.5 mul sub exch  %% y -= 0.5\n\
 		   3 -1 roll dup rectfill\n\
+		} bind def\n\
+		/boxgray { %%size x y box - draws box centered on x,y\n\
+			 0 0 1 5 index sub sethsbcolor  %% grayscale\n\
+		   1 index 0.5 sub  %% x -= 0.5   s x y x'\n\
+		   1 index 0.5 sub  %% y -= 0.5   s x y x' y'\n\
+		   5 2 roll  %% x' y' s x y\n\
+		   pop pop pop\n\
+		   1 dup rectfill\n\
 		} bind def\n\
 		\n\
 		/drawseq1 { %% print sequence1\n\

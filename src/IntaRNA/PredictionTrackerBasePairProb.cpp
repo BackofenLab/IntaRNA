@@ -24,6 +24,7 @@ PredictionTrackerBasePairProb(
 	, energy(energy)
 	, fileName(fileName)
 	, probabilityThreshold(0.0001)
+	, maxDotPlotSize(1000)
 {
 }
 
@@ -683,6 +684,14 @@ generateDotPlot( const char *seq1, const char *seq2, const char *fileName
 	bbox[2] = 72 * (strlen(seq1) + 3);
 	bbox[3] = 72 * (strlen(seq2) + 3);
 
+	size_t maxSize = std::max(bbox[2], bbox[3]);
+	float scale = 1;
+	if (maxSize > maxDotPlotSize) {
+		scale = maxDotPlotSize / (float)maxSize;
+		bbox[2] *= scale;
+		bbox[3] *= scale;
+	}
+
 	fprintf(file,
           "%%!PS-Adobe-3.0 EPSF-3.0\n"
           "%%%%Creator: IntaRNA\n"
@@ -690,8 +699,17 @@ generateDotPlot( const char *seq1, const char *seq2, const char *fileName
           "%%%%BoundingBox: %d %d %d %d\n"
           "%%%%DocumentFonts: Helvetica\n"
           "%%%%Pages: 1\n"
-          "%%%%EndComments\n\n",
+          "%%%%EndComments\n",
           bbox[0], bbox[1], bbox[2], bbox[3]);
+
+	// scaling
+	fprintf(file,
+		      "%%%%BeginProcSet: epsffit 1 0\n"
+		      "gsave\n"
+		      "%f 0 translate\n"
+	        "%f %f scale\n"
+		      "%%%%EndProcSet\n\n",
+				  scale, scale, scale);
 
   // comment
 
@@ -749,7 +767,7 @@ generateDotPlot( const char *seq1, const char *seq2, const char *fileName
 
 	for (const plist *pl1 = pl; pl1->i > 0; pl1++) {
     if (pl1->type == 0) {
-      fprintf(file, "%1.9f %d %d box\n", sqrt(pl1->p), pl1->i, pl1->j);
+      fprintf(file, "%1.9f %d %d boxgray\n", sqrt(pl1->p), pl1->i, pl1->j);
     }
   }
 
