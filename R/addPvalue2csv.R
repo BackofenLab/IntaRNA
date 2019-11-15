@@ -115,8 +115,9 @@ pVal <- round( gevPvalue( E, gevfit ), digits=pValPrec )
 # write output
 ####################################################################
 
-o = cbind( d, pVal )
-colnames(o)[ncol(o)] = "p-value"
+o = cbind( d, pVal, p.adjust(pval, method="BH") )
+colnames(o)[ncol(o)-1] = "p-value"
+colnames(o)[ncol(o)] = "fdr"
 
 write.table( o, outFile, sep=csvColSep, row.names=FALSE, col.names = TRUE, quote=FALSE )
 
