@@ -2,6 +2,31 @@
 # Auxiliary R scripts of the IntaRNA package
 
 
+# `addPvalue2csv.R` - Computes p-values of IntaRNA energies from present energy distribution
+
+For genome-wide target sRNA predictions, we assume the set of energy values 
+predicted for all target sufficiently diverse to be used as a background energy
+model for minimum energies of putative target sequences. Thus, we can fit a
+generalized extreme value (GEV) distribution to the data that is subsequently
+used to estimate p-values for each energy.
+
+The `addPvalue2csv.R` script takes an IntaRNA CSV output file (assumed to be
+sufficiently large and sane enough for GEV fitting) to compute respective
+p-value estimates. The output consists of the input table extended with a
+`p-value` column. If no output file is given or in- and output file names are 
+equal, the input file is overwritten! 
+You can (optionally) specify the column name for which p-values are to be 
+estimated. Example calls are given below.
+
+```bash
+# overwriting the input file with p-value-extended table
+Rscript --vanilla addPvalues2csv.R IntaRNA-output.csv
+# creating a new output file for p-value extension
+Rscript --vanilla addPvalues2csv.R IntaRNA-output.csv IntaRNA-output-with-pValue.csv
+# computing p-values for normalized energies (has to be present in file IN.csv)
+Rscript --vanilla addPvalues2csv.R IN.csv IN-pValue.csv E_norm
+```
+
 
 # `plotRegions.R` - Visualization of RRI-covered regions
 

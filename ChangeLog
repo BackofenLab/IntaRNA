@@ -10,8 +10,16 @@
 # changes in development version since last release 
 ################################################################################
 
+# R
+- `addPvalue2csv.R` script to estimate p-values based on present energy values
+
 ################################################################################  
 ################################################################################
+
+191115 Martin Raden
+ + R/addPvalue2csv.R
+ * R/README.md :
+   + docu of addPvalue2csv.R
 
 ################################################################################
 ### version 3.1.3
