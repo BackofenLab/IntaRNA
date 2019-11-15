@@ -1,8 +1,12 @@
 
 # Auxiliary R scripts of the IntaRNA package
 
+- [addPvalue2csv.R](#addpvalue2csvr)
+- [plotRegions.R](#plotregionsr)
 
-# `addPvalue2csv.R` - Computes p-values of IntaRNA energies from present energy distribution
+
+# `addPvalue2csv.R`
+### p-value estimates of IntaRNA energies from present energy distribution
 
 For genome-wide target sRNA predictions, we assume the set of energy values 
 predicted for all target sufficiently diverse to be used as a background energy
@@ -28,7 +32,8 @@ Rscript --vanilla addPvalues2csv.R IN.csv IN-pValue.csv E_norm
 ```
 
 
-# `plotRegions.R` - Visualization of RRI-covered regions
+# `plotRegions.R`
+### Visualization of RRI-covered regions
 
 To visualize sequences' regions covered by RNA-RNA interactions predicted by
 IntaRNA, you can use `plotRegions.R` by providing the following arguments (in 
