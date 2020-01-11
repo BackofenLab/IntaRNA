@@ -119,6 +119,8 @@ The following topics are covered by this documentation:
       - [Constrain regions to be accessible or blocked](#accConstraints)
       - [Read/write accessibility from/to file or stream](#accFromFile)
 - [Library for integration in external tools](#lib)
+- [Auxiliary R scripts for output visualization etc.](/R)
+- [Auxiliary python scripts for IntaRNA-based pipelines](/python)
 
 
 <br /><br /><br /><br />
@@ -1329,7 +1331,9 @@ target;5;16;query;5;16;ACCCCCGGUGGU&ACCCCCGGUGGU;(((.((((.(((&))).)))).)));-6.76
 target;6;16;query;5;15;CCCCCGGUGGU&ACCCCCGGUGG;((.((((.(((&))).)))).));-5.56
 target;7;16;query;5;15;CCCCGGUGGU&ACCCCCGGUGG;((((((.(((&))).)))).));-5.55
 ```
-For each prediction, a row in the CSV is generated.
+For each prediction, a row in the CSV is generated. The column separator within
+the tabular CSV output can be changed using `--outSep`, e.g. to produce tab-separated
+`.tsv` output.
 
 Using the argument `--outCsvCols`, the user can specify what columns are
 printed to the output using a comma-separated list of colIds. Available colIds
@@ -1351,6 +1355,7 @@ are
 - `hybridDPfull` : hybrid in VRNA dot-bracket notation (full sequence length)
 - `hybridDB` : hybrid in dot-bar notation (interactin sites only)
 - `hybridDBfull` : hybrid in dot-bar notation (full sequence length)
+- `bpList` : list of hybrid base pairs, e.g. '(4,3):(5,2):(7,1)'
 - `E` : overall interaction energy
 - `ED1` : ED value of seq1
 - `ED2` : ED value of seq2
@@ -1376,9 +1381,16 @@ are
 - `seedED2` : ED value of seq2 of the seed only (excluding rest) (* see below)
 - `seedPu1` : probability of seed region to be accessible for seq1 (* see below)
 - `seedPu2` : probability of seed region to be accessible for seq2 (* see below)
-- `Eall` : ensemble energy of all considered interactions (-RT*log(Zall))
+- `Eall` : ensemble energy of all considered interactions (-RT*log(`Zall`))
 - `Zall` : partition function of all considered interactions
+- `Eall1` : ensemble energy of all considered intra-molecular structures of seq1 (given its accessibility constraints)
+- `Eall2` : ensemble energy of all considered intra-molecular structures of seq2 (given its accessibility constraints)
+- `EallTotal` : total ensemble energy of all considered interactions including the ensemble energies of intra-molecular structure formation (`Eall+Eall1+Eall2`)
+- `Etotal` : total energy of an interaction including the ensemble energies of intra-molecular structure formation (`E+Eall1+Eall2`)
+- `Zall1` : partition function represented by `Eall1` (exp(-`Eall1`/RT))
+- `Zall2` : partition function represented by `Eall2` (exp(-`Eall2`/RT))
 - `P_E` : probability of an interaction (site) within the considered ensemble
+- `RT` : normalized temperature used for Boltzmann weight computation
 
 (*) Note, since an interaction can cover more than one seed, all `seed*` columns
 might contain multiple entries separated by ':' symbols. In order to print only
@@ -1388,7 +1400,7 @@ to the call.
 Note further, `Pu` values are recomputed from rounded `ED` values and are thus not equal
 to the RNAplfold values from which the ED values are derived from!
 
-Using `--outCsvCols ''`, all available columns are added to the output.
+Using `--outCsvCols '*'`, all available columns are added to the output.
 
 Energies are provided in unit *kcal/mol*, probabilities in the interval [0,1].
 Position annotations start indexing with 1 (or the values set via `--qIdxPos0` and `--tIdxPos0`).
@@ -1441,8 +1453,11 @@ column labels introduced for the CVS output:
 
 - `id1` : id of first sequence (target)
 - `id2` : id of second sequence (query)
-- `Zall` : partition function of all considered interactions
+- `RT`: the scaled temperature used for Boltzmann-weight computation
 - `Eall` : ensemble energy of all considered interactions (-RT*log(Zall))
+- `Eall1` : ensemble energy of all considered intra-molecular structures of seq1 (given its accessibility constraints)
+- `Eall2` : ensemble energy of all considered intra-molecular structures of seq2 (given its accessibility constraints)
+- `EallTotal` : total ensemble energy of all considered interactions including the ensemble energies of intra-molecular structure formation (`Eall+Eall1+Eall2`)
 
 Note, `Zall` depends on the selected 
 [prediction mode](#predModes) and 
@@ -1451,7 +1466,7 @@ It holds `Zall(--model=S) <= Zall(--model=P)` as well as
 `Zall(--mode=H) <= Zall(--mode=M)`.
 Thus, most accurate results are computed using
 ```
-IntaRNA --model=P --mode=M --out=E ...
+IntaRNA --model=P --mode=M --outMode=E ...
 ```
 
 
@@ -1642,8 +1657,11 @@ Note, for *multiple sequences* in FASTA input, the provided file names are suffi
 where `#` denotes the according target/query sequence number
 within the input where numbering starts with 1.
 
+The column separator within tabular CSV output (defaulting to `;`) can be changed 
+using `--outSep`, e.g. to produce tab-separated `.tsv` output.
+
 Note further, `qPu:`|`tPu:` will report unpaired probability values based on rounded accessibility (ED) values.
-Thus, these values will most likely differ from values eg. produced by RNAplfold.
+Thus, these values will most likely differ from values eg. produced by the program RNAplfold.
 We therefore strongly recommend to store `qAcc:`|`tAcc:` values when you want to use them
 as input for subsequent IntaRNA calls!
 

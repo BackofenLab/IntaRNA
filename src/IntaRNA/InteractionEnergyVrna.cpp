@@ -1,5 +1,6 @@
 
 #include "IntaRNA/InteractionEnergyVrna.h"
+#include "IntaRNA/AccessibilityVrna.h"
 
 #include <cassert>
 #include <set>
@@ -10,8 +11,11 @@ extern "C" {
 	#include <ViennaRNA/fold.h>
 	#include <ViennaRNA/part_func.h>
 	#include <ViennaRNA/structure_utils.h>
+	#include <ViennaRNA/constraints/SHAPE.h>
 	#include <ViennaRNA/utils.h>
 }
+
+
 
 namespace IntaRNA {
 
@@ -38,6 +42,8 @@ InteractionEnergyVrna::InteractionEnergyVrna(
 	, bpGC( BP_pair[RnaSequence::getCodeForChar('G')][RnaSequence::getCodeForChar('C')] )
 	, esValues1(NULL)
 	, esValues2(NULL)
+	, Eall1(E_INF)
+	, Eall2(E_INF)
 {
 	vrna_md_defaults_reset( &foldModel );
 
@@ -156,6 +162,42 @@ computeES( const Accessibility & acc, InteractionEnergyVrna::EsMatrix & esToFill
 	free(structureConstraint);
 	free(sequence);
 
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+E_type
+InteractionEnergyVrna::
+computeIntraEall( const Accessibility & acc ) const
+{
+
+	vrna_md_t curModel = foldModel;
+	// avoid computation of base pair probabilities
+	curModel.compute_bpp = 0;
+
+	const int length = acc.getSequence().size();
+
+	// copy sequence into C data structure
+	char * sequence = (char *) vrna_alloc(sizeof(char) * (length + 1));
+	for (int i=0; i<length; i++) {
+		sequence[i] = acc.getSequence().asString().at(i);
+	}
+	sequence[length] = '\0';
+
+    // setup folding data
+    vrna_fold_compound_t * fold_compound = vrna_fold_compound( sequence, &curModel, VRNA_OPTION_DEFAULT );
+
+    // add accessibility constraints
+    AccessibilityVrna::addConstraints( *fold_compound, acc );
+
+	// rescale parameters for Boltzmann factors
+	vrna_exp_params_rescale(fold_compound, NULL);
+
+	// call PF function to get ensemble energy
+	E_type ensE = Ekcal_2_E(vrna_pf(fold_compound, NULL));
+
+	// get partition function from ensemble energy
+	return ensE;
 }
 
 ////////////////////////////////////////////////////////////////////////////

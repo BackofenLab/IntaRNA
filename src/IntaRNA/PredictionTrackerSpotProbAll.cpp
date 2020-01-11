@@ -9,19 +9,25 @@ PredictionTrackerSpotProbAll::
 PredictionTrackerSpotProbAll(
 		const InteractionEnergy & energy
 		, const std::string & streamName
-		, const std::string NA_string
+		, const std::string & NA_string
+		, const std::string & sep
 	)
  :	PredictionTracker()
 	, energy(energy)
 	, deleteStreamsOnDestruction(true)
 	, outStream(NULL)
 	, NA_string(NA_string)
+	, sep(sep)
 	, overallZ( Z_type(0.0) )
 	, pairZ( energy.size1(), energy.size2(), (Z_type)0.0 ) // init 0
 {
 #if INTARNA_IN_DEBUG_MODE
 	if (streamName.empty()) {
 		throw std::runtime_error("PredictionTrackerSpotProbAll() : streamName empty");
+	}
+	// check separator
+	if (sep.empty()) {
+		throw std::runtime_error("PredictionTrackerSpotProbAll() empty separator provided");
 	}
 #endif
 	// open streams
@@ -37,16 +43,24 @@ PredictionTrackerSpotProbAll::
 PredictionTrackerSpotProbAll(
 		const InteractionEnergy & energy
 		, std::ostream * outStream
-		, const std::string NA_string
+		, const std::string & NA_string
+		, const std::string & sep
 	)
  :	PredictionTracker()
 	, energy(energy)
 	, deleteStreamsOnDestruction(false)
 	, outStream(outStream)
 	, NA_string(NA_string)
+	, sep(sep)
 	, overallZ( Z_type(0.0) )
 	, pairZ( energy.size1(), energy.size2(), (Z_type)0.0 ) // init 0
 {
+#if INTARNA_IN_DEBUG_MODE
+	// check separator
+	if (sep.empty()) {
+		throw std::runtime_error("PredictionTrackerSpotProbAll() empty separator provided");
+	}
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -58,7 +72,8 @@ PredictionTrackerSpotProbAll::
 				, pairZ
 				, overallZ
 				, energy
-				, NA_string );
+				, NA_string
+				, sep );
 
 	// clean up if file pointers were created in constructor
 	if (deleteStreamsOnDestruction) {
@@ -113,7 +128,8 @@ writeData( std::ostream &out
 			, const Z2dMatrix & pairZ
 			, const Z_type & overallZ
 			, const InteractionEnergy & energy
-			, const std::string & NA_string )
+			, const std::string & NA_string
+			, const std::string & sep )
 {
 	// direct access to sequence string information
 	const RnaSequence & rna1 = energy.getAccessibility1().getSequence();
@@ -129,7 +145,7 @@ writeData( std::ostream &out
 	// print header : spotProb; "nt_index" ... starting with index 1
 	out <<"spotProb";
 	for (size_t j=rna2.size(); j-- > 0; ) {
-		out <<';' <<rna2Str.at(j)<<"_"<<rna2.getInOutIndex(energy.getAccessibility2().getReversedIndex(j));
+		out <<sep <<rna2Str.at(j)<<"_"<<rna2.getInOutIndex(energy.getAccessibility2().getReversedIndex(j));
 	}
 	out <<'\n';
 	// print minE data
@@ -138,7 +154,7 @@ writeData( std::ostream &out
 		out <<rna1Str.at(i)<<"_"<<rna1.getInOutIndex(i);
 		for (size_t j=pairZ.size2(); j-- > 0; ) {
 			// out separator
-			out <<';';
+			out <<sep;
 			// out infinity replacement if needed
 			if ( Z_isINF( pairZ(i,j) ) ) {
 				out<<NA_string;

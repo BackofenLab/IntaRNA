@@ -9,6 +9,7 @@
 #include <boost/program_options.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/spirit/include/qi.hpp>
 
 #include <iostream>
 #include <cstdarg>
@@ -86,6 +87,41 @@ public:
 		default : return "unknown";
 		}
 	}
+
+	template <typename InputIterator = std::string::const_iterator>
+	struct unescaped_string
+			: boost::spirit::qi::grammar<InputIterator, std::string(char const*)>
+			{
+				boost::spirit::qi::rule<InputIterator, std::string(char const*)> unesc_str;
+				boost::spirit::qi::symbols<char const, char const> unesc_char;
+
+				unescaped_string()
+	    		  : unescaped_string::base_type(unesc_str)
+				{
+					using namespace boost::spirit;
+					unesc_char.add(R"(\a)", '\a')(R"(\b)", '\b')(R"(\f)", '\f')(R"(\n)", '\n')
+	                    		  (R"(\r)", '\r')(R"(\t)", '\t')(R"(\v)", '\v')
+	                    		  (R"(\\)", '\\')(R"(\')", '\'')(R"(\")", '\"')
+	                    		  ;
+
+					unesc_str = qi::lit(qi::_r1)
+								>> *(unesc_char | qi::graph | qi::space | R"(\x)" >> qi::hex)
+								>>  qi::lit(qi::_r1)
+								;
+				}
+
+				static
+				std::string
+				getUnescaped( const std::string & rawString )
+				{
+					using namespace boost::spirit;
+					std::string parsed;
+					char const* quote = ""; // leading and trailing quote string to parse
+					unescaped_string myGrammar;
+					qi::parse( rawString.begin(), rawString.end(), myGrammar(quote), parsed);
+					return parsed;
+				}
+			};
 
 	/**
 	 * Identifies the requested personality from the given call arguments
@@ -644,9 +680,9 @@ protected:
 	bool outNoLP;
 	//! whether or not GU base pairs are allowed at interaction and helix ends
 	bool outNoGUend;
-	//! the CSV column separator
-	static const std::string outCsvColSep;
-	//! the CSV list separator within individual columns
+	//! the column separator to be used for tabular output
+	std::string outSep;
+	//! the list separator within individual columns of tabular output
 	static const std::string outCsvLstSep;
 	//! the CSV column selection
 	std::string outCsvCols;
@@ -874,6 +910,13 @@ protected:
 	 * @param list the list of argument values to validate
 	 */
 	void validate_out(const std::vector<std::string> & list);
+
+	/**
+	 * Validates the tabular column separator argument.
+	 *
+	 * @param sep the argument value to validate
+	 */
+	void validate_outSep(const std::string & sep);
 
 	/**
 	 * Validates the outCsvCols argument.
@@ -1512,6 +1555,27 @@ void CommandLineParsing::validate_outputTarget(
 			return;
 		}
 	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+void CommandLineParsing::validate_outSep(const std::string & outSep) {
+
+	// check if empty
+	if ( outSep.empty() ) {
+		LOG(ERROR) <<"no column separator for tabular CSV output defined (empty)";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+		return;
+	}
+
+	// check if distinct from value list separator
+	if ( outSep == outCsvLstSep ) {
+		LOG(ERROR) <<"the selected column separator '"<<outSep<<"' for tabular CSV output equals the value separator used to multi-value output. Please change!";
+		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+		return;
+	}
+
 }
 
 ////////////////////////////////////////////////////////////////////////////

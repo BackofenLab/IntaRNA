@@ -28,7 +28,7 @@ TEST_CASE( "AccessibilityConstraint", "[AccessibilityConstraint]" ) {
 		boost::regex regex;
 
 		// general test
-		regex = boost::regex("\\s");
+		regex = boost::regex(R"(\s)");
 		REQUIRE_FALSE(boost::regex_match( "", regex, boost::match_perl ));
 		REQUIRE(boost::regex_match( " ", regex, boost::match_perl ));
 

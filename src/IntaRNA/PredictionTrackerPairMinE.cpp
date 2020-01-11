@@ -9,18 +9,24 @@ PredictionTrackerPairMinE::
 PredictionTrackerPairMinE(
 		const InteractionEnergy & energy
 		, const std::string & streamName
-		, const std::string E_INF_string
+		, const std::string & E_INF_string
+		, const std::string & sep_string
 	)
  :	PredictionTracker()
 	, energy(energy)
 	, deleteStreamsOnDestruction(true)
 	, outStream(NULL)
 	, E_INF_string(E_INF_string)
+	, sep_string(sep_string)
 	, pairMinE( energy.size1(), energy.size2(), E_INF ) // init E_INF
 {
 #if INTARNA_IN_DEBUG_MODE
 	if (streamName.empty()) {
 		throw std::runtime_error("PredictionTrackerPairMinE() : streamName empty");
+	}
+	// check separator
+	if (sep_string.empty()) {
+		throw std::runtime_error("PredictionTrackerPairMinE() empty separator provided");
 	}
 #endif
 	// open streams
@@ -36,15 +42,23 @@ PredictionTrackerPairMinE::
 PredictionTrackerPairMinE(
 		const InteractionEnergy & energy
 		, std::ostream * outStream
-		, const std::string E_INF_string
+		, const std::string & E_INF_string
+		, const std::string & sep_string
 	)
  :	PredictionTracker()
 	, energy(energy)
 	, deleteStreamsOnDestruction(false)
 	, outStream(outStream)
 	, E_INF_string(E_INF_string)
+	, sep_string(sep_string)
 	, pairMinE( energy.size1(), energy.size2(), E_INF ) // init E_INF
 {
+#if INTARNA_IN_DEBUG_MODE
+	// check separator
+	if (sep_string.empty()) {
+		throw std::runtime_error("PredictionTrackerPairMinE() empty separator provided");
+	}
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -55,7 +69,8 @@ PredictionTrackerPairMinE::
 	writeData( *outStream
 				, pairMinE
 				, energy
-				, E_INF_string );
+				, E_INF_string
+				, sep_string );
 
 	// clean up if file pointers were created in constructor
 	if (deleteStreamsOnDestruction) {
@@ -106,7 +121,8 @@ PredictionTrackerPairMinE::
 writeData( std::ostream &out
 			, const E2dMatrix & pairMinE
 			, const InteractionEnergy & energy
-			, const std::string & E_INF_string )
+			, const std::string & E_INF_string
+			, const std::string & sep_string )
 {
 	// direct access to sequence string information
 	const RnaSequence & rna1 = energy.getAccessibility1().getSequence();
@@ -119,10 +135,10 @@ writeData( std::ostream &out
 	// col[0] = seq1
 	// cell[0,0] = "minE"
 
-	// print header : minE; "nt_index" ... starting with index 1
+	// print header : minE <sep> "nt_index" ... starting with index 1
 	out <<"minE";
 	for (size_t j=rna2Str.size(); j-- > 0; ) {
-		out <<';' <<rna2Str.at(j)<<"_"<<rna2.getInOutIndex(energy.getAccessibility2().getReversedIndex(j));
+		out <<sep_string <<rna2Str.at(j)<<"_"<<rna2.getInOutIndex(energy.getAccessibility2().getReversedIndex(j));
 	}
 	out <<'\n';
 	// print minE data
@@ -131,7 +147,7 @@ writeData( std::ostream &out
 		out <<rna1Str.at(i)<<"_"<<rna1.getInOutIndex(i);
 		for (size_t j=pairMinE.size2(); j-- > 0; ) {
 			// out separator
-			out <<';';
+			out <<sep_string;
 			// out infinity replacement if needed
 			if ( E_isINF( pairMinE(i,j) ) ) {
 				out<<E_INF_string;

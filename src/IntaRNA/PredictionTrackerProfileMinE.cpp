@@ -10,7 +10,8 @@ PredictionTrackerProfileMinE(
 		const InteractionEnergy & energy
 		, const std::string & seq1streamName
 		, const std::string & seq2streamName
-		, const std::string E_INF_string
+		, const std::string & E_INF_string
+		, const std::string & sep_string
 	)
  :	PredictionTracker()
 	, energy(energy)
@@ -18,9 +19,16 @@ PredictionTrackerProfileMinE(
 	, seq1stream(NULL)
 	, seq2stream(NULL)
 	, E_INF_string(E_INF_string)
+	, sep_string(sep_string)
 	, seq1minE( seq1streamName.empty() ? 0 : energy.size1(), E_INF ) // init E_INF
 	, seq2minE( seq2streamName.empty() ? 0 : energy.size2(), E_INF ) // init E_INF
 {
+#if INTARNA_IN_DEBUG_MODE
+	// check separator
+	if (sep_string.empty()) {
+		throw std::runtime_error("PredictionTrackerProfileMinE() empty separator provided");
+	}
+#endif
 	// open streams
 	if (!seq1streamName.empty()) {
 		seq1stream = newOutputStream( seq1streamName );
@@ -47,7 +55,8 @@ PredictionTrackerProfileMinE(
 		const InteractionEnergy & energy
 		, std::ostream * seq1stream
 		, std::ostream * seq2stream
-		, const std::string E_INF_string
+		, const std::string & E_INF_string
+		, const std::string & sep_string
 	)
  :	PredictionTracker()
 	, energy(energy)
@@ -55,9 +64,16 @@ PredictionTrackerProfileMinE(
 	, seq1stream(seq1stream)
 	, seq2stream(seq2stream)
 	, E_INF_string(E_INF_string)
+	, sep_string(sep_string)
 	, seq1minE( seq1stream==NULL ? 0 : energy.size1(), E_INF ) // init E_INF
 	, seq2minE( seq2stream==NULL ? 0 : energy.size2(), E_INF ) // init E_INF
 {
+#if INTARNA_IN_DEBUG_MODE
+	// check separator
+	if (sep_string.empty()) {
+		throw std::runtime_error("PredictionTrackerProfileMinE() empty separator provided");
+	}
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -71,14 +87,18 @@ PredictionTrackerProfileMinE::
 					, seq1minE.begin()
 					, seq1minE.end()
 					, energy.getAccessibility1().getSequence()
-					, E_INF_string );
+					, E_INF_string
+					, sep_string
+					);
 	}
 	if (seq2stream != NULL) {
 		writeProfile( *seq2stream
 					, seq2minE.begin()
 					, seq2minE.end()
 					, energy.getAccessibility2().getAccessibilityOrigin().getSequence()
-					, E_INF_string );
+					, E_INF_string
+					, sep_string
+					);
 	}
 
 	// clean up if file pointers were created in constructor

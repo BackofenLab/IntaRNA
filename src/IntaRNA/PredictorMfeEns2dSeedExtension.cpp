@@ -202,8 +202,10 @@ fillHybridZ_left( const size_t si1, const size_t si2 )
 	Z_type iStackZ = Z_type(1);
 
 	// iterate over all window starts i1 (seq1) and i2 (seq2)
-	for (i1=si1; si1-i1 < hybridZ_left.size1(); i1-- ) {
-		for (i2=si2; si2-i2 < hybridZ_left.size2(); i2-- ) {
+	for (size_t l1=0; l1 < hybridZ_left.size1(); l1++) {
+		for (size_t l2=0; l2 < hybridZ_left.size2(); l2++) {
+			i1 = si1-l1;
+			i2 = si2-l2;
 
 			// referencing cell access
 			Z_type & curZ = hybridZ_left(si1-i1,si2-i2);
@@ -222,10 +224,8 @@ fillHybridZ_left( const size_t si1, const size_t si2 )
 					}
 					// get stacking energy to avoid recomputation in recursion below
 					iStackZ = energy.getBoltzmannWeight(energy.getE_interLeft(i1,i1+noLpShift,i2,i2+noLpShift));
-					// check just stacked seed extension
-					if (i1+noLpShift==si1 && i2+noLpShift==si2) {
-						curZ += iStackZ * hybridZ_left(0,0);
-					}
+					// check just stacked
+					curZ += iStackZ + hybridZ_left(l1-noLpShift,l2-noLpShift);
 				}
 
 				// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)

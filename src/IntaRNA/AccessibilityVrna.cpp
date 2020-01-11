@@ -124,6 +124,58 @@ callbackForStorage(FLT_OR_DBL   *pr,
 
 ///////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Adds constraints to the VRNA fold compound that correspond to the present
+ * AccessibilityConstraints
+ * @param fold_compound INOUT the object to extend
+ */
+void
+AccessibilityVrna::
+addConstraints( vrna_fold_compound_t & fold_compound, const Accessibility & acc )
+{
+	// setup folding constraints
+	if ( ! acc.getAccConstraint().isEmpty() ) {
+
+		const int length = (int)acc.getSequence().size();
+
+		// copy structure constraint
+		char * structure = structure = (char *) vrna_alloc(sizeof(char) * (length + 1));
+		for (int i=0; i<length; i++) {
+			// copy accessibility constraint
+			structure[i] = acc.getAccConstraint().getVrnaDotBracket(i);
+		}
+		// set array end indicator
+		structure[length] = '\0';
+
+		// Adding hard constraints from pseudo dot-bracket
+		unsigned int constraint_options = VRNA_CONSTRAINT_DB_DEFAULT;
+		// enforce constraints
+		constraint_options |= VRNA_CONSTRAINT_DB_ENFORCE_BP;
+
+		// add constraint information to the fold compound object
+		vrna_constraints_add(&fold_compound, (const char *)structure, constraint_options);
+
+		// cleanup
+		free(structure);
+
+		// check if SHAPE reactivity data available
+		if (!acc.getAccConstraint().getShapeFile().empty()) {
+			// add SHAPE reactivity data
+			// add SHAPE data as soft constraints
+			vrna_constraints_add_SHAPE(&fold_compound,
+			                           acc.getAccConstraint().getShapeFile().c_str(),
+			                           acc.getAccConstraint().getShapeMethod().c_str(), // shape_method,
+			                           acc.getAccConstraint().getShapeConversion().c_str(), // shape_conversion,
+			                           0, // verbose,
+			                           VRNA_OPTION_PF | VRNA_OPTION_WINDOW );
+		}
+	}
+
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
 
 void
 AccessibilityVrna::
@@ -159,44 +211,8 @@ fillByRNAplfold( const VrnaHandler &vrnaHandler
     // setup folding data
     vrna_fold_compound_t * fold_compound = vrna_fold_compound( sequence, &curModel, VRNA_OPTION_PF | VRNA_OPTION_WINDOW );
 
-	// setup folding constraints
-	if ( ! getAccConstraint().isEmpty() ) {
-		// copy structure constraint
-		char * structure = structure = (char *) vrna_alloc(sizeof(char) * (length + 1));
-		for (int i=0; i<length; i++) {
-		// copy accessibility constraint
-		structure[i] = getAccConstraint().getVrnaDotBracket(i);
-		}
-		// set array end indicator
-		structure[length] = '\0';
-
-		// Adding hard constraints from pseudo dot-bracket
-		unsigned int constraint_options = VRNA_CONSTRAINT_DB_DEFAULT;
-		// enforce constraints
-		constraint_options |= VRNA_CONSTRAINT_DB_ENFORCE_BP;
-
-		// add constraint information to the fold compound object
-		vrna_constraints_add(fold_compound, (const char *)structure, constraint_options);
-
-		// cleanup
-		free(structure);
-
-		// check if SHAPE reactivity data available
-		if (!getAccConstraint().getShapeFile().empty()) {
-
-			// add SHAPE reactivity data
-			// add SHAPE data as soft constraints
-			vrna_constraints_add_SHAPE(fold_compound,
-			                           getAccConstraint().getShapeFile().c_str(),
-			                           getAccConstraint().getShapeMethod().c_str(), // shape_method,
-			                           getAccConstraint().getShapeConversion().c_str(), // shape_conversion,
-			                           0, // verbose,
-			                           VRNA_OPTION_PF | VRNA_OPTION_WINDOW );
-
-
-		}
-	}
-
+    // add accessibility constraints
+    addConstraints( *fold_compound, *this );
 
     // provide access to this object to be filled by the callback
     // and the normalized temperature for the Boltzmann weight computation
