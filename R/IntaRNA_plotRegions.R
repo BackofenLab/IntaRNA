@@ -5,6 +5,7 @@
 # predicted by IntaRNA.
 #
 # arguments: <IntaRNA-output-CSV> <1|2> <output-plot-file>
+# 
 # 1 <IntaRNA-output-CSV> = ";"-separated CSV output of IntaRNA
 # 2 <1|2> = suffix of "start,end,id" CSV cols to plot
 # 3 <output-plot-file> = file name of the otuput figure suffixed
@@ -12,7 +13,7 @@
 #
 # example call:
 #
-# Rscript --slave -f plotRegions.R --args pred.csv 1 regions.png
+# Rscript --vanilla plotRegions.R pred.csv 1 regions.png
 #
 # This script is part of the IntaRNA source code package. See
 # respective licence and documentation for further information.
@@ -20,13 +21,16 @@
 # https://github.com/BackofenLab/IntaRNA
 #
 ####################################################################
+
+
+####################################################################
 # check and load dependencies
 ####################################################################
 
 options(warn=-1)
-suppressPackageStartupMessages(require(ggplot2))
-suppressPackageStartupMessages(require(ggalt))
-suppressPackageStartupMessages(require(cowplot)) # cowplot starts with a note
+suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(ggalt))
+suppressPackageStartupMessages(library(cowplot)) # cowplot starts with a note
 options(warn=0)
 
 theme_set(theme_cowplot())

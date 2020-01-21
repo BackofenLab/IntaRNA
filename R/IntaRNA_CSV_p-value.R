@@ -1,6 +1,29 @@
 #!/usr/bin/env Rscript
 
 ####################################################################
+# Computes p-values and false discovery rates (fdr following Benjamin+Hochberg)
+# by fitting a GEV on the energy values computed by IntaRNA. 
+# Note, such p-value estimates are only useful for genome-wide predictions.
+#
+# arguments: <IntaRNA-output-CSV> [<out-CSV> = <intarna-csv-output>] [<col-name-E> = E]
+#
+# 1 <IntaRNA-output-CSV> = ";"-separated CSV output of IntaRNA
+# 2 <out-CSV> = file name to write the extended CSV output to (2 new columns)
+# 3 <col-name-E> = the column name that holds the energy values to be fitted
+#
+# example call:
+#
+# Rscript --vanilla IntaRNA_CSV_p-value.R predictions.csv
+#
+# This script is part of the IntaRNA source code package. See
+# respective licence and documentation for further information.
+#
+# https://github.com/BackofenLab/IntaRNA
+#
+####################################################################
+
+
+####################################################################
 # get command line arguments
 ####################################################################
 

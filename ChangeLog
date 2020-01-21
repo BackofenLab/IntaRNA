@@ -11,13 +11,20 @@
 ################################################################################
 
 # R
-- `addPvalue2csv.R` script to estimate p-values based on present energy values
+- `IntaRNA_CSV_p-value.R` script to estimate p-values based on energy values
 
 ################################################################################  
 ################################################################################
 
+200121 Martin Raden
+ + R/IntaRNA_CSV_p-value.R : former addPvalues2csv.R
+ + R/IntaRNA_plotRegions.R : former plotRegions.R
+ * README.md : adapted to renamings
+ + R/Makefile.am : install R scripts
+ 
+ 
 191115 Martin Raden
- + R/addPvalue2csv.R
+ + R/addPvalues2csv.R
  * R/README.md :
    + docu of addPvalue2csv.R
 
