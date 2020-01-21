@@ -133,12 +133,14 @@ gevfit <- gevFitting(E) # fitten
 
 # get rounded pValue
 pVal <- round( gevPvalue( E, gevfit ), digits=pValPrec )
+# get rounded fdr
+fdr <- round( p.adjust(pVal, method="BH"), digits=pValPrec )
 		
 ####################################################################
 # write output
 ####################################################################
 
-o = cbind( d, pVal, p.adjust(pVal, method="BH") )
+o = cbind( d, pVal, fdr )
 colnames(o)[ncol(o)-1] = "p-value"
 colnames(o)[ncol(o)] = "fdr"
 
