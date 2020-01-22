@@ -20,11 +20,13 @@ AC_CONFIG_HEADERS([src/config.h])
 m4_include([m4/m4-ax_cxx_compile_stdcxx.m4])
 m4_include([m4/m4-ax_openmp.m4])
 m4_include([m4/m4-ax_boost_base.m4])
-m4_include([m4/m4-ax_boost_system.m4])
-m4_include([m4/m4-ax_boost_filesystem.m4])
-m4_include([m4/m4-ax_boost_program_options.m4])
-m4_include([m4/m4-ax_boost_regex.m4])
-m4_include([m4/m4-ax_boost_iostreams.m4])
+AS_IF([test "x$want_boost" != "xno"],[
+	m4_include([m4/m4-ax_boost_system.m4])
+	m4_include([m4/m4-ax_boost_filesystem.m4])
+	m4_include([m4/m4-ax_boost_program_options.m4])
+	m4_include([m4/m4-ax_boost_regex.m4])
+	m4_include([m4/m4-ax_boost_iostreams.m4])
+])
 m4_include([m4/m4-ax_check_zlib.m4])
 
 lt_enable_auto_import=""
