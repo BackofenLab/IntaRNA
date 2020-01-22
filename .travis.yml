@@ -26,13 +26,12 @@ script:
     - cd $TRAVIS_BUILD_DIR
     # generate autotools's files 
     - bash autotools-init.sh 
-    # run configure
+    # run configure (without boost checks)
     - ./configure --prefix=$HOME/IntaRNA --with-vrna=$HOME/miniconda/envs/build-IntaRNA --with-boost=no --without-zlib
-    # --with-boost-system=no  --with-boost-filesystem=no --with-boost-program-options=no --with-boost-regex=no --with-boost-iostreams=no --without-zlib
     # compile documentation
     # - make doxygen-doc
     # compile, test and install IntaRNA
     - make -j 2 && make tests -j 2 && make install
     ##### check IntaRNA build #####
-    # run IntaRNA with help output
+    # run installed IntaRNA with help output
     - $HOME/IntaRNA/bin/IntaRNA -h
