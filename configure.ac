@@ -59,7 +59,7 @@ AX_CXX_COMPILE_STDCXX([11], [noext], [mandatory])
 
 # check if python is available
 AM_PATH_PYTHON([$PYTHON_REQUIRED_VERSION],, [:])
-AM_CONDITIONAL([HAVE_PYTHON], [test "$PYTHON" != :])
+AM_CONDITIONAL([HAVE_PYTHON], [test "$PYTHON" != ":"])
 AM_COND_IF([HAVE_PYTHON], [HAVE_PYTHON_yesno=yes], [HAVE_PYTHON_yesno=no])
 
 ###############################################################################
