@@ -9,7 +9,7 @@
 # 1 <IntaRNA-output-CSV> = ";"-separated CSV output of IntaRNA
 # 2 <1|2|paramFile> = suffix of "start,end,id" CSV cols to plot
 #     or paramFile containing '='-separated assignments for 
-#     id, start, end, title, xvline, xmax
+#     id, start, end, title, xvline, xmin, xmax
 # 3 <output-plot-file> = file name of the output figure suffixed
 #     by one of ".pdf",".png",".svg",".eps",".ps",".jpeg",".tiff"
 #
@@ -55,6 +55,7 @@ end = NA
 title = NULL
 # if set to some x-position, this will trigger the plotting of a vertical line at that location
 xVline = NA;
+xmin = NA;
 xmax = NA;
 rowsMax = 200;
 # set columns to plot
@@ -72,6 +73,7 @@ if (seqNr == "1" ||  seqNr == "2") {
   end = as.character(p["end",1])
   title = as.character(p["title",1])
   xVline = as.numeric(as.character(p["xvline",1]))
+  xmin = as.numeric(as.character(p["xmin",1]))
   xmax = as.numeric(as.character(p["xmax",1]))
   rowsMax = as.numeric(as.character(p["rows",1]))
 }
@@ -109,6 +111,9 @@ for( i in 1:nrow(d) ) {
 allPos = as.data.frame(allPos,ncol=1)
 #allPos # DEBUG OUT
 
+if ( is.na(xmin) ) {
+  xmin = min(allPos)
+}
 if ( is.na(xmax) ) {
   xmax = max(allPos)
 }
@@ -119,7 +124,7 @@ coveragePlot =
 		ylab("coverage") +
 		xlab( ifelse( is.null(title) , "position" , title ) ) +
 		scale_y_continuous(position = "right", expand=expand_scale(mult = c(0, .02))) +
-		scale_x_continuous(expand = c(0, 0), limits=c(1,xmax));
+		scale_x_continuous(expand = c(0, 0), limits=c(xmin,xmax));
 
 if (!is.null(title)) {
   coveragePlot = coveragePlot + theme(	axis.title.x=element_text(hjust = 0.5, face = "bold"));
@@ -149,10 +154,10 @@ regionPlot =
 		ggplot(dRegion, aes(x=start,xend=end,y=idx)) +
 		geom_dumbbell(color="dodgerblue", size=2) +
 		xlab("position") + 
-    scale_x_continuous( expand = c(0, 0), limits=c(1,xmax) ) +
+    scale_x_continuous( expand = c(0, 0), limits=c(xmin,xmax) ) +
 		ylab("") +
 		scale_y_discrete(position = "right", breaks=dRegion$idx, labels=dRegion$id) +
-		geom_vline(aes(xintercept=min(1))) +
+		geom_vline(aes(xintercept=(xmin))) +
 		theme(panel.grid.major.y=element_line(size=0.7,color="lightgray")
 				, axis.text.y=element_text(size=rel(yLabelScale))
 				#, plot.title = element_blank()
