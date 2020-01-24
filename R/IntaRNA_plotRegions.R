@@ -7,8 +7,10 @@
 # arguments: <IntaRNA-output-CSV> <1|2> <output-plot-file>
 # 
 # 1 <IntaRNA-output-CSV> = ";"-separated CSV output of IntaRNA
-# 2 <1|2> = suffix of "start,end,id" CSV cols to plot
-# 3 <output-plot-file> = file name of the otuput figure suffixed
+# 2 <1|2|paramFile> = suffix of "start,end,id" CSV cols to plot
+#     or paramFile containing '='-separated assignments for 
+#     id, start, end, title, xvline, xmax
+# 3 <output-plot-file> = file name of the output figure suffixed
 #     by one of ".pdf",".png",".svg",".eps",".ps",".jpeg",".tiff"
 #
 # example call:
@@ -41,28 +43,44 @@ theme_set(theme_cowplot())
 
 args = commandArgs(trailingOnly=TRUE)
 # check and parse
-if (length(args)!=3) { stop("call with <intarna-csv-output> <1|2> <out-file-of-plot>", call.=FALSE) }
+if (length(args)!=3) { stop("call with <intarna-csv-output> <1|2|paramFile> <out-file-of-plot>", call.=FALSE) }
 
 intarnaOutputFile = args[1];
 if (!file.exists(intarnaOutputFile )) { stop("intarna-csv-output file '", intarnaOutputFile, "' does not exist!", call.=FALSE) }
 
+# init columns to plot
+id = NA
+start = NA
+end = NA
+title = NULL
+# if set to some x-position, this will trigger the plotting of a vertical line at that location
+xVline = NA;
+xmax = NA;
+rowsMax = 200;
+# set columns to plot
 seqNr = args[2];
-if (seqNr != "1" &&  seqNr != "2") { stop("second call argument as to be '1' or '2' to specify which regions to plot"); }
-# compile column names
-id = paste("id",seqNr,sep="");
-start = paste("start",seqNr,sep="");
-end = paste("end",seqNr,sep="");
+if (seqNr == "1" ||  seqNr == "2") { 
+  id = paste("id",seqNr,sep="");
+  start = paste("start",seqNr,sep="");
+  end = paste("end",seqNr,sep="");
+} else {
+  if (!file.exists(seqNr )) { stop("second call argument as to be '1' or '2' to specify which regions to plot or the name of the parameter file to parse"); }
+  p = read.table(seqNr, header=FALSE, row.names = 1, sep="=", quote = "", strip.white=TRUE, blank.lines.skip=TRUE, comment.char="#")
+  # set parsed data
+  id = as.character(p["id",1])
+  start = as.character(p["start",1])
+  end = as.character(p["end",1])
+  title = as.character(p["title",1])
+  xVline = as.numeric(as.character(p["xvline",1]))
+  xmax = as.numeric(as.character(p["xmax",1]))
+  rowsMax = as.numeric(as.character(p["rows",1]))
+}
 
 outFile = args[3];
 fileExtensions = c(".pdf",".png",".svg",".eps",".ps",".jpeg",".tiff");
 outFileExtOk = FALSE;
 for( ext in fileExtensions ) { outFileExtOk = outFileExtOk || endsWith(outFile,ext); }
 if ( !outFileExtOk ) {stop("<out-file-of-plot> has to have one of the following file extensions ",paste(fileExtensions,sep=" "), call.=FALSE);} 
-
-# if set to some x-position, this will trigger the plotting of a vertical line at that location
-xVline = NA;
-#xVline = 250; # DEBUG TEST VALUE
-
 
 ####################################################################
 # parse IntaRNA output
@@ -76,6 +94,10 @@ for( x in c(id,start,end)) {
 	}
 }
 
+# reduce to rows of interest
+rowsMax = min(rowsMax, nrow(d))
+d = d[1:rowsMax,]
+
 ####################################################################
 # create count plot
 ####################################################################
@@ -87,14 +109,24 @@ for( i in 1:nrow(d) ) {
 allPos = as.data.frame(allPos,ncol=1)
 #allPos # DEBUG OUT
 
+if ( is.na(xmax) ) {
+  xmax = max(allPos)
+}
+
 coveragePlot =
 		ggplot( allPos, aes(x=allPos, stat(count))) +
 		geom_density() +
 		ylab("coverage") +
-		xlab("position") +
+		xlab( ifelse( is.null(title) , "position" , title ) ) +
 		scale_y_continuous(position = "right", expand=expand_scale(mult = c(0, .02))) +
-		scale_x_continuous(expand = c(0, 0)) +
-		theme(	axis.title.x=element_blank() )
+		scale_x_continuous(expand = c(0, 0), limits=c(1,xmax));
+
+if (!is.null(title)) {
+  coveragePlot = coveragePlot + theme(	axis.title.x=element_text(hjust = 0.5, face = "bold"));
+} else {
+  coveragePlot = coveragePlot + theme(	axis.title.x=element_blank());
+}
+
 
 if ( ! is.na(xVline)) {
 	coveragePlot = coveragePlot +
@@ -117,12 +149,13 @@ regionPlot =
 		ggplot(dRegion, aes(x=start,xend=end,y=idx)) +
 		geom_dumbbell(color="dodgerblue", size=2) +
 		xlab("position") + 
-		scale_x_continuous( expand = c(0, 0) ) +
+    scale_x_continuous( expand = c(0, 0), limits=c(1,xmax) ) +
 		ylab("") +
 		scale_y_discrete(position = "right", breaks=dRegion$idx, labels=dRegion$id) +
-		geom_vline(aes(xintercept=min(allPos))) +
+		geom_vline(aes(xintercept=min(1))) +
 		theme(panel.grid.major.y=element_line(size=0.7,color="lightgray")
 				, axis.text.y=element_text(size=rel(yLabelScale))
+				#, plot.title = element_blank()
 		)
 
 if ( ! is.na(xVline)) {
@@ -138,7 +171,6 @@ plotWidth = 6
 plotHeightDensity = 2
 plotHeight = plotHeightDensity + max(2,nrow(d)/9)
 plotHeightDensityRel = plotHeightDensity / plotHeight
-
 
 plot_grid( coveragePlot, regionPlot
 		, nrow=2, ncol=1
