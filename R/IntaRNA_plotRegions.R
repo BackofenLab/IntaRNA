@@ -119,13 +119,13 @@ if ( is.na(xmax) ) {
 }
 
 coveragePlot =
-		ggplot( allPos, aes(x=allPos, stat(count))) +
-		geom_density() +
-		ylab("coverage") +
-		xlab( ifelse( is.null(title) , "position" , title ) ) +
-		scale_y_continuous(position = "right", expand=expand_scale(mult = c(0, .02))) +
-		scale_x_continuous(expand = c(0, 0), limits=c(xmin,xmax));
-
+	ggplot( allPos, aes(x=allPos, stat(count))) +
+	geom_density() +
+	ylab("coverage") +
+	xlab( ifelse( is.null(title) , "position" , title ) ) +
+	scale_y_continuous(position = "right", expand=expand_scale(mult = c(0, .02))) +
+	scale_x_continuous(expand = c(0, 0), limits=c(xmin,xmax));
+  
 if (!is.null(title)) {
   coveragePlot = coveragePlot + theme(	axis.title.x=element_text(hjust = 0.5, face = "bold"));
 } else {
@@ -133,7 +133,7 @@ if (!is.null(title)) {
 }
 
 # plot vertical line if requested
-if ( ! is.na(xVline) && xVline >= xmin && xVline <= xMax ) {
+if ( ! is.na(xVline) && xVline >= xmin && xVline <= xmax ) {
 	coveragePlot = coveragePlot +
 			geom_vline(aes(xintercept=xVline));
 }
@@ -151,17 +151,17 @@ colnames(dRegion) = c("start","end","id","idx");
 yLabelScale = 0.6 # if you have to alter for more/less sequence IDs per inch; see <plotHeight> below
 
 regionPlot = 
-		ggplot(dRegion, aes(x=start,xend=end,y=idx)) +
-		geom_dumbbell(color="dodgerblue", size=2) +
-		xlab("position") + 
-    scale_x_continuous( expand = c(0, 0), limits=c(xmin,xmax) ) +
-		ylab("") +
-		scale_y_discrete(position = "right", breaks=dRegion$idx, labels=dRegion$id) +
-		geom_vline(aes(xintercept=(xmin))) +
-		theme(panel.grid.major.y=element_line(size=0.7,color="lightgray")
-				, axis.text.y=element_text(size=rel(yLabelScale))
-				#, plot.title = element_blank()
-		)
+	ggplot(dRegion, aes(x=start,xend=end,y=idx)) +
+	geom_dumbbell(color="dodgerblue", size=2) +
+	xlab("position") + 
+  scale_x_continuous( expand = c(0, 0), limits=c(xmin,xmax) ) +
+	ylab("") +
+	scale_y_discrete(position = "right", breaks=dRegion$idx, labels=dRegion$id) +
+	geom_vline(aes(xintercept=(xmin))) +
+	theme(panel.grid.major.y=element_line(size=0.7,color="lightgray")
+			, axis.text.y=element_text(size=rel(yLabelScale))
+			#, plot.title = element_blank()
+	)
 
 if ( ! is.na(xVline)) {
 	regionPlot = regionPlot + 
@@ -177,12 +177,14 @@ plotHeightDensity = 2
 plotHeight = plotHeightDensity + max(2,nrow(d)/9)
 plotHeightDensityRel = plotHeightDensity / plotHeight
 
+options(warn=-1) # disable warnings of unneeded rows
 plot_grid( coveragePlot, regionPlot
 		, nrow=2, ncol=1
 		, align = "hv"
 		, axis = "r"
 		, rel_heights= c( plotHeightDensityRel, 1.0-plotHeightDensityRel)
 )
+options(warn=0) # reenable warnings
 
 ggsave( outFile
 		, width= plotWidth
