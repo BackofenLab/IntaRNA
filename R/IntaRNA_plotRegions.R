@@ -132,8 +132,8 @@ if (!is.null(title)) {
   coveragePlot = coveragePlot + theme(	axis.title.x=element_blank());
 }
 
-
-if ( ! is.na(xVline)) {
+# plot vertical line if requested
+if ( ! is.na(xVline) && xVline >= xmin && xVline <= xMax ) {
 	coveragePlot = coveragePlot +
 			geom_vline(aes(xintercept=xVline));
 }
