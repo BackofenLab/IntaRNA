@@ -385,7 +385,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 				->default_value(qIdxPos0.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_numberArgument<long>,this,qIdxPos0,_1))
 			, std::string("index of first (5') sequence position of all query sequences"
-					" (arg in range ["+toString(qAccW.min)+","+toString(qAccW.max)+"];").c_str())
+					" (arg in range ["+toString(qIdxPos0.min)+","+toString(qIdxPos0.max)+"];").c_str())
 		("qSet"
 			, value<std::string>(&(qSetString))
 				->notifier(boost::bind(&CommandLineParsing::validate_qSet,this,_1))
@@ -486,7 +486,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 				->default_value(tIdxPos0.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_numberArgument<long>,this,tIdxPos0,_1))
 			, std::string("index of first (5') sequence position of all target sequences"
-					" (arg in range ["+toString(qAccW.min)+","+toString(qAccW.max)+"];").c_str())
+					" (arg in range ["+toString(tIdxPos0.min)+","+toString(tIdxPos0.max)+"];").c_str())
 		("tSet"
 			, value<std::string>(&(tSetString))
 				->notifier(boost::bind(&CommandLineParsing::validate_tSet,this,_1))
