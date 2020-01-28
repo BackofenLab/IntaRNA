@@ -23,6 +23,9 @@ class PredictorMfeEns : public PredictorMfe {
 public:
 
 	typedef std::unordered_map<Interaction::Boundary, Z_type, Interaction::Boundary::Hash, Interaction::Boundary::Equal> Site2Z_hash;
+  
+	//! matrix type to hold the partition functions for interaction site starts
+	typedef boost::numeric::ublas::matrix<Z_type> Z2dMatrix;
 
 public:
 
@@ -74,6 +77,40 @@ public:
 	 */
 	void
 	reportZ( SeedHandler *seedHandler = NULL );
+
+	/**
+	 * Returns the hybridization energy of the non overlapping part of seeds
+	 * starting at si and sj
+	 *
+	 * @param si1 the index of seed1 in the first sequence
+	 * @param si2 the index of seed1 in the second sequence
+	 * @param sj1 the index of seed2 in the first sequence
+	 * @param sj2 the index of seed2 in the second sequence
+	 * @param energy the interaction energy handler
+	 * @param seedHandler the seedHandler of the predictor
+	 */
+	static
+	E_type
+	getNonOverlappingEnergy( const size_t si1, const size_t si2, const size_t sj1, const size_t sj2
+	                      , const InteractionEnergy & energy, const SeedHandler & seedHandler );
+
+	/**
+	 * Computes all entries of the hybridZ matrix for interactions ending in
+	 * p=j1 and q=j2
+	 *
+	 * @param j1 end of the interaction within seq 1
+	 * @param j2 end of the interaction within seq 2
+	 * @param energy the interaction energy handler
+	 * @param seedHandler the seedHandler of the predictor
+	 * @param outConstraint the output contraint handler
+	 * @param hybridZ_left the hybridization matrix to fill
+	 *
+	 */
+	static
+	void
+	fillHybridZ_left( const size_t j1, const size_t j2, const InteractionEnergy & energy
+	               , const SeedHandler & seedHandler, const OutputConstraint & outConstraint
+								 , Z2dMatrix & hybridZ_left );
 
 protected:
 
