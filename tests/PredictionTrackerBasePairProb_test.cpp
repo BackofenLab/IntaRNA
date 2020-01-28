@@ -21,7 +21,7 @@ using namespace IntaRNA;
 inline std::vector<Z_type> getBPWeights(const InteractionEnergyBasePair & energy, const size_t maxBasepairs)
 {
 	std::vector<Z_type> bpWeights;
-	for (size_t i = 0; i <= maxBasepairs; i++) {
+	for (int i = 0; i <= maxBasepairs; i++) {
 		bpWeights.push_back(energy.getBoltzmannWeight(i * energy.getE_basePair()));
 	}
 	return bpWeights;
