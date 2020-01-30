@@ -2382,6 +2382,7 @@ getSeedConstraint( const InteractionEnergy & energy ) const
 							, seedTQ
 							, seedNoGU
 							, seedNoGUend
+							, outNoLP
 						);
 	}
 	return *seedConstraint;
@@ -2402,9 +2403,6 @@ getSeedHandler( const InteractionEnergy & energy ) const
 	} else {
 		// check if we have to allow for bulges in seed
 		if (seedConstr.getMaxUnpaired1()+seedConstr.getMaxUnpaired2()+seedConstr.getMaxUnpairedOverall() > 0) {
-			if (outNoLP) {
-				INTARNA_NOT_IMPLEMENTED("outNoLP not yet implemented for seeds with bulges");
-			}
 			// create new seed handler using mfe computation
 			return new SeedHandlerMfe( energy, seedConstr );
 		} else {

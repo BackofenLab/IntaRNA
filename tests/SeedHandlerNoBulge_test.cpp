@@ -32,7 +32,7 @@ TEST_CASE( "SeedHandlerNoBulge", "[SeedHandlerNoBulge]" ) {
 //	LOG(DEBUG) <<"r2 : "<<rAcc2.getSequence();
 
 	// seed constraint for 3 bp
-	SeedConstraint sConstr(3,0,0,0,0,10,0,IndexRangeList(),IndexRangeList(),"", false, false);
+	SeedConstraint sConstr(3,0,0,0,0,10,0,IndexRangeList(),IndexRangeList(),"", false, false, false);
 
 	SECTION( "compare with SeedHandlerMfe output" ) {
 
@@ -73,7 +73,7 @@ TEST_CASE( "SeedHandlerNoBulge", "[SeedHandlerNoBulge]" ) {
 		}
 		{
 			// should find no seed
-			SeedConstraint sConstr(3,0,0,0,0,10,0,IndexRangeList(),IndexRangeList(),"", true, false);
+			SeedConstraint sConstr(3,0,0,0,0,10,0,IndexRangeList(),IndexRangeList(),"", true, false, false);
 			SeedHandlerNoBulge sh(energy,sConstr);
 			REQUIRE( sh.fillSeed(0,energy.size1()-1,0,energy.size2()-1) == 0 );
 		}
@@ -89,19 +89,19 @@ TEST_CASE( "SeedHandlerNoBulge", "[SeedHandlerNoBulge]" ) {
 
 		{
 			// should find some seeds
-			SeedConstraint sConstr(3,0,0,0,Ekcal_2_E(-1),10,0,IndexRangeList(),IndexRangeList(),"", false, false);
+			SeedConstraint sConstr(3,0,0,0,Ekcal_2_E(-1),10,0,IndexRangeList(),IndexRangeList(),"", false, false, false);
 			SeedHandlerNoBulge sh(energy,sConstr);
 			REQUIRE( sh.fillSeed(0,energy.size1()-1,0,energy.size2()-1) > 0 );
 		}
 		{
 			// should find some seed
-			SeedConstraint sConstr(3,0,0,0,Ekcal_2_E(-2),10,0,IndexRangeList(),IndexRangeList(),"", false, false);
+			SeedConstraint sConstr(3,0,0,0,Ekcal_2_E(-2),10,0,IndexRangeList(),IndexRangeList(),"", false, false, false);
 			SeedHandlerNoBulge sh(energy,sConstr);
 			REQUIRE( sh.fillSeed(0,energy.size1()-1,0,energy.size2()-1) > 0 );
 		}
 		{
 			// should find no seed
-			SeedConstraint sConstr(3,0,0,0,Ekcal_2_E(-3),10,0,IndexRangeList(),IndexRangeList(),"", false, false);
+			SeedConstraint sConstr(3,0,0,0,Ekcal_2_E(-3),10,0,IndexRangeList(),IndexRangeList(),"", false, false, false);
 			SeedHandlerNoBulge sh(energy,sConstr);
 			REQUIRE( sh.fillSeed(0,energy.size1()-1,0,energy.size2()-1) == 0 );
 		}
@@ -117,19 +117,19 @@ TEST_CASE( "SeedHandlerNoBulge", "[SeedHandlerNoBulge]" ) {
 
 		{
 			// should find some seeds
-			SeedConstraint sConstr(3,0,0,0,0,10,Ekcal_2_E(-1),IndexRangeList(),IndexRangeList(),"", false, false);
+			SeedConstraint sConstr(3,0,0,0,0,10,Ekcal_2_E(-1),IndexRangeList(),IndexRangeList(),"", false, false, false);
 			SeedHandlerNoBulge sh(energy,sConstr);
 			REQUIRE( sh.fillSeed(0,energy.size1()-1,0,energy.size2()-1) > 0 );
 		}
 		{
 			// should find some seeds
-			SeedConstraint sConstr(3,0,0,0,0,10,Ekcal_2_E(-2),IndexRangeList(),IndexRangeList(),"", false, false);
+			SeedConstraint sConstr(3,0,0,0,0,10,Ekcal_2_E(-2),IndexRangeList(),IndexRangeList(),"", false, false, false);
 			SeedHandlerNoBulge sh(energy,sConstr);
 			REQUIRE( sh.fillSeed(0,energy.size1()-1,0,energy.size2()-1) > 0 );
 		}
 		{
 			// should find no seed
-			SeedConstraint sConstr(3,0,0,0,0,10,Ekcal_2_E(-3),IndexRangeList(),IndexRangeList(),"", false, false);
+			SeedConstraint sConstr(3,0,0,0,0,10,Ekcal_2_E(-3),IndexRangeList(),IndexRangeList(),"", false, false, false);
 			SeedHandlerNoBulge sh(energy,sConstr);
 			REQUIRE( sh.fillSeed(0,energy.size1()-1,0,energy.size2()-1) == 0 );
 		}
@@ -144,7 +144,7 @@ TEST_CASE( "SeedHandlerNoBulge", "[SeedHandlerNoBulge]" ) {
 		InteractionEnergyBasePair energy( acc1, rAcc2 );
 
 		// should find some seeds
-		SeedConstraint sConstr(3,0,0,0,0,10,Ekcal_2_E(-1),IndexRangeList(),IndexRangeList(),"", false, false);
+		SeedConstraint sConstr(3,0,0,0,0,10,Ekcal_2_E(-1),IndexRangeList(),IndexRangeList(),"", false, false, false);
 		SeedHandlerNoBulge sh(energy,sConstr);
 		REQUIRE( sh.fillSeed(0,energy.size1()-1,0,energy.size2()-1) > 0 );
 

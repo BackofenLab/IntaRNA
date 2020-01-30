@@ -12,7 +12,8 @@
 
 # IntaRNA
 - bugfix generation and tracing of seeds with bulges and no GU ends
-- bugfix seed-extension prediction for seeds with bulges 
+- bugfix seed-extension prediction for seeds with bulges
+- noLP for seeds with bulges enabled
 
 # R
 - `IntaRNA_CSV_p-value.R` script to estimate p-values based on energy values
@@ -26,6 +27,20 @@
    * bugfix generation and tracing of seeds with bulges and no GU ends
  * IntaRNA/PredictorMfe*SeedExtension* :
    * bugfix enumeration of seeds with bulges
+ * bin/CommandLineParseing :
+   * error msgs rephrased
+   + noLP for seeds with bulges enabled
+   + setup noLP for seed constraints via outNoLP
+ * IntaRNA/SeedConstraint :
+   + isLpAllowed : whether or not lps are allowed in seeds
+ * IntaRNA/SeedHandlerMfe :
+   + support for noLP constraint
+ * test/SeedHandlerMfe :
+   + test with lp
+   + test no lp (boundary)
+   + test no lp (internal)
+ * test/*
+   * adaptation to SeedConstraint constructor changes
 
 200121 Martin Raden
  + R/IntaRNA_CSV_p-value.R : former addPvalues2csv.R

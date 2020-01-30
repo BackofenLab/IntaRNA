@@ -27,7 +27,7 @@ TEST_CASE( "HelixHandlerUnpairedSeed", "[HelixHandlerUnpaired]" ) {
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
 		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, 0, IndexRangeList(""), IndexRangeList(""),
-						  "", false, false );
+						  "", false, false, false );
 
 		SeedHandlerMfe sH(energy, sC);
 		HelixHandlerUnpaired hhU(energy, hC);
@@ -116,7 +116,7 @@ TEST_CASE( "HelixHandlerUnpairedSeed", "[HelixHandlerUnpaired]" ) {
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
 		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, 0, IndexRangeList(""), IndexRangeList(""),
-						  "", false, false );
+						  "", false, false, false );
 
 		SeedHandlerMfe sH(energy, sC);
 		HelixHandlerUnpaired hhU(energy, hC);
@@ -170,7 +170,7 @@ TEST_CASE( "HelixHandlerUnpairedSeed", "[HelixHandlerUnpaired]" ) {
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
 		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, 0, IndexRangeList(""), IndexRangeList(""),
-						  "", false, false );
+						  "", false, false, false );
 
 		SeedHandlerMfe sH(energy, sC);
 		HelixHandlerUnpaired hhU(energy, hC);
@@ -237,7 +237,7 @@ TEST_CASE( "HelixHandlerUnpairedSeed", "[HelixHandlerUnpaired]" ) {
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
 		SeedConstraint sC(3, 2, 1, 1, 0, AccessibilityDisabled::ED_UPPER_BOUND, 0, IndexRangeList(""), IndexRangeList(""),
-						  "", false, false );
+						  "", false, false, false );
 
 		SeedHandlerMfe sH(energy, sC);
 		HelixHandlerUnpaired hhU(energy, hC);
@@ -324,7 +324,7 @@ TEST_CASE( "HelixHandlerUnpairedSeed", "[HelixHandlerUnpaired]" ) {
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
 		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, 0, IndexRangeList(""), IndexRangeList(""),
-						  "", false, false );
+						  "", false, false, false );
 
 		SeedHandlerMfe sH(energy, sC);
 		HelixHandlerUnpaired hhU(energy, hC);
@@ -404,7 +404,7 @@ TEST_CASE( "HelixHandlerUnpairedSeed", "[HelixHandlerUnpaired]" ) {
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
 		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, 0, IndexRangeList(""), IndexRangeList(""),
-						  "", false, false );
+						  "", false, false, false );
 
 		SeedHandlerMfe sH(energy, sC);
 		HelixHandlerUnpaired hhU(energy, hC);
@@ -499,7 +499,7 @@ TEST_CASE( "HelixHandlerUnpairedSeed", "[HelixHandlerUnpaired]" ) {
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
 		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, 0, IndexRangeList(""), IndexRangeList(""),
-						  "", false, false );
+						  "", false, false, false );
 
 		SeedHandlerMfe sH(energy, sC);
 		HelixHandlerUnpaired hhU(energy, hC);
@@ -557,7 +557,7 @@ TEST_CASE( "HelixHandlerUnpairedSeed", "[HelixHandlerUnpaired]" ) {
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
 		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, 0, IndexRangeList(""), IndexRangeList(""),
-						  "", false, false );
+						  "", false, false, false );
 
 		SeedHandlerMfe sH(energy, sC);
 		HelixHandlerUnpaired hhU(energy, hC);
@@ -632,7 +632,7 @@ TEST_CASE( "HelixHandlerUnpairedSeed", "[HelixHandlerUnpaired]" ) {
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
 		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, 0, IndexRangeList(""), IndexRangeList(""),
-						  "", false, false );
+						  "", false, false, false );
 
 		SeedHandlerMfe sH(energy, sC);
 		HelixHandlerUnpaired hhU(energy, hC);
@@ -728,7 +728,7 @@ TEST_CASE( "HelixHandlerUnpairedSeed", "[HelixHandlerUnpaired]" ) {
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
 		SeedConstraint sC(3, 1, 1, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, 0, IndexRangeList(""), IndexRangeList(""),
-						  "", false, false );
+						  "", false, false, false );
 
 		SeedHandlerMfe sH(energy, sC);
 		HelixHandlerUnpaired hhU(energy, hC);
@@ -829,7 +829,7 @@ TEST_CASE( "HelixHandlerUnpairedSeed", "[HelixHandlerUnpaired]" ) {
 
 		// seedBP / seedMaxUP / seedTMaxUP / seedQMaxUP / seedMaxE / seedMaxED / seedTRange / seedQRange / seedTQ
 		SeedConstraint sC(3, 0, 0, 0, 0, AccessibilityDisabled::ED_UPPER_BOUND, 0, IndexRangeList(""), IndexRangeList(""),
-						  "", false, false );
+						  "", false, false, false );
 
 		SeedHandlerMfe sH(energy, sC);
 		HelixHandlerUnpaired hhU(energy, hC);

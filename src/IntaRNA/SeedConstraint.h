@@ -39,6 +39,7 @@ public:
 	 * @param explicitSeeds the encodings of explicit seed interactions to be used
 	 * @param noGUallowed whether or not GU base pairs are allowed within seeds
 	 * @param noGUendAllowed whether or not GU base pairs are allowed at the ends of seeds
+	 * @param noLP whether or not lonely base pairs are allowed
 	 */
 	SeedConstraint(  const size_t bp
 				, const size_t maxUnpairedOverall
@@ -52,6 +53,7 @@ public:
 				, const std::string & explicitSeeds
 				, const bool noGUallowed
 				, const bool noGUendAllowed
+				, const bool noLP
 				);
 
 	virtual ~SeedConstraint();
@@ -149,6 +151,13 @@ public:
 	isGUendAllowed() const;
 
 	/**
+	 * Whether or not lonely base pairs are allowed
+	 * @return true if lonely base pairs are allowed; false otherwise
+	 */
+	bool
+	isLpAllowed() const;
+
+	/**
 	 * Index ranges in seq1 to be searched for seeds or empty if all indices
 	 * are to be considered.
 	 * @return index ranges to be searched or empty list if all indices relevant
@@ -240,6 +249,9 @@ protected:
 	//! whether or not GU base pairs are allowed at seed ends
 	bool bpGUendAllowed;
 
+	//! whether or not lonely base pairs are allowed
+	bool lpAllowed;
+
 };
 
 
@@ -261,6 +273,7 @@ SeedConstraint::SeedConstraint(
 		, const std::string & explicitSeeds
 		, const bool noGUallowed
 		, const bool noGUendAllowed
+		, const bool noLP
 		)
  :
 	  bp(bp_)
@@ -275,6 +288,7 @@ SeedConstraint::SeedConstraint(
 	, explicitSeeds(explicitSeeds)
 	, bpGUallowed(!noGUallowed)
 	, bpGUendAllowed(!noGUendAllowed)
+	, lpAllowed(!noLP)
 {
 	if (bp < 2) throw std::runtime_error("SeedConstraint() : base pair number ("+toString(bp)+") < 2");
 }
@@ -436,6 +450,15 @@ bool
 SeedConstraint::
 isGUendAllowed() const {
 	return bpGUendAllowed;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+SeedConstraint::
+isLpAllowed() const {
+	return lpAllowed;
 }
 
 /////////////////////////////////////////////////////////////////////////////
