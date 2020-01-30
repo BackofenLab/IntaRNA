@@ -23,6 +23,8 @@
 200130 Martin Raden
  * IntaRNA/SeedHandlerMfe :
    * bugfix generation and tracing of seeds with bulges and no GU ends
+ * IntaRNA/PredictorMfe*SeedExtension* :
+   * bugfix enumeration of seeds with bulges
 
 200121 Martin Raden
  + R/IntaRNA_CSV_p-value.R : former addPvalues2csv.R
