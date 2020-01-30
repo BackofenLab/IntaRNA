@@ -10,18 +10,25 @@
 # changes in development version since last release 
 ################################################################################
 
+# IntaRNA
+- bugfix generation and tracing of seeds with bulges and no GU ends
+- bugfix seed-extension prediction for seeds with bulges 
+
 # R
 - `IntaRNA_CSV_p-value.R` script to estimate p-values based on energy values
 
 ################################################################################  
 ################################################################################
 
+200130 Martin Raden
+ * IntaRNA/SeedHandlerMfe :
+   * bugfix generation and tracing of seeds with bulges and no GU ends
+
 200121 Martin Raden
  + R/IntaRNA_CSV_p-value.R : former addPvalues2csv.R
  + R/IntaRNA_plotRegions.R : former plotRegions.R
  * README.md : adapted to renamings
  + R/Makefile.am : install R scripts
- 
  
 191115 Martin Raden
  + R/addPvalues2csv.R

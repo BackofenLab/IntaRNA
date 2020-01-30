@@ -50,8 +50,8 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 		// init according to no seed interaction
 		seed(i1-offset1,i2-offset2) = SeedMatrix::value_type( E_INF, 0 );
 
-		// skip non-complementary or infeasible left seed boundaries
-		if (!isFeasibleSeedBasePair(i1,i2,true)) {
+		// skip non-complementary or infeasible seed base pair
+		if (!isFeasibleSeedBasePair(i1,i2)) {
 			continue; // go to next seedE index
 		}
 
@@ -119,9 +119,10 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 			} // u1
 
 			// check if full base pair number reached
-			if (bpIn+1==seedE_rec.shape()[2]) {
+			// check if feasible left seed boundaries
+			if ( bpIn+1==seedE_rec.shape()[2] && isFeasibleSeedBasePair(i1,i2,true) ) {
 
-				// find best unpaired combination in seed seed for i1,i2,bp
+				// find best unpaired combination in seed for i1,i2,bp
 				u1best = 0;
 				u2best = 0;
 				bestE = E_INF;
@@ -137,16 +138,21 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 
 					// skip if ED boundary exceeded
 					if (energy.getED1(i1,j1) >= seedConstraint.getMaxED()
-							|| energy.getED2(i2,j2) >= seedConstraint.getMaxED() )
+						|| energy.getED2(i2,j2) >= seedConstraint.getMaxED() )
 					{
 						continue;
 					}
 
 					// get overall interaction energy
-					curE = energy.getE( i1, j1, i2, j2, getSeedE( i1-offset1, i2-offset2, bpIn, u1, u2 ) ) + energy.getE_init();
+					E_type curEhyb = getSeedE( i1-offset1, i2-offset2, bpIn, u1, u2 ) + energy.getE_init();
+					curE = energy.getE( i1, j1, i2, j2, curEhyb );
 
+					// check hybrid energy bound including Einit
 					// check if better than what is known so far
-					if ( curE < bestE ) {
+					if ( curEhyb <= seedConstraint.getMaxEhybrid()
+						&& curE <= seedConstraint.getMaxE()
+						&& curE < bestE )
+					{
 						bestE = curE;
 						u1best = u1;
 						u2best = u2;
@@ -156,18 +162,10 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 
 				// reduce bestE to hybridization energy only (init+loops)
 				if (E_isNotINF( bestE )) {
-					// overwrite all seeds with too high energy -> infeasible start interactions
-					if (bestE >= seedConstraint.getMaxE()
-							// check hybridization energy bound (incl E_init)
-						|| (getSeedE( i1-offset1, i2-offset2, bpIn, u1best, u2best ) + energy.getE_init()) >= seedConstraint.getMaxEhybrid())
-					{
-						bestE = E_INF;
-					} else {
-						// get seed's hybridization loop energies only
-						bestE = getSeedE( i1-offset1, i2-offset2, bpIn, u1best, u2best );
-						// count true seed
-						seedCountNotInf++;
-					}
+					// get seed's hybridization loop energies only
+					bestE = getSeedE( i1-offset1, i2-offset2, bpIn, u1best, u2best );
+					// count true seed
+					seedCountNotInf++;
 				}
 
 				// store best (mfe) seed for all u1/u2
@@ -244,7 +242,7 @@ traceBackSeed( Interaction & interaction
 				k2 = i2+u2+1;
 
 				// check if valid trace
-				if ( E_isNotINF( getSeedE( k1, k2, bpIn-1, u1max-u1, u2max-u2 ) ) ) {
+				if ( isFeasibleSeedBasePair(k1+offset1, k2+offset2) && E_isNotINF( getSeedE( k1, k2, bpIn-1, u1max-u1, u2max-u2 ) ) ) {
 
 					// check if correct trace
 					if ( E_equal( curE, energy.getE_interLeft(i1+offset1,k1+offset1,i2+offset2,k2+offset2)

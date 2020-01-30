@@ -334,7 +334,6 @@ E_type
 SeedHandlerMfe::
 getSeedE( const size_t i1, const size_t i2, const size_t bpInbetween, const size_t u1, const size_t u2 ) const
 {
-//	return seedE_rec[i1][i2][bpInbetween][u1][u2];
 	return seedE_rec( SeedIndex({{
 		  (SeedRecMatrix::index) i1
 		, (SeedRecMatrix::index) i2
@@ -350,7 +349,6 @@ void
 SeedHandlerMfe::
 setSeedE( const size_t i1, const size_t i2, const size_t bpInbetween, const size_t u1, const size_t u2, const E_type E )
 {
-//	seedE_rec[i1][i2][bpInbetween][u1][u2] = E;
 	seedE_rec( SeedIndex({{
 		  (SeedRecMatrix::index) i1
 		, (SeedRecMatrix::index) i2
