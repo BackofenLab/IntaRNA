@@ -2210,7 +2210,7 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 		case 'B':  {
 			switch ( mode.val ) {
 			case 'H' :	return new PredictorMfe2dHelixBlockHeuristic( energy, output, predTracker, getHelixConstraint(energy));
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not available for model "+toString(model.val));
 			}
 		} break;
 		// single-site mfe interactions (contain only interior loops)
@@ -2218,7 +2218,7 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 			switch ( mode.val ) {
 			case 'H' :  return new PredictorMfe2dHeuristic( energy, output, predTracker );
 			case 'M' :  return new PredictorMfe2d( energy, output, predTracker );
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not available for model "+toString(model.val));
 			}
 		} break;
 		// single-site mfe ensemble interactions (contain only interior loops)
@@ -2226,16 +2226,16 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 			switch ( mode.val ) {
 			case 'H' :  return new PredictorMfeEns2dHeuristic( energy, output, predTracker );
 			case 'M' :  return new PredictorMfeEns2d( energy, output, predTracker );
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not available for model "+toString(model.val));
 			}
 		} break;
 		// multi-site mfe interactions (contain interior and multi-loops loops)
 		case 'M' : {
 			switch ( mode.val ) {
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not available for model "+toString(model.val));
 			}
 		} break;
-		default : INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented");
+		default : INTARNA_NOT_IMPLEMENTED("no model "+toString(model.val)+" available for mode "+toString(mode.val));
 		}
 	} else {
 		// seed-constrained predictors
@@ -2243,7 +2243,7 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 		case 'B' : {
 			switch  ( mode.val ) {
 				case 'H' : return new PredictorMfe2dHelixBlockHeuristicSeed(energy, output, predTracker, getHelixConstraint(energy), getSeedHandler(energy));
-				default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
+				default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not available for model "+toString(model.val));
 			}
 		} break;
 		// single-site mfe interactions (contain only interior loops)
@@ -2252,7 +2252,7 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 			case 'H' :  return new PredictorMfe2dHeuristicSeed( energy, output, predTracker, getSeedHandler( energy ) );
 			case 'M' :  return new PredictorMfe2dSeed( energy, output, predTracker, getSeedHandler( energy ) );
 			case 'S' :  return new PredictorMfeSeedOnly( energy, output, predTracker, getSeedHandler( energy ) );
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not available for model "+toString(model.val));
 			}
 		} break;
 		// single-site min energy interactions via seed extension (contain only interior loops)
@@ -2271,16 +2271,16 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 			case 'H' :  return new PredictorMfeEns2dHeuristicSeedExtension( energy, output, predTracker, getSeedHandler( energy ) );
 			case 'M' :  return new PredictorMfeEns2dSeedExtension( energy, output, predTracker, getSeedHandler( energy ) );
 			case 'S' :  return new PredictorMfeEnsSeedOnly( energy, output, predTracker, getSeedHandler(energy) );
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not available for model "+toString(model.val));
 			}
 		} break;
 		// multi-site mfe interactions (contain interior and multi-loops loops)
 		case 'M' : {
 			switch ( mode.val ) {
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not available for model "+toString(model.val));
 			}
 		} break;
-		default : INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented");
+		default : INTARNA_NOT_IMPLEMENTED("no model "+toString(model.val)+" available for mode "+toString(mode.val));
 		}
 	}
 }
