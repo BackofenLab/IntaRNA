@@ -148,8 +148,8 @@ protected:
 	/**
 	 * Provides the seed energy during recursion.
 	 *
-	 * @param i1 the seed left end in seq 1 (index including offset)
-	 * @param i2 the seed left end in seq 2 (index including offset)
+	 * @param i1 the seed left end in seq 1
+	 * @param i2 the seed left end in seq 2
 	 * @param bpInbetween the number of seed base pairs enclosed by the left-
 	 *        and right-most base pair, ie. bpSeed-2
 	 * @param u1 the number of unpaired bases within seq 1
@@ -168,8 +168,8 @@ protected:
 	 * you have to call the method in appropriate order depending on your seed
 	 * recursion.
 	 *
-	 * @param i1 the seed left end in seq 1 (index including offset)
-	 * @param i2 the seed left end in seq 2 (index including offset)
+	 * @param i1 the seed left end in seq 1
+	 * @param i2 the seed left end in seq 2
 	 * @param bpInbetween the number of seed base pairs enclosed by the left-
 	 *        and right-most base pair, ie. bpSeed-2
 	 * @param u1 the number of unpaired bases within seq 1
@@ -281,7 +281,7 @@ traceBackSeed( Interaction & interaction
 	const size_t seedBps = getConstraint().getBasePairs();
 
 	// trace back the according seed
-	traceBackSeed( interaction, i1-offset1, i2-offset2
+	traceBackSeed( interaction, i1, i2
 			, seedBps-2
 			, getSeedLength1(i1,i2)-seedBps
 			, getSeedLength2(i1,i2)-seedBps );
@@ -334,9 +334,16 @@ E_type
 SeedHandlerMfe::
 getSeedE( const size_t i1, const size_t i2, const size_t bpInbetween, const size_t u1, const size_t u2 ) const
 {
+#if INTARNA_IN_DEBUG_MODE
+	if ( i1 < offset1 ) throw std::runtime_error("SeedHandlerMfe::getSeedE(i1="+toString(i1)+") is out of range (>"+toString(offset1)+")");
+	if ( i1-offset1 >= seed.size1() ) throw std::runtime_error("SeedHandlerMfe::getSeedE(i1="+toString(i1)+") is out of range (<"+toString(seed.size1()+offset1)+")");
+	if ( i2 < offset2 ) throw std::runtime_error("SeedHandlerMfe::getSeedE(i2="+toString(i2)+") is out of range (>"+toString(offset2)+")");
+	if ( i2-offset2 >= seed.size2() ) throw std::runtime_error("SeedHandlerMfe::getSeedE(i2="+toString(i2)+") is out of range (<"+toString(seed.size2()+offset2)+")");
+#endif
+
 	return seedE_rec( SeedIndex({{
-		  (SeedRecMatrix::index) i1
-		, (SeedRecMatrix::index) i2
+		  (SeedRecMatrix::index) (i1-offset1)
+		, (SeedRecMatrix::index) (i2-offset2)
 		, (SeedRecMatrix::index) bpInbetween
 		, (SeedRecMatrix::index) u1
 		, (SeedRecMatrix::index) u2 }}) );
@@ -349,9 +356,16 @@ void
 SeedHandlerMfe::
 setSeedE( const size_t i1, const size_t i2, const size_t bpInbetween, const size_t u1, const size_t u2, const E_type E )
 {
+#if INTARNA_IN_DEBUG_MODE
+	if ( i1 < offset1 ) throw std::runtime_error("SeedHandlerMfe::setSeedE(i1="+toString(i1)+") is out of range (>"+toString(offset1)+")");
+	if ( i1-offset1 >= seed.size1() ) throw std::runtime_error("SeedHandlerMfe::setSeedE(i1="+toString(i1)+") is out of range (<"+toString(seed.size1()+offset1)+")");
+	if ( i2 < offset2 ) throw std::runtime_error("SeedHandlerMfe::setSeedE(i2="+toString(i2)+") is out of range (>"+toString(offset2)+")");
+	if ( i2-offset2 >= seed.size2() ) throw std::runtime_error("SeedHandlerMfe::setSeedE(i2="+toString(i2)+") is out of range (<"+toString(seed.size2()+offset2)+")");
+#endif
+
 	seedE_rec( SeedIndex({{
-		  (SeedRecMatrix::index) i1
-		, (SeedRecMatrix::index) i2
+		  (SeedRecMatrix::index) (i1-offset1)
+		, (SeedRecMatrix::index) (i2-offset2)
 		, (SeedRecMatrix::index) bpInbetween
 		, (SeedRecMatrix::index) u1
 		, (SeedRecMatrix::index) u2 }}) ) = E;
