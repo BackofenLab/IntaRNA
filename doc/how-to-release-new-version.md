@@ -11,11 +11,11 @@
   - upload source code tar ball
   - (upload win binary)
   - (upload linux binary)
+	- (via cygwin) to get cygwin dlls used for compilation on Windows run
+	  - `for f in `ldd ./IntaRNA | grep "/usr/bin/" | awk '{print $3}'`; do cp $f .; done`
+	  - zip these together with `IntaRNA.exe` (and additional script files etc.)
   - (upload API docu pdf and html.zip)
   
-- (win binary) to get cygwin dlls used for compilation on Windows run
-  - `for f in `ldd ./IntaRNA | grep "/usr/bin/" | awk '{print $3}'`; do cp $f .; done`
-  - zip these together with `IntaRNA.exe` (and additional script files etc.)
   
 - publish release on github
   
