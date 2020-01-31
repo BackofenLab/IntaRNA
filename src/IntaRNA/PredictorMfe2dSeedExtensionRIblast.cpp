@@ -78,8 +78,8 @@ predict( const IndexRange & r1, const IndexRange & r2  )
 
 	size_t si1 = RnaSequence::lastPos, si2 = RnaSequence::lastPos;
 	while( seedHandler.updateToNextSeed(si1,si2
-			, 0, interaction_size1+1-seedHandler.getConstraint().getBasePairs()+seedHandler.getConstraint().getMaxUnpaired1()
-			, 0, interaction_size2+1-seedHandler.getConstraint().getBasePairs()+seedHandler.getConstraint().getMaxUnpaired2()) )
+			, 0, interaction_size1+1-seedHandler.getConstraint().getBasePairs()
+			, 0, interaction_size2+1-seedHandler.getConstraint().getBasePairs()) )
 	{
 		E_type seedE = seedHandler.getSeedE(si1, si2);
 		size_t sl1 = seedHandler.getSeedLength1(si1, si2);
@@ -373,8 +373,8 @@ traceBack( Interaction & interaction )
 
 	size_t si1 = RnaSequence::lastPos, si2 = RnaSequence::lastPos;
 	while( seedHandler.updateToNextSeed(si1,si2
-			, i1,j1+1-seedHandler.getConstraint().getBasePairs()+seedHandler.getConstraint().getMaxUnpaired1()
-			, i2,j2+1-seedHandler.getConstraint().getBasePairs()+seedHandler.getConstraint().getMaxUnpaired2() ) )
+			, i1,j1+1-seedHandler.getConstraint().getBasePairs()
+			, i2,j2+1-seedHandler.getConstraint().getBasePairs() ) )
 	{
 		E_type seedE = seedHandler.getSeedE(si1, si2);
 
@@ -382,6 +382,11 @@ traceBack( Interaction & interaction )
 		size_t sl2 = seedHandler.getSeedLength2(si1, si2);
 		size_t sj1 = si1+sl1-1;
 		size_t sj2 = si2+sl2-1;
+
+		// check if seed exceeds interaction (eg if with bulge)
+		if ( sj1 > j1 || sj2 > j2 ) {
+			continue;
+		}
 
 		ExtendedSeed extension;
 		extension.i1 = si1;

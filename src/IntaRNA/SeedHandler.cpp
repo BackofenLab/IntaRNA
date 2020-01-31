@@ -11,10 +11,6 @@ bool
 SeedHandler::
 isFeasibleSeedBasePair( const size_t i1, const size_t i2, const bool atEndOfSeed ) const
 {
-#if INTARNA_IN_DEBUG_MODE
-	if ( i1 >= energy.size1() ) throw std::runtime_error("SeedHandler::isFeasibleSeedBasePair: i1("+toString(i1)+") >= energy.size1("+toString(energy.size1())+")");
-	if ( i2 >= energy.size2() ) throw std::runtime_error("SeedHandler::isFeasibleSeedBasePair: i2("+toString(i2)+") >= energy.size2("+toString(energy.size2())+")");
-#endif
 
 	return		i1 < energy.size1() && i2 < energy.size2()
 			&&	energy.isAccessible1(i1)
@@ -52,23 +48,23 @@ updateToNextSeed( size_t & i1_out, size_t & i2_out
 		i2 = i2min;
 	} else {
 		// update to next potential seed position
-		if (++i1 >= i1maxVal) {
+		if (++i1 > i1maxVal) {
 			i1 = i1min;
 			i2++;
 		}
 	}
 
 	// find next valid seed start within range
-	while( i2 < i2maxVal && !(isSeedBound(i1,i2))) {
+	while( i2 <= i2maxVal && !(isSeedBound(i1,i2))) {
 		// update seed position within range
-		if (++i1 == i1maxVal) {
+		if (++i1 > i1maxVal) {
 			i1 = i1min;
 			i2++;
 		}
 	}
 
 	// check if we found a valid seed in the range
-	if (i1 < i1maxVal && i2< i2maxVal) {
+	if (i1 <= i1maxVal && i2 <= i2maxVal) {
 		i1_out = i1;
 		i2_out = i2;
 		return true;

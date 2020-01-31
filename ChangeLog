@@ -10,10 +10,41 @@
 # changes in development version since last release 
 ################################################################################
 
-
 ################################################################################  
 ################################################################################
 
+################################################################################
+### version 3.1.5
+################################################################################  
+
+# IntaRNA :
+- bugfix traceback of interactions with seed on right-boundary
+- bugfix traceback of seeds with bulges when outNoLP present
+
+################################################################################
+
+200131 Martin Raden
+ * IntaRNA/PredictorMfe*SeedExtension* :
+   * undo bugfix
+   * traceback() :
+     + additional check if seed exceeds right interaction boundary
+ * IntaRNA/SeedHandler :
+   * isFeasibleSeedBasePair() :
+     * debug checks obsolete since part of the check
+   * updateToNextSeed() :
+     * bugfix : right boundary was exclusive (but has to be inclusive)
+ * IntaRNA/SeedHandlerMfe :
+   * getSeedE()
+   * setSeedE()
+   * traceBackSeed()
+     * now using global indices (offset shift done internally)
+   * fillSeed() :
+     + additional feasibility test for noLP
+   * traceback() :
+     * bugfix noLP energy trace : energy was from wrong cells
+     * trace small to large gaps (should be faster)
+ * test/SeedHandlerMfe :
+   + traceback tests (number of bps in traced seeds)
 
 ################################################################################
 ### version 3.1.4

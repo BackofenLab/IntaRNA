@@ -76,8 +76,8 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 
 	size_t si1 = RnaSequence::lastPos, si2 = RnaSequence::lastPos;
 	while( seedHandler.updateToNextSeed(si1,si2
-			, 0, range_size1+1-seedHandler.getConstraint().getBasePairs()+seedHandler.getConstraint().getMaxUnpaired1()
-			, 0, range_size2+1-seedHandler.getConstraint().getBasePairs()+seedHandler.getConstraint().getMaxUnpaired2()) )
+			, 0, range_size1+1-seedHandler.getConstraint().getBasePairs()
+			, 0, range_size2+1-seedHandler.getConstraint().getBasePairs()) )
 	{
 		// get Z and boundaries of seed
 		const Z_type seedZ = energy.getBoltzmannWeight( seedHandler.getSeedE(si1, si2) );
