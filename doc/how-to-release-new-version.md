@@ -13,6 +13,10 @@
   - (upload linux binary)
   - (upload API docu pdf and html.zip)
   
+- (win binary) to get cygwin dlls used for compilation on Windows run
+  - `for f in `ldd ./IntaRNA | grep "/usr/bin/" | awk '{print $3}'`; do cp $f .; done`
+  - zip these together with `IntaRNA.exe` (and additional script files etc.)
+  
 - publish release on github
   
 - update [bioconda recipe](https://github.com/bioconda/bioconda-recipes/tree/master/recipes/intarna)
