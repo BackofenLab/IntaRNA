@@ -1,7 +1,7 @@
 
 AC_PREREQ([2.65])
 # 5 argument version only available with aclocal >= 2.64
-AC_INIT([IntaRNA], [3.1.3], [], [intaRNA], [http://www.bioinf.uni-freiburg.de] )
+AC_INIT([IntaRNA], [3.1.4], [], [intaRNA], [http://www.bioinf.uni-freiburg.de] )
 
 # minimal required version of the boost library 
 BOOST_REQUIRED_VERSION=1.50.0
@@ -59,7 +59,7 @@ AX_CXX_COMPILE_STDCXX([11], [noext], [mandatory])
 
 # check if python is available
 AM_PATH_PYTHON([$PYTHON_REQUIRED_VERSION],, [:])
-AM_CONDITIONAL([HAVE_PYTHON], [test "$PYTHON" != :])
+AM_CONDITIONAL([HAVE_PYTHON], [test "$PYTHON" != ":"])
 AM_COND_IF([HAVE_PYTHON], [HAVE_PYTHON_yesno=yes], [HAVE_PYTHON_yesno=no])
 
 ###############################################################################
@@ -291,11 +291,13 @@ AM_CONDITIONAL([INSTALL_INTARNAPVALUE],[test x"$intarnapvalue" = x"yes"])
 ###############################################################################
 
 AX_BOOST_BASE([$BOOST_REQUIRED_VERSION], [FOUND_BOOST=1;], [FOUND_BOOST=0;])
-AX_BOOST_SYSTEM
-AX_BOOST_FILESYSTEM
-AX_BOOST_PROGRAM_OPTIONS
-AX_BOOST_REGEX
-AX_BOOST_IOSTREAMS
+AS_IF([test "x$want_boost" != "xno" && test "x$FOUND_BOOST" = "x1"], [
+	AX_BOOST_SYSTEM
+	AX_BOOST_FILESYSTEM
+	AX_BOOST_PROGRAM_OPTIONS
+	AX_BOOST_REGEX
+	AX_BOOST_IOSTREAMS
+])
 AX_CHECK_ZLIB([], [])
 
 
@@ -313,7 +315,7 @@ AC_HEADER_STDC
 ##########################################################################
 
 # FOUND_BOOST is only defined if want_boost is "yes"
-AS_IF([test $want_boost = "no" || test $FOUND_BOOST != 1], [
+AS_IF([test $want_boost != "no" && test $FOUND_BOOST != 1], [
 	AC_MSG_NOTICE([])
 	AC_MSG_NOTICE([The Boost Library was not found!])
 	AC_MSG_NOTICE([ -> If installed in a non-standard path, please use '--with-boost=PREFIX'.])
@@ -430,6 +432,7 @@ AC_CONFIG_FILES([src/IntaRNA/Makefile])
 AC_CONFIG_FILES([src/IntaRNA/intarna_config.h])
 AC_CONFIG_FILES([src/bin/Makefile])
 AC_CONFIG_FILES([perl/Makefile])
+AC_CONFIG_FILES([R/Makefile])
 AC_CONFIG_FILES([python/Makefile])
 AC_CONFIG_FILES([python/bin/Makefile])
 AC_CONFIG_FILES([python/intarnapvalue/Makefile])

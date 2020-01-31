@@ -384,7 +384,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 				->default_value(qIdxPos0.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_numberArgument<long>,this,qIdxPos0,_1))
 			, std::string("index of first (5') sequence position of all query sequences"
-					" (arg in range ["+toString(qAccW.min)+","+toString(qAccW.max)+"];").c_str())
+					" (arg in range ["+toString(qIdxPos0.min)+","+toString(qIdxPos0.max)+"];").c_str())
 		("qSet"
 			, value<std::string>(&(qSetString))
 				->notifier(boost::bind(&CommandLineParsing::validate_qSet,this,_1))
@@ -485,7 +485,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 				->default_value(tIdxPos0.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_numberArgument<long>,this,tIdxPos0,_1))
 			, std::string("index of first (5') sequence position of all target sequences"
-					" (arg in range ["+toString(qAccW.min)+","+toString(qAccW.max)+"];").c_str())
+					" (arg in range ["+toString(tIdxPos0.min)+","+toString(tIdxPos0.max)+"];").c_str())
 		("tSet"
 			, value<std::string>(&(tSetString))
 				->notifier(boost::bind(&CommandLineParsing::validate_tSet,this,_1))
@@ -2210,7 +2210,7 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 		case 'B':  {
 			switch ( mode.val ) {
 			case 'H' :	return new PredictorMfe2dHelixBlockHeuristic( energy, output, predTracker, getHelixConstraint(energy));
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not available for model "+toString(model.val));
 			}
 		} break;
 		// single-site mfe interactions (contain only interior loops)
@@ -2218,7 +2218,7 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 			switch ( mode.val ) {
 			case 'H' :  return new PredictorMfe2dHeuristic( energy, output, predTracker );
 			case 'M' :  return new PredictorMfe2d( energy, output, predTracker );
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not available for model "+toString(model.val));
 			}
 		} break;
 		// single-site mfe ensemble interactions (contain only interior loops)
@@ -2226,16 +2226,16 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 			switch ( mode.val ) {
 			case 'H' :  return new PredictorMfeEns2dHeuristic( energy, output, predTracker );
 			case 'M' :  return new PredictorMfeEns2d( energy, output, predTracker );
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not available for model "+toString(model.val));
 			}
 		} break;
 		// multi-site mfe interactions (contain interior and multi-loops loops)
 		case 'M' : {
 			switch ( mode.val ) {
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not available for model "+toString(model.val));
 			}
 		} break;
-		default : INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented");
+		default : INTARNA_NOT_IMPLEMENTED("no model "+toString(model.val)+" available for mode "+toString(mode.val));
 		}
 	} else {
 		// seed-constrained predictors
@@ -2243,7 +2243,7 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 		case 'B' : {
 			switch  ( mode.val ) {
 				case 'H' : return new PredictorMfe2dHelixBlockHeuristicSeed(energy, output, predTracker, getHelixConstraint(energy), getSeedHandler(energy));
-				default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
+				default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not available for model "+toString(model.val));
 			}
 		} break;
 		// single-site mfe interactions (contain only interior loops)
@@ -2252,7 +2252,7 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 			case 'H' :  return new PredictorMfe2dHeuristicSeed( energy, output, predTracker, getSeedHandler( energy ) );
 			case 'M' :  return new PredictorMfe2dSeed( energy, output, predTracker, getSeedHandler( energy ) );
 			case 'S' :  return new PredictorMfeSeedOnly( energy, output, predTracker, getSeedHandler( energy ) );
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not available for model "+toString(model.val));
 			}
 		} break;
 		// single-site min energy interactions via seed extension (contain only interior loops)
@@ -2271,16 +2271,16 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 			case 'H' :  return new PredictorMfeEns2dHeuristicSeedExtension( energy, output, predTracker, getSeedHandler( energy ) );
 			case 'M' :  return new PredictorMfeEns2dSeedExtension( energy, output, predTracker, getSeedHandler( energy ) );
 			case 'S' :  return new PredictorMfeEnsSeedOnly( energy, output, predTracker, getSeedHandler(energy) );
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not available for model "+toString(model.val));
 			}
 		} break;
 		// multi-site mfe interactions (contain interior and multi-loops loops)
 		case 'M' : {
 			switch ( mode.val ) {
-			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented for model "+toString(model.val));
+			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not available for model "+toString(model.val));
 			}
 		} break;
-		default : INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented");
+		default : INTARNA_NOT_IMPLEMENTED("no model "+toString(model.val)+" available for mode "+toString(mode.val));
 		}
 	}
 }
@@ -2382,6 +2382,7 @@ getSeedConstraint( const InteractionEnergy & energy ) const
 							, seedTQ
 							, seedNoGU
 							, seedNoGUend
+							, outNoLP
 						);
 	}
 	return *seedConstraint;
@@ -2402,9 +2403,6 @@ getSeedHandler( const InteractionEnergy & energy ) const
 	} else {
 		// check if we have to allow for bulges in seed
 		if (seedConstr.getMaxUnpaired1()+seedConstr.getMaxUnpaired2()+seedConstr.getMaxUnpairedOverall() > 0) {
-			if (outNoLP) {
-				INTARNA_NOT_IMPLEMENTED("outNoLP not yet implemented for seeds with bulges");
-			}
 			// create new seed handler using mfe computation
 			return new SeedHandlerMfe( energy, seedConstr );
 		} else {

@@ -74,8 +74,8 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 
 	size_t si1 = RnaSequence::lastPos, si2 = RnaSequence::lastPos;
 	while( seedHandler.updateToNextSeed(si1,si2
-			, 0, range_size1+1-seedHandler.getConstraint().getBasePairs()
-			, 0, range_size2+1-seedHandler.getConstraint().getBasePairs()) )
+			, 0, range_size1+1-seedHandler.getConstraint().getBasePairs()+seedHandler.getConstraint().getMaxUnpaired1()
+			, 0, range_size2+1-seedHandler.getConstraint().getBasePairs()+seedHandler.getConstraint().getMaxUnpaired2()) )
 	{
 		// get energy and boundaries of seed
 		E_type seedE = seedHandler.getSeedE(si1, si2);
@@ -327,8 +327,8 @@ traceBack( Interaction & interaction )
 
 	size_t si1 = RnaSequence::lastPos, si2 = RnaSequence::lastPos;
 	while( seedHandler.updateToNextSeed(si1,si2
-			, i1,j1+1-seedHandler.getConstraint().getBasePairs()
-			, i2,j2+1-seedHandler.getConstraint().getBasePairs() ) )
+			, i1,j1+1-seedHandler.getConstraint().getBasePairs()+seedHandler.getConstraint().getMaxUnpaired1()
+			, i2,j2+1-seedHandler.getConstraint().getBasePairs()+seedHandler.getConstraint().getMaxUnpaired2() ) )
 	{
 			E_type seedE = seedHandler.getSeedE(si1, si2);
 			const size_t sl1 = seedHandler.getSeedLength1(si1, si2);
