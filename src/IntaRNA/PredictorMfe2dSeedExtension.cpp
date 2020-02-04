@@ -338,6 +338,11 @@ traceBack( Interaction & interaction )
 			const size_t maxMatrixLen1 = energy.getAccessibility1().getMaxLength()-sl1+1;
 			const size_t maxMatrixLen2 = energy.getAccessibility2().getMaxLength()-sl2+1;
 
+			// check if seed exceeds interaction (eg if with bulge)
+			if ( sj1 > j1 || sj2 > j2 ) {
+				continue;
+			}
+
 			hybridE_left.resize( std::min(si1+1, maxMatrixLen1), std::min(si2+1, maxMatrixLen2) );
 			fillHybridE_left( si1, si2 );
 			hybridE_right.resize( std::min(j1-sj1+1, maxMatrixLen1), std::min(j2-sj2+1, maxMatrixLen2) );

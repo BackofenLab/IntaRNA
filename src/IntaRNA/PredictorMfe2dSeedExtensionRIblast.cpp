@@ -383,6 +383,11 @@ traceBack( Interaction & interaction )
 		size_t sj1 = si1+sl1-1;
 		size_t sj2 = si2+sl2-1;
 
+		// check if seed exceeds interaction (eg if with bulge)
+		if ( sj1 > j1 || sj2 > j2 ) {
+			continue;
+		}
+
 		ExtendedSeed extension;
 		extension.i1 = si1;
 		extension.i2 = si2;

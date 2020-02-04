@@ -10,18 +10,95 @@
 # changes in development version since last release 
 ################################################################################
 
-# R
-- `IntaRNA_CSV_p-value.R` script to estimate p-values based on energy values
+# IntaRNA
+- improved Zall estimate (and depending values) for `--model=X` (default)
 
 ################################################################################  
 ################################################################################
 
+################################################################################
+
+200131 Martin Raden
+ * IntaRNA/PredictorMfe2dHeuristicSeedExtension :
+   * fillHybridE_left() :
+     + extended Zall update (additional save cases considered)
+
+
+################################################################################
+### version 3.1.5
+################################################################################  
+
+# IntaRNA :
+- bugfix traceback of interactions with seed on right-boundary
+- bugfix traceback of seeds with bulges when outNoLP present
+
+################################################################################
+
+200131 Martin Raden
+ * IntaRNA/PredictorMfe*SeedExtension* :
+   * undo bugfix
+   * traceback() :
+     + additional check if seed exceeds right interaction boundary
+ * IntaRNA/SeedHandler :
+   * isFeasibleSeedBasePair() :
+     * debug checks obsolete since part of the check
+   * updateToNextSeed() :
+     * bugfix : right boundary was exclusive (but has to be inclusive)
+ * IntaRNA/SeedHandlerMfe :
+   * getSeedE()
+   * setSeedE()
+   * traceBackSeed()
+     * now using global indices (offset shift done internally)
+   * fillSeed() :
+     + additional feasibility test for noLP
+   * traceback() :
+     * bugfix noLP energy trace : energy was from wrong cells
+     * trace small to large gaps (should be faster)
+ * test/SeedHandlerMfe :
+   + traceback tests (number of bps in traced seeds)
+
+################################################################################
+### version 3.1.4
+################################################################################  
+
+# IntaRNA
+- bugfix generation and tracing of seeds with bulges and no GU ends
+- bugfix seed-extension prediction for seeds with bulges
+- noLP for seeds with bulges enabled
+
+# R
+- `IntaRNA_CSV_p-value.R` script to estimate p-values based on energy values
+- `IntaRNA_plotRegions.R` = renaming of former `plotRegions.R`
+
+################################################################################  
+
+200130 Martin Raden
+ * IntaRNA/SeedHandlerMfe :
+   * bugfix generation and tracing of seeds with bulges and no GU ends
+ * IntaRNA/PredictorMfe*SeedExtension* :
+   * bugfix enumeration of seeds with bulges
+ * bin/CommandLineParseing :
+   * error msgs rephrased
+   + noLP for seeds with bulges enabled
+   + setup noLP for seed constraints via outNoLP
+ * IntaRNA/SeedConstraint :
+   + isLpAllowed : whether or not lps are allowed in seeds
+ * IntaRNA/SeedHandlerMfe :
+   + support for noLP constraint
+ * test/SeedHandlerMfe :
+   + test with lp
+   + test no lp (boundary)
+   + test no lp (internal)
+ * test/*
+   * adaptation to SeedConstraint constructor changes
+
 200121 Martin Raden
  + R/IntaRNA_CSV_p-value.R : former addPvalues2csv.R
  + R/IntaRNA_plotRegions.R : former plotRegions.R
+ - R/addPvalues2csv.R : renamed
+ - R/plotRegions.R : renamed
  * README.md : adapted to renamings
  + R/Makefile.am : install R scripts
- 
  
 191115 Martin Raden
  + R/addPvalues2csv.R
