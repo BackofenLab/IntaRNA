@@ -96,11 +96,17 @@ protected:
 	 *
 	 * @param j1 end of the interaction within seq 1
 	 * @param j2 end of the interaction within seq 2
+	 * @param energy the interaction energy handler
+	 * @param seedHandler the seedHandler of the predictor
+	 * @param outConstraint the output contraint handler
+	 * @param hybridZ_left the hybridization matrix to fill
 	 *
 	 */
-	virtual
+	static
 	void
-	fillHybridZ_left( const size_t j1, const size_t j2 );
+	fillHybridZ_left( const size_t j1, const size_t j2, const InteractionEnergy & energy
+	               , const SeedHandler & seedHandler, const OutputConstraint & outConstraint
+								 , Z2dMatrix & hybridZ_left );
 
 	/**
 	 * Computes all entries of the hybridE matrix for interactions starting in
@@ -132,10 +138,13 @@ protected:
 	 * @param si2 the index of seed1 in the second sequence
 	 * @param sj1 the index of seed2 in the first sequence
 	 * @param sj2 the index of seed2 in the second sequence
+	 * @param energy the interaction energy handler
+	 * @param seedHandler the seedHandler of the predictor
 	 */
-	virtual
+	static
 	E_type
-	getNonOverlappingEnergy( const size_t si1, const size_t si2, const size_t sj1, const size_t sj2 );
+	getNonOverlappingEnergy( const size_t si1, const size_t si2, const size_t sj1, const size_t sj2
+	                       , const InteractionEnergy & energy, const SeedHandler & seedHandler );
 
 	// debug function
 	void

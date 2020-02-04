@@ -97,7 +97,7 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 
 		// EL
 		hybridZ_left.resize( std::min(si1+1, maxMatrixLen1), std::min(si2+1, maxMatrixLen2) );
-		fillHybridZ_left(si1, si2);
+		fillHybridZ_left(si1, si2, energy, seedHandler, outConstraint, hybridZ_left);
 
 		// updateZ for all boundary combinations
 		for (size_t l1 = 0; l1<hybridZ_left.size1(); l1++) {
@@ -135,7 +135,8 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 
 E_type
 PredictorMfeEns2dSeedExtension::
-getNonOverlappingEnergy( const size_t si1, const size_t si2, const size_t si1p, const size_t si2p ) {
+getNonOverlappingEnergy( const size_t si1, const size_t si2, const size_t si1p, const size_t si2p
+                       , const InteractionEnergy & energy, const SeedHandler & seedHandler ) {
 
 #if INTARNA_IN_DEBUG_MODE
 	// check indices
@@ -183,10 +184,10 @@ getNonOverlappingEnergy( const size_t si1, const size_t si2, const size_t si1p, 
 
 void
 PredictorMfeEns2dSeedExtension::
-fillHybridZ_left( const size_t si1, const size_t si2 )
+fillHybridZ_left( const size_t si1, const size_t si2, const InteractionEnergy & energy
+	             , const SeedHandler & seedHandler, const OutputConstraint & outConstraint
+							 , Z2dMatrix & hybridZ_left )
 {
-	// temporary access
-	const OutputConstraint & outConstraint = output.getOutputConstraint();
 #if INTARNA_IN_DEBUG_MODE
 	// check indices
 	if (!energy.areComplementary(si1,si2) )
@@ -246,6 +247,28 @@ fillHybridZ_left( const size_t si1, const size_t si2 )
 
 				// correction for left seeds
 				if ( i1<si1 && i2<si2 && seedHandler.isSeedBound(i1, i2) ) {
+
+					// get end of left seed
+					size_t j1 = i1+seedHandler.getSeedLength1(i1,i2)-1;
+					size_t j2 = i2+seedHandler.getSeedLength2(i1,i2)-1;
+
+					if (j1 <= si1 && j2 <= si2) {
+						// left seed not overlapping anchor seed
+						// subtract whole seed
+						curZ -= energy.getBoltzmannWeight( seedHandler.getSeedE(i1, i2) )
+														* hybridZ_left( si1-j1, si2-j2 );
+					} else if (seedHandler.areLoopOverlapping(i1,i2,si1,si2)) {
+						// left seed is overlapping anchor seed
+						// subtract non-overlapping part of seed
+						E_type nonOverlapE = getNonOverlappingEnergy(i1, i2, si1, si2, energy, seedHandler);
+						curZ -= energy.getBoltzmannWeight( nonOverlapE ) * hybridZ_left( 0, 0 );
+					}
+
+					// sanity insurance
+					if (curZ < 0) {
+						curZ = Z_type(0.0);
+					}
+/*
 
 					// check if seed is to be processed:
 					bool substractThisSeed =
@@ -327,6 +350,9 @@ fillHybridZ_left( const size_t si1, const size_t si2 )
 							}
 						}
 					} // substractThisSeed
+
+
+*/
 				}
 
 			} // complementary
