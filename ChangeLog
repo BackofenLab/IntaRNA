@@ -10,8 +10,19 @@
 # changes in development version since last release 
 ################################################################################
 
+# IntaRNA
+- improved Zall estimate (and depending values) for `--model=X` (default)
+
 ################################################################################  
 ################################################################################
+
+################################################################################
+
+200131 Martin Raden
+ * IntaRNA/PredictorMfe2dHeuristicSeedExtension :
+   * fillHybridE_left() :
+     + extended Zall update (additional save cases considered)
+
 
 ################################################################################
 ### version 3.1.5
