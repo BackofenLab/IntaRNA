@@ -12,7 +12,7 @@ PredictorMfeEns2dSeedExtension(
 		, PredictionTracker * predTracker
 		, SeedHandler * seedHandlerInstance )
  :
-	PredictorMfeEns(energy,output,predTracker)
+	PredictorMfeEns2d(energy,output,predTracker)
 	, seedHandler(seedHandlerInstance)
 	, hybridZ_left( 0,0 )
 	, hybridZ_right( 0,0 )
@@ -74,6 +74,29 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 	// initialize overall partition function for updates
 	initZ();
 
+	// if predTracker is set, compute hybridZ
+	if (predTracker != NULL) {
+	  hybridZ.resize( range_size1, range_size2 );
+		// for all right ends j1
+		for (size_t j1 = hybridZ.size1(); j1-- > 0; ) {
+			// check if j1 is accessible
+			if (!energy.isAccessible1(j1))
+				continue;
+			// iterate over all right ends j2
+			for (size_t j2 = hybridZ.size2(); j2-- > 0; ) {
+				// check if j2 is accessible
+				if (!energy.isAccessible2(j2))
+					continue;
+				// check if base pair (j1,j2) possible
+				if (!energy.areComplementary( j1, j2 ))
+					continue;
+
+				// fill matrix and store best interaction
+				PredictorMfeEns2d::fillHybridZ( j1, j2, 0, 0, false );
+			}
+	  }
+	}
+
 	size_t si1 = RnaSequence::lastPos, si2 = RnaSequence::lastPos;
 	while( seedHandler.updateToNextSeed(si1,si2
 			, 0, range_size1+1-seedHandler.getConstraint().getBasePairs()
@@ -127,8 +150,17 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 	// report mfe interaction
 	reportOptima();
 
+  // report to predictionTracker
 	reportZ( &seedHandler );
 
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+const PredictorMfeEns2dSeedExtension::Z2dMatrix &
+PredictorMfeEns2dSeedExtension::
+getHybridZ() const {
+	return hybridZ;
 }
 
 //////////////////////////////////////////////////////////////////////////

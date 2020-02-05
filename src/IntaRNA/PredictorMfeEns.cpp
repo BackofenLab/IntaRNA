@@ -44,36 +44,6 @@ getZPartition() const {
 
 ////////////////////////////////////////////////////////////////////////////
 
-Z_type
-PredictorMfeEns::
-getHybridZ( const size_t i1, const size_t j1
-	 , const size_t i2, const size_t j2)
-{
-	Interaction::Boundary key(i1, j1, i2, j2);
-	if ( Z_partition.find(key) == Z_partition.end() ) {
-		return Z_type(0);
-	} else {
-		return Z_partition[key];
-	}
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-Z_type
-PredictorMfeEns::
-getZ( const size_t i1, const size_t j1
-	 , const size_t i2, const size_t j2)
-{
-	Interaction::Boundary key(i1, j1, i2, j2);
-	if ( Z_partition.find(key) == Z_partition.end() ) {
-		return Z_type(0);
-	} else {
-		return Z_partition[key] * energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, E_type(0)));
-	}
-}
-
-////////////////////////////////////////////////////////////////////////////
-
 void
 PredictorMfeEns::
 reportZ( SeedHandler* seedHandler )

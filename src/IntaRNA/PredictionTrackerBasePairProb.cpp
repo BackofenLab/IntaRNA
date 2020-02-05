@@ -1,5 +1,6 @@
 
 #include "IntaRNA/PredictionTrackerBasePairProb.h"
+#include "IntaRNA/PredictorMfeEns2dSeedExtension.h"
 
 extern "C" {
 	#include <ViennaRNA/vrna_config.h>
@@ -65,6 +66,11 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 
 	Z_type maxZ = 0.0;
 	Interaction::Boundary interactionBoundary;
+
+  PredictorMfeEns2dSeedExtension* seedPredictor = dynamic_cast<PredictorMfeEns2dSeedExtension*>(predictor);
+  if (seedPredictor != nullptr) {
+		LOG(DEBUG) << "hello hybridZ " << seedPredictor->getHybridZ()(0,0);
+	}
 
 	// initialize Z_partition
 	const PredictorMfeEns::Site2Z_hash & Z_partition = predictor->getZPartition();
@@ -447,7 +453,7 @@ getHybridZ( const size_t i1, const size_t j1
 					, const PredictorMfeEns *predictor)
 {
 	Interaction::Boundary boundary(i1, j1, i2, j2);
-	return getHybridZ(boundary,predictor);
+	return getHybridZ(boundary, predictor);
 }
 
 ////////////////////////////////////////////////////////////////////////////

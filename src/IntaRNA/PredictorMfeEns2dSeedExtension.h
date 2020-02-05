@@ -2,7 +2,7 @@
 #ifndef INTARNA_PREDICTORMFEENS2DSEEDEXTENSION_H_
 #define INTARNA_PREDICTORMFEENS2DSEEDEXTENSION_H_
 
-#include "IntaRNA/PredictorMfeEns.h"
+#include "IntaRNA/PredictorMfeEns2d.h"
 #include "IntaRNA/SeedHandlerIdxOffset.h"
 
 namespace IntaRNA {
@@ -19,7 +19,7 @@ namespace IntaRNA {
  * @author Martin Raden
  *
  */
-class PredictorMfeEns2dSeedExtension: public PredictorMfeEns {
+class PredictorMfeEns2dSeedExtension: public PredictorMfeEns2d {
 
 protected:
 
@@ -69,6 +69,13 @@ public:
 	predict( const IndexRange & r1 = IndexRange(0,RnaSequence::lastPos)
 			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos) );
 
+	/**
+	 * Access to hybridZ
+	 *
+	 * @return hybridZ
+	 */
+	const Z2dMatrix &
+	getHybridZ() const;
 
 protected:
 
@@ -87,6 +94,10 @@ protected:
 
 	//! partition function of all interaction hybrids that start on the right side of the seed excluding E_init
 	Z2dMatrix hybridZ_right;
+
+	//! energy of all interaction hybrids that end in position p (seq1) and
+	//! q (seq2)
+	using PredictorMfeEns2d::hybridZ;
 
 protected:
 
