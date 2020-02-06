@@ -290,10 +290,9 @@ AM_CONDITIONAL([INSTALL_INTARNAPVALUE],[test x"$intarnapvalue" = x"yes"])
 AC_MSG_CHECKING([whether to compile and install 'CopomuS' python module])
 copomus=yes
 AC_ARG_ENABLE([CopomuS],
-	[AS_HELP_STRING([--enable-CopomuS],
-	    [build and install the CopomuS python3 module])],
-  	[AM_COND_IF([HAVE_PYTHON], [copomus="$enableval"], [copomus="no (python not available)"])],
-  	[AM_COND_IF([HAVE_PYTHON], [copomus=yes], [copomus="no (python not available)"])]
+	[AS_HELP_STRING([--disable-CopomuS],
+	    [build and install the CopomuS python3 module (def=enabled)])],
+  	[AM_COND_IF([HAVE_PYTHON], [copomus="$enableval"], [copomus="no (python not available)"])]
   	)
 AC_MSG_RESULT([$copomus])
 
