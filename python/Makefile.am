@@ -1,12 +1,13 @@
 
 # sub directories to check for Makefiles
-SUBDIRS = intarnapvalue bin
-
-noinst_PYTHON = setup.py
+SUBDIRS = copomus intarnapvalue bin
 
 
 # install python modules
 if HAVE_PYTHON
+
+noinst_PYTHON = setup.py
+
 if INSTALL_INTARNAPVALUE
 
 # ensure pip is installed
@@ -18,4 +19,18 @@ install-exec-hook:
 		$(PYTHON) setup.py install --prefix=${prefix}
 
 endif
+
+# copomus installation
+if INSTALL_INTARNAPVALUE
+
+python_PYTHON = \
+		CopomuS.py
+
+endif
+
+else
+
+# ensure files are part of distribution if python not available
+EXTRA_DIST = *.py
+
 endif
