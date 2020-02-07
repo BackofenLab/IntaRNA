@@ -18,6 +18,12 @@
 
 ################################################################################
 
+200207 Martin Raden + Fabio Gutmann
+ + python/CopomuS.py : Compensatory mutation selector to support interaction
+   validation experiments
+ + python/copomus/* : utility functions of CopomuS
+ * python/README.md : links to dedicated README.md of subfolders
+
 200131 Martin Raden
  * IntaRNA/PredictorMfe2dHeuristicSeedExtension :
    * fillHybridE_left() :
