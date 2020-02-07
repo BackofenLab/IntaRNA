@@ -1,14 +1,14 @@
 
 AC_PREREQ([2.65])
 # 5 argument version only available with aclocal >= 2.64
-AC_INIT([IntaRNA], [3.1.5], [], [intaRNA], [http://www.bioinf.uni-freiburg.de] )
+AC_INIT([IntaRNA], [3.2.0], [], [intaRNA], [http://www.bioinf.uni-freiburg.de] )
 
 # minimal required version of the boost library 
 BOOST_REQUIRED_VERSION=1.50.0
 # minimal required version of the Vienna RNA library
 VRNA_REQUIRED_VERSION=2.4.14
-# minimal required version of python interpreter
-PYTHON_REQUIRED_VERSION=3.7
+# minimal required version of python interpreter (to install intarnapvalue)
+PYTHON_REQUIRED_VERSION=3.6
 
 
 AC_CANONICAL_HOST
@@ -283,22 +283,6 @@ AC_MSG_RESULT([$intarnapvalue])
 AM_CONDITIONAL([INSTALL_INTARNAPVALUE],[test x"$intarnapvalue" = x"yes"])
 
 
-#############################
-# COPOMUS SCRIPT
-#############################
-
-AC_MSG_CHECKING([whether to compile and install 'CopomuS' python module])
-copomus=yes
-AC_ARG_ENABLE([CopomuS],
-	[AS_HELP_STRING([--disable-CopomuS],
-	    [build and install the CopomuS python3 module (def=enabled)])],
-  	[AM_COND_IF([HAVE_PYTHON], [copomus="$enableval"], [copomus="no (python not available)"])]
-  	)
-AC_MSG_RESULT([$copomus])
-
-AM_CONDITIONAL([INSTALL_COPOMUS],[test x"$copomus" = x"yes"])
-
-
 
 ###############################################################################
 
@@ -478,7 +462,6 @@ Features
   * log coloring              : $logColoring
   * OpenMP multi-threading    : $multithreadingEnabled
   * intarnapvalue             : $intarnapvalue
-  * CopomuS                   : $copomus
 
 Install Directories for given 'prefix'
 --------------------------------------
