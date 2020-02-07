@@ -3,22 +3,28 @@
 # Copyright 2019
 # Author: Fabio Gutmann <https://github.com/fabio-gut>
 
+
+__intarna_min__ = '3.1.2'
+__python_min__ = '3.7.0'
+
 import os
 import sys
+from platform import python_version
+
+if python_version() < __python_min__:
+    sys.stderr.write(f'CopomuS requires python >= {__python_min__}\n')
+    sys.exit(1)
+
 import csv
 from tempfile import gettempdir
 from argparse import ArgumentParser, FileType, SUPPRESS
 from typing import List
-from platform import python_version
 from copomus.mutation import Mutation
 from copomus.IntaRNA import IntaRNA
 from copomus.candidate_selectors import get_selector
 from copomus.candidate_filters import get_filter
 from copomus.mutation_generators import get_generator
 
-__version__ = 'v1.0'
-__intarna_min__ = '3.1.2'
-__python_min__ = '3.7.0'
 
 
 class CopomuS:
@@ -130,7 +136,6 @@ class CopomuS:
                                  'prediction constraints.')
         parser.add_argument('--threads', dest='threads', default=defaults['threads'], type=int,
                             help='Threads used for IntaRNA call')
-        parser.add_argument('-v', '--version', action='version', version=f'CopomuS {__version__}')
         parser.add_argument('--alpha', dest='alpha', type=float, default=defaults['alpha'], help=SUPPRESS)
         parser.add_argument('--beta', dest='beta', type=float, default=defaults['beta'], help=SUPPRESS)
 
@@ -232,8 +237,5 @@ class CopomuS:
 
 
 if __name__ == '__main__':
-    if python_version() < __python_min__:
-        sys.stderr.write(f'This script requires python >= {__python_min__}\n')
-        sys.exit(1)
     c = CopomuS()
     c.main()

@@ -3,10 +3,16 @@
 SUBDIRS = copomus intarnapvalue bin
 
 
+# scripts to be installed in $(bindir) directly
+
+dist_bin_SCRIPTS = \
+	CopomuS.py
+
+# auxiliary scripts to be part of distribution 
+noinst_PYTHON = setup.py
+
 # install python modules
 if HAVE_PYTHON
-
-noinst_PYTHON = setup.py
 
 if INSTALL_INTARNAPVALUE
 
@@ -19,18 +25,5 @@ install-exec-hook:
 		$(PYTHON) setup.py install --prefix=${prefix}
 
 endif
-
-# copomus installation
-if INSTALL_INTARNAPVALUE
-
-python_PYTHON = \
-		CopomuS.py
-
-endif
-
-else
-
-# ensure files are part of distribution if python not available
-EXTRA_DIST = *.py
 
 endif

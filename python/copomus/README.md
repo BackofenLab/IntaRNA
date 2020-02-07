@@ -50,7 +50,6 @@ G15C&C2G	2	15	2	GC	CG	1	True	True	False	True	1	2	-9.32	-12.37	-8.12	-12.2	0	5	-3
 | -d, --delimiter     | character              | "\t" (tab) | (Optional) delimiter used to separate csv output. |
 | -p, --parameterFile | file name              | None    | (optional) parameter file to be used in IntaRNA calls to further guide predictions. |
 | -t, --threads       | integer                | 0 (all) | (Optional) thread count used by IntaRNA. |
-| -v, --version       |                        |         | Prints current version and exits. |
 
 #### Measures
 
