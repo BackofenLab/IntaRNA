@@ -18,7 +18,7 @@
 
 ################################################################################
 
-200207 Martin Raden
+200207 Martin Raden + Fabio Gutmann
  + python/CopomuS.py : Compensatory mutation selector to support interaction
    validation experiments
  + python/copomus/* : utility functions of CopomuS
