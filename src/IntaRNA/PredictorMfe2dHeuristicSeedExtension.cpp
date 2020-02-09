@@ -269,14 +269,10 @@ fillHybridE_left( const size_t si1, const size_t si2 )
 			if ( E_isNotINF( curMinE ) ) {
 				// safe cases for Zall update:
 				// - i==si && j==sj : seed only
-				// - i!=si && !seedBound(i) &&
-				//   ? j==sj : left seed extension
-				//   ? or no seed between i and si : si == left-most seed
-				bool isSeedOrLeftExt = (i1==si1 && i2==si2)
-							|| (j1opt == sj1 && !seedHandler.isSeedBound(i1,i2));
+				// - i!=si && and no seed between i (incl.) and si (excl) : si == left-most seed
 
 				// leftE (incl. E_init) + seedE
-				updateOptima( i1,sj1,i2,sj2, curMinE + seedE, true, isSeedOrLeftExt );
+				updateOptima( i1,sj1,i2,sj2, curMinE + seedE, true, (i1==si1 && i2==si2) );
 
 				// check if right opt != right seed boundary
 				// check for max interaction length
