@@ -2,7 +2,7 @@
 #ifndef INTARNA_PREDICTORMFEENS2DSEEDEXTENSION_H_
 #define INTARNA_PREDICTORMFEENS2DSEEDEXTENSION_H_
 
-#include "IntaRNA/PredictorMfeEns2d.h"
+#include "IntaRNA/PredictorMfeEns.h"
 #include "IntaRNA/SeedHandlerIdxOffset.h"
 
 namespace IntaRNA {
@@ -19,7 +19,7 @@ namespace IntaRNA {
  * @author Martin Raden
  *
  */
-class PredictorMfeEns2dSeedExtension: public PredictorMfeEns2d {
+class PredictorMfeEns2dSeedExtension: public PredictorMfeEns {
 
 protected:
 
@@ -38,12 +38,14 @@ public:
 	 *         tracking is to be done; if non-NULL, the tracker gets deleted
 	 *         on this->destruction.
 	 * @param seedHandler the seed handler to be used
+	 * @param trackBasePairProbs indicates the presence of a basePairProb tracker
 	 */
 	PredictorMfeEns2dSeedExtension(
 			const InteractionEnergy & energy
 			, OutputHandler & output
 			, PredictionTracker * predTracker
-			, SeedHandler * seedHandler );
+			, SeedHandler * seedHandler
+			, bool trackBasePairProbs );
 
 
 	/**
@@ -70,12 +72,12 @@ public:
 			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos) );
 
 	/**
-	 * Access to hybridZ
+	 * Access to ZL_partition
 	 *
-	 * @return hybridZ
+	 * @return ZL_partition
 	 */
-	const Z2dMatrix &
-	getHybridZ() const;
+	const Site2Z_hash &
+	getZLPartition() const;
 
 protected:
 
@@ -92,12 +94,14 @@ protected:
 	//! the seed handler (with idx offset)
 	SeedHandlerIdxOffset seedHandler;
 
+	//! boolean indicating the presence of a basePairProb tracker
+	bool trackBasePairProbs;
+
 	//! partition function of all interaction hybrids that start on the right side of the seed excluding E_init
 	Z2dMatrix hybridZ_right;
 
-	//! energy of all interaction hybrids that end in position p (seq1) and
-	//! q (seq2)
-	using PredictorMfeEns2d::hybridZ;
+	//! map storing the partition of ZL for all considered interaction sites
+	Site2Z_hash ZL_partition;
 
 protected:
 
@@ -107,17 +111,11 @@ protected:
 	 *
 	 * @param j1 end of the interaction within seq 1
 	 * @param j2 end of the interaction within seq 2
-	 * @param energy the interaction energy handler
-	 * @param seedHandler the seedHandler of the predictor
-	 * @param outConstraint the output contraint handler
-	 * @param hybridZ_left the hybridization matrix to fill
 	 *
 	 */
-	static
+	virtual
 	void
-	fillHybridZ_left( const size_t j1, const size_t j2, const InteractionEnergy & energy
-	               , const SeedHandler & seedHandler, const OutputConstraint & outConstraint
-								 , Z2dMatrix & hybridZ_left );
+	fillHybridZ_left( const size_t j1, const size_t j2 );
 
 	/**
 	 * Computes all entries of the hybridE matrix for interactions starting in

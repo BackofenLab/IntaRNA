@@ -2280,7 +2280,7 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 		case 'P' : {
 			switch ( mode.val ) {
 			case 'H' :  return new PredictorMfeEns2dHeuristicSeedExtension( energy, output, predTracker, getSeedHandler( energy ) );
-			case 'M' :  return new PredictorMfeEns2dSeedExtension( energy, output, predTracker, getSeedHandler( energy ) );
+			case 'M' :  return new PredictorMfeEns2dSeedExtension( energy, output, predTracker, getSeedHandler( energy ), !outPrefix2streamName.at(OutPrefixCode::OP_basePairProb).empty() );
 			case 'S' :  return new PredictorMfeEnsSeedOnly( energy, output, predTracker, getSeedHandler(energy) );
 			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not available for model "+toString(model.val));
 			}

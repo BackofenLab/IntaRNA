@@ -67,7 +67,7 @@ protected:
 	using PredictorMfe::predTracker;
 
 	//! map storing the partition of Zall for all considered interaction sites
-	std::unordered_map<Interaction::Boundary, Z_type, Interaction::Boundary::Hash, Interaction::Boundary::Equal> Z_partition;
+	Site2Z_hash Z_partition;
 
 
 	/**

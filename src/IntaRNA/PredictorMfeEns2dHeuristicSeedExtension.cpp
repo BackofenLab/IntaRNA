@@ -11,7 +11,7 @@ PredictorMfeEns2dHeuristicSeedExtension(
 		, PredictionTracker * predTracker
 		, SeedHandler * seedHandlerInstance )
  :
-	PredictorMfeEns2dSeedExtension(energy,output,predTracker,seedHandlerInstance)
+	PredictorMfeEns2dSeedExtension(energy,output,predTracker,seedHandlerInstance,false)
 , E_right_opt(E_INF)
 , j1opt(0)
 , j2opt(0)
@@ -155,9 +155,6 @@ void
 PredictorMfeEns2dHeuristicSeedExtension::
 fillHybridZ_left( const size_t si1, const size_t si2 )
 {
-  // temporary access
-	const OutputConstraint & outConstraint = output.getOutputConstraint();
-
 	// static data
 	const Z_type seedZ = energy.getBoltzmannWeight(seedHandler.getSeedE(si1, si2));
 	const size_t sj1 = si1 + seedHandler.getSeedLength1(si1,si2) -1;
@@ -165,7 +162,7 @@ fillHybridZ_left( const size_t si1, const size_t si2 )
 	const Z_type rightOptZ = hybridZ_right(j1opt-sj1,j2opt-sj2);
 
 	// compute left-extensions of current seed
-	PredictorMfeEns2dSeedExtension::fillHybridZ_left(si1,si2, energy, seedHandler, outConstraint, hybridZ_left);
+	PredictorMfeEns2dSeedExtension::fillHybridZ_left(si1,si2);
 
 	// update partition function information
 	for (size_t l1=0; l1 < hybridZ_left.size1(); l1++ ) {

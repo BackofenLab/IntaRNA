@@ -69,7 +69,10 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
 
   PredictorMfeEns2dSeedExtension* seedPredictor = dynamic_cast<PredictorMfeEns2dSeedExtension*>(predictor);
   if (seedPredictor != nullptr) {
-		LOG(DEBUG) << "hello hybridZ " << seedPredictor->getHybridZ()(0,0);
+		const PredictorMfeEns::Site2Z_hash & ZL_partition = seedPredictor->getZLPartition();
+		for (auto z = ZL_partition.begin(); z != ZL_partition.end(); ++z) {
+			LOG(DEBUG) << z->second;
+		}
 	}
 
 	// initialize Z_partition
