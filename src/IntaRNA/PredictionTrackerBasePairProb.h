@@ -146,6 +146,25 @@ protected:
 	              , const size_t i1, const size_t j1
 	              , const size_t i2, const size_t j2 );
 
+  /**
+	 * Compute the overlapping partitions of all seeds overlapping basepair k
+	 * @param predictor the predictor providing the probability information
+	 * @param seedHandler the seedHandler of the predictor
+	 * @param i1 region index
+	 * @param j1 region index
+	 * @param i2 region index
+	 * @param j2 region index
+	 * @param k1 basepair index
+	 * @param k2 basepair index
+	 * @param leftSide whether to check for overlaps on the left side of k
+	 *
+	 * @return the cummulative overlapping seed partitions at k
+	 */
+	Z_type
+	getOverlappingSeedAtK( const PredictorMfeEns2dSeedExtension *predictor, const SeedHandler* seedHandler
+											 , const size_t i1, const size_t j1, const size_t i2, const size_t j2
+	                     , const size_t k1, const size_t k2, const bool leftSide );
+
 	/**
 	 * Access to the current partition function covering
 	 * the interaction at region (i1, j1, i2, j2).

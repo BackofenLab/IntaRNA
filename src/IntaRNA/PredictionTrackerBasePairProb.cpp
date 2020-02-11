@@ -272,6 +272,28 @@ getZRPartition( const PredictorMfeEns2dSeedExtension *predictor, const SeedHandl
 
 Z_type
 PredictionTrackerBasePairProb::
+getOverlappingSeedAtK( const PredictorMfeEns2dSeedExtension *predictor, const SeedHandler* seedHandler
+                     , const size_t i1, const size_t j1, const size_t i2, const size_t j2
+	                   , const size_t k1, const size_t k2, const bool leftSide )
+{
+	Z_type partZ = 0;
+	size_t si1 = RnaSequence::lastPos, si2 = RnaSequence::lastPos;
+	size_t seedLength = seedHandler->getConstraint().getBasePairs();
+	size_t l1 = leftSide ? std::max(i1, k1+1-seedLength) : k1;
+	size_t l2 = leftSide ? std::max(i2, k2+1-seedLength) : k2;
+	size_t r1 = leftSide ? k1 : std::min(k1+1-seedLength, j1);
+	size_t r2 = leftSide ? k2 : std::min(k2+1-seedLength, j2);
+	while( seedHandler->updateToNextSeed(si1,si2, l1, r1, l2, r2) ) {
+    if (leftSide) {
+			// partZ += getZPartitionValue(&predictor->getZLPartition(), Interaction::Boundary(i1, si1, i2, si2));
+		}
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+Z_type
+PredictionTrackerBasePairProb::
 getHybridZ( const size_t i1, const size_t j1
 					, const size_t i2, const size_t j2
 					, const PredictorMfeEns *predictor)
