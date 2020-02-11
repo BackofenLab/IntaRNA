@@ -6,6 +6,7 @@
 #include "IntaRNA/InteractionEnergy.h"
 #include "IntaRNA/Interaction.h"
 #include "IntaRNA/PredictorMfeEns.h"
+#include "IntaRNA/PredictorMfeEns2dSeedExtension.h"
 
 #include <iostream>
 
@@ -27,8 +28,8 @@ class PredictionTrackerBasePairProb: public PredictionTracker
 
 public:
 
+	typedef std::unordered_map<Interaction::Boundary, Z_type, Interaction::Boundary::Hash, Interaction::Boundary::Equal> Site2Z_hash;
 	typedef std::unordered_map<Interaction::BasePair, Z_type, Interaction::BasePair::Hash, Interaction::BasePair::Equal> BasePair2Prob_hash;
-
 	typedef std::unordered_map<Interaction::BasePair, std::set<Interaction::BasePair>, Interaction::BasePair::Hash, Interaction::BasePair::Equal> BasePairIndex;
 
 public:
@@ -80,72 +81,71 @@ public:
 	updateZ( PredictorMfeEns *predictor, SeedHandler* seedHandler ) override;
 
 	/**
-	 * Compute partition function of the
-	 * the subregion (i1, j1, i2, j2)
-	 * @param i1 region index
-	 * @param j1 region index
-	 * @param i2 region index
-	 * @param j2 region index
+	 * Access to the base pair probability
+	 * of basepair (i1, i2)
+	 * @param i1 index in first sequence
+	 * @param i2 index in second sequence
+	 * @param predictor the predictor providing the probability information
+	 *
+	 * @return the base pair probability of given basepair
+	 */
+	Z_type
+	getBasePairProb( const size_t i1, const size_t i2
+	               , const PredictorMfeEns *predictor);
+
+protected:
+
+	//! energy handler used for predictions
+	const InteractionEnergy & energy;
+
+	//! filename of the generated dotplot
+	const std::string fileName;
+
+	//! threshold used to draw probabilities in dotplot
+	const Z_type probabilityThreshold;
+
+	//! map storing structure probabilities
+	BasePair2Prob_hash structureProbs;
+
+	//! left side index
+	BasePairIndex rightExt;
+
+	//! right side index
+	BasePairIndex leftExt;
+
+	//! flag for seed-based predictors
+	bool isSeedPredictor;
+
+	//! maximum postscript width/height in ps units
+	const size_t maxDotPlotSize;
+
+	/**
+	 * Access to the given partition function covering
+	 * the given boundary
+	 * @param Site2Z_hash partition function hash
+	 * @param Boundary boundary
+	 *
+	 * @return the partition function at given boundary
+	 */
+	Z_type
+	getZPartitionValue( const Site2Z_hash *Zpartition, const Interaction::Boundary & boundary );
+
+	/**
+	 * Compute ZR partition function for given region
 	 * @param predictor the predictor providing the probability information
 	 * @param seedHandler the seedHandler of the predictor
-	 */
-	void
-	computeMissingZ( const Interaction::Boundary & boundFull
-					       , const Interaction::BasePair & k
-				         , const PredictorMfeEns *predictor
-					       , const SeedHandler* seedHandler );
-
-	std::pair< Z_type, Z_type >
-	computeMissingZseed( const size_t l1, const size_t k1, const size_t r1
-						         , const size_t l2 , const size_t k2, const size_t r2
-					           , const PredictorMfeEns *predictor
-					           , const SeedHandler* seedHandler );
-	/**
-	 * Check if full seed exists in the region (i1, j1, i2, j2)
 	 * @param i1 region index
 	 * @param j1 region index
 	 * @param i2 region index
 	 * @param j2 region index
-	 * @param seedHandler the seedHandler of the predictor
 	 *
-	 * @return true if region contains a full seed
+	 * @return the ZR partition function at given region
 	 */
-	bool
-	isFullSeedinRegion( const size_t i1, const size_t j1
-					        	, const size_t i2, const size_t j2
-					        	, const SeedHandler* seedHandler );
+	Z_type
+	getZRPartition( const PredictorMfeEns2dSeedExtension *predictor, const SeedHandler* seedHandler
+	              , const size_t i1, const size_t j1
+	              , const size_t i2, const size_t j2 );
 
-	/**
-	 * Get leftmost seeds containing basepair (k1, k2)
-	 * @param k1 base pair index
-	 * @param k2 base pair index
-	 * @param i1min minimal base pair index for seed starts
-	 * @param i2min minimal base pair index for seed starts
-	 * @param seedHandler the seedHandler of the predictor
-	 *
-	 * @return vector of pairs containing the left-most seed of each
-	 *         loop-overlapping cluster of seeds containing base pair k
-	 */
-	std::vector< Interaction::BasePair >
-	getLeftMostSeedsAtK( const size_t k1, const size_t k2
-					           , const size_t i1min, const size_t i2min
-					           , const SeedHandler* seedHandler );
-
-	/**
-	 * Get partial energy of seed (si1, si2) at region (i1, j1, i2, j2)
-	 * @param i1 region index
-	 * @param j1 region index
-	 * @param i2 region index
-	 * @param j2 region index
-	 * @param seedHandler the seedHandler of the predictor
-	 *
-	 * @return energy of seed at given region
-	 */
-	E_type
-	getPartialSeedEnergy( const size_t si1, const size_t si2
-		                  , const size_t i1, const size_t j1
-											, const size_t i2, const size_t j2
-											, const SeedHandler* seedHandler );
 	/**
 	 * Access to the current partition function covering
 	 * the interaction at region (i1, j1, i2, j2).
@@ -172,47 +172,6 @@ public:
 	Z_type
 	getHybridZ(  const Interaction::Boundary & boundary
 	           , const PredictorMfeEns *predictor);
-
-	/**
-	 * Access to the base pair probability
-	 * of basepair (i1, i2)
-	 * @param i1 index in first sequence
-	 * @param i2 index in second sequence
-	 * @param predictor the predictor providing the probability information
-	 *
-	 * @return the base pair probability of given basepair
-	 */
-	Z_type
-	getBasePairProb( const size_t i1, const size_t i2
-	               , const PredictorMfeEns *predictor);
-
-	/**
-	 * Set the current partition function covering
-	 * the interaction at region (i1, j1, i2, j2).
-	 * @param i1 region index
-	 * @param j1 region index
-	 * @param i2 region index
-	 * @param j2 region index
-	 * @param partZ the new partition function for givent region
-	 * @param predictor the predictor providing the probability information
-	 */
-	void
-	updateHybridZ( const size_t i1, const size_t j1
-						 	 , const size_t i2, const size_t j2
-							 , const Z_type partZ
-							 , const PredictorMfeEns & predictor );
-
-	/**
-	 * Set the current partition function covering
-	 * the interaction at region (i1, j1, i2, j2).
-	 * @param boundary the region of interest
-	 * @param partZ the new partition function for givent region
-	 * @param predictor the predictor providing the probability information
-	 */
-	void
-	updateHybridZ( const Interaction::Boundary & boundary
-				       , const Z_type partZ
-	         	   , const PredictorMfeEns & predictor );
 
 	void
 	updateProb( const Interaction::BasePair & bp, const Z_type prob ) {
@@ -242,13 +201,10 @@ public:
 	/**
 	 * Compute basepair probabilities and store in structureProbs
 	 * @param predictor the predictor providing the probability information
-	 * @param iterator start of partition function
-	 * @param iterator end of partition function
+	 * @param seedHandler the seedHandler of the predictor
 	 */
 	void
-	computeBasePairProbs( const PredictorMfeEns *predictor
-		                  , const PredictorMfeEns::Site2Z_hash::const_iterator first
-	                    , const PredictorMfeEns::Site2Z_hash::const_iterator last );
+	computeBasePairProbs( const PredictorMfeEns2dSeedExtension *predictor, const SeedHandler* seedHandler );
 
 	/**
 	 * Compute basepair probabilities for no-seed predictions and store in structureProbs
@@ -256,35 +212,6 @@ public:
 	 */
 	void
 	computeBasePairProbsNoSeed( const PredictorMfeEns *predictor );
-
-protected:
-
-	//! energy handler used for predictions
-	const InteractionEnergy & energy;
-
-	//! filename of the generated dotplot
-	const std::string fileName;
-
-	//! threshold used to draw probabilities in dotplot
-	const Z_type probabilityThreshold;
-
-	//! map storing structure probabilities
-	BasePair2Prob_hash structureProbs;
-
-	//! map storing missing Z partitions for a given interaction
-	PredictorMfeEns::Site2Z_hash Z_partitionMissing;
-
-	//! left side index
-	BasePairIndex rightExt;
-
-	//! right side index
-	BasePairIndex leftExt;
-
-	//! flag for seedHandler
-	bool hasSeedhandler;
-
-	//! maximum postscript width/height in ps units
-	const size_t maxDotPlotSize;
 
 	//! postscript template for dotplots
 	const char* dotplotTemplate =

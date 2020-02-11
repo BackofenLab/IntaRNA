@@ -142,6 +142,14 @@ getZLPartition() const {
 	return ZL_partition;
 }
 
+////////////////////////////////////////////////////////////////////////////
+
+const PredictorMfeEns::Site2Z_hash &
+PredictorMfeEns2dSeedExtension::
+getZHPartition() const {
+	return ZH_partition;
+}
+
 //////////////////////////////////////////////////////////////////////////
 
 E_type
@@ -366,6 +374,18 @@ fillHybridZ_right( const size_t sj1, const size_t sj2 )
 						}
 					} // k2
 				} // k1
+			} // complementary
+
+			// store partial Z
+			if (trackBasePairProbs) {
+				Interaction::Boundary key(sj1,j1,sj2,j2);
+				auto keyEntry = ZH_partition.find(key);
+				if ( ZH_partition.find(key) == ZH_partition.end() ) {
+					ZH_partition[key] = curZ;
+				} else {
+					// update entry
+					keyEntry->second += curZ;
+				}
 			}
 		}
 	}
