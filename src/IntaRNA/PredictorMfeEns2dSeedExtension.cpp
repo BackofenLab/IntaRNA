@@ -298,9 +298,6 @@ fillHybridZ_left( const size_t si1, const size_t si2 )
 				auto keyEntry = ZL_partition.find(key);
 				if ( ZL_partition.find(key) == ZL_partition.end() ) {
 					ZL_partition[key] = curZ;
-				} else {
-					// update entry
-					keyEntry->second += curZ;
 				}
 			}
 
@@ -382,9 +379,6 @@ fillHybridZ_right( const size_t sj1, const size_t sj2 )
 				auto keyEntry = ZH_partition.find(key);
 				if ( ZH_partition.find(key) == ZH_partition.end() ) {
 					ZH_partition[key] = curZ;
-				} else {
-					// update entry
-					keyEntry->second += curZ;
 				}
 			}
 		}
