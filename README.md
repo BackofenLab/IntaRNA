@@ -193,7 +193,7 @@ not needed to be installed separately):
 
 The data provided within the github repository
 (or within the `Source code` archives provided at the  
-[IntaRNA release page](https://github.com/BackofenLab/IntaRNA/releases))
+[IntaRNA release page](https://github.com/BackofenLab/IntaRNA/releases/latest))
 is no complete distribution and
 lacks all system specifically generated files. Thus, in order to get started with
 a fresh clone of the IntaRNA source code repository you have to run the GNU autotools
@@ -214,7 +214,7 @@ Afterwards, you can continue as if you would have downloaded an
 ## IntaRNA package distribution (e.g. `intaRNA-2.0.0.tar.gz`)
 
 When downloading an IntaRNA package distribution (e.g. `intaRNA-2.0.0.tar.gz`) from the
-[IntaRNA release page](https://github.com/BackofenLab/IntaRNA/releases), you should
+[IntaRNA release page](https://github.com/BackofenLab/IntaRNA/releases/latest), you should
 first ensure, that you have all [dependencies](#deps) installed. If so, you can
 simply run the following (assuming `bash` shell).
 ```bash
@@ -277,10 +277,10 @@ and follow either [install from github](#instgithub) or
 ### ... using pre-compiled binaries
 
 For some releases, we also provide precompiled binary packages for Microsoft Windows at the
-[IntaRNA release page](https://github.com/BackofenLab/IntaRNA/releases)
+[IntaRNA release page](https://github.com/BackofenLab/IntaRNA/releases/latest)
 that enable 'out-of-the-box' usage. If you
 want to use them:
-- [download](https://github.com/BackofenLab/IntaRNA/releases) the according ZIP archive and extract
+- [download](https://github.com/BackofenLab/IntaRNA/releases/latest) the according ZIP archive and extract
 - open a [Windows command prompt](https://www.lifewire.com/how-to-open-command-prompt-2618089)
 - [run IntaRNA](#usage)
 
@@ -331,7 +331,7 @@ brew install viennarna
 brew install doxygen
 ```
 
-Download and extract the IntaRNA source code package (e.g. `intaRNA-2.0.2.tar.gz`) from the [release page](releases/).
+Download and extract the IntaRNA source code package (e.g. `intaRNA-2.0.2.tar.gz`) from the [release page](https://github.com/BackofenLab/IntaRNA/releases/latest).
 
 ```[bash]
 ./configure CC=gcc-6 CXX=g++-6
