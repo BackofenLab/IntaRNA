@@ -202,19 +202,19 @@ computeBasePairProbs( const PredictorMfeEns2dSeedExtension *predictor, const See
 				// ... ZNL:seed:ZNR
 				size_t si1 = RnaSequence::lastPos, si2 = RnaSequence::lastPos;
 				// get length1 and length2 (to handle seeds with bulges)
-				size_t seedLength = seedHandler->getConstraint().getBasePairs(); // TODO replace
+				size_t sl1 = seedHandler->getSeedLength1(si1,si2);
+				size_t sl2 = seedHandler->getSeedLength2(si1,si2);
 				while( seedHandler->updateToNextSeed(si1,si2
-						// si1 in [k1-min(k1,maxSeedLen1),k1-1]
-						// si2 analog
-						, std::max(i1, k1+1-seedLength) // TODO use slen1,slen2  //TODO gefahr size_t overflow
+						, k1-std::min(k1, sl1)
 						, k1-1
-						, std::max(i1, k2+1-seedLength)
+						, k2-std::min(k2, sl2)
 						, k2-1) )
 				{
-					// TODO check if k is in seed(si)
-					bpZ += getZPartitionValue(&ZL_partition, Interaction::Boundary(i1,si1,i2,si2))
+					if (seedHandler->isSeedBasePair(si1, si2, k1, k2)) {
+            bpZ += getZPartitionValue(&ZL_partition, Interaction::Boundary(i1,si1,i2,si2))
 					        * energy.getBoltzmannWeight(seedHandler->getSeedE(si1, si2))
-							    * getZRPartition(predictor, seedHandler, si1+seedLength-1, j1, si2+seedLength-1, j2); // TODO use slen1,2
+							    * getZRPartition(predictor, seedHandler, si1+sl1-1, j1, si2+sl2-1, j2);
+					}
 				}
 
 				// add ED values, dangling ends, etc.

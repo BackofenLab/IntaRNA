@@ -148,6 +148,20 @@ public:
 			, const size_t i2min = 0, const size_t i2max = RnaSequence::lastPos
 			) const;
 
+	/**
+	 * Checks whether or not a given index pair is a valid seed base of a given seed
+	 *
+	 * @param i1 the left most interacting base of seq1 of a seed
+	 * @param i2 the left most interacting base of seq2 of a seed
+	 * @param k1 the interacting base of seq1
+	 * @param k2 the interacting base of seq2
+	 * @return true if (k1,k2) is a valid base pair of seed(i1,i2); false otherwise
+	 */
+	virtual
+	bool
+	isSeedBasePair( const size_t i1, const size_t i2
+						, const size_t k1, const size_t k2 ) const;
+
 
 protected:
 
@@ -243,6 +257,21 @@ isSeedBound( const size_t i1, const size_t i2 ) const
 {
 	// search for seed entry in hash
 	return seedForLeftEnd.find( SeedHash::key_type(i1,i2) ) != seedForLeftEnd.end();
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+SeedHandlerNoBulge::
+isSeedBasePair( const size_t i1, const size_t i2
+						, const size_t k1, const size_t k2 ) const
+{
+	if (!isSeedBound(i1, i2)) {
+		return false;
+	}
+
+	return k1 >= i1 && k2 >= i2 && (k1 - i1) == (k2 - i2);
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -194,6 +194,20 @@ public:
 						, const size_t i2
 						, const bool atEndOfSeed = false ) const;
 
+	/**
+	 * Checks whether or not a given index pair is a valid seed base of a given seed
+	 *
+	 * @param i1 the left most interacting base of seq1 of a seed
+	 * @param i2 the left most interacting base of seq2 of a seed
+	 * @param k1 the interacting base of seq1
+	 * @param k2 the interacting base of seq2
+	 * @return true if (k1,k2) is a valid base pair of seed(i1,i2); false otherwise
+	 */
+	virtual
+	bool
+	isSeedBasePair( const size_t i1, const size_t i2
+						, const size_t k1, const size_t k2 ) const;
+
 protected:
 
 	//! the used energy function
