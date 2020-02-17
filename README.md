@@ -497,10 +497,8 @@ mode   = M
 # no seed constraint
 noSeed = true
 # full global accessibility computation
-qAccW  = 0
-qAccL  = 0
-tAccW  = 0
-tAccL  = 0
+accW  = 0
+accL  = 0
 ``` 
 
 where you use the long parameter names without the leading `--`.
@@ -750,7 +748,7 @@ by running IntaRNA when disabling both the seed constraint
 as well as the accessibility integration using
 ```bash
 # prediction results similar to TargetScan/RNAhybrid
-IntaRNA [..] --noSeed --qAcc=N --tAcc=N
+IntaRNA [..] --noSeed --acc=N
 ```
 We *add seed-constraint support to TargetScan/RNAhybrid-like computations* by removing the
 `--noSeed` flag from the above call.
@@ -767,7 +765,7 @@ Finally, RNAup only predicts interactions for subsequences of length 25.
 All this can be setup using
 ```bash
 # prediction results similar to 'RNAup -b' (incorporating accessibility of both RNAs)
-IntaRNA --mode=M --noSeed --qAccW=0 --qAccL=0 --qIntLenMax=25 --tAccW=0 --tAccL=0 --tIntLenMax=25
+IntaRNA --mode=M --noSeed --accW=0 --accL=0 --intLenMax=25
 ```
 We *add seed-constraint support to RNAup-like computations* by removing the
 `--noSeed` flag from the above call. 
@@ -1055,8 +1053,8 @@ which results in two shorter ranges. If a range is shorter than `--seedBP`, it
 is completely removed.
 
 Finally, it is possible to restrict the overall length an interaction is allowed
-to have. This can be done independently for the query and target sequence using
-`--qIntLenMax` and `--tIntLenMax`, respectively. By setting both to 0 (default),
+to have via `--intLenMax`. This can be done independently for the query and target sequence using
+`--qIntLenMax` and `--tIntLenMax`, respectively. By setting to 0 (default),
 the smaller of the full sequence length and the maximal accessibility-window
 size (`--tAccW`, `--qAccW`) is used.
 
@@ -1610,8 +1608,8 @@ If no value for `--energyVRNA` is provided, the default model of the underlying
 Vienna RNA package is used (see respective documentation).
 
 To increase prediction quality and to reduce the computational complexity, the
-number of unpaired bases between intermolecular base pairs is restricted
-(similar to internal loop length restrictions in single RNA folding algorithm). The
+number of unpaired bases between intermolecular base pairs is restricted via
+`--intLoopMax` (similar to internal loop length restrictions in single RNA folding algorithm). The
 upper bound can be set independently for the query and target sequence via
 `--qIntLoopMax` and `--tIntLoopMax`, respectively, and defaults to 16.
 
@@ -1856,10 +1854,11 @@ penalty for a subsequence partaking in an interaction is given by *ED=-RT log(Pu
 where *Pu* denotes the unpaired probability of the subsequence. Within the
 IntaRNA energy model, *ED* values for both interacting subsequences are considered.
 
-Accessibility incorporation can be disabled for query or target sequences using
+To globally turn off accessibility consideration, set `--acc=N`.
+Accessibility incorporation can be disabled separately for query or target sequences using
 `--qAcc=N` or `--tAcc=N`, respectively.
 
-A setup of `--qAcc=C` or `--tAcc=C` (default) enables accessibility computation
+A setup of `--acc=C` (default, as for `--qAcc=C` and `--tAcc=C`) enables accessibility computation
 using the selected [energy model](#energy) for query or target sequences, respectively.
 
 Using `--accNoLP` and `--accNoGUend`, the consideration of lonely base pairs
@@ -1885,7 +1884,8 @@ unpaired probabilities within the window (while only intramolecular base pairs
 within the window are considered).
 
 IntaRNA enables both global as well as local unpaired probability computation.
-To this end, the sliding window length has to be specified in order to enable/disable
+To this end, the sliding window length `--accW` and the maximal base pair span 
+`--accL` (<= `--accW`) have to be specified in order to enable/disable
 local folding.
 
 ##### Use case examples global/local unpaired probability computation
@@ -1899,7 +1899,7 @@ i.e. the maximal number of positions enclosed by a base pair
 independently while respecting `AccL <= AccW`.
 ```bash
 # using global accessibilities for target and query
-IntaRNA [..] --qAccW=0 --qAccL=0 --tAccW=0 --qAccL=0
+IntaRNA [..] --accW=0 --accL=0
 # using global accessibilities for query and local ones for target
 IntaRNA [..] --qAccW=0 --qAccL=0 --tAccW=150 --qAccL=100
 ```
