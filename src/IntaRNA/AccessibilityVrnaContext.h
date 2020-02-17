@@ -1,20 +1,10 @@
 
-#ifndef INTARNA_ACCESSIBILITYVIENNA_H_
-#define INTARNA_ACCESSIBILITYVIENNA_H_
+#ifndef INTARNA_ACCESSIBILITYVIENNACONTEXT_H_
+#define INTARNA_ACCESSIBILITYVIENNACONTEXT_H_
 
-#include "IntaRNA/Accessibility.h"
-#include "IntaRNA/VrnaHandler.h"
-
-#include <boost/numeric/ublas/banded.hpp>
-
-#include <iostream>
+#include "IntaRNA/AccessibilityVrna.h"
 
 
-extern "C" {
-	#include <ViennaRNA/fold_vars.h>
-	#include <ViennaRNA/params.h>
-	#include <ViennaRNA/part_func_window.h>
-}
 
 
 namespace IntaRNA {
@@ -26,7 +16,7 @@ namespace IntaRNA {
  *
  * @author Martin Mann 2014
  */
-class AccessibilityVrna : public Accessibility {
+class AccessibilityVrnaContext : public AccessibilityVrna {
 
 public:
 
@@ -40,19 +30,22 @@ public:
 	 *        to be unstructured both in sequence and interaction
 	 * @param vrnaHandler the VRNA parameter handler to be used
 	 * @param plFoldW the sliding window size to be used for plFold computations
-	 *
+	 * @param maxInteriorSpan for sequences of lengths below the given range
+	 *           full ED values are provided; otherwise only exterior-context
+	 *           EDs are given
 	 */
-	AccessibilityVrna( const RnaSequence& sequence
+	AccessibilityVrnaContext( const RnaSequence& sequence
 			, const size_t maxLength
 			, const AccessibilityConstraint * const accConstraint
 			, const VrnaHandler & vrnaHandler
 			, const size_t plFoldW = 0
+			, const size_t maxInteriorSpan = 999999
 			);
 
 	/**
 	 * destruction
 	 */
-	virtual ~AccessibilityVrna();
+	virtual ~AccessibilityVrnaContext();
 
 	/**
 	 * Returns the accessibility energy value for the given range in the
@@ -70,51 +63,23 @@ public:
 	getED( const size_t from, const size_t to ) const;
 
 
-	/**
-	 * Adds constraints to the VRNA fold compound that correspond to the present
-	 * AccessibilityConstraints
-	 * @param fold_compound INOUT the object to extend
-	 * @param acc the accessibility handler to get constraint information from
-	 */
-	static
-	void
-	addConstraints( vrna_fold_compound_t & fold_compound
-				, const Accessibility & acc );
-
-
 
 protected:
 
 	//! type for the ED value matrix (upper triangular matrix banded by maxLength)
 	typedef boost::numeric::ublas::banded_matrix<E_type> EdMatrix;
 
-	//! the ED values for the given sequence
-	EdMatrix edValues;
+	//! the exterior-context ED values for for the given sequence
+	EdMatrix edExteriorValues;
 
+	//! maximal sequence length for which full EDs are provided; above, only
+	//! exterior-context EDs are given
+	const size_t maxInteriorSpan;
 
-	/*! intializes the internal data structures
-	 * @param vrnaHandler the VRNA parameter handler to be used
-	 * @param plFoldW the sliding window size to be used for plFold computations
-	 */
 	virtual
 	void
-	init(	const VrnaHandler & vrnaHandler
+	init(const VrnaHandler & vrnaHandler
 			, const size_t plFoldW);
-
-	/**
-	 * Use RNAplfold-like style to fill ED-values
-	 *
-	 * @param vrnaHandler the VRNA handler to be used
-	 * @param plFoldW the sliding window size to be used or 0 for full length
-	 * @param plFoldL the maximal base pair span to be used or 0 for plFoldW
-	 * @param callBackToStore the call-back function to be used to store the
-	 *        ED values
-	 */
-	void
-	fillByRNAplfold( const VrnaHandler &vrnaHandler
-						, const size_t plFoldW
-						, const size_t plFoldL
-						, vrna_probs_window_callback  * callBackToStore );
 
 	/**
 	 * callback function used when calling vrna_probs_window()
@@ -136,7 +101,7 @@ protected:
 	 */
 	static
 	void
-	callbackForStorage(	FLT_OR_DBL    *pr,
+	callbackForStorageExterior(	FLT_OR_DBL    *pr,
 	                    int           pr_size,
 	                    int           j,
 	                    int           max,
@@ -152,7 +117,7 @@ protected:
 
 inline
 E_type
-AccessibilityVrna::
+AccessibilityVrnaContext::
 getED( const size_t from, const size_t to ) const
 {
 	// input range check
@@ -164,8 +129,13 @@ getED( const size_t from, const size_t to ) const
 			// end position blocked --> omit accessibility
 			return ED_UPPER_BOUND;
 		}
-		// return according ED value from the precomputed matrix
-		return edValues (from,to);
+		if ( (to-from+1) <= maxInteriorSpan) {
+			// return full ED value from the precomputed matrix
+			return edValues (from,to);
+		} else {
+			// return external-only ED value from the precomputed matrix
+			return edExteriorValues (from,to);
+		}
 	} else {
 		// region length exceeds maximally allowed length -> no value
 		return ED_UPPER_BOUND;
@@ -176,4 +146,4 @@ getED( const size_t from, const size_t to ) const
 
 } // namespace
 
-#endif /* ACCESSIBILITYVIENNA_H_ */
+#endif /* INTARNA_ACCESSIBILITYVIENNACONTEXT_H_ */

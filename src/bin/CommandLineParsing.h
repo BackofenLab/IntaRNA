@@ -597,6 +597,8 @@ protected:
 	CharParameter acc;
 	//! window length for accessibility computation (plFold)
 	NumberParameter<int> accW;
+	//! maximal length of non-external-context accessibility computation (plFold)
+	NumberParameter<int> accWint;
 	//! maximal base pair span for accessibility computation (plFold)
 	NumberParameter<int> accL;
 	//! whether or not lonely base pairs are allowed in accessibility computation

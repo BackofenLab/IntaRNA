@@ -30,6 +30,7 @@ extern "C" {
 #include "IntaRNA/AccessibilityDisabled.h"
 #include "IntaRNA/AccessibilityFromStream.h"
 #include "IntaRNA/AccessibilityVrna.h"
+#include "IntaRNA/AccessibilityVrnaContext.h"
 #include "IntaRNA/AccessibilityBasePair.h"
 
 #include "IntaRNA/HelixHandler.h"
@@ -145,6 +146,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	// meta constraints
 	acc("acc","NC", 'C'),
 	accW("accW", 0, 99999, 150),
+	accWint("accWint", 0, 99999, 99999),
 	accL("accL", 0, 99999, 100),
 	intLenMax("intLenMax", 0, 99999, 0),
 	intLoopMax("intLoopMax", 0, 30, 10),
@@ -820,6 +822,13 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 				->notifier(boost::bind(&CommandLineParsing::validate_numberArgumentExcludeRange<int>,this,accL,_1,1,2))
 			, std::string("accessibility computation : maximal loop size (base pair span) for accessibility computation"
 					" (arg in range ["+toString(tAccL.min)+","+toString(accL.max)+"]; 0 will use the sliding window size 'accW')").c_str())
+		(accWint.name.c_str()
+			, value<int>(&(accWint.val))
+				->default_value(accWint.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_numberArgument<int>,this,accWint,_1))
+			, std::string("accessibility computation : for windows above this size, only ED values for exterior-context are computed"
+					" (arg in range ["+toString(accW.min)+","+toString(accW.max)+"])"
+					).c_str())
 		((energy.name+",e").c_str()
 			, value<char>(&(energy.val))
 				->default_value(energy.def)
@@ -1890,14 +1899,26 @@ getQueryAccessibility( const size_t sequenceNumber ) const
     						);
 
 		case 'V' : // VRNA-based accessibilities
-			return new AccessibilityVrna(
-							seq
-							, std::min( qIntLenMax.val == 0 ? seq.size() : qIntLenMax.val
-										, qAccW.val == 0 ? seq.size() : qAccW.val )
-							, &accConstraint
-							, vrnaHandler
-							, qAccW.val
-							);
+			if (accWint.val >= qAccW.val) {
+				return new AccessibilityVrna(
+								seq
+								, std::min( qIntLenMax.val == 0 ? seq.size() : qIntLenMax.val
+											, qAccW.val == 0 ? seq.size() : qAccW.val )
+								, &accConstraint
+								, vrnaHandler
+								, qAccW.val
+								);
+			} else {
+				return new AccessibilityVrnaContext(
+								seq
+								, std::min( qIntLenMax.val == 0 ? seq.size() : qIntLenMax.val
+											, qAccW.val == 0 ? seq.size() : qAccW.val )
+								, &accConstraint
+								, vrnaHandler
+								, qAccW.val
+								, accWint.val
+								);
+			}
 		default :
 			INTARNA_NOT_IMPLEMENTED("query accessibility computation not implemented for energy = '"+toString(energy.val)+"'. Disable via --qAcc=N.");
 		} break;
@@ -1963,14 +1984,26 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 								);
 
 		case 'V' : // VRNA-based accessibilities
-			return new AccessibilityVrna(
-								seq
-								, std::min( tIntLenMax.val == 0 ? seq.size() : tIntLenMax.val
-										, tAccW.val == 0 ? seq.size() : tAccW.val )
-								, &accConstraint
-								, vrnaHandler
-								, tAccW.val
-								);
+			if (accWint.val >= tAccW.val) {
+				return new AccessibilityVrna(
+									seq
+									, std::min( tIntLenMax.val == 0 ? seq.size() : tIntLenMax.val
+											, tAccW.val == 0 ? seq.size() : tAccW.val )
+									, &accConstraint
+									, vrnaHandler
+									, tAccW.val
+									);
+			} else {
+				return new AccessibilityVrnaContext(
+									seq
+									, std::min( tIntLenMax.val == 0 ? seq.size() : tIntLenMax.val
+											, tAccW.val == 0 ? seq.size() : tAccW.val )
+									, &accConstraint
+									, vrnaHandler
+									, tAccW.val
+									, accWint.val
+									);
+			}
 		default :
 			INTARNA_NOT_IMPLEMENTED("target accessibility computation not implemented for energy = '"+toString(energy.val)+"'. Disable via --tAcc=N.");
 		} break;

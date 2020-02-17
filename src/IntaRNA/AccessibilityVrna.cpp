@@ -49,12 +49,25 @@ AccessibilityVrna::AccessibilityVrna(
 	Accessibility( seq, maxLength, accConstraint ),
 	edValues( getSequence().size(), getSequence().size(), 0, getMaxLength() )
 {
+	assert(plFoldW <= getMaxLength());
+	// init data
+	init(vrnaHandler,plFoldW);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+void
+AccessibilityVrna::
+init(const VrnaHandler & vrnaHandler
+		, const size_t plFoldW)
+{
 	// if sequence shows minimal length
 	if (seq.size() > 4) {
 		// window-based accessibility computation
 		fillByRNAplfold(vrnaHandler
 				, (plFoldW==0? getSequence().size() : std::min(plFoldW,getSequence().size()))
 				, getAccConstraint().getMaxBpSpan()
+				, &callbackForStorage
 				);
 	} else {
 		// init ED values for short sequences
@@ -64,7 +77,6 @@ AccessibilityVrna::AccessibilityVrna(
 			}
 		}
 	}
-
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -181,7 +193,8 @@ void
 AccessibilityVrna::
 fillByRNAplfold( const VrnaHandler &vrnaHandler
 		, const size_t plFoldW
-		, const size_t plFoldL )
+		, const size_t plFoldL
+		, vrna_probs_window_callback  * callBackToStore )
 {
 #if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_omp_logOutput)
@@ -219,7 +232,7 @@ fillByRNAplfold( const VrnaHandler &vrnaHandler
     std::pair< AccessibilityVrna*, FLT_OR_DBL > storageRT(this, (FLT_OR_DBL)vrnaHandler.getRT());
 
 	// call folding and unpaired prob calculation
-    int retVal = vrna_probs_window( fold_compound, plFoldW, VRNA_PROBS_WINDOW_UP, &callbackForStorage, (void*)(&storageRT));
+    int retVal = vrna_probs_window( fold_compound, plFoldW, VRNA_PROBS_WINDOW_UP, callBackToStore, (void*)(&storageRT));
     // check if computations went fine
     if (retVal == 0) {
     	throw std::runtime_error("AccessibilityVrna::fillByRNAplfold() : vrna_probs_window() returned 0 status ...");
