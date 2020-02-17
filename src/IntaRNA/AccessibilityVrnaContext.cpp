@@ -51,7 +51,6 @@ AccessibilityVrnaContext::AccessibilityVrnaContext(
 	edExteriorValues( getSequence().size(), getSequence().size(), 0, getMaxLength() ),
 	maxInteriorSpan(maxInteriorSpan)
 {
-	assert( maxInteriorSpan <= getMaxLength() );
 	// super constructor calls init()
 }
 

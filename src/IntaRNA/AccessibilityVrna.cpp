@@ -49,7 +49,7 @@ AccessibilityVrna::AccessibilityVrna(
 	Accessibility( seq, maxLength, accConstraint ),
 	edValues( getSequence().size(), getSequence().size(), 0, getMaxLength() )
 {
-	assert(plFoldW <= getMaxLength());
+	assert(plFoldW >= getMaxLength());
 	// init data
 	init(vrnaHandler,plFoldW);
 }
