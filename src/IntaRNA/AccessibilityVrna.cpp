@@ -60,14 +60,14 @@ AccessibilityVrna::AccessibilityVrna(
 	// if sequence shows minimal length
 	if (seq.size() > 4) {
 		// window-based accessibility computation
-		if (maxInteriorSpan >= getMaxLength()) {
-			fillByRNAplfold(vrnaHandler
-				, (plFoldW==0? getSequence().size() : std::min(plFoldW,getSequence().size()))
-				, getAccConstraint().getMaxBpSpan()
-				, &callbackForStorage
-				, VRNA_PROBS_WINDOW_UP
-				);
-		} else {
+		fillByRNAplfold(vrnaHandler
+			, (plFoldW==0? getSequence().size() : std::min(plFoldW,getSequence().size()))
+			, getAccConstraint().getMaxBpSpan()
+			, &callbackForStorage
+			, VRNA_PROBS_WINDOW_UP
+			);
+		// TODO replace with computations based on one plfold run
+		if (maxInteriorSpan < getMaxLength()) {
 			fillByRNAplfold(vrnaHandler
 				, (plFoldW==0? getSequence().size() : std::min(plFoldW,getSequence().size()))
 				, getAccConstraint().getMaxBpSpan()
@@ -110,7 +110,7 @@ callbackForStorage(FLT_OR_DBL   *pr,
 					 void         *data)
 {
 	// check if expected data
-	if (type & (VRNA_PROBS_WINDOW_UP | VRNA_ANY_LOOP)) {
+	if ( (type & VRNA_PROBS_WINDOW_UP) && (type & VRNA_ANY_LOOP)) {
 
 		// access the storage data
 		std::pair< AccessibilityVrna*, FLT_OR_DBL > storageRT = *((std::pair< AccessibilityVrna*, FLT_OR_DBL >*)data);
@@ -153,42 +153,39 @@ callbackForStorageExterior(FLT_OR_DBL   *pr,
 					 unsigned int type,
 					 void         *data)
 {
-	// forward call to store full ED values
-	AccessibilityVrna::callbackForStorage(pr,pr_size,j,max,type,data);
+	if (type & VRNA_PROBS_WINDOW_UP) {
 
-	// check if exterior data
-	if (type & (VRNA_PROBS_WINDOW_UP | VRNA_EXT_LOOP)) {
+		// check if exterior data
+		if (type & VRNA_EXT_LOOP) {
 
+			// access the storage data
+			std::pair< AccessibilityVrna*, FLT_OR_DBL > storageRT = *((std::pair< AccessibilityVrna*, FLT_OR_DBL >*)data);
+			// direct data access for computation
+			const FLT_OR_DBL RT = storageRT.second;
+			EdMatrix & edValues = storageRT.first->edExteriorValues;
+			const AccessibilityConstraint & accConstr = storageRT.first->getAccConstraint();
 
-	LOG(DEBUG)<<"cbExt - ext";
-
-		// access the storage data
-		std::pair< AccessibilityVrna*, FLT_OR_DBL > storageRT = *((std::pair< AccessibilityVrna*, FLT_OR_DBL >*)data);
-		// direct data access for computation
-	    const FLT_OR_DBL RT = storageRT.second;
-	    EdMatrix & edValues = storageRT.first->edExteriorValues;
-	    const AccessibilityConstraint & accConstr = storageRT.first->getAccConstraint();
-
-	    // copy unpaired data for all available interval lengths
-	    // but ensure interval does not contain blocked positions
-	    const bool rightEndBlocked = accConstr.isMarkedBlocked(j-1);
-	    for (int l = std::min(j,std::min(pr_size,std::min(max,(int)storageRT.first->getMaxLength()))); l>=1; l--) {
-			// get unpaired probability
-			FLT_OR_DBL prob_unpaired = pr[l];
-//			TODO: check for [0,1] range and correct if needed (print WARNING)
-			// get left interval boundary index
-			int i = j - l + 1;
-			// check if interval ends are blocked positions
-			// check if zero before computing its log-value
-			if (rightEndBlocked || accConstr.isMarkedBlocked(i-1) || (prob_unpaired == 0.0) ) {
-				// ED value = ED_UPPER_BOUND
-				edValues(i-1,j-1) = ED_UPPER_BOUND;
-			} else {
-				// compute ED value = E(unstructured in [i,j]) - E_all
-				edValues(i-1,j-1) = std::max<E_type>( 0., Z_2_E( -RT*Z_type(std::log(prob_unpaired) )));
+			// copy unpaired data for all available interval lengths
+			// but ensure interval does not contain blocked positions
+			const bool rightEndBlocked = accConstr.isMarkedBlocked(j-1);
+			for (int l = std::min(j,std::min(pr_size,std::min(max,(int)storageRT.first->getMaxLength()))); l>=1; l--) {
+				// get unpaired probability
+				FLT_OR_DBL prob_unpaired = pr[l];
+	//			TODO: check for [0,1] range and correct if needed (print WARNING)
+				// get left interval boundary index
+				int i = j - l + 1;
+				// check if interval ends are blocked positions
+				// check if zero before computing its log-value
+				if (rightEndBlocked || accConstr.isMarkedBlocked(i-1) || (prob_unpaired == 0.0) ) {
+					// ED value = ED_UPPER_BOUND
+					edValues(i-1,j-1) = ED_UPPER_BOUND;
+				} else {
+					// compute ED value = E(unstructured in [i,j]) - E_all
+					edValues(i-1,j-1) = std::max<E_type>( 0., Z_2_E( -RT*Z_type(std::log(prob_unpaired) )));
+				}
 			}
-	    }
-	}
+		}
+	} // VRNA_PROBS_WINDOW_UP
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -266,8 +263,6 @@ fillByRNAplfold( const VrnaHandler &vrnaHandler
 		throw std::runtime_error("AccessibilityVrna::fillByRNAplfold() : plFoldW < 3");
 	}
 #endif
-
-	LOG(DEBUG) <<"fillByRNAplfold upMode = "<<upMode <<"  up "<<VRNA_PROBS_WINDOW_UP<<"  split "<<VRNA_PROBS_WINDOW_UP_SPLIT<<" both "<<(VRNA_PROBS_WINDOW_UP|VRNA_PROBS_WINDOW_UP_SPLIT)<<"  cb = "<<callBackToStore;
 
 	// add maximal BP span
 	vrna_md_t curModel = vrnaHandler.getModel( plFoldL, plFoldW );
