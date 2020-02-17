@@ -57,6 +57,7 @@
    + additional checks for meta arguments with setup of q|t variables
    + usage of .isSet() where appropriate
    + check that outSep is not within id prefix in outMode=C
+   + ensure intLenMax >= seedBP
 
 200207 Martin Raden + Fabio Gutmann
  + python/CopomuS.py : Compensatory mutation selector to support interaction

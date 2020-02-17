@@ -1283,6 +1283,9 @@ parse(int argc, char** argv)
 					if (seedNoGU) LOG(INFO) <<"explicit seeds defined, but seedNoGU provided (will be ignored)";
 					if (seedNoGUend) LOG(INFO) <<"explicit seeds defined, but seedNoGUend provided (will be ignored)";
 				}
+				// compare maximal interaction length with minimal seed length
+				if (qIntLenMax.val > 0 && qIntLenMax.val < seedBP.val) { throw error("maximal query interaction length < seedBP"); }
+				if (tIntLenMax.val > 0 && tIntLenMax.val < seedBP.val) { throw error("maximal target interaction length < seedBP"); }
 			}
 
 			///////////////  PARSE AND PREPARE PREDICTION RANGES  //////////////
