@@ -192,28 +192,38 @@ computeBasePairProbs( const PredictorMfeEns2dSeedExtension *predictor, const See
 				Interaction::BasePair kBP(k1, k2);
 
 				// k internal
+				Z_type ZSleft = getHybridZ(i1, k1, i2, k2, predictor);
+				Z_type ZSright = getHybridZ(k1, j1, k2, j2, predictor);
+
 				// ... ZS:ZS
-				bpZ = getHybridZ(i1, k1, i2, k2, predictor) * getHybridZ(k1, j1, k2, j2, predictor) / energy.getBoltzmannWeight(energy.getE_init());
+				bpZ = ZSleft * ZSright / energy.getBoltzmannWeight(energy.getE_init());
 
 				// ... ZS:ZP
+				if (!Z_equal(ZSleft, 0.0)) {
+					// TODO: check if E_init is correct here ...
+          bpZ += ZSleft * (getZHPartition(predictor, seedHandler, k1, j1, k2, j2) - ZSright) / energy.getBoltzmannWeight(energy.getE_init());
+				}
 
 				// ... ZP:ZS
+				if (!Z_equal(ZSright, 0.0)) {
+					// TODO: check if E_init is correct here ...
+				  bpZ += (getZHPartition(predictor, seedHandler, i1, k1, i2, k2) - ZSleft) * ZSright / energy.getBoltzmannWeight(energy.getE_init());
+				}
 
 				// ... ZNL:seed:ZNR
 				size_t si1 = RnaSequence::lastPos, si2 = RnaSequence::lastPos;
-				// get length1 and length2 (to handle seeds with bulges)
-				size_t sl1 = seedHandler->getSeedLength1(si1,si2);
-				size_t sl2 = seedHandler->getSeedLength2(si1,si2);
+				size_t maxSeedLength1 = (seedHandler->getConstraint().getBasePairs() - 1) * energy.getMaxInternalLoopSize1();
+				size_t maxSeedLength2 = (seedHandler->getConstraint().getBasePairs() - 1) * energy.getMaxInternalLoopSize2();
 				while( seedHandler->updateToNextSeed(si1,si2
-						, k1-std::min(k1, sl1)
+						, k1-std::min(k1, maxSeedLength1)
 						, k1-1
-						, k2-std::min(k2, sl2)
+						, k2-std::min(k2, maxSeedLength2)
 						, k2-1) )
 				{
 					if (seedHandler->isSeedBasePair(si1, si2, k1, k2)) {
-            bpZ += getZPartitionValue(&ZL_partition, Interaction::Boundary(i1,si1,i2,si2))
+            bpZ += getZPartitionValue(&ZL_partition, Interaction::Boundary(i1,si1,i2,si2), true)
 					        * energy.getBoltzmannWeight(seedHandler->getSeedE(si1, si2))
-							    * getZRPartition(predictor, seedHandler, si1+sl1-1, j1, si2+sl2-1, j2);
+							    * getZRPartition(predictor, seedHandler, si1+seedHandler->getSeedLength1(si1,si2)-1, j1, si2+seedHandler->getSeedLength2(si1,si2)-1, j2, si1, si2);
 					}
 				}
 
@@ -230,15 +240,45 @@ computeBasePairProbs( const PredictorMfeEns2dSeedExtension *predictor, const See
 
 Z_type
 PredictionTrackerBasePairProb::
-getZPartitionValue( const Site2Z_hash *Zpartition, const Interaction::Boundary & boundary )
+getZPartitionValue( const Site2Z_hash *Zpartition, const Interaction::Boundary & boundary, const bool addZInit )
 {
-	// TODO refactor ZNL computation withou E_init -> move E_init add within predictor somewhere else.. eg update() call
 	auto keyEntry = Zpartition->find(boundary);
 	if ( Zpartition->find(boundary) == Zpartition->end() ) {
 		return 0;
 	} else {
-		return keyEntry->second;
+		if (addZInit && boundary.i1 == boundary.j1 && boundary.i2 == boundary.j2) {
+      return keyEntry->second * energy.getBoltzmannWeight(energy.getE_init());
+		} else {
+			return keyEntry->second;
+		}
 	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+Z_type
+PredictionTrackerBasePairProb::
+getZHPartition( const PredictorMfeEns2dSeedExtension *predictor, const SeedHandler* seedHandler
+              , const size_t i1, const size_t j1
+	            , const size_t i2, const size_t j2 )
+{
+	// single bp boundary with ZH == 1
+	if (i1==j1 && i1==j2 && energy.areComplementary(i1,i2)) {
+		return Z_type(1);
+	}
+	Interaction::Boundary boundary(i1,j1,i2,j2);
+
+	LOG(DEBUG) << "request ZH @ " << i1 << ":" << j1 << ":" << i2 << ":" << j2;
+
+	// TODO: first check if ZH is available
+	Z_type ZH = getZPartitionValue(&predictor->getZHPartition(), Interaction::Boundary(i1,j1,i2,j2), false);
+	if (Z_equal(ZH, 0.0)) {
+		LOG(DEBUG) << "needs to be computed ...";
+	}
+
+	// TODO: then compute recursively
+	
+	return ZH;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -247,64 +287,51 @@ Z_type
 PredictionTrackerBasePairProb::
 getZRPartition( const PredictorMfeEns2dSeedExtension *predictor, const SeedHandler* seedHandler
               , const size_t i1, const size_t j1
-	            , const size_t i2, const size_t j2 )
+	            , const size_t i2, const size_t j2
+							, const size_t sa1, const size_t sa2 )
 {
+	// TODO: memoization
+
 	// single bp boundary with ZNR == 1
 	if (i1==j1 && i1==j2 && energy.areComplementary(i1,i2)) {
 		return Z_type(1);
 	}
 	Interaction::Boundary boundary(i1,j1,i2,j2);
-	// TODO write recursive ZH function
-	Z_type partZ = getZPartitionValue(&predictor->getZHPartition(), boundary);
+	LOG(DEBUG) << "request ZR @ " << i1 << ":" << j1 << ":" << i2 << ":" << j2;
+
+	Z_type partZ = getZHPartition(predictor, seedHandler, i1, j1, i2, j2);
 
 	Z_type ZS = getHybridZ(boundary, predictor);
-	// assert ZS <= partZ before subtracting
+
+	assert( ZS <= partZ );
 	partZ -= ZS;
 
-	// TODO iterate all right-overlapping seed
-	// TODO use getZRPartition per seed
+	// iterate all seeds that overlap anchor seed sa on the right side
 	Z_type Zoverlapping = 0;
-//	size_t si1 = i1;
-//	size_t si2 = i2;
-//	while( si2 > 0 && !(seedHandler->isSeedBound(si1,si2))) {
-//		// update seed position within range
-//		if (si1 == 0) {
-//			si2--;
-//		} else {
-//			si1--;
-//		}
-//	}
-//	if (seedHandler->isSeedBound(si1, si2)) {
-//		ZS = getHybridZ(si1, j1, si2, j2, predictor) - PredictorMfeEns2dSeedExtension::getNonOverlappingEnergy(si1, si2, i1, i2, energy, *seedHandler);
-//		// assert ZS <= partZ before adding
-//	}
+	size_t si1 = RnaSequence::lastPos, si2 = RnaSequence::lastPos;
+	size_t maxSeedLength1 = (seedHandler->getConstraint().getBasePairs() - 1) * energy.getMaxInternalLoopSize1();
+	size_t maxSeedLength2 = (seedHandler->getConstraint().getBasePairs() - 1) * energy.getMaxInternalLoopSize2();
+	while( seedHandler->updateToNextSeed(si1,si2
+			, i1-std::min(i1, maxSeedLength1)
+			, i1-1
+			, i2-std::min(i2, maxSeedLength2)
+			, i2-1) )
+	{
+		if (seedHandler->isSeedBasePair(si1, si2, i1, i2)) {
+			LOG(DEBUG) << "overlapping seed @ " << si1 << ":" << si2;
+			size_t sj1 = si1 + seedHandler->getSeedLength1(si1, si2) - 1;
+			size_t sj2 = si2 + seedHandler->getSeedLength2(si1, si2) - 1;
+			E_type EnonOverlap = PredictorMfeEns2dSeedExtension::getNonOverlappingEnergy(sa1, sa2, si1, si2, energy, *seedHandler);
+			E_type Eoverlap = seedHandler->getSeedE(sa1, sa2) - EnonOverlap;
+			partZ -= energy.getBoltzmannWeight(seedHandler->getSeedE(si1, si2) - Eoverlap)
+			       * getZRPartition(predictor, seedHandler, sj1, j1, sj2, j2, si1, si2);
+		}
+	}
 
 	// assert Zoverlapping <= partZ
 	partZ -= Zoverlapping;
 
 	return partZ;
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-Z_type
-PredictionTrackerBasePairProb::
-getOverlappingSeedAtK( const PredictorMfeEns2dSeedExtension *predictor, const SeedHandler* seedHandler
-                     , const size_t i1, const size_t j1, const size_t i2, const size_t j2
-	                   , const size_t k1, const size_t k2, const bool leftSide )
-{
-	Z_type partZ = 0;
-	size_t si1 = RnaSequence::lastPos, si2 = RnaSequence::lastPos;
-	size_t seedLength = seedHandler->getConstraint().getBasePairs();
-	size_t l1 = leftSide ? std::max(i1, k1+1-seedLength) : k1;
-	size_t l2 = leftSide ? std::max(i2, k2+1-seedLength) : k2;
-	size_t r1 = leftSide ? k1 : std::min(k1+1-seedLength, j1);
-	size_t r2 = leftSide ? k2 : std::min(k2+1-seedLength, j2);
-	while( seedHandler->updateToNextSeed(si1,si2, l1, r1, l2, r2) ) {
-    if (leftSide) {
-			// partZ += getZPartitionValue(&predictor->getZLPartition(), Interaction::Boundary(i1, si1, i2, si2));
-		}
-	}
 }
 
 ////////////////////////////////////////////////////////////////////////////
