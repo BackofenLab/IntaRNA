@@ -27,7 +27,6 @@ libIntaRNA_a_HEADERS =    \
 					AccessibilityDisabled.h \
 					AccessibilityFromStream.h \
 					AccessibilityVrna.h \
-					AccessibilityVrnaContext.h \
 					AccessibilityBasePair.h \
 					HelixConstraint.h \
 					HelixHandler.h \
@@ -96,7 +95,6 @@ libIntaRNA_a_SOURCES =    \
 					AccessibilityConstraint.cpp \
 					AccessibilityFromStream.cpp \
 					AccessibilityVrna.cpp \
-					AccessibilityVrnaContext.cpp \
 					AccessibilityBasePair.cpp \
 					HelixHandler.cpp \
 					HelixHandlerNoBulgeMax.cpp \

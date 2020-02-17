@@ -30,7 +30,6 @@ extern "C" {
 #include "IntaRNA/AccessibilityDisabled.h"
 #include "IntaRNA/AccessibilityFromStream.h"
 #include "IntaRNA/AccessibilityVrna.h"
-#include "IntaRNA/AccessibilityVrnaContext.h"
 #include "IntaRNA/AccessibilityBasePair.h"
 
 #include "IntaRNA/HelixHandler.h"
@@ -1899,26 +1898,15 @@ getQueryAccessibility( const size_t sequenceNumber ) const
     						);
 
 		case 'V' : // VRNA-based accessibilities
-			if (accWint.val >= qAccW.val) {
-				return new AccessibilityVrna(
-								seq
-								, std::min( qIntLenMax.val == 0 ? seq.size() : qIntLenMax.val
-											, qAccW.val == 0 ? seq.size() : qAccW.val )
-								, &accConstraint
-								, vrnaHandler
-								, qAccW.val
-								);
-			} else {
-				return new AccessibilityVrnaContext(
-								seq
-								, std::min( qIntLenMax.val == 0 ? seq.size() : qIntLenMax.val
-											, qAccW.val == 0 ? seq.size() : qAccW.val )
-								, &accConstraint
-								, vrnaHandler
-								, qAccW.val
-								, accWint.val
-								);
-			}
+			return new AccessibilityVrna(
+							seq
+							, std::min( qIntLenMax.val == 0 ? seq.size() : qIntLenMax.val
+										, qAccW.val == 0 ? seq.size() : qAccW.val )
+							, &accConstraint
+							, vrnaHandler
+							, qAccW.val
+							, accWint.val
+							);
 		default :
 			INTARNA_NOT_IMPLEMENTED("query accessibility computation not implemented for energy = '"+toString(energy.val)+"'. Disable via --qAcc=N.");
 		} break;
@@ -1984,26 +1972,15 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 								);
 
 		case 'V' : // VRNA-based accessibilities
-			if (accWint.val >= tAccW.val) {
-				return new AccessibilityVrna(
-									seq
-									, std::min( tIntLenMax.val == 0 ? seq.size() : tIntLenMax.val
-											, tAccW.val == 0 ? seq.size() : tAccW.val )
-									, &accConstraint
-									, vrnaHandler
-									, tAccW.val
-									);
-			} else {
-				return new AccessibilityVrnaContext(
-									seq
-									, std::min( tIntLenMax.val == 0 ? seq.size() : tIntLenMax.val
-											, tAccW.val == 0 ? seq.size() : tAccW.val )
-									, &accConstraint
-									, vrnaHandler
-									, tAccW.val
-									, accWint.val
-									);
-			}
+			return new AccessibilityVrna(
+								seq
+								, std::min( tIntLenMax.val == 0 ? seq.size() : tIntLenMax.val
+										, tAccW.val == 0 ? seq.size() : tAccW.val )
+								, &accConstraint
+								, vrnaHandler
+								, tAccW.val
+								, accWint.val
+								);
 		default :
 			INTARNA_NOT_IMPLEMENTED("target accessibility computation not implemented for energy = '"+toString(energy.val)+"'. Disable via --tAcc=N.");
 		} break;

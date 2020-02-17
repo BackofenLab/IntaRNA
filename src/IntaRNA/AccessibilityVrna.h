@@ -40,13 +40,16 @@ public:
 	 *        to be unstructured both in sequence and interaction
 	 * @param vrnaHandler the VRNA parameter handler to be used
 	 * @param plFoldW the sliding window size to be used for plFold computations
-	 *
+	 * @param maxInteriorSpan for sequences of lengths below the given range
+	 *           full ED values are provided; otherwise only exterior-context
+	 *           EDs are given
 	 */
 	AccessibilityVrna( const RnaSequence& sequence
 			, const size_t maxLength
 			, const AccessibilityConstraint * const accConstraint
 			, const VrnaHandler & vrnaHandler
 			, const size_t plFoldW = 0
+			, const size_t maxInteriorSpan = 999999
 			);
 
 	/**
@@ -91,15 +94,12 @@ protected:
 	//! the ED values for the given sequence
 	EdMatrix edValues;
 
+	//! the exterior-context ED values for for the given sequence
+	EdMatrix edExteriorValues;
 
-	/*! intializes the internal data structures
-	 * @param vrnaHandler the VRNA parameter handler to be used
-	 * @param plFoldW the sliding window size to be used for plFold computations
-	 */
-	virtual
-	void
-	init(	const VrnaHandler & vrnaHandler
-			, const size_t plFoldW);
+	//! maximal sequence length for which full EDs are provided; above, only
+	//! exterior-context EDs are given
+	const size_t maxInteriorSpan;
 
 	/**
 	 * Use RNAplfold-like style to fill ED-values
@@ -109,12 +109,14 @@ protected:
 	 * @param plFoldL the maximal base pair span to be used or 0 for plFoldW
 	 * @param callBackToStore the call-back function to be used to store the
 	 *        ED values
+	 * @param upMode the mode of vrna_probs_windows() to be used
 	 */
 	void
 	fillByRNAplfold( const VrnaHandler &vrnaHandler
 						, const size_t plFoldW
 						, const size_t plFoldL
-						, vrna_probs_window_callback  * callBackToStore );
+						, vrna_probs_window_callback  * callBackToStore
+						, unsigned int upMode = VRNA_PROBS_WINDOW_UP );
 
 	/**
 	 * callback function used when calling vrna_probs_window()
@@ -143,6 +145,33 @@ protected:
 	                    unsigned int  type,
 	                    void          *storageRT);
 
+	/**
+	 * callback function used when calling vrna_probs_window()
+	 *
+	 * This function will be called for each probability data set in the sliding
+	 * window probability computation implementation of vrna_probs_window().
+	 * The argument @a type specifies the type of probability that is passed to
+	 * this function.
+	 *
+	 * @see vrna_probs_window()
+	 *
+	 * @param pr      An array of probabilities
+	 * @param pr_size The length of the probability array
+	 * @param j       The j-position (3'-end) of the probability intervals (indexing starting with 1)
+	 * @param max     The (theoretical) maximum length of the probability array
+	 * @param type    The type of probability that is passed to this function
+	 * @param storageRT    Auxiliary data: should hold a pair(AccessibilityVrna*,double RT)
+	 *
+	 */
+	static
+	void
+	callbackForStorageExterior(	FLT_OR_DBL    *pr,
+	                    int           pr_size,
+	                    int           j,
+	                    int           max,
+	                    unsigned int  type,
+	                    void          *storageRT);
+
 };
 
 
@@ -164,8 +193,13 @@ getED( const size_t from, const size_t to ) const
 			// end position blocked --> omit accessibility
 			return ED_UPPER_BOUND;
 		}
-		// return according ED value from the precomputed matrix
-		return edValues (from,to);
+		if ( (to-from+1) <= maxInteriorSpan) {
+			// return full ED value from the precomputed matrix
+			return edValues (from,to);
+		} else {
+			// return external-only ED value from the precomputed matrix
+			return edExteriorValues (from,to);
+		}
 	} else {
 		// region length exceeds maximally allowed length -> no value
 		return ED_UPPER_BOUND;
