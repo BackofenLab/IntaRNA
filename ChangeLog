@@ -12,11 +12,51 @@
 
 # IntaRNA
 - improved Zall estimate (and depending values) for `--model=X` (default)
+- new arguments:
+  - `qId|tId` : optional id (FASTA prefix) setup for sequence naming
+  - `acc|accW|accL` : meta accessibility setup for both query and target
+  - `intLenMax|intLoopMax` : meta interaction and interior loop length setup
+  
+# CopomuS
+- Compensatory mutation selector to support interaction validation experiments
+
 
 ################################################################################  
 ################################################################################
 
 ################################################################################
+
+200217 Martin Raden
+ * bin/CommandLineParsing :
+   * NumericParameter : 
+   * CharParameter :
+     + isSet() : checks if value and default differ
+ + qId|tId : id (prefix) for sequence naming
+ + acc|accW|accL : meta for q|t*
+ + intLenMax|intLoopMax : meta for q|t*
+ * resetParamDefault() :
+   + overwrite value (since set to default in constructor)
+ + validate_region|shape|shapeMethod|shapeConversion : generic checks for q|t
+ + validate_seedRange : generic checks for q|t
+ + validate_numberArgumentExcludeRange() : generic check excluding a range
+ + validate_id() : checks for line breaks in q|tId
+ * parseSequences() :
+ * parseSequencesFasta() :
+   + idPrefix handling
+ - obsolete functions
+   - validate_query|target
+   - validate_qAccW|L|Constr
+   - validate_q|tRegion|Shape|ShapeMethod|ShapeConversion
+   - validate_seedQ|TRange
+ * constructor() :
+   + extended default reset for new arguments
+   * q|tAcc* arguments now hidden
+   * validation calls refactored
+   + model|acc|intLenMax|intLoopMax now general arguments
+ * parse() :
+   + additional checks for meta arguments with setup of q|t variables
+   + usage of .isSet() where appropriate
+   + check that outSep is not within id prefix in outMode=C
 
 200207 Martin Raden + Fabio Gutmann
  + python/CopomuS.py : Compensatory mutation selector to support interaction

@@ -418,6 +418,11 @@ protected:
 	  bool isInRange() const {
 		  return isInRange(val);
 	  }
+		//! whether or not the value was set
+		//! @return val != def
+		bool isSet() const {
+			return val != def;
+		}
 
 	};
 
@@ -457,6 +462,11 @@ protected:
 		//! @return true if in alphabet; false otherwise
 		bool isInAlphabet() const {
 		  return isInAlphabet(val);
+		}
+		//! whether or not the value was set
+		//! @return val != def
+		bool isSet() const {
+			return val != def;
 		}
 
 	};
@@ -500,6 +510,8 @@ protected:
 	std::string queryArg;
 	//! the container holding all query sequences
 	RnaSequenceVec query;
+	//! the id (prefix) to be used for query naming
+	std::string qId;
 	//! in/output index of pos 0 (of all queries)
 	NumberParameter<long> qIdxPos0;
 	//! subset of query sequence indices to be processed
@@ -541,6 +553,8 @@ protected:
 	std::string targetArg;
 	//! the container holding all target sequences
 	RnaSequenceVec target;
+	//! the id (prefix) to be used for target naming
+	std::string tId;
 	//! in/output index of pos 0 (of all targets)
 	NumberParameter<long> tIdxPos0;
 	//! subset of target sequence indices to be processed
@@ -577,6 +591,22 @@ protected:
 	//! optional encoding how data from tShape is converted into pairing
 	//! probabilities for according accessibility prediction
 	std::string tShapeConversion;
+
+	// META PARAMETER applied to both query and target
+	//! accessibility computation mode
+	CharParameter acc;
+	//! window length for accessibility computation (plFold)
+	NumberParameter<int> accW;
+	//! maximal base pair span for accessibility computation (plFold)
+	NumberParameter<int> accL;
+	//! whether or not lonely base pairs are allowed in accessibility computation
+	bool accNoLP;
+	//! whether or not GU base pairs are allowed to close loops in accessibility computation
+	bool accNoGUend;
+	//! window length to be considered accessible/interacting
+	NumberParameter<int> intLenMax;
+	//! maximal internal loop length to be considered accessible/interacting
+	NumberParameter<int> intLoopMax;
 
 
 	//! the minimal number of base pairs allowed in the helix (>2)
@@ -649,11 +679,6 @@ protected:
 	//! whether or not the overall energy covers dangling end contributions
 	bool energyNoDangles;
 
-
-	//! whether or not lonely base pairs are allowed in accessibility computation
-	bool accNoLP;
-	//! whether or not GU base pairs are allowed to close loops in accessibility computation
-	bool accNoGUend;
 
 	//! where to write the output to and for each in what format
 //	std::string out;
@@ -731,6 +756,7 @@ protected:
 	resetParamDefault( Param & param, Value value ) {
 		if (param.def != value) {
 			param.def = value;
+			param.val = value;
 			VLOG(1) <<"  "<<param.name<<"=" <<value;
 		}
 	}
@@ -755,34 +781,10 @@ protected:
 	////////////  INDIVIDUAL TESTS  //////////////////
 
 	/**
-	 * Validates the query sequence argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_query(const std::string & value);
-
-	/**
 	 * Validates the query's qSet argument.
 	 * @param value the argument value to validate
 	 */
 	void validate_qSet(const std::string & value);
-
-	/**
-	 * Validates the query accessibility sliding window size argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_qAccW(const int & value);
-
-	/**
-	 * Validates the query accessibility maximal loop length argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_qAccL(const int & value);
-
-	/**
-	 * Validates the query accessibility constraint argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_qAccConstr(const std::string & value);
 
 	/**
 	 * Validates the qAccFile argument.
@@ -791,35 +793,26 @@ protected:
 	void validate_qAccFile(const std::string & value);
 
 	/**
-	 * Validates the query's region argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_qRegion(const std::string & value);
-
-	/**
-	 * Validates the query's SHAPE reactivity data file.
+	 * Validates the SHAPE reactivity data file.
+	 * @param paramName the name of the argument
 	 * @param value the filename of the query's SHAPE reactivity data
 	 */
-	void validate_qShape( const std::string & value );
+	void validate_shape(const std::string& paramName, const std::string & value );
 
 	/**
-	 * Validates the query's method to transform SHAPE reactivity data to
+	 * Validates the method to transform SHAPE reactivity data to
 	 * pseudo energies.
+	 * @param paramName the name of the argument
 	 * @param value the query's SHAPE method encoding
 	 */
-	void validate_qShapeMethod( const std::string & value );
+	void validate_shapeMethod(const std::string& paramName,  const std::string & value );
 
 	/**
-	 * Validates the query's SHAPE reactivity data conversion method encoding.
+	 * Validates the SHAPE reactivity data conversion method encoding.
+	 * @param paramName the name of the argument
 	 * @param value the query's SHAPE conversion method encoding
 	 */
-	void validate_qShapeConversion( const std::string & value );
-
-	/**
-	 * Validates the target sequence argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_target(const std::string & value);
+	void validate_shapeConversion(const std::string& paramName,  const std::string & value );
 
 	/**
 	 * Validates the target's tSet argument.
@@ -828,53 +821,10 @@ protected:
 	void validate_tSet(const std::string & value);
 
 	/**
-	 * Validates the target accessibility sliding window size argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_tAccW(const int & value);
-
-	/**
-	 * Validates the target accessibility maximal loop length argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_tAccL(const int & value);
-
-	/**
-	 * Validates the target accessibility constraint argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_tAccConstr(const std::string & value);
-
-	/**
 	 * Validates the tAccFile argument.
 	 * @param value the argument value to validate
 	 */
 	void validate_tAccFile(const std::string & value);
-
-	/**
-	 * Validates the target's region argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_tRegion(const std::string & value);
-
-	/**
-	 * Validates the target's SHAPE reactivity data file.
-	 * @param value the filename of the target's SHAPE reactivity data
-	 */
-	void validate_tShape( const std::string & value );
-
-	/**
-	 * Validates the target's method to transform SHAPE reactivity data to
-	 * pseudo energies.
-	 * @param value the target's SHAPE method encoding
-	 */
-	void validate_tShapeMethod( const std::string & value );
-
-	/**
-	 * Validates the target's SHAPE reactivity data conversion method encoding.
-	 * @param value the target's SHAPE conversion method encoding
-	 */
-	void validate_tShapeConversion( const std::string & value );
 
 	/**
 	 * Validates the explicit seed argument.
@@ -883,16 +833,11 @@ protected:
 	void validate_seedTQ(const std::string & value);
 
 	/**
-	 * Validates the seedQRange argument.
+	 * Validates the seed?Range argument.
+	 * @param paramName the name of the argument
 	 * @param value the argument value to validate
 	 */
-	void validate_seedQRange(const std::string & value);
-
-	/**
-	 * Validates the seedTRange argument.
-	 * @param value the argument value to validate
-	 */
-	void validate_seedTRange(const std::string & value);
+	void validate_seedRange(const std::string& paramName, const std::string & value);
 
 	/**
 	 * Validates the energy parameter file argument.
@@ -953,9 +898,29 @@ protected:
 	template <typename T>
 	void validate_numberArgument(const NumberParameter<T> & param, const T& value)
 	{
-		// alphabet check
+		// range check
 		if ( ! param.isInRange(value) ) {
 			LOG(ERROR) <<param.name<<" = " <<value <<" : has to be in the range [" <<param.min <<","<<param.max<<"]";
+			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+		}
+	}
+
+	/**
+	 * Validates a NumberParameter and excludes a certain value range.
+	 * @param param the parameter object
+	 * @param value the value of the parameter to validate
+	 * @param minExcl the minimum of the range to be excluded
+	 * @param minExcl the maximum of the range to be excluded
+	 */
+	template <typename T>
+	void validate_numberArgumentExcludeRange(const NumberParameter<T> & param, const T& value, const T& minExcl, const T& maxExcl)
+	{
+		// standard check
+		validate_numberArgument( param, value );
+
+		// check excluded range
+		if (param.val >= minExcl && param.val <= maxExcl) {
+			LOG(ERROR) <<"\n "<<param.name<<" = " <<value <<" : has to be < "<<minExcl <<" or > "<<maxExcl;
 			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 		}
 	}
@@ -979,6 +944,13 @@ protected:
 	 */
 	void validate_sequenceArgument(const std::string& argument, const std::string & value);
 
+	/**
+	 * Validates a sequence id arguments.
+	 * @param argument the argument name of this parameter
+	 * @param value the argument value to validate
+	 */
+	void validate_id(const std::string& argument, const std::string & value);
+
 
 	/**
 	 * Validates a structure constraint argument.
@@ -992,6 +964,7 @@ protected:
 	/**
 	 * Parses the parameter value and returns all parsed sequences.
 	 * @param paramName the name of the parameter (for exception handling)
+	 * @param idPrefix the id (FASTA prefix) to be used for sequence id setup
 	 * @param paramArg the given argument for the parameter
 	 * @param sequences the container to fill
 	 * @param seqSubset the indices of the input sequences to store (all other
@@ -999,6 +972,7 @@ protected:
 	 * @param idxPos0 input/output index of first sequence position to be used
 	 */
 	void parseSequences(const std::string & paramName,
+					const std::string& idPrefix,
 					const std::string& paramArg,
 					RnaSequenceVec& sequences,
 					const IndexRangeList & seqSubset,
@@ -1008,6 +982,7 @@ protected:
 	 * Parses the parameter input stream from FASTA format and returns all
 	 * parsed sequences.
 	 * @param paramName the name of the parameter (for exception handling)
+	 * @param idPrefix the FASTA-id prefix to be used for sequence id setup
 	 * @param input the input stream from where to read the FASTA data
 	 * @param sequences the container to fill
 	 * @param seqSubset the indices of the input sequences to store (all other
@@ -1015,6 +990,7 @@ protected:
 	 * @param idxPos0 input/output index of first sequence position to be used
 	 */
 	void parseSequencesFasta( const std::string & paramName,
+					const std::string& idPrefix,
 					std::istream& input,
 					RnaSequenceVec& sequences,
 					const IndexRangeList & seqSubset,
@@ -1163,9 +1139,15 @@ CommandLineParsing::checkIfParsed() const {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_query(const std::string & value)
+void CommandLineParsing::validate_id(const std::string& paramName, const std::string & value)
 {
-	validate_sequenceArgument("query",value);
+	std::string invalidChars = "\n\r";
+	for (auto c : invalidChars) {
+		if (value.find(c) != std::string::npos) {
+			LOG(ERROR) <<paramName<<" = '" <<value <<"' contains a line break";
+			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+		}
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1190,43 +1172,6 @@ void CommandLineParsing::validate_qSet(const std::string & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_qAccW(const int & value)
-{
-	// standard check
-	validate_numberArgument<int>(qAccW,value);
-	// check lower bound
-	if (qAccW.val > 0 && qAccW.val < 3) {
-		LOG(ERROR) <<"\n qAccW = " <<value <<" : has to be 0 or > 3";
-		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
-	}
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_qAccL(const int & value)
-{
-	// standard check
-	validate_numberArgument<int>(qAccL,value);
-	// check lower bound
-	if (qAccL.val > 0 && qAccL.val < 3) {
-		LOG(ERROR) <<"qAccL = " <<value <<" : has to be 0 or > 3";
-		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
-	}
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_qAccConstr(const std::string & value)
-{
-	// forward check to general method
-	validate_structureConstraintArgument("qAccConstr", value);
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
 void CommandLineParsing::validate_qAccFile(const std::string & value)
 {
 	// if not empty
@@ -1234,7 +1179,7 @@ void CommandLineParsing::validate_qAccFile(const std::string & value)
 		// if not STDIN
 		if ( boost::iequals(value,"STDIN") ) {
 			if (getTargetSequences().size()>1) {
-				LOG(ERROR) <<"reading quary accessibilities for multiple sequences from '"<<value<<"' is not supported";
+				LOG(ERROR) <<"reading query accessibilities for multiple sequences from '"<<value<<"' is not supported";
 				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 			} else {
 				setStdinUsed();
@@ -1255,18 +1200,10 @@ void CommandLineParsing::validate_qAccFile(const std::string & value)
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_qRegion(const std::string & value) {
-	// check and store region information
-	validateRegion( "qRegion", value );
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_qShape( const std::string & value )
+void CommandLineParsing::validate_shape(const std::string& paramName, const std::string & value )
 {
 	if (!validateFile( value )) {
-		LOG(ERROR) <<"Can not access/read query's SHAPE reactivity file '" <<value <<"'";
+		LOG(ERROR) <<"Can not access/read SHAPE reactivity file for "<<paramName<<"='" <<value <<"'";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
 }
@@ -1274,11 +1211,11 @@ void CommandLineParsing::validate_qShape( const std::string & value )
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_qShapeMethod( const std::string & value )
+void CommandLineParsing::validate_shapeMethod( const std::string& paramName, const std::string & value )
 {
 
 	if (!boost::regex_match(value, AccessibilityConstraint::regexShapeMethod, boost::match_perl) ) {
-		LOG(ERROR) <<"Query's SHAPE method encoding '" <<value <<"' is not valid.";
+		LOG(ERROR) <<"SHAPE method encoding "<<paramName<<"='" <<value <<"' is not valid.";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
 }
@@ -1286,20 +1223,12 @@ void CommandLineParsing::validate_qShapeMethod( const std::string & value )
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_qShapeConversion( const std::string & value )
+void CommandLineParsing::validate_shapeConversion( const std::string& paramName, const std::string & value )
 {
 	if (!boost::regex_match(value, AccessibilityConstraint::regexShapeConversion, boost::match_perl) ) {
-		LOG(ERROR) <<"Query's SHAPE conversion method encoding '" <<value <<"' is not valid.";
+		LOG(ERROR) <<"SHAPE conversion method encoding "<<paramName<<"'" <<value <<"' is not valid.";
 		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_target(const std::string & value)
-{
-	validate_sequenceArgument("target",value);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1319,43 +1248,6 @@ void CommandLineParsing::validate_tSet(const std::string & value) {
 			tSet = IndexRangeList(value);
 		}
 	}
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_tAccW(const int & value)
-{
-	// standard check
-	validate_numberArgument<int>(tAccW,value);
-	// check lower bound
-	if (tAccW.val > 0 && tAccW.val < 3) {
-		LOG(ERROR) <<"tAccW = " <<value <<" : has to be 0 or > 3";
-		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
-	}
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_tAccL(const int & value)
-{
-	// standard check
-	validate_numberArgument<int>(tAccL,value);
-	// check lower bound
-	if (tAccL.val > 0 && tAccL.val < 3) {
-		LOG(ERROR) <<"tAccL = " <<value <<" : has to be 0 or > 3";
-		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
-	}
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_tAccConstr(const std::string & value)
-{
-	// forward check to general method
-	validate_structureConstraintArgument("tAccConstr", value);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1382,48 +1274,6 @@ void CommandLineParsing::validate_tAccFile(const std::string & value)
 				}
 			}
 		}
-	}
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_tRegion(const std::string & value) {
-	// check and store region information
-	validateRegion( "tRegion", value );
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_tShape( const std::string & value )
-{
-	if (!validateFile( value )) {
-		LOG(ERROR) <<"Can not access/read target's SHAPE reactivity file '" <<value <<"'";
-		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
-	}
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_tShapeMethod( const std::string & value )
-{
-	if (!boost::regex_match(value, AccessibilityConstraint::regexShapeMethod, boost::match_perl) ) {
-		LOG(ERROR) <<"Target's SHAPE method encoding '" <<value <<"' is not valid.";
-		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
-	}
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_tShapeConversion( const std::string & value )
-{
-
-	if (!boost::regex_match(value, AccessibilityConstraint::regexShapeConversion, boost::match_perl) ) {
-		LOG(ERROR) <<"Target's SHAPE conversion method encoding '" <<value <<"' is not valid.";
-		updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 	}
 }
 
@@ -1461,24 +1311,11 @@ void CommandLineParsing::validate_seedTQ(const std::string & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_seedQRange(const std::string & value) {
+void CommandLineParsing::validate_seedRange(const std::string& paramName, const std::string & value) {
 	if (!value.empty()) {
 		// check regex
 		if (!boost::regex_match(value, IndexRangeList::regex, boost::match_perl) ) {
-			LOG(ERROR) <<"seedQRange"<<" = " <<value <<" : is not in the format 'from1-to1,from2-to2,..'";
-			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
-		}
-	}
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-inline
-void CommandLineParsing::validate_seedTRange(const std::string & value) {
-	if (!value.empty()) {
-		// check regex
-		if (!boost::regex_match(value, IndexRangeList::regex, boost::match_perl) ) {
-			LOG(ERROR) <<"seedTRange"<<" = " <<value <<" : is not in the format 'from1-to1,from2-to2,..'";
+			LOG(ERROR) <<paramName<<" = " <<value <<" : is not in the format 'from1-to1,from2-to2,..'";
 			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 		}
 	}
