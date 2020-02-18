@@ -281,7 +281,7 @@ fillHybridZ_left( const size_t si1, const size_t si2 )
 						// left seed is overlapping anchor seed
 						// subtract non-overlapping part of seed
 						E_type nonOverlapE = getNonOverlappingEnergy(i1, i2, si1, si2, energy, seedHandler);
-						curZ -= energy.getBoltzmannWeight( nonOverlapE );
+						curZ -= energy.getBoltzmannWeight( nonOverlapE ) * hybridZ_left( 0, 0 );
 					}
 
 					// sanity insurance
@@ -297,9 +297,7 @@ fillHybridZ_left( const size_t si1, const size_t si2 )
 				Interaction::Boundary key(i1,si1,i2,si2);
 				auto keyEntry = ZL_partition.find(key);
 				if ( ZL_partition.find(key) == ZL_partition.end() ) {
-					// subtract E_init for predictionTrackers
-					Z_type subtract = (i1==si1 && i2==si2) ? energy.getBoltzmannWeight(energy.getE_init()) : 1.0;
-					ZL_partition[key] = curZ / subtract;
+					ZL_partition[key] = curZ;
 				}
 			}
 

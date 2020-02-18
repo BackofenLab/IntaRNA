@@ -31,6 +31,7 @@ public:
 	typedef std::unordered_map<Interaction::Boundary, Z_type, Interaction::Boundary::Hash, Interaction::Boundary::Equal> Site2Z_hash;
 	typedef std::unordered_map<Interaction::BasePair, Z_type, Interaction::BasePair::Hash, Interaction::BasePair::Equal> BasePair2Prob_hash;
 	typedef std::unordered_map<Interaction::BasePair, std::set<Interaction::BasePair>, Interaction::BasePair::Hash, Interaction::BasePair::Equal> BasePairIndex;
+	typedef boost::numeric::ublas::matrix<Z_type> Z2dMatrix;
 
 public:
 
@@ -119,6 +120,15 @@ protected:
 	//! maximum postscript width/height in ps units
 	const size_t maxDotPlotSize;
 
+	//! partition function of all interaction hybrids that start on the right side of the seed excluding E_init
+	Z2dMatrix hybridZ_right;
+
+	//! partition function of all interaction hybrids that start on the right side of the seed excluding E_init
+	Z2dMatrix hybridZ_left;
+
+	//! map storing the missing partitions of ZH for all considered interaction sites
+	Site2Z_hash ZH_partition_missing;
+
 	/**
 	 * Access to the given partition function covering
 	 * the given boundary
@@ -139,13 +149,15 @@ protected:
 	 * @param j1 region index
 	 * @param i2 region index
 	 * @param j2 region index
+	 * @param leftSide whether the ZH partition is at the left of an anchor seed
 	 *
 	 * @return the ZH partition function at given region
 	 */
 	Z_type
 	getZHPartition( const PredictorMfeEns2dSeedExtension *predictor, const SeedHandler* seedHandler
 	              , const size_t i1, const size_t j1
-	              , const size_t i2, const size_t j2 );
+	              , const size_t i2, const size_t j2
+								, const bool leftSide );
 
 	/**
 	 * Compute ZR partition function for given region
@@ -232,6 +244,36 @@ protected:
 	 */
 	void
 	computeBasePairProbsNoSeed( const PredictorMfeEns *predictor );
+
+	/**
+	 * Computes hybridZ_right
+	 *
+	 * Note: (i1,i2) have to be complementary (right-most base pair of seed)
+	 *
+	 * @param sj1 end of anchor seed in seq 1
+	 * @param r1 end of the interaction within seq 1
+	 * @param sj2 end of anchor seed in seq 2
+	 * @param r2 end of the interaction within seq 2
+	 * @param seedHandler the seedHandler of the predictor
+	 *
+	 */
+	void
+	fillHybridZ_right( const size_t sj1, const size_t r1, const size_t sj2, const size_t r2, const SeedHandler* seedHandler );
+
+	/**
+	 * Computes hybridZ_left
+	 *
+	 * Note: (i1,i2) have to be complementary (right-most base pair of seed)
+	 *
+	 * @param l1 start of the interaction within seq 1
+	 * @param si1 start of anchor seed in seq 1
+	 * @param l2 start of the interaction within seq 2
+	 * @param si2 start of anchor seed in seq 2
+	 * @param seedHandler the seedHandler of the predictor
+	 *
+	 */
+	void
+	fillHybridZ_left( const size_t l1, const size_t si1, const size_t l2, const size_t si2, const SeedHandler* seedHandler );
 
 	//! postscript template for dotplots
 	const char* dotplotTemplate =
