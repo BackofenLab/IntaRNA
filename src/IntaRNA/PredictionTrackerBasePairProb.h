@@ -270,9 +270,9 @@ protected:
 	 * @param l2 start of the interaction within seq 2
 	 * @param si2 start of anchor seed in seq 2
 	 * @param seedHandler the seedHandler of the predictor
-	 *
+	 * @return Z of region
 	 */
-	void
+	Z_type
 	fillHybridZ_left( const size_t l1, const size_t si1, const size_t l2, const size_t si2, const SeedHandler* seedHandler );
 
 	//! postscript template for dotplots

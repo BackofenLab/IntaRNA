@@ -88,7 +88,7 @@ public:
 	getZHPartition() const;
 
 	/**
-	 * Returns the hybridization energy of the non overlapping part of seeds
+	 * Returns the hybridization energy of the non-overlapping part of seeds
 	 * starting at si and sj
 	 *
 	 * @param si1 the index of seed1 in the first sequence

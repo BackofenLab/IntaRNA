@@ -40,12 +40,9 @@ isSeedBasePair( const size_t i1, const size_t i2
 	Interaction interaction = Interaction(energy.getAccessibility1().getSequence(), energy.getAccessibility2().getAccessibilityOrigin().getSequence());
 	interaction.basePairs.push_back( energy.getBasePair(i1, i2) );
 	traceBackSeed( interaction, i1, i2 );
+	interaction.basePairs.push_back( energy.getBasePair(i1+getSeedLength1(i1,i2)-1, i2+getSeedLength2(i1,i2)-1) );
 
-	if (std::find(interaction.basePairs.begin(), interaction.basePairs.end(), energy.getBasePair(k1, k2)) != interaction.basePairs.end()) {
-    return true;
-	}
-		
-	return false;
+	return (std::find(interaction.basePairs.begin(), interaction.basePairs.end(), energy.getBasePair(k1, k2)) != interaction.basePairs.end());
 }
 
 //////////////////////////////////////////////////////////////////////////

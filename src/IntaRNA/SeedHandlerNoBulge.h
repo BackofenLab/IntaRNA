@@ -271,7 +271,9 @@ isSeedBasePair( const size_t i1, const size_t i2
 		return false;
 	}
 
-	return k1 >= i1 && k2 >= i2 && (k1 - i1) == (k2 - i2);
+	return k1 >= i1 && k2 >= i2
+			&& (k1 - i1) == (k2 - i2)
+			&& (k1-i1)<getConstraint().getBasePairs();
 }
 
 //////////////////////////////////////////////////////////////////////////

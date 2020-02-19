@@ -280,8 +280,8 @@ fillHybridZ_left( const size_t si1, const size_t si2 )
 					} else if (seedHandler.areLoopOverlapping(i1,i2,si1,si2)) {
 						// left seed is overlapping anchor seed
 						// subtract non-overlapping part of seed
-						E_type nonOverlapE = getNonOverlappingEnergy(i1, i2, si1, si2, energy, seedHandler);
-						curZ -= energy.getBoltzmannWeight( nonOverlapE ) * hybridZ_left( 0, 0 );
+						E_type nonOverlapE = getNonOverlappingEnergy(i1, i2, si1, si2, energy, seedHandler); // without E_init
+						curZ -= energy.getBoltzmannWeight( nonOverlapE + energy.getE_init() );
 					}
 
 					// sanity insurance
