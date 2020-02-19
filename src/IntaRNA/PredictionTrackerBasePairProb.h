@@ -149,15 +149,13 @@ protected:
 	 * @param j1 region index
 	 * @param i2 region index
 	 * @param j2 region index
-	 * @param leftSide whether the ZH partition is at the left of an anchor seed
 	 *
 	 * @return the ZH partition function at given region
 	 */
 	Z_type
 	getZHPartition( const PredictorMfeEns2dSeedExtension *predictor, const SeedHandler* seedHandler
 	              , const size_t i1, const size_t j1
-	              , const size_t i2, const size_t j2
-								, const bool leftSide );
+	              , const size_t i2, const size_t j2 );
 
 	/**
 	 * Compute ZR partition function for given region
@@ -244,21 +242,6 @@ protected:
 	 */
 	void
 	computeBasePairProbsNoSeed( const PredictorMfeEns *predictor );
-
-	/**
-	 * Computes hybridZ_right
-	 *
-	 * Note: (i1,i2) have to be complementary (right-most base pair of seed)
-	 *
-	 * @param sj1 end of anchor seed in seq 1
-	 * @param r1 end of the interaction within seq 1
-	 * @param sj2 end of anchor seed in seq 2
-	 * @param r2 end of the interaction within seq 2
-	 * @param seedHandler the seedHandler of the predictor
-	 *
-	 */
-	void
-	fillHybridZ_right( const size_t sj1, const size_t r1, const size_t sj2, const size_t r2, const SeedHandler* seedHandler );
 
 	/**
 	 * Computes hybridZ_left
