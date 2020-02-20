@@ -295,11 +295,13 @@ fillHybridZ_left( const size_t si1, const size_t si2 )
 
 					// check if seed is to be processed:
 					bool substractThisSeed =
+										seedHandler.isSeedBound(i1,i2)
+										&& (
 							// check if left of anchor seed
 										( i1+seedHandler.getSeedLength1(i1,i2)-1 <= si1
 										&& i2+seedHandler.getSeedLength2(i1,i2)-1 <= si2 )
 							// check if overlapping with anchor seed
-									||	seedHandler.areLoopOverlapping(i1,i2,si1,si2);
+									||	seedHandler.areLoopOverlapping(i1,i2,si1,si2));
 
 					if (substractThisSeed) {
 
