@@ -156,6 +156,7 @@ protected:
 
 	/**
 	 * Compute ZR partition function for given region
+	 * @note Does not contain E_init
 	 * @param predictor the predictor providing the probability information
 	 * @param seedHandler the seedHandler of the predictor
 	 * @param i1 region index
@@ -170,8 +171,7 @@ protected:
 	Z_type
 	getZRPartition( const PredictorMfeEns2dSeedExtension *predictor, const SeedHandler* seedHandler
 	              , const size_t i1, const size_t j1
-	              , const size_t i2, const size_t j2
-								, const size_t si1, const size_t si2 );
+	              , const size_t i2, const size_t j2 );
 
 	/**
 	 * Access to the current partition function covering
