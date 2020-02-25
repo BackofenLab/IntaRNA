@@ -371,7 +371,6 @@ fillHybridZ_left( const size_t si1, const size_t si2 )
 							curZ -= correctionTerm;
 							// sanity ensurence
 							if (curZ < 0) {
-								LOG(DEBUG) << "curZ < 0: "<<curZ;
 								curZ = Z_type(0.0);
 							}
 						}

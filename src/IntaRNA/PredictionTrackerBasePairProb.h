@@ -120,11 +120,8 @@ protected:
 	//! maximum postscript width/height in ps units
 	const size_t maxDotPlotSize;
 
-	//! partition function of all interaction hybrids that start on the right side of the seed excluding E_init
-	Z2dMatrix hybridZ_right;
-
-	//! partition function of all interaction hybrids that start on the right side of the seed excluding E_init
-	Z2dMatrix hybridZ_left;
+	//! partition function of all interaction hybrids that start on the right side of the seed including E_init
+	Z2dMatrix hybridZ;
 
 	//! map storing the missing partitions of ZH for all considered interaction sites
 	Site2Z_hash ZH_partition_missing;
@@ -244,7 +241,7 @@ protected:
 	computeBasePairProbsNoSeed( const PredictorMfeEns *predictor );
 
 	/**
-	 * Computes hybridZ_left
+	 * Computes hybridZ
 	 *
 	 * Note: (i1,i2) have to be complementary (right-most base pair of seed)
 	 *
@@ -256,7 +253,7 @@ protected:
 	 * @return Z of region
 	 */
 	Z_type
-	fillHybridZ_left( const size_t l1, const size_t si1, const size_t l2, const size_t si2, const SeedHandler* seedHandler );
+	fillHybridZ( const size_t l1, const size_t si1, const size_t l2, const size_t si2, const SeedHandler* seedHandler );
 
 	//! postscript template for dotplots
 	const char* dotplotTemplate =
