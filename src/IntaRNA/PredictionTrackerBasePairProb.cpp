@@ -171,9 +171,9 @@ PredictionTrackerBasePairProb::
 computeBasePairProbs( const PredictorMfeEns2dSeedExtension *predictor, const SeedHandler* seedHandler )
 {
 
-#define LOGCHECK_I i1 == 2 && i2 == 2
-#define LOGCHECK_J j1 == 2 && j2 == 2
-#define LOGCHECK_K k1 == 2 && k2 == 2
+#define LOGCHECK_I i1 == 3 && i2 == 3
+#define LOGCHECK_J j1 == 3 && j2 == 3
+#define LOGCHECK_K k1 == 3 && k2 == 3
 
 	auto ZL_partition = predictor->getZLPartition();
 	size_t i1, j1, i2, j2;
@@ -206,22 +206,26 @@ computeBasePairProbs( const PredictorMfeEns2dSeedExtension *predictor, const See
 
 				Interaction::BasePair kBP(k1, k2);
 				bpZ = 0;
+				tempZ = 0;
 
 				// k internal
 				Z_type ZSleft = getHybridZ(i1, k1, i2, k2, predictor);
 				Z_type ZSright = getHybridZ(k1, j1, k2, j2, predictor);
 
 				// ... ZS:ZS
-				bpZ += ZSleft * ZSright / energy.getBoltzmannWeight(energy.getE_init());
-				LOG_IF(LOGCHECK_K, DEBUG) << "int ZS:ZS @ " << k1 << ":" << k2 << " = " << bpZ;
+				tempZ = ZSleft * ZSright / energy.getBoltzmannWeight(energy.getE_init());
+				LOG_IF(LOGCHECK_K, DEBUG) << "int ZS:ZS @ " << " = " << tempZ;
+				bpZ += tempZ;
 
 				// ... ZS:ZN
-				bpZ += ZSleft * getZRPartition(predictor, seedHandler, k1, j1, k2, j2);
-				LOG_IF(LOGCHECK_K, DEBUG) << "int ZS:ZN @ " << k1 << ":" << k2 << " = " << bpZ;
+				tempZ = ZSleft * getZRPartition(predictor, seedHandler, k1, j1, k2, j2);
+				LOG_IF(LOGCHECK_K, DEBUG) << "int ZS:ZN @ " << " = " << tempZ;
+				bpZ += tempZ;
 
 				// ... ZN:ZS
-				bpZ += getZPartitionValue(&ZL_partition, Interaction::Boundary(i1,k1,i2,k2), false) * ZSright / energy.getBoltzmannWeight(energy.getE_init());
-				LOG_IF(LOGCHECK_K, DEBUG) << "int ZN:ZS @ " << k1 << ":" << k2 << " = " << bpZ;
+				tempZ = getZPartitionValue(&ZL_partition, Interaction::Boundary(i1,k1,i2,k2), false) * ZSright / energy.getBoltzmannWeight(energy.getE_init());
+				LOG_IF(LOGCHECK_K, DEBUG) << "int ZN:ZS @ " << " = " << tempZ;
+				bpZ += tempZ;
 
 				// // ... ZS:ZP
 				// if (!Z_equal(ZSleft, 0.0)) {
@@ -244,7 +248,6 @@ computeBasePairProbs( const PredictorMfeEns2dSeedExtension *predictor, const See
 				const size_t seedBP = seedHandler->getConstraint().getBasePairs();
 				size_t maxSeedLength1 = (seedBP - std::min((size_t)2,seedBP)) + seedHandler->getConstraint().getMaxUnpaired1();
 				size_t maxSeedLength2 = (seedBP - std::min((size_t)2,seedBP)) + seedHandler->getConstraint().getMaxUnpaired2();
-				tempZ = 0.0;
 				while( seedHandler->updateToNextSeed(si1,si2
 						, std::max(i1,k1-std::min(k1, maxSeedLength1))
 						, k1-1  // k1 > 0
@@ -254,6 +257,10 @@ computeBasePairProbs( const PredictorMfeEns2dSeedExtension *predictor, const See
 					if (seedHandler->isSeedBasePair(si1, si2, k1, k2)) {
 						size_t sj1 = si1+seedHandler->getSeedLength1(si1,si2)-1;
 						size_t sj2 = si2+seedHandler->getSeedLength2(si1,si2)-1;
+						// seed region mismatch
+						if ((sj1 == j1 && sj2 != j2) || (sj1 != j1 && sj2 == j2)) {
+							continue;
+						}
 						// check if still in region
 						assert( i1 <= si1 && i2 <= si2 );
 						if (sj1 > j1 || sj2 > j2) {
@@ -264,14 +271,14 @@ computeBasePairProbs( const PredictorMfeEns2dSeedExtension *predictor, const See
 						   		* energy.getBoltzmannWeight(seedHandler->getSeedE(si1, si2))
 									* getHybridZ(sj1, j1, sj2, j2, predictor)
 									/ energy.getBoltzmannWeight(energy.getE_init());
-						LOG_IF(LOGCHECK_K, DEBUG) << "int ZN:seed:ZS @ " << k1 << ":" << k2 << " = " << tempZ;
+						LOG_IF(LOGCHECK_K, DEBUG) << "int ZN:seed:ZS @ " << si1 << ":" << si2 << " = " << tempZ;
 						bpZ += tempZ;
 
 						// ZS:seed:ZN
 						tempZ = getHybridZ(i1, si1, i2, si2, predictor)
 						   		* energy.getBoltzmannWeight(seedHandler->getSeedE(si1, si2))
 									* getZRPartition(predictor, seedHandler, sj1, j1, sj2, j2);
-						LOG_IF(LOGCHECK_K, DEBUG) << "int ZS:seed:ZN @ " << k1 << ":" << k2 << " = " << tempZ;
+						LOG_IF(LOGCHECK_K, DEBUG) << "int ZS:seed:ZN @ " << si1 << ":" << si2 << " = " << tempZ;
 						bpZ += tempZ;
 
 						// ZN:seed:ZP
@@ -279,9 +286,39 @@ computeBasePairProbs( const PredictorMfeEns2dSeedExtension *predictor, const See
 						   		* energy.getBoltzmannWeight(seedHandler->getSeedE(si1, si2))
 									* (getZHPartition(predictor, seedHandler, sj1, j1, sj2, j2) - getHybridZ(sj1, j1, sj2, j2, predictor))
 									 / energy.getBoltzmannWeight(energy.getE_init());
-						LOG_IF(LOGCHECK_K, DEBUG) << "int ZN:seed:ZP @ " << k1 << ":" << k2 << " = " << tempZ;
+						LOG_IF(LOGCHECK_K, DEBUG) << "int ZN:seed:ZP @ " << si1 << ":" << si2 << " = " << tempZ;
 						bpZ += tempZ;
+
+
+						// ZN:seed':ZP
+						size_t spi1 = RnaSequence::lastPos, spi2 = RnaSequence::lastPos;
+						while( seedHandler->updateToNextSeed(spi1,spi2
+								, std::max(i1,si1-std::min(si1, maxSeedLength1))
+								, k1-std::min(k1, maxSeedLength1)-1
+								, std::max(i2,si2-std::min(si2, maxSeedLength2))
+								, k2-std::min(k2, maxSeedLength2)-1) ) // k2 > 0
+						{
+							if (seedHandler->isSeedBasePair(spi1, spi2, si1, si2) && seedHandler->areLoopOverlapping(spi1, spi2, si1, si2)) {
+								size_t spj1 = spi1+seedHandler->getSeedLength1(spi1,spi2)-1;
+								size_t spj2 = spi2+seedHandler->getSeedLength2(spi1,spi2)-1;
+								if (k1 < spj1 && k2 < spj2) {
+									continue;
+								}
+								// check if still in region
+								assert( i1 <= spi1 && i2 <= spi2 );
+								if (spj1 > j1 || spj2 > j2) {
+									continue;
+								}
+								tempZ = getZPartitionValue(&ZL_partition, Interaction::Boundary(i1,spi1,i2,spi2), false) // contains E_init
+											* energy.getBoltzmannWeight(PredictorMfeEns2dSeedExtension::getNonOverlappingEnergy(spi1, spi2, si1, si2, energy, *seedHandler))
+											* energy.getBoltzmannWeight(seedHandler->getSeedE(si1, si2))
+											* getZRPartition(predictor, seedHandler, sj1, j1, sj2, j2);
+								LOG_IF(LOGCHECK_K, DEBUG) << "int ZN:seed':ZN @ " << spi1 << ":" << spi2 << " = " << tempZ;
+								bpZ += tempZ;
+							}
+						}
 					}
+
 				}
 
 				// add ED values, dangling ends, etc.
@@ -398,7 +435,7 @@ getZRPartition( const PredictorMfeEns2dSeedExtension *predictor, const SeedHandl
 							- PredictorMfeEns2dSeedExtension::getNonOverlappingEnergy(si1, si2, i1, i2, energy, *seedHandler);
 			Z_type corrZterm = energy.getBoltzmannWeight(Eoverlap) * getZRPartition(predictor, seedHandler, sj1, j1, sj2, j2);
 			assert(corrZterm <= partZ);
-			LOG(DEBUG) << "overlap @ " << si1 << ":" << si2;
+			//LOG(DEBUG) << "overlap @ " << si1 << ":" << si2;
 			partZ -= corrZterm;
 		}
 	}
