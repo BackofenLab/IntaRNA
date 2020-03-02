@@ -412,9 +412,12 @@ interaction energy = -10.85 kcal/mol
 
 ```
 
-or provide (multiple) sequence(s) in [FASTA-format](#https://en.wikipedia.org/wiki/FASTA_format).
-It is possible to provide either file input or to read the FASTA input from the
-STDIN stream.
+In case you need specific RNA names in your output, you can provide ID strings 
+for each RNA using e.g. `--tId="mRNA with GC"` or `--qId="sRNA-example"`.
+
+Multiple sequences can be provided in [FASTA-format](#https://en.wikipedia.org/wiki/FASTA_format).
+It is possible to use either file input or to read the FASTA input from the
+`STDIN` stream.
 
 ```bash
 # running IntaRNA with FASTA files
@@ -1056,7 +1059,7 @@ Finally, it is possible to restrict the overall length an interaction is allowed
 to have via `--intLenMax`. This can be done independently for the query and target sequence using
 `--qIntLenMax` and `--tIntLenMax`, respectively. By setting to 0 (default),
 the smaller of the full sequence length and the maximal accessibility-window
-size (`--tAccW`, `--qAccW`) is used.
+size is used (see `--accW`, `--tAccW`, or `--qAccW`).
 
 
 

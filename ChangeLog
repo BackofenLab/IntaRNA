@@ -35,6 +35,8 @@
    * areComplementary() : 
      + check if both positions are accessible (to avoid additional checks in
        predictor recursions)
+ * bin/IntaRNA :
+   * ambiguous nt warning now in verbose log (was info log) 
 
 200217 Martin Raden
  * bin/CommandLineParsing :

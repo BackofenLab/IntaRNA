@@ -113,7 +113,7 @@ int main(int argc, char **argv){
 #if INTARNA_MULITHREADING
 						#pragma omp critical(intarna_omp_logOutput)
 #endif
-						LOG(INFO) <<"Sequence '"<<queryAccOrig->getSequence().getId()
+						VLOG(1) <<"Sequence '"<<queryAccOrig->getSequence().getId()
 								<<"' contains ambiguous nucleotide encodings. These positions are ignored for interaction computation.";
 					}
 #if INTARNA_MULITHREADING
@@ -182,8 +182,8 @@ int main(int argc, char **argv){
 #if INTARNA_MULITHREADING
 						#pragma omp critical(intarna_omp_logOutput)
 #endif
-						{ LOG(INFO) <<"Sequence '"<<targetAcc->getSequence().getId()
-								<<"' contains ambiguous IUPAC nucleotide encodings. These positions are ignored for interaction computation and replaced by 'N'.";}
+						{ VLOG(1) <<"Sequence '"<<targetAcc->getSequence().getId()
+								<<"' contains ambiguous IUPAC nucleotide encodings. These positions are ignored for interaction computation and are replaced by 'N'.";}
 					}
 
 					// second: iterate over all query sequences
