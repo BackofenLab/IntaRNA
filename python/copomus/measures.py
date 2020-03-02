@@ -3,8 +3,8 @@
 
 import os
 from tempfile import gettempdir
-from utils.mutation import Mutation
-from utils.indexing import idx_to_array_index
+from copomus.mutation import Mutation
+from copomus.indexing import idx_to_array_index
 
 
 class Measure:

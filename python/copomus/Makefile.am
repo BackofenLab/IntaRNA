@@ -4,6 +4,7 @@ dist_copomus_DATA = \
 		candidate_filters.py \
 		candidate_selectors.py \
 		indexing.py \
+		IntaRNA.py \
 		measures.py \
 		mutation.py \
 		mutation_generators.py

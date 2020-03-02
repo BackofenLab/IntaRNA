@@ -2,9 +2,9 @@
 # Author: Fabio Gutmann <https://github.com/fabio-gut>
 
 from copy import deepcopy
-from utils.indexing import idx_to_array_index
-from utils.measures import get_measure
-from utils.mutation import Mutation
+from copomus.indexing import idx_to_array_index
+from copomus.measures import get_measure
+from copomus.mutation import Mutation
 from typing import List, Tuple
 
 

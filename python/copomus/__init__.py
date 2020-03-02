@@ -1,1 +1,1 @@
-__all__ = ['mutation', 'indexing', 'IntaRNA', 'measures.py']
+__all__ = ['mutation', 'indexing', 'IntaRNA', 'measures']
