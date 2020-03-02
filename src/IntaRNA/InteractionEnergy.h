@@ -148,7 +148,8 @@ public:
 	 * Checks whether or not two positions can form a base pair
 	 * @param i1 index in first sequence
 	 * @param i2 index in second sequence
-	 * @return true if seq1(i1) can form a base pair with seq2(i2)
+	 * @return true if seq1(i1) can form a base pair with seq2(i2) and both
+	 *         positions are accessible
 	 */
 	virtual
 	bool
@@ -685,7 +686,9 @@ bool
 InteractionEnergy::
 areComplementary( const size_t i1, const size_t i2 ) const
 {
-	return RnaSequence::areComplementary( accS1.getSequence(), accS2.getSequence(), i1, i2);
+	return RnaSequence::areComplementary( accS1.getSequence(), accS2.getSequence(), i1, i2)
+		&& isAccessible1(i1)
+		&& isAccessible2(i2);
 }
 
 ////////////////////////////////////////////////////////////////////////////

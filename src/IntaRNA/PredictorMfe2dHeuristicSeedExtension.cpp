@@ -267,8 +267,12 @@ fillHybridE_left( const size_t si1, const size_t si2 )
 			}
 			// update mfe if needed
 			if ( E_isNotINF( curMinE ) ) {
+				// safe cases for Zall update:
+				// - i==si && j==sj : seed only
+				// - i!=si && and no seed between i (incl.) and si (excl) : si == left-most seed
+
 				// leftE (incl. E_init) + seedE
-				updateOptima( i1,sj1,i2,sj2, curMinE + seedE, true, i1==si1 && i2==si2 );
+				updateOptima( i1,sj1,i2,sj2, curMinE + seedE, true, (i1==si1 && i2==si2) );
 
 				// check if right opt != right seed boundary
 				// check for max interaction length
@@ -276,9 +280,16 @@ fillHybridE_left( const size_t si1, const size_t si2 )
 					&& (j1opt+1-i1)<=energy.getAccessibility1().getMaxLength()
 					&& (j2opt+1-i2)<=energy.getAccessibility2().getMaxLength() )
 				{
+					// check if no seed between i and si
+					// or no Z update for left extensions to avoid duplicated handling (underestimates Zall)
+					bool noSeedLeftOfsi = (i1 < si1 && !seedHandler.isSeedBound(i1,i2));
+					if (noSeedLeftOfsi) {
+						size_t x1=si1, x2=si2;
+						// check of no seed start between i and si
+						noSeedLeftOfsi = !(seedHandler.updateToNextSeed(x1,x2, i1+1,si1-1, i2+1, si2-1));
+					}
 					// leftE (incl. E_init) + seedE + rightOptE
-					// no Z update for left extensions to avoid duplicated handling (underestimates Zall)
-					updateOptima( i1,j1opt,i2,j2opt, curMinE + seedE + rightOptE, true, false );
+					updateOptima( i1,j1opt,i2,j2opt, curMinE + seedE + rightOptE, true, noSeedLeftOfsi );
 				}
 			}
 		}
