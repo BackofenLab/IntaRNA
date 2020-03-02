@@ -11,6 +11,7 @@
 ################################################################################
 
 # IntaRNA
+- BUGFIX: accessibility blocking constraints were only applied to seed location
 - improved Zall estimate (and depending values) for `--model=X` (default)
 - new arguments:
   - `qId|tId` : optional id (FASTA prefix) setup for sequence naming
@@ -25,6 +26,15 @@
 ################################################################################
 
 ################################################################################
+
+200302 Martin Raden
+ * IntaRNA/IndexRange :
+   * fromString() :
+     * bugfix: + missing parsing of negative indices 
+ * IntaRNA/InteractionEnergy :
+   * areComplementary() : 
+     + check if both positions are accessible (to avoid additional checks in
+       predictor recursions)
 
 200217 Martin Raden
  * bin/CommandLineParsing :
