@@ -1,5 +1,5 @@
 
-copomus_DATA = \
+dist_copomus_DATA = \
 		__init__.py \
 		candidate_filters.py \
 		candidate_selectors.py \
