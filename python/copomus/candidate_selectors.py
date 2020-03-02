@@ -3,8 +3,8 @@
 
 import sys
 from typing import List, Tuple
-from utils.IntaRNA import IntaRNA
-from utils.indexing import idx_to_array_index as idx_aidx
+from copomus.IntaRNA import IntaRNA
+from copomus.indexing import idx_to_array_index as idx_aidx
 
 
 def get_mfe_bps(query: str, target: str, qidxpos0: int, tidxpos0: int, param_file: str, threads: int, **kwargs) -> \
