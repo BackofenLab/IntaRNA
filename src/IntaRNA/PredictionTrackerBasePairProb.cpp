@@ -214,36 +214,20 @@ computeBasePairProbs( const PredictorMfeEns2dSeedExtension *predictor, const See
 
 				// ... ZS:ZS
 				tempZ = ZSleft * ZSright / energy.getBoltzmannWeight(energy.getE_init());
-				LOG_IF(LOGCHECK_K, DEBUG) << "int ZS:ZS @ " << " = " << tempZ;
+				LOG_IF(LOGCHECK_K, DEBUG) << "int ZS:ZS " << " = " << tempZ;
 				bpZ += tempZ;
 
 				// ... ZS:ZN
 				tempZ = ZSleft * getZRPartition(predictor, seedHandler, k1, j1, k2, j2);
-				LOG_IF(LOGCHECK_K, DEBUG) << "int ZS:ZN @ " << " = " << tempZ;
+				LOG_IF(LOGCHECK_K, DEBUG) << "int ZS:ZN " << " = " << tempZ;
 				bpZ += tempZ;
 
 				// ... ZN:ZS
 				tempZ = getZPartitionValue(&ZL_partition, Interaction::Boundary(i1,k1,i2,k2), false) * ZSright / energy.getBoltzmannWeight(energy.getE_init());
-				LOG_IF(LOGCHECK_K, DEBUG) << "int ZN:ZS @ " << " = " << tempZ;
+				LOG_IF(LOGCHECK_K, DEBUG) << "int ZN:ZS " << " = " << tempZ;
 				bpZ += tempZ;
 
-				// // ... ZS:ZP
-				// if (!Z_equal(ZSleft, 0.0)) {
-				// 	tempZ = ZSleft
-				// 			* (getZHPartition(predictor, seedHandler, k1, j1, k2, j2) - ZSright) / energy.getBoltzmannWeight(energy.getE_init());
-				// 	bpZ += tempZ;
-				// 	LOG_IF(LOGCHECK_K, DEBUG) << "int ZS:ZP @ " << k1 << ":" << k2 << " = " << tempZ;
-				// }
-
-				// // ... ZP:ZS
-				// if (!Z_equal(ZSright, 0.0)) {
-				// 	tempZ = (getZHPartition(predictor, seedHandler, i1, k1, i2, k2) - ZSleft) / energy.getBoltzmannWeight(energy.getE_init())
-				// 			* ZSright;
-				// 	bpZ += tempZ;
-				// 	LOG_IF(LOGCHECK_K, DEBUG) << "int ZP:ZS @ " << k1 << ":" << k2 << " = " << tempZ;
-				// }
-
-				// ... ZNL:seed:ZNR
+				// seeds overlapping k
 				size_t si1 = RnaSequence::lastPos, si2 = RnaSequence::lastPos;
 				const size_t seedBP = seedHandler->getConstraint().getBasePairs();
 				size_t maxSeedLength1 = (seedBP - std::min((size_t)2,seedBP)) + seedHandler->getConstraint().getMaxUnpaired1();
@@ -289,8 +273,7 @@ computeBasePairProbs( const PredictorMfeEns2dSeedExtension *predictor, const See
 						LOG_IF(LOGCHECK_K, DEBUG) << "int ZN:seed:ZP @ " << si1 << ":" << si2 << " = " << tempZ;
 						bpZ += tempZ;
 
-
-						// ZN:seed':ZP
+						// ZNL:seed':ZNR
 						size_t spi1 = RnaSequence::lastPos, spi2 = RnaSequence::lastPos;
 						while( seedHandler->updateToNextSeed(spi1,spi2
 								, std::max(i1,si1-std::min(si1, maxSeedLength1))
@@ -391,14 +374,17 @@ getZRPartition( const PredictorMfeEns2dSeedExtension *predictor, const SeedHandl
               , const size_t i1, const size_t j1
 	            , const size_t i2, const size_t j2 )
 {
-	// TODO: memoization
+	// memoization
+	Interaction::Boundary boundary(i1,j1,i2,j2);
+	auto keyEntry = ZR_partition.find(boundary);
+	if ( ZR_partition.find(boundary) != ZR_partition.end() ) {
+		return ZR_partition[boundary];
+	}
 
 	// single bp boundary with ZNR == 1
 	if (i1==j1 && i2==j2 && energy.areComplementary(i1,i2)) {
 		return Z_type(1);
 	}
-	Interaction::Boundary boundary(i1,j1,i2,j2);
-	// LOG(DEBUG) << "request ZR @ " << i1 << ":" << j1 << ":" << i2 << ":" << j2;
 
 	Z_type partZ = getZHPartition(predictor, seedHandler, i1, j1, i2, j2);
 	Z_type ZS = getHybridZ(boundary, predictor);
@@ -439,6 +425,9 @@ getZRPartition( const PredictorMfeEns2dSeedExtension *predictor, const SeedHandl
 			partZ -= corrZterm;
 		}
 	}
+
+	// store ZR_partition
+	ZR_partition[boundary] = partZ;
 
 	return partZ;
 }

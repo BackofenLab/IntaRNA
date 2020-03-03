@@ -123,6 +123,9 @@ protected:
 	//! partition function of all interaction hybrids that start on the right side of the seed including E_init
 	Z2dMatrix hybridZ;
 
+	//! map storing the missing partitions of ZR for all considered interaction sites
+	Site2Z_hash ZR_partition;
+
 	//! map storing the missing partitions of ZH for all considered interaction sites
 	Site2Z_hash ZH_partition_missing;
 
