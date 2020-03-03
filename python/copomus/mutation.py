@@ -3,7 +3,7 @@
 
 from dataclasses import dataclass, field
 from typing import List
-from utils.indexing import idx_to_array_index
+from copomus.indexing import idx_to_array_index
 
 
 @dataclass()

@@ -176,8 +176,12 @@ public:
 		if( ! boost::regex_match(stringEncoding, regex, boost::match_perl) ) {
 			throw std::runtime_error("IndexRange::fromString("+stringEncoding+") uses no valid index range string encoding");
 		}
-		// find split position
-		const size_t splitPos = stringEncoding.find('-');
+		// find split position assuming second index to be negative
+		size_t splitPos = stringEncoding.find("--");
+		if (splitPos == std::string::npos) {
+			// last index should not be negative, thus, split at last '-'
+			splitPos = stringEncoding.find_last_of('-');
+		}
 		// parse interval boundaries
 		if (seq == NULL) {
 			from = boost::lexical_cast<size_t>(stringEncoding.substr(0,splitPos));

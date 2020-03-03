@@ -143,6 +143,13 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	tShapeMethod("Zb0.89"),
 	tShapeConversion("Os1.6i-2.29"),
 
+	// meta constraints
+	acc("acc","NC", 'C'),
+	accW("accW", 0, 99999, 150),
+	accL("accL", 0, 99999, 100),
+	intLenMax("intLenMax", 0, 99999, 0),
+	intLoopMax("intLoopMax", 0, 30, 10),
+
 	// Helix Constraints
 	helixMinBP("helixMinBP",2,4,2),
 	helixMaxBP("helixMaxBP",2,20,10),
@@ -229,6 +236,10 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		resetParamDefault<>(tAccW, 0);
 		resetParamDefault<>(tAccL, 0);
 		resetParamDefault<>(tIntLoopMax, 16);
+		resetParamDefault<>(accW, 0);
+		resetParamDefault<>(accL, 0);
+		resetParamDefault<>(intLenMax, 0);
+		resetParamDefault<>(intLoopMax, 16);
 #if INTARNA_MULITHREADING
 		resetParamDefault<>(threads, 1);
 #endif
@@ -260,6 +271,10 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		resetParamDefault<>(tAccW, 150);
 		resetParamDefault<>(tAccL, 100);
 		resetParamDefault<>(tIntLoopMax, 16);
+		resetParamDefault<>(accW, 150);
+		resetParamDefault<>(accL, 100);
+		resetParamDefault<>(intLenMax, 0);
+		resetParamDefault<>(intLoopMax, 16);
 		resetParamDefault<>(energyFile, std::string(VrnaHandler::Turner04), "energyVRNA");
 #if INTARNA_MULITHREADING
 		resetParamDefault<>(threads, 1);
@@ -303,6 +318,9 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		resetParamDefault<>(tAccW, 0);
 		resetParamDefault<>(tAccL, 0);
 		resetParamDefault<>(tIntLenMax, 60);
+		resetParamDefault<>(accW, 0);
+		resetParamDefault<>(accL, 0);
+		resetParamDefault<>(intLenMax, 60);
 		break;
 	case IntaRNAseed :
 		// seed-only prediction
@@ -317,6 +335,8 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		resetParamDefault<>(tIntLoopMax, 8);
 		resetParamDefault<>(qIntLenMax, 60);
 		resetParamDefault<>(qIntLoopMax, 8);
+		resetParamDefault<>(intLenMax, 60);
+		resetParamDefault<>(intLoopMax, 8);
 		resetParamDefault<>(outMinPu, 0.001);
 		// new features added with 3.1.0
 		resetParamDefault<>(outNoLP, true, "outNoLP");
@@ -347,11 +367,29 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		("query,q"
 			, value<std::string>(&queryArg)
 				->required()
-				->notifier(boost::bind(&CommandLineParsing::validate_query,this,_1))
+				->notifier(boost::bind(&CommandLineParsing::validate_sequenceArgument,this,"query",_1))
 			, "either an RNA sequence or the stream/file name from where to read"
 				" the query sequences (should be the shorter sequences to increase efficiency);"
 				" use 'STDIN' to read from standard input stream; sequences have to use"
 				" IUPAC nucleotide encoding; output alias is [seq2]")
+		;
+	opts_cmdline_short.add(opts_query);
+	opts_query.add_options()
+		("qId"
+			, value<std::string>(&qId)
+				->default_value("")
+				->notifier(boost::bind(&CommandLineParsing::validate_id,this,"qId",_1))
+			, std::string("id (FASTA-prefix) to be used for query sequence naming.").c_str())
+		(qIdxPos0.name.c_str()
+			, value<long>(&(qIdxPos0.val))
+				->default_value(qIdxPos0.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_numberArgument<long>,this,qIdxPos0,_1))
+			, std::string("index of first (5') sequence position of all query sequences"
+					" (arg in range ["+toString(qIdxPos0.min)+","+toString(qIdxPos0.max)+"];").c_str())
+		("qSet"
+			, value<std::string>(&(qSetString))
+				->notifier(boost::bind(&CommandLineParsing::validate_qSet,this,_1))
+			, std::string("query subset : List of sequence indices to consider for prediction in the format 'from1-to1,from2-to2,..' assuming indexing starts with 1").c_str())
 		(qAcc.name.c_str()
 			, value<char>(&(qAcc.val))
 				->default_value(qAcc.def)
@@ -365,7 +403,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		(qAccW.name.c_str()
 			, value<int>(&(qAccW.val))
 				->default_value(qAccW.def)
-				->notifier(boost::bind(&CommandLineParsing::validate_qAccW,this,_1))
+				->notifier(boost::bind(&CommandLineParsing::validate_numberArgumentExcludeRange<int>,this,qAccW,_1,1,2))
 			, std::string("accessibility computation : sliding window size for query accessibility computation"
 					" (arg in range ["+toString(qAccW.min)+","+toString(qAccW.max)+"];"
 					" 0 will use to the full sequence length)."
@@ -374,25 +412,12 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		(qAccL.name.c_str()
 			, value<int>(&(qAccL.val))
 				->default_value(qAccL.def)
-				->notifier(boost::bind(&CommandLineParsing::validate_qAccL,this,_1))
+				->notifier(boost::bind(&CommandLineParsing::validate_numberArgumentExcludeRange<int>,this,qAccL,_1,1,2))
 			, std::string("accessibility computation : maximal loop length (base pair span) for query accessibility computation"
 					" (arg in range ["+toString(qAccL.min)+","+toString(qAccL.max)+"]; 0 will use to sliding window size 'qAccW')").c_str())
-		;
-	opts_cmdline_short.add(opts_query);
-	opts_query.add_options()
-		(qIdxPos0.name.c_str()
-			, value<long>(&(qIdxPos0.val))
-				->default_value(qIdxPos0.def)
-				->notifier(boost::bind(&CommandLineParsing::validate_numberArgument<long>,this,qIdxPos0,_1))
-			, std::string("index of first (5') sequence position of all query sequences"
-					" (arg in range ["+toString(qIdxPos0.min)+","+toString(qIdxPos0.max)+"];").c_str())
-		("qSet"
-			, value<std::string>(&(qSetString))
-				->notifier(boost::bind(&CommandLineParsing::validate_qSet,this,_1))
-			, std::string("query subset : List of sequence indices to consider for prediction in the format 'from1-to1,from2-to2,..' assuming indexing starts with 1").c_str())
 		("qAccConstr"
 			, value<std::string>(&(qAccConstr))
-				->notifier(boost::bind(&CommandLineParsing::validate_qAccConstr,this,_1))
+				->notifier(boost::bind(&CommandLineParsing::validate_structureConstraintArgument,this,"qAccConstr",_1))
 			, std::string("accessibility computation : structure constraint :"
 					"\n EITHER a string of query sequence length encoding for each position:"
 					" '.' no constraint,"
@@ -425,7 +450,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 					" (arg in range ["+toString(qIntLoopMax.min)+","+toString(qIntLoopMax.max)+"]; 0 enforces stackings only)").c_str())
 		("qRegion"
 			, value<std::string>(&(qRegionString))
-				->notifier(boost::bind(&CommandLineParsing::validate_qRegion,this,_1))
+				->notifier(boost::bind(&CommandLineParsing::validateRegion,this,"qRegion",_1))
 			, std::string("interaction site : query regions to be considered for"
 					" interaction prediction. Format ="
 					" 'from1-to1,from2-to2,..' where indexing starts with 'qIdxPos0'."
@@ -451,8 +476,26 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		("target,t"
 			, value<std::string>(&targetArg)
 				->required()
-				->notifier(boost::bind(&CommandLineParsing::validate_target,this,_1))
+				->notifier(boost::bind(&CommandLineParsing::validate_sequenceArgument,this,"target",_1))
 				, "either an RNA sequence or the stream/file name from where to read the target sequences (should be the longer sequences to increase efficiency); use 'STDIN' to read from standard input stream; sequences have to use IUPAC nucleotide encoding; output alias is [seq1]")
+		;
+	opts_cmdline_short.add(opts_target);
+	opts_target.add_options()
+		("tId"
+			, value<std::string>(&tId)
+				->default_value("")
+				->notifier(boost::bind(&CommandLineParsing::validate_id,this,"tId",_1))
+			, std::string("id (FASTA-prefix) to be used for target sequence naming.").c_str())
+		(tIdxPos0.name.c_str()
+			, value<long>(&(tIdxPos0.val))
+				->default_value(tIdxPos0.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_numberArgument<long>,this,tIdxPos0,_1))
+			, std::string("index of first (5') sequence position of all target sequences"
+					" (arg in range ["+toString(tIdxPos0.min)+","+toString(tIdxPos0.max)+"];").c_str())
+		("tSet"
+			, value<std::string>(&(tSetString))
+				->notifier(boost::bind(&CommandLineParsing::validate_tSet,this,_1))
+			, std::string("target subset : List of sequence indices to consider for prediction in the format 'from1-to1,from2-to2,..' assuming indexing starts with 1").c_str())
 		(tAcc.name.c_str()
 			, value<char>(&(tAcc.val))
 				->default_value(tAcc.def)
@@ -466,8 +509,8 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		(tAccW.name.c_str()
 			, value<int>(&(tAccW.val))
 				->default_value(tAccW.def)
-				->notifier(boost::bind(&CommandLineParsing::validate_tAccW,this,_1))
-			, std::string("accessibility computation : sliding window size for query accessibility computation"
+				->notifier(boost::bind(&CommandLineParsing::validate_numberArgumentExcludeRange<int>,this,tAccW,_1,1,2))
+			, std::string("accessibility computation : sliding window size for target accessibility computation"
 					" (arg in range ["+toString(tAccW.min)+","+toString(tAccW.max)+"];"
 					" 0 will use the full sequence length)"
 					" Note, this also restricts the maximal interaction length (see --tIntLenMax)."
@@ -475,25 +518,12 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		(tAccL.name.c_str()
 			, value<int>(&(tAccL.val))
 				->default_value(tAccL.def)
-				->notifier(boost::bind(&CommandLineParsing::validate_tAccL,this,_1))
-			, std::string("accessibility computation : maximal loop size (base pair span) for query accessibility computation"
+				->notifier(boost::bind(&CommandLineParsing::validate_numberArgumentExcludeRange<int>,this,tAccL,_1,1,2))
+			, std::string("accessibility computation : maximal loop size (base pair span) for target accessibility computation"
 					" (arg in range ["+toString(tAccL.min)+","+toString(tAccL.max)+"]; 0 will use the sliding window size 'tAccW')").c_str())
-		;
-	opts_cmdline_short.add(opts_target);
-	opts_target.add_options()
-		(tIdxPos0.name.c_str()
-			, value<long>(&(tIdxPos0.val))
-				->default_value(tIdxPos0.def)
-				->notifier(boost::bind(&CommandLineParsing::validate_numberArgument<long>,this,tIdxPos0,_1))
-			, std::string("index of first (5') sequence position of all target sequences"
-					" (arg in range ["+toString(tIdxPos0.min)+","+toString(tIdxPos0.max)+"];").c_str())
-		("tSet"
-			, value<std::string>(&(tSetString))
-				->notifier(boost::bind(&CommandLineParsing::validate_tSet,this,_1))
-			, std::string("target subset : List of sequence indices to consider for prediction in the format 'from1-to1,from2-to2,..' assuming indexing starts with 1").c_str())
 		("tAccConstr"
 			, value<std::string>(&(tAccConstr))
-				->notifier(boost::bind(&CommandLineParsing::validate_tAccConstr,this,_1))
+				->notifier(boost::bind(&CommandLineParsing::validate_structureConstraintArgument,this,"tAccConstr",_1))
 			, std::string("accessibility computation : structure constraint :"
 					"\n EITHER a string of target sequence length encoding for each position:"
 					" '.' no constraint,"
@@ -526,7 +556,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 					" (arg in range ["+toString(tIntLoopMax.min)+","+toString(tIntLoopMax.max)+"]; 0 enforces stackings only)").c_str())
 		("tRegion"
 			, value<std::string>(&(tRegionString))
-				->notifier(boost::bind(&CommandLineParsing::validate_tRegion,this,_1))
+				->notifier(boost::bind(&CommandLineParsing::validateRegion,this,"tRegion",_1))
 			, std::string("interaction site : target regions to be considered for"
 					" interaction prediction. Format ="
 					" 'from1-to1,from2-to2,..' where indexing starts with 'tIdxPos0'."
@@ -654,11 +684,11 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 					" (arg in range ["+toString(seedMinPu.min)+","+toString(seedMinPu.max)+"]).").c_str())
 		("seedQRange"
 			, value<std::string>(&(seedQRange))
-				->notifier(boost::bind(&CommandLineParsing::validate_seedQRange,this,_1))
+				->notifier(boost::bind(&CommandLineParsing::validate_seedRange,this,"seedQRange",_1))
 			, std::string("interval(s) in the query to search for seeds in format 'from1-to1,from2-to2,...' (Note, only for single query)").c_str())
 		("seedTRange"
 			, value<std::string>(&(seedTRange))
-				->notifier(boost::bind(&CommandLineParsing::validate_seedTRange,this,_1))
+				->notifier(boost::bind(&CommandLineParsing::validate_seedRange,this,"seedTRange",_1))
 			, std::string("interval(s) in the target to search for seeds in format 'from1-to1,from2-to2,...' (Note, only for single target)").c_str())
 	    ("seedNoGU", value<bool>(&seedNoGU)
 						->default_value(seedNoGU)
@@ -675,15 +705,15 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	opts_shape.add_options()
 		("qShape"
 			, value<std::string>(&qShape)
-				->notifier(boost::bind(&CommandLineParsing::validate_qShape,this,_1))
+				->notifier(boost::bind(&CommandLineParsing::validate_shape,this,"qShape",_1))
 			, "file name from where to read the query sequence's SHAPE reactivity data to guide its accessibility computation")
 		("tShape"
 			, value<std::string>(&tShape)
-				->notifier(boost::bind(&CommandLineParsing::validate_tShape,this,_1))
+				->notifier(boost::bind(&CommandLineParsing::validate_shape,this,"tShape",_1))
 			, "SHAPE: file name from where to read the target sequence's SHAPE reactivity data to guide its accessibility computation")
 		("qShapeMethod"
 				, value<std::string>(&qShapeMethod)
-					->notifier(boost::bind(&CommandLineParsing::validate_qShapeMethod,this,_1))
+					->notifier(boost::bind(&CommandLineParsing::validate_shapeMethod,this,"qShapeMethod",_1))
 				, std::string("SHAPE: method how to integrate SHAPE reactivity data into query accessibility computation via pseudo energies:"
 					"\n"
 					" 'D': Convert by using a linear equation according to Deigan et al. (2009). The calculated pseudo energies will "
@@ -698,13 +728,13 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 					).c_str())
 		("tShapeMethod"
 			, value<std::string>(&tShapeMethod)
-				->notifier(boost::bind(&CommandLineParsing::validate_tShapeMethod,this,_1))
+				->notifier(boost::bind(&CommandLineParsing::validate_shapeMethod,this,"tShapeMethod",_1))
 			, std::string("SHAPE: method how to integrate SHAPE reactivity data into target accessibility computation via pseudo energies.\n"
 					"[for encodings see --qShapeMethod]"
 					).c_str())
 		("qShapeConversion"
 				, value<std::string>(&qShapeConversion)
-					->notifier(boost::bind(&CommandLineParsing::validate_qShapeConversion,this,_1))
+					->notifier(boost::bind(&CommandLineParsing::validate_shapeConversion,this,"qShapeConversion",_1))
 				, std::string("SHAPE: method how to convert SHAPE reactivities to pairing probabilities for query accessibility computation. "
 					"This parameter is useful when dealing with the SHAPE incorporation according to Zarringhalam et al. (2012). "
 					"The following methods can be used to convert SHAPE reactivities into the probability for a certain nucleotide to be unpaired:"
@@ -721,7 +751,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 					).c_str())
 		("tShapeConversion"
 				, value<std::string>(&tShapeConversion)
-					->notifier(boost::bind(&CommandLineParsing::validate_tShapeConversion,this,_1))
+					->notifier(boost::bind(&CommandLineParsing::validate_shapeConversion,this,"tShapeConversion",_1))
 				, std::string("SHAPE: method how to convert SHAPE reactivities to pairing probabilities for target accessibility computation.\n"
 					"[for encodings see --qShapeConversion]"
 					).c_str())
@@ -739,9 +769,6 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 					"\n 'M' = exact (slow), "
 					"\n 'S' = seed-only"
 					).c_str())
-		;
-	opts_cmdline_short.add(opts_inter);
-	opts_inter.add_options()
 		(model.name.c_str()
 			, value<char>(&(model.val))
 				->default_value(model.def)
@@ -752,6 +779,48 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 					"\n 'B' = single-site, helix-block-based, minimum-free-energy interaction (blocks of stable helices and interior loops only), "
 					"\n 'P' = single-site interaction with minimal free ensemble energy per site (interior loops only)"
 					).c_str())
+		(acc.name.c_str()
+			, value<char>(&(acc.val))
+				->default_value(acc.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_charArgument,this,acc,_1))
+			, std::string("accessibility computation :"
+					"\n 'N' no accessibility contributions"
+					"\n 'C' computation of accessibilities (see --accW and --accL)"
+					).c_str())
+		(intLenMax.name.c_str()
+			, value<int>(&(intLenMax.val))
+				->default_value(intLenMax.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_numberArgument<int>,this,intLenMax,_1))
+			, std::string("interaction site : maximal window size to be considered for"
+					" interaction"
+					" (arg in range ["+toString(intLenMax.min)+","+toString(intLenMax.max)+"];"
+					" 0 refers to the full sequence length)."
+					" If --accW is provided, the smaller window size of both is used."
+					).c_str())
+		(intLoopMax.name.c_str()
+			, value<int>(&(intLoopMax.val))
+				->default_value(intLoopMax.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_numberArgument<int>,this,intLoopMax,_1))
+			, std::string("interaction site : maximal number of unpaired bases between neighbored interacting bases to be considered in interactions"
+					" (arg in range ["+toString(intLoopMax.min)+","+toString(intLoopMax.max)+"]; 0 enforces stackings only)").c_str())
+		;
+	opts_cmdline_short.add(opts_inter);
+	opts_inter.add_options()
+		(accW.name.c_str()
+			, value<int>(&(accW.val))
+				->default_value(accW.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_numberArgumentExcludeRange<int>,this,accW,_1,1,2))
+			, std::string("accessibility computation : sliding window size for accessibility computation"
+					" (arg in range ["+toString(accW.min)+","+toString(accW.max)+"];"
+					" 0 will use the full sequence length)"
+					" Note, this also restricts the maximal interaction length (see --intLenMax)."
+					).c_str())
+		(accL.name.c_str()
+			, value<int>(&(accL.val))
+				->default_value(accL.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_numberArgumentExcludeRange<int>,this,accL,_1,1,2))
+			, std::string("accessibility computation : maximal loop size (base pair span) for accessibility computation"
+					" (arg in range ["+toString(tAccL.min)+","+toString(accL.max)+"]; 0 will use the sliding window size 'accW')").c_str())
 		((energy.name+",e").c_str()
 			, value<char>(&(energy.val))
 				->default_value(energy.def)
@@ -1106,7 +1175,6 @@ parse(int argc, char** argv)
 			// parsing escape literals
 			outSep = unescaped_string<std::string::const_iterator>::getUnescaped( outSep );
 
-
 			// open output stream
 			{
 				// open according stream
@@ -1120,12 +1188,32 @@ parse(int argc, char** argv)
 			}
 
 			// parse the sequences
-			parseSequences("query",queryArg,query,qSet,qIdxPos0.val);
-			parseSequences("target",targetArg,target,tSet,tIdxPos0.val);
+			parseSequences("query",qId,queryArg,query,qSet,qIdxPos0.val);
+			parseSequences("target",tId,targetArg,target,tSet,tIdxPos0.val);
 
 			// validate accessibility input from file (requires parsed sequences)
 			validate_qAccFile( qAccFile );
 			validate_tAccFile( tAccFile );
+
+			//////////////// INTERACTION CONSTRAINTS ///////////////////
+
+			// interaction length: meta vs. special
+			if (intLenMax.isSet()) {
+				if (qIntLenMax.isSet() && intLenMax.val != qIntLenMax.val) { throw error("--intLenMax and --qIntLenMax are set to different values"); }
+				if (tIntLenMax.isSet() && intLenMax.val != tIntLenMax.val) { throw error("--intLenMax and --tIntLenMax are set to different values"); }
+				qIntLenMax.val = intLenMax.val;
+				tIntLenMax.val = intLenMax.val;
+			}
+
+			// interior loop length: meta vs. special
+			if (intLoopMax.isSet()) {
+				if (qIntLoopMax.isSet() && intLoopMax.val != qIntLoopMax.val) { throw error("--intLoopMax and --qIntLoopMax are set to different values"); }
+				if (tIntLoopMax.isSet() && intLoopMax.val != tIntLoopMax.val) { throw error("--intLoopMax and --tIntLoopMax are set to different values"); }
+				qIntLoopMax.val = intLoopMax.val;
+				tIntLoopMax.val = intLoopMax.val;
+			}
+
+			////////////////   SEED  ////////////////////////
 
 			// check seed setup
 			if (noSeedRequired) {
@@ -1137,13 +1225,13 @@ parse(int argc, char** argv)
 				if (mode.val == 'S') throw error("mode=S not applicable for non-seed predictions!");
 				// input sanity check : maybe seed constraints defined -> warn
 				if (!seedTQ.empty()) LOG(INFO) <<"no seed constraint wanted, but explicit seedTQ provided (will be ignored)";
-				if (seedBP.val != seedBP.def) LOG(INFO) <<"no seed constraint wanted, but seedBP provided (will be ignored)";
-				if (seedMaxUP.val != seedMaxUP.def) LOG(INFO) <<"no seed constraint wanted, but seedMaxUP provided (will be ignored)";
-				if (seedQMaxUP.val != seedQMaxUP.def) LOG(INFO) <<"no seed constraint wanted, but seedQMaxUP provided (will be ignored)";
-				if (seedTMaxUP.val != seedTMaxUP.def) LOG(INFO) <<"no seed constraint wanted, but seedTMaxUP provided (will be ignored)";
-				if (seedMaxE.val != seedMaxE.def) LOG(INFO) <<"no seed constraint wanted, but seedMaxE provided (will be ignored)";
-				if (seedMaxEhybrid.val != seedMaxEhybrid.def) LOG(INFO) <<"no seed constraint wanted, but seedMaxEhybrid provided (will be ignored)";
-				if (seedMinPu.val != seedMinPu.def) LOG(INFO) <<"no seed constraint wanted, but seedMinPu provided (will be ignored)";
+				if (seedBP.isSet()) LOG(INFO) <<"no seed constraint wanted, but seedBP provided (will be ignored)";
+				if (seedMaxUP.isSet()) LOG(INFO) <<"no seed constraint wanted, but seedMaxUP provided (will be ignored)";
+				if (seedQMaxUP.isSet()) LOG(INFO) <<"no seed constraint wanted, but seedQMaxUP provided (will be ignored)";
+				if (seedTMaxUP.isSet()) LOG(INFO) <<"no seed constraint wanted, but seedTMaxUP provided (will be ignored)";
+				if (seedMaxE.isSet()) LOG(INFO) <<"no seed constraint wanted, but seedMaxE provided (will be ignored)";
+				if (seedMaxEhybrid.isSet()) LOG(INFO) <<"no seed constraint wanted, but seedMaxEhybrid provided (will be ignored)";
+				if (seedMinPu.isSet()) LOG(INFO) <<"no seed constraint wanted, but seedMinPu provided (will be ignored)";
 				if (!seedQRange.empty()) LOG(INFO) <<"no seed constraint wanted, but seedQRange provided (will be ignored)";
 				if (!seedTRange.empty()) LOG(INFO) <<"no seed constraint wanted, but seedTRange provided (will be ignored)";
 				if (seedNoGU) LOG(INFO) <<"no seed constraint wanted, but seedNoGU provided (will be ignored)";
@@ -1185,18 +1273,21 @@ parse(int argc, char** argv)
 						throw error("explicit seed definition only for single query/target available");
 					}
 					// input sanity check : maybe seed constraints defined -> warn
-					if (seedBP.val != seedBP.def) LOG(INFO) <<"explicit seeds defined, but seedBP provided (will be ignored)";
-					if (seedMaxUP.val != seedMaxUP.def) LOG(INFO) <<"explicit seeds defined, but seedMaxUP provided (will be ignored)";
-					if (seedQMaxUP.val != seedQMaxUP.def) LOG(INFO) <<"explicit seeds defined, but seedQMaxUP provided (will be ignored)";
-					if (seedTMaxUP.val != seedTMaxUP.def) LOG(INFO) <<"explicit seeds defined, but seedTMaxUP provided (will be ignored)";
-					if (seedMaxE.val != seedMaxE.def) LOG(INFO) <<"explicit seeds defined, but seedMaxE provided (will be ignored)";
-					if (seedMaxEhybrid.val != seedMaxEhybrid.def) LOG(INFO) <<"explicit seeds defined, but seedMaxEhybrid provided (will be ignored)";
-					if (seedMinPu.val != seedMinPu.def) LOG(INFO) <<"explicit seeds defined, but seedMinPu provided (will be ignored)";
+					if (seedBP.isSet()) LOG(INFO) <<"explicit seeds defined, but seedBP provided (will be ignored)";
+					if (seedMaxUP.isSet()) LOG(INFO) <<"explicit seeds defined, but seedMaxUP provided (will be ignored)";
+					if (seedQMaxUP.isSet()) LOG(INFO) <<"explicit seeds defined, but seedQMaxUP provided (will be ignored)";
+					if (seedTMaxUP.isSet()) LOG(INFO) <<"explicit seeds defined, but seedTMaxUP provided (will be ignored)";
+					if (seedMaxE.isSet()) LOG(INFO) <<"explicit seeds defined, but seedMaxE provided (will be ignored)";
+					if (seedMaxEhybrid.isSet()) LOG(INFO) <<"explicit seeds defined, but seedMaxEhybrid provided (will be ignored)";
+					if (seedMinPu.isSet()) LOG(INFO) <<"explicit seeds defined, but seedMinPu provided (will be ignored)";
 					if (!seedQRange.empty()) LOG(INFO) <<"explicit seeds defined, but seedQRange provided (will be ignored)";
 					if (!seedTRange.empty()) LOG(INFO) <<"explicit seeds defined, but seedTRange provided (will be ignored)";
 					if (seedNoGU) LOG(INFO) <<"explicit seeds defined, but seedNoGU provided (will be ignored)";
 					if (seedNoGUend) LOG(INFO) <<"explicit seeds defined, but seedNoGUend provided (will be ignored)";
 				}
+				// compare maximal interaction length with minimal seed length
+				if (qIntLenMax.val > 0 && qIntLenMax.val < seedBP.val) { throw error("maximal query interaction length < seedBP"); }
+				if (tIntLenMax.val > 0 && tIntLenMax.val < seedBP.val) { throw error("maximal target interaction length < seedBP"); }
 			}
 
 			///////////////  PARSE AND PREPARE PREDICTION RANGES  //////////////
@@ -1217,6 +1308,176 @@ parse(int argc, char** argv)
 			// parse region string if available
 			parseRegion( "qRegion", qRegionString, query, qRegion );
 			parseRegion( "tRegion", tRegionString, target, tRegion );
+
+			//////////////// ACCESSIBILITY CONSTRAINTS ///////////////////
+
+			// accessibility setup: meta vs. special
+			if (acc.isSet()) {
+				if (qAcc.isSet() && acc.val != qAcc.val) { throw error("--acc and --qAcc are set to different values"); }
+				if (tAcc.isSet() && acc.val != tAcc.val) { throw error("--acc and --tAcc are set to different values"); }
+				qAcc.val = acc.val;
+				tAcc.val = acc.val;
+			}
+			if (accW.isSet()) {
+				if (qAccW.isSet() && accW.val != qAccW.val) { throw error("--accW and --qAccW are set to different values"); }
+				if (tAccW.isSet() && accW.val != tAccW.val) { throw error("--accW and --tAccW are set to different values"); }
+				qAccW.val = accW.val;
+				tAccW.val = accW.val;
+			}
+			if (accL.isSet()) {
+				if (qAccL.isSet() && accL.val != qAccL.val) { throw error("--accL and --qAccL are set to different values"); }
+				if (tAccL.isSet() && accL.val != tAccL.val) { throw error("--accL and --tAccL are set to different values"); }
+				qAccL.val = accL.val;
+				tAccL.val = accL.val;
+			}
+
+			// check qAccConstr - query sequence compatibility
+			if (vm.count("qAccConstr") > 0) {
+				// only for single sequence input supported
+				if (!validateSequenceNumber("qAccConstr",query,1,1)) {
+					// report error
+					INTARNA_NOT_IMPLEMENTED("--qAccConstr only supported for single sequence input");
+				}
+			} else {
+				// generate empty constraint
+				qAccConstr = std::string(query.at(0).size(),'.');
+			}
+			// check tAccConstr - target sequence compatibility
+			if (vm.count("tAccConstr") > 0) {
+				// only for single sequence input supported
+				if (!validateSequenceNumber("tAccConstr",target,1,1)) {
+					// report error
+					INTARNA_NOT_IMPLEMENTED("--tAccConstr only supported for single sequence input");
+				}
+			} else {
+				// generate empty constraint
+				tAccConstr = std::string(target.at(0).size(),'.');
+			}
+
+			// check sanity of accessibility setup
+			switch(qAcc.val) {
+			case 'C' : {
+				if (!qAccFile.empty()) LOG(INFO) <<"qAcc = "<<qAcc.val<<" : ignoring --qAccFile";
+				if (energy.val != 'V') {
+					if (accNoLP) LOG(INFO) <<"ignoring --accNoLP, not supported for energy=="<<energy.val;
+					if (accNoGUend) LOG(INFO) <<"ignoring --accNoGUend, not supported for energy=="<<energy.val;
+				}
+				break;
+			}
+			case 'E' : // drop to next handling
+			case 'P' : {
+				if (qAccFile.empty()) LOG(INFO) <<"qAcc = "<<qAcc.val<<" but no --qAccFile given";
+				if (vm.count("qAccConstr")>0) LOG(INFO) <<"qAcc = "<<qAcc.val<<" : accessibility constraints (--qAccConstr) possibly not used in computation of loaded ED values";
+				break;
+			}	// drop to next handling
+			case 'N' : {
+				if (qAccL.isSet()) LOG(INFO) <<"qAcc = "<<qAcc.val<<" : ignoring --qAccL";
+				if (qAccW.isSet()) LOG(INFO) <<"qAcc = "<<qAcc.val<<" : ignoring --qAccW";
+				if (qAcc.val != 'N' && !qAccFile.empty()) LOG(INFO) <<"qAcc = "<<qAcc.val<<" : ignoring --qAccFile";
+				break;
+			}
+			} // switch
+			switch(tAcc.val) {
+			case 'C' : {
+				if (!tAccFile.empty()) LOG(INFO) <<"tAcc = "<<tAcc.val<<" : ignoring --tAccFile";
+				if (energy.val != 'V') {
+					if (accNoLP) LOG(INFO) <<"ignoring --accNoLP, not supported for energy=="<<energy.val;
+					if (accNoGUend) LOG(INFO) <<"ignoring --accNoGUend, not supported for energy=="<<energy.val;
+				}
+				break;
+			}
+			case 'E' : // drop to next handling
+			case 'P' : {
+				if (tAccFile.empty()) LOG(INFO) <<"tAcc = "<<tAcc.val<<" but no --tAccFile given";
+				if (vm.count("tAccConstr")>0) LOG(INFO) <<"tAcc = "<<tAcc.val<<" : accessibility constraints (--tAccConstr) possibly not used in computation of loaded ED values";
+				break;
+			}	// drop to next handling
+			case 'N' : {
+				if (tAccL.isSet()) LOG(INFO) <<"tAcc = "<<tAcc.val<<" : ignoring --tAccL";
+				if (tAccW.isSet()) LOG(INFO) <<"tAcc = "<<tAcc.val<<" : ignoring --tAccW";
+				if (tAcc.val=='N' && !tAccFile.empty()) LOG(INFO) <<"tAcc = "<<tAcc.val<<" : ignoring --tAccFile";
+				break;
+			}
+			} // switch
+
+
+			// check qAcc upper bound
+			if (qAccL.val > qAccW.val && qAccW.val != 0) {
+				throw error("qAccL = " +toString(qAccL.val) + " : has to be <= qAccW (=" +toString(qAccW.val) + ")");
+			}
+
+			// check qAcc upper bound
+			if (tAccL.val > tAccW.val && tAccW.val != 0) {
+				throw error("tAccL = " +toString(tAccL.val)+" : has to be <= tAccW (=" +toString(tAccW.val)+")");
+			}
+
+
+			/////////////////  OUTPUT MODE  //////////////
+
+			// check ensemble sanity
+			switch(outMode.val) {
+			case 'E' :
+				// check single sequence input
+				if (target.size() > 1 || query.size() > 1) {
+					throw error("outmode=E allows only single sequence input for query and target");
+				}
+				// ensure separator is not used within sequence name
+				if (qId.find(outSep) != std::string::npos) { throw error("--qId contains --outSep separator..."); }
+				if (tId.find(outSep) != std::string::npos) { throw error("--tId contains --outSep separator..."); }
+				break;
+			case 'C' :
+				// ensure separator is not used within sequence name
+				if (qId.find(outSep) != std::string::npos) { throw error("--qId contains --outSep separator..."); }
+				if (tId.find(outSep) != std::string::npos) { throw error("--tId contains --outSep separator..."); }
+				break;
+			default:
+				break;
+			}
+
+			// check CSV stuff
+			if (outCsvCols != outCsvCols_default && outMode.val != 'C') {
+				throw error("outCsvCols set but outMode != C ("+toString(outMode.val)+")");
+			}
+			if (!outCsvSort.empty()) {
+				if (outMode.val != 'C') {
+					throw error("outCsvSort set but outMode != C ("+toString(outMode.val)+")");
+				}
+				// check if column to sort is within output list
+				std::string curCsvCols = (outCsvCols.empty() || outCsvCols=="*" ? OutputHandlerCsv::list2string(OutputHandlerCsv::string2list(""),",") : outCsvCols);
+				if ( ("," + curCsvCols + ",").find(","+outCsvSort+",") == std::string::npos ) {
+					throw error("outCsvSort column ID '"+outCsvSort+"' is not within outCsvCols list");
+				}
+				// get index of column to sort
+				OutputHandlerCsv::ColTypeList csvCols = OutputHandlerCsv::string2list( curCsvCols );
+				OutputHandlerCsv::ColType outCsvColType = *(OutputHandlerCsv::string2list( outCsvSort ).begin());
+				auto it = std::find(csvCols.begin(), csvCols.end(), outCsvColType);
+				size_t outCsvSortIdx = std::distance(csvCols.begin(), it);
+				// check whether to do lex or numeric ordering
+				bool sortLexOrder = (std::find( OutputHandlerCsv::colTypeNumericSort.begin(), OutputHandlerCsv::colTypeNumericSort.end(), outCsvColType) == OutputHandlerCsv::colTypeNumericSort.end());
+				// setup sorted CSV output
+				OutputStreamHandler * tmpOSH = outStreamHandler;
+				outStreamHandler = new OutputStreamHandlerSortedCsv( tmpOSH, outCsvSortIdx, sortLexOrder, outSep, true, outCsvLstSep );
+			}
+
+			// check output sanity
+			{	// check for duplicates
+				bool noDuplicate = true;
+				for (auto c1=outPrefix2streamName.begin(); noDuplicate && c1!=outPrefix2streamName.end(); c1++) {
+					// skip empty entries
+					if (c1->second.empty()) { continue; }
+					for (auto c2=c1; noDuplicate && (++c2)!=outPrefix2streamName.end();) {
+						if ( ! c2->second.empty() && boost::iequals( c1->second, c2->second ) ) {
+							noDuplicate = false;
+							throw error("--out argument shows multiple times '"+toString(c1->second)+"' as target file/stream.");
+						}
+					}
+					// check if base pair probability output possible
+					if (c1->first == OutPrefixCode::OP_basePairProb) {
+						if (model.val != 'P') { throw error("--out=basePairProb requires --model=P"); }
+						if (mode.val != 'M') { throw error("--out=basePairProb requires --mode=M"); }
+					}
+				}
+			}
 
 
 			//////////////// WINDOW-BASED COMPUTATION ///////////////////
@@ -1266,140 +1527,8 @@ parse(int argc, char** argv)
 				}
 			}
 
-			//////////////// ACCESSIBILITY CONSTRAINTS ///////////////////
 
-			// check qAccConstr - query sequence compatibility
-			if (vm.count("qAccConstr") > 0) {
-				// only for single sequence input supported
-				if (!validateSequenceNumber("qAccConstr",query,1,1)) {
-					// report error
-					INTARNA_NOT_IMPLEMENTED("--qAccConstr only supported for single sequence input");
-				}
-			} else {
-				// generate empty constraint
-				qAccConstr = std::string(query.at(0).size(),'.');
-			}
-			// check tAccConstr - target sequence compatibility
-			if (vm.count("tAccConstr") > 0) {
-				// only for single sequence input supported
-				if (!validateSequenceNumber("tAccConstr",target,1,1)) {
-					// report error
-					INTARNA_NOT_IMPLEMENTED("--tAccConstr only supported for single sequence input");
-				}
-			} else {
-				// generate empty constraint
-				tAccConstr = std::string(target.at(0).size(),'.');
-			}
-
-			// check sanity of accessibility setup
-			switch(qAcc.val) {
-			case 'C' : {
-				if (!qAccFile.empty()) LOG(INFO) <<"qAcc = "<<qAcc.val<<" : ignoring --qAccFile";
-				if (energy.val != 'V') {
-					if (accNoLP) LOG(INFO) <<"ignoring --accNoLP, not supported for energy=="<<energy.val;
-					if (accNoGUend) LOG(INFO) <<"ignoring --accNoGUend, not supported for energy=="<<energy.val;
-				}
-				break;
-			}
-			case 'E' : // drop to next handling
-			case 'P' : {
-				if (qAccFile.empty()) LOG(INFO) <<"qAcc = "<<qAcc.val<<" but no --qAccFile given";
-				if (vm.count("qAccConstr")>0) LOG(INFO) <<"qAcc = "<<qAcc.val<<" : accessibility constraints (--qAccConstr) possibly not used in computation of loaded ED values";
-				break;
-			}	// drop to next handling
-			case 'N' : {
-				if (qAccL.val != qAccL.def) LOG(INFO) <<"qAcc = "<<qAcc.val<<" : ignoring --qAccL";
-				if (qAccW.val != qAccW.def) LOG(INFO) <<"qAcc = "<<qAcc.val<<" : ignoring --qAccW";
-				if (qAcc.val != 'N' && !qAccFile.empty()) LOG(INFO) <<"qAcc = "<<qAcc.val<<" : ignoring --qAccFile";
-				break;
-			}
-			} // switch
-			switch(tAcc.val) {
-			case 'C' : {
-				if (!tAccFile.empty()) LOG(INFO) <<"tAcc = "<<tAcc.val<<" : ignoring --tAccFile";
-				if (energy.val != 'V') {
-					if (accNoLP) LOG(INFO) <<"ignoring --accNoLP, not supported for energy=="<<energy.val;
-					if (accNoGUend) LOG(INFO) <<"ignoring --accNoGUend, not supported for energy=="<<energy.val;
-				}
-				break;
-			}
-			case 'E' : // drop to next handling
-			case 'P' : {
-				if (tAccFile.empty()) LOG(INFO) <<"tAcc = "<<tAcc.val<<" but no --tAccFile given";
-				if (vm.count("tAccConstr")>0) LOG(INFO) <<"tAcc = "<<tAcc.val<<" : accessibility constraints (--tAccConstr) possibly not used in computation of loaded ED values";
-				break;
-			}	// drop to next handling
-			case 'N' : {
-				if (tAccL.val != tAccL.def) LOG(INFO) <<"tAcc = "<<tAcc.val<<" : ignoring --tAccL";
-				if (tAccW.val != tAccW.def) LOG(INFO) <<"tAcc = "<<tAcc.val<<" : ignoring --tAccW";
-				if (tAcc.val=='N' && !tAccFile.empty()) LOG(INFO) <<"tAcc = "<<tAcc.val<<" : ignoring --tAccFile";
-				break;
-			}
-			} // switch
-
-
-			// check qAcc upper bound
-			if (qAccL.val > qAccW.val && qAccW.val != 0) {
-				throw error("qAccL = " +toString(qAccL.val) + " : has to be <= qAccW (=" +toString(qAccW.val) + ")");
-			}
-
-			// check qAcc upper bound
-			if (tAccL.val > tAccW.val && tAccW.val != 0) {
-				throw error("tAccL = " +toString(tAccL.val)+" : has to be <= tAccW (=" +toString(tAccW.val)+")");
-			}
-
-			// check ensemble sanity
-			if (outMode.val == 'E') {
-				// check single sequence input
-				if (target.size() > 1 || query.size() > 1) {
-					throw error("outmode=E allows only single sequence input for query and target");
-				}
-			}
-
-			// check CSV stuff
-			if (outCsvCols != outCsvCols_default && outMode.val != 'C') {
-				throw error("outCsvCols set but outMode != C ("+toString(outMode.val)+")");
-			}
-			if (!outCsvSort.empty()) {
-				if (outMode.val != 'C') {
-					throw error("outCsvSort set but outMode != C ("+toString(outMode.val)+")");
-				}
-				// check if column to sort is within output list
-				std::string curCsvCols = (outCsvCols.empty() || outCsvCols=="*" ? OutputHandlerCsv::list2string(OutputHandlerCsv::string2list(""),",") : outCsvCols);
-				if ( ("," + curCsvCols + ",").find(","+outCsvSort+",") == std::string::npos ) {
-					throw error("outCsvSort column ID '"+outCsvSort+"' is not within outCsvCols list");
-				}
-				// get index of column to sort
-				OutputHandlerCsv::ColTypeList csvCols = OutputHandlerCsv::string2list( curCsvCols );
-				OutputHandlerCsv::ColType outCsvColType = *(OutputHandlerCsv::string2list( outCsvSort ).begin());
-				auto it = std::find(csvCols.begin(), csvCols.end(), outCsvColType);
-				size_t outCsvSortIdx = std::distance(csvCols.begin(), it);
-				// check whether to do lex or numeric ordering
-				bool sortLexOrder = (std::find( OutputHandlerCsv::colTypeNumericSort.begin(), OutputHandlerCsv::colTypeNumericSort.end(), outCsvColType) == OutputHandlerCsv::colTypeNumericSort.end());
-				// setup sorted CSV output
-				OutputStreamHandler * tmpOSH = outStreamHandler;
-				outStreamHandler = new OutputStreamHandlerSortedCsv( tmpOSH, outCsvSortIdx, sortLexOrder, outSep, true, outCsvLstSep );
-			}
-
-			// check output sanity
-			{	// check for duplicates
-				bool noDuplicate = true;
-				for (auto c1=outPrefix2streamName.begin(); noDuplicate && c1!=outPrefix2streamName.end(); c1++) {
-					// skip empty entries
-					if (c1->second.empty()) { continue; }
-					for (auto c2=c1; noDuplicate && (++c2)!=outPrefix2streamName.end();) {
-						if ( ! c2->second.empty() && boost::iequals( c1->second, c2->second ) ) {
-							noDuplicate = false;
-							throw error("--out argument shows multiple times '"+toString(c1->second)+"' as target file/stream.");
-						}
-					}
-					// check if base pair probability output possible
-					if (c1->first == OutPrefixCode::OP_basePairProb) {
-						if (model.val != 'P') { throw error("--out=basePairProb requires --model=P"); }
-						if (mode.val != 'M') { throw error("--out=basePairProb requires --mode=M"); }
-					}
-				}
-			}
+			//////////////// MODEL ////////////////////////
 
 			// final checks if parameter set compatible with model
 			switch (model.val) {
@@ -1915,6 +2044,7 @@ getOutputConstraint()  const
 void
 CommandLineParsing::
 parseSequences(const std::string & paramName,
+				const std::string & idPrefix,
 					const std::string& paramArg,
 					RnaSequenceVec& sequences,
 					const IndexRangeList & seqSubset,
@@ -1926,13 +2056,13 @@ parseSequences(const std::string & paramName,
 
 	// read FASTA from STDIN stream
 	if (boost::iequals(paramArg,"STDIN")) {
-		parseSequencesFasta(paramName, std::cin, sequences, seqSubset,idxPos0);
+		parseSequencesFasta(paramName,idPrefix, std::cin, sequences, seqSubset,idxPos0);
 	} else
 	if (RnaSequence::isValidSequenceIUPAC(paramArg)) {
 		// check if sequence is to be stored
 		if (seqSubset.empty() || seqSubset.covers(1)) {
 			// direct sequence input
-			sequences.push_back(RnaSequence(paramName,paramArg,idxPos0));
+			sequences.push_back(RnaSequence(idPrefix.empty()?paramName:idPrefix,paramArg,idxPos0));
 		} else {
 			// would result in no sequence -> error
 			LOG(ERROR) <<"Parsing of "<<paramName<<" : only single sequence given but not listed in sequence subset '"<<seqSubset<<"'";
@@ -1956,7 +2086,7 @@ parseSequences(const std::string & paramName,
 				LOG(ERROR) <<"FASTA parsing of "<<paramName<<" : could not open FASTA file  '"<<paramArg<<"'";
 				updateParsingCode( ReturnCode::STOP_PARSING_ERROR );
 			} else {
-				parseSequencesFasta(paramName, *infile, sequences, seqSubset,idxPos0);
+				parseSequencesFasta(paramName,idPrefix, *infile, sequences, seqSubset,idxPos0);
 			}
 		} catch (std::exception & ex) {
 			LOG(ERROR) <<"error while FASTA parsing of "<<paramName<<" : "<<ex.what();
@@ -1982,6 +2112,7 @@ parseSequences(const std::string & paramName,
 void
 CommandLineParsing::
 parseSequencesFasta( const std::string & paramName,
+					const std::string& idPrefix,
 					std::istream& input,
 					RnaSequenceVec& sequences,
 					const IndexRangeList & seqSubset,
@@ -2012,7 +2143,7 @@ parseSequencesFasta( const std::string & paramName,
 					// check if sequence is to be stored
 					if (seqSubset.empty() || seqSubset.covers(seqNumber)) {
 						// store sequence
-						sequences.push_back( RnaSequence( name, sequence, idxPos0 ) );
+						sequences.push_back( RnaSequence( idPrefix+name, sequence, idxPos0 ) );
 					}
 				}
 				// clear name data
@@ -2060,7 +2191,7 @@ parseSequencesFasta( const std::string & paramName,
 		// check if sequence is to be stored
 		if (seqSubset.empty() || seqSubset.covers(seqNumber)) {
 			// store sequence
-			sequences.push_back( RnaSequence( name, sequence, idxPos0 ) );
+			sequences.push_back( RnaSequence( idPrefix+name, sequence, idxPos0 ) );
 		}
 	}
 
