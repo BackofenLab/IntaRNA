@@ -30,7 +30,7 @@ isFeasibleSeedBasePair( const size_t i1, const size_t i2, const bool atEndOfSeed
 bool
 SeedHandler::
 isSeedBasePair( const size_t i1, const size_t i2
-						, const size_t k1, const size_t k2 ) const
+						, const size_t k1, const size_t k2, const bool includeBoundaries ) const
 {
 	if (!isSeedBound(i1, i2)) {
 		return false;
@@ -38,10 +38,12 @@ isSeedBasePair( const size_t i1, const size_t i2
 
 	// trace seed at (i1,i2)
 	Interaction interaction = Interaction(energy.getAccessibility1().getSequence(), energy.getAccessibility2().getAccessibilityOrigin().getSequence());
-	interaction.basePairs.push_back( energy.getBasePair(i1, i2) );
 	traceBackSeed( interaction, i1, i2 );
-	interaction.basePairs.push_back( energy.getBasePair(i1+getSeedLength1(i1,i2)-1, i2+getSeedLength2(i1,i2)-1) );
-
+	if (includeBoundaries) {
+    interaction.basePairs.push_back( energy.getBasePair(i1, i2) );
+	  interaction.basePairs.push_back( energy.getBasePair(i1+getSeedLength1(i1,i2)-1, i2+getSeedLength2(i1,i2)-1) );
+	}
+	
 	return (std::find(interaction.basePairs.begin(), interaction.basePairs.end(), energy.getBasePair(k1, k2)) != interaction.basePairs.end());
 }
 

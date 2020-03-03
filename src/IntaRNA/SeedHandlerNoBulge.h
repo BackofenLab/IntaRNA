@@ -155,12 +155,13 @@ public:
 	 * @param i2 the left most interacting base of seq2 of a seed
 	 * @param k1 the interacting base of seq1
 	 * @param k2 the interacting base of seq2
+	 * @param includeBoundaries whether boundaries count as seed base pair
 	 * @return true if (k1,k2) is a valid base pair of seed(i1,i2); false otherwise
 	 */
 	virtual
 	bool
 	isSeedBasePair( const size_t i1, const size_t i2
-						, const size_t k1, const size_t k2 ) const;
+						, const size_t k1, const size_t k2, const bool includeBoundaries = true ) const;
 
 
 protected:
@@ -265,15 +266,22 @@ inline
 bool
 SeedHandlerNoBulge::
 isSeedBasePair( const size_t i1, const size_t i2
-						, const size_t k1, const size_t k2 ) const
+						, const size_t k1, const size_t k2, const bool includeBoundaries ) const
 {
 	if (!isSeedBound(i1, i2)) {
 		return false;
 	}
 
-	return k1 >= i1 && k2 >= i2
+	if (includeBoundaries) {
+    return k1 >= i1 && k2 >= i2
 			&& (k1 - i1) == (k2 - i2)
 			&& (k1-i1)<getConstraint().getBasePairs();
+	}
+
+	// exclude boundaries
+	return k1 > i1 && k2 > i2
+			&& (k1 - i1) == (k2 - i2)
+			&& (k1-i1)<getConstraint().getBasePairs()-1;
 }
 
 //////////////////////////////////////////////////////////////////////////
