@@ -97,6 +97,44 @@ updateToNextSeed( size_t & i1_out, size_t & i2_out
 
 //////////////////////////////////////////////////////////////////////////
 
+bool
+SeedHandler::
+updateToNextSeedWithK( size_t & i1_out, size_t & i2_out
+		, const size_t k1, const size_t k2, const bool includeBoundaries
+		) const
+{
+	// boundaries
+	if (k1 == 0 || k2 == 0 || i1_out == 0 || i2_out == 0) {
+		return false;
+	}
+
+	const size_t seedBP = getConstraint().getBasePairs();
+  size_t maxSeedLength1 = (seedBP - std::min((size_t)2,seedBP)) + getConstraint().getMaxUnpaired1();
+	size_t maxSeedLength2 = (seedBP - std::min((size_t)2,seedBP)) + getConstraint().getMaxUnpaired2();
+
+	size_t i1 = std::min(i1_out-1, k1-1);
+	size_t i2 = std::min(i2_out-1, k2-1);
+	size_t min_i1 = k1 - std::min(k1, maxSeedLength1);
+	size_t min_i2 = k2 - std::min(k2, maxSeedLength2);
+
+	while (i1 > min_i1 && i2 > min_i2 && !(isSeedBound(i1, i2))) {
+		i1--;
+		i2--;
+	}
+
+	// check if we found a valid seed in the range
+	if (isSeedBasePair(i1, i2, k1, k2, includeBoundaries)) {
+		i1_out = i1;
+		i2_out = i2;
+		return true;
+	}
+	
+	// no valid seed found
+	return false;
+}
+
+//////////////////////////////////////////////////////////////////////////
+
 void
 SeedHandler::
 addSeeds( Interaction & i ) const

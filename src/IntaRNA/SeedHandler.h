@@ -152,6 +152,22 @@ public:
 			) const;
 
 	/**
+	 * updateToNextSeed for seeds including base pair k
+	 *
+	 * @param i1 seq1 seed index to be changed
+	 * @param i2 seq2 seed index to be changed
+	 * @param k1 first position within seq1 (inclusive)
+	 * @param k2 last position within seq1 (inclusive)
+	 * @param includeBoundaries whether boundaries count as seed base pair
+	 * @return true if the input variables have been changed; false otherwise
+	 */
+	virtual
+	bool
+	updateToNextSeedWithK( size_t & i1, size_t & i2
+			, const size_t k1, const size_t k2, const bool includeBoundaries = true
+			) const;
+
+	/**
 	 * Adds all seeds to a given interaction that are completely covered by its
 	 * base pairs.
 	 *
