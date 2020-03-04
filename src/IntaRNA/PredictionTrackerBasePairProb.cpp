@@ -22,7 +22,7 @@ PredictionTrackerBasePairProb(
 	, energy(energy)
 	, fileName(fileName)
 	, probabilityThreshold(0.0001)
-	, maxDotPlotSize(1000)
+	, maxDotPlotSize(640)
 {
 }
 
@@ -122,7 +122,7 @@ updateZ( PredictorMfeEns *predictor, SeedHandler *seedHandler )
     " using Vienna RNA package "
     VRNA_VERSION;
 
-	generateDotPlot(strdup(rna1.c_str()), strdup(reverseRna2.c_str()), name, plist, comment.c_str(), interactionBoundary);
+	generateDotPlotSvg(strdup(rna1.c_str()), strdup(reverseRna2.c_str()), name, plist, comment.c_str(), interactionBoundary, energy);
 
 }
 
@@ -163,11 +163,6 @@ void
 PredictionTrackerBasePairProb::
 computeBasePairProbs( const PredictorMfeEns2dSeedExtension *predictor, const SeedHandler* seedHandler )
 {
-
-#define LOGCHECK_I i1 == 2 && i2 == 2
-#define LOGCHECK_J j1 == 2 && j2 == 2
-#define LOGCHECK_K k1 == 2 && k2 == 2
-
 	auto ZL_partition = predictor->getZLPartition();
 	size_t i1, j1, i2, j2;
 	for (auto z = predictor->getZPartition().begin(); z != predictor->getZPartition().end(); ++z) {
@@ -176,19 +171,15 @@ computeBasePairProbs( const PredictorMfeEns2dSeedExtension *predictor, const See
 		i2 = z->first.i2;
 		j2 = z->first.j2;
 
-		LOG(DEBUG) << "region @ " << i1 << ":" << j1 << ":" << i2 << ":" << j2;
-
 		Z_type bpZ;
 		// i external left
 		bpZ = getHybridZ(i1, j1, i2, j2, predictor)
 				* energy.getBoltzmannWeight(energy.getE(i1, j1, i2, j2, E_type(0)));
 		updateProb(Interaction::BasePair(i1,i2), bpZ);
-		LOG_IF(LOGCHECK_I, DEBUG) << "ext left @ " << i1 << ":" << i2 << " = " << bpZ;
 
 		// j external right (and not single bp)
 		if (i1!=j1) {
 			updateProb(Interaction::BasePair(j1,j2), bpZ);
-			LOG_IF(LOGCHECK_J, DEBUG) << "ext right @ " << j1 << ":" << j2 << " = " << bpZ;
 		}
 
 		Z_type tempZ;
@@ -207,17 +198,14 @@ computeBasePairProbs( const PredictorMfeEns2dSeedExtension *predictor, const See
 
 				// ... ZS:ZS
 				tempZ = ZSleft * ZSright / energy.getBoltzmannWeight(energy.getE_init());
-				LOG_IF(LOGCHECK_K, DEBUG) << "int ZS:ZS " << " = " << tempZ;
 				bpZ += tempZ;
 
 				// ... ZS:ZN
 				tempZ = ZSleft * getZRPartition(predictor, seedHandler, k1, j1, k2, j2);
-				LOG_IF(LOGCHECK_K, DEBUG) << "int ZS:ZN " << " = " << tempZ;
 				bpZ += tempZ;
 
 				// ... ZN:ZS
 				tempZ = getZPartitionValue(&ZL_partition, Interaction::Boundary(i1,k1,i2,k2), false) * ZSright / energy.getBoltzmannWeight(energy.getE_init());
-				LOG_IF(LOGCHECK_K, DEBUG) << "int ZN:ZS " << " = " << tempZ;
 				bpZ += tempZ;
 
 				// seeds overlapping k
@@ -241,14 +229,12 @@ computeBasePairProbs( const PredictorMfeEns2dSeedExtension *predictor, const See
 									* energy.getBoltzmannWeight(seedHandler->getSeedE(si1, si2))
 									* getHybridZ(sj1, j1, sj2, j2, predictor)
 									/ energy.getBoltzmannWeight(energy.getE_init());
-						LOG_IF(LOGCHECK_K, DEBUG) << "int ZN:seed:ZS @ " << si1 << ":" << si2 << " = " << tempZ;
 						bpZ += tempZ;
 
 						// ZS:seed:ZN
 						tempZ = getHybridZ(i1, si1, i2, si2, predictor)
 									* energy.getBoltzmannWeight(seedHandler->getSeedE(si1, si2))
 									* getZRPartition(predictor, seedHandler, sj1, j1, sj2, j2);
-						LOG_IF(LOGCHECK_K, DEBUG) << "int ZS:seed:ZN @ " << si1 << ":" << si2 << " = " << tempZ;
 						bpZ += tempZ;
 
 						// ZN:seed:ZP
@@ -256,7 +242,6 @@ computeBasePairProbs( const PredictorMfeEns2dSeedExtension *predictor, const See
 									* energy.getBoltzmannWeight(seedHandler->getSeedE(si1, si2))
 									* (getZHPartition(predictor, seedHandler, sj1, j1, sj2, j2) - getHybridZ(sj1, j1, sj2, j2, predictor))
 									/ energy.getBoltzmannWeight(energy.getE_init());
-						LOG_IF(LOGCHECK_K, DEBUG) << "int ZN:seed:ZP @ " << si1 << ":" << si2 << " = " << tempZ;
 						bpZ += tempZ;
 
 						// ZNL:seed':ZNR
@@ -278,7 +263,6 @@ computeBasePairProbs( const PredictorMfeEns2dSeedExtension *predictor, const See
 											* energy.getBoltzmannWeight(PredictorMfeEns2dSeedExtension::getNonOverlappingEnergy(spi1, spi2, si1, si2, energy, *seedHandler))
 											* energy.getBoltzmannWeight(seedHandler->getSeedE(si1, si2))
 											* getZRPartition(predictor, seedHandler, sj1, j1, sj2, j2);
-								LOG_IF(LOGCHECK_K, DEBUG) << "int ZN:seed':ZN @ " << spi1 << ":" << spi2 << " = " << tempZ;
 								bpZ += tempZ;
 							}
 						}
@@ -653,6 +637,123 @@ generateDotPlot( const char *seq1, const char *seq2, const char *fileName
 
 	fclose(file);
 	return true; /* success */
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+bool
+PredictionTrackerBasePairProb::
+generateDotPlotSvg( const char *seq1, const char *seq2, const char *fileName
+							 , const plist *pl, const char *comment
+						   , const Interaction::Boundary interactionBoundary
+							 , const InteractionEnergy & energy )
+{
+	FILE *file;
+	file = fopen(fileName, "w");
+	if (file == NULL) return false; /* failure */
+
+	const float boxSize = maxDotPlotSize / (3.5 + std::max(strlen(seq1), strlen(seq2)));
+	const float maxWidth = (2.5+strlen(seq1)) * boxSize;
+	const float maxHeight = (2.5+strlen(seq2)) * boxSize;
+
+	fprintf(file,
+          "<svg width='%f' height='%f' version='1.1' xmlns='http://www.w3.org/2000/svg'>\n",
+					maxWidth+boxSize, maxHeight+boxSize);
+
+	// draw sequence 1 + unpaired probs
+	for (size_t i = 0; seq1[i] != '\0'; i++) {
+    fprintf(file,
+		        "<text x='%f' y='%f' dominant-baseline='middle' text-anchor='middle' font-size='%fpx'>%c</text>\n"
+						, (i+3) * boxSize, 0.5 * boxSize, boxSize, seq1[i]);
+		fprintf(file,
+		        "<text x='%f' y='%f' dominant-baseline='middle' text-anchor='middle' font-size='%fpx'>%c</text>\n"
+						, (i+3) * boxSize, maxHeight + 0.5*boxSize, boxSize, seq1[i]);
+		float acc = energy.getBoltzmannWeight(energy.getED1(i, i));
+		std::ostringstream message;
+		message << acc;
+		fprintf(file, drawSvgSquare(i+1, -0.5, boxSize, acc, message.str().c_str()));
+  }
+
+	// draw sequence 2 + unpaired probs
+	for (size_t i = 0; seq2[i] != '\0'; i++) {
+    fprintf(file,
+		        "<text x='%f' y='%f' dominant-baseline='middle' text-anchor='middle' font-size='%fpx'>%c</text>\n"
+						, 0.5 * boxSize, (i+3) * boxSize, boxSize, seq2[i]);
+		fprintf(file,
+		        "<text x='%f' y='%f' dominant-baseline='middle' text-anchor='middle' font-size='%fpx'>%c</text>\n"
+						, maxWidth + 0.5*boxSize, (i+3) * boxSize, boxSize, seq2[i]);
+		float acc = energy.getBoltzmannWeight(energy.getED2(i, i));
+		std::ostringstream message;
+		message << acc;
+		fprintf(file, drawSvgSquare(-0.5, i+1, boxSize, acc, message.str().c_str()));
+  }
+
+	// draw dots
+	for (const plist *pl1 = pl; pl1->i > 0; pl1++) {
+    if (pl1->type == 0) {
+			std::ostringstream message;
+			message << "(" << (pl1->i-1) << "," << (strlen(seq2)-pl1->j) << ") = " << pl1->p;
+      fprintf(file, drawSvgSquare(pl1->i, strlen(seq2)-pl1->j+1, boxSize, pl1->p, message.str().c_str()));
+    }
+  }
+
+	// draw grid
+	const float dashArray = 0.5 * boxSize;
+	const float dashOffset = 0.5 * dashArray;
+	const float strokeWidth = 0.02 * boxSize;
+	for (size_t i = 0; i <= strlen(seq1); i++) {
+		if (i % 10 == 0) {
+      fprintf(file,
+		          "<line x1='%f' y1='%f' x2='%f' y2='%f' style='stroke:rgb(64,64,64);stroke-width:%f'/>\n"
+					  	, (i+2.5) * boxSize, 2.5*boxSize, (i+2.5) * boxSize, 1.0*maxHeight, strokeWidth);
+		} else {
+			fprintf(file,
+		          "<line x1='%f' y1='%f' x2='%f' y2='%f' stroke-dasharray='%f %f' stroke-dashoffset='%f' style='stroke:rgb(48,48,48);stroke-width:%f'/>\n"
+						  , (i+2.5) * boxSize, 2.5*boxSize, (i+2.5) * boxSize, 1.0*maxHeight, dashArray, dashArray, dashOffset, strokeWidth);
+		}
+	}
+	for (size_t i = 0; i <= strlen(seq2); i++) {
+		if (i % 10 == 0) {
+      fprintf(file,
+		          "<line x1='%f' y1='%f' x2='%f' y2='%f' style='stroke:rgb(64,64,64);stroke-width:%f'/>\n"
+						  , 2.5*boxSize, (i+2.5) * boxSize, 1.0*maxWidth, (i+2.5) * boxSize, strokeWidth);
+		} else {
+      fprintf(file,
+		          "<line x1='%f' y1='%f' x2='%f' y2='%f' stroke-dasharray='%f %f' stroke-dashoffset='%f' style='stroke:rgb(48,48,48);stroke-width:%f'/>\n"
+					  	, 2.5*boxSize, (i+2.5) * boxSize, 1.0*maxWidth, (i+2.5) * boxSize, dashArray, dashArray, dashOffset, strokeWidth);
+		}
+		
+	}
+	fprintf(file,
+		      "<rect x='%f' y='%f' width='%f' height='%f' style='pointer-events:none;stroke:black;stroke-width:%f;fill-opacity:0'/>\n"
+					, 2.5*boxSize, 2.5*boxSize, 1.0*(maxWidth-2.5*boxSize), 1.0*(maxHeight-2.5*boxSize), 2*strokeWidth);
+
+	// draw best interaction outline
+	fprintf(file,
+		      "<rect x='%f' y='%f' width='%f' height='%f' style='pointer-events:none;stroke:rgb(255,0,0);stroke-width:%f;fill-opacity:0'/>\n"
+					, (interactionBoundary.i1+2.5) * boxSize
+					, (strlen(seq2)-interactionBoundary.i2-interactionBoundary.j1+interactionBoundary.i1+1.5) * boxSize
+					, (interactionBoundary.j1-interactionBoundary.i1+1) * boxSize
+					, (interactionBoundary.j2-interactionBoundary.i2+1) * boxSize
+					, 2*strokeWidth);
+
+	fprintf(file, "</svg>\n");
+
+	fclose(file);
+	return true; /* success */
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+const char*
+PredictionTrackerBasePairProb::
+drawSvgSquare(const float x, const float y, const float size, const float probability, const char* tooltip)
+{
+	std::ostringstream svg;
+  svg << "<rect x='" << (x+1.5) * size << "' y='" << (y+1.5) * size << "' width='" << size << "' height='" << size << "' style='fill:black;fill-opacity:" << sqrt(probability) << ";'>";
+	svg << "<title>" << tooltip << "</title>";
+	svg << "</rect>";
+	return svg.str().c_str();
 }
 
 ////////////////////////////////////////////////////////////////////////////

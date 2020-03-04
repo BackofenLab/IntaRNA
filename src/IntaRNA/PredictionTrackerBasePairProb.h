@@ -229,6 +229,37 @@ protected:
 								 , const Interaction::Boundary interactionBoundary );
 
 	/**
+	 * Generates a dotplot of the given base pair probabilities
+	 * @param seq1 first RNA sequence
+	 * @param seq2 second RNA sequence
+	 * @param fileName name of the output file
+	 * @param pl plist containing base pair probabilities
+	 * @param comment comment to include in postscript
+	 * @param interactionBoundary boundary of the predicted interaction
+	 * @param energy interaction energy
+	 *
+	 * @return false in case of failure
+	 */
+	bool
+	generateDotPlotSvg( const char *seq1, const char *seq2, const char *fileName
+	               , const plist *pl, const char *comment
+								 , const Interaction::Boundary interactionBoundary
+								 , const InteractionEnergy & energy );
+
+  /**
+	 * Draw an SVG square at given position with given size and opacity
+	 * @param x horizontal position of square center
+	 * @param y vertical position of square center
+	 * @param size size of square
+	 * @param probability bp-probability of square [0-1]
+	 * @param tooltip tooltip shown on hover
+	 * 
+	 * @return svg tag for square
+	 */
+	const char*
+	drawSvgSquare(const float x, const float y, const float size, const float probability, const char* tooltip = "");
+
+	/**
 	 * Compute basepair probabilities and store in structureProbs
 	 * @param predictor the predictor providing the probability information
 	 * @param seedHandler the seedHandler of the predictor
