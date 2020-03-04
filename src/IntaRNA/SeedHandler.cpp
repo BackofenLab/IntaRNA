@@ -103,33 +103,29 @@ updateToNextSeedWithK( size_t & i1_out, size_t & i2_out
 		, const size_t k1, const size_t k2, const bool includeBoundaries
 		) const
 {
-	// boundaries
-	if (k1 == 0 || k2 == 0 || i1_out == 0 || i2_out == 0) {
+	// if no left-shift left
+	if ((i1_out == 0 && i2_out == 0)
+			|| (!includeBoundaries && (k1 == 0 || k2 == 0)))
+	{
 		return false;
 	}
 
 	const size_t seedBP = getConstraint().getBasePairs();
-  size_t maxSeedLength1 = (seedBP - std::min((size_t)2,seedBP)) + getConstraint().getMaxUnpaired1();
-	size_t maxSeedLength2 = (seedBP - std::min((size_t)2,seedBP)) + getConstraint().getMaxUnpaired2();
+	const size_t maxDistI1 = (seedBP - 1) + getConstraint().getMaxUnpaired1();
+	const size_t maxDistI2 = (seedBP - 1) + getConstraint().getMaxUnpaired2();
 
-	size_t i1 = std::min(i1_out-1, k1-1);
-	size_t i2 = std::min(i2_out-1, k2-1);
-	size_t min_i1 = k1 - std::min(k1, maxSeedLength1);
-	size_t min_i2 = k2 - std::min(k2, maxSeedLength2);
+	size_t min_i1 = k1 - std::min(k1, maxDistI1);
+	size_t min_i2 = k2 - std::min(k2, maxDistI2);
 
-	while (i1 > min_i1 && i2 > min_i2 && !(isSeedBound(i1, i2))) {
-		i1--;
-		i2--;
-	}
-
-	// check if we found a valid seed in the range
-	if (isSeedBasePair(i1, i2, k1, k2, includeBoundaries)) {
-		i1_out = i1;
-		i2_out = i2;
-		return true;
+	// check all seeds within the range
+	while (updateToNextSeed(i1_out,i2_out,min_i1, (includeBoundaries?k1:k1-1), min_i2, (includeBoundaries?k2:k2-1))) {
+		// check if we found a seed including k in the range
+		if (isSeedBasePair(i1_out, i2_out, k1, k2, includeBoundaries)) {
+			return true;
+		}
 	}
 	
-	// no valid seed found
+	// no valid seed including k found
 	return false;
 }
 

@@ -154,8 +154,8 @@ public:
 	/**
 	 * updateToNextSeed for seeds including base pair k
 	 *
-	 * @param i1 seq1 seed index to be changed
-	 * @param i2 seq2 seed index to be changed
+	 * @param i1 seq1 seed index to be changed; set to > k1 to find first valid i1
+	 * @param i2 seq2 seed index to be changed; set to > k2 to find first valid i2
 	 * @param k1 first position within seq1 (inclusive)
 	 * @param k2 last position within seq1 (inclusive)
 	 * @param includeBoundaries whether boundaries count as seed base pair
