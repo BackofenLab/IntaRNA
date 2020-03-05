@@ -257,7 +257,7 @@ protected:
 	 * @return svg tag for square
 	 */
 	const char*
-	drawSvgSquare(const float x, const float y, const float size, const float probability, const char* tooltip = "");
+	drawSvgSquare(const float x, const float y, const size_t size, const float probability, const char* tooltip = "");
 
 	/**
 	 * Compute basepair probabilities and store in structureProbs

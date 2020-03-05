@@ -652,91 +652,179 @@ generateDotPlotSvg( const char *seq1, const char *seq2, const char *fileName
 	file = fopen(fileName, "w");
 	if (file == NULL) return false; /* failure */
 
-	const float boxSize = maxDotPlotSize / (3.5 + std::max(strlen(seq1), strlen(seq2)));
-	const float maxWidth = (2.5+strlen(seq1)) * boxSize;
-	const float maxHeight = (2.5+strlen(seq2)) * boxSize;
+	// file information
+	fprintf(file, "<!--\n\
+%s \n\n\
+Sequence 1: %s\n\
+Sequence 2: %s\n\n\
+Base pair probabilities:\n"
+	, comment, seq1, seq2);
+
+	for (const plist *pl1 = pl; pl1->i > 0; pl1++) {
+    if (pl1->type == 0) {
+			fprintf(file, "%d,%d: %f\n"
+			, pl1->i, strlen(seq2)-pl1->j+1, pl1->p);
+		}
+	}
+
+	fprintf(file, "-->\n\n");
+
+  const size_t unitSize = 1;
+	const size_t boxSize = 2 * unitSize;
+	const size_t maxWidth = (2.5+strlen(seq1)) * boxSize;
+	const size_t maxHeight = (2.5+strlen(seq2)) * boxSize;
 
 	fprintf(file,
-          "<svg width='%f' height='%f' version='1.1' xmlns='http://www.w3.org/2000/svg'>\n",
-					maxWidth+boxSize, maxHeight+boxSize);
-
-	// draw sequence 1 + unpaired probs
-	for (size_t i = 0; seq1[i] != '\0'; i++) {
-    fprintf(file,
-		        "<text x='%f' y='%f' dominant-baseline='middle' text-anchor='middle' font-size='%fpx'>%c</text>\n"
-						, (i+3) * boxSize, 0.5 * boxSize, boxSize, seq1[i]);
-		fprintf(file,
-		        "<text x='%f' y='%f' dominant-baseline='middle' text-anchor='middle' font-size='%fpx'>%c</text>\n"
-						, (i+3) * boxSize, maxHeight + 0.5*boxSize, boxSize, seq1[i]);
-		float acc = energy.getBoltzmannWeight(energy.getED1(i, i));
-		std::ostringstream message;
-		message << acc;
-		fprintf(file, drawSvgSquare(i+1, -0.5, boxSize, acc, message.str().c_str()));
-  }
-
-	// draw sequence 2 + unpaired probs
-	for (size_t i = 0; seq2[i] != '\0'; i++) {
-    fprintf(file,
-		        "<text x='%f' y='%f' dominant-baseline='middle' text-anchor='middle' font-size='%fpx'>%c</text>\n"
-						, 0.5 * boxSize, (i+3) * boxSize, boxSize, seq2[i]);
-		fprintf(file,
-		        "<text x='%f' y='%f' dominant-baseline='middle' text-anchor='middle' font-size='%fpx'>%c</text>\n"
-						, maxWidth + 0.5*boxSize, (i+3) * boxSize, boxSize, seq2[i]);
-		float acc = energy.getBoltzmannWeight(energy.getED2(i, i));
-		std::ostringstream message;
-		message << acc;
-		fprintf(file, drawSvgSquare(-0.5, i+1, boxSize, acc, message.str().c_str()));
-  }
+          "<svg viewBox='0 0 %d %d' width='%d' height='%d' version='1.1' xmlns='http://www.w3.org/2000/svg'>\n",
+					maxWidth+boxSize, maxHeight+boxSize, maxDotPlotSize, maxDotPlotSize);
 
 	// draw dots
+	fprintf(file, "\n<!-- Base pair probabilities -->\n\n");
 	for (const plist *pl1 = pl; pl1->i > 0; pl1++) {
     if (pl1->type == 0) {
 			std::ostringstream message;
-			message << "(" << (pl1->i-1) << "," << (strlen(seq2)-pl1->j) << ") = " << pl1->p;
+			message << "(" << (pl1->i) << "," << (strlen(seq2)-pl1->j+1) << ") = " << pl1->p;
       fprintf(file, drawSvgSquare(pl1->i, strlen(seq2)-pl1->j+1, boxSize, pl1->p, message.str().c_str()));
     }
   }
 
+	fprintf(file, "\n<!-- Unpaired probabilities -->\n\n");
+	// unpaired probs seq1
+	for (size_t i = 0; seq1[i] != '\0'; i++) {
+		float acc = 1-energy.getBoltzmannWeight(energy.getED1(i+1, i+1));
+		std::ostringstream message;
+		message << "(" << (i+1) << ") = " << acc;
+		fprintf(file, drawSvgSquare(i+1, -0.5, boxSize, acc, message.str().c_str()));
+  }
+
+	// unpaired probs seq2
+	for (size_t i = 0; seq2[i] != '\0'; i++) {
+		float acc = 1-energy.getBoltzmannWeight(energy.getED2(i+1, i+1));
+		std::ostringstream message;
+		message << "(" << (strlen(seq2)-i) << ") = " << acc;
+		fprintf(file, drawSvgSquare(-0.5, strlen(seq2)-i, boxSize, acc, message.str().c_str()));
+  }
+
 	// draw grid
-	const float dashArray = 0.5 * boxSize;
-	const float dashOffset = 0.5 * dashArray;
-	const float strokeWidth = 0.02 * boxSize;
+	fprintf(file, "\n<!-- Grid -->\n\n");
 	for (size_t i = 0; i <= strlen(seq1); i++) {
+		if (i % 5 == 0) {
+      fprintf(file,
+		          "<line x1='%d' y1='%d' x2='%d' y2='%d' class='sep5'/>\n"
+					  	, size_t((i+2.5)*2*unitSize), 5*unitSize, size_t((i+2.5)*2*unitSize), maxHeight);
+		}
 		if (i % 10 == 0) {
       fprintf(file,
-		          "<line x1='%f' y1='%f' x2='%f' y2='%f' style='stroke:rgb(64,64,64);stroke-width:%f'/>\n"
-					  	, (i+2.5) * boxSize, 2.5*boxSize, (i+2.5) * boxSize, 1.0*maxHeight, strokeWidth);
-		} else {
-			fprintf(file,
-		          "<line x1='%f' y1='%f' x2='%f' y2='%f' stroke-dasharray='%f %f' stroke-dashoffset='%f' style='stroke:rgb(48,48,48);stroke-width:%f'/>\n"
-						  , (i+2.5) * boxSize, 2.5*boxSize, (i+2.5) * boxSize, 1.0*maxHeight, dashArray, dashArray, dashOffset, strokeWidth);
+		          "<line x1='%d' y1='%d' x2='%d' y2='%d' class='sep10'/>\n"
+					  	, size_t((i+2.5)*2*unitSize), 5*unitSize, size_t((i+2.5)*2*unitSize), maxHeight);
+		}
+		if (i % 50 == 0) {
+      fprintf(file,
+		          "<line x1='%d' y1='%d' x2='%d' y2='%d' class='sep50'/>\n"
+					  	, size_t((i+2.5)*2*unitSize), 5*unitSize, size_t((i+2.5)*2*unitSize), maxHeight);
 		}
 	}
 	for (size_t i = 0; i <= strlen(seq2); i++) {
+		if (i % 5 == 0) {
+      fprintf(file,
+		          "<line x1='%d' y1='%d' x2='%d' y2='%d' class='sep5'/>\n"
+						  , 5*unitSize, size_t((i+2.5)*2*unitSize), maxWidth, size_t((i+2.5)*2*unitSize));
+		}
 		if (i % 10 == 0) {
       fprintf(file,
-		          "<line x1='%f' y1='%f' x2='%f' y2='%f' style='stroke:rgb(64,64,64);stroke-width:%f'/>\n"
-						  , 2.5*boxSize, (i+2.5) * boxSize, 1.0*maxWidth, (i+2.5) * boxSize, strokeWidth);
-		} else {
-      fprintf(file,
-		          "<line x1='%f' y1='%f' x2='%f' y2='%f' stroke-dasharray='%f %f' stroke-dashoffset='%f' style='stroke:rgb(48,48,48);stroke-width:%f'/>\n"
-					  	, 2.5*boxSize, (i+2.5) * boxSize, 1.0*maxWidth, (i+2.5) * boxSize, dashArray, dashArray, dashOffset, strokeWidth);
+		          "<line x1='%d' y1='%d' x2='%d' y2='%d' class='sep10'/>\n"
+						  , 5*unitSize, size_t((i+2.5)*2*unitSize), maxWidth, size_t((i+2.5)*2*unitSize));
 		}
-		
+		if (i % 50 == 0) {
+      fprintf(file,
+		          "<line x1='%d' y1='%d' x2='%d' y2='%d' class='sep50'/>\n"
+						  , 5*unitSize, size_t((i+2.5)*2*unitSize), maxWidth, size_t((i+2.5)*2*unitSize));
+		}
 	}
+
+	// draw frames
 	fprintf(file,
-		      "<rect x='%f' y='%f' width='%f' height='%f' style='pointer-events:none;stroke:black;stroke-width:%f;fill-opacity:0'/>\n"
-					, 2.5*boxSize, 2.5*boxSize, 1.0*(maxWidth-2.5*boxSize), 1.0*(maxHeight-2.5*boxSize), 2*strokeWidth);
+		      "<rect x='%d' y='%d' width='%d' height='%d' class='frame'/>\n"
+					, 5*unitSize, 5*unitSize, maxWidth-5*unitSize, (maxHeight-5*unitSize));
+	fprintf(file,
+		      "<rect x='%d' y='%d' width='%d' height='%d' class='frame'/>\n"
+					, 5*unitSize, boxSize, maxWidth-5*unitSize, boxSize);
+	fprintf(file,
+		      "<rect x='%d' y='%d' width='%d' height='%d' class='frame'/>\n"
+					, boxSize, 5*unitSize, boxSize, maxHeight-5*unitSize);
+
+	fprintf(file, "\n<!-- Sequences -->\n\n");
+	// draw sequence 1
+	for (size_t i = 0; seq1[i] != '\0'; i++) {
+    fprintf(file,
+		        "<text x='%d' y='%d' class='nt'>%c</text>\n"
+						, (i+3) * boxSize, boxSize, seq1[i]);
+		fprintf(file,
+		        "<text x='%d' y='%d' class='nt'>%c</text>\n"
+						, (i+3) * boxSize, maxHeight + boxSize, seq1[i]);
+  }
+
+	// draw sequence 2
+	for (size_t i = 0; seq2[i] != '\0'; i++) {
+    fprintf(file,
+		        "<text x='%d' y='%d' class='nt'>%c</text>\n"
+						, unitSize, size_t((i+3.5)*2*unitSize), seq2[i]);
+		fprintf(file,
+		        "<text x='%d' y='%d' class='nt'>%c</text>\n"
+						, maxWidth + unitSize, size_t((i+3.5)*2*unitSize), seq2[i]);
+  }
 
 	// draw best interaction outline
+	fprintf(file, "\n<!-- Mfe -->\n\n");
 	fprintf(file,
-		      "<rect x='%f' y='%f' width='%f' height='%f' style='pointer-events:none;stroke:rgb(255,0,0);stroke-width:%f;fill-opacity:0'/>\n"
-					, (interactionBoundary.i1+2.5) * boxSize
-					, (strlen(seq2)-interactionBoundary.i2-interactionBoundary.j1+interactionBoundary.i1+1.5) * boxSize
+		      "<rect x='%d' y='%d' width='%d' height='%d' class='mfe'/>\n"
+					, size_t((interactionBoundary.i1+2.5)*2*unitSize)
+					, size_t((strlen(seq2)-interactionBoundary.i2-interactionBoundary.j1+interactionBoundary.i1+1.5)*2*unitSize)
 					, (interactionBoundary.j1-interactionBoundary.i1+1) * boxSize
-					, (interactionBoundary.j2-interactionBoundary.i2+1) * boxSize
-					, 2*strokeWidth);
+					, (interactionBoundary.j2-interactionBoundary.i2+1) * boxSize);
 
+	fprintf(file, "\n<!-- Styling -->\n\n");
+	const float strokeWidth = 0.02 * boxSize;
+  fprintf(file, "<style type='text/css'>\n\
+    <![CDATA[\n\
+      .nt {\n\
+				text-anchor:middle;\n\
+				font-size:%dpx;\n\
+			}\n\
+      .box {\n\
+				fill:black;\n\
+				width:%dpx;\n\
+				height:%dpx;\n\
+			}\n\
+      .sep5 {\n\
+				stroke:#555;\n\
+				stroke-width:%f;\n\
+				opacity:0.2;\n\
+			}\n\
+      .sep10 {\n\
+				stroke:#555;\n\
+				stroke-width:%f;\n\
+				opacity:0.5;\n\
+			}\n\
+      .sep50 {\n\
+				stroke:#555;\n\
+				stroke-width:%f;\n\
+				opacity:1;\n\
+			}\n\
+      .frame {\n\
+				pointer-events:none;\n\
+				stroke:black;\n\
+				stroke-width:%f;\n\
+				fill-opacity:0;\n\
+			}\n\
+			.mfe {\n\
+				pointer-events:none;\n\
+				stroke:red;\n\
+				stroke-width:%f;\n\
+				fill-opacity:0;\n\
+			}\n\
+    ]]>\n\
+  </style>\n", boxSize, boxSize, boxSize, strokeWidth, strokeWidth, strokeWidth, 2*strokeWidth, 2*strokeWidth);
 	fprintf(file, "</svg>\n");
 
 	fclose(file);
@@ -747,12 +835,12 @@ generateDotPlotSvg( const char *seq1, const char *seq2, const char *fileName
 
 const char*
 PredictionTrackerBasePairProb::
-drawSvgSquare(const float x, const float y, const float size, const float probability, const char* tooltip)
+drawSvgSquare(const float x, const float y, const size_t size, const float probability, const char* tooltip)
 {
 	std::ostringstream svg;
-  svg << "<rect x='" << (x+1.5) * size << "' y='" << (y+1.5) * size << "' width='" << size << "' height='" << size << "' style='fill:black;fill-opacity:" << sqrt(probability) << ";'>";
+  svg << "<rect x='" << size_t((x+1.5) * size) << "' y='" << size_t((y+1.5) * size) << "' class='box' style='fill-opacity:" << sqrt(probability) << ";'>";
 	svg << "<title>" << tooltip << "</title>";
-	svg << "</rect>";
+	svg << "</rect>\n";
 	return svg.str().c_str();
 }
 
