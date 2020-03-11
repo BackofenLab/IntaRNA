@@ -750,6 +750,7 @@ Sequence 2: %s\n"
 					, boxSize, 5*unitSize, boxSize, maxHeight-5*unitSize, 2*strokeWidth);
 
 	fprintf(file, "\n<!-- Sequences -->\n\n");
+	fprintf(file, "<g transform='translate(0,-%f)'>\n", unitSize/4.0);
 	// draw sequence 1
 	for (size_t i = 0; seq1[i] != '\0'; i++) {
     fprintf(file,
@@ -769,6 +770,7 @@ Sequence 2: %s\n"
 		        "<text x='%d' y='%d' class='nt' style='text-anchor:middle;font-size:%dpx;font-family:Arial;'>%c<title>(%d)</title></text>\n"
 						, maxWidth + unitSize, size_t((i+3.5)*2*unitSize), boxSize, seq2[i], i+1);
   }
+	fprintf(file, "</g>\n");
 
 	// draw best interaction outline
 	fprintf(file, "\n<!-- Mfe -->\n\n");
