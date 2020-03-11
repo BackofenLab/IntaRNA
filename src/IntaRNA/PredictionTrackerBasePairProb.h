@@ -253,11 +253,12 @@ protected:
 	 * @param size size of square
 	 * @param probability bp-probability of square [0-1]
 	 * @param tooltip tooltip shown on hover
+	 * @param className class of svg element
 	 * 
 	 * @return svg tag for square
 	 */
 	const char*
-	drawSvgSquare(const float x, const float y, const size_t size, const float probability, const char* tooltip = "");
+	drawSvgSquare(const float x, const float y, const size_t size, const float probability, const char* className, const char* tooltip = "");
 
 	/**
 	 * Compute basepair probabilities and store in structureProbs
