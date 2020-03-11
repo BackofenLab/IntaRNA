@@ -97,11 +97,13 @@ public:
 	 * @param sj2 the index of seed2 in the second sequence
 	 * @param energy the interaction energy handler
 	 * @param seedHandler the seedHandler of the predictor
+	 * @param sipIsSeed whether or not sj is a left seed boundary (for sanity checking)
 	 */
 	static
 	E_type
 	getNonOverlappingEnergy( const size_t si1, const size_t si2, const size_t sj1, const size_t sj2
-	                       , const InteractionEnergy & energy, const SeedHandler & seedHandler );
+	                       , const InteractionEnergy & energy, const SeedHandler & seedHandler
+	                       , const bool sjIsSeed = true );
 
 protected:
 

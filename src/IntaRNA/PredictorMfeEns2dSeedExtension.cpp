@@ -155,18 +155,19 @@ getZHPartition() const {
 E_type
 PredictorMfeEns2dSeedExtension::
 getNonOverlappingEnergy( const size_t si1, const size_t si2, const size_t si1p, const size_t si2p
-                       , const InteractionEnergy & energy, const SeedHandler & seedHandler ) {
+                       , const InteractionEnergy & energy, const SeedHandler & seedHandler
+                       , const bool sipIsSeed) {
 
 #if INTARNA_IN_DEBUG_MODE
 	// check indices
 	if( !seedHandler.isSeedBound(si1,si2) )
 		throw std::runtime_error("PredictorMfeEns2dSeedExtension::getNonOverlappingEnergy( si "+toString(si1)+","+toString(si2)+",..) is no seed bound");
-	if( !seedHandler.isSeedBound(si1p,si2p) )
+	if( sipIsSeed && !seedHandler.isSeedBound(si1p,si2p) )
 		throw std::runtime_error("PredictorMfeEns2dSeedExtension::getNonOverlappingEnergy( sip "+toString(si1p)+","+toString(si2p)+",..) is no seed bound");
 	if( si1 > si1p )
 		throw std::runtime_error("PredictorMfeEns2dSeedExtension::getNonOverlappingEnergy( si "+toString(si1)+","+toString(si2)+", sip "+toString(si1p)+","+toString(si2p)+",..) si1 > sj1 !");
 	// check if loop-overlapping (i.e. share at least one loop)
-	if( !seedHandler.areLoopOverlapping(si1,si2,si1p,si2p) ) {
+	if( sipIsSeed && !seedHandler.areLoopOverlapping(si1,si2,si1p,si2p) ) {
 		throw std::runtime_error("PredictorMfeEns2dSeedExtension::getNonOverlappingEnergy( si "+toString(si1)+","+toString(si2)+", sip "+toString(si1p)+","+toString(si2p)+",..) are not loop overlapping");
 	}
 #endif

@@ -220,8 +220,7 @@ computeBasePairProbs( const PredictorMfeEns2dSeedExtension *predictor, const See
 							continue;
 						}
 						// check if still in region
-						assert( i1 <= si1 && i2 <= si2 );
-						if (sj1 > j1 || sj2 > j2) {
+						if (si1 < i1 || si2 < i2 || sj1 > j1 || sj2 > j2) {
 							continue;
 						}
 						// ZN:seed:ZS
@@ -255,12 +254,11 @@ computeBasePairProbs( const PredictorMfeEns2dSeedExtension *predictor, const See
 									continue;
 								}
 								// check if still in region
-								assert( i1 <= spi1 && i2 <= spi2 );
-								if (spj1 > j1 || spj2 > j2) {
+								if (spi1 < i1 || spi2 < i2 ||spj1 > j1 || spj2 > j2) {
 									continue;
 								}
 								tempZ = getZPartitionValue(&ZL_partition, Interaction::Boundary(i1,spi1,i2,spi2), false) // contains E_init
-											* energy.getBoltzmannWeight(PredictorMfeEns2dSeedExtension::getNonOverlappingEnergy(spi1, spi2, si1, si2, energy, *seedHandler))
+											* energy.getBoltzmannWeight(PredictorMfeEns2dSeedExtension::getNonOverlappingEnergy(spi1, spi2, si1, si2, energy, *seedHandler, false))
 											* energy.getBoltzmannWeight(seedHandler->getSeedE(si1, si2))
 											* getZRPartition(predictor, seedHandler, sj1, j1, sj2, j2);
 								bpZ += tempZ;
@@ -367,7 +365,7 @@ getZRPartition( const PredictorMfeEns2dSeedExtension *predictor, const SeedHandl
 		// check if still in region
 		if ( j1 < sj1 || j2 < sj2 ) continue;
 		E_type Eoverlap = seedHandler->getSeedE(si1, si2)
-						- PredictorMfeEns2dSeedExtension::getNonOverlappingEnergy(si1, si2, i1, i2, energy, *seedHandler);
+						- PredictorMfeEns2dSeedExtension::getNonOverlappingEnergy(si1, si2, i1, i2, energy, *seedHandler, false);
 		Z_type corrZterm = energy.getBoltzmannWeight(Eoverlap) * getZRPartition(predictor, seedHandler, sj1, j1, sj2, j2);
 		assert(corrZterm <= partZ);
 		partZ -= corrZterm;
