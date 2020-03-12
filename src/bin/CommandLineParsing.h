@@ -1330,7 +1330,9 @@ validate_energyFile(const std::string & value)
 {
 	// check for supported default models
 	if (value == std::string(VrnaHandler::Turner99)
-		|| value == std::string(VrnaHandler::Turner04) )
+		|| value == std::string(VrnaHandler::Turner04)
+		|| value == std::string(VrnaHandler::Andronescu07)
+	)
 	{
 		return;
 	}

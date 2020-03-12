@@ -10,10 +10,17 @@
 # changes in development version since last release 
 ################################################################################
 
+# IntaRNA
+- BUGFIX: Andronescu07 energy parameter set was not loaded by name without file
 
 
 ################################################################################  
 ################################################################################
+
+200312 Martin Raden
+ * bin/CommandLineParsing :
+   * validate_energyFile() : 
+     + bugfix: missing check for predefined Andronescu07 data set name
 
 ################################################################################
 ### version 3.2.0
