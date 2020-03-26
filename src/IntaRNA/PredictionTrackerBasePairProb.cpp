@@ -675,7 +675,7 @@ Sequence 2: %s\n"
     if (pl1->type == 0) {
 			std::ostringstream message;
 			message << "(" << (pl1->i) << "," << (strlen(seq2)-pl1->j+1) << ") = " << pl1->p;
-      fprintf(file, drawSvgSquare(pl1->i, strlen(seq2)-pl1->j+1, boxSize, pl1->p, "bp", message.str().c_str()));
+      fprintf(file, drawSvgSquare(pl1->i, strlen(seq2)-pl1->j+1, boxSize, pl1->p, "bp", message.str().c_str()).c_str());
     }
   }
 
@@ -686,7 +686,7 @@ Sequence 2: %s\n"
 		if (acc > 0) {
       std::ostringstream message;
 		  message << "(" << (i+1) << ") = " << acc;
-		  fprintf(file, drawSvgSquare(i+1, -0.5, boxSize, acc, "unpaired", message.str().c_str()));
+		  fprintf(file, drawSvgSquare(i+1, -0.5, boxSize, acc, "unpaired", message.str().c_str()).c_str());
 		}
   }
 
@@ -696,7 +696,7 @@ Sequence 2: %s\n"
 		if (acc > 0) {
       std::ostringstream message;
 		  message << "(" << (strlen(seq2)-i) << ") = " << acc;
-		  fprintf(file, drawSvgSquare(-0.5, strlen(seq2)-i, boxSize, acc, "unpaired", message.str().c_str()));
+		  fprintf(file, drawSvgSquare(-0.5, strlen(seq2)-i, boxSize, acc, "unpaired", message.str().c_str()).c_str());
 		}
   }
 
@@ -837,7 +837,7 @@ Sequence 2: %s\n"
 
 ////////////////////////////////////////////////////////////////////////////
 
-const char*
+std::string
 PredictionTrackerBasePairProb::
 drawSvgSquare(const float x, const float y, const size_t size, const float probability, const char* className, const char* tooltip)
 {
@@ -845,7 +845,7 @@ drawSvgSquare(const float x, const float y, const size_t size, const float proba
   svg << "<rect x='" << size_t((x+1.5) * size) << "' y='" << size_t((y+1.5) * size) << "' width='" << size << "' height='" << size << "' class='" << className << "' style='fill:black;fill-opacity:" << sqrt(probability) << ";'>";
 	svg << "<title>" << tooltip << "</title>";
 	svg << "</rect>\n";
-	return svg.str().c_str();
+	return svg.str();
 }
 
 ////////////////////////////////////////////////////////////////////////////

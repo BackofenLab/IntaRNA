@@ -257,7 +257,7 @@ protected:
 	 * 
 	 * @return svg tag for square
 	 */
-	const char*
+	std::string
 	drawSvgSquare(const float x, const float y, const size_t size, const float probability, const char* className, const char* tooltip = "");
 
 	/**
