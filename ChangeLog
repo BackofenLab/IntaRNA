@@ -13,9 +13,16 @@
 # IntaRNA
 - BUGFIX: Andronescu07 energy parameter set was not loaded by name without file
 
+# CopomuS :
+- exit value 0 if no favorable interaction was found
+
 
 ################################################################################  
 ################################################################################
+
+200429 Martin Raden
+ * python/copomus/candidate_selectors.py :
+   * bugfix: sys.exit(0) if not favorable interaction was found
 
 200312 Martin Raden
  * bin/CommandLineParsing :

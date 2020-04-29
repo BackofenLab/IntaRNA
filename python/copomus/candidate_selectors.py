@@ -24,7 +24,7 @@ def get_mfe_bps(query: str, target: str, qidxpos0: int, tidxpos0: int, param_fil
     data = i.run(query, target, qidxpos0, tidxpos0, 'bpList', threads, param_file=param_file)
     if not data or not data['bpList']:
         print('No favorable interaction between the specified sequences!')
-        sys.exit(1)
+        sys.exit(0)
     for t in data['bpList'].strip().split(':'):
         t_index, q_index = [int(x) for x in t.strip('(').strip(')').split(',')]
         candidates.append((q_index, t_index))  # note we do query first, then target
@@ -48,7 +48,7 @@ def get_mfe_bps_so(query: str, target: str, qidxpos0: int, tidxpos0: int, param_
     data = i.run(query, target, qidxpos0, tidxpos0, 'start1,end1,start2,end2', threads, param_file=param_file)
     if not data:
         print('No favorable interaction between the specified sequences!')
-        sys.exit(1)
+        sys.exit(0)
     data = i.run(query, target, qidxpos0, tidxpos0, 'bpList', threads, 1000, param_file,
                  ['--qRegion', f"{data['start2']}-{data['end2']}", '--tRegion',  f"{data['start1']}-{data['end1']}"])
     for subopt in data:
