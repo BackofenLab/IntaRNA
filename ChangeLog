@@ -12,6 +12,7 @@
 
 # IntaRNA
 - BUGFIX: Andronescu07 energy parameter set was not loaded by name without file
+- support for multi-seq input when `seedQ|TRange` given
 
 # CopomuS :
 - exit value 0 if no favorable interaction was found
@@ -19,6 +20,10 @@
 
 ################################################################################  
 ################################################################################
+
+200602 Martin Raden
+ * bin/CommandLineParsing :
+   + explicit seedQ|TRange check for each sequence (support for multi-seq input)
 
 200429 Martin Raden
  * python/copomus/candidate_selectors.py :

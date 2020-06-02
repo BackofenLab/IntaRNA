@@ -1237,18 +1237,14 @@ parse(int argc, char** argv)
 			} else {
 				// check query search ranges
 				if (!seedQRange.empty()) {
-					if (query.size()!=1) {
-						throw error("seedQRange given but more than one query sequence provided");
-					} else {
-						validate_indexRangeList("seedQRange",seedQRange, *(query.begin()));
+					for (auto q : query) {
+						validate_indexRangeList("seedQRange",seedQRange, q);
 					}
 				}
 				// check target search ranges
 				if (!seedTRange.empty()) {
-					if (target.size()!=1) {
-						throw error("seedTRange given but more than one target sequence provided");
-					} else {
-						validate_indexRangeList("seedTRange",seedTRange, *(target.begin()));
+					for (auto t : target) {
+						validate_indexRangeList("seedTRange",seedTRange, t);
 					}
 				}
 
@@ -1256,14 +1252,14 @@ parse(int argc, char** argv)
 				// check for explicit seed constraints
 				if (seedTQ.empty()) {
 					// check for minimal sequence length (>=seedBP)
-					for( size_t i=0; i<query.size(); i++) {
-						if (query.at(i).size() < seedBP.val) {
-							throw error("length of query sequence "+toString(i+1)+" is below minimal number of seed base pairs (seedBP="+toString(seedBP.val)+")");
+					for( auto q : query) {
+						if (q.size() < seedBP.val) {
+							throw error("length of query "+q.getId()+" is below minimal number of seed base pairs (seedBP="+toString(seedBP.val)+")");
 						}
 					}
-					for( size_t i=0; i<target.size(); i++) {
-						if (target.at(i).size() < seedBP.val) {
-							throw error("length of target sequence "+toString(i+1)+" is below minimal number of seed base pairs (seedBP="+toString(seedBP.val)+")");
+					for( auto t : target) {
+						if (t.size() < seedBP.val) {
+							throw error("length of target sequence "+t.getId()+" is below minimal number of seed base pairs (seedBP="+toString(seedBP.val)+")");
 						}
 					}
 				} else {
