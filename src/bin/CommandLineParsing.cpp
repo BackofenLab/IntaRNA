@@ -1542,12 +1542,12 @@ parse(int argc, char** argv)
 				// check for minimal sequence length
 				for(size_t i=0; i<query.size(); i++) {
 					if (query.at(i).size() < helixMinBP.val) {
-						throw error("length of query sequence "+toString(i+1)+" is below minimal number of helix base pairs (helixMinBP="+toString(helixMinBP.val)+")");
+						throw error("length of query sequence "+query.at(i).getId()+" is below minimal number of helix base pairs (helixMinBP="+toString(helixMinBP.val)+")");
 					}
 				}
 				for(size_t i=0; i<target.size(); i++) {
 					if (target.at(i).size() < helixMinBP.val) {
-						throw error("length of target sequence "+toString(i+1)+" is below minimal number of helix base pairs (helixMinBP="+toString(helixMinBP.val)+")");
+						throw error("length of target sequence "+target.at(i).getId()+" is below minimal number of helix base pairs (helixMinBP="+toString(helixMinBP.val)+")");
 					}
 				}
 				// Ensure that min is smaller than max.
@@ -2230,7 +2230,7 @@ validateSequenceAlphabet( const std::string& paramName,
 	for (int i=0; i<sequences.size(); i++) {
 		// check if valid
 		if (! RnaSequence::isValidSequenceIUPAC(sequences.at(i).asString())) {
-			LOG(ERROR) <<"sequence " <<(i+1)<<" for parameter "<<paramName<<" is not valid!";
+			LOG(ERROR) <<"sequence " <<sequences.at(i).getId()<<" for parameter "<<paramName<<" is not valid!";
 			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 			allValid = false;
 		}

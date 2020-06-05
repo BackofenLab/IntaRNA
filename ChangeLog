@@ -23,6 +23,10 @@
 
 200602 Martin Raden
  * bin/CommandLineParsing :
+   + sequence error information now with sequence ID rather than number
+
+200602 Martin Raden
+ * bin/CommandLineParsing :
    + explicit seedQ|TRange check for each sequence (support for multi-seq input)
 
 200429 Martin Raden
