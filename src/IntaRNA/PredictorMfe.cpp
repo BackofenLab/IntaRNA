@@ -92,6 +92,15 @@ updateOptima( const size_t i1, const size_t j1
 		return;
 	}
 
+	// check ED penalties
+	if (output.getOutputConstraint().maxED < Accessibility::ED_UPPER_BOUND
+			&& (energy.getED1(i1,j1) > output.getOutputConstraint().maxED
+					|| energy.getED2(i2,j2) > output.getOutputConstraint().maxED)
+			)
+	{
+		return;
+	}
+
 	// update Zall if needed
 	if (incrementZall) {
 		updateZall( i1,j1, i2,j2, interE, isHybridE );

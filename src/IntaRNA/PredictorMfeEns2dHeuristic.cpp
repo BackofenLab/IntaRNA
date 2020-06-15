@@ -34,8 +34,6 @@ predict( const IndexRange & r1
 		, const IndexRange & r2
 		)
 {
-	// temporary access
-	const OutputConstraint & outConstraint = output.getOutputConstraint();
 #if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_omp_logOutput)
 #endif

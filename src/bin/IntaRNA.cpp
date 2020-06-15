@@ -213,9 +213,9 @@ int main(int argc, char **argv){
 								// setup collecting output handler to ensure
 								// k-best output per query-target combination
 								// and not per region combination if not requested
-								OutputHandlerInteractionList bestInteractions( parameters.getOutputConstraint(),
+								OutputHandlerInteractionList bestInteractions( parameters.getOutputConstraint(*energy),
 										(parameters.reportBestPerRegion() ? std::numeric_limits<size_t>::max() : 1 )
-											* parameters.getOutputConstraint().reportMax );
+											* parameters.getOutputConstraint(*energy).reportMax );
 
 								// run prediction for all range combinations
 								for(const IndexRange & tRange : parameters.getTargetRanges(*energy, targetNumber, *targetAcc)) {

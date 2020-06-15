@@ -3,6 +3,7 @@
 #define INTARNA_OUTPUTCONSTRAINT_H_
 
 #include "IntaRNA/general.h"
+#include "IntaRNA/Accessibility.h"
 
 namespace IntaRNA {
 
@@ -58,6 +59,9 @@ public:
 	//! whether or not interaction base pairs have to be traced for output generation
 	const bool needBPs;
 
+	//! maximal ED penalty of each interacting subsequence to be considered for output
+	const E_type maxED;
+
 public:
 
 	/**
@@ -83,7 +87,8 @@ public:
 						, const bool noLP = false
 						, const bool noGUend = false
 						, const bool needZall = false
-						, const bool needBPs = true );
+						, const bool needBPs = true
+						, const E_type maxED = Accessibility::ED_UPPER_BOUND);
 
 	//! destruction
 	virtual ~OutputConstraint();

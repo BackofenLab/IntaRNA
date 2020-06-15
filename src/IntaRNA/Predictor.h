@@ -256,6 +256,15 @@ updateZall( const size_t i1, const size_t j1
 		return;
 	}
 
+	// check ED penalties
+	if (output.getOutputConstraint().maxED < Accessibility::ED_UPPER_BOUND
+			&& (energy.getED1(i1,j1) > output.getOutputConstraint().maxED
+					|| energy.getED2(i2,j2) > output.getOutputConstraint().maxED)
+			)
+	{
+		return;
+	}
+
 	// increment Zall with BW of overall energy
 	incrementZall(
 			energy.getBoltzmannWeight(

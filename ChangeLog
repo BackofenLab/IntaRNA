@@ -21,6 +21,21 @@
 ################################################################################  
 ################################################################################
 
+200615 Martin Raden
+ * IntaRNA/OutputConstraint :
+   + maxED : maximal ED penalty of each interacting subsequence
+ * bin/CommandLineParsing :
+   * getOutputConstraint() : 
+     + energy argument to setup OutputConstraint constructor call
+ * IntaRNA/Predictor :
+   * updateZall() :
+     + check for OutputConstraint.maxED
+ * IntaRNA/PredictorMfe :
+   * updateOptima() :
+     + check for OutputConstraint.maxED
+ * IntaRNA/PredictorMfe* :
+   * obsolete OutputConstraint variable removed
+
 200602 Martin Raden
  * bin/CommandLineParsing :
    + sequence error information now with sequence ID rather than number

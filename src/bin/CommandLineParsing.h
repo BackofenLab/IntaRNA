@@ -290,9 +290,10 @@ public:
 
 	/**
 	 * The constraints to be applied to the interaction output generation
+	 * @param energy the interaction energy to be used for computation
 	 * @return the output constraints to be applied
 	 */
-	OutputConstraint getOutputConstraint() const;
+	OutputConstraint getOutputConstraint( const InteractionEnergy & energy ) const;
 
 	/**
 	 * The stream to write the interaction output to

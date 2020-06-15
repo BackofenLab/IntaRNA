@@ -2004,7 +2004,7 @@ getEnergyHandler( const Accessibility& accTarget, const ReverseAccessibility& ac
 
 OutputConstraint
 CommandLineParsing::
-getOutputConstraint()  const
+getOutputConstraint( const InteractionEnergy & energy )  const
 {
 	checkIfParsed();
 	OutputConstraint::ReportOverlap overlap = OutputConstraint::ReportOverlap::OVERLAP_BOTH;
@@ -2025,6 +2025,7 @@ getOutputConstraint()  const
 			, outNoGUend
 			, outNeedsZall
 			, outNeedsBPs
+			, (outMinPu.val>0 ? std::min<E_type>(Accessibility::ED_UPPER_BOUND, energy.getE( outMinPu.val )) : Accessibility::ED_UPPER_BOUND)
 			);
 }
 
@@ -2437,22 +2438,22 @@ getOutputHandler( const InteractionEnergy & energy ) const
 {
 	switch (outMode.val) {
 	case 'N' :
-		return new OutputHandlerText( getOutputConstraint(), outStreamHandler->getOutStream(), energy, 10, false );
+		return new OutputHandlerText( getOutputConstraint(energy), outStreamHandler->getOutStream(), energy, 10, false );
 	case 'D' :
-		return new OutputHandlerText( getOutputConstraint(), outStreamHandler->getOutStream(), energy, 10, true );
+		return new OutputHandlerText( getOutputConstraint(energy), outStreamHandler->getOutStream(), energy, 10, true );
 	case 'E' :
 		// ensure that Zall is computed
 		outNeedsZall = true;
 		// no interaction details needed
 		outNeedsBPs = false;
-		return new OutputHandlerEnsemble( getOutputConstraint(), outStreamHandler->getOutStream(), energy );
+		return new OutputHandlerEnsemble( getOutputConstraint(energy), outStreamHandler->getOutStream(), energy );
 	case 'C' :
 		// ensure that Zall is computed if needed
 		outNeedsZall = outNeedsZall || OutputHandlerCsv::needsZall(OutputHandlerCsv::string2list( outCsvCols ));
 		// check whether interaction details are needed
 		outNeedsBPs = OutputHandlerCsv::needBPs(OutputHandlerCsv::string2list( outCsvCols ));;
 		// create output handler
-		return new OutputHandlerCsv( getOutputConstraint(), outStreamHandler->getOutStream(), energy, OutputHandlerCsv::string2list( outCsvCols ), outSep, false, outCsvLstSep );
+		return new OutputHandlerCsv( getOutputConstraint(energy), outStreamHandler->getOutStream(), energy, OutputHandlerCsv::string2list( outCsvCols ), outSep, false, outCsvLstSep );
 	default :
 		INTARNA_NOT_IMPLEMENTED("Output mode "+toString(outMode.val)+" not implemented yet");
 	}
