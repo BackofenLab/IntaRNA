@@ -718,10 +718,10 @@ of equal length *n*.
 | [Seed constraint](#seed) | ![yes](doc/figures/icon-yes.39.png) | ![yes](doc/figures/icon-yes.39.png) | ![yes](doc/figures/icon-yes.39.png) |
 | [Explicit seeds](#seedExplicit) | ![yes](doc/figures/icon-yes.39.png) | ![yes](doc/figures/icon-yes.39.png) | ![yes](doc/figures/icon-yes.39.png) |
 | [SHAPE reactivity constraint](#shape) | ![yes](doc/figures/icon-yes.39.png) | ![yes](doc/figures/icon-yes.39.png) | ![yes](doc/figures/icon-yes.39.png) |
-| No [seed constraint](#seed) | ![yes](doc/figures/icon-yes.39.png) | ![yes](doc/figures/icon-yes.39.png) | [![no](doc/figures/icon-no.39.png)] |
+| No [seed constraint](#seed) | ![yes](doc/figures/icon-yes.39.png) | ![yes](doc/figures/icon-yes.39.png) | ![no](doc/figures/icon-no.39.png) |
 | Minimum free energy interaction | not guaranteed | ![yes](doc/figures/icon-yes.39.png) | ![yes](doc/figures/icon-yes.39.png) |
 | Overlapping [suboptimal interactions](#subopts) | ![yes](doc/figures/icon-yes.39.png) | ![yes](doc/figures/icon-yes.39.png) | ![yes](doc/figures/icon-yes.39.png) |
-| Non-overlapping [suboptimal interactions](#subopts) | ![yes](doc/figures/icon-yes.39.png) | [![no](doc/figures/icon-no.39.png)] | ![yes](doc/figures/icon-yes.39.png) |
+| Non-overlapping [suboptimal interactions](#subopts) | ![yes](doc/figures/icon-yes.39.png) | ![no](doc/figures/icon-no.39.png) | ![yes](doc/figures/icon-yes.39.png) |
 
 Note, due to the low run-time requirement of the heuristic prediction mode
 (`--mode=H`), heuristic IntaRNA interaction predictions are widely used to screen
