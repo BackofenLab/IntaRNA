@@ -562,9 +562,9 @@ IntaRNA can predict single-site interactions within any structural context of th
 
 |   context       | exterior | hairpin loop | non-hairpin loop |
 | :-------------: | :------: | :----------: | :--------------: |
-| **exterior**    | ![yes](doc/figures/icon-yes.39.pngg) | ![yes](doc/figures/icon-yes.39.pngg) | ![yes](doc/figures/icon-yes.39.pngg) |
-| **hairpin**     | ![yes](doc/figures/icon-yes.39.pngg) | ![yes](doc/figures/icon-yes.39.pngg) | ![yes](doc/figures/icon-yes.39.pngg) |
-| **non-hairpin loop** | ![yes](doc/figures/icon-yes.39.pngg) | ![yes](doc/figures/icon-yes.39.pngg) | ![yes](doc/figures/icon-yes.39.pngg) |
+| **exterior**    | ![yes](doc/figures/icon-yes.39.png) | ![yes](doc/figures/icon-yes.39.png) | ![yes](doc/figures/icon-yes.39.png) |
+| **hairpin**     | ![yes](doc/figures/icon-yes.39.png) | ![yes](doc/figures/icon-yes.39.png) | ![yes](doc/figures/icon-yes.39.png) |
+| **non-hairpin loop** | ![yes](doc/figures/icon-yes.39.png) | ![yes](doc/figures/icon-yes.39.png) | ![yes](doc/figures/icon-yes.39.png) |
 
 Note, *concatenation-based approaches* as implemented in UNAfold, NUPACK or RNAcofold can
 *only predict exterior-exterior context* combinations (shown by (b) in the figure above)
@@ -715,13 +715,13 @@ of equal length *n*.
 | -------- | :------------------: | :-----------------: | :--------------: |
 | Time complexity (prediction only) | O(*n*^2) | O(*n*^4) | O(*n*^2) |
 | Space complexity | O(*n*^2) | O(*n*^2) | O(*n*^2) |
-| [Seed constraint](#seed) | x | x | x |
-| [Explicit seeds](#seedExplicit) | x | x | x |
-| [SHAPE reactivity constraint](#shape) | x | x | x |
-| No [seed constraint](#seed) | x | x | - |
-| Minimum free energy interaction | not guaranteed | x | x |
-| Overlapping [suboptimal interactions](#subopts) | x | x | x |
-| Non-overlapping [suboptimal interactions](#subopts) | x | - | x |
+| [Seed constraint](#seed) | ![yes](doc/figures/icon-yes.39.png) | ![yes](doc/figures/icon-yes.39.png) | ![yes](doc/figures/icon-yes.39.png) |
+| [Explicit seeds](#seedExplicit) | ![yes](doc/figures/icon-yes.39.png) | ![yes](doc/figures/icon-yes.39.png) | ![yes](doc/figures/icon-yes.39.png) |
+| [SHAPE reactivity constraint](#shape) | ![yes](doc/figures/icon-yes.39.png) | ![yes](doc/figures/icon-yes.39.png) | ![yes](doc/figures/icon-yes.39.png) |
+| No [seed constraint](#seed) | ![yes](doc/figures/icon-yes.39.png) | ![yes](doc/figures/icon-yes.39.png) | [![no](doc/figures/icon-no.39.png)] |
+| Minimum free energy interaction | not guaranteed | ![yes](doc/figures/icon-yes.39.png) | ![yes](doc/figures/icon-yes.39.png) |
+| Overlapping [suboptimal interactions](#subopts) | ![yes](doc/figures/icon-yes.39.png) | ![yes](doc/figures/icon-yes.39.png) | ![yes](doc/figures/icon-yes.39.png) |
+| Non-overlapping [suboptimal interactions](#subopts) | ![yes](doc/figures/icon-yes.39.png) | [![no](doc/figures/icon-no.39.png)] | ![yes](doc/figures/icon-yes.39.png) |
 
 Note, due to the low run-time requirement of the heuristic prediction mode
 (`--mode=H`), heuristic IntaRNA interaction predictions are widely used to screen
