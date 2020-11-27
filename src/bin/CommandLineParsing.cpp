@@ -12,7 +12,7 @@
 	#include <omp.h>
 #endif
 
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
 #include <boost/tokenizer.hpp>
@@ -350,6 +350,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	}
 
 	using namespace boost::program_options;
+	using namespace boost::placeholders;
 
 	////  REMAINING INITIALIZATIONS  /////////////////////////////////
 
