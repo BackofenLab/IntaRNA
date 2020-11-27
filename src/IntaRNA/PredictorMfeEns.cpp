@@ -111,8 +111,6 @@ void
 PredictorMfeEns::
 traceBack( Interaction & interaction )
 {
-	// temporary access
-	const OutputConstraint & outConstraint = output.getOutputConstraint();
 	// check if something to trace
 	if (interaction.basePairs.size() < 2) {
 		return;

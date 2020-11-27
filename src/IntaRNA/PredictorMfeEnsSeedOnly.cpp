@@ -32,8 +32,6 @@ void
 PredictorMfeEnsSeedOnly::
 predict( const IndexRange & r1, const IndexRange & r2 )
 {
-	// temporary access
-	const OutputConstraint & outConstraint = output.getOutputConstraint();
 #if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_omp_logOutput)
 #endif
@@ -97,8 +95,6 @@ void
 PredictorMfeEnsSeedOnly::
 traceBack( Interaction & interaction )
 {
-	// temporary access
-	const OutputConstraint & outConstraint = output.getOutputConstraint();
 	// check if something to trace
 	if (interaction.basePairs.size() < 2) {
 		return;

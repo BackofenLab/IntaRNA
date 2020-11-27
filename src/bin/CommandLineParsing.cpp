@@ -12,7 +12,7 @@
 	#include <omp.h>
 #endif
 
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
 #include <boost/tokenizer.hpp>
@@ -350,6 +350,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	}
 
 	using namespace boost::program_options;
+	using namespace boost::placeholders;
 
 	////  REMAINING INITIALIZATIONS  /////////////////////////////////
 
@@ -1237,18 +1238,14 @@ parse(int argc, char** argv)
 			} else {
 				// check query search ranges
 				if (!seedQRange.empty()) {
-					if (query.size()!=1) {
-						throw error("seedQRange given but more than one query sequence provided");
-					} else {
-						validate_indexRangeList("seedQRange",seedQRange, *(query.begin()));
+					for (auto q : query) {
+						validate_indexRangeList("seedQRange",seedQRange, q);
 					}
 				}
 				// check target search ranges
 				if (!seedTRange.empty()) {
-					if (target.size()!=1) {
-						throw error("seedTRange given but more than one target sequence provided");
-					} else {
-						validate_indexRangeList("seedTRange",seedTRange, *(target.begin()));
+					for (auto t : target) {
+						validate_indexRangeList("seedTRange",seedTRange, t);
 					}
 				}
 
@@ -1256,14 +1253,14 @@ parse(int argc, char** argv)
 				// check for explicit seed constraints
 				if (seedTQ.empty()) {
 					// check for minimal sequence length (>=seedBP)
-					for( size_t i=0; i<query.size(); i++) {
-						if (query.at(i).size() < seedBP.val) {
-							throw error("length of query sequence "+toString(i+1)+" is below minimal number of seed base pairs (seedBP="+toString(seedBP.val)+")");
+					for( auto q : query) {
+						if (q.size() < seedBP.val) {
+							throw error("length of query "+q.getId()+" is below minimal number of seed base pairs (seedBP="+toString(seedBP.val)+")");
 						}
 					}
-					for( size_t i=0; i<target.size(); i++) {
-						if (target.at(i).size() < seedBP.val) {
-							throw error("length of target sequence "+toString(i+1)+" is below minimal number of seed base pairs (seedBP="+toString(seedBP.val)+")");
+					for( auto t : target) {
+						if (t.size() < seedBP.val) {
+							throw error("length of target sequence "+t.getId()+" is below minimal number of seed base pairs (seedBP="+toString(seedBP.val)+")");
 						}
 					}
 				} else {
@@ -1546,12 +1543,12 @@ parse(int argc, char** argv)
 				// check for minimal sequence length
 				for(size_t i=0; i<query.size(); i++) {
 					if (query.at(i).size() < helixMinBP.val) {
-						throw error("length of query sequence "+toString(i+1)+" is below minimal number of helix base pairs (helixMinBP="+toString(helixMinBP.val)+")");
+						throw error("length of query sequence "+query.at(i).getId()+" is below minimal number of helix base pairs (helixMinBP="+toString(helixMinBP.val)+")");
 					}
 				}
 				for(size_t i=0; i<target.size(); i++) {
 					if (target.at(i).size() < helixMinBP.val) {
-						throw error("length of target sequence "+toString(i+1)+" is below minimal number of helix base pairs (helixMinBP="+toString(helixMinBP.val)+")");
+						throw error("length of target sequence "+target.at(i).getId()+" is below minimal number of helix base pairs (helixMinBP="+toString(helixMinBP.val)+")");
 					}
 				}
 				// Ensure that min is smaller than max.
@@ -2008,7 +2005,7 @@ getEnergyHandler( const Accessibility& accTarget, const ReverseAccessibility& ac
 
 OutputConstraint
 CommandLineParsing::
-getOutputConstraint()  const
+getOutputConstraint( const InteractionEnergy & energy )  const
 {
 	checkIfParsed();
 	OutputConstraint::ReportOverlap overlap = OutputConstraint::ReportOverlap::OVERLAP_BOTH;
@@ -2029,6 +2026,7 @@ getOutputConstraint()  const
 			, outNoGUend
 			, outNeedsZall
 			, outNeedsBPs
+			, (outMinPu.val>0 ? std::min<E_type>(Accessibility::ED_UPPER_BOUND, energy.getE( outMinPu.val )) : Accessibility::ED_UPPER_BOUND)
 			);
 }
 
@@ -2234,7 +2232,7 @@ validateSequenceAlphabet( const std::string& paramName,
 	for (int i=0; i<sequences.size(); i++) {
 		// check if valid
 		if (! RnaSequence::isValidSequenceIUPAC(sequences.at(i).asString())) {
-			LOG(ERROR) <<"sequence " <<(i+1)<<" for parameter "<<paramName<<" is not valid!";
+			LOG(ERROR) <<"sequence " <<sequences.at(i).getId()<<" for parameter "<<paramName<<" is not valid!";
 			updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
 			allValid = false;
 		}
@@ -2441,22 +2439,22 @@ getOutputHandler( const InteractionEnergy & energy ) const
 {
 	switch (outMode.val) {
 	case 'N' :
-		return new OutputHandlerText( getOutputConstraint(), outStreamHandler->getOutStream(), energy, 10, false );
+		return new OutputHandlerText( getOutputConstraint(energy), outStreamHandler->getOutStream(), energy, 10, false );
 	case 'D' :
-		return new OutputHandlerText( getOutputConstraint(), outStreamHandler->getOutStream(), energy, 10, true );
+		return new OutputHandlerText( getOutputConstraint(energy), outStreamHandler->getOutStream(), energy, 10, true );
 	case 'E' :
 		// ensure that Zall is computed
 		outNeedsZall = true;
 		// no interaction details needed
 		outNeedsBPs = false;
-		return new OutputHandlerEnsemble( getOutputConstraint(), outStreamHandler->getOutStream(), energy );
+		return new OutputHandlerEnsemble( getOutputConstraint(energy), outStreamHandler->getOutStream(), energy );
 	case 'C' :
 		// ensure that Zall is computed if needed
 		outNeedsZall = outNeedsZall || OutputHandlerCsv::needsZall(OutputHandlerCsv::string2list( outCsvCols ));
 		// check whether interaction details are needed
 		outNeedsBPs = OutputHandlerCsv::needBPs(OutputHandlerCsv::string2list( outCsvCols ));;
 		// create output handler
-		return new OutputHandlerCsv( getOutputConstraint(), outStreamHandler->getOutStream(), energy, OutputHandlerCsv::string2list( outCsvCols ), outSep, false, outCsvLstSep );
+		return new OutputHandlerCsv( getOutputConstraint(energy), outStreamHandler->getOutStream(), energy, OutputHandlerCsv::string2list( outCsvCols ), outSep, false, outCsvLstSep );
 	default :
 		INTARNA_NOT_IMPLEMENTED("Output mode "+toString(outMode.val)+" not implemented yet");
 	}

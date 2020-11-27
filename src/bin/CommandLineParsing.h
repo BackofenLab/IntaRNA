@@ -290,9 +290,10 @@ public:
 
 	/**
 	 * The constraints to be applied to the interaction output generation
+	 * @param energy the interaction energy to be used for computation
 	 * @return the output constraints to be applied
 	 */
-	OutputConstraint getOutputConstraint() const;
+	OutputConstraint getOutputConstraint( const InteractionEnergy & energy ) const;
 
 	/**
 	 * The stream to write the interaction output to
@@ -1330,7 +1331,9 @@ validate_energyFile(const std::string & value)
 {
 	// check for supported default models
 	if (value == std::string(VrnaHandler::Turner99)
-		|| value == std::string(VrnaHandler::Turner04) )
+		|| value == std::string(VrnaHandler::Turner04)
+		|| value == std::string(VrnaHandler::Andronescu07)
+	)
 	{
 		return;
 	}

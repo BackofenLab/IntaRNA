@@ -10,10 +10,63 @@
 # changes in development version since last release 
 ################################################################################
 
-
+# IntaRNA
 
 ################################################################################  
 ################################################################################
+
+
+################################################################################
+### version 3.2.1
+################################################################################  
+
+# IntaRNA
+- support for multi-seq input when `seedQ|TRange` given
+- BUGFIX: Andronescu07 energy parameter set was not loaded by name without file
+- BUGFIX: 'outMinPu' was not fully implemented
+- BUILDFIX: non-global import of boost::bind
+
+# CopomuS :
+- exit value 0 if no favorable interaction was found
+
+################################################################################  
+
+201127 Martin Raden
+ * bin/CommandLineParsing :
+   * changing import and usage of boost::bind and boost::placeholders namespace
+     (thanks to Behra Phani Rama Krishna)
+
+200615 Martin Raden
+ * IntaRNA/OutputConstraint :
+   + maxED : maximal ED penalty of each interacting subsequence
+ * bin/CommandLineParsing :
+   * getOutputConstraint() : 
+     + energy argument to setup OutputConstraint constructor call
+ * IntaRNA/Predictor :
+   * updateZall() :
+     + check for OutputConstraint.maxED
+ * IntaRNA/PredictorMfe :
+   * updateOptima() :
+     + check for OutputConstraint.maxED
+ * IntaRNA/PredictorMfe* :
+   * obsolete OutputConstraint variable removed
+
+200602 Martin Raden
+ * bin/CommandLineParsing :
+   + sequence error information now with sequence ID rather than number
+
+200602 Martin Raden
+ * bin/CommandLineParsing :
+   + explicit seedQ|TRange check for each sequence (support for multi-seq input)
+
+200429 Martin Raden
+ * python/copomus/candidate_selectors.py :
+   * bugfix: sys.exit(0) if not favorable interaction was found
+
+200312 Martin Raden
+ * bin/CommandLineParsing :
+   * validate_energyFile() : 
+     + bugfix: missing check for predefined Andronescu07 data set name
 
 ################################################################################
 ### version 3.2.0
