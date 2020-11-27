@@ -11,13 +11,6 @@
 ################################################################################
 
 # IntaRNA
-- support for multi-seq input when `seedQ|TRange` given
-- BUGFIX: Andronescu07 energy parameter set was not loaded by name without file
-- BUGFIX: 'outMinPu' was not fully implemented
-- BUILDFIX: non-global import of boost::bind
-
-# CopomuS :
-- exit value 0 if no favorable interaction was found
 
 
 ################################################################################  
