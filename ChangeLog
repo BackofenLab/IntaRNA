@@ -13,7 +13,8 @@
 # IntaRNA
 - support for multi-seq input when `seedQ|TRange` given
 - BUGFIX: Andronescu07 energy parameter set was not loaded by name without file
-- BUGFIX: 'outMinPu' was not fully implemented 
+- BUGFIX: 'outMinPu' was not fully implemented
+- BUILDFIX: non-global import of boost::bind
 
 # CopomuS :
 - exit value 0 if no favorable interaction was found
@@ -21,6 +22,27 @@
 
 ################################################################################  
 ################################################################################
+
+
+################################################################################
+### version 3.2.1
+################################################################################  
+
+# IntaRNA
+- support for multi-seq input when `seedQ|TRange` given
+- BUGFIX: Andronescu07 energy parameter set was not loaded by name without file
+- BUGFIX: 'outMinPu' was not fully implemented
+- BUILDFIX: non-global import of boost::bind
+
+# CopomuS :
+- exit value 0 if no favorable interaction was found
+
+################################################################################  
+
+201127 Martin Raden
+ * bin/CommandLineParsing :
+   * changing import and usage of boost::bind and boost::placeholders namespace
+     (thanks to Behra Phani Rama Krishna)
 
 200615 Martin Raden
  * IntaRNA/OutputConstraint :
