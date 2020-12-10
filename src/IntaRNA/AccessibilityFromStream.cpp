@@ -87,7 +87,8 @@ parseRNAplfold_text( std::istream & inStream, const Z_type RT, const bool parseP
 	// check if maxLength <= max available length
 	size_t cutEnd   = line.find_last_of("1234567890");
 	size_t cutStart = line.find_last_not_of("1234567890", cutEnd );
-	size_t maxAvailLength = boost::lexical_cast<size_t>( line.substr(cutStart+1,cutEnd-cutStart));
+	// max length == 1 smaller than max-accessibility-data-length due to dangling-end treatment
+	size_t maxAvailLength = (boost::lexical_cast<size_t>( line.substr(cutStart+1,cutEnd-cutStart)) -1);
 	if (maxAvailLength < getMaxLength()) {
 #if INTARNA_MULITHREADING
 		#pragma omp critical(intarna_omp_logOutput)

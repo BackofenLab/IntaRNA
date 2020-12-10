@@ -11,11 +11,18 @@
 ################################################################################
 
 # IntaRNA
-
+- BUGFIX: maximal interaction length correction for precomputed accessibility
+  data was one to large (wrong dangling end computation for maximally long RRIs)
+  (thanks to Sabine Reisser)
 
 ################################################################################  
 ################################################################################
 
+
+201210 Martin Raden
+ * IntaRNA/AccessibilityFromStream :
+   * bugfix: max length == 1 smaller than max-accessibility-data-length due to 
+     dangling-end treatment (thanks to Sabine Reisser)
 
 ################################################################################
 ### version 3.2.1
