@@ -14,10 +14,25 @@
 - BUGFIX: maximal interaction length correction for precomputed accessibility
   data was one to large (wrong dangling end computation for maximally long RRIs)
   (thanks to Sabine Reisser)
+- BUGFIX: explicit seed encodings within last 7 nucleotides (seedBP) were 
+  ignored (thanks to Sebastian Holler)
 
 ################################################################################  
 ################################################################################
 
+210211 Martin Raden
+ * IntaRNA/SeedConstraint :
+   * constructor: bp>2 check only if no explicit seed present
+ * IntaRNA/SeedHandlerExplicit :
+   - getSeedMaxBP() : obsolete, replaced by getSeedMinBP()
+   + getSeedMinBP() : minimal number of bps within encoded seeds; used for seed
+     constraint initialization
+   * traceBackSeed() :
+     * bugfix: check for minimal seed length sufficient on one side
+ * bin/CommandLineParsing :
+   * seedBP now set to getSeedMinBP() if explicit seeds present
+ * bin/IntaRNA :
+   * exception information now motivates to send input along with report
 
 201210 Martin Raden
  * IntaRNA/AccessibilityFromStream :

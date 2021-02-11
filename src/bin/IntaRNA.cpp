@@ -420,13 +420,13 @@ int main(int argc, char **argv){
 	////////////////////// exception handling ///////////////////////////
 	} catch (std::exception & e) {
 		LOG(WARNING) <<"Exception raised : " <<e.what() <<"\n\n"
-			<<"  ==> Please report to the IntaRNA development team! Thanks!\n";
+			<<"  ==> Please report (including input) to the IntaRNA development team! Thanks!\n";
 		el::Loggers::flushAll();
 		return -1;
 	} catch (...) {
 		std::exception_ptr eptr = std::current_exception();
 		LOG(WARNING) <<"Unknown exception raised \n\n"
-			<<"  ==> Please report to the IntaRNA development team! Thanks!\n";
+			<<"  ==> Please report (including input) to the IntaRNA development team! Thanks!\n";
 		el::Loggers::flushAll();
 		return -1;
 	}

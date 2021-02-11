@@ -120,14 +120,14 @@ public:
 	checkSeedEncoding( const std::string & seed );
 
 	/**
-	 * parses the given explicit seed encoding for the maximal number of
-	 * base pairs within a seed
+	 * parses the given explicit seed encoding for the minimal number of
+	 * base pairs within any of the encoded seed
 	 * @param seedEncoding the explicit seed encoding to parse
-	 * @return the maximal number of base pairs among all encoded seeds
+	 * @return the minimal number of base pairs among all encoded seeds
 	 */
 	static
 	size_t
-	getSeedMaxBP( const std::string & seedEncoding );
+	getSeedMinBP( const std::string & seedEncoding );
 
 	/**
 	 * Replace the input variables i1 and i2 to values to within the given range
