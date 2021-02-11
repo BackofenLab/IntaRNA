@@ -16,6 +16,8 @@
   (thanks to Sabine Reisser)
 - BUGFIX: explicit seed encodings within last 7 nucleotides (seedBP) were 
   ignored (thanks to Sebastian Holler)
+- BUGFIX: outNoLP option was not correctly implemented (missing recursion cases)
+  and was thus missing interactions
 
 ################################################################################  
 ################################################################################
@@ -33,6 +35,14 @@
    * seedBP now set to getSeedMinBP() if explicit seeds present
  * bin/IntaRNA :
    * exception information now motivates to send input along with report
+ + docs/recursions : recursion depictions for sanity checks of implementations
+   + PredictorMfe2d (+outNoLP)
+   + PredictorMfe2dSeed (+outNoLP)
+ * IntaRNA/PredictorMfe2dSeed :
+ * IntaRNA/PredictorMfe2dHeuristic :
+ * IntaRNA/PredictorMfe2dHeuristicSeed :
+ * IntaRNA/PredictorMfeEns2dHeuristic :
+   * bugfix outNoLP : missing recursion cases 
 
 201210 Martin Raden
  * IntaRNA/AccessibilityFromStream :

@@ -133,6 +133,46 @@ fillHybridZ()
 					curCellEtotal = energy.getE(i1,i1+noLpShift, i2,i2+noLpShift ,energy.getE(curCell->val));
 					// update overall partition function information for initial bps only
 					updateZ( i1,curCell->j1, i2,curCell->j2, curCell->val, true );
+
+					if(outConstraint.noLP) {
+						/////////////////////////////////////////
+						// check direct extension to the right of the noLP stacking
+						/////////////////////////////////////////
+
+						// direct cell access (const)
+						rightExt = &(hybridZ(i1+noLpShift,i2+noLpShift));
+						// check if right side can pair
+						if (Z_equal(rightExt->val, 0.0)) {
+							continue;
+						}
+						// check if interaction length is within boundary
+						if ( (rightExt->j1 +1 -i1) > energy.getAccessibility1().getMaxLength()
+							|| (rightExt->j2 +1 -i2) > energy.getAccessibility2().getMaxLength() )
+						{
+							continue;
+						}
+
+						// compute Z for direct extension with stacking
+						curZ = iStackZ * rightExt->val;
+
+						// update overall partition function information for current right extension
+						updateZ( i1,rightExt->j1, i2,rightExt->j2, curZ, true );
+
+						// check if this combination yields better energy
+						curEtotal = energy.getE(i1,rightExt->j1, i2,rightExt->j2, energy.getE(curZ));
+
+						// update best right extension for (i1,i2) in curCell
+						if ( curEtotal < curCellEtotal )
+						{
+							// update current best for this left boundary
+							// copy right boundary
+							*curCell = *rightExt;
+							// set new partition function
+							curCell->val = curZ;
+							// store total energy to avoid recomputation
+							curCellEtotal = curEtotal;
+						}
+					}
 				}
 
 
