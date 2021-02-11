@@ -43,6 +43,9 @@
  * IntaRNA/PredictorMfe2dHeuristicSeed :
  * IntaRNA/PredictorMfeEns2dHeuristic :
    * bugfix outNoLP : missing recursion cases 
+ * IntaRNA/AccessibilityFromStream : 
+   * bugfix read from stream
+   * test updated
 
 201210 Martin Raden
  * IntaRNA/AccessibilityFromStream :
