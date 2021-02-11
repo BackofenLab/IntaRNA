@@ -791,7 +791,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 			, value<int>(&(intLenMax.val))
 				->default_value(intLenMax.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_numberArgument<int>,this,intLenMax,_1))
-			, std::string("interaction site : maximal window size to be considered for"
+			, std::string("interaction site : maximal subsequence length considered for"
 					" interaction"
 					" (arg in range ["+toString(intLenMax.min)+","+toString(intLenMax.max)+"];"
 					" 0 refers to the full sequence length)."
@@ -1403,7 +1403,7 @@ parse(int argc, char** argv)
 				throw error("qAccL = " +toString(qAccL.val) + " : has to be <= qAccW (=" +toString(qAccW.val) + ")");
 			}
 
-			// check qAcc upper bound
+			// check tAcc upper bound
 			if (tAccL.val > tAccW.val && tAccW.val != 0) {
 				throw error("tAccL = " +toString(tAccL.val)+" : has to be <= tAccW (=" +toString(tAccW.val)+")");
 			}

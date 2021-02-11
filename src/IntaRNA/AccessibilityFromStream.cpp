@@ -102,7 +102,8 @@ parseRNAplfold_text( std::istream & inStream, const Z_type RT, const bool parseP
 	}
 
 	// resize data structure to fill
-	edValues.resize( getSequence().size(), getSequence().size(), 0, getMaxLength() );
+	// 1 larger to enable dangling end computation
+	edValues.resize( getSequence().size(), getSequence().size(), 0, 1+getMaxLength() );
 
 	// TODO rewrite to support "nan" and "inf" parsing via boost::spirit::qi
 	// http://stackoverflow.com/questions/11420263/is-it-possible-to-read-infinity-or-nan-values-using-input-streams
@@ -136,7 +137,7 @@ parseRNAplfold_text( std::istream & inStream, const Z_type RT, const bool parseP
 
 		// parse probabilities or EDs for this line and store
 		double curVal;
-		size_t minI = j - std::min( j, getMaxLength() );
+		size_t minI = j - std::min( j, 1+getMaxLength() );
 		for ( size_t i = j; i>minI; i--) {
 			if ( inStream >>curVal ) {
 				// check if we parse probabilities

@@ -139,7 +139,8 @@ getED( const size_t from, const size_t to ) const
 	// input range check
 	checkIndices(from,to);
 
-	if ((to-from+1) <= getMaxLength()) {
+	// 1 larger to enable dangling end computation
+	if ((to-from+1) <= 1+getMaxLength()) {
 		// check for constrained end positions
 		if (!getAccConstraint().isAccessible(from) || !getAccConstraint().isAccessible(to)) {
 			// end position blocked --> omit accessibility

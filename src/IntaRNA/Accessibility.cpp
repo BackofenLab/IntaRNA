@@ -30,7 +30,7 @@ operator<<(std::ostream& out, const Accessibility& acc)
 		// print first (without delimiter)
 		out <<acc.getED(i, i);
 		// print remaining with delimiter
-		for (size_t j=i+1; j<std::min(acc.getMaxLength()+i,acc.getSequence().size());j++) {
+		for (size_t j=i+1; j<std::min(1+acc.getMaxLength()+i,acc.getSequence().size());j++) {
 			out <<delimiter <<(acc.getED(i, j)>=0?" ":"") <<acc.getED(i, j);
 		}
 		out <<"\n";
@@ -67,7 +67,7 @@ writeRNAplfold_text( std::ostream& out, const Z_type RT, const bool writeProbs )
 
 	// length information
 	out <<" #i$	l=";
-	for (size_t l=1; l<=std::min(getSequence().size(),getMaxLength()); l++) {
+	for (size_t l=1; l<=std::min(getSequence().size(),1+getMaxLength()); l++) {
 		out <<l <<'\t';
 	}
 	out <<'\n';
@@ -76,7 +76,7 @@ writeRNAplfold_text( std::ostream& out, const Z_type RT, const bool writeProbs )
 	for (size_t j=0; j<getSequence().size(); j++) {
 		// print end of window = j
 		out <<(j+1) <<'\t';
-		size_t maxL = std::min(j+1,getMaxLength());
+		size_t maxL = std::min(j+1,1+getMaxLength());
 		// for each (increasing) window length, print value
 		for ( size_t l = 1; l <= maxL; l++ ) {
 			if (writeProbs) {
@@ -100,7 +100,7 @@ writeRNAplfold_text( std::ostream& out, const Z_type RT, const bool writeProbs )
 			}
 		}
 		// print NA for remaining entries
-		for ( size_t l = maxL+1; l<=getMaxLength(); l++ ) {
+		for ( size_t l = maxL+1; l<=1+getMaxLength(); l++ ) {
 			out <<"NA\t";
 		}
 		// line break
