@@ -1214,7 +1214,7 @@ tool arguments in the Vienna RNA package (see e.g. the
 An example call that shows the effect of SHAPE data incorporation is given below (assuming the SHAPE data from above is stored in
 the file `data-SHAPE.txt`). 
 ```[bash]
-IntaRNA -q GCCGUCGCCA -t GCCGUCGCCA --tShape=data-SHAPE.txt --noseed --out=qAcc:STDOUT --out=tAcc:STDERR --out=/dev/null
+IntaRNA -q GCCGUCGCCA -t GCCGUCGCCA --tShape=data-SHAPE.txt --out=qAcc:STDOUT --out=tAcc:STDERR --out=/dev/null
 ```
 
 
