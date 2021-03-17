@@ -1182,16 +1182,41 @@ molecule. IntaRNA supports such data by interfacing the Vienna RNA package
 capabilities for SHAPE reactivity data incorporation, see
 Lorenz et al. ([2015](https://doi.org/10.1093/bioinformatics/btv523), [2016](https://dx.doi.org/10.1186%2Fs13015-016-0070-z)) or the
 [RNAfold manpage](https://www.tbi.univie.ac.at/RNA/RNAfold.1.html).
+To use this feature, ViennaRNA-based accessibility computation is needed, 
+i.e. `--t|qAcc=C`, which is the default mode (no action required).
 
 The SHAPE reactivity data can be provided via file using `--qShape` or
-`--tShape` for query or target sequence, respectively.
-Independently for each, it is possible
+`--tShape` for query or target sequence, respectively. The input format is a
+space-separated 3-column format providing position, nucleotide and reactivity value as
+exmemplified below.
+
+```[bash]
+    1 G 0.134
+    2 C 0.044
+    3 C 0.057
+    4 G 0.114
+    5 U 0.094
+    6 C 0.035
+    7 G 0.909
+    8 C 0.224
+    9 C 0.529
+    10 A 1.475
+```
+
+Independently for each sequence, it is possible
 to define the methods to be used to convert the data into pseudo energies and
 pairing probabilities. The respective IntaRNA arguments are
 `--qShapeMethod`|`--tShapeMethod`
 and `--qShapeConversion`|`--tShapeConversion`, which mimics the according
 tool arguments in the Vienna RNA package (see e.g. the
 [RNAfold manpage](https://www.tbi.univie.ac.at/RNA/RNAfold.1.html)).
+
+An example call that shows the effect of SHAPE data incorporation is given below (assuming the SHAPE data from above is stored in
+the file `data-SHAPE.txt`). 
+```[bash]
+IntaRNA -q GCCGUCGCCA -t GCCGUCGCCA --tShape=data-SHAPE.txt --noseed --out=qAcc:STDOUT --out=tAcc:STDERR --out=/dev/null
+```
+
 
 For further details, please refer to our respective publication
 
