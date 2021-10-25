@@ -52,9 +52,9 @@ If you use IntaRNA, please cite our respective articles
 - [Integration of accessibility data from structure probing into RNA–RNA interaction prediction](https://doi.org/10.1093/bioinformatics/bty1029)
   Milad Miladi, Soheila Montaseri, Rolf Backofen, Martin Raden,
   Bioinformatics, 2019, DOI:[10.1093/bioinformatics/bty1029](https://doi.org/10.1093/bioinformatics/bty1029).
-- [Constraint maximal inter-molecular helix lengths within RNA-RNA interaction prediction improves bacterial sRNA target prediction.](http://insticc.org/node/TechnicalProgram/biostec/presentationDetails/76897)
+- [IntaRNAhelix - Composing RNA-RNA interactions from stable inter-molecular helices boosts bacterial sRNA target prediction](https://doi.org/10.1142/S0219720019400092)
   Rick Gelhausen, Sebastian Will, Ivo L. Hofacker, Rolf Backofen, and Martin Raden,
-   In Proc. of the 10th International Conference on Bioinformatics Models, Methods and Algorithms. INSTICC, SciTePress, 2019
+  Journal of Bioinformatics and Computational Biology, 2019, 17(5), 1940009, DOI:[10.1142/S0219720019400092](https://doi.org/10.1142/S0219720019400092).
 - [CopraRNA and IntaRNA: predicting small RNA targets, networks and interaction domains](https://doi.org/10.1093/nar/gku359)
   Patrick R. Wright, Jens Georg, Martin Mann, Dragos A. Sorescu, Andreas S. Richter, Steffen Lott, Robert Kleinkauf, Wolfgang R. Hess, and Rolf Backofen,
   Nucleic Acids Research, 42 (W1), W119-W123, 2014, DOI:[10.1093/nar/gku359](https://doi.org/10.1093/nar/gku359).
@@ -695,7 +695,7 @@ This model is used by the [IntaRNAhelix](#IntaRNAhelix) personality.
 
 For further details on the model and the underlying algorithm, please refer to our respective publication
 
-- [Constraint maximal inter-molecular helix lengths within RNA-RNA interaction prediction improves bacterial sRNA target prediction.](http://www.bioinf.uni-freiburg.de/Subpages/publications.html?de#Gelhausen-helixLength-2019.abstract)
+- [IntaRNAhelix - Composing RNA-RNA interactions from stable inter-molecular helices boosts bacterial sRNA target prediction](https://doi.org/10.1142/S0219720019400092)
 
 
 
@@ -900,7 +900,7 @@ interest](#interConstr) or [constraint the seed regions](#seed).
 ### IntaRNAhelix
 
 **IntaRNAhelix** provides helix-based RNA-RNA interaction prediction described
-in [(Gelhausen et al., 2019)](http://www.bioinf.uni-freiburg.de/Subpages/publications.html?de#Gelhausen-helixLength-2019.abstract).
+in [(Gelhausen et al., 2019)](https://doi.org/10.1142/S0219720019400092).
 It therefore enables per default 
 
 - the [helix-based single-site interaction model](#interactionModel-ssHelixBlockMfe)
