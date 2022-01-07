@@ -123,7 +123,7 @@ coveragePlot =
 	geom_density() +
 	ylab("coverage") +
 	xlab( ifelse( is.null(title) , "position" , title ) ) +
-	scale_y_continuous(position = "right", expand=expand_scale(mult = c(0, .02))) +
+	scale_y_continuous(position = "right", expand=expansion(mult = c(0, .02))) +
 	scale_x_continuous(expand = c(0, 0), limits=c(xmin,xmax));
   
 if (!is.null(title)) {
