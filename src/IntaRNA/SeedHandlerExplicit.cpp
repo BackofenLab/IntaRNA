@@ -81,23 +81,23 @@ SeedHandlerExplicit::
 
 size_t
 SeedHandlerExplicit::
-getSeedMaxBP( const std::string & seedEncoding )
+getSeedMinBP( const std::string & seedEncoding )
 {
-	size_t maxBP = 0;
+	size_t minBP = 99999;
 	if (!seedEncoding.empty()) {
 #if INTARNA_IN_DEBUG_MODE
-		if (!checkSeedEncoding(seedEncoding).empty()) throw std::runtime_error("SeedHandlerExplicit::getSeedMaxBP() : no valid seed encoding : "+checkSeedEncoding(seedEncoding));
+		if (!checkSeedEncoding(seedEncoding).empty()) throw std::runtime_error("SeedHandlerExplicit::getSeedMinBP() : no valid seed encoding : "+checkSeedEncoding(seedEncoding));
 #endif
 		size_t curBP = 0;
 		for( const char & c : seedEncoding ) {
 			switch(c){
 			case ',' :
-			case '&' : maxBP = std::max( maxBP, curBP ); curBP = 0; break;
+			case '&' : minBP = std::min( minBP, curBP ); curBP = 0; break;
 			case '|' : curBP++;
 			}
 		}
 	}
-	return maxBP;
+	return minBP;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -171,6 +171,7 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 			withinIntervals++;
 		}
 	}
+
 	// return identified number
 	return withinIntervals;
 }
@@ -194,7 +195,7 @@ traceBackSeed( Interaction & interaction
 	// fill data structure for current seed
 	const SeedData & s = seed->second;
 	// check if seed can not contain at least three base pairs
-	if (s.dotBar1.size() < 3 && s.dotBar2.size() < 3) {
+	if (s.dotBar1.size() < 3 || s.dotBar2.size() < 3) {
 		return;
 	}
 	// get positions of second base pair within seed (if any)

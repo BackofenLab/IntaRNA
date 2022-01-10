@@ -1,7 +1,7 @@
 
 AC_PREREQ([2.65])
 # 5 argument version only available with aclocal >= 2.64
-AC_INIT([IntaRNA], [3.2.1], [], [intaRNA], [http://www.bioinf.uni-freiburg.de] )
+AC_INIT([IntaRNA], [3.2.2], [], [intaRNA], [http://www.bioinf.uni-freiburg.de] )
 
 # minimal required version of the boost library 
 BOOST_REQUIRED_VERSION=1.50.0
@@ -411,7 +411,7 @@ AS_IF([test "$DEPENDENCYNOTFOUND" = "1"], [
 ##########################################################################
 
 # get available personalities
-AC_SUBST([PERSONALITIES],[`grep -P "^\\s+case\\s+IntaRNA\\S+\\s*:\\s*return" ./src/bin/CommandLineParsing.h | sed "s/^\\s*case\\s\\+\\(IntaRNA\\S*\\)\\s\\+:\\s\\+return.*/\\1/g" | tr "\\n" " "`])
+AC_SUBST([PERSONALITIES],[`grep "^\\s*case\\s*IntaRNA\\S*\\s*:\\s*return" ./src/bin/CommandLineParsing.h | sed "s/^\\s*case\\s\\+\\(IntaRNA\\S*\\)\\s\\+:\\s\\+return.*/\\1/g" | tr "\\n" " "`])
 ##########################################################################
 
 

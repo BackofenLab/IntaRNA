@@ -124,13 +124,48 @@ fillHybridE()
 
 				// set to interaction initiation with according boundary
 				// if valid right boundary
-				if (!outConstraint.noGUend || !energy.isGU(i1+noLpShift,i2+noLpShift))
+				if (E_isNotINF(iStackE)
+						&& (!outConstraint.noGUend || !energy.isGU(i1+noLpShift,i2+noLpShift)))
 				{
 					*curCell = BestInteractionE(iStackE + energy.getE_init(), i1+noLpShift, i2+noLpShift);
 					// current best total energy value (covers to far E_init only)
 					curCellEtotal = energy.getE(i1,curCell->j1,i2,curCell->j2,curCell->val);
 					// update Zall
 					updateZall( i1,curCell->j1,i2,curCell->j2, curCellEtotal, false );
+				}
+
+				/////////////////////////////////////////
+				// check direct extension to the right of the noLP stacking
+				/////////////////////////////////////////
+				if(outConstraint.noLP)
+				{
+
+					// direct cell access (const)
+					rightExt = &(hybridE(i1+noLpShift,i2+noLpShift));
+					// check if right side can pair
+					// check if interaction length is within boundary
+					if (E_isNotINF(rightExt->val)
+						&& (rightExt->j1 +1 -i1) <= energy.getAccessibility1().getMaxLength()
+						&& (rightExt->j2 +1 -i2) <= energy.getAccessibility2().getMaxLength() )
+					{
+						// compute energy direct extension with stacking
+						curE = iStackE + rightExt->val;
+						// check if this combination yields better energy
+						curEtotal = energy.getE(i1,rightExt->j1,i2,rightExt->j2,curE);
+						// update best extension
+						if ( curEtotal < curCellEtotal )
+						{
+							// update current best for this left boundary
+							// copy right boundary
+							*curCell = *rightExt;
+							// set new energy
+							curCell->val = curE;
+							// store total energy to avoid recomputation
+							curCellEtotal = curEtotal;
+						}
+						// update Zall
+						updateZall( i1,rightExt->j1,i2,rightExt->j2, curEtotal, false );
+					}
 				}
 
 				// iterate over all loop sizes w1 (seq1) and w2 (seq2) (minus 1)

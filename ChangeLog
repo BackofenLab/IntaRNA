@@ -10,11 +10,60 @@
 # changes in development version since last release 
 ################################################################################
 
+
+################################################################################
+### version 3.2.2
+################################################################################  
+
 # IntaRNA
+- BUGFIX: maximal interaction length correction for precomputed accessibility
+  data was one to large (wrong dangling end computation for maximally long RRIs)
+  (thanks to Sabine Reisser)
+- BUGFIX: explicit seed encodings within last 7 nucleotides (seedBP) were 
+  ignored (thanks to Sebastian Holler)
+- BUGFIX: outNoLP option was not correctly implemented (missing recursion cases)
+  and was thus missing interactions
+- BUGFIX: osx: configure adaptation to old grep version in osx
 
 ################################################################################  
 ################################################################################
 
+220110 Martin Raden
+ * configure.ac :
+   * rewrite of grep personality call to be compatible with old grep version on osx
+
+201204 Simon Bray (thanks!) :
+ * replace travis with github action
+
+210211 Martin Raden
+ * IntaRNA/SeedConstraint :
+   * constructor: bp>2 check only if no explicit seed present
+ * IntaRNA/SeedHandlerExplicit :
+   - getSeedMaxBP() : obsolete, replaced by getSeedMinBP()
+   + getSeedMinBP() : minimal number of bps within encoded seeds; used for seed
+     constraint initialization
+   * traceBackSeed() :
+     * bugfix: check for minimal seed length sufficient on one side
+ * bin/CommandLineParsing :
+   * seedBP now set to getSeedMinBP() if explicit seeds present
+ * bin/IntaRNA :
+   * exception information now motivates to send input along with report
+ + docs/recursions : recursion depictions for sanity checks of implementations
+   + PredictorMfe2d (+outNoLP)
+   + PredictorMfe2dSeed (+outNoLP)
+ * IntaRNA/PredictorMfe2dSeed :
+ * IntaRNA/PredictorMfe2dHeuristic :
+ * IntaRNA/PredictorMfe2dHeuristicSeed :
+ * IntaRNA/PredictorMfeEns2dHeuristic :
+   * bugfix outNoLP : missing recursion cases 
+ * IntaRNA/AccessibilityFromStream : 
+   * bugfix read from stream
+   * test updated
+
+201210 Martin Raden
+ * IntaRNA/AccessibilityFromStream :
+   * bugfix: max length == 1 smaller than max-accessibility-data-length due to 
+     dangling-end treatment (thanks to Sabine Reisser)
 
 ################################################################################
 ### version 3.2.1
@@ -35,6 +84,8 @@
  * bin/CommandLineParsing :
    * changing import and usage of boost::bind and boost::placeholders namespace
      (thanks to Behra Phani Rama Krishna)
+ * R/IntaRNA_plotRegions.R :
+   * replace deprecated expand_scale() with expansion() 
 
 200615 Martin Raden
  * IntaRNA/OutputConstraint :

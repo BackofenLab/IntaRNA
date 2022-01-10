@@ -100,6 +100,10 @@ fillHybridE( const size_t j1, const size_t j2
 		throw std::runtime_error("PredictorMfe2d::fillHybridE() : i1init > j1 : "+toString(i1init)+" > "+toString(j1));
 	if (i2init > j2)
 		throw std::runtime_error("PredictorMfe2d::fillHybridE() : i2init > j2 : "+toString(i2init)+" > "+toString(j2));
+	if (!energy.isAccessible2(j1))
+		throw std::runtime_error("PredictorMfe2d::fillHybridE() : !energy.isAccessible2(j1) : "+toString(j1));
+	if (!energy.isAccessible2(j2))
+		throw std::runtime_error("PredictorMfe2d::fillHybridE() : !energy.isAccessible2(j2) : "+toString(j2));
 #endif
 
 	// get minimal start indices heeding max interaction length
@@ -166,6 +170,7 @@ fillHybridE( const size_t j1, const size_t j2
 							iStackE = energy.getE_interLeft(i1,i1+noLpShift,i2,i2+noLpShift);
 
 							// init with stacking only
+							// or stacking with right extension
 							curMinE = iStackE + ((w1==2&&w2==2) ? energy.getE_init() : hybridE_pq(i1+noLpShift, i2+noLpShift) );
 						} else {
 							//
@@ -274,7 +279,7 @@ traceBack( Interaction & interaction  )
 			// get stacking term
 			iStackE = energy.getE_interLeft(i1,i1+noLpShift, i2,i2+noLpShift);
 
-			// check just stacking
+			// check just stacking with right extension
 			if ( E_equal( curE, iStackE + hybridE_pq(i1+noLpShift,i2+noLpShift) )) {
 				// store bp
 				interaction.basePairs.push_back( energy.getBasePair(i1+noLpShift,i2+noLpShift) );

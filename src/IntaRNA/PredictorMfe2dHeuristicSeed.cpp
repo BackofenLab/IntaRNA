@@ -167,12 +167,15 @@ fillHybridE()
 					E_type seedE = seedHandler.getSeedE(i1,i2);
 					if (sj1 < hybridE.size1() && sj2 < hybridE.size2()) {
 
-						// get energy of seed only explicitly
-						curE = seedE + energy.getE_init();
-						// check if this combination yields better energy
-						curEseedtotal = energy.getE(i1,sj1,i2,sj2,curE);
-						// update Zall for seed only (if otherwise stacking enforced)
-						updateZall( i1,sj1,i2,sj2, curEseedtotal, false );
+						// exclude single-bp seeds in noLP mode
+						if (sj1 >= i1+noLpShift) {
+							// get energy of seed only explicitly
+							curE = seedE + energy.getE_init();
+							// check if this combination yields better energy
+							curEseedtotal = energy.getE(i1,sj1,i2,sj2,curE);
+							// update Zall for seed only (if otherwise stacking enforced)
+							updateZall( i1,sj1,i2,sj2, curEseedtotal, false );
+						}
 
 						// for noLP : check for explicit interior loop after seed
 						// assumption: seed fulfills noLP
@@ -252,6 +255,73 @@ fillHybridE()
 
 				// if !noLP or stacking bp possible
 				if (E_isNotINF(iStackE))  {
+
+					if (outConstraint.noLP) {
+						/////////////////////////////////////////
+						// check direct extension to the right of the noLP stacking
+						/////////////////////////////////////////
+
+						//////////////////////////////////////////////////////////
+						// update hybridE without seed constraint
+						//////////////////////////////////////////////////////////
+
+						// direct cell access (const)
+						rightExt = &(hybridE(i1+noLpShift,i2+noLpShift));
+
+						// check if right side can pair
+						// check if interaction length is within boundary
+						if ( E_isNotINF(rightExt->val)
+							&& (rightExt->j1 +1 -i1) <= energy.getAccessibility1().getMaxLength()
+							&& (rightExt->j2 +1 -i2) <= energy.getAccessibility2().getMaxLength() )
+						{
+							// compute energy for direct stack extension
+							curE = iStackE + rightExt->val;
+							// check if this combination yields better energy
+							curEtotal = energy.getE(i1,rightExt->j1,i2,rightExt->j2,curE);
+							if ( curEtotal < curCellEtotal )
+							{
+								// update current best for this left boundary
+								// copy right boundary
+								*curCell = *rightExt;
+								// set new energy
+								curCell->val = curE;
+								// store total energy to avoid recomputation
+								curCellEtotal = curEtotal;
+							}
+						}
+
+						//////////////////////////////////////////////////////////
+						// update hybridE_seed including seed constraint
+						//////////////////////////////////////////////////////////
+
+						// direct cell access to right side end of loop (seed has to be to the right of it)
+						rightExt = &(hybridE_seed(i1+noLpShift,i2+noLpShift));
+						// check if right side of loop can pair
+						// check if interaction length is within boundary
+						if (E_isNotINF(rightExt->val)
+							&& (rightExt->j1 +1 -i1) <= energy.getAccessibility1().getMaxLength()
+							&& (rightExt->j2 +1 -i2) <= energy.getAccessibility2().getMaxLength() )
+						{
+							// compute energy for direct stack extension
+							curE = iStackE + rightExt->val;
+							// check if this combination yields better energy
+							curEseedtotal = energy.getE(i1,rightExt->j1,i2,rightExt->j2,curE);
+							if ( curEseedtotal < curCellSeedEtotal )
+							{
+								// update current best for this left boundary
+								// copy right boundary
+								*curCellSeed = *rightExt;
+								// set new energy
+								curCellSeed->val = curE;
+								// store overall energy
+								curCellSeedEtotal = curEseedtotal;
+							}
+							// avoid Z update; otherwise double-counting of interactions
+							//   --> that way, underestimation of Z
+						}
+					}
+
+
 					// iterate over all loop sizes w1 (seq1) and w2 (seq2) (minus 1)
 					for (w1=1; w1-1 <= energy.getMaxInternalLoopSize1() && i1+noLpShift+w1<hybridE.size1(); w1++) {
 					for (w2=1; w2-1 <= energy.getMaxInternalLoopSize2() && i2+noLpShift+w2<hybridE.size2(); w2++) {
@@ -409,6 +479,26 @@ traceBack( Interaction & interaction )
 		
 		const BestInteractionE * curCell = NULL;
 		bool traceNotFound = true;
+
+		// check for stacking on the left with direct right extension
+		if (outConstraint.noLP) {
+			curCell = &(hybridE_seed(i1+noLpShift,i2+noLpShift));
+			// check if right boundary is equal (part of the heuristic)
+			if ( curCell->j1 == j1 && curCell->j2 == j2 &&
+					// and energy is the source of curE
+					E_equal( curE, (iStackE + curCell->val ) ) )
+			{
+				// stop searching
+				traceNotFound = false;
+				// store bp
+				interaction.basePairs.push_back( energy.getBasePair(i1+noLpShift,i2+noLpShift) );
+				// trace right part of stacking
+				i1+=noLpShift;
+				i2+=noLpShift;
+				curE = curCell->val;
+			}
+		}
+
 		// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
 		for (k1=std::min(j1,i1+energy.getMaxInternalLoopSize1()+1+noLpShift); traceNotFound && k1>i1+noLpShift; k1--) {
 		for (k2=std::min(j2,i2+energy.getMaxInternalLoopSize2()+1+noLpShift); traceNotFound && k2>i2+noLpShift; k2--) {
@@ -454,7 +544,7 @@ traceBack( Interaction & interaction )
 				i2 = k2;
 				break;
 			}
-			// trace remaining base pairs
+			// trace right bulge extension of seed in noLP mode
 			if (outConstraint.noLP) {
 				for (size_t l1=std::min(j1-1,k1+energy.getMaxInternalLoopSize1()+1); traceNotFound && l1>k1; l1--) {
 				for (size_t l2=std::min(j2-1,k2+energy.getMaxInternalLoopSize2()+1); traceNotFound && l2>k2; l2--) {
@@ -477,6 +567,7 @@ traceBack( Interaction & interaction )
 				}} // l1 l2
 			}
 			if (traceNotFound){
+				// as to be direct right extension of seed without bulge
 				curCell = &(hybridE(k1,k2));
 				// sanity check
 				assert( E_equal( curE, (seedE+(curCell->val)) )

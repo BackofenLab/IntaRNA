@@ -87,7 +87,8 @@ parseRNAplfold_text( std::istream & inStream, const Z_type RT, const bool parseP
 	// check if maxLength <= max available length
 	size_t cutEnd   = line.find_last_of("1234567890");
 	size_t cutStart = line.find_last_not_of("1234567890", cutEnd );
-	size_t maxAvailLength = boost::lexical_cast<size_t>( line.substr(cutStart+1,cutEnd-cutStart));
+	// max length == 1 smaller than max-accessibility-data-length due to dangling-end treatment
+	size_t maxAvailLength = (boost::lexical_cast<size_t>( line.substr(cutStart+1,cutEnd-cutStart)) -1);
 	if (maxAvailLength < getMaxLength()) {
 #if INTARNA_MULITHREADING
 		#pragma omp critical(intarna_omp_logOutput)
@@ -101,7 +102,7 @@ parseRNAplfold_text( std::istream & inStream, const Z_type RT, const bool parseP
 	}
 
 	// resize data structure to fill
-	edValues.resize( getSequence().size(), getSequence().size(), 0, getMaxLength() );
+	edValues.resize( getSequence().size(), getSequence().size(), 0, 1+getMaxLength() );
 
 	// TODO rewrite to support "nan" and "inf" parsing via boost::spirit::qi
 	// http://stackoverflow.com/questions/11420263/is-it-possible-to-read-infinity-or-nan-values-using-input-streams
@@ -135,7 +136,7 @@ parseRNAplfold_text( std::istream & inStream, const Z_type RT, const bool parseP
 
 		// parse probabilities or EDs for this line and store
 		double curVal;
-		size_t minI = j - std::min( j, getMaxLength() );
+		size_t minI = j - std::min( j, 1+getMaxLength() );
 		for ( size_t i = j; i>minI; i--) {
 			if ( inStream >>curVal ) {
 				// check if we parse probabilities
@@ -162,7 +163,7 @@ parseRNAplfold_text( std::istream & inStream, const Z_type RT, const bool parseP
 			}
 		}
 		// check if full line was already parsed
-		if (j < maxAvailLength || minI > 0) {
+		if (j < 1+maxAvailLength || minI > 0) {
 			// skip rest till end of line
 			inStream.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 		}

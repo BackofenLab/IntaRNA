@@ -192,6 +192,7 @@ fillHybridE( const size_t j1, const size_t j2
 							iStackE = energy.getE_interLeft(i1,i1+noLpShift,i2,i2+noLpShift);
 
 							// init with stacking only
+							// or stacking with right extension
 							curMinE = iStackE + ((w1==2&&w2==2) ? energy.getE_init() : hybridE_pq(i1+noLpShift, i2+noLpShift) );
 						} else {
 							//
@@ -214,7 +215,8 @@ fillHybridE( const size_t j1, const size_t j2
 								curMinEseed = std::min( curMinEseed, seedHandler.getSeedE(i1,i2) + hybridE_pq(k1,k2) );
 							} else
 							// just the seed up to right boundary (explicit noLP handling)
-							if (k1 == j1 && k2 == j2) {
+							// ensure minimal seed length in noLP mode
+							if (k1 == j1 && k2 == j2 && k1>=i1+noLpShift) {
 								curMinEseed = std::min( curMinEseed, seedHandler.getSeedE(i1,i2) + energy.getE_init() );
 							}
 							// handle interior loops after seeds in noLP-mode
@@ -235,6 +237,13 @@ fillHybridE( const size_t j1, const size_t j2
 									}
 								}
 							}
+						}
+					}
+
+					// handle direct left-stacking in noLP-mode
+					if ( outConstraint.noLP) {
+						if ( E_isNotINF( hybridE_pq_seed(i1+noLpShift,i2+noLpShift) ) ) {
+							curMinEseed = std::min( curMinEseed, (iStackE + hybridE_pq_seed(i1+noLpShift,i2+noLpShift) ) );
 						}
 					}
 
@@ -428,6 +437,26 @@ traceBack( Interaction & interaction )
 					} // l1
 					// start next iteration if trace was found
 					if (!traceNotFound) {
+						continue;
+					}
+				}
+			}
+
+			// explicit check of direct left-end stacking (in noLP mode)
+			if (outConstraint.noLP) {
+				if ( E_isNotINF( hybridE_pq_seed(i1+noLpShift,i2+noLpShift) ) ) {
+					// check if correct split
+					if (E_equal ( curE,
+							(iStackE + hybridE_pq_seed(i1+noLpShift,i2+noLpShift) )
+							) )
+					{
+						// store stacked base pair
+						interaction.basePairs.push_back( energy.getBasePair(i1+noLpShift,i2+noLpShift) );
+						// update trace back boundary
+						i1+=noLpShift;
+						i2+=noLpShift;
+						curE= hybridE_pq_seed(i1,i2);
+						// start next iteration if trace was found
 						continue;
 					}
 				}

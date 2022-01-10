@@ -62,19 +62,19 @@ TEST_CASE( "AccessibilityFromStream", "[AccessibilityFromStream]" ) {
 		std::istringstream  accStream(accString);
 
 		// trigger parsing
-		AccessibilityFromStream acc( rna, 10, NULL, accStream, AccessibilityFromStream::Pu_RNAplfold_Text, 1.0 );
+		AccessibilityFromStream acc( rna, 9, NULL, accStream, AccessibilityFromStream::Pu_RNAplfold_Text, 1.0 );
 
 //		std::cerr <<"orig data:\n" <<accString;
 //		std::cerr <<"ED data:\n" <<acc;
 
 		// check elements
 		REQUIRE( acc.getED(29, 29) == 0 );
-		REQUIRE( acc.getED(20, 29) == 732 );
+		REQUIRE( acc.getED(21, 29) == 690 );
 //		// old checks not working for integer-based ED type
 //		REQUIRE( std::exp( - acc.getED(29, 29) ) > 0.998 );
 //		REQUIRE( std::exp( - acc.getED(29, 29) ) < 0.999 );
-//		REQUIRE( std::exp( - acc.getED(20, 29) ) > 0.0006 );
-//		REQUIRE( std::exp( - acc.getED(20, 29) ) < 0.0007 );
+//		REQUIRE( std::exp( - acc.getED(21, 29) ) > 0.0001 );
+//		REQUIRE( std::exp( - acc.getED(21, 29) ) < 0.00011 );
 	}
 
 	SECTION("Pu_RNAplfold output reparsed") {
@@ -83,31 +83,21 @@ TEST_CASE( "AccessibilityFromStream", "[AccessibilityFromStream]" ) {
 		std::istringstream  accStream(accString);
 
 		// trigger parsing
-		AccessibilityFromStream acc( rna, 10, NULL, accStream, AccessibilityFromStream::Pu_RNAplfold_Text, 1.0 );
+		AccessibilityFromStream acc( rna, 9, NULL, accStream, AccessibilityFromStream::Pu_RNAplfold_Text, 1.0 );
 
 		// check elements
 		REQUIRE( acc.getED(29, 29) == 0 );
-		REQUIRE( acc.getED(20, 29) == 732 );
-//		// old checks not working for integer-based ED type
-//		REQUIRE( std::exp( - acc.getED(29, 29) ) > 0.998 );
-//		REQUIRE( std::exp( - acc.getED(29, 29) ) < 0.999 );
-//		REQUIRE( std::exp( - acc.getED(20, 29) ) > 0.0006 );
-//		REQUIRE( std::exp( - acc.getED(20, 29) ) < 0.0007 );
+		REQUIRE( acc.getED(21, 29) == 690 );
 
 		std::stringstream accStream2;
 		acc.writeRNAplfold_Pu_text( accStream2, 1.0 );
 
 		// trigger parsing
-		AccessibilityFromStream acc2( rna, 10, NULL, accStream2, AccessibilityFromStream::Pu_RNAplfold_Text, 1.0 );
+		AccessibilityFromStream acc2( rna, 9, NULL, accStream2, AccessibilityFromStream::Pu_RNAplfold_Text, 1.0 );
 
 		// check elements
 		REQUIRE( acc.getED(29, 29) == 0 );
-		REQUIRE( acc.getED(20, 29) == 732 );
-//		// old checks not working for integer-based ED type
-//		REQUIRE( std::exp( - acc2.getED(29, 29) ) > 0.998 );
-//		REQUIRE( std::exp( - acc2.getED(29, 29) ) < 0.999 );
-//		REQUIRE( std::exp( - acc2.getED(20, 29) ) > 0.0006 );
-//		REQUIRE( std::exp( - acc2.getED(20, 29) ) < 0.0007 );
+		REQUIRE( acc.getED(21, 29) == 690 );
 
 	}
 
@@ -117,31 +107,21 @@ TEST_CASE( "AccessibilityFromStream", "[AccessibilityFromStream]" ) {
 		std::istringstream  accStream(accString);
 
 		// trigger parsing
-		AccessibilityFromStream acc( rna, 10, NULL, accStream, AccessibilityFromStream::Pu_RNAplfold_Text, 1.0 );
+		AccessibilityFromStream acc( rna, 9, NULL, accStream, AccessibilityFromStream::Pu_RNAplfold_Text, 1.0 );
 
 		// check elements
 		REQUIRE( acc.getED(29, 29) == 0 );
-		REQUIRE( acc.getED(20, 29) == 732 );
-//		// old checks not working for integer-based ED type
-//		REQUIRE( std::exp( - acc.getED(29, 29) ) > 0.998 );
-//		REQUIRE( std::exp( - acc.getED(29, 29) ) < 0.999 );
-//		REQUIRE( std::exp( - acc.getED(20, 29) ) > 0.0006 );
-//		REQUIRE( std::exp( - acc.getED(20, 29) ) < 0.0007 );
+		REQUIRE( acc.getED(21, 29) == 690 );
 
 		std::stringstream accStream2;
 		acc.writeRNAplfold_ED_text( accStream2 );
 
 		// trigger parsing
-		AccessibilityFromStream acc2( rna, 10, NULL, accStream2, AccessibilityFromStream::ED_RNAplfold_Text, 1.0 );
+		AccessibilityFromStream acc2( rna, 9, NULL, accStream2, AccessibilityFromStream::ED_RNAplfold_Text, 1.0 );
 
 		// check elements
 		REQUIRE( acc.getED(29, 29) == 0 );
-		REQUIRE( acc.getED(20, 29) == 732 );
-//		// old checks not working for integer-based ED type
-//		REQUIRE( std::exp( - acc2.getED(29, 29) ) > 0.998 );
-//		REQUIRE( std::exp( - acc2.getED(29, 29) ) < 0.999 );
-//		REQUIRE( std::exp( - acc2.getED(20, 29) ) > 0.0006 );
-//		REQUIRE( std::exp( - acc2.getED(20, 29) ) < 0.0007 );
+		REQUIRE( acc.getED(21, 29) == 690 );
 
 	}
 
@@ -150,7 +130,7 @@ TEST_CASE( "AccessibilityFromStream", "[AccessibilityFromStream]" ) {
 		std::istringstream  accStream(accString);
 		RnaSequence rnaDouble("tooLong",seq+seq);
 		// trigger parsing exception
-		REQUIRE_THROWS( AccessibilityFromStream( rnaDouble, 10, NULL, accStream, AccessibilityFromStream::Pu_RNAplfold_Text, 1.0 ) );
+		REQUIRE_THROWS( AccessibilityFromStream( rnaDouble, 9, NULL, accStream, AccessibilityFromStream::Pu_RNAplfold_Text, 1.0 ) );
 	}
 
 	SECTION("test decomposeByMaxED()") {
@@ -158,7 +138,7 @@ TEST_CASE( "AccessibilityFromStream", "[AccessibilityFromStream]" ) {
 		std::istringstream  accStream(accString);
 		RnaSequence rna("tooLong",seq);
 		// read PU values for fake ED values
-		AccessibilityFromStream acc( rna, 10, NULL, accStream, AccessibilityFromStream::ED_RNAplfold_Text, 1.0 );
+		AccessibilityFromStream acc( rna, 9, NULL, accStream, AccessibilityFromStream::ED_RNAplfold_Text, 1.0 );
 
 		// new validation values for integer-based ED type just copied from failing tests
 		// ! not manually checked for sanity !

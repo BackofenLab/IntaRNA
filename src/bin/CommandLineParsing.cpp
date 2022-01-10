@@ -1267,8 +1267,10 @@ parse(int argc, char** argv)
 					if (target.size()>1 || query.size() > 1) {
 						throw error("explicit seed definition only for single query/target available");
 					}
-					// input sanity check : maybe seed constraints defined -> warn
 					if (seedBP.isSet()) LOG(INFO) <<"explicit seeds defined, but seedBP provided (will be ignored)";
+					// reset seedBP to minimal bps in any of the seeds
+					seedBP.val = SeedHandlerExplicit::getSeedMinBP(seedTQ);
+					// input sanity check : maybe seed constraints defined -> warn
 					if (seedMaxUP.isSet()) LOG(INFO) <<"explicit seeds defined, but seedMaxUP provided (will be ignored)";
 					if (seedQMaxUP.isSet()) LOG(INFO) <<"explicit seeds defined, but seedQMaxUP provided (will be ignored)";
 					if (seedTMaxUP.isSet()) LOG(INFO) <<"explicit seeds defined, but seedTMaxUP provided (will be ignored)";
@@ -1533,9 +1535,9 @@ parse(int argc, char** argv)
 				// check compatibility of seed constraint with helix setup
 				if (!noSeedRequired) {
 					// check if helixMaxBP >= seedBP
-					if (helixMaxBP.val < ( seedTQ.empty() ? seedBP.val : SeedHandlerExplicit::getSeedMaxBP(seedTQ) ) ) {
-						throw error("maximum number of seed base pairs ("
-								+toString(( seedTQ.empty() ? seedBP.val : SeedHandlerExplicit::getSeedMaxBP(seedTQ) ))
+					if (helixMaxBP.val < seedBP.val) {
+						throw error("minimum number of seed base pairs ("
+								+toString(seedBP.val)
 								+") exceeds the maximally allowed number of helix base pairs ("+toString(helixMaxBP.val)+")");
 					}
 				}

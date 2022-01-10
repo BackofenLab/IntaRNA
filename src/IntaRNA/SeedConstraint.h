@@ -290,7 +290,7 @@ SeedConstraint::SeedConstraint(
 	, bpGUendAllowed(!noGUendAllowed)
 	, lpAllowed(!noLP)
 {
-	if (bp < 2) throw std::runtime_error("SeedConstraint() : base pair number ("+toString(bp)+") < 2");
+	if (bp < 2 && explicitSeeds.empty()) throw std::runtime_error("SeedConstraint() : base pair number ("+toString(bp)+") < 2");
 }
 
 /////////////////////////////////////////////////////////////////////////////
