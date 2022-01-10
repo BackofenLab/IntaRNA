@@ -31,7 +31,9 @@
 220110 Martin Raden
  * configure.ac :
    * rewrite of grep personality call to be compatible with old grep version on osx
-   
+
+201204 Simon Bray (thanks!) :
+ * replace travis with github action
 
 210211 Martin Raden
  * IntaRNA/SeedConstraint :
