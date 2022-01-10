@@ -411,7 +411,7 @@ AS_IF([test "$DEPENDENCYNOTFOUND" = "1"], [
 ##########################################################################
 
 # get available personalities
-AC_SUBST([PERSONALITIES],[`grep -P "^\\s+case\\s+IntaRNA\\S+\\s*:\\s*return" ./src/bin/CommandLineParsing.h | sed "s/^\\s*case\\s\\+\\(IntaRNA\\S*\\)\\s\\+:\\s\\+return.*/\\1/g" | tr "\\n" " "`])
+AC_SUBST([PERSONALITIES],[`grep "^\\s*case\\s*IntaRNA\\S*\\s*:\\s*return" ./src/bin/CommandLineParsing.h | sed "s/^\\s*case\\s\\+\\(IntaRNA\\S*\\)\\s\\+:\\s\\+return.*/\\1/g" | tr "\\n" " "`])
 ##########################################################################
 
 
