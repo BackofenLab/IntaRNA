@@ -23,8 +23,6 @@ jobs:
         conda activate build-IntaRNA
     - name: Script
       run: |
-        ##### activate build env  #####
-        conda activate build-IntaRNA
         ##### start IntaRNA build #####
         pwd
         # generate autotools's files 
