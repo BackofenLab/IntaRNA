@@ -29,6 +29,7 @@ jobs:
         bash autotools-init.sh 
         # run configure (without boost checks)
         ENVPREFIX=`conda info --base`/envs/build-IntaRNA
+        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ENVPREFIX/lib
         ./configure \
            --prefix=$HOME/IntaRNA \
            --with-vrna=$ENVPREFIX \
