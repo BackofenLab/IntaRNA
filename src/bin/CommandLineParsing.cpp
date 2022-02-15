@@ -106,7 +106,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 
 	queryArg(""),
 	query(),
-	qIdxPos0("qIdxPos0",-9999999,9999999,1),
+	qIdxPos0("qIdxPos0",-2000000000,2000000000,1),  // 4 byte range of long = -2,147,483,648 bis 2,147,483,647
 	qSet(),
 	qSetString(""),
 	qAcc("qAcc", "NCPE", 'C'),
@@ -125,7 +125,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 
 	targetArg(""),
 	target(),
-	tIdxPos0("tIdxPos0",-9999999,9999999,1),
+	tIdxPos0("tIdxPos0",-2000000000,2000000000,1),
 	tSet(),
 	tSetString(""),
 	tAcc("tAcc","NCPE", 'C'),
@@ -205,6 +205,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	outSep(";"),
 	outCsvCols(outCsvCols_default),
 	outPerRegion(false),
+	outPairwise(false),
 	outSpotProbSpots(""),
 	outNeedsZall(false),
 	outNeedsBPs(true),
@@ -992,6 +993,12 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 						->implicit_value(true)
 	    		, "output : if given (or true), best interactions are reported independently"
 	    		" for all region combinations; otherwise only the best for each query-target combination")
+	    ("outPairwise"
+	    		, value<bool>(&outPairwise)
+						->default_value(outPairwise)
+						->implicit_value(true)
+	    		, "output : if given (or true), interactions are only computed for each corresponding query-target pair (same index) "
+	    				"instead of all-vs-all")
 	    ("verbose,v", "verbose output") // handled via easylogging++
 	    ("default-log-file", value<std::string>(&(logFileName)), "file to be used for log output (INFO, WARNING, VERBOSE, DEBUG)")
 	    ;
@@ -1189,6 +1196,11 @@ parse(int argc, char** argv)
 			// parse the sequences
 			parseSequences("query",qId,queryArg,query,qSet,qIdxPos0.val);
 			parseSequences("target",tId,targetArg,target,tSet,tIdxPos0.val);
+
+			// check if same number if pairwise mode
+			if (outPairwise && query.size() != target.size()) {
+				throw error("--outPairwise requires same number of query and target sequences");
+			}
 
 			// validate accessibility input from file (requires parsed sequences)
 			validate_qAccFile( qAccFile );
@@ -1800,6 +1812,32 @@ getQuerySequences() const
 {
 	checkIfParsed();
 	return query;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+const size_t
+CommandLineParsing::
+getQueryIndexForTarget( const size_t i, const size_t targetIndex ) const
+{
+	checkIfParsed();
+#if INTARNA_IN_DEBUG_MODE
+	if (i>=query.size())
+		throw std::runtime_error("CommandLineParsing::getQueryIndexForTarget("+toString(i)+") out of bounds");
+#endif
+	// depends on pairwise or all-vs-all prediction
+	return outPairwise ? targetIndex : i;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+const size_t
+CommandLineParsing::
+getQueryNumberForTarget( const size_t targetIndex ) const
+{
+	checkIfParsed();
+	// depends on pairwise or all-vs-all prediction
+	return outPairwise ? 1 : query.size();
 }
 
 ////////////////////////////////////////////////////////////////////////////

@@ -191,8 +191,10 @@ int main(int argc, char **argv){
 					// this parallelization should only be enabled if the outer target-loop is not parallelized
 					# pragma omp parallel for schedule(dynamic) num_threads( parameters.getThreads() ) shared(queryAcc,reportedInteractions,exceptionPtrDuringOmp,exceptionInfoDuringOmp,targetAcc,targetNumber) if(parallelizeQueryLoop)
 #endif
-					for ( size_t queryNumber = 0; queryNumber < parameters.getQuerySequences().size(); ++queryNumber )
+					for ( size_t queryIdx = 0; queryIdx < parameters.getQueryNumberForTarget(targetNumber); ++queryIdx )
 					{
+						// get index of this query wrt. getQuerySequence() and queryAcc()
+						const size_t queryNumber = parameters.getQueryIndexForTarget(queryIdx, targetNumber);
 #if INTARNA_MULITHREADING
 						#pragma omp flush (threadAborted)
 						// explicit try-catch-block due to missing OMP exception forwarding

@@ -162,6 +162,22 @@ public:
 	const RnaSequenceVec& getQuerySequences() const;
 
 	/**
+	 * Provides the number of query sequences to be considered for a target sequence.
+	 * @param targetIndex index of the target sequence wrt. getTargetSequences().
+	 * @return the number of query sequences for this target
+	 */
+	const size_t getQueryNumberForTarget( const size_t targetIndex ) const;
+
+	/**
+	 * Provides the index (wrt. getQuerySequences()) of the i-th (wrt. getQueryNumberForTarget())
+	 * query sequence that is to be considered for a given target sequence.
+	 * @param i the i-th target-specific query sequence (wrt. getQueryNumberForTarget())
+	 * @param targetIndex index of the target sequence wrt. getTargetSequences().
+	 * @return the index of i-th query sequence (wrt. getQuerySequences()) for this target
+	 */
+	const size_t getQueryIndexForTarget( const size_t i, const size_t targetIndex ) const;
+
+	/**
 	 * Parses the target parameter and returns all parsed sequences.
 	 * @return the set of parsed target sequences
 	 */
@@ -718,6 +734,9 @@ protected:
 	//! for all region combinations or only the best for each query-target
 	//! combination
 	bool outPerRegion;
+	//! whether or not each query-target combinations should be considered pairwise
+	//! instead of all-vs-all
+	bool outPairwise;
 	//! for SpotProb output : spots to be tracked
 	std::string outSpotProbSpots;
 	//! whether or not Zall is needed for output generation

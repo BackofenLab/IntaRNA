@@ -106,6 +106,7 @@ The following topics are covered by this documentation:
   - [SHAPE reactivity data to enhance accessibility computation](#shape)
 - [Output Setup](#outputSetup)
   - [Output modes](#outmodes)
+  - [Pairwise vs. all-vs-all](#outpairwise)
   - [Sequence indexing](#idxPos0)
   - [Suboptimal RNA-RNA interaction prediction and output restrictions](#subopts)
   - [Energy parameters and temperature](#energy)
@@ -1498,6 +1499,20 @@ IntaRNA --model=P --mode=M --outMode=E ...
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
+
+
+<br /><br />
+<a name="outpairwise" />
+
+## Pairwise vs. all-vs-all
+
+When multiple query and target sequences are provided, IntaRNA predicts interactions for 
+all pairs of query-target combinations, i.e. **all-vs-all**.
+
+Alternatively, you can enforce **pairwise** processing using `--outPairwise`. 
+When given, sequences are combined based on their input order, i.e. the 5th target is 
+(only) considered for interaction prediction with the 5th query sequence. Thus, you
+have to provide the same number of query and target sequences.
 
 
 <br /><br />

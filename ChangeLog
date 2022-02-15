@@ -10,6 +10,34 @@
 # changes in development version since last release 
 ################################################################################
 
+################################################################################  
+################################################################################
+
+
+################################################################################
+### version 3.3.0
+################################################################################  
+
+# IntaRNA
+- `--outPairwise` enables pairwise sequence processing instead of all-vs-all
+- input range for `--q|tIdxPos0` is now +-2,000,000,000 (was +-9,999,999) to
+  enable genomic position settings
+
+################################################################################  
+################################################################################
+
+
+220215 Martin Raden
+ * bin/CommandLineParsing :
+   + outPairwise : switch to trigger pairwise vs. all-vs-all sequence processing
+   + getQueryNumberForTarget() : target-specific query sequence number
+   + getQueryIndexForTarget() : index getter for target-specific query sequences
+ * bin/IntaRNA :
+   * query iteration now based on target-specific sequence number to enable
+     pairwise sequence processing
+220214 Martin Raden
+ * bin/CommandLineParsing :
+   * idxpos0 range now +-2,000,000,000 (was +-9,999,999) for genomic positions
 
 ################################################################################
 ### version 3.2.2
