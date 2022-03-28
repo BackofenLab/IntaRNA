@@ -2195,16 +2195,19 @@ parseSequencesFasta( const std::string & paramName,
 		if( !name.empty() ){
 			// trim leading/trailing whitespaces
 			trimStart = line.find_first_not_of(" \t");
-			line = line.substr( trimStart, std::max(0,(int)line.find_last_not_of(" \t\n\r")+1-trimStart) );
-			// check for enclosed whitespaces
-			if( line.find(' ') != std::string::npos ){ // Invalid sequence--no spaces allowed
-				LOG(ERROR) <<"FASTA parsing of "<<paramName<<" : sequence for ID '"<<name<<"' contains spaces";
-				updateParsingCode( ReturnCode::STOP_PARSING_ERROR );
-				name.clear();
-				sequence.clear();
-			} else {
-				// store sequence line
-				sequence += line;
+			// check if not an empty lines with white spaces only
+			if (trimStart < line.size()) {
+				line = line.substr( trimStart, std::max(0,(int)line.find_last_not_of(" \t\n\r")+1-trimStart) );
+				// check for enclosed whitespaces
+				if( line.find(' ') != std::string::npos ){ // Invalid sequence--no spaces allowed
+					LOG(ERROR) <<"FASTA parsing of "<<paramName<<" : sequence for ID '"<<name<<"' contains spaces";
+					updateParsingCode( ReturnCode::STOP_PARSING_ERROR );
+					name.clear();
+					sequence.clear();
+				} else {
+					// store sequence line
+					sequence += line;
+				}
 			}
 		} else {
 			LOG(ERROR) <<"FASTA parsing of "<<paramName<<" : found sequence data without leading ID";

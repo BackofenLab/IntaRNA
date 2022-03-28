@@ -10,9 +10,19 @@
 # changes in development version since last release 
 ################################################################################
 
+# IntaRNA
+- BUGFIX: empty lines with white spaces within FASTA input were causing parsing
+  errors
+
 ################################################################################  
 ################################################################################
 
+
+220328 Martin Raden
+ * bin/CommandLineParsing :
+   * parseSequencesFasta() :
+     * BUGFIX: missing handling of empty lines with white spaces only within 
+       FASTA input (were causing parsing errors) 
 
 ################################################################################
 ### version 3.3.0
