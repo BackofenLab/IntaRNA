@@ -1774,6 +1774,24 @@ mfe-site in the second sequence and are thus less likely to occure.
 
 ![Minimal interaction energy index pair information](./doc/figures/pair-minE.png)
 
+A more sophisticated plot can be done using `ggplot2` from the `tidyverse` package.
+
+```R
+library(tidyverse)
+
+read_delim("pairMinE-t1q1.csv", delim=";") %>%
+  replace(is.na(.), 0) %>%
+  rename( target = minE ) %>%
+  pivot_longer( cols=-target, names_to = "query", values_to = "E" ) %>%
+  separate( query, into = c("qSeq","qIdx"), sep = "_") %>%
+  separate( target, into = c("tSeq","tIdx"), sep = "_") %>%
+  mutate(across(c(tIdx,qIdx,E),as.numeric)) %>%
+  mutate(E = ifelse( E>0, 0, E)) %>%
+  ggplot(aes(x=tIdx,y=qIdx, fill=E)) +
+    geom_tile() + 
+    scale_fill_gradient(low="blue",high="red")
+```
+
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
