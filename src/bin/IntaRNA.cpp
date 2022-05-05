@@ -230,7 +230,7 @@ int main(int argc, char **argv){
 									// iterate over all window combinations
 #if INTARNA_MULITHREADING
 									// this parallelization should only be enabled if neither the outer target-loop nor the inner query-loop are parallelized
-									# pragma omp parallel for schedule(dynamic) collapse(2) num_threads( parameters.getThreads() ) shared(queryAcc,reportedInteractions,exceptionPtrDuringOmp,exceptionInfoDuringOmp,targetAcc,targetNumber,queryNumber,queryWindows,targetWindows, bestInteractions, energy) if(parallelizeWindowsLoop)
+									# pragma omp parallel for schedule(dynamic) collapse(2) num_threads( parameters.getThreads() ) shared(queryAcc,reportedInteractions,exceptionPtrDuringOmp,exceptionInfoDuringOmp,targetAcc,targetNumber,queryWindows,targetWindows, bestInteractions, energy) if(parallelizeWindowsLoop)
 #endif									
 									for (int qNumWindow = 0; qNumWindow < queryWindows.size(); ++qNumWindow) {
 									for (int tNumWindow = 0; tNumWindow < targetWindows.size(); ++tNumWindow) {									

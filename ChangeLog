@@ -10,10 +10,18 @@
 # changes in development version since last release 
 ################################################################################
 
+# IntaRNA
+- compilation fix: correcting shared variables for parallelization
+- BUGFIX debug check
 
 ################################################################################  
 ################################################################################
 
+220505 Martin Raden
+ * bin/IntaRNA :
+   * compilation fix: removing queryNumber from shared variables, since constant
+ * IntaRNA/PredictorMfe2d:
+   * predict() : bugfix: debug check was calling wrong function
 
 ################################################################################
 ### version 3.3.1

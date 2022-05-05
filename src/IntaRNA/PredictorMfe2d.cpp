@@ -100,8 +100,8 @@ fillHybridE( const size_t j1, const size_t j2
 		throw std::runtime_error("PredictorMfe2d::fillHybridE() : i1init > j1 : "+toString(i1init)+" > "+toString(j1));
 	if (i2init > j2)
 		throw std::runtime_error("PredictorMfe2d::fillHybridE() : i2init > j2 : "+toString(i2init)+" > "+toString(j2));
-	if (!energy.isAccessible2(j1))
-		throw std::runtime_error("PredictorMfe2d::fillHybridE() : !energy.isAccessible2(j1) : "+toString(j1));
+	if (!energy.isAccessible1(j1))
+		throw std::runtime_error("PredictorMfe2d::fillHybridE() : !energy.isAccessible1(j1) : "+toString(j1));
 	if (!energy.isAccessible2(j2))
 		throw std::runtime_error("PredictorMfe2d::fillHybridE() : !energy.isAccessible2(j2) : "+toString(j2));
 #endif
