@@ -13,9 +13,14 @@
 # IntaRNA
 - compilation fix: correcting shared variables for parallelization
 - BUGFIX debug check
+- BUGFIX IntaRNAhelix traceback of helices where seed is not at right end
 
 ################################################################################  
 ################################################################################
+
+220913 Martin Raden
+ * IntaRNA/HelixHandlerNoBulgeMax:
+   * traceBackHelixSeed() : bugfix: tracing of helices with seed-trailing bps
 
 220505 Martin Raden
  * bin/IntaRNA :

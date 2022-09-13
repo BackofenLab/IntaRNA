@@ -380,16 +380,16 @@ traceBackHelixSeed( Interaction & interaction
 	// get energy to be traced
 	E_type curE = helixSeed.at(BP(i1,i2)).first;
 
+	// No traceback possible for current boundary
+	if (E_isINF(curE)) {
+		return;
+	}
+
 	const size_t bestL1 = getHelixSeedLength1(i1,i2);
 	const size_t bestL2 = getHelixSeedLength2(i1,i2);
 
 	const size_t j1 = i1 + decodeHelixSeedLength1(helixSeed.at(BP(i1,i2)).second) -1;
 	const size_t j2 = i2 + decodeHelixSeedLength2(helixSeed.at(BP(i1,i2)).second) -1;
-
-	// No traceback possible for current boundary
-	if (E_isINF(curE)) {
-		return;
-	}
 
 	// Calculate how many base pairs are possible alongside the seed.
 	// Note: If seedHandler allows unpaired positions this check is not enough, check happens in loop
@@ -436,7 +436,7 @@ traceBackHelixSeed( Interaction & interaction
 		E_type trailingE = E_type(0);
 		const size_t trailingBP = (j1-seedEnd1);
 		// update trailingE to cover all (missing) trailing base pairs
-		for (size_t trailingL = 0; trailingL < trailingBP; trailingL++) {
+		for (size_t trailingL = 1; trailingL <= trailingBP; trailingL++) {
 			// check if trailing based pairs are possible, otherwise stop computation
 			if (!energy.areComplementary(seedEnd1+trailingL,seedEnd2+trailingL))
 			{
