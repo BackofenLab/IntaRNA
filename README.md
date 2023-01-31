@@ -1004,7 +1004,7 @@ The predicted RNA-RNA interactions can be enhanced if additional
 knowledge is available. To this end, IntaRNA provides different options to
 restrict predicted interactions.
 
-A general most general restriction is the maximal energy (inversely related to
+One of the most general restriction is the maximal energy (inversely related to
 stability) an RNA-RNA interaction is allowed to have. Per default, a reported
 interaction should have a negative energy (<0) to be energetically favorable.
 This report barrier can be altered using `--outMaxE`. For suboptimal interaction
