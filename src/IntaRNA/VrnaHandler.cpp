@@ -109,12 +109,9 @@ VrnaHandler::
 
 ////////////////////////////////////////////////////////////////////////////
 
-
-
-
 vrna_md_t
 VrnaHandler::
-getModel( int max_bp_span, int window_size ) const
+getModel( const int max_bp_span, const int window_size, const double pfScale ) const
 {
 	// the sub model to be returned
 	vrna_md_t subModel;
@@ -125,9 +122,22 @@ getModel( int max_bp_span, int window_size ) const
     // set specific parameters
     subModel.max_bp_span = max_bp_span;
     subModel.window_size = window_size;
+    if (!(pfScale < 1)) {
+    	subModel.sfact = pfScale;
+    }
 
 	// return new model
 	return subModel;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+double
+VrnaHandler::
+getPfScaleDefault()
+{
+	// get default value from VRNA package
+	return vrna_md_defaults_sfact_get();
 }
 
 ////////////////////////////////////////////////////////////////////////////

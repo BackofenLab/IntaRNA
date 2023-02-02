@@ -122,6 +122,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	qShape(""),
 	qShapeMethod("Zb0.89"),
 	qShapeConversion("Os1.6i-2.29"),
+	qPfScale("qPfScale", 1.0, 99999.0, VrnaHandler::getPfScaleDefault()),
 
 	targetArg(""),
 	target(),
@@ -141,6 +142,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	tShape(""),
 	tShapeMethod("Zb0.89"),
 	tShapeConversion("Os1.6i-2.29"),
+	tPfScale("tPfScale", 1.0, 99999.0, VrnaHandler::getPfScaleDefault()),
 
 	// meta constraints
 	acc("acc","NC", 'C'),
@@ -469,6 +471,15 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 					" (arg in range ["+toString(qRegionLenMax.min)+","+toString(qRegionLenMax.max)+"];"
 					" 0 defaults to no automatic range detection)"
 					).c_str())
+		(qPfScale.name.c_str()
+			, value<double>(&(qPfScale.val))
+				->default_value(qPfScale.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_numberArgument<double>,this,qPfScale,_1))
+			, std::string("accessibility computation : partition function scaling parameter for query accessibility computation"
+					" to avoid over-/underflow of data type range. See ViennaRNA package for details."
+					" (arg in range ["+toString(qPfScale.min)+","+toString(qPfScale.max)+"];"
+							"values below 1 are ignored)"
+					).c_str())
 		;
 
 	////  TARGET SEQUENCE OPTIONS  ////////////////////////////////////
@@ -574,6 +585,15 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 					" until only regions below the given maximal length or remaining."
 					" (arg in range ["+toString(tRegionLenMax.min)+","+toString(tRegionLenMax.max)+"];"
 					" 0 defaults to no automatic range detection)"
+					).c_str())
+		(tPfScale.name.c_str()
+			, value<double>(&(tPfScale.val))
+				->default_value(tPfScale.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_numberArgument<double>,this,tPfScale,_1))
+			, std::string("accessibility computation : partition function scaling parameter for target accessibility computation"
+					" to avoid over-/underflow of data type range. See ViennaRNA package for details."
+					" (arg in range ["+toString(tPfScale.min)+","+toString(tPfScale.max)+"];"
+							"values below 1 are ignored)"
 					).c_str())
 		;
 
@@ -1934,6 +1954,7 @@ getQueryAccessibility( const size_t sequenceNumber ) const
 							, &accConstraint
 							, vrnaHandler
 							, qAccW.val
+							, qPfScale.val
 							);
 		default :
 			INTARNA_NOT_IMPLEMENTED("query accessibility computation not implemented for energy = '"+toString(energy.val)+"'. Disable via --qAcc=N.");
@@ -2007,6 +2028,7 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 								, &accConstraint
 								, vrnaHandler
 								, tAccW.val
+								, tPfScale.val
 								);
 		default :
 			INTARNA_NOT_IMPLEMENTED("target accessibility computation not implemented for energy = '"+toString(energy.val)+"'. Disable via --tAcc=N.");

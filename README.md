@@ -118,6 +118,7 @@ The following topics are covered by this documentation:
     - [Accessibility and unpaired probabilities](#accessibility)
       - [Local versus global unpaired probabilities](#accLocalGlobal)
       - [Constrain regions to be accessible or blocked](#accConstraints)
+      - [Scaling factors for partition function computation for accessibility estimation](#accPfScale)
       - [Read/write accessibility from/to file or stream](#accFromFile)
 - [Library for integration in external tools](#lib)
 - [Auxiliary R scripts for output visualization etc.](/R)
@@ -2022,6 +2023,43 @@ term and thus IntaRNA will use and provide corrected energy terms.
 
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
+
+
+
+
+<a name="accPfScale" />
+
+#### Scaling factors for partition function computation for accessibility estimation
+
+To compute the unpaired probabilities, which are the base for accessibility estimation, 
+one needs to calculate so called partition functions of structure ensembles. The value
+of these numbers can be very large for longer sequences, since the RNA structure space 
+growths exponentially with sequence length. Thus, the respective methods from the
+Vienna RNA package employ mathematical tricks to scale the partition function values
+in order to keep them within ranges that can be handled with normal data structures.
+
+If you are investigating very long (or special) sequences, these tricks might be insufficient
+and the accessibility computation will fail with an error similar to the one shown below.
+
+![pf_scale problem](doc/figures/pf_scale.problem.png)
+
+This error, raised by the underlying routine from the Vienna RNA package, shows that
+the value of the partition function `Q` exceeds the possible range for such numbers.
+
+This problem can be tackled, when supporting the partition function scaling with a 
+sequence specific scaling factor (the `pf_scale` mentioned within the error above).
+You can set this factor using `--qPfScale`|`--tPfScale` for query|target sequence, 
+respectively. The larger the value, the higher `Q` values can be dealt with but with the
+cost of precision. Too high values will render the accessibility computation useless,
+since the precision is so low that all unpaired probabilities are dropping to zero.
+Thus, be careful when setting the factor. The 
+[RNAplfold manual](https://www.tbi.univie.ac.at/RNA/RNAplfold.1.html)
+recommends values between 1 and 2. But higher values might be needed for very long 
+sequences.
+
+
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
+
 
 <a name="accFromFile" />
 

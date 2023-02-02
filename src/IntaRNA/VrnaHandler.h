@@ -65,10 +65,15 @@ public:
 	 * 				or -1 if no constraint needed
 	 * @param window_size Size of the sliding window for locally folding within one RNA
 	 * 				or -1 if no constraint needed
+	 * @oaram pfScale can be used to scale pf_scale of VRNA partition function computation.
+	 *                Note: only used for values >= 1.0, all other values are ignored.
 	 * @return the model to be used for VRNA computations
 	 */
 	vrna_md_t
-	getModel( int max_bp_span = -1, int window_size = -1 ) const;
+	getModel(
+			const int max_bp_span = -1,
+			const int window_size = -1,
+			const double pfScale = getPfScaleDefault() ) const;
 
 	/**
 	 * Provides RT for the current setup
@@ -84,6 +89,16 @@ public:
 	static
 	Z_type
 	getRT( const Z_type temperature );
+
+
+	/**
+	 * Provides the default value of the ViennaRNA package for the pf_scale factor
+	 * model.sfact to be used in argument parsing etc.
+	 * @return the default model.sfact value from the ViennaRNA package
+	 */
+	static
+	double
+	getPfScaleDefault();
 
 
 

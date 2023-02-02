@@ -565,6 +565,8 @@ protected:
 	//! optional encoding how data from qShape is converted into pairing
 	//! probabilities for according accessibility prediction
 	std::string qShapeConversion;
+	//! pf_scale parameter to be used for accessibility computation for query sequences
+	NumberParameter<double> qPfScale;
 
 	//! the target command line argument
 	std::string targetArg;
@@ -608,6 +610,8 @@ protected:
 	//! optional encoding how data from tShape is converted into pairing
 	//! probabilities for according accessibility prediction
 	std::string tShapeConversion;
+	//! pf_scale parameter to be used for accessibility computation for target sequences
+	NumberParameter<double> tPfScale;
 
 	// META PARAMETER applied to both query and target
 	//! accessibility computation mode

@@ -7,31 +7,33 @@
 #include <limits>
 #include <stdexcept>
 
-// constraint-based ED filling
-extern "C" {
-	#include <ViennaRNA/part_func.h>
-	#include <ViennaRNA/fold.h>
-	#include <ViennaRNA/model.h>
-	#include <ViennaRNA/constraints/SHAPE.h>
-}
-
-// RNAup-like ED filling
-extern "C" {
-	#include <ViennaRNA/fold_vars.h>
-	#include <ViennaRNA/fold.h>
-	#include <ViennaRNA/part_func.h>
-	#include <ViennaRNA/part_func_up.h>
-	#include <ViennaRNA/utils.h>
-}
+//// constraint-based ED filling
+//extern "C" {
+//	#include <ViennaRNA/part_func.h>
+//	#include <ViennaRNA/fold.h>
+//	#include <ViennaRNA/model.h>
+//	#include <ViennaRNA/constraints/SHAPE.h>
+//}
+//
+//// RNAup-like ED filling
+//extern "C" {
+//	#include <ViennaRNA/fold_vars.h>
+//	#include <ViennaRNA/fold.h>
+//	#include <ViennaRNA/part_func.h>
+//	#include <ViennaRNA/part_func_up.h>
+//	#include <ViennaRNA/utils.h>
+//}
 
 // RNAplfold-like ED filling
 extern "C" {
 	#include <ViennaRNA/fold_vars.h>
 	#include <ViennaRNA/fold.h>
+	#include <ViennaRNA/params.h>
 	#include <ViennaRNA/part_func.h>
 	#include <ViennaRNA/LPfold.h>
 	#include <ViennaRNA/structure_utils.h>
 	#include <ViennaRNA/utils.h>
+	#include <ViennaRNA/constraints/SHAPE.h>
 }
 
 namespace IntaRNA {
@@ -44,6 +46,7 @@ AccessibilityVrna::AccessibilityVrna(
 			, const AccessibilityConstraint * const accConstraint
 			, const VrnaHandler & vrnaHandler
 			, const size_t plFoldW
+			, const double pfScale
 		)
  :
 	Accessibility( seq, maxLength, accConstraint ),
@@ -55,6 +58,7 @@ AccessibilityVrna::AccessibilityVrna(
 		fillByRNAplfold(vrnaHandler
 				, (plFoldW==0? getSequence().size() : std::min(plFoldW,getSequence().size()))
 				, getAccConstraint().getMaxBpSpan()
+				, pfScale
 				);
 	} else {
 		// init ED values for short sequences
@@ -124,11 +128,6 @@ callbackForStorage(FLT_OR_DBL   *pr,
 
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * Adds constraints to the VRNA fold compound that correspond to the present
- * AccessibilityConstraints
- * @param fold_compound INOUT the object to extend
- */
 void
 AccessibilityVrna::
 addConstraints( vrna_fold_compound_t & fold_compound, const Accessibility & acc )
@@ -173,7 +172,6 @@ addConstraints( vrna_fold_compound_t & fold_compound, const Accessibility & acc 
 
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 
 
@@ -181,7 +179,8 @@ void
 AccessibilityVrna::
 fillByRNAplfold( const VrnaHandler &vrnaHandler
 		, const size_t plFoldW
-		, const size_t plFoldL )
+		, const size_t plFoldL
+		, const double pfScale )
 {
 #if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_omp_logOutput)
@@ -196,8 +195,8 @@ fillByRNAplfold( const VrnaHandler &vrnaHandler
 	}
 #endif
 
-	// add maximal BP span
-	vrna_md_t curModel = vrnaHandler.getModel( plFoldL, plFoldW );
+	// get parameter-specific model
+	vrna_md_t curModel = vrnaHandler.getModel( plFoldL, plFoldW, pfScale );
 
 	const int length = getSequence().size();
 

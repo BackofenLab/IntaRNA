@@ -10,10 +10,27 @@
 # changes in development version since last release 
 ################################################################################
 
+# IntaRNA
+- new arguments t|qPfScale to tune ViennaRNA pf_scale parameter used
+  to scale partition functions for ED value computation to avoid overflows 
 
 ################################################################################  
 ################################################################################
 
+230201 Martin Raden
+ * IntaRNA/AccessibilityVrna :
+   * constructor() :
+   * fillByRNAplfold()
+     + pfScale parameter
+ * bin/CommandLineParsing :
+   + t|qPfScale : sequence-specific parameters for explicit pf_scale setup for
+     accessibility computation of long sequences
+ * IntaRNA/VrnaHandler :
+   * getModel() 
+     + explicit pfScale parameter for rescaling of VRNA exp_params if pfScale >= 1.0
+   + getPfScaleDefault() : provides default value from Vienna package
+ * README.md :
+   + docu of Q overflow and pfScale usage
 
 
 ################################################################################

@@ -129,10 +129,10 @@ computeES( const Accessibility & acc, InteractionEnergyVrna::EsMatrix & esToFill
 	const FLT_OR_DBL ensembleE = vrna_pf( foldData, NULL );
 
 	if (foldData->exp_matrices == NULL) {
-		throw std::runtime_error("AccessibilityVrna::computeES() : partition functions after computation not available");
+		throw std::runtime_error("InteractionEnergyVrna::computeES() : partition functions after computation not available");
 	}
 	if (foldData->exp_matrices->qm == NULL) {
-		throw std::runtime_error("AccessibilityVrna::computeES() : partition functions Qm after computation not available");
+		throw std::runtime_error("InteractionEnergyVrna::computeES() : partition functions Qm after computation not available");
 	}
 	// copy ensemble energies of multi loop parts = ES values
 	FLT_OR_DBL qm_val = 0.0;

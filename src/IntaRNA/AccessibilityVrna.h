@@ -39,12 +39,15 @@ public:
 	 *        to be unstructured both in sequence and interaction
 	 * @param vrnaHandler the VRNA parameter handler to be used
 	 * @param plFoldW the sliding window size to be used for plFold computations
+	 * @oaram pfScale can be used to explicitly set pf_scale of VRNA partition function computation.
+	 *                Note: only used for values >= 1.0, all other values are ignored.
 	 */
 	AccessibilityVrna( const RnaSequence& sequence
 			, const size_t maxLength
 			, const AccessibilityConstraint * const accConstraint
 			, const VrnaHandler & vrnaHandler
 			, const size_t plFoldW = 0
+			, const double pfScale = VrnaHandler::getPfScaleDefault()
 			);
 
 	/**
@@ -80,7 +83,6 @@ public:
 				, const Accessibility & acc );
 
 
-
 protected:
 
 	//! type for the ED value matrix (upper triangular matrix banded by maxLength)
@@ -96,11 +98,14 @@ protected:
 	 * @param vrnaHandler the VRNA handler to be used
 	 * @param plFoldW the sliding window size to be used or 0 for full length
 	 * @param plFoldL the maximal base pair span to be used or 0 for plFoldW
+	 * @oaram pfScale can be used to explicitly set pf_scale of VRNA partition function computation.
+	 *                Note: only used for values >= 1.0, all other values are ignored.
 	 */
 	void
 	fillByRNAplfold( const VrnaHandler &vrnaHandler
 						, const size_t plFoldW
-						, const size_t plFoldL );
+						, const size_t plFoldL
+						, const double pfScale);
 
 	/**
 	 * callback function used when calling vrna_probs_window()
