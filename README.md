@@ -681,7 +681,7 @@ The following figure depicts the effect of the maximum helix length constraints
 that only allows for helices up to a specified length. 
 That way, long interactions (left) are avoided and replaced by a more flexible 
 model composed of short inter-molecular helices (right). 
-The blue boxes represent the lenth-bound helices and while the red boxes depict
+The blue boxes represent the length-bound helices and the red boxes depict
 the interspacing unpaired regions (interior loops).
 
 ![helixbased](./doc/figures/helixbased.svg)
