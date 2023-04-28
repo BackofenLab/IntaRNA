@@ -14,6 +14,10 @@ namespace IntaRNA {
  * overall interaction computation instead of considering all possible seeds
  * starting at (i1,i2).
  *
+ * Note, strongly underestimates Zall since some recursion cases (that are
+ * excluded from Zall updating) might produce interaction duplicates (which
+ * would lead to an overestiamte of Zall).
+ *
  * @author Frank Gelhausen
  * @author Martin Raden
  *
