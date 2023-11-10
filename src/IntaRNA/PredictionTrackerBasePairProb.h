@@ -291,7 +291,7 @@ protected:
 	fillHybridZ( const size_t l1, const size_t si1, const size_t l2, const size_t si2, const SeedHandler* seedHandler );
 
 	//! postscript template for dotplots
-	const char* dotplotTemplate =
+	const char* const dotplotTemplate =
 		"/box { %%size x y box - draws box centered on x,y\n\
 		   2 index 0.5 mul sub            %% x -= 0.5\n\
 		   exch 2 index 0.5 mul sub exch  %% y -= 0.5\n\

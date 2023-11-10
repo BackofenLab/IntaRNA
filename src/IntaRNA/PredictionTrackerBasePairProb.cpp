@@ -518,7 +518,7 @@ generateDotPlot( const char *seq1, const char *seq2, const char *fileName
 	file = fopen(fileName,"w");
 	if (file == NULL) return false; /* failure */
 
-	int bbox[4];
+	size_t bbox[4];
 	bbox[0] = 0;
 	bbox[1] = 0;
 	bbox[2] = 72 * (strlen(seq1) + 3);
@@ -536,7 +536,7 @@ generateDotPlot( const char *seq1, const char *seq2, const char *fileName
           "%%!PS-Adobe-3.0 EPSF-3.0\n"
           "%%%%Creator: IntaRNA\n"
           "%%%%Title: RNA Dot Plot\n"
-          "%%%%BoundingBox: %d %d %d %d\n"
+          "%%%%BoundingBox: %zu %zu %zu %zu\n"
           "%%%%DocumentFonts: Helvetica\n"
           "%%%%Pages: 1\n"
           "%%%%EndComments\n",
@@ -562,7 +562,7 @@ generateDotPlot( const char *seq1, const char *seq2, const char *fileName
 
 	// ps template
 
-	fprintf(file, dotplotTemplate);
+	fprintf(file, "%s", dotplotTemplate);
   fprintf(file, "end\n");
 	fprintf(file, "DPdict begin\n");
 
@@ -666,7 +666,7 @@ Sequence 2: %s\n"
 	const size_t maxHeight = (2.5+strlen(seq2)) * boxSize;
 
 	fprintf(file,
-          "<svg viewBox='0 0 %d %d' width='%d' height='%d' version='1.1' xmlns='http://www.w3.org/2000/svg'>\n",
+          "<svg viewBox='0 0 %zu %zu' width='%zu' height='%zu' version='1.1' xmlns='http://www.w3.org/2000/svg'>\n",
 					maxWidth+boxSize, maxHeight+boxSize, maxDotPlotSize, maxDotPlotSize);
 
 	// draw dots
@@ -675,7 +675,7 @@ Sequence 2: %s\n"
     if (pl1->type == 0) {
 			std::ostringstream message;
 			message << "(" << (pl1->i) << "," << (strlen(seq2)-pl1->j+1) << ") = " << pl1->p;
-      fprintf(file, drawSvgSquare(pl1->i, strlen(seq2)-pl1->j+1, boxSize, pl1->p, "bp", message.str().c_str()).c_str());
+      fprintf(file, "%s", drawSvgSquare(pl1->i, strlen(seq2)-pl1->j+1, boxSize, pl1->p, "bp", message.str().c_str()).c_str());
     }
   }
 
@@ -686,7 +686,7 @@ Sequence 2: %s\n"
 		if (acc > 0) {
       std::ostringstream message;
 		  message << "(" << (i+1) << ") = " << acc;
-		  fprintf(file, drawSvgSquare(i+1, -0.5, boxSize, acc, "unpaired", message.str().c_str()).c_str());
+		  fprintf(file, "%s", drawSvgSquare(i+1, -0.5, boxSize, acc, "unpaired", message.str().c_str()).c_str());
 		}
   }
 
@@ -696,7 +696,7 @@ Sequence 2: %s\n"
 		if (acc > 0) {
       std::ostringstream message;
 		  message << "(" << (strlen(seq2)-i) << ") = " << acc;
-		  fprintf(file, drawSvgSquare(-0.5, strlen(seq2)-i, boxSize, acc, "unpaired", message.str().c_str()).c_str());
+		  fprintf(file, "%s", drawSvgSquare(-0.5, strlen(seq2)-i, boxSize, acc, "unpaired", message.str().c_str()).c_str());
 		}
   }
 
@@ -706,47 +706,47 @@ Sequence 2: %s\n"
 	for (size_t i = 0; i <= strlen(seq1); i++) {
 		if (i % 5 == 0) {
       fprintf(file,
-		          "<line x1='%d' y1='%d' x2='%d' y2='%d' class='sep5' style='stroke:#555;stroke-width:%f;opacity:0.2;'/>\n"
+		          "<line x1='%zu' y1='%zu' x2='%zu' y2='%zu' class='sep5' style='stroke:#555;stroke-width:%f;opacity:0.2;'/>\n"
 					  	, size_t((i+2.5)*2*unitSize), 5*unitSize, size_t((i+2.5)*2*unitSize), maxHeight, strokeWidth);
 		}
 		if (i % 10 == 0) {
       fprintf(file,
-		          "<line x1='%d' y1='%d' x2='%d' y2='%d' class='sep10' style='stroke:#555;stroke-width:%f;opacity:0.5;'/>\n"
+		          "<line x1='%zu' y1='%zu' x2='%zu' y2='%zu' class='sep10' style='stroke:#555;stroke-width:%f;opacity:0.5;'/>\n"
 					  	, size_t((i+2.5)*2*unitSize), 5*unitSize, size_t((i+2.5)*2*unitSize), maxHeight, strokeWidth);
 		}
 		if (i % 50 == 0) {
       fprintf(file,
-		          "<line x1='%d' y1='%d' x2='%d' y2='%d' class='sep50' style='stroke:#555;stroke-width:%f;opacity:1;'/>\n"
+		          "<line x1='%zu' y1='%zu' x2='%zu' y2='%zu' class='sep50' style='stroke:#555;stroke-width:%f;opacity:1;'/>\n"
 					  	, size_t((i+2.5)*2*unitSize), 5*unitSize, size_t((i+2.5)*2*unitSize), maxHeight, strokeWidth);
 		}
 	}
 	for (size_t i = 0; i <= strlen(seq2); i++) {
 		if (i % 5 == 0) {
       fprintf(file,
-		          "<line x1='%d' y1='%d' x2='%d' y2='%d' class='sep5' style='stroke:#555;stroke-width:%f;opacity:0.2;'/>\n"
+		          "<line x1='%zu' y1='%zu' x2='%zu' y2='%zu' class='sep5' style='stroke:#555;stroke-width:%f;opacity:0.2;'/>\n"
 						  , 5*unitSize, size_t((i+2.5)*2*unitSize), maxWidth, size_t((i+2.5)*2*unitSize), strokeWidth);
 		}
 		if (i % 10 == 0) {
       fprintf(file,
-		          "<line x1='%d' y1='%d' x2='%d' y2='%d' class='sep10' style='stroke:#555;stroke-width:%f;opacity:0.5;'/>\n"
+		          "<line x1='%zu' y1='%zu' x2='%zu' y2='%zu' class='sep10' style='stroke:#555;stroke-width:%f;opacity:0.5;'/>\n"
 						  , 5*unitSize, size_t((i+2.5)*2*unitSize), maxWidth, size_t((i+2.5)*2*unitSize), strokeWidth);
 		}
 		if (i % 50 == 0) {
       fprintf(file,
-		          "<line x1='%d' y1='%d' x2='%d' y2='%d' class='sep50' style='stroke:#555;stroke-width:%f;opacity:1;'/>\n"
+		          "<line x1='%zu' y1='%zu' x2='%zu' y2='%zu' class='sep50' style='stroke:#555;stroke-width:%f;opacity:1;'/>\n"
 						  , 5*unitSize, size_t((i+2.5)*2*unitSize), maxWidth, size_t((i+2.5)*2*unitSize), strokeWidth);
 		}
 	}
 
 	// draw frames
 	fprintf(file,
-		      "<rect x='%d' y='%d' width='%d' height='%d' class='frame' style='pointer-events:none;stroke:black;stroke-width:%f;fill-opacity:0;'/>\n"
+		      "<rect x='%zu' y='%zu' width='%zu' height='%zu' class='frame' style='pointer-events:none;stroke:black;stroke-width:%f;fill-opacity:0;'/>\n"
 					, 5*unitSize, 5*unitSize, maxWidth-5*unitSize, (maxHeight-5*unitSize), 2*strokeWidth);
 	fprintf(file,
-		      "<rect x='%d' y='%d' width='%d' height='%d' class='frame' style='pointer-events:none;stroke:black;stroke-width:%f;fill-opacity:0;'/>\n"
+		      "<rect x='%zu' y='%zu' width='%zu' height='%zu' class='frame' style='pointer-events:none;stroke:black;stroke-width:%f;fill-opacity:0;'/>\n"
 					, 5*unitSize, boxSize, maxWidth-5*unitSize, boxSize, 2*strokeWidth);
 	fprintf(file,
-		      "<rect x='%d' y='%d' width='%d' height='%d' class='frame' style='pointer-events:none;stroke:black;stroke-width:%f;fill-opacity:0;'/>\n"
+		      "<rect x='%zu' y='%zu' width='%zu' height='%zu' class='frame' style='pointer-events:none;stroke:black;stroke-width:%f;fill-opacity:0;'/>\n"
 					, boxSize, 5*unitSize, boxSize, maxHeight-5*unitSize, 2*strokeWidth);
 
 	fprintf(file, "\n<!-- Sequences -->\n\n");
@@ -754,20 +754,20 @@ Sequence 2: %s\n"
 	// draw sequence 1
 	for (size_t i = 0; seq1[i] != '\0'; i++) {
     fprintf(file,
-		        "<text x='%d' y='%d' class='nt' style='text-anchor:middle;font-size:%dpx;font-family:Arial;'>%c<title>(%d)</title></text>\n"
+		        "<text x='%zu' y='%zu' class='nt' style='text-anchor:middle;font-size:%zupx;font-family:Arial;'>%c<title>(%zu)</title></text>\n"
 						, (i+3) * boxSize, boxSize, boxSize, seq1[i], i+1);
 		fprintf(file,
-		        "<text x='%d' y='%d' class='nt' style='text-anchor:middle;font-size:%dpx;font-family:Arial;'>%c<title>(%d)</title></text>\n"
+		        "<text x='%zu' y='%zu' class='nt' style='text-anchor:middle;font-size:%zupx;font-family:Arial;'>%c<title>(%zu)</title></text>\n"
 						, (i+3) * boxSize, maxHeight + boxSize, boxSize, seq1[i], i+1);
   }
 
 	// draw sequence 2
 	for (size_t i = 0; seq2[i] != '\0'; i++) {
     fprintf(file,
-		        "<text x='%d' y='%d' class='nt' style='text-anchor:middle;font-size:%dpx;font-family:Arial;'>%c<title>(%d)</title></text>\n"
+		        "<text x='%zu' y='%zu' class='nt' style='text-anchor:middle;font-size:%zupx;font-family:Arial;'>%c<title>(%zu)</title></text>\n"
 						, unitSize, size_t((i+3.5)*2*unitSize), boxSize, seq2[i], i+1);
 		fprintf(file,
-		        "<text x='%d' y='%d' class='nt' style='text-anchor:middle;font-size:%dpx;font-family:Arial;'>%c<title>(%d)</title></text>\n"
+		        "<text x='%zu' y='%zu' class='nt' style='text-anchor:middle;font-size:%zupx;font-family:Arial;'>%c<title>(%zu)</title></text>\n"
 						, maxWidth + unitSize, size_t((i+3.5)*2*unitSize), boxSize, seq2[i], i+1);
   }
 	fprintf(file, "</g>\n");
@@ -775,7 +775,7 @@ Sequence 2: %s\n"
 	// draw best interaction outline
 	fprintf(file, "\n<!-- Mfe -->\n\n");
 	fprintf(file,
-		      "<rect x='%d' y='%d' width='%d' height='%d' class='mfe' style='pointer-events:none;stroke:red;stroke-width:%f;fill-opacity:0;'/>\n"
+		      "<rect x='%zu' y='%zu' width='%zu' height='%zu' class='mfe' style='pointer-events:none;stroke:red;stroke-width:%f;fill-opacity:0;'/>\n"
 					, size_t((interactionBoundary.i1+2.5)*2*unitSize)
 					, size_t((strlen(seq2)-interactionBoundary.j2+1.5)*2*unitSize)
 					, (interactionBoundary.j1-interactionBoundary.i1+1) * boxSize
@@ -787,18 +787,18 @@ Sequence 2: %s\n"
     <![CDATA[\n\
       .nt {\n\
 				text-anchor:middle !important;\n\
-				font-size:%dpx !important;\n\
+				font-size:%zupx !important;\n\
 				font-family:Arial !important;\n\
 			}\n\
       .bp {\n\
 				fill:blue !important;\n\
-				width:%dpx !important;\n\
-				height:%dpx !important;\n\
+				width:%zupx !important;\n\
+				height:%zupx !important;\n\
 			}\n\
 			.unpaired {\n\
 				fill:red !important;\n\
-				width:%dpx !important;\n\
-				height:%dpx !important;\n\
+				width:%zupx !important;\n\
+				height:%zupx !important;\n\
 			}\n\
       .sep5 {\n\
 				stroke:#555 !important;\n\
