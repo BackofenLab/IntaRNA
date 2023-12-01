@@ -13,11 +13,21 @@
 # IntaRNA
 - new arguments t|qPfScale to tune ViennaRNA pf_scale parameter used
   to scale partition functions for ED value computation to avoid overflows
-- BUGFIX : sequence subset selection not supported when accessibilities are read
-  from file 
+- BUGFIX : when using sequence subset selection in combination with precomputed
+  accessibilities from file, wrong accessibilities were loaded for the selected
+  sequences 
 
 ################################################################################  
 ################################################################################
+
+231201 Martin Raden
+ * IntaRNA/RNASequence :
+   + seqNumber : index of this sequence among its input sequence set. 
+     relevant for accessibility loading from file
+ * bin/CommandLineParsing : 
+   * getFullFilename() : uses RNASequence::seqNumber instead of index within sequence
+     vector. this enables the correct loading of respective accessibility files in 
+     case only a subset of the sequences is used for prediction (--tSet or --qSet) 
 
 230201 Martin Raden
  * IntaRNA/AccessibilityVrna :

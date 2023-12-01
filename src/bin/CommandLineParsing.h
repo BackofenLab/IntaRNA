@@ -1212,11 +1212,6 @@ void CommandLineParsing::validate_qAccFile(const std::string & value, const Inde
 			}
 		} else {
 			// should be file
-			// subsetting not supported, since indexing is screwed
-			if (!subSet.empty()) {
-				LOG(ERROR) <<"reading query accessibilities for a subset of sequences from '"<<value<<"' is not supported";
-				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
-			}
 			// check needed files
 			for (auto rna = getQuerySequences().begin(); rna != getQuerySequences().end(); rna++) {
 				if ( ! validateFile( getFullFilename(value, NULL, &(*rna) ) ) ) {
@@ -1299,11 +1294,6 @@ void CommandLineParsing::validate_tAccFile(const std::string & value, const Inde
 			}
 		} else {
 			// should be file
-			// subsetting not supported, since indexing is screwed
-			if (!subSet.empty()) {
-				LOG(ERROR) <<"reading target accessibilities for a subset of sequences from '"<<value<<"' is not supported";
-				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
-			}
 			// check needed files
 			for (auto rna = getTargetSequences().begin(); rna != getTargetSequences().end(); rna++) {
 				if ( ! validateFile( getFullFilename(value, &(*rna), NULL ) ) ) {
@@ -1626,54 +1616,20 @@ getFullFilename( const std::string & fileNamePath, const RnaSequence * target, c
 	// generate target only
 	if (target != NULL && query == NULL) {
 		if (getTargetSequences().size() > 1) {
-			fileID += "s";
-//			prefix += "t";
-			// search for index of the target sequence
-			for (size_t t = 0; t < getTargetSequences().size(); t++) {
-				if (getTargetSequences().at(t) == *target) {
-					// indexing starts with 1
-					fileID += toString(t+1);
-					break;
-				}
-			}
+			fileID += "s" + toString(target->getSeqNumber());
 		}
 	} else
 	// generate query only
 	if (query != NULL && target == NULL) {
 		if (getQuerySequences().size() > 1) {
-			fileID += "s";
-//			prefix += "q";
-			// search for index of the query sequence
-			for (size_t q = 0; q < getQuerySequences().size(); q++) {
-				if (getQuerySequences().at(q) == *query) {
-					// indexing starts with 1
-					fileID += toString(q+1);
-					break;
-				}
-			}
+			fileID += "s"+toString(query->getSeqNumber());
 		}
 	} else
 	// generate combined part
 	{
 		if (getQuerySequences().size() > 1 || getTargetSequences().size() > 1) {
-			fileID += "t";
-			// search for index of the target sequence
-			for (size_t t = 0; t < getTargetSequences().size(); t++) {
-				if (getTargetSequences().at(t) == *target) {
-					// indexing starts with 1
-					fileID += toString(t+1);
-					break;
-				}
-			}
-			fileID += "q";
-			// search for index of the query sequence
-			for (size_t q = 0; q < getQuerySequences().size(); q++) {
-				if (getQuerySequences().at(q) == *query) {
-					// indexing starts with 1
-					fileID += toString(q+1);
-					break;
-				}
-			}
+			fileID += "t"+toString(target->getSeqNumber());
+			fileID += "q"+toString(query->getSeqNumber());
 		}
 	}
 

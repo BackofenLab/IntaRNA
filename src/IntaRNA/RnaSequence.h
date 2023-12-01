@@ -63,10 +63,13 @@ public:
 	 * @param id the name of the sequence
 	 * @param seqString the nucleotide string encoding the sequence
 	 * @param idxPos0 input/output index of the first sequence position
+	 * @param seqNumber index of the sequence among the respective sequence set in this call.
+	 * 		  relevant for accessibility parsing
 	 */
 	RnaSequence(const std::string& id
 			, const std::string & seqString
-			, const long idxPos0 = 1 );
+			, const long idxPos0 = 1
+			, const size_t seqNumber = 1 );
 
 	/**
 	 * Destruction and garbage collection
@@ -82,6 +85,13 @@ public:
 	 */
 	const std::string&
 	getId() const;
+
+	/**
+	 * Access to the sequence's index among the respective input sequence set of the call arguments
+	 * @return the sequence index among the input sequence set (1-based)
+	 */
+	const size_t
+	getSeqNumber() const;
 
 	/**
 	 * Access to the length of the sequence.
@@ -284,6 +294,10 @@ protected:
 	//! Input/output index of the first sequence position
 	long idxPos0;
 
+	//! index of the sequence within the overall input (1-based).
+	//! relevant for reading accessibility files
+	size_t seqNumber;
+
 };
 
 
@@ -296,13 +310,15 @@ inline
 RnaSequence::RnaSequence(
 		const std::string & id
 		, const std::string & seqString
-		, const long idxPos0 )
+		, const long idxPos0
+		, const size_t seqNumber )
  :
 	id(id)
 	, seqString(getUpperCase(seqString))
 	, seqCode(getCodeForString(this->seqString))
 	, ambiguous(this->seqString.find('N')!=std::string::npos)
 	, idxPos0(idxPos0)
+	, seqNumber(seqNumber)
 {
 #if INTARNA_IN_DEBUG_MODE
 	if (id.size() == 0) {
@@ -330,6 +346,16 @@ RnaSequence::
 getId() const
 {
 	return id;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+inline
+const size_t
+RnaSequence::
+getSeqNumber() const
+{
+	return seqNumber;
 }
 
 /////////////////////////////////////////////////////////////////////////////
