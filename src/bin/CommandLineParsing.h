@@ -815,7 +815,7 @@ protected:
 	 * @param value the argument value to validate
 	 * @param subSet subset of query sequences used for prediction
 	 */
-	void validate_qAccFile(const std::string & value, const IndexRange & subSet);
+	void validate_qAccFile(const std::string & value, const IndexRangeList & subSet);
 
 	/**
 	 * Validates the SHAPE reactivity data file.
@@ -850,7 +850,7 @@ protected:
 	 * @param value the argument value to validate
 	 * @param subSet subset of target sequences used for prediction
 	 */
-	void validate_tAccFile(const std::string & value, const IndexRange & subSet);
+	void validate_tAccFile(const std::string & value, const IndexRangeList & subSet);
 
 	/**
 	 * Validates the explicit seed argument.
@@ -1285,7 +1285,7 @@ void CommandLineParsing::validate_tSet(const std::string & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_tAccFile(const std::string & value, const IndexRange & subSet)
+void CommandLineParsing::validate_tAccFile(const std::string & value, const IndexRangeList & subSet)
 {
 	// if not empty
 	if (!value.empty()) {
