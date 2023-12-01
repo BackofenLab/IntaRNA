@@ -11,7 +11,6 @@ handbook using IntaRNA](http://www.bioinf.uni-freiburg.de/Subpages/publications.
 
 
 
-
 ## Example 2.1: Local Installation via `conda` (Linux System with `bash` Shell)
 
 First, we need to install `conda` (if not already available).
@@ -21,7 +20,7 @@ On Microsoft Windows, you can emply the Windows Subsystem for Linux (WSL) for th
 ```sh
 # download Miniconda installer
 wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
-# note: ’-b’ runs the installer in non-interactive silent mode (agreeing to licence etc.)
+# note: â€™-bâ€™ runs the installer in non-interactive silent mode (agreeing to licence etc.)
 # starting conda installation process
 bash ~/miniconda.sh -b -p $HOME/miniconda
 ```
