@@ -2196,7 +2196,7 @@ parseSequencesFasta( const std::string & paramName,
 					// check if sequence is to be stored
 					if (seqSubset.empty() || seqSubset.covers(seqNumber)) {
 						// store sequence
-						sequences.push_back( RnaSequence( idPrefix+name, sequence, idxPos0 ) );
+						sequences.push_back( RnaSequence( idPrefix+name, sequence, idxPos0 , seqNumber) );
 					}
 				}
 				// clear name data
@@ -2247,7 +2247,7 @@ parseSequencesFasta( const std::string & paramName,
 		// check if sequence is to be stored
 		if (seqSubset.empty() || seqSubset.covers(seqNumber)) {
 			// store sequence
-			sequences.push_back( RnaSequence( idPrefix+name, sequence, idxPos0 ) );
+			sequences.push_back( RnaSequence( idPrefix+name, sequence, idxPos0 , seqNumber) );
 		}
 	}
 
