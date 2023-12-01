@@ -813,8 +813,9 @@ protected:
 	/**
 	 * Validates the qAccFile argument.
 	 * @param value the argument value to validate
+	 * @param subSet subset of query sequences used for prediction
 	 */
-	void validate_qAccFile(const std::string & value);
+	void validate_qAccFile(const std::string & value, const IndexRange & subSet);
 
 	/**
 	 * Validates the SHAPE reactivity data file.
@@ -847,8 +848,9 @@ protected:
 	/**
 	 * Validates the tAccFile argument.
 	 * @param value the argument value to validate
+	 * @param subSet subset of target sequences used for prediction
 	 */
-	void validate_tAccFile(const std::string & value);
+	void validate_tAccFile(const std::string & value, const IndexRange & subSet);
 
 	/**
 	 * Validates the explicit seed argument.
@@ -1196,7 +1198,7 @@ void CommandLineParsing::validate_qSet(const std::string & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_qAccFile(const std::string & value)
+void CommandLineParsing::validate_qAccFile(const std::string & value, const IndexRangeList & subSet )
 {
 	// if not empty
 	if (!value.empty()) {
@@ -1210,6 +1212,12 @@ void CommandLineParsing::validate_qAccFile(const std::string & value)
 			}
 		} else {
 			// should be file
+			// subsetting not supported, since indexing is screwed
+			if (!subSet.empty()) {
+				LOG(ERROR) <<"reading query accessibilities for a subset of sequences from '"<<value<<"' is not supported";
+				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+			}
+			// check needed files
 			for (auto rna = getQuerySequences().begin(); rna != getQuerySequences().end(); rna++) {
 				if ( ! validateFile( getFullFilename(value, NULL, &(*rna) ) ) ) {
 					LOG(ERROR) <<"query accessibility file '"<<value<<"' could not be found";
@@ -1277,7 +1285,7 @@ void CommandLineParsing::validate_tSet(const std::string & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 inline
-void CommandLineParsing::validate_tAccFile(const std::string & value)
+void CommandLineParsing::validate_tAccFile(const std::string & value, const IndexRange & subSet)
 {
 	// if not empty
 	if (!value.empty()) {
@@ -1291,6 +1299,12 @@ void CommandLineParsing::validate_tAccFile(const std::string & value)
 			}
 		} else {
 			// should be file
+			// subsetting not supported, since indexing is screwed
+			if (!subSet.empty()) {
+				LOG(ERROR) <<"reading target accessibilities for a subset of sequences from '"<<value<<"' is not supported";
+				updateParsingCode(ReturnCode::STOP_PARSING_ERROR);
+			}
+			// check needed files
 			for (auto rna = getTargetSequences().begin(); rna != getTargetSequences().end(); rna++) {
 				if ( ! validateFile( getFullFilename(value, &(*rna), NULL ) ) ) {
 					LOG(ERROR) <<"target accessibility file '"<<value<<"' could not be found";

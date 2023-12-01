@@ -12,7 +12,9 @@
 
 # IntaRNA
 - new arguments t|qPfScale to tune ViennaRNA pf_scale parameter used
-  to scale partition functions for ED value computation to avoid overflows 
+  to scale partition functions for ED value computation to avoid overflows
+- BUGFIX : sequence subset selection not supported when accessibilities are read
+  from file 
 
 ################################################################################  
 ################################################################################

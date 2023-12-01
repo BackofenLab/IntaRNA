@@ -1223,8 +1223,8 @@ parse(int argc, char** argv)
 			}
 
 			// validate accessibility input from file (requires parsed sequences)
-			validate_qAccFile( qAccFile );
-			validate_tAccFile( tAccFile );
+			validate_qAccFile( qAccFile, qSet );
+			validate_tAccFile( tAccFile, tSet );
 
 			//////////////// INTERACTION CONSTRAINTS ///////////////////
 
