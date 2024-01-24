@@ -15,10 +15,16 @@
   to scale partition functions for ED value computation to avoid overflows
 - BUGFIX : when using sequence subset selection in combination with precomputed
   accessibilities from file, wrong accessibilities were loaded for the selected
-  sequences 
+  sequences
+- BUGFIX : query accessibility constraints were applied in reversed indexing
 
 ################################################################################  
 ################################################################################
+
+240124 Martin Raden
+ * IntaRNA/AccessibilityConstraint() :
+   * AccessibilityConstraint() : 
+     * BUGFIX: reversed index ranges were not stored
 
 231201 Martin Raden
  * IntaRNA/RNASequence :
