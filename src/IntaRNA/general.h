@@ -11,6 +11,8 @@
 
 #include "IntaRNA/intarna_config.h"
 
+#include <cassert>
+
 //! central flag whether or not debug mode is enabled
 #define INTARNA_IN_DEBUG_MODE ((defined(_DEBUG)) || (!defined (NDEBUG)))
 

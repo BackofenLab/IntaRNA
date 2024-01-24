@@ -144,8 +144,10 @@ fillHybridE_left( const size_t si1, const size_t si2 )
 	const size_t noLpShift = outConstraint.noLP ? 1 : 0;
 	E_type iStackE = E_type(0);
 
-	// iterate over all window starts j1 (seq1) and j2 (seq2)
+	// iterate over all window starts i1 (seq1) and i2 (seq2)
+	// via their distance l1/l2 to the left seed boundary si1/si2
 	for (size_t l1=0; l1 < hybridE_left.size1(); l1++) {
+
 		for (size_t l2=0; l2 < hybridE_left.size2(); l2++) {
 			i1 = si1-l1;
 			i2 = si2-l2;
@@ -154,13 +156,22 @@ fillHybridE_left( const size_t si1, const size_t si2 )
 			E_type & curE = hybridE_left(l1,l2);
 			// init current cell (e_init if just left (i1,i2) base pair; assuming seed is internally stacked on the left end if noLP)
 			curE = (i1==si1 && i2==si2) ? energy.getE_init() : E_INF;
+			// skip if not accessible
 			// check if complementary
-			if( i1<si1 && i2<si2 && energy.areComplementary(i1,i2) ) {
+			if (energy.isAccessible1(i1)
+				&& energy.isAccessible2(i2)
+				&& i1<si1
+				&& i2<si2
+				&& energy.areComplementary(i1,i2) )
+			{
 
 				// right-stacking of i if no-LP
 				if (outConstraint.noLP) {
 					// skip if no stacking possible
-					if (!energy.areComplementary(i1+noLpShift,i2+noLpShift)) {
+					if (  !energy.areComplementary(i1+noLpShift,i2+noLpShift)
+						| !energy.isAccessible1(i1+noLpShift)
+						| !energy.isAccessible2(i2+noLpShift))
+					{
 						continue;
 					}
 					// get stacking energy to avoid recomputation in recursion below
@@ -177,6 +188,7 @@ fillHybridE_left( const size_t si1, const size_t si2 )
 						// ensure maximal loop length
 						if (k2-i2-noLpShift > energy.getMaxInternalLoopSize2()+1) break;
 						// check if (k1,k2) are valid left boundary
+		if ( energy.isAccessible1(k1) && energy.isAccessible2(k2) )
 						if ( E_isNotINF( hybridE_left(si1-k1,si2-k2) ) ) {
 							curE = std::min( curE,
 									(iStackE
@@ -224,13 +236,22 @@ fillHybridE_right( const size_t sj1, const size_t sj2 )
 			// init current cell (0 if just left (i1,i2) base pair)
 			curE = (sj1==j1 && sj2==j2) ? 0 : E_INF;
 
+			// skip if not accessible
 			// check if complementary
-			if( sj1<j1 && sj2<j2 && energy.areComplementary(j1,j2) ) {
+			if (energy.isAccessible1(j1)
+				&& energy.isAccessible2(j2)
+				&& sj1<j1
+				&& sj2<j2
+				&& energy.areComplementary(j1,j2) )
+			{
 
 				// left-stacking of j if no-LP
 				if (outConstraint.noLP) {
 					// skip if no stacking possible
-					if (!energy.areComplementary(j1-noLpShift,j2-noLpShift)) {
+					if (!energy.areComplementary(j1-noLpShift,j2-noLpShift)
+						| !energy.isAccessible1(j1-noLpShift)
+						| !energy.isAccessible2(j2-noLpShift))
+					{
 						continue;
 					}
 					// get stacking energy to avoid recomputation in recursion below
@@ -249,6 +270,7 @@ fillHybridE_right( const size_t sj1, const size_t sj2 )
 					// ensure maximal loop length
 					if (j2-noLpShift-k2 > energy.getMaxInternalLoopSize2()+1) break;
 					// check if (k1,k2) are valid left boundary
+if ( energy.isAccessible1(k1) && energy.isAccessible2(k2) )
 					if ( E_isNotINF( hybridE_right(k1-sj1,k2-sj2) ) ) {
 						curE = std::min( curE,
 								(hybridE_right(k1-sj1,k2-sj2)

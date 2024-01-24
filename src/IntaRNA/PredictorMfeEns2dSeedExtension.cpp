@@ -210,12 +210,20 @@ fillHybridZ_left( const size_t si1, const size_t si2 )
 			curZ = (i1==si1 && i2==si2) ? energy.getBoltzmannWeight(energy.getE_init()) : 0.0;
 
 			// check if complementary (use global sequence indexing)
-			if( i1<si1 && i2<si2 && energy.areComplementary(i1,i2) ) {
+			if( i1<si1
+				&& i2<si2
+				&& energy.isAccessible1(i1)
+				&& energy.isAccessible2(i2)
+				&& energy.areComplementary(i1,i2) )
+			{
 
 				// right-stacking of i if no-LP
 				if (outConstraint.noLP) {
 					// skip if no stacking possible
-					if (!energy.areComplementary(i1+noLpShift,i2+noLpShift)) {
+					if (!energy.areComplementary(i1+noLpShift,i2+noLpShift)
+						| !energy.isAccessible1(i1+noLpShift)
+						| !energy.isAccessible2(i2+noLpShift) )
+					{
 						continue;
 					}
 					// get stacking energy to avoid recomputation in recursion below
@@ -317,7 +325,7 @@ fillHybridZ_left( const size_t si1, const size_t si2 )
 
 							}
 							curZ -= correctionTerm;
-							// sanity ensurence
+							// sanity insurance
 							if (curZ < 0) {
 								curZ = Z_type(0.0);
 							}
@@ -365,12 +373,20 @@ fillHybridZ_right( const size_t sj1, const size_t sj2 )
 			curZ = sj1==j1 && sj2==j2 ? energy.getBoltzmannWeight(0.0) : 0.0;
 
 			// check if complementary free base pair
-			if( sj1<j1 && sj2<j2 && energy.areComplementary(j1,j2) ) {
+			if( sj1<j1
+				&& sj2<j2
+				&& energy.isAccessible1(j1)
+				&& energy.isAccessible2(j2)
+				&& energy.areComplementary(j1,j2) )
+			{
 
 				// left-stacking of j if no-LP
 				if (outConstraint.noLP) {
 					// skip if no stacking possible
-					if (!energy.areComplementary(j1-noLpShift,j2-noLpShift)) {
+					if (!energy.areComplementary(j1-noLpShift,j2-noLpShift)
+						| !energy.isAccessible1(j1-noLpShift)
+						| !energy.isAccessible2(j2-noLpShift) )
+					{
 						continue;
 					}
 					// get stacking energy to avoid recomputation in recursion below

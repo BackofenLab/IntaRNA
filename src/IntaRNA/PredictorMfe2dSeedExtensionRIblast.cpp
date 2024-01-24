@@ -164,7 +164,10 @@ parallelExtension( PredictorMfe2dSeedExtensionRIblast::ExtendedSeed & seed
 	// extend left
 	while (seed.i1 > 1 && seed.i2 > 1) {
 		// todo acc1/acc2 maxLength() termination
-		if (energy.areComplementary(seed.i1-1,seed.i2-1)) {
+		if (energy.isAccessible1(seed.i1-1)
+			&& energy.isAccessible2(seed.i2-1)
+			&& energy.areComplementary(seed.i1-1,seed.i2-1))
+		{
 			E_type newEnergy = seed.energy + energy.getE_interLeft(seed.i1-1,i1min,seed.i2-1,i2min);
 			if (newEnergy < seed.energy) {
 				seed.energy = newEnergy;
@@ -187,7 +190,10 @@ parallelExtension( PredictorMfe2dSeedExtensionRIblast::ExtendedSeed & seed
 	// extend right
 	while (seed.j1 < max_extension1-1 && seed.j2 < max_extension2-1) {
 		// todo acc1/acc2 maxLength() termination
-		if (energy.areComplementary(seed.j1+1,seed.j2+1)) {
+		if (energy.isAccessible1(seed.j1+1)
+			&& energy.isAccessible2(seed.j2+1)
+			&& energy.areComplementary(seed.j1+1,seed.j2+1))
+		{
 			E_type newEnergy = seed.energy + energy.getE_interLeft(j1min,seed.j1+1,j2min,seed.j2+1);
 			if (newEnergy < seed.energy) {
 				seed.energy = newEnergy;
@@ -230,7 +236,12 @@ fillHybridE_left( const size_t j1, const size_t j2 )
 			hybridE_left(i1,i2) = i1==0 && i2==0 ? energy.getE_init() : E_INF;
 
 			// check if complementary
-			if( i1>0 && i2>0 && energy.areComplementary(j1-i1,j2-i2) ) {
+			if( i1>0
+				&& i2>0
+				&& energy.isAccessible1(j1-i1)
+				&& energy.isAccessible2(j2-i2)
+				&& energy.areComplementary(j1-i1,j2-i2) )
+			{
 				curMinE = E_INF;
 
 				// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
@@ -286,7 +297,12 @@ fillHybridE_right( const size_t i1, const size_t i2 )
 			hybridE_right(j1,j2) = j1==0 && j2==0 ? 0 : E_INF;
 
 			// check if complementary
-			if( j1>i1 && j2>i2 && energy.areComplementary(i1+j1,i2+j2) ) {
+			if( j1>i1
+				&& j2>i2
+				&& energy.isAccessible1(i1+j1)
+				&& energy.isAccessible2(i2+j2)
+				&& energy.areComplementary(i1+j1,i2+j2) )
+			{
 				curMinE = E_INF;
 
 				// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
