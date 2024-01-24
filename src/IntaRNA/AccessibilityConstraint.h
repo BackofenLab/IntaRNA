@@ -308,16 +308,17 @@ AccessibilityConstraint( const AccessibilityConstraint& toCopy
 	, paired(toCopy.paired)
 {
 
+
 	if (reverseIndices) {
 
 		// reverse blocked
-		blocked.reverse(length);
+		blocked.reverseInplace(length);
 
 		// reverse accessible
-		accessible.reverse(length);
+		accessible.reverseInplace(length);
 
 		// reverse accessible
-		paired.reverse(length);
+		paired.reverseInplace(length);
 
 	}
 }
