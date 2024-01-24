@@ -10,6 +10,13 @@
 # changes in development version since last release 
 ################################################################################
 
+################################################################################  
+################################################################################
+
+################################################################################
+### version 3.4.0
+################################################################################  
+
 # IntaRNA
 - new arguments t|qPfScale for sequence-specific ViennaRNA pf_scale parameter used
   to scale partition functions for ED value computation to avoid overflows
