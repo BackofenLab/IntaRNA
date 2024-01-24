@@ -11,11 +11,13 @@
 ################################################################################
 
 # IntaRNA
-- new arguments t|qPfScale to tune ViennaRNA pf_scale parameter used
+- new arguments t|qPfScale for sequence-specific ViennaRNA pf_scale parameter used
   to scale partition functions for ED value computation to avoid overflows
 - BUGFIX : when using sequence subset selection in combination with precomputed
   accessibilities from file, wrong accessibilities were loaded for the selected
   sequences
+- BUGFIX : seed-extension-based predictions (default prediction mode) were not 
+  heeding accessibility constraints
 - BUGFIX : query accessibility constraints were applied in reversed indexing
 
 ################################################################################  
@@ -25,6 +27,11 @@
  * IntaRNA/AccessibilityConstraint() :
    * AccessibilityConstraint() : 
      * BUGFIX: reversed index ranges were not stored
+   * PredictorMfe2dHeuristicSeedExtension :
+   * PredictorMfe2dSeedExtension :
+   * PredictorMfe2dSeedExtensionRIblast :
+   * PredictorMfeEns2sSeedExtension:
+     * BUGFIX: missing isAccessible() checks added 
 
 231201 Martin Raden
  * IntaRNA/RNASequence :
