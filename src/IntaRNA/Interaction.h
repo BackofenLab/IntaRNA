@@ -306,12 +306,12 @@ public:
 	compareEnergy( const E_type& energy, const Interaction & hasLargerE );
 
 	/**
-	 * Prints the interacting base pair to stream
+	 * Prints the interaction boundary to stream
 	 * @param out the ostream to write to
-	 * @param bp the Interaction base pair object to add
+	 * @param b the Boundary object to add
 	 * @return the altered stream out
 	 */
-	friend std::ostream& operator<<(std::ostream& out, const BasePair& bp);
+	friend std::ostream& operator<<(std::ostream& out, const Boundary& b);
 
 	/**
 	 * Prints the interacting boundary to stream

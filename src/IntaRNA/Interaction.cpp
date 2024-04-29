@@ -30,6 +30,7 @@ std::ostream&
 operator<<(std::ostream& out, const Interaction::Boundary& b)
 {
 	out <<"("<<b.i1<<":"<<b.i2<<")-("<<b.j1<<","<<b.j2<<")";
+//	out <<"("<<b.i1<<","<<b.j1<<","<<b.i2<<","<<b.j2<<")";
 	return out;
 }
 
