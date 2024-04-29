@@ -34,6 +34,9 @@
  * IntaRNA/Interaction
    * Seed::operator"<"
      * BUGFIX: less-than check fixed
+ * IntaRNA/PredictorMfe :
+   * updateOptima() :
+     + no interaction update if "n==0"
 
 240124 Martin Raden
  * IntaRNA/AccessibilityConstraint() :

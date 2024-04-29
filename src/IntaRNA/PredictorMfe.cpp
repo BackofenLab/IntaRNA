@@ -139,7 +139,9 @@ updateOptima( const size_t i1, const size_t j1
 
 
 	// check if we have to care about insertion (curE <= worst E in list)
-	if (curE > mfeInteractions.rbegin()->energy ) {
+	if (output.getOutputConstraint().reportMax <= 1
+		&& curE > mfeInteractions.rbegin()->energy )
+	{
 		return;
 	}
 
