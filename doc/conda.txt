@@ -1,7 +1,7 @@
 
 # Conda distribution
 
-IntaRNA v2 is also distributed via conda's bioconda channel.
+IntaRNA is also distributed via conda's bioconda channel.
 https://bioconda.github.io/recipes/intarna/README.html
 
 You will find the recipe here
