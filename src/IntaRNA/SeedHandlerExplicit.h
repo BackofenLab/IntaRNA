@@ -206,7 +206,7 @@ public:
 protected:
 
 	//! container to store
-	boost::unordered_map< Interaction::BasePair, SeedData > seedForLeftEnd;
+	boost::unordered_map< Interaction::BasePair, SeedData, Interaction::BasePair::Hash > seedForLeftEnd;
 
 };
 

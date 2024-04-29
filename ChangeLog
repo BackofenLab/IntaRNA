@@ -21,9 +21,13 @@
    * Seed::operator"<"
      * BUGFIX: less-than check fixed
    + operator<<(Boundary)
+   + BasePair (explicit class definition)
  * IntaRNA/PredictorMfe :
    * updateOptima() :
      + no interaction update if "n==0"
+ * IntaRNA/SeedHandler :
+   * addSeeds()
+     * BUGFIX : if internal seed base pairs were not found seed was still added
 
 ################################################################################
 ### version 3.4.0

@@ -95,12 +95,19 @@ addSeeds( Interaction & i ) const
 			Interaction tmp( *(i.s1), *(i.s2) );
 			traceBackSeed( tmp, i1, i2 );
 			Interaction::PairingVec::const_iterator bpS(bp);
+			bool bpNotFound = false;
 			for ( auto & sBP : tmp.basePairs ) {
+				// get next base pair from interaction for comparison with seed
 				bpS++;
 				// check for seed base pair
-				if ( sBP != (*bpS) ) {
-					continue;
+				if ( !(sBP == (*bpS)) ) { // only equality check defined...
+					bpNotFound = true;
+					break;
 				}
+			}
+			// one of the seed base pairs was not found -> skip this seed
+			if (bpNotFound) {
+				continue;
 			}
 			// add seed to interaction
 			if (i.seed == NULL) { i.seed = new Interaction::SeedSet(); }

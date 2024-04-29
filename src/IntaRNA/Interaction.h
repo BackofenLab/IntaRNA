@@ -28,7 +28,61 @@ class Interaction {
 public:
 
 	//! type of a base pair index encoding
-	typedef std::pair<size_t,size_t> BasePair;
+	class BasePair {
+
+	public:
+
+		size_t first;  //!< index in first sequence
+		size_t second;  //!< index in second sequence
+
+		/**
+		 * Construction
+		 * @param first index in first sequence
+		 * @param second index in second sequence
+		 */
+		BasePair( const size_t first=RnaSequence::lastPos,
+				  const size_t second=RnaSequence::lastPos )
+			: first(first), second(second)
+		{}
+
+		//! hash value computation
+		struct Hash {
+			/**
+			 * Hash value computation for an instance
+			 * @param i instance to hash
+			 * @return the respective hash value
+			 */
+			size_t operator()(const BasePair &i ) const
+		  {
+			  size_t key = 0;
+			  boost::hash_combine(key, i.first);
+			  boost::hash_combine(key, i.second);
+			  return key;
+		  }
+		};
+
+		/**
+		 * @param bp the BasePair to compare to
+		 * @return true if first index of this is smaller or it is equal but second is smaller
+		 */
+		const bool
+		operator <  ( const BasePair &bp ) const {
+			return (first < bp.first)
+					|| (first == bp.first && second < bp.second);
+		}
+
+		/**
+		 * equality check
+		 * @param bp the BasePair to compare to
+		 * @return true if this BasePair equals bp (same positions)
+		 */
+		const bool
+		operator ==  ( const BasePair &bp ) const {
+			return first == bp.first
+				&& second == bp.second;
+		}
+
+	};
 
 	//! type of a vector encoding base pair indices that are interacting
 	typedef std::vector<BasePair> PairingVec;
@@ -36,7 +90,10 @@ public:
 	/**
 	 * Index 4-tuple each within an RNA sequence
 	 */
-	struct Boundary {
+	class Boundary {
+
+	public:
+
 		size_t i1;	//!< 1st index in first sequence
 		size_t j1;	//!< last index in first sequence
 		size_t i2;	//!< 1st index in second sequence
@@ -72,22 +129,20 @@ public:
 			}
 		};
 
-		//! equality check
-		struct Equal {
-			/**
-			 * check equality of two instances
-			 * @param lhs instance 1
-			 * @param rhs instance 2
-			 * @param true if all indices are equal; false otherwise
-			 */
-			bool operator()( const Boundary & lhs, const Boundary & rhs ) const
-			{
-				return lhs.i1 == rhs.i1
-					&& lhs.i2 == rhs.i2
-					&& lhs.j1 == rhs.j1
-					&& lhs.j2 == rhs.j2 ;
-			}
-		};
+		/**
+		 * check equality of two Boundaries
+		 * @param rhs instance to compare to
+		 * @param true if all indices are equal; false otherwise
+		 */
+		const bool
+		operator == ( const Boundary & rhs ) const
+		{
+			return i1 == rhs.i1
+				&& i2 == rhs.i2
+				&& j1 == rhs.j1
+				&& j2 == rhs.j2 ;
+		}
+
 	};
 
 

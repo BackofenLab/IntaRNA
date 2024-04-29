@@ -27,7 +27,7 @@ public:
 	//! container type for sparse helix information for a given left-most
 	//! base pair (i1,i2)
 	//! it holds both the energy (first) as well as the length of the helix
-	typedef boost::unordered_map< Interaction::BasePair, HelixData > HelixHash;
+	typedef boost::unordered_map< Interaction::BasePair, HelixData, Interaction::BasePair::Hash > HelixHash;
 
 protected:
 
