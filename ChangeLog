@@ -10,8 +10,19 @@
 # changes in development version since last release 
 ################################################################################
 
+# IntaRNA
+- BUGFIX : seed order check was buggy
+
 ################################################################################  
 ################################################################################
+
+240429 Martin Raden
+ * IntaRNA/Interaction
+   * Seed::operator"<"
+     * BUGFIX: less-than check fixed
+ * IntaRNA/PredictorMfe :
+   * updateOptima() :
+     + no interaction update if "n==0"
 
 ################################################################################
 ### version 3.4.0
@@ -29,14 +40,6 @@
 
 ################################################################################  
 ################################################################################
-
-240429 Martin Raden
- * IntaRNA/Interaction
-   * Seed::operator"<"
-     * BUGFIX: less-than check fixed
- * IntaRNA/PredictorMfe :
-   * updateOptima() :
-     + no interaction update if "n==0"
 
 240124 Martin Raden
  * IntaRNA/AccessibilityConstraint() :
