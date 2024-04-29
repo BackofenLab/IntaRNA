@@ -128,7 +128,7 @@ public:
 		const bool
 		operator <  ( const Seed &s ) const {
 			return ( energy < s.energy
-						|| (E_equal(energy,s.energy && bp_i.first < s.bp_i.first))
+						|| (E_equal(energy,s.energy) && (bp_i.first < s.bp_i.first))
 						);
 		}
 
