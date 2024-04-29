@@ -311,7 +311,15 @@ public:
 	 * @param bp the Interaction base pair object to add
 	 * @return the altered stream out
 	 */
-	friend std::ostream& operator<<(std::ostream& out, const Interaction::BasePair& bp);
+	friend std::ostream& operator<<(std::ostream& out, const BasePair& bp);
+
+	/**
+	 * Prints the interacting boundary to stream
+	 * @param out the ostream to write to
+	 * @param bp the Interaction Boundary object to add
+	 * @return the altered stream out
+	 */
+	friend std::ostream& operator<<(std::ostream& out, const Boundary& bp);
 
 	/**
 	 * Prints the interacting base pairs to stream

@@ -1,7 +1,6 @@
 /*
  * Interaction.cpp
  *
- *  Created on: 14.07.2014
  *      Author: Mmann
  */
 
@@ -22,6 +21,15 @@ std::ostream&
 operator<<(std::ostream& out, const Interaction::BasePair& bp)
 {
 	out <<"("<<bp.first<<"-"<<bp.second<<")";
+	return out;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+std::ostream&
+operator<<(std::ostream& out, const Interaction::Boundary& b)
+{
+	out <<"("<<b.i1<<":"<<b.i2<<")-("<<b.j1<<","<<b.j2<<")";
 	return out;
 }
 

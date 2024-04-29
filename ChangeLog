@@ -20,6 +20,7 @@
  * IntaRNA/Interaction
    * Seed::operator"<"
      * BUGFIX: less-than check fixed
+   + operator<<(Boundary)
  * IntaRNA/PredictorMfe :
    * updateOptima() :
      + no interaction update if "n==0"
