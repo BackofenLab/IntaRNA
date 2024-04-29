@@ -18,7 +18,7 @@ SH_LOG_COMPILER = $(SHELL)
 dist_check_SCRIPTS = runIntaRNA.sh
 
 # the program to build
-check_PROGRAMS = runApiTests 
+check_PROGRAMS = runApiTests
 
 # test sources
 runApiTests_SOURCES =	\
@@ -42,10 +42,12 @@ runApiTests_SOURCES =	\
 					Interaction_test.cpp  \
 					InteractionEnergyBasePair_test.cpp  \
 					InteractionRange_test.cpp  \
+					PredictionTrackerBasePairProb_test.cpp \
 					PredictionTrackerProfileMinE_test.cpp \
 					PredictionTrackerSpotProb_test.cpp \
 					PredictorMfe2dHelixBlockHeuristic_test.cpp \
 					PredictorMfe2dHelixBlockHeuristicSeed_test.cpp \
+					PredictorMfeEns2d_test.cpp \
 					NussinovHandler_test.cpp \
 					RnaSequence_test.cpp \
 					OutputStreamHandlerSortedCsv_test.cpp \
@@ -65,6 +67,3 @@ LIBS= 	-L$(top_builddir)/src/IntaRNA -lIntaRNA \
 runApiTests_CXXFLAGS =	-I$(top_builddir)/src \
 						@AM_CXXFLAGS@ @CXXFLAGS@ \
 						-DELPP_NO_LOG_TO_FILE
-
-
-						

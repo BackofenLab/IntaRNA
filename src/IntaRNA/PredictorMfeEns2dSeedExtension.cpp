@@ -10,12 +10,14 @@ PredictorMfeEns2dSeedExtension(
 		const InteractionEnergy & energy
 		, OutputHandler & output
 		, PredictionTracker * predTracker
-		, SeedHandler * seedHandlerInstance )
+		, SeedHandler * seedHandlerInstance
+		, bool trackBasePairProbs )
  :
 	PredictorMfeEns(energy,output,predTracker)
 	, seedHandler(seedHandlerInstance)
 	, hybridZ_left( 0,0 )
 	, hybridZ_right( 0,0 )
+	, trackBasePairProbs(trackBasePairProbs)
 {
 	assert( seedHandler.getConstraint().getBasePairs() > 1 );
 }
@@ -125,24 +127,45 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 	// report mfe interaction
 	reportOptima();
 
+  // report to predictionTracker
+	reportZ( &seedHandler );
+
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+const PredictorMfeEns::Site2Z_hash &
+PredictorMfeEns2dSeedExtension::
+getZLPartition() const {
+	return ZL_partition;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+const PredictorMfeEns::Site2Z_hash &
+PredictorMfeEns2dSeedExtension::
+getZHPartition() const {
+	return ZH_partition;
 }
 
 //////////////////////////////////////////////////////////////////////////
 
 E_type
 PredictorMfeEns2dSeedExtension::
-getNonOverlappingEnergy( const size_t si1, const size_t si2, const size_t si1p, const size_t si2p ) {
+getNonOverlappingEnergy( const size_t si1, const size_t si2, const size_t si1p, const size_t si2p
+                       , const InteractionEnergy & energy, const SeedHandler & seedHandler
+                       , const bool sipIsSeed) {
 
 #if INTARNA_IN_DEBUG_MODE
 	// check indices
 	if( !seedHandler.isSeedBound(si1,si2) )
 		throw std::runtime_error("PredictorMfeEns2dSeedExtension::getNonOverlappingEnergy( si "+toString(si1)+","+toString(si2)+",..) is no seed bound");
-	if( !seedHandler.isSeedBound(si1p,si2p) )
+	if( sipIsSeed && !seedHandler.isSeedBound(si1p,si2p) )
 		throw std::runtime_error("PredictorMfeEns2dSeedExtension::getNonOverlappingEnergy( sip "+toString(si1p)+","+toString(si2p)+",..) is no seed bound");
 	if( si1 > si1p )
 		throw std::runtime_error("PredictorMfeEns2dSeedExtension::getNonOverlappingEnergy( si "+toString(si1)+","+toString(si2)+", sip "+toString(si1p)+","+toString(si2p)+",..) si1 > sj1 !");
 	// check if loop-overlapping (i.e. share at least one loop)
-	if( !seedHandler.areLoopOverlapping(si1,si2,si1p,si2p) ) {
+	if( sipIsSeed && !seedHandler.areLoopOverlapping(si1,si2,si1p,si2p) ) {
 		throw std::runtime_error("PredictorMfeEns2dSeedExtension::getNonOverlappingEnergy( si "+toString(si1)+","+toString(si2)+", sip "+toString(si1p)+","+toString(si2p)+",..) are not loop overlapping");
 	}
 #endif
@@ -181,13 +204,14 @@ void
 PredictorMfeEns2dSeedExtension::
 fillHybridZ_left( const size_t si1, const size_t si2 )
 {
-	// temporary access
-	const OutputConstraint & outConstraint = output.getOutputConstraint();
 #if INTARNA_IN_DEBUG_MODE
 	// check indices
 	if (!energy.areComplementary(si1,si2) )
 		throw std::runtime_error("PredictorMfeEns2dSeedExtension::fillHybridZ_left("+toString(si1)+","+toString(si2)+",..) are not complementary");
 #endif
+
+  // temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
 
 	// global vars to avoid reallocation
 	size_t i1,i2,k1,k2;
@@ -249,15 +273,42 @@ fillHybridZ_left( const size_t si1, const size_t si2 )
 				} // k1
 
 				// correction for left seeds
-				if ( i1<si1 && i2<si2 && seedHandler.isSeedBound(i1, i2) ) {
+
+
+				// if ( i1<si1 && i2<si2 && seedHandler.isSeedBound(i1, i2) ) {
+
+				// 	// get end of left seed
+				// 	size_t j1 = i1+seedHandler.getSeedLength1(i1,i2)-1;
+				// 	size_t j2 = i2+seedHandler.getSeedLength2(i1,i2)-1;
+
+				// 	if (j1 <= si1 && j2 <= si2) {
+				// 		// left seed not overlapping anchor seed
+				// 		// subtract whole seed
+				// 		curZ -= energy.getBoltzmannWeight( seedHandler.getSeedE(i1, i2) )
+				// 										* hybridZ_left( si1-j1, si2-j2 );
+				// 	} else if (seedHandler.isSeedBasePair(i1,i2,si1,si2)) {
+				// 		// left seed is overlapping anchor seed
+				// 		// subtract non-overlapping part of seed
+				// 		E_type nonOverlapE = getNonOverlappingEnergy(i1, i2, si1, si2, energy, seedHandler); // without E_init
+				// 		curZ -= energy.getBoltzmannWeight( nonOverlapE + energy.getE_init() );
+				// 	}
+
+				// 	// sanity insurance
+				// 	if (curZ < 0) {
+				// 		LOG(DEBUG) << "curZ < 0: "<<curZ;
+				// 		curZ = Z_type(0.0);
+				// 	}
+				// }
 
 					// check if seed is to be processed:
 					bool substractThisSeed =
+										seedHandler.isSeedBound(i1,i2)
+										&& (
 							// check if left of anchor seed
 										( i1+seedHandler.getSeedLength1(i1,i2)-1 <= si1
 										&& i2+seedHandler.getSeedLength2(i1,i2)-1 <= si2 )
 							// check if overlapping with anchor seed
-									||	seedHandler.areLoopOverlapping(i1,i2,si1,si2);
+									||	seedHandler.areLoopOverlapping(i1,i2,si1,si2));
 
 					if (substractThisSeed) {
 
@@ -284,7 +335,7 @@ fillHybridZ_left( const size_t si1, const size_t si2 )
 							// check if right side is non-empty
 							if ( ! E_equal(hybridZ_left( si1-si1overlap, si2-si2overlap),0) ) {
 								// compute Energy of loop S \ S'
-								E_type nonOverlapE = getNonOverlappingEnergy(i1, i2, si1overlap, si2overlap);
+								E_type nonOverlapE = getNonOverlappingEnergy(i1, i2, si1overlap, si2overlap, energy, seedHandler);
 								// subtract energy.getBoltzmannWeight( nonOverlapE ) * hybridZ_left( si1overlap, si2overlap up to anchor seed [==1 if equal])
 								Z_type correctionTerm = energy.getBoltzmannWeight( nonOverlapE )
 														* hybridZ_left( si1-si1overlap, si2-si2overlap);
@@ -331,9 +382,17 @@ fillHybridZ_left( const size_t si1, const size_t si2 )
 							}
 						}
 					} // substractThisSeed
-				}
 
 			} // complementary
+
+			// store partial Z
+			if (trackBasePairProbs) {
+				Interaction::Boundary key(i1,si1,i2,si2);
+				auto keyEntry = ZL_partition.find(key);
+				if ( ZL_partition.find(key) == ZL_partition.end() ) {
+					ZL_partition[key] = curZ;
+				}
+			}
 
 		} // i2
 	} // i1
@@ -413,6 +472,15 @@ fillHybridZ_right( const size_t sj1, const size_t sj2 )
 						}
 					} // k2
 				} // k1
+			} // complementary
+
+			// store partial Z
+			if (trackBasePairProbs) {
+				Interaction::Boundary key(sj1,j1,sj2,j2);
+				auto keyEntry = ZH_partition.find(key);
+				if ( ZH_partition.find(key) == ZH_partition.end() ) {
+					ZH_partition[key] = curZ;
+				}
 			}
 		}
 	}

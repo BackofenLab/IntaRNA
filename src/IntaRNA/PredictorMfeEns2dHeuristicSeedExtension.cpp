@@ -11,7 +11,7 @@ PredictorMfeEns2dHeuristicSeedExtension(
 		, PredictionTracker * predTracker
 		, SeedHandler * seedHandlerInstance )
  :
-	PredictorMfeEns2dSeedExtension(energy,output,predTracker,seedHandlerInstance)
+	PredictorMfeEns2dSeedExtension(energy,output,predTracker,seedHandlerInstance,false)
 , E_right_opt(E_INF)
 , j1opt(0)
 , j2opt(0)

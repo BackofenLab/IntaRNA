@@ -28,6 +28,16 @@ operator<<(std::ostream& out, const Interaction::BasePair& bp)
 ////////////////////////////////////////////////////////////////////////////
 
 std::ostream&
+operator<<(std::ostream& out, const Interaction::Boundary& b)
+{
+	out <<"("<<b.i1<<":"<<b.i2<<")-("<<b.j1<<","<<b.j2<<")";
+//	out <<"("<<b.i1<<","<<b.j1<<","<<b.i2<<","<<b.j2<<")";
+	return out;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+std::ostream&
 operator<<(std::ostream& out, const Interaction& i)
 {
 	for (int p=0; p<i.basePairs.size(); p++) {
