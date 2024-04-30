@@ -46,7 +46,8 @@ updateZ( const size_t i1, const size_t j1
 	// check if something to be done
 	if (Z_equal(partZ,0) || Z_isINF(Zall))
 		return;
-	// update overall partition function
+	// handle whether or not partZ includes ED values or not
+	Z_type partZ_widthED = 0, partZ_noED = 0;
 	if (isHybridZ) {
 #if INTARNA_IN_DEBUG_MODE
 		if ( (std::numeric_limits<Z_type>::max() - (partZ*energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, E_type(0))))) <= Zall) {
@@ -54,25 +55,30 @@ updateZ( const size_t i1, const size_t j1
 		}
 #endif
 		// add ED penalties etc.
-		Zall += partZ*energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, E_type(0)));
+		partZ_noED = partZ;
+		partZ_widthED = partZ*energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, E_type(0)));
 	} else {
 #if INTARNA_IN_DEBUG_MODE
 		if ( (std::numeric_limits<Z_type>::max() - partZ) <= Zall) {
 			LOG(WARNING) <<"PredictorMfeEns::updateZ() : partition function overflow! Recompile with larger partition function data type!";
 		}
 #endif
-		// just increase
-		Zall += partZ;
+		// remove ED
+		partZ_noED = partZ / energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, E_type(0)));;
+		partZ_widthED = partZ;
 	}
 
-	// store partial Z
+	// increase overall partition function
+	Zall += partZ_withED;
+
+	// store partial Z (without ED)
 	Interaction::Boundary key(i1,j1,i2,j2);
 	auto keyEntry = Z_partition.find(key);
 	if ( Z_partition.find(key) == Z_partition.end() ) {
-		Z_partition[key] = partZ;
+		Z_partition[key] = partZ_noED;
 	} else {
 		// update entry
-		keyEntry->second += partZ;
+		keyEntry->second += partZ_noED;
 	}
 
 }

@@ -28,6 +28,9 @@
  * IntaRNA/SeedHandler :
    * addSeeds()
      * BUGFIX : if internal seed base pairs were not found seed was still added
+ * IntaRNA/PredictorMfeEns :
+   * updateZ()
+     * BUGFIX : no handling of partial Z including ED values (so far not used)
 
 ################################################################################
 ### version 3.4.0
