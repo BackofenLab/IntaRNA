@@ -102,13 +102,13 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 			for (size_t l2 = 0; l2< hybridZ_left.size2(); l2++) {
 				// check complementarity of boundary
 				if ( Z_equal(hybridZ_left(l1,l2), 0.0) ) continue;
-				// ensure max interaction length in seq 1
+				// iterate extension right of seed in seq 1
 				for (size_t r1 = 0; r1 < hybridZ_right.size1() ; r1++) {
-					// check interaction length
+					// ensure max interaction length in seq 1
 					if (sj1+r1-si1+l1 >= energy.getAccessibility1().getMaxLength()) break;
-					// ensure max interaction length in seq 2
+					// iterate extension right of seed in seq 2
 					for (size_t r2 = 0; r2 < hybridZ_right.size2() ; r2++) {
-						// check interaction length
+						// ensure max interaction length in seq 2
 						if (sj2+r2-si2+l2 >= energy.getAccessibility2().getMaxLength()) break;
 						// check complementarity of boundary
 						if (Z_equal(hybridZ_right(r1,r2),0.0)) continue;
