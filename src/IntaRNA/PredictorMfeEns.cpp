@@ -47,7 +47,7 @@ updateZ( const size_t i1, const size_t j1
 	if (Z_equal(partZ,0) || Z_isINF(Zall))
 		return;
 	// handle whether or not partZ includes ED values or not
-	Z_type partZ_widthED = 0, partZ_noED = 0;
+	Z_type partZ_withED = 0, partZ_noED = 0;
 	if (isHybridZ) {
 #if INTARNA_IN_DEBUG_MODE
 		if ( (std::numeric_limits<Z_type>::max() - (partZ*energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, E_type(0))))) <= Zall) {
@@ -56,7 +56,7 @@ updateZ( const size_t i1, const size_t j1
 #endif
 		// add ED penalties etc.
 		partZ_noED = partZ;
-		partZ_widthED = partZ*energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, E_type(0)));
+		partZ_withED = partZ*energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, E_type(0)));
 	} else {
 #if INTARNA_IN_DEBUG_MODE
 		if ( (std::numeric_limits<Z_type>::max() - partZ) <= Zall) {
@@ -65,7 +65,7 @@ updateZ( const size_t i1, const size_t j1
 #endif
 		// remove ED
 		partZ_noED = partZ / energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2, E_type(0)));;
-		partZ_widthED = partZ;
+		partZ_withED = partZ;
 	}
 
 	// increase overall partition function
