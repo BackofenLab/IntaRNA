@@ -20,6 +20,7 @@
 - publish release on github
   
 - update [bioconda recipe](https://github.com/bioconda/bioconda-recipes/tree/master/recipes/intarna)
+  - should be automatically triggered by bioconda-bot with respective PR and notification
 - update [galaxy tool shed information](https://github.com/bgruening/galaxytools/tree/master/tools/rna_tools/intarna/intarna.xml)
 
 - update webserver
