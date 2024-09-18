@@ -349,6 +349,8 @@ SeedData( const std::string & seedEncoding, const InteractionEnergy & energyFunc
 				// seed exceeds sequence end
 				start2 = std::string::npos;
 			}
+			// reverse dotBar2
+			std::reverse(dotBar2.begin(), dotBar2.end());
 		}
 	}
 
