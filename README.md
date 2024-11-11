@@ -1384,7 +1384,7 @@ are
 - `hybridDB` : hybrid in dot-bar notation (interactin sites only)
 - `hybridDBfull` : hybrid in dot-bar notation (full sequence length)
 - `bpList` : list of hybrid base pairs, e.g. '(4,3):(5,2):(7,1)'
-- `E` : overall interaction energy
+- `E` : overall interaction energy = E + ED1 + ED2
 - `ED1` : ED value of seq1
 - `ED2` : ED value of seq2
 - `Pu1` : probability to be accessible for seq1
