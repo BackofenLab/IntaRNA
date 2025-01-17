@@ -1490,8 +1490,15 @@ column labels introduced for the CVS output:
 Note, `Zall` depends on the selected 
 [prediction mode](#predModes) and 
 [RNA-RNA interaction model](#interactionModel).
-It holds `Zall(--model=S) <= Zall(--model=P)` as well as 
-`Zall(--mode=H) <= Zall(--mode=M)`.
+It holds 
+
+- `Zall(--model=S) <= Zall(--model=P)` as well as
+- `Zall(--mode=H --model=P) <= Zall(--mode=M --model=P)`.
+
+BUT: the seed-extension strategy in `--model=X` does not allow for correct `Zall` computation in exact mfe prediction mode (`--mode=M`).
+
+- **BEWARE in seed-extension models:** `Zall(--mode=H --model=X)` might be LARGER than exact mode `Zall(--mode=M --model=X)`, since in the latter **not all structures are counted to avoid duplicated counts!**
+
 Thus, most accurate results are computed using
 ```
 IntaRNA --model=P --mode=M --outMode=E ...
