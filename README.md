@@ -1495,14 +1495,12 @@ It holds
 - `Zall(--model=S) <= Zall(--model=P)` as well as
 - `Zall(--mode=H --model=P) <= Zall(--mode=M --model=P)`.
 
-BUT: the seed-extension strategy in `--model=X` does not allow for correct `Zall` computation in exact mfe prediction mode (`--mode=M`).
-
-- **BEWARE in seed-extension models:** `Eall(--mode=M --model=X)` might be higher than `E(--mode=M --model=X)`, since in this mode **`Zall` does not consider all structures to avoid duplicated counts!** Thus, avoid `Eall` or `Zall` output in this mode!
-
 Thus, most accurate results are computed using
 ```
 IntaRNA --model=P --mode=M --outMode=E ...
 ```
+
+BUT: the **seed-extension strategy in `--model=X` does not allow for correct `Zall` computation**. Thus, avoid `Eall` or `Zall` output in this mode!
 
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
