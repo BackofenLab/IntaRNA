@@ -1497,7 +1497,7 @@ It holds
 
 BUT: the seed-extension strategy in `--model=X` does not allow for correct `Zall` computation in exact mfe prediction mode (`--mode=M`).
 
-- **BEWARE in seed-extension models:** `Zall(--mode=H --model=X)` might be LARGER than exact mode `Zall(--mode=M --model=X)`, since in the latter **not all structures are counted to avoid duplicated counts!**
+- **BEWARE in seed-extension models:** `Eall(--mode=M --model=X)` might be higher than `E(--mode=M --model=X)`, since in this mode **`Zall` does not consider all structures to avoid duplicated counts!** Thus, avoid `Eall` or `Zall` output in this mode!
 
 Thus, most accurate results are computed using
 ```
