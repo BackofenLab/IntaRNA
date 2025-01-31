@@ -141,11 +141,13 @@ channel (linux only). This way, you will install a pre-built IntaRNA binary alon
 with all dependencies.
 Follow
 [![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat-square)](http://bioconda.github.io/recipes/intarna/README.html)
-to get detailed information or run
+to get detailed information or run the following command to install it to the currently activated environment.
 ```bash
 conda install -c conda-forge -c bioconda intarna
 ```
-if you are using bioconda already.
+**Note**: Conda is available for Windows, MacOs and Linux. We recommend the [Miniconda installation](https://docs.anaconda.com/miniconda/install/#quick-command-line-install)
+
+**Note further**: *Windows user without Powershell or Commandline experience* might [consider to first install a Linux App via WSL](https://documentation.ubuntu.com/wsl/en/latest/howto/install-ubuntu-wsl2/) and use and install conda therein since most related scripts will be tailored for Linux BASH shells or similar systems.
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
 <br /><br />
