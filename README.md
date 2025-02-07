@@ -898,6 +898,13 @@ single or few interactions unbiased by the heuristics applied in normal IntaRNA.
 If you are using long RNAs, you should constraint predictions to the [regions of
 interest](#interConstr) or [constraint the seed regions](#seed). 
 
+In summary, the following calls are equivalent.
+
+```sh
+IntaRNAup ...
+IntaRNA --personality=IntaRNAup ...
+IntaRNA --model=X --mode=M --accW=0 --accL=0 --intLenMax=60 --outOverlap=B ...
+```
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
@@ -915,6 +922,13 @@ helix blocks, which is faster than the normal mode but applies more constraints.
 Thus, you should use *IntaRNAhelix* if you want to focus predictions on stable
 subinteractions (helices) and need to do it fast.
 
+In summary, the following calls are equivalent.
+
+```sh
+IntaRNAhelix ...
+IntaRNA --personality=IntaRNAhelix ...
+IntaRNA --model=B ...
+```
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
@@ -939,6 +953,13 @@ of the interacting molecules, either since they are very short or very long.
 The latter makes accessibility prediction difficult, since it is not only governed
 by thermodynamics.
 
+In summary, the following calls are equivalent.
+
+```sh
+IntaRNAduplex ...
+IntaRNA --personality=IntaRNAduplex ...
+IntaRNA --qAcc=N --tAcc=N ...
+```
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
@@ -959,6 +980,14 @@ Furthermore, it ensures
 - [no lonely base pairs](#interConstr)
 
 
+In summary, the following calls are equivalent.
+
+```sh
+IntaRNAsTar ...
+IntaRNA --personality=IntaRNAsTar ...
+IntaRNA --intLenMax=60 --intLoopMax=8 --seedNoGU --seedMinPu=0.001 --outMinPu=0.001 --outNoLP --outNoGUend --outOverlap=Q --outMode=C --outCsvCols=id1,id2,start1,end1,start2,end2,E ...
+```
+
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
 ### IntaRNAseed
@@ -968,6 +997,14 @@ To this end, it
 
 - uses [seed-only prediction mode](#predModes).
 
+
+In summary, the following calls are equivalent.
+
+```sh
+IntaRNAseed ...
+IntaRNA --personality=IntaRNAseed ...
+IntaRNA --mode=S ...
+```
 
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
@@ -982,10 +1019,13 @@ To do so, it
 
 - uses [ensemble-based prediction model](#interactionModel-ssProbability).
 
+In summary, the following calls are equivalent.
 
-
-
-
+```sh
+IntaRNAens ...
+IntaRNA --personality=IntaRNAens ...
+IntaRNA --model=P ...
+```
 
 
 
