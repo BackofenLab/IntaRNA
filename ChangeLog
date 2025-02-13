@@ -12,10 +12,16 @@
 
 # IntaRNA
 
+# IntaRNA_plotRegions.R
+
+- fix deprecation warning
+
 ################################################################################  
 ################################################################################
 
-
+250213 Martin Raden
+ * R/IntaRNA_plotRegions.R
+   * fix deprecation warning when using element_lines() with ggplot >= 3.4.0
 
 ################################################################################
 ### version 3.4.1

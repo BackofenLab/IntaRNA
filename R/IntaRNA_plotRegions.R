@@ -158,7 +158,7 @@ regionPlot =
 	ylab("") +
 	scale_y_discrete(position = "right", breaks=dRegion$idx, labels=dRegion$id) +
 	geom_vline(aes(xintercept=(xmin))) +
-	theme(panel.grid.major.y=element_line(size=0.7,color="lightgray")
+	theme(panel.grid.major.y=element_line(linewidth=0.7,color="lightgray")
 			, axis.text.y=element_text(size=rel(yLabelScale))
 			#, plot.title = element_blank()
 	)
