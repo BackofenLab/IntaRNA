@@ -6,29 +6,37 @@ on:
   pull_request:
     branches: [ master ]
 
+
+defaults:
+  run:
+    shell: bash -el {0}
+
+
 jobs:
   build:
 
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: s-weigand/setup-conda@v1
+
+    - name: Check out sources from github
+      uses: actions/checkout@v2
+
+    - name: Setup conda environment
+      uses: conda-incubator/setup-miniconda@v2
       with:
-        activate-conda: true
-    - name: Create conda environement
-      run: |
-        source `conda info --base`/etc/profile.d/conda.sh
-        conda create -q -n build-IntaRNA -c conda-forge -c bioconda gcc_linux-64 gxx_linux-64 boost-cpp viennarna>=2.4.14 pkgconfig
-        conda activate build-IntaRNA
-    - name: Script
+        miniconda-version: "latest"
+        environment-file: conda-build-env.yml
+        activate-environment: conda-build-env
+
+    - name: Build and test IntaRNA
       run: |
         ##### start IntaRNA build #####
         pwd
         # generate autotools's files 
         bash autotools-init.sh 
         # run configure (without boost checks)
-        ENVPREFIX=`conda info --base`/envs/build-IntaRNA
+        ENVPREFIX=`conda info --base`/envs/conda-build-env
         export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ENVPREFIX/lib
         ./configure \
            --prefix=$HOME/IntaRNA \

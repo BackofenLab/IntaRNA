@@ -1,0 +1,15 @@
+
+name: intarna-build-env
+
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+
+dependencies:
+  - gcc_linux-64 
+  - gxx_linux-64 
+  - pkgconfig
+  - boost-cpp 
+  - viennarna>=2.4.14
+ 
