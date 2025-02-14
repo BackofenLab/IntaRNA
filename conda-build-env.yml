@@ -10,6 +10,7 @@ dependencies:
   - gcc_linux-64 
   - gxx_linux-64 
   - pkgconfig
+  - zlib
   - boost-cpp 
   - viennarna>=2.4.14
  
