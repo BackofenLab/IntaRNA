@@ -12,16 +12,24 @@ class IntaRNA:
         pass
 
     @staticmethod
+    def version_tuple(versionstring: str):
+        """
+        Decomposes a version string into a tuple of entries
+        :param versionstring: The string encoding of a version, i.e. dot-separated numbers
+        """
+        return tuple(map(int, versionstring.split('.')))
+
+    @staticmethod
     def check_binary(required_version: str):
         """
-        Checks weather or not the IntaRNA binary can be found in PATH and exits with returncode 1 if not found.
+        Checks weather or not the IntaRNA binary can be found in PATH and exits with return code 1 if not found.
         :param required_version: The minimum required version for IntaRNA
         """
         p = run('IntaRNA --version', shell=True, stdout=PIPE, stderr=PIPE, universal_newlines=True)
         if p.returncode:
             sys.stderr.write('Please add the IntaRNA binary to your PATH.\n')
             sys.exit(1)
-        if p.stdout.split('\n')[0].split()[1] < required_version:
+        if IntaRNA.version_tuple(p.stdout.split('\n')[0].split()[1]) < IntaRNA.version_tuple(required_version):
             sys.stderr.write(f'This tool requires IntaRNA version {required_version}, please upgrade\n')
             sys.exit(1)
 

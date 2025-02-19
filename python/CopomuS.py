@@ -11,9 +11,6 @@ import os
 import sys
 from platform import python_version
 
-if python_version() < __python_min__:
-    sys.stderr.write(f'CopomuS requires python >= {__python_min__}\n')
-    sys.exit(1)
 
 import csv
 from tempfile import gettempdir
@@ -25,6 +22,10 @@ from copomus.candidate_selectors import get_selector
 from copomus.candidate_filters import get_filter
 from copomus.mutation_generators import get_generator
 
+
+if IntaRNA.version_tuple(python_version()) < IntaRNA.version_tuple(__python_min__):
+    sys.stderr.write(f'CopomuS requires python >= {__python_min__}\n')
+    sys.exit(1)
 
 
 class CopomuS:

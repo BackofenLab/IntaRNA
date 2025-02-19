@@ -16,8 +16,21 @@
 
 - fix deprecation warning
 
+# CopomuS.py
+
+- bugfix version checking
+
 ################################################################################  
 ################################################################################
+
+250219 Martin Raden
+ * python/CopomuS.py
+ * python/copomus/IntaRNA.py
+   * bugfix version checking (old string comparison fails for "3.12" < "3.7")
+
+250214 Martin Raden
+ + conda-build-env.yml : environment to build IntaRNA
+ * new github build workflow
 
 250213 Martin Raden
  * R/IntaRNA_plotRegions.R
