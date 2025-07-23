@@ -1,8 +1,8 @@
 
 # Auxiliary R scripts of the IntaRNA package
 
-- [IntaRNA_CSV_p-value.R](#intarnacsvpvaluer)
-- [IntaRNA_plotRegions.R](#intrarnaplotregionsr)
+- [IntaRNA_CSV_p-value.R](#intarna_csv_p-valuer)
+- [IntaRNA_plotRegions.R](#intarna_plotregionsr)
 
 
 # `IntaRNA_CSV_p-value.R`
