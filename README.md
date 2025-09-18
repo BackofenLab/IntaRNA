@@ -153,12 +153,20 @@ conda install -c conda-forge -c bioconda intarna
 <br /><br />
 <a name="instdocker" />
 
-## IntaRNA docker container (via QUAY)
+## IntaRNA docker container (via QUAY.IO)
 
 An [IntaRNA docker container](https://quay.io/repository/biocontainers/intarna)
 ([?](https://www.docker.com/)) is provided from the bioconda package via
-[Quay.io](https://quay.io/). This provides
+[Quay.io](https://quay.io/). This gives
 you with an encapsulated IntaRNA installation.
+
+**Note** The `biocontainer` builds do not support the `latest` tag, such that you have to specify a version to download! So best 
+
+- open the [quay.io IntaRNA tag page](https://quay.io/repository/biocontainers/intarna?tab=tags)
+- identify the tag of the container version you want to install, e.g. `3.4.1--pl5321h077b44d_3`
+- use this tag in your container pull command as an appendix, e.g.
+  - `podman pull quay.io/biocontainers/intarna:3.4.1--pl5321h077b44d_3` or
+  - `docker pull quay.io/biocontainers/intarna:3.4.1--pl5321h077b44d_3`
 
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
