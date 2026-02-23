@@ -58,7 +58,9 @@ If you use IntaRNA, please cite our respective articles
 - [CopraRNA and IntaRNA: predicting small RNA targets, networks and interaction domains](https://doi.org/10.1093/nar/gku359)
   Patrick R. Wright, Jens Georg, Martin Mann, Dragos A. Sorescu, Andreas S. Richter, Steffen Lott, Robert Kleinkauf, Wolfgang R. Hess, and Rolf Backofen,
   Nucleic Acids Research, 42 (W1), W119-W123, 2014, DOI:[10.1093/nar/gku359](https://doi.org/10.1093/nar/gku359).
-
+- [The impact of various seed, accessibility and interaction constraints on sRNA target prediction- a systematic assessment](https://doi.org/10.1186/s12859-019-3143-4). 
+  Martin Raden, Teresa Müller, Stefan Mautner, Rick Gelhausen, and Rolf Backofen,
+  BMC Bioinformatics, 21 (15), 2020, DOI:[10.1186/s12859-019-3143-4](https://doi.org/10.1186/s12859-019-3143-4). 
 
 
 <br /><br /><br /><br />
@@ -975,7 +977,7 @@ IntaRNA --qAcc=N --tAcc=N ...
 
 **IntaRNAsTar** provides optimized parameters for large scale (genome-wide) sRNA
 target prediction identified via the benchmark introduced in our publication 
-(Raden et al., 2019). This covers
+[(Raden et al., 2020)](https://doi.org/10.1186/s12859-019-3143-4). This covers
 
 - [no GU base pairs in seeds](#seed)
 - [minimal unpaired probability of 0.001 of seed regions](#seed)
