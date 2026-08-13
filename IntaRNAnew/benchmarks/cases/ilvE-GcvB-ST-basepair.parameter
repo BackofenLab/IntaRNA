@@ -1,0 +1,14 @@
+target=doc/handson/ilvE.fasta
+query=doc/handson/GcvB.ST.fasta
+tIdxPos0=-200
+energy=B
+tAcc=N
+qAcc=N
+noSeed=true
+mode=M
+model=S
+intLenMax=20
+outMode=C
+outCsvCols=id1,start1,end1,id2,start2,end2,E
+outCsvSort=E
+outNumber=3
