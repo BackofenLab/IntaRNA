@@ -2,53 +2,118 @@ name: C/C++ CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [master, refactoring, refactor-to-c++23]
   pull_request:
-    branches: [ master ]
-
+    branches: [master, refactoring]
 
 defaults:
   run:
     shell: bash -el {0}
 
-
 jobs:
   build:
-
-    runs-on: ubuntu-latest
+    name: Build and test (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: GCC 14 release
+            os: ubuntu-24.04
+            compiler: gcc
+            configure_debug: --disable-debug
+          - name: GCC 14 debug
+            os: ubuntu-24.04
+            compiler: gcc
+            configure_debug: --enable-debug
+          - name: Apple Clang release
+            os: macos-15
+            compiler: apple-clang
+            configure_debug: --disable-debug
 
     steps:
+      - name: Check out sources
+        uses: actions/checkout@v4
 
-    - name: Check out sources from github
-      uses: actions/checkout@v2
+      - name: Set up conda environment
+        uses: conda-incubator/setup-miniconda@v4
+        with:
+          miniconda-version: latest
+          environment-file: conda-build-env.yml
+          activate-environment: intarna-build-env
 
-    - name: Setup conda environment
-      uses: conda-incubator/setup-miniconda@v2
-      with:
-        miniconda-version: "latest"
-        environment-file: conda-build-env.yml
-        activate-environment: conda-build-env
+      - name: Install and select GCC 14
+        if: matrix.compiler == 'gcc'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes gcc-14 g++-14
+          echo "CC=gcc-14" >> "$GITHUB_ENV"
+          echo "CXX=g++-14" >> "$GITHUB_ENV"
+          echo "LDFLAGS=-L${CONDA_PREFIX}/lib -Wl,-rpath,${CONDA_PREFIX}/lib" >> "$GITHUB_ENV"
 
-    - name: Build and test IntaRNA
-      run: |
-        ##### start IntaRNA build #####
-        pwd
-        # generate autotools's files 
-        bash autotools-init.sh 
-        # run configure (without boost checks)
-        ENVPREFIX=`conda info --base`/envs/conda-build-env
-        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ENVPREFIX/lib
-        ./configure \
-           --prefix=$HOME/IntaRNA \
-           --with-vrna=$ENVPREFIX \
-           --with-boost=$ENVPREFIX \
-           --with-boost-libdir=$ENVPREFIX/lib \
-           --with-zlib=$ENVPREFIX
-        # compile documentation
-        # - make doxygen-doc
-        # compile, test and install IntaRNA
-        make -j 2 && make install
-        make tests -j 2
-        ##### check IntaRNA build #####
-        # run installed IntaRNA with help output
-        $HOME/IntaRNA/bin/IntaRNA -h
+      - name: Verify GCC 14
+        if: matrix.compiler == 'gcc'
+        run: |
+          "$CC" --version
+          "$CXX" --version
+          test "$("$CC" -dumpfullversion | cut -d. -f1)" = 14
+          test "$("$CXX" -dumpfullversion | cut -d. -f1)" = 14
+
+      - name: Set up Apple Clang with OpenMP
+        if: matrix.compiler == 'apple-clang'
+        run: |
+          brew install libomp
+          libomp_prefix="$(brew --prefix libomp)"
+          echo "CC=/usr/bin/clang" >> "$GITHUB_ENV"
+          echo "CXX=/usr/bin/clang++" >> "$GITHUB_ENV"
+          echo "CPPFLAGS=-I${libomp_prefix}/include" >> "$GITHUB_ENV"
+          echo "CXXFLAGS=-Xpreprocessor -fopenmp" >> "$GITHUB_ENV"
+          echo "LDFLAGS=-L${libomp_prefix}/lib -Wl,-rpath,${libomp_prefix}/lib -L${CONDA_PREFIX}/lib -Wl,-rpath,${CONDA_PREFIX}/lib" >> "$GITHUB_ENV"
+          echo "LIBS=-lomp" >> "$GITHUB_ENV"
+
+      - name: Verify Apple Clang
+        if: matrix.compiler == 'apple-clang'
+        run: |
+          "$CC" --version
+          "$CXX" --version
+          "$CXX" --version | grep -q "Apple clang"
+
+      - name: Bootstrap and configure
+        run: |
+          bash autotools-init.sh
+          ./configure \
+            --prefix="$RUNNER_TEMP/intarna-install" \
+            --with-vrna="$CONDA_PREFIX" \
+            --with-boost="$CONDA_PREFIX" \
+            --with-boost-libdir="$CONDA_PREFIX/lib" \
+            --with-zlib="$CONDA_PREFIX" \
+            ${{ matrix.configure_debug }}
+          grep -Eq '^CXX = .* -std=c\+\+23([[:space:]]|$)' Makefile
+          grep -q '^#define INTARNA_MULITHREADING 1' src/config.h
+
+      - name: Build, install, and run full test suite
+        run: |
+          make -j 2
+          make install
+          make tests -j 2
+          "$RUNNER_TEMP/intarna-install/bin/IntaRNA" -h
+
+      - name: Compile every installed public header independently
+        run: |
+          header_probe="$RUNNER_TEMP/intarna-header-probe.cpp"
+          for header in "$RUNNER_TEMP/intarna-install/include/IntaRNA/"*.h; do
+            printf '#include <IntaRNA/%s>\nint main() { return 0; }\n' "$(basename "$header")" > "$header_probe"
+            "$CXX" -std=c++23 ${CPPFLAGS:-} ${CXXFLAGS:-} \
+              -I"$RUNNER_TEMP/intarna-install/include" \
+              -I"$CONDA_PREFIX/include" \
+              -fsyntax-only "$header_probe"
+          done
+
+      - name: Compile and link an installed pkg-config consumer
+        run: |
+          consumer="$RUNNER_TEMP/intarna-consumer.cpp"
+          printf '#include <IntaRNA/RnaSequence.h>\nint main() { IntaRNA::RnaSequence rna("test", "ACGU"); return rna.size() == 4 ? 0 : 1; }\n' > "$consumer"
+          export PKG_CONFIG_PATH="$RUNNER_TEMP/intarna-install/lib/pkgconfig"
+          "$CXX" -std=c++23 "$consumer" $(pkg-config --cflags --libs IntaRNA) \
+            -o "$RUNNER_TEMP/intarna-consumer"
+          "$RUNNER_TEMP/intarna-consumer"
