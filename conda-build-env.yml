@@ -6,6 +6,9 @@ channels:
   - defaults
 
 dependencies:
+  - autoconf
+  - automake
+  - libtool
   - pkgconfig
   - zlib
   - boost-cpp
