@@ -3,7 +3,7 @@
 This document records the phase-1 audit requested in discussion #232. It is
 about scientific behavior and runtime cost, not a style rewrite. The audited
 baseline is IntaRNA 3.4.1, commit `3b14bc0`. The correction and regression
-record below is current through `96c14b3`.
+record below is current through `87f45f1`.
 
 ## Reproducible baseline
 
@@ -25,8 +25,9 @@ After the phase-1 regressions and local corrections through `a975c4d`:
 - all 20 command-line golden cases pass.
 
 The late heuristic-cell regressions and correction through `96c14b3` raise the
-API gate to 3,927 assertions in 33 test cases. The 20-case CLI result above is
-the latest recorded CLI gate.
+API gate to 3,927 assertions in 33 test cases. The subsequent output-hub
+regression and corrections through `87f45f1` raise it to 3,934 assertions in
+34 test cases. The complete 20-case CLI suite still passes.
 
 The added CLI cases cover asymmetric target/query accessibility options,
 seed-free `outMinPu` range filtering, and rejection of partition output from
@@ -125,6 +126,7 @@ separately because it was a test-data error, not a production defect.
 | exact noLP seed extension added independent partition factors | the stack weight and remaining left subensemble were added, violating the sum-product recurrence | with one allowed two-pair seed in a `3x3` complementary grid, the exact partition is `exp(2)+exp(3)` | `1ed5819` multiplies the stack and subensemble weights |
 | empty seed-extension ranges retained prior boundary partitions | early return reset scalar optima but did not clear `Z_partition`, so predictor reuse replayed stale sites | exact and heuristic predictors run on a seeded range and then a singleton range; the second partition and boundary store are zero | `a975c4d` calls `initZ()` on both no-seed paths |
 | heuristic cell incumbents leaked, and ensemble noLP direct control was over-scoped | `curCellEtotal` was not reset in `PredictorMfe2dHeuristic`, `PredictorMfeEns2dHeuristic` or `PredictorMfe2dHeuristicSeed`, so a stale strict-tie incumbent could suppress a valid cell; ensemble direct extension was also nested under singleton `noGUend` acceptance, while its empty/too-long guards continued the whole cell and skipped later loop extensions | `08d375e` records five pre-fix failures: unseeded and ensemble energies `-2` instead of `-3`, seeded energy `-2` instead of `-4`, and missing direct/bulged boundaries of `exp(3)` and `exp(4)` | `96c14b3` resets each incumbent per cell, independently guards the ensemble direct extension, and leaves later loop enumeration reachable |
+| `OutputHandlerHub` could neither instantiate nor report child counts correctly | its inline `add` definition retained an obsolete two-argument signature, while `reported()` initialized zero and repeatedly took the minimum, so a nonempty hub always reported zero | `0c9cbc1` first fails to compile against the public declaration; after the forwarding repair, a two-child hub reports zero instead of the required maximum two | `ce0599b` aligns and forwards the one-argument `add`; `87f45f1` aggregates child counts with `max` |
 
 Additional high-confidence findings are not treated as tiny local fixes because
 they change aggregation or recurrence ownership and need the benchmark gates of
@@ -156,7 +158,7 @@ terminal-GU partition filtering, seed-extension sum-product/reuse behavior,
 asymmetric target/query options, seed-free range filtering, window-partition
 rejection, accessibility splitting, the span-sensitive ViennaRNA ES path, and
 per-cell state plus direct/bulged noLP continuation in the three affected
-heuristic families.
+heuristic families, and output-hub forwarding/count aggregation.
 
 Coverage still lacks:
 
@@ -207,7 +209,11 @@ change.
 - `08d375e` exposed stale cell incumbents in all three affected heuristic
   families and the ensemble direct/loop control-flow defects in five focused
   sections; `96c14b3` reset the incumbents and corrected the ensemble guard.
-- Established the current 33-case / 3,927-assertion API gate at `96c14b3`.
+- `0c9cbc1` exposed the unusable output-hub forwarder and zero report count;
+  `ce0599b` aligned its public forwarding call and `87f45f1` returns the
+  documented maximum child count.
+- Established the current 34-case / 3,934-assertion API and 20-case CLI gate at
+  `87f45f1`.
 
 The discussion once calls the phase-1 document `refactor-changelog.md`; no such
 file exists and the same phase otherwise consistently requires
