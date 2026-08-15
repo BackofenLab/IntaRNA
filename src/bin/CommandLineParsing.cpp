@@ -2015,8 +2015,8 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 		case 'B' : // base-pair based accessibility
 			return new AccessibilityBasePair(
 								seq
-								, std::min( qIntLenMax.val == 0 ? seq.size() : qIntLenMax.val
-										, qAccW.val == 0 ? seq.size() : qAccW.val )
+								, std::min( tIntLenMax.val == 0 ? seq.size() : tIntLenMax.val
+										, tAccW.val == 0 ? seq.size() : tAccW.val )
 								, &accConstraint
 								);
 
@@ -2776,6 +2776,5 @@ getPersonality( int argc, char ** argv )
 
 
 ////////////////////////////////////////////////////////////////////////////
-
 
 
