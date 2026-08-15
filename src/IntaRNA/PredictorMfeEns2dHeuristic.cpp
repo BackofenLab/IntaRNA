@@ -179,6 +179,12 @@ fillHybridZ()
 				// iterate over all loop sizes w1 (seq1) and w2 (seq2) (minus 1)
 				for (w1=1; w1-1 <= energy.getMaxInternalLoopSize1() && i1+w1+noLpShift<hybridZ.size1(); w1++) {
 				for (w2=1; w2-1 <= energy.getMaxInternalLoopSize2() && i2+w2+noLpShift<hybridZ.size2(); w2++) {
+					// For noLP, the adjacent continuation is already represented
+					// by the direct extension above. Counting it again as the
+					// (w1,w2)=(1,1) loop duplicates the same interaction paths.
+					if (noLpShift != 0 && w1 == 1 && w2 == 1) {
+						continue;
+					}
 					// direct cell access (const)
 					rightExt = &(hybridZ(i1+noLpShift+w1,i2+noLpShift+w2));
 					// check if right side can pair
