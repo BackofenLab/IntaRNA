@@ -117,6 +117,7 @@ jobs:
           consumer="$RUNNER_TEMP/intarna-consumer.cpp"
           printf '#include <IntaRNA/RnaSequence.h>\nint main() { IntaRNA::RnaSequence rna("test", "ACGU"); return rna.size() == 4 ? 0 : 1; }\n' > "$consumer"
           export PKG_CONFIG_PATH="$RUNNER_TEMP/intarna-install/lib/pkgconfig"
-          "$CXX" -std=c++23 "$consumer" $(pkg-config --cflags --libs IntaRNA) \
+          "$CXX" -std=c++23 ${CPPFLAGS:-} ${CXXFLAGS:-} "$consumer" \
+            ${LDFLAGS:-} $(pkg-config --cflags --libs IntaRNA) \
             -o "$RUNNER_TEMP/intarna-consumer"
           "$RUNNER_TEMP/intarna-consumer"
