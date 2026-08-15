@@ -52,7 +52,9 @@ add( const Interaction & interaction )
 	{
 		// count interaction
 		reportedInteractions++;
-		if (storage.size() < maxToStore || lessThan_StorageContainer( &interaction, *(storage.rbegin()) )) {
+		if (maxToStore > 0
+				&& (storage.size() < maxToStore
+						|| lessThan_StorageContainer( &interaction, *(storage.rbegin()) ))) {
 			// find where to insert this interaction
 			StorageContainer::iterator insertPos = std::lower_bound( storage.begin(), storage.end(), &interaction, lessThan_StorageContainer );
 			// check if interaction is NOT already part of the list
