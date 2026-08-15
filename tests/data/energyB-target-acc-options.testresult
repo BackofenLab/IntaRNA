@@ -1,0 +1,8 @@
+id1;start1;end1;id2;start2;end2;subseqDP;hybridDP;E
+target;2;4;query;1;2;CGU&GG;(.(&));-2
+#ensemble delta energy to unpair a region ED
+ #i$	l=1	2	3	4	
+1	0.000000e+00	NA	NA	NA	
+2	0.000000e+00	0.000000e+00	NA	NA	
+3	0.000000e+00	0.000000e+00	0.000000e+00	NA	
+4	0.000000e+00	0.000000e+00	0.000000e+00	1.313186e+00	

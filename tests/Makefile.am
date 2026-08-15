@@ -46,6 +46,7 @@ runApiTests_SOURCES =	\
 					PredictionTrackerSpotProb_test.cpp \
 					PredictorMfe2dHelixBlockHeuristic_test.cpp \
 					PredictorMfe2dHelixBlockHeuristicSeed_test.cpp \
+					PredictorMfeEnsRegression_test.cpp \
 					NussinovHandler_test.cpp \
 					RnaSequence_test.cpp \
 					OutputStreamHandlerSortedCsv_test.cpp \
@@ -65,6 +66,3 @@ LIBS= 	-L$(top_builddir)/src/IntaRNA -lIntaRNA \
 runApiTests_CXXFLAGS =	-I$(top_builddir)/src \
 						@AM_CXXFLAGS@ @CXXFLAGS@ \
 						-DELPP_NO_LOG_TO_FILE
-
-
-						

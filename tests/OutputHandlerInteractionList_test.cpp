@@ -88,4 +88,17 @@ TEST_CASE( "OutputHandlerInteractionList", "[OutputHandlerInteractionList]" ) {
 
 	}
 
+	SECTION("zero storage capacity") {
+
+		Interaction i(r,r);
+		i.basePairs.push_back( Interaction::BasePair(0,7) );
+		i.energy = Ekcal_2_E(-1.0);
+
+		OutputHandlerInteractionList out(oc,0);
+		out.add(i);
+
+		REQUIRE( out.reported() == 1 );
+		REQUIRE( out.empty() );
+	}
+
 }

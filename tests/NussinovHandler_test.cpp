@@ -68,4 +68,15 @@ TEST_CASE("NussinovHandler", "[NussinovHandler]") {
     REQUIRE(nuss == 3u);
 
   }
+
+  SECTION("Out-of-range paired intervals have zero weight") {
+
+    RnaSequence rna("test", "ACGU");
+    NussinovHandler::Z2dMatrix Q(rna.size(), rna.size());
+    NussinovHandler::Z2dMatrix Qb(rna.size(), rna.size());
+    Q.clear();
+    Qb.clear();
+
+    REQUIRE(NussinovHandler::getQb(0, rna.size(), rna, 1.0, 0, Q, Qb) == 0.0);
+  }
 }

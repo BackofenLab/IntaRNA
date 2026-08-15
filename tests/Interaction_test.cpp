@@ -90,4 +90,39 @@ TEST_CASE( "Interaction", "[Interaction]" ) {
 
 	}
 
+	SECTION("self assignment preserves owned state") {
+
+		Interaction inter(r,r);
+		inter.basePairs.push_back( Interaction::BasePair(0,7) );
+		inter.basePairs.push_back( Interaction::BasePair(1,6) );
+		inter.energy = Ekcal_2_E(-2.0);
+		inter.seed = new Interaction::SeedSet();
+		inter.seed->insert( Interaction::Seed(
+				Interaction::BasePair(0,7), Interaction::BasePair(1,6), inter.energy) );
+
+		inter = inter;
+
+		REQUIRE( inter.basePairs.size() == 2 );
+		REQUIRE( inter.basePairs.front() == Interaction::BasePair(0,7) );
+		REQUIRE( inter.basePairs.back() == Interaction::BasePair(1,6) );
+		REQUIRE( inter.energy == Ekcal_2_E(-2.0) );
+		REQUIRE( inter.seed != NULL );
+		REQUIRE( inter.seed->size() == 1 );
+	}
+
+	SECTION("seeded and unseeded interactions compare safely") {
+
+		Interaction unseeded(r,r);
+		unseeded.basePairs.push_back( Interaction::BasePair(0,7) );
+		unseeded.energy = Ekcal_2_E(-1.0);
+
+		Interaction seeded(unseeded);
+		seeded.seed = new Interaction::SeedSet();
+		seeded.seed->insert( Interaction::Seed(
+				Interaction::BasePair(0,7), Interaction::BasePair(0,7), seeded.energy) );
+
+		REQUIRE_FALSE( unseeded == seeded );
+		REQUIRE_FALSE( seeded == unseeded );
+	}
+
 }
