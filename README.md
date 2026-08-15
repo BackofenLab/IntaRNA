@@ -180,7 +180,7 @@ you with an encapsulated IntaRNA installation.
 If you are going to compile IntaRNA from source, ensure you meet the following
 dependencies:
 
-- compiler supporting C++11 standard and OpenMP
+- compiler supporting C++23 and OpenMP (GCC 14 or Apple Clang)
 - [boost C++ library](http://www.boost.org/) version >= 1.50.0
   (ensure the following libraries are installed for development (not just runtime libraries!); or install all e.g. in Ubuntu via package `libboost-all-dev`)
     - libboost_regex
@@ -312,56 +312,33 @@ directory to your [`Path` System variable](http://www.computerhope.com/issues/ch
 <br /><br />
 <a name="instosx" />
 
-## OS X installation with homebrew (thanks to Lars Barquist)
+## macOS installation with Homebrew
 
-If you do not want to or can use the pre-compiled binaries for OS X available from
-[bioconda](https://anaconda.org/bioconda/intarna), you can compile `IntaRNA`
-locally.
+The [Bioconda package](https://anaconda.org/bioconda/intarna) is the simplest
+installation route. To build locally with the system Apple Clang compiler,
+install the dependencies and the OpenMP runtime:
 
-The following wraps up how to build `IntaRNA-2.0.2` under OS X (Sierra 10.12.4) using homebrew.
-
-First, install homebrew! :)
-
-```[bash]
-brew install gcc --without-multilib
+```bash
+brew install autoconf automake boost libtool libomp pkg-config viennarna
 ```
 
-`--without-multilib` is necessary for OpenMP multithreading support -- note
-OS X default `gcc`/`clang` doesn't support OpenMP, so we need to install standard
-`gcc`/`g++`
+Apple Clang needs the Homebrew `libomp` headers, library and preprocessing flag.
+The following keeps the normal optimized, multithreaded build:
 
-```[bash]
-brew install boost --cc=gcc-6
-```
-
-`--cc=gcc-6` is necessary to build `boost` with standard `gcc`, rather than the
-default bottle which appears to have been built with the system `clang`.
-Brew installs `gcc`/`g++` as `/usr/local/bin/gcc-VERSION` by default to avoid
-clashing with the system's `gcc`/`clang`. `6` is the current version as of
-writing, but may change.
-
-```[bash]
-brew install viennarna
-brew install doxygen
-```
-
-Download and extract the IntaRNA source code package (e.g. `intaRNA-2.0.2.tar.gz`) from the [release page](https://github.com/BackofenLab/IntaRNA/releases/latest).
-
-```[bash]
-./configure CC=gcc-6 CXX=g++-6
-```
-
-This sets up makefiles to use standard `gcc`/`g++` from brew, which will
-need an update to the appropriate compiler version if not still `6`.
-You might also want to
-set `--prefix=INSTALLPATH` if you dont want to install IntaRNA globally.
-
-
-```[bash]
-make
-make tests
+```bash
+LIBOMP_PREFIX="$(brew --prefix libomp)"
+CPPFLAGS="-I${LIBOMP_PREFIX}/include" \
+CXXFLAGS="-Xpreprocessor -fopenmp" \
+LDFLAGS="-L${LIBOMP_PREFIX}/lib -Wl,-rpath,${LIBOMP_PREFIX}/lib" \
+LIBS="-lomp" \
+./configure CC=clang CXX=clang++
+make -j2
+make tests -j2
 make install
 ```
+
+Use `--prefix=INSTALLPATH` with `./configure` when a system-wide installation
+is not desired.
 
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
@@ -2254,6 +2231,4 @@ flags are used within the IntaRNA configuration:
 [![no](doc/figures/icon-no.39.png)](https://www.freepik.com/free-vector/icons-collection_1638275.htm)
 [![up](doc/figures/icon-up.38.png)](https://www.freepik.com/free-vector/colored-arrows_794372.htm)
 Designed by Freepik
-
-
 
