@@ -46,6 +46,7 @@ runApiTests_SOURCES =	\
 					PredictionTrackerSpotProb_test.cpp \
 					PredictorMfe2dHelixBlockHeuristic_test.cpp \
 					PredictorMfe2dHelixBlockHeuristicSeed_test.cpp \
+					PredictorMfeHeuristicCellState_test.cpp \
 					PredictorMfeEnsRegression_test.cpp \
 					NussinovHandler_test.cpp \
 					RnaSequence_test.cpp \
