@@ -222,7 +222,7 @@ reported() const
 	size_t maxReported = 0;
 	// get maximal number of reports among all handlers
 	for (auto it=outList.begin(); it!=outList.end(); it++) {
-		maxReported = std::min( maxReported, (*it)->reported() );
+		maxReported = std::max( maxReported, (*it)->reported() );
 	}
 	// return maximum
 	return maxReported;
