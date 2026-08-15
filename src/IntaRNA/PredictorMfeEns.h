@@ -95,6 +95,18 @@ protected:
 				, const bool isHybridZ );
 
 	/**
+	 * Consumes a complete partition for one interaction boundary. Exact 2D
+	 * prediction finalizes each boundary once and therefore does not need to
+	 * retain it until reportOptima(). Tracker-enabled predictions keep using
+	 * updateZ() so their established callback timing and ordering stay intact.
+	 */
+	void
+	updateCompleteZ( const size_t i1, const size_t j1
+				, const size_t i2, const size_t j2
+				, const Z_type partFunct
+				, const bool isHybridZ );
+
+	/**
 	 * Calls for the stored Z_partition information updateOptima() before
 	 * calling reportOptima() from its super class.
 	 */
@@ -111,6 +123,17 @@ protected:
 	traceBack( Interaction & interaction );
 
 private:
+
+	/**
+	 * Applies output filters, converts the partition representation and adds
+	 * the accepted contribution to Zall. Returns the partition without ED.
+	 */
+	bool
+	addPartitionContribution( const size_t i1, const size_t j1
+				, const size_t i2, const size_t j2
+				, const Z_type partFunct
+				, const bool isHybridZ
+				, Z_type & partZ_noED );
 
 	/**
 	 * Calls updateOptima() for each entry of Z_partition.
