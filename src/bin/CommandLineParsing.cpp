@@ -1549,6 +1549,12 @@ parse(int argc, char** argv)
 				if (outNumber.val > 1 && outOverlap.val != 'B') {
 					throw error("window-based computation: non-overlapping subopt output (-n > 1) only supported for --outOverlap=B");
 				}
+				const bool windowNeedsZall = outMode.val == 'E'
+						|| (outMode.val == 'C'
+								&& OutputHandlerCsv::needsZall(OutputHandlerCsv::string2list(outCsvCols)));
+				if (windowNeedsZall) {
+					throw error("window-based computation cannot provide Zall/Eall output: overlapping windows count interactions more than once");
+				}
 			}
 
 
@@ -2776,4 +2782,3 @@ getPersonality( int argc, char ** argv )
 
 
 ////////////////////////////////////////////////////////////////////////////
-
