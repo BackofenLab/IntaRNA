@@ -70,8 +70,8 @@ predict( const IndexRange & r1
 	}
 
 	// resize matrices
-	hybridE.resize( hybridEsize1, hybridEsize2 );
-	hybridE_seed.resize( hybridE.size1(), hybridE.size2() );
+	hybridE.resize( hybridEsize1, hybridEsize2, false );
+	hybridE_seed.resize( hybridE.size1(), hybridE.size2(), false );
 
 	// reinit mfe for later updates with final information
 	initOptima();

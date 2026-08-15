@@ -20,7 +20,7 @@ fillSeed( const size_t i1min, const size_t i1max, const size_t i2min, const size
 	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
 
 	// resize matrizes
-	seed.resize( i1max-i1min+1, i2max-i2min+1 );
+	seed.resize( i1max-i1min+1, i2max-i2min+1, false );
 	seedE_rec.resize( SeedIndex({{ // setup ring-list data for seed computation
 					  (SeedRecMatrix::index)(seed.size1())
 					, (SeedRecMatrix::index)(seed.size2())

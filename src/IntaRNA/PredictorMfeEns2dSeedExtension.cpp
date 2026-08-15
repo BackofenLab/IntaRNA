@@ -91,11 +91,11 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 		const size_t maxMatrixLen2 = energy.getAccessibility2().getMaxLength()-sl2+1;
 
 		// ER
-		hybridZ_right.resize( std::min(range_size1-sj1, maxMatrixLen1), std::min(range_size2-sj2, maxMatrixLen2) );
+		hybridZ_right.resize( std::min(range_size1-sj1, maxMatrixLen1), std::min(range_size2-sj2, maxMatrixLen2), false );
 		fillHybridZ_right(sj1, sj2);
 
 		// EL
-		hybridZ_left.resize( std::min(si1+1, maxMatrixLen1), std::min(si2+1, maxMatrixLen2) );
+		hybridZ_left.resize( std::min(si1+1, maxMatrixLen1), std::min(si2+1, maxMatrixLen2), false );
 		fillHybridZ_left(si1, si2);
 
 		// updateZ for all boundary combinations

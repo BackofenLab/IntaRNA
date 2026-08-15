@@ -20,7 +20,7 @@ fillHelix(const size_t i1min, const size_t i1max, const size_t i2min, const size
 	// measure timing
 	TIMED_FUNC_IF(timerObj,VLOG_IS_ON(9));
 
-	helix.resize( i1max-i1min+1, i2max-i2min+1 );
+	helix.resize( i1max-i1min+1, i2max-i2min+1, false );
 	helixE_rec.resize( HelixIndex({{
 				   (HelixRecMatrix::index)(helix.size1())
 				   , (HelixRecMatrix::index)(helix.size2())

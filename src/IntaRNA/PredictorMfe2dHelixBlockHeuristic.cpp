@@ -74,7 +74,7 @@ predict( const IndexRange & r1
 	}
 
 	// resize matrix
-	hybridE.resize( hybridEsize1, hybridEsize2 );
+	hybridE.resize( hybridEsize1, hybridEsize2, false );
 
 	// temp vars
 	size_t i1,i2,w1,w2;

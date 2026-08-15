@@ -68,8 +68,8 @@ predict( const IndexRange & r1, const IndexRange & r2  )
 	}
 
 	// resize matrix
-	hybridE_pq.resize( hybridE_pqsize1, hybridE_pqsize2 );
-	hybridE_pq_seed.resize( hybridE_pqsize1, hybridE_pqsize2 );
+	hybridE_pq.resize( hybridE_pqsize1, hybridE_pqsize2, false );
+	hybridE_pq_seed.resize( hybridE_pqsize1, hybridE_pqsize2, false );
 
 	// initialize mfe interaction for updates
 	initOptima();

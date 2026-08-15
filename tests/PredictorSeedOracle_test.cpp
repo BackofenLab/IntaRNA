@@ -8,6 +8,7 @@
 #include "IntaRNA/OutputHandlerInteractionList.h"
 #include "IntaRNA/PredictorMfe2dSeed.h"
 #include "IntaRNA/PredictorMfe2dSeedExtension.h"
+#include "IntaRNA/PredictorMfe2dSeedExtensionRIblast.h"
 #include "IntaRNA/PredictorMfeEns2dSeedExtension.h"
 #include "IntaRNA/PredictorMfeEnsSeedOnly.h"
 #include "IntaRNA/PredictorMfeSeedOnly.h"
@@ -663,5 +664,37 @@ TEST_CASE("tiny exhaustive seed oracle for exact predictor families",
 				}));
 		REQUIRE(seedOnly.getZall()
 				== Approx(seedOnlyExpected.partition).epsilon(1e-12));
+	}
+
+	SECTION("RIblast predictor can be reused across range shapes") {
+		RnaSequence target("target", "GGGGGGGG");
+		RnaSequence query("query", "CCCCCCC");
+		AccessibilityDisabled targetAcc(target, 0, nullptr);
+		AccessibilityDisabled queryAcc(query, 0, nullptr);
+		ReverseAccessibility reverseQueryAcc(queryAcc);
+		InteractionEnergyBasePair energy(targetAcc, reverseQueryAcc, 2, 2);
+		const SeedConstraint seedConstraint = makeSeedConstraint(3, 0, 0, 0,
+				false);
+		const OutputConstraint outputConstraint = makeOutputConstraint(false);
+		SeedRecordingOutput reusedOutput(outputConstraint);
+		PredictorMfe2dSeedExtensionRIblast reused(energy, reusedOutput, nullptr,
+				new SeedHandlerMfe(energy, seedConstraint));
+
+		auto compareWithFresh = [&](const IndexRange & range1,
+				const IndexRange & range2) {
+			CAPTURE(range1.from, range1.to, range2.from, range2.to);
+			reused.predict(range1, range2);
+			SeedRecordingOutput freshOutput(outputConstraint);
+			PredictorMfe2dSeedExtensionRIblast fresh(energy, freshOutput, nullptr,
+					new SeedHandlerMfe(energy, seedConstraint));
+			fresh.predict(range1, range2);
+			REQUIRE_FALSE(freshOutput.calls.empty());
+			REQUIRE(reusedOutput.last() == freshOutput.last());
+		};
+
+		compareWithFresh(IndexRange(0, 5), IndexRange(0, 4)); // 6 x 5
+		compareWithFresh(IndexRange(1, 6), IndexRange(1, 5)); // same shape
+		compareWithFresh(IndexRange(2, 5), IndexRange(2, 4)); // smaller: 4 x 3
+		compareWithFresh(IndexRange(3, 5), IndexRange(1, 4)); // same product: 3 x 4
 	}
 }

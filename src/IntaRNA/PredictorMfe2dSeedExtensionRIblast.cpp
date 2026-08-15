@@ -108,7 +108,7 @@ predict( const IndexRange & r1, const IndexRange & r2  )
 		maxMatrixLen2 = energy.getAccessibility2().getMaxLength()-sl2;
 
 		// EL
-		hybridE_left.resize( std::min(extension.i1+1, maxMatrixLen1), std::min(extension.i2+1, maxMatrixLen2) );
+		hybridE_left.resize( std::min(extension.i1+1, maxMatrixLen1), std::min(extension.i2+1, maxMatrixLen2), false );
 		for (size_t i = 0; i < hybridE_left.size1(); i++) {
 			for (size_t j = 0; j < hybridE_left.size2(); j++) {
 				hybridE_left(i, j) = E_INF;
@@ -117,7 +117,7 @@ predict( const IndexRange & r1, const IndexRange & r2  )
 		fillHybridE_left(extension.i1, extension.i2);
 
 		// ER
-		hybridE_right.resize( std::min(interaction_size1-extension.j1, maxMatrixLen1), std::min(interaction_size2-extension.j2, maxMatrixLen2) );
+		hybridE_right.resize( std::min(interaction_size1-extension.j1, maxMatrixLen1), std::min(interaction_size2-extension.j2, maxMatrixLen2), false );
 		for (size_t i = 0; i < hybridE_right.size1(); i++) {
 			for (size_t j = 0; j < hybridE_right.size2(); j++) {
 				hybridE_right(i, j) = E_INF;
@@ -422,14 +422,14 @@ traceBack( Interaction & interaction )
 		const size_t maxMatrixLen2 = energy.getAccessibility2().getMaxLength()-sl2;
 
 		// traceback for full extension
-		hybridE_left.resize( std::min(extension.i1+1, maxMatrixLen1), std::min(extension.i2+1, maxMatrixLen2) );
+		hybridE_left.resize( std::min(extension.i1+1, maxMatrixLen1), std::min(extension.i2+1, maxMatrixLen2), false );
 		for (size_t i = 0; i < hybridE_left.size1(); i++) {
 			for (size_t j = 0; j < hybridE_left.size2(); j++) {
 				hybridE_left(i, j) = E_INF;
 			}
 		}
 		fillHybridE_left(extension.i1, extension.i2);
-		hybridE_right.resize( std::min(j1-extension.j1+1, maxMatrixLen1), std::min(j2-extension.j2+1, maxMatrixLen2) );
+		hybridE_right.resize( std::min(j1-extension.j1+1, maxMatrixLen1), std::min(j2-extension.j2+1, maxMatrixLen2), false );
 		for (size_t i = 0; i < hybridE_right.size1(); i++) {
 			for (size_t j = 0; j < hybridE_right.size2(); j++) {
 				hybridE_right(i, j) = E_INF;

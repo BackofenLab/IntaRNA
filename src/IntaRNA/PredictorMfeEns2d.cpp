@@ -55,7 +55,8 @@ predict( const IndexRange & r1
 	hybridZ.resize( std::min( energy.size1()
 						, (r1.to==RnaSequence::lastPos?energy.size1()-1:r1.to)-r1.from+1 )
 				, std::min( energy.size2()
-						, (r2.to==RnaSequence::lastPos?energy.size2()-1:r2.to)-r2.from+1 ) );
+						, (r2.to==RnaSequence::lastPos?energy.size2()-1:r2.to)-r2.from+1 )
+				, false );
 
 	// initialize mfe interaction for updates
 	initOptima();

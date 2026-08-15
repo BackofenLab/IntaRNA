@@ -71,8 +71,8 @@ predict( const IndexRange & r1
 			, (r2.to==RnaSequence::lastPos?energy.size2()-1:r2.to)-r2.from+1 );
 
 	// resize matrix
-	hybridE.resize( hybridEsize1, hybridEsize2 );
-	hybridE_seed.resize( hybridE.size1(), hybridE.size2() );
+	hybridE.resize( hybridEsize1, hybridEsize2, false );
+	hybridE_seed.resize( hybridE.size1(), hybridE.size2(), false );
 
 	// Fill seed / helix and helixSeed Matrices, if one is empty trigger empty interaction reporting
 	if ((seedHandler.fillSeed(0, hybridEsize1-1, 0, hybridEsize2-1) == 0)
