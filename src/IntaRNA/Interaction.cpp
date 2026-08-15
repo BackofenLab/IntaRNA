@@ -230,7 +230,8 @@ operator == ( const Interaction &i ) const
 			&& s2 == i.s2
 			&& E_equal( energy, i.energy )
 			&& basePairs == i.basePairs
-			&& (seed == i.seed || *seed == *(i.seed))
+			&& (seed == i.seed
+					|| (seed != NULL && i.seed != NULL && *seed == *(i.seed)))
 			;
 }
 
