@@ -62,6 +62,7 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 	if (seedHandler.fillSeed( 0, range_size1-1, 0, range_size2-1 ) == 0) {
 		// trigger empty interaction reporting
 		initOptima();
+		initZ();
 		reportOptima();
 		// stop computation
 		return;
@@ -229,7 +230,7 @@ fillHybridZ_left( const size_t si1, const size_t si2 )
 					// get stacking energy to avoid recomputation in recursion below
 					iStackZ = energy.getBoltzmannWeight(energy.getE_interLeft(i1,i1+noLpShift,i2,i2+noLpShift));
 					// check just stacked
-					curZ += iStackZ + hybridZ_left(l1-noLpShift,l2-noLpShift);
+					curZ += iStackZ * hybridZ_left(l1-noLpShift,l2-noLpShift);
 				}
 
 				// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)

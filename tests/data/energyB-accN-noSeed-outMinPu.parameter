@@ -1,0 +1,13 @@
+target=GGGG
+query=CCCC
+energy=B
+tAcc=N
+qAcc=N
+model=S
+mode=M
+noSeed=true
+outMinPu=0.5
+outMode=C
+outCsvCols=id1,start1,end1,id2,start2,end2,E
+outNumber=1
+threads=1

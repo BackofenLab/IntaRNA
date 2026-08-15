@@ -175,16 +175,26 @@ public:
 		E_type energy;
 
 		/**
-		 * order definition: first by increasing energy using increasing seq1
-		 * index as tie breaker.
+		 * order definition: first by increasing energy, then lexicographically
+		 * by all seed boundaries as tie breakers.
 		 * @param s the seed to compare to
 		 * @return true if this seed is considered smaller than s
 		 */
 		const bool
 		operator <  ( const Seed &s ) const {
-			return ( energy < s.energy
-						|| (E_equal(energy,s.energy) && (bp_i.first < s.bp_i.first))
-						);
+			if (energy != s.energy) {
+				return energy < s.energy;
+			}
+			if (bp_i.first != s.bp_i.first) {
+				return bp_i.first < s.bp_i.first;
+			}
+			if (bp_i.second != s.bp_i.second) {
+				return bp_i.second < s.bp_i.second;
+			}
+			if (bp_j.first != s.bp_j.first) {
+				return bp_j.first < s.bp_j.first;
+			}
+			return bp_j.second < s.bp_j.second;
 		}
 
 		/**

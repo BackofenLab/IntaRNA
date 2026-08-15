@@ -151,6 +151,9 @@ Interaction &
 Interaction::
 operator= ( const Interaction & toCopy )
 {
+	if (this == &toCopy) {
+		return *this;
+	}
 #if INTARNA_IN_DEBUG_MODE
 	if (!toCopy.isValid())
 		throw std::runtime_error("Interaction::=("+toString(toCopy)+") not valid!");
@@ -227,7 +230,8 @@ operator == ( const Interaction &i ) const
 			&& s2 == i.s2
 			&& E_equal( energy, i.energy )
 			&& basePairs == i.basePairs
-			&& (seed == i.seed || *seed == *(i.seed))
+			&& (seed == i.seed
+					|| (seed != NULL && i.seed != NULL && *seed == *(i.seed)))
 			;
 }
 
