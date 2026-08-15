@@ -2,9 +2,9 @@ name: C/C++ CI
 
 on:
   push:
-    branches: [master, refactoring, refactor-to-c++23]
+    branches: [master, refactoring, 'refactor-to-c++23']
   pull_request:
-    branches: [master, refactoring, refactor-to-c++23]
+    branches: [master, refactoring, 'refactor-to-c++23']
 
 defaults:
   run:
