@@ -151,6 +151,9 @@ Interaction &
 Interaction::
 operator= ( const Interaction & toCopy )
 {
+	if (this == &toCopy) {
+		return *this;
+	}
 #if INTARNA_IN_DEBUG_MODE
 	if (!toCopy.isValid())
 		throw std::runtime_error("Interaction::=("+toString(toCopy)+") not valid!");
