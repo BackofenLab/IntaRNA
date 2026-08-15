@@ -7,4 +7,4 @@ Name: IntaRNA
 Description: RNA-RNA interaction prediction C++ library
 Version: @VERSION@
 Libs: -L${libdir} -lIntaRNA @LIBS@
-Cflags: -I${includedir}
+Cflags: -I${includedir} @BOOST_CPPFLAGS@ @VRNA_CFLAGS@
