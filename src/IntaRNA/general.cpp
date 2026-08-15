@@ -2,6 +2,7 @@
 #include "IntaRNA/general.h"
 
 #include <fstream>
+#include <iostream>
 
 #include <boost/regex.hpp>
 #include <boost/algorithm/string.hpp>

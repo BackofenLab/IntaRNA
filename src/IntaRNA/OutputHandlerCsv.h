@@ -8,9 +8,11 @@
 #include "IntaRNA/OutputHandler.h"
 #include "IntaRNA/InteractionEnergy.h"
 
+#include <iterator>
 #include <list>
 #include <map>
 #include <numeric>
+#include <utility>
 
 #include <boost/algorithm/string.hpp>
 
