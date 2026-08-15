@@ -11,8 +11,9 @@
 #include <boost/filesystem.hpp>
 #include <boost/spirit/include/qi.hpp>
 
-#include <iostream>
 #include <cstdarg>
+#include <fstream>
+#include <iostream>
 
 #include "IntaRNA/Accessibility.h"
 #include "IntaRNA/InteractionEnergy.h"

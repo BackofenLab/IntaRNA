@@ -6,6 +6,7 @@ INITIALIZE_EASYLOGGINGPP
 
 #include <iostream>
 #include <exception>
+#include <sstream>
 
 #if INTARNA_MULITHREADING
 	#include <omp.h>
