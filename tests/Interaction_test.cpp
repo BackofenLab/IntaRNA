@@ -125,4 +125,28 @@ TEST_CASE( "Interaction", "[Interaction]" ) {
 		REQUIRE_FALSE( seeded == unseeded );
 	}
 
+	SECTION("seed ordering preserves distinct equal-energy ranges") {
+
+		const E_type seedEnergy = -100;
+		const Interaction::Seed seed(
+				Interaction::BasePair(1,6), Interaction::BasePair(3,4), seedEnergy );
+		const Interaction::Seed differentSeq2Right(
+				Interaction::BasePair(1,7), Interaction::BasePair(3,4), seedEnergy );
+		const Interaction::Seed differentSeq1Right(
+				Interaction::BasePair(1,6), Interaction::BasePair(4,4), seedEnergy );
+		const Interaction::Seed differentSeq2Left(
+				Interaction::BasePair(1,6), Interaction::BasePair(3,3), seedEnergy );
+		Interaction::SeedSet seeds;
+
+		REQUIRE( seeds.insert(seed).second );
+		REQUIRE( seeds.insert(differentSeq2Right).second );
+		REQUIRE( seeds.insert(differentSeq1Right).second );
+		REQUIRE( seeds.insert(differentSeq2Left).second );
+		REQUIRE( seeds.size() == 4 );
+
+		// Only an exact duplicate is equivalent in the ordering.
+		REQUIRE_FALSE( seeds.insert(seed).second );
+		REQUIRE( seeds.size() == 4 );
+	}
+
 }
