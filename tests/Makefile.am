@@ -47,6 +47,7 @@ runApiTests_SOURCES =	\
 					PredictorMfe2dHelixBlockHeuristic_test.cpp \
 					PredictorMfe2dHelixBlockHeuristicSeed_test.cpp \
 					PredictorMfeEnsRegression_test.cpp \
+					PredictorTinyOracle_test.cpp \
 					NussinovHandler_test.cpp \
 					RnaSequence_test.cpp \
 					OutputStreamHandlerSortedCsv_test.cpp \
