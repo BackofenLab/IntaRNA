@@ -51,6 +51,7 @@ runApiTests_SOURCES =	\
 					NussinovHandler_test.cpp \
 					RnaSequence_test.cpp \
 					OutputStreamHandlerSortedCsv_test.cpp \
+					OutputHandlerHub_test.cpp \
 					OutputHandlerInteractionList_test.cpp \
 					SeedHandlerExplicit_test.cpp \
 					SeedHandlerNoBulge_test.cpp \
