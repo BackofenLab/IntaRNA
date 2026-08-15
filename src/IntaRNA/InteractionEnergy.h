@@ -959,28 +959,30 @@ getE( const size_t i1, const size_t j1
 		, const E_type hybridE ) const
 {
 	// check if hybridization energy and EDs are not infinite
-	if ( E_isNotINF(hybridE)
-			&& (getED1( i1, j1 ) < Accessibility::ED_UPPER_BOUND)
-			&& (getED2( i2, j2 ) < Accessibility::ED_UPPER_BOUND))
-	{
-		// compute overall interaction energy
-		return hybridE
-				// accessibility penalty
-				+ getED1( i1, j1 )
-				+ getED2( i2, j2 )
-				// dangling end penalty
-				// weighted by the probability that ends are unpaired
-				+ (energyWithDangles ? Z_2_E(E_2_Z(getE_danglingLeft( i1, i2 ))*getPr_danglingLeft(i1,j1,i2,j2)) : E_type(0))
-				+ (energyWithDangles ? Z_2_E(E_2_Z(getE_danglingRight( j1, j2 ))*getPr_danglingRight(i1,j1,i2,j2)) : E_type(0))
-				// helix closure penalty
-				+ getE_endLeft( i1, i2 )
-				+ getE_endRight( j1, j2 )
-				+ getEnergyAdd()
-				;
-	} else {
-		// hybridE is infinite, thus overall energy is infinity as well
-		return E_INF;
+	if ( E_isNotINF(hybridE) ) {
+		const E_type ed1 = getED1( i1, j1 );
+		if ( ed1 < Accessibility::ED_UPPER_BOUND ) {
+			const E_type ed2 = getED2( i2, j2 );
+			if ( ed2 < Accessibility::ED_UPPER_BOUND ) {
+				// compute overall interaction energy
+				return hybridE
+						// accessibility penalty
+						+ ed1
+						+ ed2
+						// dangling end penalty
+						// weighted by the probability that ends are unpaired
+						+ (energyWithDangles ? Z_2_E(E_2_Z(getE_danglingLeft( i1, i2 ))*getPr_danglingLeft(i1,j1,i2,j2)) : E_type(0))
+						+ (energyWithDangles ? Z_2_E(E_2_Z(getE_danglingRight( j1, j2 ))*getPr_danglingRight(i1,j1,i2,j2)) : E_type(0))
+						// helix closure penalty
+						+ getE_endLeft( i1, i2 )
+						+ getE_endRight( j1, j2 )
+						+ getEnergyAdd()
+						;
+			}
+		}
 	}
+	// hybridE or an ED is infinite, thus overall energy is infinity as well
+	return E_INF;
 }
 
 ////////////////////////////////////////////////////////////////////////////
