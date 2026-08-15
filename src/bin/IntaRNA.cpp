@@ -310,7 +310,9 @@ int main(int argc, char **argv){
 #endif
 								{// update final output handler
 									// copy partition function information if available
-									output->incrementZ( bestInteractions.getZ() );
+									if (bestInteractions.getOutputConstraint().needZall) {
+										output->incrementZ( bestInteractions.getZ() );
+									}
 									// forward all reported interactions for all regions to final output handler
 									for( const Interaction * inter : bestInteractions) {
 										output->add(*inter);

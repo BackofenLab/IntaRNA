@@ -204,13 +204,14 @@ void
 PredictorMfe::
 reportOptima()
 {
+	// temporary access
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
+
 	// store overall partition function
-	if (Z_isNotINF(getZall())) {
+	if (outConstraint.needZall && Z_isNotINF(getZall())) {
 		output.incrementZ( getZall() );
 	}
 
-	// temporary access
-	const OutputConstraint & outConstraint = output.getOutputConstraint();
 	// number of reported interactions
 	size_t reported = 0;
 	// get maximal report energy = mfe + deltaE + precisionEpsilon

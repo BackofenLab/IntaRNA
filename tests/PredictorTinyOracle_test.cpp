@@ -221,6 +221,7 @@ class RecordingOutput final : public OutputHandler {
 public:
 	explicit RecordingOutput(const OutputConstraint & constraint)
 	 : OutputHandler(constraint)
+	 , zUpdates(0)
 	{}
 
 	void add(const Interaction & interaction) override {
@@ -228,11 +229,17 @@ public:
 		++reportedInteractions;
 	}
 
+	void incrementZ(const Z_type subZ) override {
+		++zUpdates;
+		OutputHandler::incrementZ(subZ);
+	}
+
 	const Interaction & last() const {
 		return *calls.back();
 	}
 
 	std::vector<std::unique_ptr<Interaction> > calls;
+	size_t zUpdates;
 };
 
 std::string reversed(const std::string & sequence) {
@@ -373,5 +380,40 @@ TEST_CASE("tiny exhaustive oracle for exact predictors", "[PredictorTinyOracle]"
 		ensemblePredictor.predict(sub1, sub2);
 		REQUIRE(ensemblePredictor.getZall()
 				== Approx(oracle.partition).epsilon(1e-12));
+	}
+
+	SECTION("partition output is merged only when requested") {
+		RnaSequence target("target", "GG");
+		RnaSequence query("query", "CC");
+		AccessibilityDisabled targetAcc(target, 0, NULL);
+		AccessibilityDisabled queryAcc(query, 0, NULL);
+		ReverseAccessibility reverseQueryAcc(queryAcc);
+		InteractionEnergyBasePair energy(targetAcc, reverseQueryAcc, 0, 0);
+
+		OutputConstraint noPartition(1, OutputConstraint::OVERLAP_BOTH,
+				E_INF, E_INF, false, false, false, false, false);
+		RecordingOutput noPartitionOutput(noPartition);
+		PredictorMfe2d noPartitionPredictor(energy, noPartitionOutput, NULL);
+		noPartitionPredictor.predict();
+		REQUIRE(noPartitionOutput.zUpdates == 0);
+		REQUIRE(noPartitionOutput.getZ() == 0.0);
+		REQUIRE(noPartitionPredictor.getZall() == 0.0);
+
+		RecordingOutput noPartitionEnsembleOutput(noPartition);
+		PredictorMfeEns2d noPartitionEnsemblePredictor(energy,
+				noPartitionEnsembleOutput, NULL);
+		noPartitionEnsemblePredictor.predict();
+		REQUIRE(noPartitionEnsemblePredictor.getZall() > 0.0);
+		REQUIRE(noPartitionEnsembleOutput.zUpdates == 0);
+		REQUIRE(noPartitionEnsembleOutput.getZ() == 0.0);
+
+		OutputConstraint withPartition(1, OutputConstraint::OVERLAP_BOTH,
+				E_INF, E_INF, false, false, false, true, false);
+		RecordingOutput partitionOutput(withPartition);
+		PredictorMfe2d partitionPredictor(energy, partitionOutput, NULL);
+		partitionPredictor.predict();
+		REQUIRE(partitionOutput.zUpdates == 1);
+		REQUIRE(partitionPredictor.getZall() > 0.0);
+		REQUIRE(partitionOutput.getZ() == partitionPredictor.getZall());
 	}
 }
