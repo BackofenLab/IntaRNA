@@ -1,5 +1,5 @@
 
-AC_PREREQ([2.65])
+AC_PREREQ([2.69])
 # 5 argument version only available with aclocal >= 2.64
 AC_INIT([IntaRNA], [3.4.1], [], [intaRNA], [http://www.bioinf.uni-freiburg.de] )
 
@@ -54,8 +54,8 @@ AM_INIT_AUTOMAKE([1.11])
 # use the C++ compiler for the following checks
 AC_LANG([C++])
 
-# ensure we are using c11 C++ standard
-AX_CXX_COMPILE_STDCXX([11], [noext], [mandatory])
+# ensure we are using the C++23 standard
+AX_CXX_COMPILE_STDCXX([23], [noext], [mandatory])
 
 # check if python is available
 AM_PATH_PYTHON([$PYTHON_REQUIRED_VERSION],, [:])
@@ -197,7 +197,7 @@ AS_IF([test x"$enable_multiprecision" = x"yes"], [
 # Vienna RNA package library path support, if not installed in usual directories
 ###############################################################################
 AC_ARG_WITH([vrna],
-	[AC_HELP_STRING(
+	[AS_HELP_STRING(
 	    [--with-vrna=PREFIX],
 	    [alternative prefix path to Vienna RNA library]
 	  )],
@@ -305,10 +305,6 @@ AX_CHECK_ZLIB([], [])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SIZE_T
-
-# Checks for header files.
-AC_HEADER_STDC
-
 
 ##########################################################################
 # check boost test results
