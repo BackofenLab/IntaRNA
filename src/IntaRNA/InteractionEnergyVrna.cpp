@@ -112,7 +112,7 @@ computeES( const Accessibility & acc, InteractionEnergyVrna::EsMatrix & esToFill
 		curModel.max_bp_span = -1;
 	}
 	// TODO check if VRNA_OPTION_WINDOW reasonable to speedup
-	vrna_fold_compound_t * foldData = vrna_fold_compound( sequence, &foldModel, VRNA_OPTION_PF);
+	vrna_fold_compound_t * foldData = vrna_fold_compound( sequence, &curModel, VRNA_OPTION_PF);
 
 	// Adding hard constraints from pseudo dot-bracket
 	unsigned int constraint_options = VRNA_CONSTRAINT_DB_DEFAULT;
