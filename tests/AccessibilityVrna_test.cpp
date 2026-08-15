@@ -52,5 +52,10 @@ TEST_CASE("AccessibilityVrna", "[AccessibilityVrna]") {
 
 		REQUIRE( E_isNotINF(unrestrictedEnergy.getES1(0, rna.size()-1)) );
 		REQUIRE( E_isINF(shortSpanEnergy.getES1(0, rna.size()-1)) );
+
+		// Exercise both normal computeIntraEall() paths. Their ViennaRNA-owned
+		// resources are released by the scoped owners in InteractionEnergyVrna.
+		REQUIRE( E_isNotINF(unrestrictedEnergy.getEall1()) );
+		REQUIRE( E_isNotINF(unrestrictedEnergy.getEall2()) );
 	}
 }

@@ -3,6 +3,8 @@
 #include "IntaRNA/AccessibilityVrna.h"
 
 #include <cassert>
+#include <cstdlib>
+#include <memory>
 #include <set>
 
 // ES computation
@@ -13,6 +15,26 @@ extern "C" {
 	#include <ViennaRNA/structure_utils.h>
 	#include <ViennaRNA/constraints/SHAPE.h>
 	#include <ViennaRNA/utils.h>
+}
+
+
+namespace {
+
+struct VrnaAllocatedDeleter {
+	void operator()( char * data ) const {
+		free(data);
+	}
+};
+
+struct VrnaFoldCompoundDeleter {
+	void operator()( vrna_fold_compound_t * foldCompound ) const {
+		vrna_fold_compound_free(foldCompound);
+	}
+};
+
+typedef std::unique_ptr<char, VrnaAllocatedDeleter> VrnaAllocatedPtr;
+typedef std::unique_ptr<vrna_fold_compound_t, VrnaFoldCompoundDeleter> VrnaFoldCompoundPtr;
+
 }
 
 
@@ -94,8 +116,10 @@ computeES( const Accessibility & acc, InteractionEnergyVrna::EsMatrix & esToFill
 	const Z_type RT = getRT();
 
 	// VRNA compatible data structures
-	char * sequence = (char *) vrna_alloc(sizeof(char) * (seqLength + 1));
-	char * structureConstraint = (char *) vrna_alloc(sizeof(char) * (seqLength + 1));
+	VrnaAllocatedPtr sequenceOwner( (char *) vrna_alloc(sizeof(char) * (seqLength + 1)) );
+	VrnaAllocatedPtr structureConstraintOwner( (char *) vrna_alloc(sizeof(char) * (seqLength + 1)) );
+	char * const sequence = sequenceOwner.get();
+	char * const structureConstraint = structureConstraintOwner.get();
 	for (int i=0; i<seqLength; i++) {
 		// copy sequence
 		sequence[i] = acc.getSequence().asString().at(i);
@@ -112,7 +136,8 @@ computeES( const Accessibility & acc, InteractionEnergyVrna::EsMatrix & esToFill
 		curModel.max_bp_span = -1;
 	}
 	// TODO check if VRNA_OPTION_WINDOW reasonable to speedup
-	vrna_fold_compound_t * foldData = vrna_fold_compound( sequence, &curModel, VRNA_OPTION_PF);
+	VrnaFoldCompoundPtr foldDataOwner( vrna_fold_compound( sequence, &curModel, VRNA_OPTION_PF) );
+	vrna_fold_compound_t * const foldData = foldDataOwner.get();
 
 	// Adding hard constraints from pseudo dot-bracket
 	unsigned int constraint_options = VRNA_CONSTRAINT_DB_DEFAULT;
@@ -157,11 +182,6 @@ computeES( const Accessibility & acc, InteractionEnergyVrna::EsMatrix & esToFill
 			}
 		}
 	}
-	// garbage collection
-	vrna_fold_compound_free(foldData);
-	free(structureConstraint);
-	free(sequence);
-
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -178,14 +198,16 @@ computeIntraEall( const Accessibility & acc ) const
 	const int length = acc.getSequence().size();
 
 	// copy sequence into C data structure
-	char * sequence = (char *) vrna_alloc(sizeof(char) * (length + 1));
+	VrnaAllocatedPtr sequenceOwner( (char *) vrna_alloc(sizeof(char) * (length + 1)) );
+	char * const sequence = sequenceOwner.get();
 	for (int i=0; i<length; i++) {
 		sequence[i] = acc.getSequence().asString().at(i);
 	}
 	sequence[length] = '\0';
 
-    // setup folding data
-    vrna_fold_compound_t * fold_compound = vrna_fold_compound( sequence, &curModel, VRNA_OPTION_DEFAULT );
+	// setup folding data
+	VrnaFoldCompoundPtr foldCompoundOwner( vrna_fold_compound( sequence, &curModel, VRNA_OPTION_DEFAULT ) );
+	vrna_fold_compound_t * const fold_compound = foldCompoundOwner.get();
 
     // add accessibility constraints
     AccessibilityVrna::addConstraints( *fold_compound, acc );
