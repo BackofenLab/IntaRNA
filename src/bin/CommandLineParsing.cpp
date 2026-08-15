@@ -2634,7 +2634,7 @@ getQueryRanges( const InteractionEnergy & energy, const size_t sequenceNumber, c
 	if (outMinPu.val > Z_type(0) && !Z_equal(outMinPu.val, Z_type(0))) {
 		// decompose ranges based in minimal unpaired probability value per position
 		// since all ranges covering a position will have a lower unpaired probability
-		acc.decomposeByMaxED( qRegion[sequenceNumber], energy.getE( outMinPu.val ), (noSeedRequired ? RnaSequence::lastPos : seedBP.val ) );
+		acc.decomposeByMaxED( qRegion[sequenceNumber], energy.getE( outMinPu.val ), (noSeedRequired ? 1 : seedBP.val ) );
 	}
 
 	return qRegion.at(sequenceNumber);
@@ -2668,7 +2668,7 @@ getTargetRanges( const InteractionEnergy & energy, const size_t sequenceNumber, 
 	if (outMinPu.val > Z_type(0) && !Z_equal(outMinPu.val, Z_type(0))) {
 		// decompose ranges based in minimal unpaired probability value per position
 		// since all ranges covering a position will have a lower unpaired probability
-		acc.decomposeByMaxED( tRegion[sequenceNumber], energy.getE( outMinPu.val ), (noSeedRequired ? RnaSequence::lastPos : seedBP.val ) );
+		acc.decomposeByMaxED( tRegion[sequenceNumber], energy.getE( outMinPu.val ), (noSeedRequired ? 1 : seedBP.val ) );
 	}
 
 	return tRegion.at(sequenceNumber);
@@ -2776,5 +2776,4 @@ getPersonality( int argc, char ** argv )
 
 
 ////////////////////////////////////////////////////////////////////////////
-
 
