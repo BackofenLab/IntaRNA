@@ -14,6 +14,7 @@ PredictorMfeEns::PredictorMfeEns(
 		, PredictionTracker * predTracker
 		)
 	: PredictorMfe(energy,output,predTracker)
+	, updateZisComplete(false)
 {
 }
 
@@ -104,6 +105,17 @@ updateZ( const size_t i1, const size_t j1
 		return;
 	}
 
+	// Exact 2D prediction finalizes each boundary once. In this scoped mode the
+	// partition can update the optima immediately instead of entering the map.
+	// Trackers retain the map path to preserve deferred callback ordering.
+	if (updateZisComplete && predTracker == NULL) {
+		if (Z_isNotINF(partZ_noED) && partZ_noED > 0) {
+			PredictorMfe::updateOptima(i1, j1, i2, j2,
+					energy.getE(partZ_noED), true, false);
+		}
+		return;
+	}
+
 	// store partial Z (without ED)
 	Interaction::Boundary key(i1,j1,i2,j2);
 	auto keyEntry = Z_partition.find(key);
@@ -125,22 +137,26 @@ updateCompleteZ( const size_t i1, const size_t j1
 		, const Z_type partZ
 		, const bool isHybridZ )
 {
-	// Trackers observe the established deferred map traversal and therefore
-	// retain the previous storage path.
-	if (predTracker != NULL) {
-		updateZ(i1, j1, i2, j2, partZ, isHybridZ);
-		return;
-	}
+	class CompleteUpdateScope {
+	public:
+		explicit CompleteUpdateScope(bool & mode)
+		 : mode(mode), previous(mode)
+		{
+			mode = true;
+		}
 
-	Z_type partZ_noED = 0;
-	if (!addPartitionContribution(i1, j1, i2, j2, partZ, isHybridZ, partZ_noED)) {
-		return;
-	}
+		~CompleteUpdateScope()
+		{
+			mode = previous;
+		}
 
-	if (Z_isNotINF(partZ_noED) && partZ_noED > 0) {
-		PredictorMfe::updateOptima(i1, j1, i2, j2,
-				energy.getE(partZ_noED), true, false);
-	}
+	private:
+		bool & mode;
+		const bool previous;
+	};
+
+	CompleteUpdateScope completeUpdate(updateZisComplete);
+	updateZ(i1, j1, i2, j2, partZ, isHybridZ);
 }
 
 ////////////////////////////////////////////////////////////////////////////

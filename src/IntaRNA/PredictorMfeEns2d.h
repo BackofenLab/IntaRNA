@@ -72,13 +72,14 @@ protected:
 
 	/**
 	 * Computes all entries of the hybridE matrix for interactions ending in
-	 * p=j1 and q=j2 and report all valid interactions to updateZ()
+	 * p=j1 and q=j2 and reports every complete boundary via updateCompleteZ(),
+	 * which invokes the virtual updateZ() hook.
 	 *
 	 * @param j1 end of the interaction within seq 1
 	 * @param j2 end of the interaction within seq 2
 	 * @param i1init smallest value for i1
 	 * @param i2init smallest value for i2
-	 * @param callUpdateZ whether or not updateZ() is to be called
+	 * @param callUpdateZ whether or not updateCompleteZ() is to be called
 	 *
 	 */
 	virtual

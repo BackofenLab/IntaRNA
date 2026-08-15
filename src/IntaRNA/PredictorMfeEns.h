@@ -61,6 +61,9 @@ protected:
 	//! map storing the partition of Zall for all considered interaction sites
 	std::unordered_map<Interaction::Boundary, Z_type, Interaction::Boundary::Hash> Z_partition;
 
+	//! whether updateZ() currently receives one complete boundary partition
+	bool updateZisComplete;
+
 
 	/**
 	 * Initializes the hybridization partition functions.
@@ -97,8 +100,10 @@ protected:
 	/**
 	 * Consumes a complete partition for one interaction boundary. Exact 2D
 	 * prediction finalizes each boundary once and therefore does not need to
-	 * retain it until reportOptima(). Tracker-enabled predictions keep using
-	 * updateZ() so their established callback timing and ordering stay intact.
+	 * retain it until reportOptima(). The virtual updateZ() hook is called so
+	 * subclasses can observe or alter the update; overrides that delegate to the
+	 * base implementation inherit streaming. Tracker-enabled predictions retain
+	 * the partition so their established callback timing and ordering stay intact.
 	 */
 	void
 	updateCompleteZ( const size_t i1, const size_t j1
@@ -136,7 +141,9 @@ private:
 				, Z_type & partZ_noED );
 
 	/**
-	 * Calls updateOptima() for each entry of Z_partition.
+	 * Calls updateOptima() for each buffered entry of Z_partition. This hook is
+	 * still called by reportOptima(), but complete tracker-free partitions were
+	 * already consumed by updateZ() and are therefore not present in the map.
 	 */
 	virtual
 	void
