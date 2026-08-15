@@ -70,6 +70,9 @@ jobs:
           echo "CXXFLAGS=-Xpreprocessor -fopenmp" >> "$GITHUB_ENV"
           echo "LDFLAGS=-L${libomp_prefix}/lib -Wl,-rpath,${libomp_prefix}/lib -L${CONDA_PREFIX}/lib -Wl,-rpath,${CONDA_PREFIX}/lib" >> "$GITHUB_ENV"
           echo "LIBS=-lomp" >> "$GITHUB_ENV"
+          vrna_libs="$(pkg-config --libs RNAlib2)"
+          vrna_libs="${vrna_libs//-Wl,-fno-lto/}"
+          echo "VRNA_LIBS=${vrna_libs}" >> "$GITHUB_ENV"
 
       - name: Verify Apple Clang
         if: matrix.compiler == 'apple-clang'
