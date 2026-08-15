@@ -14,6 +14,7 @@
 #include "IntaRNA/SeedHandlerNoBulge.h"
 
 #include <cmath>
+#include <stdexcept>
 
 using namespace IntaRNA;
 
@@ -29,6 +30,79 @@ public:
 
 	size_t getPartitionCount() const {
 		return this->Z_partition.size();
+	}
+};
+
+class InspectableExactEnsemblePredictor : public PredictorMfeEns2d {
+public:
+	InspectableExactEnsemblePredictor(
+			const InteractionEnergy & energy,
+			OutputHandler & output,
+			PredictionTracker * tracker)
+	 : PredictorMfeEns2d(energy, output, tracker)
+	{}
+
+	size_t getPartitionCount() const {
+		return Z_partition.size();
+	}
+};
+
+class CountingPredictionTracker : public PredictionTracker {
+public:
+	explicit CountingPredictionTracker(size_t & calls)
+	 : calls(calls)
+	{}
+
+	void updateOptimumCalled(const size_t, const size_t,
+			const size_t, const size_t, const E_type) override
+	{
+		++calls;
+	}
+
+private:
+	size_t & calls;
+};
+
+class InterceptingExactEnsemblePredictor : public PredictorMfeEns2d {
+public:
+	InterceptingExactEnsemblePredictor(
+			const InteractionEnergy & energy,
+			OutputHandler & output)
+	 : PredictorMfeEns2d(energy, output, NULL)
+	 , updateCalls(0)
+	 , throwOnUpdate(false)
+	{}
+
+	size_t getPartitionCount() const {
+		return Z_partition.size();
+	}
+
+	void initializeForUpdateTest() {
+		initOptima();
+		initZ();
+	}
+
+	void addCompleteForUpdateTest() {
+		updateCompleteZ(0, 0, 0, 0, Z_type(1), true);
+	}
+
+	void addBufferedForUpdateTest() {
+		PredictorMfeEns::updateZ(0, 0, 0, 0, Z_type(1), true);
+	}
+
+	size_t updateCalls;
+	bool throwOnUpdate;
+
+protected:
+	void updateZ(const size_t i1, const size_t j1,
+			const size_t i2, const size_t j2,
+			const Z_type partZ, const bool isHybridZ) override
+	{
+		++updateCalls;
+		if (throwOnUpdate) {
+			throw std::runtime_error("intercepted complete partition");
+		}
+		PredictorMfeEns::updateZ(i1, j1, i2, j2, partZ, isHybridZ);
 	}
 };
 
@@ -134,5 +208,89 @@ TEST_CASE("ensemble predictor regressions", "[PredictorMfeEns]") {
 		heuristic.predict(IndexRange(0, 0), IndexRange(0, 0));
 		REQUIRE(heuristic.getPartitionCount() == 0);
 		REQUIRE(heuristic.getZall() == 0.0);
+	}
+
+	SECTION("exact complete boundaries stream unless tracker ordering is required") {
+		RnaSequence target("target", "GGGG");
+		RnaSequence query("query", "CCCC");
+		AccessibilityDisabled targetAcc(target, 0, NULL);
+		AccessibilityDisabled queryAcc(query, 0, NULL);
+		ReverseAccessibility reverseQueryAcc(queryAcc);
+		InteractionEnergyBasePair energy(targetAcc, reverseQueryAcc, 2, 2);
+
+		for (int overlapValue = OutputConstraint::OVERLAP_NONE;
+				overlapValue <= OutputConstraint::OVERLAP_BOTH; ++overlapValue)
+		{
+			OutputConstraint constraint(5,
+					static_cast<OutputConstraint::ReportOverlap>(overlapValue),
+					E_INF, E_INF, false, false, false, true, false);
+
+			OutputHandlerInteractionList streamedOut(constraint, 5);
+			InspectableExactEnsemblePredictor streamed(energy, streamedOut, NULL);
+			streamed.predict();
+			REQUIRE(streamed.getPartitionCount() == 0);
+
+			size_t trackerCalls = 0;
+			OutputHandlerInteractionList bufferedOut(constraint, 5);
+			InspectableExactEnsemblePredictor buffered(energy, bufferedOut,
+					new CountingPredictionTracker(trackerCalls));
+			buffered.predict();
+			REQUIRE(buffered.getPartitionCount() > 0);
+			REQUIRE(trackerCalls == buffered.getPartitionCount());
+
+			REQUIRE(streamed.getZall() == buffered.getZall());
+			REQUIRE(streamedOut.getZ() == bufferedOut.getZ());
+			REQUIRE(streamedOut.reported() == bufferedOut.reported());
+
+			auto streamedInteraction = streamedOut.begin();
+			auto bufferedInteraction = bufferedOut.begin();
+			for (; streamedInteraction != streamedOut.end()
+					&& bufferedInteraction != bufferedOut.end();
+					++streamedInteraction, ++bufferedInteraction)
+			{
+				REQUIRE(**streamedInteraction == **bufferedInteraction);
+			}
+			REQUIRE(streamedInteraction == streamedOut.end());
+			REQUIRE(bufferedInteraction == bufferedOut.end());
+		}
+	}
+
+	SECTION("exact streaming retains the virtual update hook") {
+		RnaSequence target("target", "GGGG");
+		RnaSequence query("query", "CCCC");
+		AccessibilityDisabled targetAcc(target, 0, NULL);
+		AccessibilityDisabled queryAcc(query, 0, NULL);
+		ReverseAccessibility reverseQueryAcc(queryAcc);
+		InteractionEnergyBasePair energy(targetAcc, reverseQueryAcc, 2, 2);
+		OutputConstraint constraint(5, OutputConstraint::OVERLAP_BOTH,
+				E_INF, E_INF, false, false, false, true, false);
+		OutputHandlerInteractionList output(constraint, 5);
+		InterceptingExactEnsemblePredictor predictor(energy, output);
+
+		predictor.predict();
+
+		REQUIRE(predictor.updateCalls > 0);
+		REQUIRE(predictor.getPartitionCount() == 0);
+	}
+
+	SECTION("complete update mode is restored after an override throws") {
+		RnaSequence target("target", "G");
+		RnaSequence query("query", "C");
+		AccessibilityDisabled targetAcc(target, 0, NULL);
+		AccessibilityDisabled queryAcc(query, 0, NULL);
+		ReverseAccessibility reverseQueryAcc(queryAcc);
+		InteractionEnergyBasePair energy(targetAcc, reverseQueryAcc);
+		OutputConstraint constraint(1, OutputConstraint::OVERLAP_BOTH,
+				E_INF, E_INF, false, false, false, true, false);
+		OutputHandlerInteractionList output(constraint, 1);
+		InterceptingExactEnsemblePredictor predictor(energy, output);
+		predictor.initializeForUpdateTest();
+		predictor.throwOnUpdate = true;
+
+		REQUIRE_THROWS_AS(predictor.addCompleteForUpdateTest(), std::runtime_error);
+
+		predictor.throwOnUpdate = false;
+		predictor.addBufferedForUpdateTest();
+		REQUIRE(predictor.getPartitionCount() == 1);
 	}
 }
