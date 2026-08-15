@@ -204,11 +204,11 @@ addOutputHandler( OutputHandler * handler )
 inline
 void
 OutputHandlerHub::
-add( const Interaction & inter, const OutputConstraint & outConstraint )
+add( const Interaction & inter )
 {
 	// forward to all in list
 	for (auto it=outList.begin(); it!=outList.end(); it++) {
-		(*it)->add(inter,outConstraint);
+		(*it)->add(inter);
 	}
 }
 
