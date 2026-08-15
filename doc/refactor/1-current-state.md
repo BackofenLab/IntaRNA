@@ -3,7 +3,7 @@
 This document records the phase-1 audit requested in discussion #232. It is
 about scientific behavior and runtime cost, not a style rewrite. The audited
 baseline is IntaRNA 3.4.1, commit `3b14bc0`. The correction and regression
-record below is current through `a975c4d`.
+record below is current through `96c14b3`.
 
 ## Reproducible baseline
 
@@ -23,6 +23,10 @@ After the phase-1 regressions and local corrections through `a975c4d`:
 
 - the API binary passes 3,895 assertions in 31 test cases; and
 - all 20 command-line golden cases pass.
+
+The late heuristic-cell regressions and correction through `96c14b3` raise the
+API gate to 3,927 assertions in 33 test cases. The 20-case CLI result above is
+the latest recorded CLI gate.
 
 The added CLI cases cover asymmetric target/query accessibility options,
 seed-free `outMinPu` range filtering, and rejection of partition output from
@@ -120,6 +124,7 @@ separately because it was a test-data error, not a production defect.
 | ViennaRNA ensemble temporaries lacked complete scoped ownership | `computeIntraEall` leaked its allocated sequence and fold compound on normal return; `computeES` cleanup was not exception-safe | the API suite exercises span-sensitive ES plus both `getEall1/getEall2` paths; direct leak detection still belongs to sanitizer coverage | `595029f` gives Vienna allocations and fold compounds scoped deleters |
 | exact noLP seed extension added independent partition factors | the stack weight and remaining left subensemble were added, violating the sum-product recurrence | with one allowed two-pair seed in a `3x3` complementary grid, the exact partition is `exp(2)+exp(3)` | `1ed5819` multiplies the stack and subensemble weights |
 | empty seed-extension ranges retained prior boundary partitions | early return reset scalar optima but did not clear `Z_partition`, so predictor reuse replayed stale sites | exact and heuristic predictors run on a seeded range and then a singleton range; the second partition and boundary store are zero | `a975c4d` calls `initZ()` on both no-seed paths |
+| heuristic cell incumbents leaked, and ensemble noLP direct control was over-scoped | `curCellEtotal` was not reset in `PredictorMfe2dHeuristic`, `PredictorMfeEns2dHeuristic` or `PredictorMfe2dHeuristicSeed`, so a stale strict-tie incumbent could suppress a valid cell; ensemble direct extension was also nested under singleton `noGUend` acceptance, while its empty/too-long guards continued the whole cell and skipped later loop extensions | `08d375e` records five pre-fix failures: unseeded and ensemble energies `-2` instead of `-3`, seeded energy `-2` instead of `-4`, and missing direct/bulged boundaries of `exp(3)` and `exp(4)` | `96c14b3` resets each incumbent per cell, independently guards the ensemble direct extension, and leaves later loop enumeration reachable |
 
 Additional high-confidence findings are not treated as tiny local fixes because
 they change aggregation or recurrence ownership and need the benchmark gates of
@@ -149,12 +154,16 @@ output, or partition/filter agreement. Phase 1 now has focused evidence for
 zero-capacity output, one exact-versus-heuristic noLP ensemble comparison,
 terminal-GU partition filtering, seed-extension sum-product/reuse behavior,
 asymmetric target/query options, seed-free range filtering, window-partition
-rejection, accessibility splitting, and the span-sensitive ViennaRNA ES path.
+rejection, accessibility splitting, the span-sensitive ViennaRNA ES path, and
+per-cell state plus direct/bulged noLP continuation in the three affected
+heuristic families.
 
 Coverage still lacks:
 
 - a brute-force small-instance partition oracle and direct `maxED` partition
   filter regression;
+- systematic small-grid differential coverage for heuristic pruning and ties
+  beyond the five focused counterexamples;
 - direct exact-MFE and exact-seeded-MFE regressions, plus wider bulged-seed and
   heuristic seed-extension oracles;
 - reuse tests for other stateful predictor families;
@@ -193,8 +202,12 @@ change.
   introduced scoped ownership for the ViennaRNA ensemble resources.
 - `de135fd` exposed seed-extension algebra and reuse defects before `1ed5819`
   restored multiplication and `a975c4d` cleared stale partitions.
-- Established the current 31-case / 3,895-assertion API and 20-case CLI gate at
-  `a975c4d`.
+- Established the intermediate 31-case / 3,895-assertion API and 20-case CLI
+  gate at `a975c4d`.
+- `08d375e` exposed stale cell incumbents in all three affected heuristic
+  families and the ensemble direct/loop control-flow defects in five focused
+  sections; `96c14b3` reset the incumbents and corrected the ensemble guard.
+- Established the current 33-case / 3,927-assertion API gate at `96c14b3`.
 
 The discussion once calls the phase-1 document `refactor-changelog.md`; no such
 file exists and the same phase otherwise consistently requires
