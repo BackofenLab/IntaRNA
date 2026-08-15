@@ -46,6 +46,22 @@ updateZ( const size_t i1, const size_t j1
 	// check if something to be done
 	if (Z_equal(partZ,0) || Z_isINF(Zall))
 		return;
+
+	// Apply the same site filters used for MFE candidates before changing
+	// either the global or boundary-specific partition.
+	const OutputConstraint & outConstraint = output.getOutputConstraint();
+	if (outConstraint.noGUend
+			&& (energy.isGU(i1,i2) || energy.isGU(j1,j2)))
+	{
+		return;
+	}
+	if (outConstraint.maxED < Accessibility::ED_UPPER_BOUND
+			&& (energy.getED1(i1,j1) > outConstraint.maxED
+					|| energy.getED2(i2,j2) > outConstraint.maxED))
+	{
+		return;
+	}
+
 	// handle whether or not partZ includes ED values or not
 	Z_type partZ_withED = 0, partZ_noED = 0;
 	if (isHybridZ) {
