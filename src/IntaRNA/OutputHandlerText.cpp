@@ -53,7 +53,7 @@ OutputHandlerText::
 		#pragma omp critical(intarna_omp_outputStreamUpdate)
 #endif
 		{
-			out <<outTmp.str();
+			out <<outTmp.view();
 		} // omp critical(intarna_omp_outputStreamUpdate)
 	}
 
@@ -310,17 +310,17 @@ add( const Interaction & i )
 			// get ID of s1
 			<<i.s1->getId() <<'\n'
 			// get position in s1
-			<<pos1.str() <<'\n'
-			<<pos1tag.str() <<'\n'
+			<<pos1.view() <<'\n'
+			<<pos1tag.view() <<'\n'
 			// print collected interaction stuff
-			<<s1Unbound.str() <<'\n'
-			<<s1Bound.str() <<'\n'
-			<<pairing.str() <<'\n'
-			<<s2Bound.str() <<'\n'
-			<<s2Unbound.str() <<'\n'
+			<<s1Unbound.view() <<'\n'
+			<<s1Bound.view() <<'\n'
+			<<pairing.view() <<'\n'
+			<<s2Bound.view() <<'\n'
+			<<s2Unbound.view() <<'\n'
 			// get position in reversed index order for s2
-			<<pos2tag.str() <<'\n'
-			<<pos2.str() <<'\n'
+			<<pos2tag.view() <<'\n'
+			<<pos2.view() <<'\n'
 			// get ID of s2
 			<<i.s2->getId() <<'\n'
 			;
@@ -429,7 +429,7 @@ add( const Interaction & i )
 		#pragma omp critical(intarna_omp_outputStreamUpdate)
 	#endif
 		{
-			out <<outTmp.str();
+			out <<outTmp.view();
 		} // omp critical(intarna_omp_outputStreamUpdate)
 	}
 
