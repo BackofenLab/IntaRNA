@@ -2,9 +2,11 @@
 #ifndef INTARNA_INTERACTION_H_
 #define INTARNA_INTERACTION_H_
 
-#include <vector>
+#include <algorithm>
+#include <sstream>
 #include <set>
 #include <utility>
+#include <vector>
 
 #include <boost/functional/hash.hpp>
 

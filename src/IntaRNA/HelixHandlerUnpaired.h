@@ -10,6 +10,8 @@
 
 #include <boost/numeric/ublas/matrix.hpp>
 
+#include <tuple>
+
 namespace IntaRNA {
 
 /**

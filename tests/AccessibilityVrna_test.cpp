@@ -32,6 +32,28 @@ TEST_CASE("AccessibilityVrna", "[AccessibilityVrna]") {
 
   }
 
+	SECTION("C++ string boundary preserves ViennaRNA constraints") {
+
+		const std::string seq = "GGGGAAAACCCC";
+		RnaSequence rna("test", seq);
+		AccessibilityConstraint constraint(rna, "xp........px", 0, "", "", "");
+		VrnaHandler vrnaHandler(37, "Turner04", false, false);
+		AccessibilityVrna acc(rna, 1, &constraint, vrnaHandler, rna.size());
+
+		// 'x' is passed at both C-string boundaries and forces unpaired bases.
+		REQUIRE( E_equal(acc.getED(0, 0), 0) );
+		REQUIRE( E_equal(acc.getED(rna.size()-1, rna.size()-1), 0) );
+
+		// Exercise the same x|........|x bytes through computeES() and
+		// computeIntraEall(), including the reversed accessibility path.
+		AccessibilityDisabled disabledAcc(rna, rna.size(), &constraint);
+		ReverseAccessibility disabledAccReversed(disabledAcc);
+		InteractionEnergyVrna energy(
+				disabledAcc, disabledAccReversed, vrnaHandler, 16, 16, true);
+		REQUIRE( E_isNotINF(energy.getEall1()) );
+		REQUIRE( E_isNotINF(energy.getEall2()) );
+	}
+
 
 	SECTION("InteractionEnergyVrna respects accessibility base-pair span") {
 

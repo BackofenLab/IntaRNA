@@ -470,7 +470,7 @@ add( const Interaction & i )
 		#pragma omp critical(intarna_omp_outputStreamUpdate)
 	#endif
 		{
-			out << outTmp.str();
+			out << outTmp.view();
 		} // omp critical(intarna_omp_outputStreamUpdate)
 	}
 

@@ -6,6 +6,8 @@ INITIALIZE_EASYLOGGINGPP
 
 #include <iostream>
 #include <exception>
+#include <memory>
+#include <sstream>
 
 #if INTARNA_MULITHREADING
 	#include <omp.h>
@@ -23,6 +25,17 @@ INITIALIZE_EASYLOGGINGPP
 #include "IntaRNA/OutputHandlerInteractionList.h"
 
 using namespace IntaRNA;
+
+namespace {
+
+struct QueryAccessibilityStorage {
+	// Declaration order is intentional: reversed borrows from original and is
+	// therefore destroyed first.
+	std::unique_ptr<Accessibility> original;
+	std::unique_ptr<ReverseAccessibility> reversed;
+};
+
+}
 
 /////////////////////////////////////////////////////////////////////
 /**
@@ -84,8 +97,8 @@ int main(int argc, char **argv){
 		// number of already reported interactions to enable IntaRNA v1 separator output
 		size_t reportedInteractions = 0;
 
-		// storage to avoid accessibility recomputation (init NULL)
-		std::vector< ReverseAccessibility * > queryAcc(parameters.getQuerySequences().size(), NULL);
+		// storage to avoid accessibility recomputation
+		std::vector<QueryAccessibilityStorage> queryAcc(parameters.getQuerySequences().size());
 
 		// compute all query accessibilities to enable parallelization
 #if INTARNA_MULITHREADING
@@ -103,17 +116,17 @@ int main(int argc, char **argv){
 					#pragma omp critical(intarna_omp_logOutput)
 #endif
 					VLOG(1) <<"computing accessibility for query '"<<parameters.getQuerySequences().at(qi).getId()<<"'...";
-					Accessibility * queryAccOrig = parameters.getQueryAccessibility(qi);
-					INTARNA_CHECK_NOT_NULL(queryAccOrig,"query initialization failed");
+					queryAcc[qi].original.reset(parameters.getQueryAccessibility(qi));
+					INTARNA_CHECK_NOT_NULL(queryAcc[qi].original.get(),"query initialization failed");
 					// reverse indexing of target sequence for the computation
-					queryAcc[qi] = new ReverseAccessibility(*queryAccOrig);
+					queryAcc[qi].reversed = std::make_unique<ReverseAccessibility>(*queryAcc[qi].original);
 
 					// check if we have to warn about ambiguity
-					if (queryAccOrig->getSequence().isAmbiguous()) {
+					if (queryAcc[qi].original->getSequence().isAmbiguous()) {
 #if INTARNA_MULITHREADING
 						#pragma omp critical(intarna_omp_logOutput)
 #endif
-						VLOG(1) <<"Sequence '"<<queryAccOrig->getSequence().getId()
+						VLOG(1) <<"Sequence '"<<queryAcc[qi].original->getSequence().getId()
 								<<"' contains ambiguous nucleotide encodings. These positions are ignored for interaction computation.";
 					}
 #if INTARNA_MULITHREADING
@@ -174,8 +187,8 @@ int main(int argc, char **argv){
 					{ VLOG(1) <<"computing accessibility for target '"<<parameters.getTargetSequences().at(targetNumber).getId()<<"'..."; }
 
 					// VRNA not completely threadsafe ...
-					Accessibility * targetAcc = parameters.getTargetAccessibility(targetNumber);
-					INTARNA_CHECK_NOT_NULL(targetAcc,"target initialization failed");
+					std::unique_ptr<Accessibility> targetAcc(parameters.getTargetAccessibility(targetNumber));
+					INTARNA_CHECK_NOT_NULL(targetAcc.get(),"target initialization failed");
 
 					// check if we have to warn about ambiguity
 					if (targetAcc->getSequence().isAmbiguous()) {
@@ -202,15 +215,15 @@ int main(int argc, char **argv){
 							try {
 #endif
 								// sanity check
-								assert( queryAcc.at(queryNumber) != NULL );
+								assert( queryAcc.at(queryNumber).reversed != nullptr );
 
 								// get energy computation handler for both sequences
-								InteractionEnergy* energy = parameters.getEnergyHandler( *targetAcc, *(queryAcc.at(queryNumber)) );
-								INTARNA_CHECK_NOT_NULL(energy,"energy initialization failed");
+								std::unique_ptr<InteractionEnergy> energy(parameters.getEnergyHandler( *targetAcc, *queryAcc.at(queryNumber).reversed ));
+								INTARNA_CHECK_NOT_NULL(energy.get(),"energy initialization failed");
 
 								// get output/storage handler
-								OutputHandler * output = parameters.getOutputHandler( *energy );
-								INTARNA_CHECK_NOT_NULL(output,"output handler initialization failed");
+								std::unique_ptr<OutputHandler> output(parameters.getOutputHandler( *energy ));
+								INTARNA_CHECK_NOT_NULL(output.get(),"output handler initialization failed");
 
 								// setup collecting output handler to ensure
 								// k-best output per query-target combination
@@ -221,7 +234,7 @@ int main(int argc, char **argv){
 
 								// run prediction for all range combinations
 								for(const IndexRange & tRange : parameters.getTargetRanges(*energy, targetNumber, *targetAcc)) {
-								for(const IndexRange & qRange : parameters.getQueryRanges(*energy, queryNumber, queryAcc.at(queryNumber)->getAccessibilityOrigin())) {
+								for(const IndexRange & qRange : parameters.getQueryRanges(*energy, queryNumber, *queryAcc.at(queryNumber).original)) {
 
 									// get windows for both ranges
 									std::vector<IndexRange> queryWindows = qRange.overlappingWindows(parameters.getWindowWidth(), parameters.getWindowOverlap());
@@ -250,7 +263,7 @@ int main(int argc, char **argv){
 														<<" target "<<targetAcc->getSequence().getId()
 														<<" (range " <<(tWindow+1)<<")"
 														<<" and"
-														<<" query "<<queryAcc.at(queryNumber)->getSequence().getId()
+														<<" query "<<queryAcc.at(queryNumber).reversed->getSequence().getId()
 														<<" (range " <<(qWindow+1)<<")"
 #if INTARNA_MULITHREADING
 #if INTARNA_IN_DEBUG_MODE
@@ -261,15 +274,13 @@ int main(int argc, char **argv){
 														<<" ..."; }
 		
 												// get interaction prediction handler
-												Predictor * predictor = parameters.getPredictor( *energy, bestInteractions );
-												INTARNA_CHECK_NOT_NULL(predictor,"predictor initialization failed");
+												std::unique_ptr<Predictor> predictor(parameters.getPredictor( *energy, bestInteractions ));
+												INTARNA_CHECK_NOT_NULL(predictor.get(),"predictor initialization failed");
 		
 												// run prediction for this window combination
 												predictor->predict(	  tWindow
-																	, queryAcc.at(queryNumber)->getReversedIndexRange(qWindow)
+																	, queryAcc.at(queryNumber).reversed->getReversedIndexRange(qWindow)
 																	);
-												// garbage collection
-												INTARNA_CLEANUP(predictor);
 #if INTARNA_MULITHREADING
 											////////////////////// exception handling ///////////////////////////
 											} catch (std::exception & e) {
@@ -321,10 +332,6 @@ int main(int argc, char **argv){
 #endif
 								reportedInteractions += output->reported();
 
-								// garbage collection
-								 INTARNA_CLEANUP(output);
-								 INTARNA_CLEANUP(energy);
-
 #if INTARNA_MULITHREADING
 							////////////////////// exception handling ///////////////////////////
 							} catch (std::exception & e) {
@@ -361,9 +368,6 @@ int main(int argc, char **argv){
 					// write accessibility to file if needed
 					parameters.writeTargetAccessibility( *targetAcc );
 
-					// garbage collection
-					INTARNA_CLEANUP(targetAcc);
-
 #if INTARNA_MULITHREADING
 				////////////////////// exception handling ///////////////////////////
 				} catch (std::exception & e) {
@@ -397,15 +401,11 @@ int main(int argc, char **argv){
 #endif
 		} // for targets
 
-		// garbage collection
-		for (size_t queryNumber=0; queryNumber < queryAcc.size(); queryNumber++) {
-			// this is a hack to cleanup the original accessibility object
-			Accessibility* queryAccOrig = &(const_cast<Accessibility&>(queryAcc[queryNumber]->getAccessibilityOrigin()) );
-			// write accessibility to file if needed
-			parameters.writeQueryAccessibility( *queryAccOrig );
-			INTARNA_CLEANUP( queryAccOrig );
-			// cleanup (now broken) reverse accessibility object
-			INTARNA_CLEANUP(queryAcc[queryNumber]);
+		// write successfully initialized query accessibilities if needed
+		for (const QueryAccessibilityStorage & queryAccessibility : queryAcc) {
+			if (queryAccessibility.original != nullptr && queryAccessibility.reversed != nullptr) {
+				parameters.writeQueryAccessibility(*queryAccessibility.original);
+			}
 		}
 
 #if INTARNA_MULITHREADING
