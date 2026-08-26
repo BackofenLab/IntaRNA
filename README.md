@@ -2186,6 +2186,11 @@ processed using doxygen to generate html/pdf versions.
 When IntaRNA is build while `pkg-config` is present, according pkg-config
 information is generated and installed too.
 
+IntaRNA's public headers require C++23. External consumers must therefore
+select `-std=c++23` (or a newer standard) in their own build; the installed
+pkg-config metadata supplies IntaRNA and dependency flags but deliberately
+does not override the consuming project's language mode.
+
 ## Mandatory `Easylogging++` initalization !
 
 Since IntaRNA makes heavy use of the `Easylogging++` library, you have to add (and adapt)

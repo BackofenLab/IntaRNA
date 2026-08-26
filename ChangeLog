@@ -12,6 +12,13 @@
 
 # IntaRNA
 
+- migrate the build baseline to strict C++23, with GCC 14 and Apple Clang CI
+- use C++23 string buffers/views and scoped ownership to remove redundant
+  ViennaRNA/output allocations and make failure paths exception-safe
+- reduce redundant exact-ensemble partition-map lookups without changing
+  recurrence arithmetic
+- add exact tiny-input predictor and seed regression oracles
+
 # IntaRNA_plotRegions.R
 
 - fix deprecation warning
