@@ -17,6 +17,8 @@
   ViennaRNA/output allocations and make failure paths exception-safe
 - reduce redundant exact-ensemble partition-map lookups without changing
   recurrence arithmetic
+- remove redundant accessibility feasibility checks from hot prediction paths
+  without changing accepted base pairs or recurrence arithmetic
 - add exact tiny-input predictor and seed regression oracles
 
 # IntaRNA_plotRegions.R

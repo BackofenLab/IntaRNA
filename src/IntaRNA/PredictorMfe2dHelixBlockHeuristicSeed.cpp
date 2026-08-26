@@ -94,9 +94,7 @@ predict( const IndexRange & r1
 	for (i2=0; i2<hybridE.size2(); i2++) {
 
 		// check if positions can form interaction
-		if (	energy.isAccessible1(i1)
-				&& energy.isAccessible2(i2)
-				&& energy.areComplementary(i1,i2) )
+		if (energy.areComplementary(i1,i2) )
 		{
 			// set to interaction initiation with according boundary
 			hybridE(i1,i2) = BestInteractionE(energy.getE_init(), i1, i2);

@@ -10,6 +10,39 @@
 
 using namespace IntaRNA;
 
+namespace {
+
+class CountingInteractionEnergyBasePair : public InteractionEnergyBasePair {
+public:
+	using InteractionEnergyBasePair::InteractionEnergyBasePair;
+
+	bool
+	isAccessible1( const size_t i ) const override
+	{
+		accessibilityCalls1++;
+		return InteractionEnergy::isAccessible1(i);
+	}
+
+	bool
+	isAccessible2( const size_t i ) const override
+	{
+		accessibilityCalls2++;
+		return InteractionEnergy::isAccessible2(i);
+	}
+
+	void
+	resetAccessibilityCalls() const
+	{
+		accessibilityCalls1 = 0;
+		accessibilityCalls2 = 0;
+	}
+
+	mutable size_t accessibilityCalls1 = 0;
+	mutable size_t accessibilityCalls2 = 0;
+};
+
+} // namespace
+
 TEST_CASE( "SeedHandlerNoBulge", "[SeedHandlerNoBulge]" ) {
 
 	// setup easylogging++ stuff if not already done
@@ -169,4 +202,34 @@ TEST_CASE( "SeedHandlerNoBulge", "[SeedHandlerNoBulge]" ) {
 
 	}
 
+}
+
+TEST_CASE( "SeedHandler feasibility delegates accessibility once",
+		"[SeedHandlerNoBulge][AP1Feasibility]" )
+{
+	RnaSequence rna1("target", "GA");
+	RnaSequence rna2("query", "AC");
+	AccessibilityDisabled acc1(rna1, rna1.size(), NULL);
+	AccessibilityDisabled acc2(rna2, rna2.size(), NULL);
+	ReverseAccessibility rAcc2(acc2);
+	CountingInteractionEnergyBasePair energy(acc1, rAcc2);
+	SeedConstraint constraint(2, 0, 0, 0, E_INF,
+			Accessibility::ED_UPPER_BOUND, E_INF, IndexRangeList(),
+			IndexRangeList(), "", false, false, false);
+	SeedHandlerNoBulge seedHandler(energy, constraint);
+
+	energy.resetAccessibilityCalls();
+	REQUIRE(seedHandler.isFeasibleSeedBasePair(0, 0));
+	REQUIRE(energy.accessibilityCalls1 == 1);
+	REQUIRE(energy.accessibilityCalls2 == 1);
+
+	energy.resetAccessibilityCalls();
+	REQUIRE_FALSE(seedHandler.isFeasibleSeedBasePair(1, 1));
+	REQUIRE(energy.accessibilityCalls1 == 0);
+	REQUIRE(energy.accessibilityCalls2 == 0);
+
+	energy.resetAccessibilityCalls();
+	REQUIRE_FALSE(seedHandler.isFeasibleSeedBasePair(energy.size1(), 0));
+	REQUIRE(energy.accessibilityCalls1 == 0);
+	REQUIRE(energy.accessibilityCalls2 == 0);
 }
