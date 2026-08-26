@@ -89,10 +89,8 @@ updateZ( const size_t i1, const size_t j1
 
 	// store partial Z (without ED)
 	Interaction::Boundary key(i1,j1,i2,j2);
-	auto keyEntry = Z_partition.find(key);
-	if ( Z_partition.find(key) == Z_partition.end() ) {
-		Z_partition[key] = partZ_noED;
-	} else {
+	auto [keyEntry, inserted] = Z_partition.try_emplace(key, partZ_noED);
+	if (!inserted) {
 		// update entry
 		keyEntry->second += partZ_noED;
 	}

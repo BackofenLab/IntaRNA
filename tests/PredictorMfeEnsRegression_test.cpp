@@ -32,6 +32,34 @@ public:
 	}
 };
 
+class InspectableExactEnsemblePredictor : public PredictorMfeEns2d {
+public:
+	InspectableExactEnsemblePredictor(
+			const InteractionEnergy & energy,
+			OutputHandler & output)
+	 : PredictorMfeEns2d(energy, output, nullptr)
+	{}
+
+	void addPartition(
+			const size_t i1, const size_t j1,
+			const size_t i2, const size_t j2,
+			const Z_type partition)
+	{
+		updateZ(i1, j1, i2, j2, partition, true);
+	}
+
+	Z_type getPartition(
+			const size_t i1, const size_t j1,
+			const size_t i2, const size_t j2) const
+	{
+		return Z_partition.at(Interaction::Boundary(i1, j1, i2, j2));
+	}
+
+	size_t getPartitionCount() const {
+		return Z_partition.size();
+	}
+};
+
 TEST_CASE("ensemble predictor regressions", "[PredictorMfeEns]") {
 
 	#include "testEasyLoggingSetup.icc"
@@ -74,6 +102,25 @@ TEST_CASE("ensemble predictor regressions", "[PredictorMfeEns]") {
 		predictor.predict();
 
 		REQUIRE(predictor.getZall() == 0.0);
+	}
+
+	SECTION("repeated boundary updates accumulate in one partition entry") {
+		RnaSequence target("target", "G");
+		RnaSequence query("query", "C");
+		AccessibilityDisabled targetAcc(target, 0, nullptr);
+		AccessibilityDisabled queryAcc(query, 0, nullptr);
+		ReverseAccessibility reverseQueryAcc(queryAcc);
+		InteractionEnergyBasePair energy(targetAcc, reverseQueryAcc);
+		OutputConstraint constraint(1, OutputConstraint::OVERLAP_BOTH,
+				E_INF, E_INF, false, false, false, true, false);
+		OutputHandlerInteractionList out(constraint, 1);
+		InspectableExactEnsemblePredictor predictor(energy, out);
+
+		predictor.addPartition(0, 0, 0, 0, Z_type(2));
+		predictor.addPartition(0, 0, 0, 0, Z_type(3));
+
+		REQUIRE(predictor.getPartitionCount() == 1);
+		REQUIRE(predictor.getPartition(0, 0, 0, 0) == Z_type(5));
 	}
 
 	SECTION("noLP seed extension multiplies stacked partition factors") {

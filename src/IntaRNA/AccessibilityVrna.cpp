@@ -5,7 +5,9 @@
 #include <cassert>
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include <stdexcept>
+#include <string>
 
 //// constraint-based ED filling
 //extern "C" {
@@ -34,6 +36,37 @@ extern "C" {
 	#include <ViennaRNA/structure_utils.h>
 	#include <ViennaRNA/utils.h>
 	#include <ViennaRNA/constraints/SHAPE.h>
+}
+
+namespace {
+
+struct VrnaFoldCompoundDeleter {
+	void operator()( vrna_fold_compound_t * foldCompound ) const noexcept {
+		if (foldCompound != nullptr) {
+			vrna_fold_compound_free(foldCompound);
+		}
+	}
+};
+
+using VrnaFoldCompoundPtr = std::unique_ptr<vrna_fold_compound_t, VrnaFoldCompoundDeleter>;
+
+std::string
+getVrnaConstraint( const IntaRNA::Accessibility & acc )
+{
+	const std::size_t sequenceLength = acc.getSequence().size();
+	const IntaRNA::AccessibilityConstraint & constraintSpec = acc.getAccConstraint();
+	std::string constraint;
+	constraint.resize_and_overwrite(
+			sequenceLength,
+			[&constraintSpec, sequenceLength]( char * const data, const std::size_t ) noexcept {
+				for (std::size_t i = 0; i < sequenceLength; ++i) {
+					data[i] = constraintSpec.getVrnaDotBracket(i);
+				}
+				return sequenceLength;
+			});
+	return constraint;
+}
+
 }
 
 namespace IntaRNA {
@@ -135,16 +168,10 @@ addConstraints( vrna_fold_compound_t & fold_compound, const Accessibility & acc 
 	// setup folding constraints
 	if ( ! acc.getAccConstraint().isEmpty() ) {
 
-		const int length = (int)acc.getSequence().size();
-
-		// copy structure constraint
-		char * structure = structure = (char *) vrna_alloc(sizeof(char) * (length + 1));
-		for (int i=0; i<length; i++) {
-			// copy accessibility constraint
-			structure[i] = acc.getAccConstraint().getVrnaDotBracket(i);
-		}
-		// set array end indicator
-		structure[length] = '\0';
+		// Build the exact pseudo dot-bracket byte sequence in owned C++ storage.
+		// resize_and_overwrite avoids value-initializing a buffer that is replaced
+		// byte-for-byte before ViennaRNA consumes it.
+		const std::string structure = getVrnaConstraint(acc);
 
 		// Adding hard constraints from pseudo dot-bracket
 		unsigned int constraint_options = VRNA_CONSTRAINT_DB_DEFAULT;
@@ -152,10 +179,7 @@ addConstraints( vrna_fold_compound_t & fold_compound, const Accessibility & acc 
 		constraint_options |= VRNA_CONSTRAINT_DB_ENFORCE_BP;
 
 		// add constraint information to the fold compound object
-		vrna_constraints_add(&fold_compound, (const char *)structure, constraint_options);
-
-		// cleanup
-		free(structure);
+		vrna_constraints_add(&fold_compound, structure.c_str(), constraint_options);
 
 		// check if SHAPE reactivity data available
 		if (!acc.getAccConstraint().getShapeFile().empty()) {
@@ -198,17 +222,16 @@ fillByRNAplfold( const VrnaHandler &vrnaHandler
 	// get parameter-specific model
 	vrna_md_t curModel = vrnaHandler.getModel( plFoldL, plFoldW, pfScale );
 
-	const int length = getSequence().size();
+	// RnaSequence owns stable, null-terminated storage for the complete call.
+	const std::string & sequence = getSequence().asString();
 
-	// copy sequence into C data structure
-	char * sequence = (char *) vrna_alloc(sizeof(char) * (length + 1));
-	for (int i=0; i<length; i++) {
-		sequence[i] = getSequence().asString().at(i);
+	// setup folding data
+	VrnaFoldCompoundPtr foldCompoundOwner(
+			vrna_fold_compound( sequence.c_str(), &curModel, VRNA_OPTION_PF | VRNA_OPTION_WINDOW ) );
+	vrna_fold_compound_t * const fold_compound = foldCompoundOwner.get();
+	if (fold_compound == nullptr) {
+		throw std::runtime_error("AccessibilityVrna::fillByRNAplfold() : vrna_fold_compound() failed");
 	}
-	sequence[length] = '\0';
-
-    // setup folding data
-    vrna_fold_compound_t * fold_compound = vrna_fold_compound( sequence, &curModel, VRNA_OPTION_PF | VRNA_OPTION_WINDOW );
 
     // add accessibility constraints
     addConstraints( *fold_compound, *this );
@@ -223,11 +246,6 @@ fillByRNAplfold( const VrnaHandler &vrnaHandler
     if (retVal == 0) {
     	throw std::runtime_error("AccessibilityVrna::fillByRNAplfold() : vrna_probs_window() returned 0 status ...");
     }
-
-
-    // garbage collection
-    vrna_fold_compound_free(fold_compound);
-    free(sequence);
 
 }
 
