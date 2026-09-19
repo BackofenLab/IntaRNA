@@ -1,0 +1,7 @@
+{
+  "file": "intarna-profile-evidence.zip",
+  "bytes": 1399285,
+  "sha256": "6338c4af17babe8776c9192841d11b1ce37b6c954acbbade29d49252e9ca4fc8",
+  "files": 1029,
+  "note": "Large source build artifacts, compiled probe, gprofng experiment directories and old-binary capability probes remain local and are excluded."
+}
