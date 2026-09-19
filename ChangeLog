@@ -12,14 +12,19 @@
 
 # IntaRNA
 
-- migrate the build baseline to strict C++23, with GCC 14 and Apple Clang CI
-- use C++23 string buffers/views and scoped ownership to remove redundant
-  ViennaRNA/output allocations and make failure paths exception-safe
-- reduce redundant exact-ensemble partition-map lookups without changing
-  recurrence arithmetic
-- remove redundant accessibility feasibility checks from hot prediction paths
-  without changing accepted base pairs or recurrence arithmetic
-- add exact tiny-input predictor and seed regression oracles
+- remove redundant accessibility checks from predictor, helix and seed handling
+
+- C++23 required; build and installation checks with GCC 14 and Apple Clang
+- reduce temporary allocations and fix cleanup on error paths
+- avoid repeated partition-map lookups in exact ensemble prediction
+- add exhaustive interaction and seed oracles for short-sequence tests
+
+- BUGFIX : heuristic cell initialization and noLP ensemble recurrences
+- BUGFIX : ensemble filtering and seed-extension partition reset
+- BUGFIX : target accessibility limits and seed-free outMinPu filtering
+- BUGFIX : accessibility range splitting and intramolecular ensemble energies
+- BUGFIX : interaction assignment, seed comparison and output handling
+- reject Zall/Eall-dependent output in window mode
 
 # IntaRNA_plotRegions.R
 
@@ -31,6 +36,76 @@
 
 ################################################################################  
 ################################################################################
+
+260919 Alexander Mitrofanov
+ * IntaRNA/PredictorMfe2d* :
+ * IntaRNA/PredictorMfeEns2d* :
+   * fillHybridE*(), fillHybridZ*(), predict(), parallelExtension()
+ * IntaRNA/HelixHandlerNoBulgeMax : fillHelix(), fillHelixSeed()
+ * IntaRNA/SeedHandler : isFeasibleSeedBasePair()
+   * remove accessibility checks already covered by areComplementary()
+ * tests/SeedHandlerNoBulge_test.cpp :
+   + regression test for accessibility call counts
+
+260919 Alexander Mitrofanov
+ * configure.ac / m4 / .github/workflows/build.yml :
+   * C++23 requirement, library checks and GCC 14 / Apple Clang builds
+ * IntaRNA.pc.in :
+   * fix installed include and library flags
+ * IntaRNA/AccessibilityVrna / InteractionEnergyVrna :
+   * C++ string constraints, avoid sequence copies and ensure cleanup on errors
+ * bin/IntaRNA :
+   * automatic cleanup of accessibility, energy, output and predictor objects
+ * IntaRNA/OutputHandlerCsv / OutputHandlerEnsemble / OutputHandlerText :
+   * use stream views to avoid temporary string copies
+ * IntaRNA/PredictorMfeEns :
+   * updateZ() : single lookup for partition insertion and accumulation
+ * IntaRNA/RnaSequence :
+   * use string::contains() for alphabet and ambiguity checks
+ * tests :
+   + exhaustive interaction and seed oracles for short-sequence tests
+   + ViennaRNA constraint and repeated partition update tests
+   * update Catch to 2.13.10
+
+260919 Alexander Mitrofanov
+ * IntaRNA/PredictorMfe2dHeuristic :
+ * IntaRNA/PredictorMfe2dHeuristicSeed :
+   * fillHybridE() : BUGFIX : reset best energy for each cell
+ * IntaRNA/PredictorMfeEns2dHeuristic :
+   * fillHybridZ() :
+     * BUGFIX : reset best energy for each cell
+     * BUGFIX : noLP double counting and missing stacked/bulged extensions
+ * IntaRNA/PredictorMfeEns :
+   * updateZ() : BUGFIX : apply noGUend and maxED filters
+ * IntaRNA/PredictorMfeEns2dSeedExtension :
+ * IntaRNA/PredictorMfeEns2dHeuristicSeedExtension :
+   * predict() : BUGFIX : clear partition functions when no seed is found
+ * IntaRNA/PredictorMfeEns2dSeedExtension :
+   * fillHybridZ_left() : BUGFIX : multiply stacked partition factors
+ * bin/CommandLineParsing :
+   * parse() : reject Zall/Eall-dependent output in window mode
+   * getTargetAccessibility() : BUGFIX : use target-specific length limits
+   * getQueryRanges(), getTargetRanges() : BUGFIX : outMinPu without seeds
+ * IntaRNA/Accessibility :
+   * decomposeByMaxED() : BUGFIX : exclude forbidden positions and fix range length
+ * IntaRNA/InteractionEnergyBasePair :
+   * computeES() : BUGFIX : exclude empty structure
+ * IntaRNA/NussinovHandler :
+   * getQb() : BUGFIX : zero weight for out-of-range paired intervals
+ * IntaRNA/InteractionEnergyVrna :
+   * computeES() : BUGFIX : heed maximal base pair span
+   * computeES(), computeIntraEall() : BUGFIX : free ViennaRNA data on exit
+ * IntaRNA/Interaction :
+   * operator=() : BUGFIX : handle self-assignment
+   * operator==() : BUGFIX : handle missing seeds
+   * Seed::operator<() : BUGFIX : compare all seed boundaries on energy ties
+ * IntaRNA/OutputHandlerHub :
+   * add() : BUGFIX : fix output forwarding signature
+   * reported() : BUGFIX : report maximal child count
+ * IntaRNA/OutputHandlerInteractionList :
+   * add() : BUGFIX : handle zero storage capacity
+ + tests : API and CLI regressions
+ + doc/refactor/1-current-state.md : architecture and correctness audit
 
 250219 Martin Raden
  * python/CopomuS.py
