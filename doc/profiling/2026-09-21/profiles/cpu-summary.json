@@ -1,0 +1,1381 @@
+[
+  {
+    "profile": "gcvb",
+    "nominal_sampling_period_ms": 100,
+    "sampled_cpu_s": 35.3,
+    "samples": 353,
+    "process_user_s": 35.264,
+    "process_system_s": 0.046,
+    "sampled_minus_process_cpu_s": -0.01000000000000574,
+    "collector_warnings": [
+      "*** Collector Warning: Collection interval timer period was changed (100000 -> 0); profile data may be unreliable"
+    ],
+    "self_functions": [
+      {
+        "self_s": 35.3,
+        "self_pct": 100.0,
+        "inclusive_s": 35.3,
+        "inclusive_pct": 100.0,
+        "function": "<Total>"
+      },
+      {
+        "self_s": 21.4,
+        "self_pct": 60.62,
+        "inclusive_s": 21.4,
+        "inclusive_pct": 60.62,
+        "function": "IntaRNA::InteractionEnergyVrna::getE_interLeft(unsigned long, unsigned long, unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 2.4,
+        "self_pct": 6.8,
+        "inclusive_s": 14.4,
+        "inclusive_pct": 40.79,
+        "function": "IntaRNA::PredictorMfe2dHeuristicSeedExtension::fillHybridE_left(unsigned long, unsigned long)"
+      },
+      {
+        "self_s": 1.9,
+        "self_pct": 5.38,
+        "inclusive_s": 11.9,
+        "inclusive_pct": 33.71,
+        "function": "IntaRNA::PredictorMfe2dHeuristicSeedExtension::fillHybridE_right(unsigned long, unsigned long, unsigned long, unsigned long)"
+      },
+      {
+        "self_s": 0.9,
+        "self_pct": 2.55,
+        "inclusive_s": 0.9,
+        "inclusive_pct": 2.55,
+        "function": "<static>@0x77ace (<libm.so.6>)"
+      },
+      {
+        "self_s": 0.9,
+        "self_pct": 2.55,
+        "inclusive_s": 0.9,
+        "inclusive_pct": 2.55,
+        "function": "IntaRNA::AccessibilityVrna::getED(unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.9,
+        "self_pct": 2.55,
+        "inclusive_s": 0.9,
+        "inclusive_pct": 2.55,
+        "function": "IntaRNA::InteractionEnergy::getBoltzmannWeight(int) const"
+      },
+      {
+        "self_s": 0.8,
+        "self_pct": 2.27,
+        "inclusive_s": 4.1,
+        "inclusive_pct": 11.61,
+        "function": "IntaRNA::InteractionEnergy::getE(unsigned long, unsigned long, unsigned long, unsigned long, int) const"
+      },
+      {
+        "self_s": 0.8,
+        "self_pct": 2.27,
+        "inclusive_s": 3.0,
+        "inclusive_pct": 8.5,
+        "function": "vrna_probs_window"
+      },
+      {
+        "self_s": 0.7,
+        "self_pct": 1.98,
+        "inclusive_s": 0.7,
+        "inclusive_pct": 1.98,
+        "function": "compute_pU"
+      },
+      {
+        "self_s": 0.6,
+        "self_pct": 1.7,
+        "inclusive_s": 0.8,
+        "inclusive_pct": 2.27,
+        "function": "vrna_exp_E_ext_fast"
+      },
+      {
+        "self_s": 0.6,
+        "self_pct": 1.7,
+        "inclusive_s": 0.7,
+        "inclusive_pct": 1.98,
+        "function": "vrna_exp_E_int_loop"
+      },
+      {
+        "self_s": 0.5,
+        "self_pct": 1.42,
+        "inclusive_s": 0.8,
+        "inclusive_pct": 2.27,
+        "function": "IntaRNA::PredictorMfe2dSeedExtension::fillHybridE_left(unsigned long, unsigned long)"
+      },
+      {
+        "self_s": 0.4,
+        "self_pct": 1.13,
+        "inclusive_s": 0.4,
+        "inclusive_pct": 1.13,
+        "function": "vrna_exp_E_internal"
+      },
+      {
+        "self_s": 0.3,
+        "self_pct": 0.85,
+        "inclusive_s": 0.3,
+        "inclusive_pct": 0.85,
+        "function": "IntaRNA::InteractionEnergy::getED1(unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.3,
+        "self_pct": 0.85,
+        "inclusive_s": 0.3,
+        "inclusive_pct": 0.85,
+        "function": "IntaRNA::SeedHandlerNoBulge::updateToNextSeed(unsigned long&, unsigned long&, unsigned long, unsigned long, unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.2,
+        "self_pct": 0.57,
+        "inclusive_s": 0.2,
+        "inclusive_pct": 0.57,
+        "function": "IntaRNA::InteractionEnergy::areComplementary(unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.2,
+        "self_pct": 0.57,
+        "inclusive_s": 0.2,
+        "inclusive_pct": 0.57,
+        "function": "IntaRNA::InteractionEnergy::getED2(unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.2,
+        "self_pct": 0.57,
+        "inclusive_s": 3.7,
+        "inclusive_pct": 10.48,
+        "function": "IntaRNA::PredictorMfe::updateOptima(unsigned long, unsigned long, unsigned long, unsigned long, int, bool, bool)"
+      },
+      {
+        "self_s": 0.2,
+        "self_pct": 0.57,
+        "inclusive_s": 0.2,
+        "inclusive_pct": 0.57,
+        "function": "IntaRNA::SeedHandlerNoBulge::isSeedBound(unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.2,
+        "self_pct": 0.57,
+        "inclusive_s": 0.2,
+        "inclusive_pct": 0.57,
+        "function": "vrna_get_ptype_window"
+      },
+      {
+        "self_s": 0.2,
+        "self_pct": 0.57,
+        "inclusive_s": 0.2,
+        "inclusive_pct": 0.57,
+        "function": "wrap_hc_ext_cb_window"
+      },
+      {
+        "self_s": 0.1,
+        "self_pct": 0.28,
+        "inclusive_s": 0.8,
+        "inclusive_pct": 2.27,
+        "function": "IntaRNA::InteractionEnergy::getPr_danglingLeft(unsigned long, unsigned long, unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.1,
+        "self_pct": 0.28,
+        "inclusive_s": 0.2,
+        "inclusive_pct": 0.57,
+        "function": "IntaRNA::InteractionEnergyVrna::getE_danglingRight(unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.1,
+        "self_pct": 0.28,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.28,
+        "function": "IntaRNA::InteractionEnergyVrna::getE_endLeft(unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.1,
+        "self_pct": 0.28,
+        "inclusive_s": 0.8,
+        "inclusive_pct": 2.27,
+        "function": "exp"
+      },
+      {
+        "self_s": 0.1,
+        "self_pct": 0.28,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.28,
+        "function": "exp_E_m2_fast"
+      },
+      {
+        "self_s": 0.1,
+        "self_pct": 0.28,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.28,
+        "function": "vrna_E_exterior_stem"
+      },
+      {
+        "self_s": 0.1,
+        "self_pct": 0.28,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.28,
+        "function": "vrna_exp_eval_hairpin"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 30.1,
+        "inclusive_pct": 85.27,
+        "function": "<static>@0x2a145 (<libc.so.6>)"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 3.0,
+        "inclusive_pct": 8.5,
+        "function": "CommandLineParsing::getTargetAccessibility(unsigned long) const"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 30.1,
+        "inclusive_pct": 85.27,
+        "function": "GOMP_parallel"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 3.0,
+        "inclusive_pct": 8.5,
+        "function": "IntaRNA::AccessibilityVrna::AccessibilityVrna(IntaRNA::RnaSequence const&, unsigned long, IntaRNA::AccessibilityConstraint const*, IntaRNA::VrnaHandler const&, unsigned long, double)"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 3.0,
+        "inclusive_pct": 8.5,
+        "function": "IntaRNA::AccessibilityVrna::fillByRNAplfold(IntaRNA::VrnaHandler const&, unsigned long, unsigned long, double)"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 1.6,
+        "inclusive_pct": 4.53,
+        "function": "IntaRNA::InteractionEnergy::getPr_danglingRight(unsigned long, unsigned long, unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 27.1,
+        "inclusive_pct": 76.77,
+        "function": "IntaRNA::PredictorMfe2dHeuristicSeedExtension::predict(IntaRNA::IndexRange const&, IntaRNA::IndexRange const&)"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 0.8,
+        "inclusive_pct": 2.27,
+        "function": "IntaRNA::PredictorMfe2dSeedExtension::traceBack(IntaRNA::Interaction&)"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 0.8,
+        "inclusive_pct": 2.27,
+        "function": "IntaRNA::PredictorMfe::reportOptima()"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 0.3,
+        "inclusive_pct": 0.85,
+        "function": "IntaRNA::SeedHandlerIdxOffset::updateToNextSeed(unsigned long&, unsigned long&, unsigned long, unsigned long, unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 30.1,
+        "inclusive_pct": 85.27,
+        "function": "__libc_start_main"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 30.1,
+        "inclusive_pct": 85.27,
+        "function": "main"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 30.1,
+        "inclusive_pct": 85.27,
+        "function": "main._omp_fn.1"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 27.1,
+        "inclusive_pct": 76.77,
+        "function": "main._omp_fn.2"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 27.1,
+        "inclusive_pct": 76.77,
+        "function": "main._omp_fn.3"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.28,
+        "function": "vrna_exp_E_ml_fast"
+      }
+    ]
+  },
+  {
+    "profile": "gcvb_repeat",
+    "nominal_sampling_period_ms": 100,
+    "sampled_cpu_s": 35.2,
+    "samples": 352,
+    "process_user_s": 35.196,
+    "process_system_s": 0.044,
+    "sampled_minus_process_cpu_s": -0.03999999999999511,
+    "collector_warnings": [
+      "*** Collector Warning: Collection interval timer period was changed (100000 -> 0); profile data may be unreliable"
+    ],
+    "self_functions": [
+      {
+        "self_s": 35.2,
+        "self_pct": 100.0,
+        "inclusive_s": 35.2,
+        "inclusive_pct": 100.0,
+        "function": "<Total>"
+      },
+      {
+        "self_s": 22.8,
+        "self_pct": 64.77,
+        "inclusive_s": 22.8,
+        "inclusive_pct": 64.77,
+        "function": "IntaRNA::InteractionEnergyVrna::getE_interLeft(unsigned long, unsigned long, unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 2.6,
+        "self_pct": 7.39,
+        "inclusive_s": 15.5,
+        "inclusive_pct": 44.03,
+        "function": "IntaRNA::PredictorMfe2dHeuristicSeedExtension::fillHybridE_left(unsigned long, unsigned long)"
+      },
+      {
+        "self_s": 2.1,
+        "self_pct": 5.97,
+        "inclusive_s": 10.2,
+        "inclusive_pct": 28.98,
+        "function": "IntaRNA::PredictorMfe2dHeuristicSeedExtension::fillHybridE_right(unsigned long, unsigned long, unsigned long, unsigned long)"
+      },
+      {
+        "self_s": 1.1,
+        "self_pct": 3.12,
+        "inclusive_s": 3.2,
+        "inclusive_pct": 9.09,
+        "function": "vrna_probs_window"
+      },
+      {
+        "self_s": 0.8,
+        "self_pct": 2.27,
+        "inclusive_s": 0.8,
+        "inclusive_pct": 2.27,
+        "function": "IntaRNA::AccessibilityVrna::getED(unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.7,
+        "self_pct": 1.99,
+        "inclusive_s": 0.7,
+        "inclusive_pct": 1.99,
+        "function": "<static>@0x77ace (<libm.so.6>)"
+      },
+      {
+        "self_s": 0.6,
+        "self_pct": 1.7,
+        "inclusive_s": 0.8,
+        "inclusive_pct": 2.27,
+        "function": "vrna_exp_E_int_loop"
+      },
+      {
+        "self_s": 0.5,
+        "self_pct": 1.42,
+        "inclusive_s": 3.2,
+        "inclusive_pct": 9.09,
+        "function": "IntaRNA::InteractionEnergy::getE(unsigned long, unsigned long, unsigned long, unsigned long, int) const"
+      },
+      {
+        "self_s": 0.4,
+        "self_pct": 1.14,
+        "inclusive_s": 0.6,
+        "inclusive_pct": 1.7,
+        "function": "IntaRNA::PredictorMfe2dSeedExtension::fillHybridE_left(unsigned long, unsigned long)"
+      },
+      {
+        "self_s": 0.4,
+        "self_pct": 1.14,
+        "inclusive_s": 0.4,
+        "inclusive_pct": 1.14,
+        "function": "vrna_exp_E_ext_fast"
+      },
+      {
+        "self_s": 0.3,
+        "self_pct": 0.85,
+        "inclusive_s": 0.3,
+        "inclusive_pct": 0.85,
+        "function": "IntaRNA::InteractionEnergy::getBoltzmannWeight(int) const"
+      },
+      {
+        "self_s": 0.3,
+        "self_pct": 0.85,
+        "inclusive_s": 1.2,
+        "inclusive_pct": 3.41,
+        "function": "IntaRNA::InteractionEnergy::getPr_danglingRight(unsigned long, unsigned long, unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.3,
+        "self_pct": 0.85,
+        "inclusive_s": 0.4,
+        "inclusive_pct": 1.14,
+        "function": "compute_pU"
+      },
+      {
+        "self_s": 0.3,
+        "self_pct": 0.85,
+        "inclusive_s": 0.3,
+        "inclusive_pct": 0.85,
+        "function": "vrna_exp_E_internal"
+      },
+      {
+        "self_s": 0.2,
+        "self_pct": 0.57,
+        "inclusive_s": 0.2,
+        "inclusive_pct": 0.57,
+        "function": "<static>@0xaab1b (<libc.so.6>)"
+      },
+      {
+        "self_s": 0.2,
+        "self_pct": 0.57,
+        "inclusive_s": 0.2,
+        "inclusive_pct": 0.57,
+        "function": "IntaRNA::InteractionEnergyVrna::getE_danglingRight(unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.2,
+        "self_pct": 0.57,
+        "inclusive_s": 0.2,
+        "inclusive_pct": 0.57,
+        "function": "IntaRNA::InteractionEnergyVrna::getE_endLeft(unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.2,
+        "self_pct": 0.57,
+        "inclusive_s": 0.2,
+        "inclusive_pct": 0.57,
+        "function": "IntaRNA::SeedHandlerNoBulge::updateToNextSeed(unsigned long&, unsigned long&, unsigned long, unsigned long, unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.2,
+        "self_pct": 0.57,
+        "inclusive_s": 0.2,
+        "inclusive_pct": 0.57,
+        "function": "add_QI5_contribution"
+      },
+      {
+        "self_s": 0.2,
+        "self_pct": 0.57,
+        "inclusive_s": 0.7,
+        "inclusive_pct": 1.99,
+        "function": "exp"
+      },
+      {
+        "self_s": 0.2,
+        "self_pct": 0.57,
+        "inclusive_s": 0.2,
+        "inclusive_pct": 0.57,
+        "function": "vrna_exp_E_multibranch_stem"
+      },
+      {
+        "self_s": 0.1,
+        "self_pct": 0.28,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.28,
+        "function": "IntaRNA::InteractionEnergy::areComplementary(unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.1,
+        "self_pct": 0.28,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.28,
+        "function": "IntaRNA::InteractionEnergy::getED2(unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.1,
+        "self_pct": 0.28,
+        "inclusive_s": 0.2,
+        "inclusive_pct": 0.57,
+        "function": "exp_E_m2_fast"
+      },
+      {
+        "self_s": 0.1,
+        "self_pct": 0.28,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.28,
+        "function": "wrap_hc_int_cb_window"
+      },
+      {
+        "self_s": 0.1,
+        "self_pct": 0.28,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.28,
+        "function": "wrap_hc_mb_cb_window"
+      },
+      {
+        "self_s": 0.1,
+        "self_pct": 0.28,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.28,
+        "function": "write"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 29.4,
+        "inclusive_pct": 83.52,
+        "function": "<static>@0x2a145 (<libc.so.6>)"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 3.0,
+        "inclusive_pct": 8.52,
+        "function": "CommandLineParsing::getTargetAccessibility(unsigned long) const"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 29.4,
+        "inclusive_pct": 83.52,
+        "function": "GOMP_parallel"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 3.0,
+        "inclusive_pct": 8.52,
+        "function": "IntaRNA::AccessibilityVrna::AccessibilityVrna(IntaRNA::RnaSequence const&, unsigned long, IntaRNA::AccessibilityConstraint const*, IntaRNA::VrnaHandler const&, unsigned long, double)"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 3.0,
+        "inclusive_pct": 8.52,
+        "function": "IntaRNA::AccessibilityVrna::fillByRNAplfold(IntaRNA::VrnaHandler const&, unsigned long, unsigned long, double)"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 0.7,
+        "inclusive_pct": 1.99,
+        "function": "IntaRNA::InteractionEnergy::getPr_danglingLeft(unsigned long, unsigned long, unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.28,
+        "function": "IntaRNA::OutputHandlerCsv::~OutputHandlerCsv()"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 26.3,
+        "inclusive_pct": 74.72,
+        "function": "IntaRNA::PredictorMfe2dHeuristicSeedExtension::predict(IntaRNA::IndexRange const&, IntaRNA::IndexRange const&)"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 0.6,
+        "inclusive_pct": 1.7,
+        "function": "IntaRNA::PredictorMfe2dSeedExtension::traceBack(IntaRNA::Interaction&)"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 0.6,
+        "inclusive_pct": 1.7,
+        "function": "IntaRNA::PredictorMfe::reportOptima()"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 2.8,
+        "inclusive_pct": 7.95,
+        "function": "IntaRNA::PredictorMfe::updateOptima(unsigned long, unsigned long, unsigned long, unsigned long, int, bool, bool)"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 0.2,
+        "inclusive_pct": 0.57,
+        "function": "IntaRNA::SeedHandlerIdxOffset::updateToNextSeed(unsigned long&, unsigned long&, unsigned long, unsigned long, unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.28,
+        "function": "_IO_do_write"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.28,
+        "function": "_IO_file_sync"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.28,
+        "function": "_IO_file_write"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 29.4,
+        "inclusive_pct": 83.52,
+        "function": "__libc_start_main"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 0.2,
+        "inclusive_pct": 0.57,
+        "function": "allocate_dp_matrices"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 0.2,
+        "inclusive_pct": 0.57,
+        "function": "calloc"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.28,
+        "function": "fflush"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 29.4,
+        "inclusive_pct": 83.52,
+        "function": "main"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 29.4,
+        "inclusive_pct": 83.52,
+        "function": "main._omp_fn.1"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 26.4,
+        "inclusive_pct": 75.0,
+        "function": "main._omp_fn.2"
+      }
+    ]
+  },
+  {
+    "profile": "chix384",
+    "nominal_sampling_period_ms": 100,
+    "sampled_cpu_s": 40.8,
+    "samples": 408,
+    "process_user_s": 40.212,
+    "process_system_s": 0.665,
+    "sampled_minus_process_cpu_s": -0.07700000000000617,
+    "collector_warnings": [
+      "*** Collector Warning: Collection interval timer period was changed (100000 -> 0); profile data may be unreliable"
+    ],
+    "self_functions": [
+      {
+        "self_s": 40.8,
+        "self_pct": 100.0,
+        "inclusive_s": 40.8,
+        "inclusive_pct": 100.0,
+        "function": "<Total>"
+      },
+      {
+        "self_s": 7.9,
+        "self_pct": 19.36,
+        "inclusive_s": 25.0,
+        "inclusive_pct": 61.27,
+        "function": "vrna_probs_window"
+      },
+      {
+        "self_s": 7.3,
+        "self_pct": 17.89,
+        "inclusive_s": 7.3,
+        "inclusive_pct": 17.89,
+        "function": "IntaRNA::InteractionEnergyVrna::getE_interLeft(unsigned long, unsigned long, unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 4.6,
+        "self_pct": 11.27,
+        "inclusive_s": 8.2,
+        "inclusive_pct": 20.1,
+        "function": "vrna_exp_E_int_loop"
+      },
+      {
+        "self_s": 4.5,
+        "self_pct": 11.03,
+        "inclusive_s": 4.5,
+        "inclusive_pct": 11.03,
+        "function": "vrna_exp_E_internal"
+      },
+      {
+        "self_s": 3.6,
+        "self_pct": 8.82,
+        "inclusive_s": 3.8,
+        "inclusive_pct": 9.31,
+        "function": "compute_pU"
+      },
+      {
+        "self_s": 1.7,
+        "self_pct": 4.17,
+        "inclusive_s": 1.7,
+        "inclusive_pct": 4.17,
+        "function": "add_QI5_contribution"
+      },
+      {
+        "self_s": 1.6,
+        "self_pct": 3.92,
+        "inclusive_s": 2.3,
+        "inclusive_pct": 5.64,
+        "function": "vrna_exp_E_ext_fast"
+      },
+      {
+        "self_s": 1.4,
+        "self_pct": 3.43,
+        "inclusive_s": 1.5,
+        "inclusive_pct": 3.68,
+        "function": "exp_E_m2_fast"
+      },
+      {
+        "self_s": 1.3,
+        "self_pct": 3.19,
+        "inclusive_s": 1.3,
+        "inclusive_pct": 3.19,
+        "function": "vrna_get_ptype_window"
+      },
+      {
+        "self_s": 0.9,
+        "self_pct": 2.21,
+        "inclusive_s": 3.3,
+        "inclusive_pct": 8.09,
+        "function": "IntaRNA::PredictorMfe2dHeuristicSeedExtension::fillHybridE_right(unsigned long, unsigned long, unsigned long, unsigned long)"
+      },
+      {
+        "self_s": 0.8,
+        "self_pct": 1.96,
+        "inclusive_s": 4.9,
+        "inclusive_pct": 12.01,
+        "function": "IntaRNA::PredictorMfe2dHeuristicSeedExtension::fillHybridE_left(unsigned long, unsigned long)"
+      },
+      {
+        "self_s": 0.7,
+        "self_pct": 1.72,
+        "inclusive_s": 0.7,
+        "inclusive_pct": 1.72,
+        "function": "wrap_hc_ext_cb_window"
+      },
+      {
+        "self_s": 0.6,
+        "self_pct": 1.47,
+        "inclusive_s": 2.1,
+        "inclusive_pct": 5.15,
+        "function": "vrna_exp_E_ml_fast"
+      },
+      {
+        "self_s": 0.5,
+        "self_pct": 1.23,
+        "inclusive_s": 0.8,
+        "inclusive_pct": 1.96,
+        "function": "IntaRNA::PredictorMfe2dSeedExtension::fillHybridE_left(unsigned long, unsigned long)"
+      },
+      {
+        "self_s": 0.5,
+        "self_pct": 1.23,
+        "inclusive_s": 0.5,
+        "inclusive_pct": 1.23,
+        "function": "wrap_hc_int_cb_window"
+      },
+      {
+        "self_s": 0.4,
+        "self_pct": 0.98,
+        "inclusive_s": 0.4,
+        "inclusive_pct": 0.98,
+        "function": "<static>@0x77ace (<libm.so.6>)"
+      },
+      {
+        "self_s": 0.4,
+        "self_pct": 0.98,
+        "inclusive_s": 0.5,
+        "inclusive_pct": 1.23,
+        "function": "vrna_exp_E_mb_loop_fast"
+      },
+      {
+        "self_s": 0.3,
+        "self_pct": 0.74,
+        "inclusive_s": 0.5,
+        "inclusive_pct": 1.23,
+        "function": "<static>@0xaab1b (<libc.so.6>)"
+      },
+      {
+        "self_s": 0.2,
+        "self_pct": 0.49,
+        "inclusive_s": 0.2,
+        "inclusive_pct": 0.49,
+        "function": "IntaRNA::InteractionEnergy::getBoltzmannWeight(int) const"
+      },
+      {
+        "self_s": 0.2,
+        "self_pct": 0.49,
+        "inclusive_s": 0.2,
+        "inclusive_pct": 0.49,
+        "function": "brk"
+      },
+      {
+        "self_s": 0.2,
+        "self_pct": 0.49,
+        "inclusive_s": 0.2,
+        "inclusive_pct": 0.49,
+        "function": "vrna_exp_E_multibranch_stem"
+      },
+      {
+        "self_s": 0.2,
+        "self_pct": 0.49,
+        "inclusive_s": 0.5,
+        "inclusive_pct": 1.23,
+        "function": "vrna_exp_eval_hairpin"
+      },
+      {
+        "self_s": 0.1,
+        "self_pct": 0.25,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.25,
+        "function": "<static>@0x188341 (<libc.so.6>)"
+      },
+      {
+        "self_s": 0.1,
+        "self_pct": 0.25,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.25,
+        "function": "<static>@0x21bc0 (<IntaRNA>)"
+      },
+      {
+        "self_s": 0.1,
+        "self_pct": 0.25,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.25,
+        "function": "<static>@0xb53d9 (<libc.so.6>)"
+      },
+      {
+        "self_s": 0.1,
+        "self_pct": 0.25,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.25,
+        "function": "IntaRNA::InteractionEnergyVrna::getE_danglingRight(unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.1,
+        "self_pct": 0.25,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.25,
+        "function": "IntaRNA::PredictorMfe2dSeedExtension::fillHybridE_right(unsigned long, unsigned long)"
+      },
+      {
+        "self_s": 0.1,
+        "self_pct": 0.25,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.25,
+        "function": "default_pair_constraint"
+      },
+      {
+        "self_s": 0.1,
+        "self_pct": 0.25,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.25,
+        "function": "vrna_E_exterior_stem"
+      },
+      {
+        "self_s": 0.1,
+        "self_pct": 0.25,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.25,
+        "function": "vrna_get_ptype_md"
+      },
+      {
+        "self_s": 0.1,
+        "self_pct": 0.25,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.25,
+        "function": "wrap_hc_hp_cb_window"
+      },
+      {
+        "self_s": 0.1,
+        "self_pct": 0.25,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.25,
+        "function": "wrap_hc_mb_cb_window"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 33.4,
+        "inclusive_pct": 81.86,
+        "function": "<static>@0x2a145 (<libc.so.6>)"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 24.3,
+        "inclusive_pct": 59.56,
+        "function": "CommandLineParsing::getTargetAccessibility(unsigned long) const"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 33.4,
+        "inclusive_pct": 81.86,
+        "function": "GOMP_parallel"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.25,
+        "function": "IntaRNA::AccessibilityConstraint::AccessibilityConstraint(IntaRNA::RnaSequence const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, unsigned long, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 24.2,
+        "inclusive_pct": 59.31,
+        "function": "IntaRNA::AccessibilityVrna::AccessibilityVrna(IntaRNA::RnaSequence const&, unsigned long, IntaRNA::AccessibilityConstraint const*, IntaRNA::VrnaHandler const&, unsigned long, double)"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.25,
+        "function": "IntaRNA::AccessibilityVrna::callbackForStorage(double*, int, int, int, unsigned int, void*)"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 24.2,
+        "inclusive_pct": 59.31,
+        "function": "IntaRNA::AccessibilityVrna::fillByRNAplfold(IntaRNA::VrnaHandler const&, unsigned long, unsigned long, double)"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 0.6,
+        "inclusive_pct": 1.47,
+        "function": "IntaRNA::InteractionEnergy::getE(unsigned long, unsigned long, unsigned long, unsigned long, int) const"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 0.2,
+        "inclusive_pct": 0.49,
+        "function": "IntaRNA::InteractionEnergy::getPr_danglingLeft(unsigned long, unsigned long, unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 0.2,
+        "inclusive_pct": 0.49,
+        "function": "IntaRNA::InteractionEnergy::getPr_danglingRight(unsigned long, unsigned long, unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.25,
+        "function": "IntaRNA::InteractionEnergyVrna::getE_danglingLeft(unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 9.1,
+        "inclusive_pct": 22.3,
+        "function": "IntaRNA::PredictorMfe2dHeuristicSeedExtension::predict(IntaRNA::IndexRange const&, IntaRNA::IndexRange const&)"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 0.9,
+        "inclusive_pct": 2.21,
+        "function": "IntaRNA::PredictorMfe2dSeedExtension::traceBack(IntaRNA::Interaction&)"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 0.9,
+        "inclusive_pct": 2.21,
+        "function": "IntaRNA::PredictorMfe::reportOptima()"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 0.6,
+        "inclusive_pct": 1.47,
+        "function": "IntaRNA::PredictorMfe::updateOptima(unsigned long, unsigned long, unsigned long, unsigned long, int, bool, bool)"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 0.2,
+        "inclusive_pct": 0.49,
+        "function": "__default_morecore"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 33.4,
+        "inclusive_pct": 81.86,
+        "function": "__libc_start_main"
+      }
+    ]
+  },
+  {
+    "profile": "long_pair",
+    "nominal_sampling_period_ms": 100,
+    "sampled_cpu_s": 47.4,
+    "samples": 474,
+    "process_user_s": 47.437,
+    "process_system_s": 0.013,
+    "sampled_minus_process_cpu_s": -0.04999999999999903,
+    "collector_warnings": [
+      "*** Collector Warning: Collection interval timer period was changed (100000 -> 0); profile data may be unreliable"
+    ],
+    "self_functions": [
+      {
+        "self_s": 47.4,
+        "self_pct": 100.0,
+        "inclusive_s": 47.4,
+        "inclusive_pct": 100.0,
+        "function": "<Total>"
+      },
+      {
+        "self_s": 30.2,
+        "self_pct": 63.71,
+        "inclusive_s": 30.2,
+        "inclusive_pct": 63.71,
+        "function": "IntaRNA::InteractionEnergyVrna::getE_interLeft(unsigned long, unsigned long, unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 3.9,
+        "self_pct": 8.23,
+        "inclusive_s": 20.3,
+        "inclusive_pct": 42.83,
+        "function": "IntaRNA::PredictorMfe2dHeuristicSeedExtension::fillHybridE_right(unsigned long, unsigned long, unsigned long, unsigned long)"
+      },
+      {
+        "self_s": 3.7,
+        "self_pct": 7.81,
+        "inclusive_s": 20.9,
+        "inclusive_pct": 44.09,
+        "function": "IntaRNA::PredictorMfe2dHeuristicSeedExtension::fillHybridE_left(unsigned long, unsigned long)"
+      },
+      {
+        "self_s": 3.0,
+        "self_pct": 6.33,
+        "inclusive_s": 3.0,
+        "inclusive_pct": 6.33,
+        "function": "IntaRNA::SeedHandlerNoBulge::updateToNextSeed(unsigned long&, unsigned long&, unsigned long, unsigned long, unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 1.1,
+        "self_pct": 2.32,
+        "inclusive_s": 1.1,
+        "inclusive_pct": 2.32,
+        "function": "IntaRNA::AccessibilityVrna::getED(unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.7,
+        "self_pct": 1.48,
+        "inclusive_s": 0.7,
+        "inclusive_pct": 1.48,
+        "function": "IntaRNA::InteractionEnergy::getBoltzmannWeight(int) const"
+      },
+      {
+        "self_s": 0.6,
+        "self_pct": 1.27,
+        "inclusive_s": 0.6,
+        "inclusive_pct": 1.27,
+        "function": "<static>@0x77ace (<libm.so.6>)"
+      },
+      {
+        "self_s": 0.6,
+        "self_pct": 1.27,
+        "inclusive_s": 0.6,
+        "inclusive_pct": 1.27,
+        "function": "vrna_exp_E_internal"
+      },
+      {
+        "self_s": 0.5,
+        "self_pct": 1.05,
+        "inclusive_s": 4.4,
+        "inclusive_pct": 9.28,
+        "function": "IntaRNA::InteractionEnergy::getE(unsigned long, unsigned long, unsigned long, unsigned long, int) const"
+      },
+      {
+        "self_s": 0.3,
+        "self_pct": 0.63,
+        "inclusive_s": 0.4,
+        "inclusive_pct": 0.84,
+        "function": "IntaRNA::InteractionEnergy::areComplementary(unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.3,
+        "self_pct": 0.63,
+        "inclusive_s": 0.5,
+        "inclusive_pct": 1.05,
+        "function": "IntaRNA::InteractionEnergyVrna::getE_danglingLeft(unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.3,
+        "self_pct": 0.63,
+        "inclusive_s": 0.5,
+        "inclusive_pct": 1.05,
+        "function": "exp"
+      },
+      {
+        "self_s": 0.3,
+        "self_pct": 0.63,
+        "inclusive_s": 0.3,
+        "inclusive_pct": 0.63,
+        "function": "vrna_E_exterior_stem"
+      },
+      {
+        "self_s": 0.2,
+        "self_pct": 0.42,
+        "inclusive_s": 0.2,
+        "inclusive_pct": 0.42,
+        "function": "IntaRNA::InteractionEnergy::getED1(unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.2,
+        "self_pct": 0.42,
+        "inclusive_s": 1.3,
+        "inclusive_pct": 2.74,
+        "function": "IntaRNA::InteractionEnergy::getPr_danglingLeft(unsigned long, unsigned long, unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.2,
+        "self_pct": 0.42,
+        "inclusive_s": 1.7,
+        "inclusive_pct": 3.59,
+        "function": "IntaRNA::InteractionEnergy::getPr_danglingRight(unsigned long, unsigned long, unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.2,
+        "self_pct": 0.42,
+        "inclusive_s": 0.5,
+        "inclusive_pct": 1.05,
+        "function": "vrna_exp_E_int_loop"
+      },
+      {
+        "self_s": 0.2,
+        "self_pct": 0.42,
+        "inclusive_s": 1.2,
+        "inclusive_pct": 2.53,
+        "function": "vrna_probs_window"
+      },
+      {
+        "self_s": 0.1,
+        "self_pct": 0.21,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.21,
+        "function": "IntaRNA::InteractionEnergy::getED2(unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.1,
+        "self_pct": 0.21,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.21,
+        "function": "IntaRNA::InteractionEnergy::isAccessible1(unsigned long) const"
+      },
+      {
+        "self_s": 0.1,
+        "self_pct": 0.21,
+        "inclusive_s": 0.2,
+        "inclusive_pct": 0.42,
+        "function": "IntaRNA::InteractionEnergyVrna::getE_danglingRight(unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.1,
+        "self_pct": 0.21,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.21,
+        "function": "IntaRNA::InteractionEnergyVrna::getE_endLeft(unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.1,
+        "self_pct": 0.21,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.21,
+        "function": "IntaRNA::InteractionEnergyVrna::getE_endRight(unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.1,
+        "self_pct": 0.21,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.21,
+        "function": "IntaRNA::SeedHandler::isFeasibleSeedBasePair(unsigned long, unsigned long, bool) const"
+      },
+      {
+        "self_s": 0.1,
+        "self_pct": 0.21,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.21,
+        "function": "IntaRNA::SeedHandlerNoBulge::isSeedBound(unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.1,
+        "self_pct": 0.21,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.21,
+        "function": "vrna_exp_E_ext_fast"
+      },
+      {
+        "self_s": 0.1,
+        "self_pct": 0.21,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.21,
+        "function": "vrna_get_ptype_window"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 42.5,
+        "inclusive_pct": 89.66,
+        "function": "<static>@0x2a145 (<libc.so.6>)"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 0.2,
+        "inclusive_pct": 0.42,
+        "function": "CommandLineParsing::getQueryAccessibility(unsigned long) const"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 1.0,
+        "inclusive_pct": 2.11,
+        "function": "CommandLineParsing::getTargetAccessibility(unsigned long) const"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 42.5,
+        "inclusive_pct": 89.66,
+        "function": "GOMP_parallel"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 1.2,
+        "inclusive_pct": 2.53,
+        "function": "IntaRNA::AccessibilityVrna::AccessibilityVrna(IntaRNA::RnaSequence const&, unsigned long, IntaRNA::AccessibilityConstraint const*, IntaRNA::VrnaHandler const&, unsigned long, double)"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 1.2,
+        "inclusive_pct": 2.53,
+        "function": "IntaRNA::AccessibilityVrna::fillByRNAplfold(IntaRNA::VrnaHandler const&, unsigned long, unsigned long, double)"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 41.3,
+        "inclusive_pct": 87.13,
+        "function": "IntaRNA::PredictorMfe2dHeuristicSeedExtension::predict(IntaRNA::IndexRange const&, IntaRNA::IndexRange const&)"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 3.5,
+        "inclusive_pct": 7.38,
+        "function": "IntaRNA::PredictorMfe::updateOptima(unsigned long, unsigned long, unsigned long, unsigned long, int, bool, bool)"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 3.0,
+        "inclusive_pct": 6.33,
+        "function": "IntaRNA::SeedHandlerIdxOffset::updateToNextSeed(unsigned long&, unsigned long&, unsigned long, unsigned long, unsigned long, unsigned long) const"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 0.1,
+        "inclusive_pct": 0.21,
+        "function": "IntaRNA::SeedHandlerNoBulge::fillSeed(unsigned long, unsigned long, unsigned long, unsigned long)"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 42.5,
+        "inclusive_pct": 89.66,
+        "function": "__libc_start_main"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 42.5,
+        "inclusive_pct": 89.66,
+        "function": "main"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 0.2,
+        "inclusive_pct": 0.42,
+        "function": "main._omp_fn.0"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 42.3,
+        "inclusive_pct": 89.24,
+        "function": "main._omp_fn.1"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 41.3,
+        "inclusive_pct": 87.13,
+        "function": "main._omp_fn.2"
+      },
+      {
+        "self_s": 0.0,
+        "self_pct": 0.0,
+        "inclusive_s": 41.3,
+        "inclusive_pct": 87.13,
+        "function": "main._omp_fn.3"
+      }
+    ]
+  }
+]

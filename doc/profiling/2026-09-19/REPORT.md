@@ -1,5 +1,7 @@
 # IntaRNA profiling report
 
+> Historical broad survey. The [21 September follow-up](../2026-09-21/README.md) profiles Martin’s requested default mode on current master and includes new ED evidence and output-stability findings.
+
 Profiled 2026-09-19. **56 workloads, 168 measured repetitions plus 56 excluded warmups, four CPU profiles, four heap traces, and separate phase and structural checks.** The fresh build passed its regression tests; all timed commands and the independent evidence audit passed. The original checkout was left unchanged.
 
 The strongest findings are a **5.08× batch speedup at 12 threads**, a default-mode CPU hotspot in internal-loop energy evaluation, and a substantial time/memory tradeoff from windowing. **An input-stream cleanup defect is confirmed: 100 open/cleanup calls leave 100 file descriptors open.** Reusing accessibility data saved **39.0% latency** in a matched test, but the current ED reader lowers the available interaction limit by one nucleotide. Exact and ensemble modes have different hotspot distributions and need separate optimization work.

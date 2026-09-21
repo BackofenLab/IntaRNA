@@ -1,5 +1,7 @@
 # IntaRNA profiling baseline: 19 September 2026
 
+> Historical broad survey. The [21 September follow-up](../2026-09-21/README.md) profiles Martin’s requested default mode on current master and includes new ED evidence and output-stability findings.
+
 This study profiles `refactor-to-c++23` at commit [`1b8377989ba79a0f1b8a450163b71bd8ed7c3e45`](https://github.com/BackofenLab/IntaRNA/commit/1b8377989ba79a0f1b8a450163b71bd8ed7c3e45). It provides a measured baseline and proposed follow-up work. It does not compare releases or measure the effects of the other open optimization PRs.
 
 Start with the [two-page briefing](BRIEF.pdf) or the [full report](REPORT.md). The report contains all 56 timing results, CPU and heap findings, experimental controls, and limitations.

@@ -1,0 +1,98 @@
+{
+  "audited_utc": "2026-09-21T16:55:54.397988+00:00",
+  "status": "pass_with_findings",
+  "integrity_status": "pass",
+  "scientific_output_status": "differences_observed",
+  "scientific_findings": [
+    {
+      "kind": "within_case_output_instability",
+      "case": "batch_chix_12t",
+      "records": [
+        "batch_chix_12t.warmup0.stdout",
+        "batch_chix_12t.measure1.stdout",
+        "batch_chix_12t.measure2.stdout",
+        "batch_chix_12t.measure3.stdout",
+        "batch_chix_12t.measure4.stdout",
+        "batch_chix_12t.measure5.stdout"
+      ]
+    },
+    {
+      "kind": "thread_count_output_mismatch",
+      "query": "chix",
+      "coordinates_and_bpList_equal": true
+    },
+    {
+      "kind": "parallel_output_instability_reproduced",
+      "counts": {
+        "1": {
+          "runs": 3,
+          "different": 0
+        },
+        "6": {
+          "runs": 5,
+          "different": 0
+        },
+        "12": {
+          "runs": 20,
+          "different": 1
+        }
+      },
+      "observed_differences": [
+        {
+          "name": "t12_repeat08",
+          "threads": 12,
+          "differences": [
+            {
+              "id": [
+                "b2410",
+                "ChiX_NC_000913"
+              ],
+              "fields": {
+                "E": {
+                  "reference": "-5.02",
+                  "observed": "-5.8"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "matched_ED_output_mismatch",
+      "comparison": {
+        "full_output_equal": false,
+        "same_row_count": true,
+        "coordinates_and_bpList_equal": true,
+        "differences": [
+          {
+            "row": 0,
+            "fields": {
+              "E": {
+                "computed": "-14.64",
+                "loaded": "-14.66"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "cases": 18,
+  "measured_runs": 90,
+  "warmups": 18,
+  "input_hashes_checked": 17,
+  "profile_checks": 9,
+  "thread_equality_full_output": {
+    "gcvb": true,
+    "chix": false
+  },
+  "thread_equality_coordinates_and_bpList": {
+    "gcvb": true,
+    "chix": true
+  },
+  "default_equivalence_cases": 3,
+  "additional_repeat_checks": 28
+}

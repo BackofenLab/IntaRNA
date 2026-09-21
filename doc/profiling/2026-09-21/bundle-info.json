@@ -1,0 +1,8 @@
+{
+  "file": "default-mode-evidence.zip",
+  "bytes": 1053867,
+  "sha256": "36fbbb40f541991ddfe0cc30009a49e71dce3ddf3916e184a4fae151d3416d59",
+  "files": 566,
+  "source_revision": "0a4568ad6e3da52f935221ff0da98a4a171e9833",
+  "exclusions": "Compiled source/build artifacts and raw gprofng experiment directories; sources remain pinned in upstream Git."
+}
