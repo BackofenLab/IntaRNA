@@ -94,7 +94,7 @@ NussinovHandler::getQb(const size_t i, const size_t j, const RnaSequence &seq,
     const Z_type bpWeight, const size_t minLoopLength,
     NussinovHandler::Z2dMatrix &Q, NussinovHandler::Z2dMatrix &Qb) {
   if (j >= seq.size()) {
-    return 1.0;
+    return 0.0;
   }
   if (i + minLoopLength >= j) {
     return 0.0;

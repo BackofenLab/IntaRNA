@@ -1549,6 +1549,12 @@ parse(int argc, char** argv)
 				if (outNumber.val > 1 && outOverlap.val != 'B') {
 					throw error("window-based computation: non-overlapping subopt output (-n > 1) only supported for --outOverlap=B");
 				}
+				const bool windowNeedsZall = outMode.val == 'E'
+						|| (outMode.val == 'C'
+								&& OutputHandlerCsv::needsZall(OutputHandlerCsv::string2list(outCsvCols)));
+				if (windowNeedsZall) {
+					throw error("window-based computation cannot provide Zall/Eall output: overlapping windows count interactions more than once");
+				}
 			}
 
 
@@ -2015,8 +2021,8 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 		case 'B' : // base-pair based accessibility
 			return new AccessibilityBasePair(
 								seq
-								, std::min( qIntLenMax.val == 0 ? seq.size() : qIntLenMax.val
-										, qAccW.val == 0 ? seq.size() : qAccW.val )
+								, std::min( tIntLenMax.val == 0 ? seq.size() : tIntLenMax.val
+										, tAccW.val == 0 ? seq.size() : tAccW.val )
 								, &accConstraint
 								);
 
@@ -2634,7 +2640,7 @@ getQueryRanges( const InteractionEnergy & energy, const size_t sequenceNumber, c
 	if (outMinPu.val > Z_type(0) && !Z_equal(outMinPu.val, Z_type(0))) {
 		// decompose ranges based in minimal unpaired probability value per position
 		// since all ranges covering a position will have a lower unpaired probability
-		acc.decomposeByMaxED( qRegion[sequenceNumber], energy.getE( outMinPu.val ), (noSeedRequired ? RnaSequence::lastPos : seedBP.val ) );
+		acc.decomposeByMaxED( qRegion[sequenceNumber], energy.getE( outMinPu.val ), (noSeedRequired ? 1 : seedBP.val ) );
 	}
 
 	return qRegion.at(sequenceNumber);
@@ -2668,7 +2674,7 @@ getTargetRanges( const InteractionEnergy & energy, const size_t sequenceNumber, 
 	if (outMinPu.val > Z_type(0) && !Z_equal(outMinPu.val, Z_type(0))) {
 		// decompose ranges based in minimal unpaired probability value per position
 		// since all ranges covering a position will have a lower unpaired probability
-		acc.decomposeByMaxED( tRegion[sequenceNumber], energy.getE( outMinPu.val ), (noSeedRequired ? RnaSequence::lastPos : seedBP.val ) );
+		acc.decomposeByMaxED( tRegion[sequenceNumber], energy.getE( outMinPu.val ), (noSeedRequired ? 1 : seedBP.val ) );
 	}
 
 	return tRegion.at(sequenceNumber);
@@ -2776,6 +2782,3 @@ getPersonality( int argc, char ** argv )
 
 
 ////////////////////////////////////////////////////////////////////////////
-
-
-

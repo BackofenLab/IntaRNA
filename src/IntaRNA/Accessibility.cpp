@@ -213,8 +213,8 @@ decomposeByMaxED( IndexRangeList & ranges, const E_type maxED, const size_t minR
 		for (size_t i= range->from; i <= range->to; i++) {
 			if (E_isINF(getED(i,i)) || (getED(i,i) > maxED && !E_equal(getED(i,i),maxED))) {
 				// check if end of range found and to be stored
-				if (lastStart < i && minRangeLength <= (i +1 - lastStart)) {
-					out.push_back(IndexRange(lastStart,i));
+				if (lastStart < i && minRangeLength <= (i - lastStart)) {
+					out.push_back(IndexRange(lastStart,i - 1));
 				}
 				lastStart = range->to +1;
 			} else {

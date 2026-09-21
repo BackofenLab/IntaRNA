@@ -1,0 +1,15 @@
+target=GGGGGGGGGGGG
+query=CCCCCCCCCCCC
+energy=B
+tAcc=N
+qAcc=N
+model=S
+mode=M
+noSeed=true
+tIntLenMax=4
+qIntLenMax=4
+windowWidth=10
+windowOverlap=4
+outMode=C
+outCsvCols=Eall
+threads=1

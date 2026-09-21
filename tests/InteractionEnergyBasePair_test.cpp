@@ -72,8 +72,10 @@ TEST_CASE( "InteractionEnergyBasePair", "[InteractionEnergyBasePair]" ) {
 	}
 
   SECTION("ES computation") {
-    REQUIRE( E_equal(energy.getES1(0, 3), Ekcal_2_E(-1.313186)) );
-    REQUIRE( E_equal(energy.getES2(0, 3), Ekcal_2_E(-1.313186)) );
+    // ES covers structures containing at least one intramolecular base pair.
+    // ACGU has exactly one admissible pair of weight exp(1), hence ES=-1.
+    REQUIRE( E_equal(energy.getES1(0, 3), Ekcal_2_E(-1.0)) );
+    REQUIRE( E_equal(energy.getES2(0, 3), Ekcal_2_E(-1.0)) );
     REQUIRE( E_isINF(energy.getES1(0, 2)) );
     REQUIRE( E_isINF(energy.getES1(1, 2)) );
     REQUIRE( E_isINF(energy.getES2(0, 2)) );

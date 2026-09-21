@@ -101,6 +101,7 @@ fillHybridZ()
 
 			// init as invalid boundary
 			*curCell = BestInteractionZ(0.0, RnaSequence::lastPos, RnaSequence::lastPos);
+			curCellEtotal = E_INF;
 
 			// check if positions can form interaction
 			if (	energy.isAccessible1(i1)
@@ -134,24 +135,20 @@ fillHybridZ()
 					// update overall partition function information for initial bps only
 					updateZ( i1,curCell->j1, i2,curCell->j2, curCell->val, true );
 
-					if(outConstraint.noLP) {
-						/////////////////////////////////////////
-						// check direct extension to the right of the noLP stacking
-						/////////////////////////////////////////
+				}
 
-						// direct cell access (const)
-						rightExt = &(hybridZ(i1+noLpShift,i2+noLpShift));
-						// check if right side can pair
-						if (Z_equal(rightExt->val, 0.0)) {
-							continue;
-						}
-						// check if interaction length is within boundary
-						if ( (rightExt->j1 +1 -i1) > energy.getAccessibility1().getMaxLength()
-							|| (rightExt->j2 +1 -i2) > energy.getAccessibility2().getMaxLength() )
-						{
-							continue;
-						}
+				if(outConstraint.noLP) {
+					/////////////////////////////////////////
+					// check direct extension to the right of the noLP stacking
+					/////////////////////////////////////////
 
+					// direct cell access (const)
+					rightExt = &(hybridZ(i1+noLpShift,i2+noLpShift));
+					// check if right side can pair and interaction length is within boundary
+					if (!Z_equal(rightExt->val, 0.0)
+						&& (rightExt->j1 +1 -i1) <= energy.getAccessibility1().getMaxLength()
+						&& (rightExt->j2 +1 -i2) <= energy.getAccessibility2().getMaxLength() )
+					{
 						// compute Z for direct extension with stacking
 						curZ = iStackZ * rightExt->val;
 
@@ -179,6 +176,12 @@ fillHybridZ()
 				// iterate over all loop sizes w1 (seq1) and w2 (seq2) (minus 1)
 				for (w1=1; w1-1 <= energy.getMaxInternalLoopSize1() && i1+w1+noLpShift<hybridZ.size1(); w1++) {
 				for (w2=1; w2-1 <= energy.getMaxInternalLoopSize2() && i2+w2+noLpShift<hybridZ.size2(); w2++) {
+					// For noLP, the adjacent continuation is already represented
+					// by the direct extension above. Counting it again as the
+					// (w1,w2)=(1,1) loop duplicates the same interaction paths.
+					if (noLpShift != 0 && w1 == 1 && w2 == 1) {
+						continue;
+					}
 					// direct cell access (const)
 					rightExt = &(hybridZ(i1+noLpShift+w1,i2+noLpShift+w2));
 					// check if right side can pair

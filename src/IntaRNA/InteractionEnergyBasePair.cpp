@@ -26,7 +26,10 @@ void InteractionEnergyBasePair::computeES(const RnaSequence &seq,
       if (Z_equal(q_val, 1.0)) {
         logQ(i, j) = E_INF;
       } else {
-        logQ(i, j) = getE(q_val);
+        // getES* covers only structures containing at least one base pair.
+        // The full monomer partition Q also contains the empty structure with
+        // unit weight, which has to be removed here.
+        logQ(i, j) = getE(q_val - Z_type(1.0));
       }
     }
   }

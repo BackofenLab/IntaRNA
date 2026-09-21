@@ -61,6 +61,7 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 	if (seedHandler.fillSeed( 0, range_size1-1, 0, range_size2-1 ) == 0) {
 		// trigger empty interaction reporting
 		initOptima();
+		initZ();
 		reportOptima();
 		// stop computation
 		return;

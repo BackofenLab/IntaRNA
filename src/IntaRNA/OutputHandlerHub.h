@@ -204,11 +204,11 @@ addOutputHandler( OutputHandler * handler )
 inline
 void
 OutputHandlerHub::
-add( const Interaction & inter, const OutputConstraint & outConstraint )
+add( const Interaction & inter )
 {
 	// forward to all in list
 	for (auto it=outList.begin(); it!=outList.end(); it++) {
-		(*it)->add(inter,outConstraint);
+		(*it)->add(inter);
 	}
 }
 
@@ -222,7 +222,7 @@ reported() const
 	size_t maxReported = 0;
 	// get maximal number of reports among all handlers
 	for (auto it=outList.begin(); it!=outList.end(); it++) {
-		maxReported = std::min( maxReported, (*it)->reported() );
+		maxReported = std::max( maxReported, (*it)->reported() );
 	}
 	// return maximum
 	return maxReported;

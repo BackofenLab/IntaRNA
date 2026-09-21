@@ -99,6 +99,7 @@ fillHybridE()
 
 			// init as invalid boundary
 			*curCell = BestInteractionE(E_INF, RnaSequence::lastPos, RnaSequence::lastPos);
+			curCellEtotal = E_INF;
 
 			// check if positions can form interaction
 			if (	energy.isAccessible1(i1)

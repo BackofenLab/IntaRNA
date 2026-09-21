@@ -5,6 +5,7 @@
 #undef NDEBUG
 
 #include "IntaRNA/AccessibilityConstraint.h"
+#include "IntaRNA/AccessibilityDisabled.h"
 
 using namespace IntaRNA;
 
@@ -132,6 +133,24 @@ TEST_CASE( "AccessibilityConstraint", "[AccessibilityConstraint]" ) {
 		REQUIRE( vrnaStyle == "..xx..xx|.xx");
 	}
 
+	SECTION("decomposeByMaxED excludes forbidden positions") {
+		RnaSequence rna("test", "AAAAAAAA");
+		AccessibilityConstraint constraint(rna, "...b...b", 0, "", "", "");
+		AccessibilityDisabled accessibility(rna, 0, &constraint);
+		IndexRangeList ranges;
+		ranges.push_back(IndexRange(0, rna.size() - 1));
+
+		accessibility.decomposeByMaxED(ranges, 0, 3);
+
+		REQUIRE(ranges.size() == 2);
+		REQUIRE(ranges.get(0) == IndexRange(0, 2));
+		REQUIRE(ranges.get(1) == IndexRange(4, 6));
+
+		ranges.clear();
+		ranges.push_back(IndexRange(0, rna.size() - 1));
+		accessibility.decomposeByMaxED(ranges, 0, 4);
+
+		REQUIRE(ranges.empty());
+	}
 
 }
-

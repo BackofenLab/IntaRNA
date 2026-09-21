@@ -1,0 +1,17 @@
+mode=M
+noSeed=true
+model=S
+energy=B
+tAcc=C
+qAcc=N
+tAccW=4
+tAccL=4
+tIntLenMax=4
+qIntLenMax=3
+target=ACGU
+query=GGGG
+out=STDERR
+out=tAcc:STDOUT
+outMode=C
+outNumber=1
+threads=1
