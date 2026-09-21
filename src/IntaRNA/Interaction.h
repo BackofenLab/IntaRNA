@@ -182,7 +182,7 @@ public:
 		 */
 		const bool
 		operator <  ( const Seed &s ) const {
-			if (energy != s.energy) {
+			if (! E_equal(energy, s.energy )) {
 				return energy < s.energy;
 			}
 			if (bp_i.first != s.bp_i.first) {
