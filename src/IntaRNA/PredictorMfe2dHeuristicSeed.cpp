@@ -119,9 +119,7 @@ fillHybridE()
 			curCellEtotal = E_INF;
 
 			// check if positions can form interaction
-			if (	energy.isAccessible1(i1)
-					&& energy.isAccessible2(i2)
-					&& energy.areComplementary(i1,i2) )
+			if (energy.areComplementary(i1,i2) )
 			{
 
 				// no lp allowed
@@ -129,8 +127,6 @@ fillHybridE()
 					// check if right-side stacking of (i1,i2) is possible
 					if ( i1+noLpShift < energy.size1()
 						&& i2+noLpShift < energy.size2()
-						&& energy.isAccessible1(i1+noLpShift)
-						&& energy.isAccessible2(i2+noLpShift)
 						&& energy.areComplementary(i1+noLpShift,i2+noLpShift))
 					{
 						// get stacking term to avoid recomputation

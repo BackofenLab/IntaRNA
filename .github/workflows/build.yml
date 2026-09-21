@@ -33,7 +33,7 @@ jobs:
 
     steps:
       - name: Check out sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up conda environment
         uses: conda-incubator/setup-miniconda@v4

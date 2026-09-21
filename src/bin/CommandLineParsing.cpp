@@ -2400,8 +2400,8 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 	// check if any tracker registered
 	if (predTracker->empty()) {
 		// cleanup to avoid overhead
-		 INTARNA_CLEANUP(predTracker);
-		predTracker == NULL;
+		INTARNA_CLEANUP(predTracker);
+		predTracker = NULL;
 	}
 
 	if (noSeedRequired) {
