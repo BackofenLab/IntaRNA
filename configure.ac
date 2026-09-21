@@ -1,5 +1,5 @@
 
-AC_PREREQ([2.65])
+AC_PREREQ([2.69])
 # 5 argument version only available with aclocal >= 2.64
 AC_INIT([IntaRNA], [3.4.1], [], [intaRNA], [http://www.bioinf.uni-freiburg.de] )
 
@@ -54,8 +54,38 @@ AM_INIT_AUTOMAKE([1.11])
 # use the C++ compiler for the following checks
 AC_LANG([C++])
 
-# ensure we are using c11 C++ standard
-AX_CXX_COMPILE_STDCXX([11], [noext], [mandatory])
+# ensure we are using the C++23 standard
+AX_CXX_COMPILE_STDCXX([23], [noext], [mandatory])
+
+# Check the C++23 library surface used by IntaRNA.  A compiler accepting
+# -std=c++23 is not sufficient when paired with an older standard library.
+AC_MSG_CHECKING([for required C++23 standard library features])
+intarna_saved_CXXFLAGS=$CXXFLAGS
+CXXFLAGS="$CXXFLAGS -pedantic-errors"
+AC_COMPILE_IFELSE(
+	[AC_LANG_PROGRAM(
+		[[#include <cstddef>
+#include <sstream>
+#include <string>
+#include <string_view>]],
+		[[std::string text{"IntaRNA"};
+const bool has_rna = text.contains("RNA") && text.contains('R');
+text.resize_and_overwrite(8, [](char * data, std::size_t size) noexcept {
+	for (std::size_t i = 0; i < size; ++i)
+		data[i] = 'x';
+	return size;
+});
+std::stringstream stream;
+stream << text;
+const std::string_view stream_view = stream.view();
+std::stringstream sink;
+sink << stream.view();
+(void)has_rna;
+(void)stream_view;]])],
+	[AC_MSG_RESULT([yes])],
+	[AC_MSG_RESULT([no])
+	 AC_MSG_ERROR([A C++23 standard library providing std::string::contains, std::string::resize_and_overwrite, and std::stringstream::view is required. Upgrade libstdc++/libc++ or select a newer C++23 toolchain.])])
+CXXFLAGS=$intarna_saved_CXXFLAGS
 
 # check if python is available
 AM_PATH_PYTHON([$PYTHON_REQUIRED_VERSION],, [:])
@@ -197,7 +227,7 @@ AS_IF([test x"$enable_multiprecision" = x"yes"], [
 # Vienna RNA package library path support, if not installed in usual directories
 ###############################################################################
 AC_ARG_WITH([vrna],
-	[AC_HELP_STRING(
+	[AS_HELP_STRING(
 	    [--with-vrna=PREFIX],
 	    [alternative prefix path to Vienna RNA library]
 	  )],
@@ -306,10 +336,6 @@ AX_CHECK_ZLIB([], [])
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SIZE_T
 
-# Checks for header files.
-AC_HEADER_STDC
-
-
 ##########################################################################
 # check boost test results
 ##########################################################################
@@ -414,12 +440,24 @@ AS_IF([test "$DEPENDENCYNOTFOUND" = "1"], [
 AC_SUBST([PERSONALITIES],[`grep 'return.*"IntaRNA..*"' ./src/bin/CommandLineParsing.h | grep -o '".*"' | tr -d '"' | tr "\n" " "`])
 ##########################################################################
 
+# Keep strict diagnostics focused on IntaRNA sources.  Boost and ViennaRNA
+# headers are external dependencies and can contain compiler extensions.
+INTARNA_SYSTEM_CPPFLAGS=
+for intarna_cppflag in $BOOST_CPPFLAGS $VRNA_CFLAGS; do
+	case "$intarna_cppflag" in
+		-I?*)
+			intarna_include_path=${intarna_cppflag#-I}
+			INTARNA_SYSTEM_CPPFLAGS="$INTARNA_SYSTEM_CPPFLAGS -isystem $intarna_include_path"
+			;;
+	esac
+done
 
 
 # distribute additional compiler and linker flags
 # --> set these variables instead of CXXFLAGS or LDFLAGS
 AC_SUBST([AM_CXXFLAGS])
 AC_SUBST([AM_LDFLAGS])
+AC_SUBST([INTARNA_SYSTEM_CPPFLAGS])
 AC_SUBST([LIBS])
 AM_CONDITIONAL(enable_pkg_config, [test "x$HAVE_PKG_CONFIG" = "xyes"])
 AM_CONDITIONAL(enable_doxygen, [test "x$HAVE_DOXYGEN" = "xyes"])

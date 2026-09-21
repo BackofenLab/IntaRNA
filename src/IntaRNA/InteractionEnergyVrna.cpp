@@ -6,6 +6,8 @@
 #include <cstdlib>
 #include <memory>
 #include <set>
+#include <stdexcept>
+#include <string>
 
 // ES computation
 extern "C" {
@@ -20,20 +22,39 @@ extern "C" {
 
 namespace {
 
-struct VrnaAllocatedDeleter {
-	void operator()( char * data ) const {
-		free(data);
-	}
-};
-
 struct VrnaFoldCompoundDeleter {
-	void operator()( vrna_fold_compound_t * foldCompound ) const {
-		vrna_fold_compound_free(foldCompound);
+	void operator()( vrna_fold_compound_t * foldCompound ) const noexcept {
+		if (foldCompound != nullptr) {
+			vrna_fold_compound_free(foldCompound);
+		}
 	}
 };
 
-typedef std::unique_ptr<char, VrnaAllocatedDeleter> VrnaAllocatedPtr;
+struct VrnaParamDeleter {
+	void operator()( vrna_param_t * params ) const noexcept {
+		std::free(params);
+	}
+};
+
 typedef std::unique_ptr<vrna_fold_compound_t, VrnaFoldCompoundDeleter> VrnaFoldCompoundPtr;
+typedef std::unique_ptr<vrna_param_t, VrnaParamDeleter> VrnaParamPtr;
+
+std::string
+getVrnaConstraint( const IntaRNA::Accessibility & acc )
+{
+	const std::size_t sequenceLength = acc.getSequence().size();
+	const IntaRNA::AccessibilityConstraint & constraintSpec = acc.getAccConstraint();
+	std::string constraint;
+	constraint.resize_and_overwrite(
+			sequenceLength,
+			[&constraintSpec, sequenceLength]( char * const data, const std::size_t ) noexcept {
+				for (std::size_t i = 0; i < sequenceLength; ++i) {
+					data[i] = constraintSpec.getVrnaDotBracket(i);
+				}
+				return sequenceLength;
+			});
+	return constraint;
+}
 
 }
 
@@ -67,6 +88,10 @@ InteractionEnergyVrna::InteractionEnergyVrna(
 	, Eall1(E_INF)
 	, Eall2(E_INF)
 {
+	// Until construction succeeds, local guards own every raw member whose
+	// class destructor would otherwise not run on an exception.
+	VrnaParamPtr foldParamsOwner(foldParams);
+
 	vrna_md_defaults_reset( &foldModel );
 
 	// init ES values if needed
@@ -76,14 +101,21 @@ InteractionEnergyVrna::InteractionEnergyVrna(
 //		#pragma omp critical(intarna_omp_callingVRNA)
 //#endif
 //		{
-		// create ES container to be filled
-		esValues1 = new EsMatrix();
-		esValues2 = new EsMatrix();
+		// Compute into local owners and publish both matrices atomically only
+		// after both ViennaRNA calls have completed successfully.
+		std::unique_ptr<EsMatrix> esValues1Owner = std::make_unique<EsMatrix>();
+		std::unique_ptr<EsMatrix> esValues2Owner = std::make_unique<EsMatrix>();
 		// fill ES container
-		computeES( accS1, *esValues1 );
-		computeES( accS2, *esValues2 );
+		computeES( accS1, *esValues1Owner );
+		computeES( accS2, *esValues2Owner );
+		esValues1 = esValues1Owner.release();
+		esValues2 = esValues2Owner.release();
 //		} // omp critical(intarna_omp_callingVRNA)
 	}
+
+	// The fully constructed object resumes ownership through its unchanged raw
+	// member; its destructor retains the public/header-level ownership contract.
+	foldParamsOwner.release();
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -115,18 +147,9 @@ computeES( const Accessibility & acc, InteractionEnergyVrna::EsMatrix & esToFill
 	const int seqLength = (int)acc.getSequence().size();
 	const Z_type RT = getRT();
 
-	// VRNA compatible data structures
-	VrnaAllocatedPtr sequenceOwner( (char *) vrna_alloc(sizeof(char) * (seqLength + 1)) );
-	VrnaAllocatedPtr structureConstraintOwner( (char *) vrna_alloc(sizeof(char) * (seqLength + 1)) );
-	char * const sequence = sequenceOwner.get();
-	char * const structureConstraint = structureConstraintOwner.get();
-	for (int i=0; i<seqLength; i++) {
-		// copy sequence
-		sequence[i] = acc.getSequence().asString().at(i);
-		// copy accessibility constraint if present
-		structureConstraint[i] = acc.getAccConstraint().getVrnaDotBracket(i);
-	}
-	sequence[seqLength] = structureConstraint[seqLength] = '\0';
+	// RnaSequence owns stable, null-terminated storage for the complete call.
+	const std::string & sequence = acc.getSequence().asString();
+	const std::string structureConstraint = getVrnaConstraint(acc);
 	// prepare folding data
 	vrna_md_t curModel;
 	vrna_md_copy( &curModel, &foldModel );
@@ -136,15 +159,18 @@ computeES( const Accessibility & acc, InteractionEnergyVrna::EsMatrix & esToFill
 		curModel.max_bp_span = -1;
 	}
 	// TODO check if VRNA_OPTION_WINDOW reasonable to speedup
-	VrnaFoldCompoundPtr foldDataOwner( vrna_fold_compound( sequence, &curModel, VRNA_OPTION_PF) );
+	VrnaFoldCompoundPtr foldDataOwner( vrna_fold_compound( sequence.c_str(), &curModel, VRNA_OPTION_PF) );
 	vrna_fold_compound_t * const foldData = foldDataOwner.get();
+	if (foldData == nullptr) {
+		throw std::runtime_error("InteractionEnergyVrna::computeES() : vrna_fold_compound() failed");
+	}
 
 	// Adding hard constraints from pseudo dot-bracket
 	unsigned int constraint_options = VRNA_CONSTRAINT_DB_DEFAULT;
 	// enforce constraints
 	constraint_options |= VRNA_CONSTRAINT_DB_ENFORCE_BP;
 
-	vrna_constraints_add( foldData, (const char *)structureConstraint, constraint_options);
+	vrna_constraints_add( foldData, structureConstraint.c_str(), constraint_options);
 
     // compute correct partition function scaling via mfe
     FLT_OR_DBL min_free_energy = vrna_mfe( foldData, NULL );
@@ -195,19 +221,15 @@ computeIntraEall( const Accessibility & acc ) const
 	// avoid computation of base pair probabilities
 	curModel.compute_bpp = 0;
 
-	const int length = acc.getSequence().size();
-
-	// copy sequence into C data structure
-	VrnaAllocatedPtr sequenceOwner( (char *) vrna_alloc(sizeof(char) * (length + 1)) );
-	char * const sequence = sequenceOwner.get();
-	for (int i=0; i<length; i++) {
-		sequence[i] = acc.getSequence().asString().at(i);
-	}
-	sequence[length] = '\0';
+	// RnaSequence owns stable, null-terminated storage for the complete call.
+	const std::string & sequence = acc.getSequence().asString();
 
 	// setup folding data
-	VrnaFoldCompoundPtr foldCompoundOwner( vrna_fold_compound( sequence, &curModel, VRNA_OPTION_DEFAULT ) );
+	VrnaFoldCompoundPtr foldCompoundOwner( vrna_fold_compound( sequence.c_str(), &curModel, VRNA_OPTION_DEFAULT ) );
 	vrna_fold_compound_t * const fold_compound = foldCompoundOwner.get();
+	if (fold_compound == nullptr) {
+		throw std::runtime_error("InteractionEnergyVrna::computeIntraEall() : vrna_fold_compound() failed");
+	}
 
     // add accessibility constraints
     AccessibilityVrna::addConstraints( *fold_compound, acc );

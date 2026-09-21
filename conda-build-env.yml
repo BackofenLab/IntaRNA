@@ -1,4 +1,3 @@
-
 name: intarna-build-env
 
 channels:
@@ -7,10 +6,10 @@ channels:
   - defaults
 
 dependencies:
-  - gcc_linux-64 
-  - gxx_linux-64 
+  - autoconf
+  - automake
+  - libtool
   - pkgconfig
   - zlib
-  - boost-cpp 
+  - boost-cpp
   - viennarna>=2.4.14
- 
