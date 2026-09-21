@@ -175,7 +175,7 @@ TEST_CASE("ensemble predictor regressions", "[PredictorMfeEns]") {
 		OutputConstraint constraint(1, OutputConstraint::OVERLAP_BOTH,
 				E_INF, E_INF, false, false, false, true, false);
 		OutputHandlerInteractionList out(constraint, 1);
-		InspectableExactEnsemblePredictor predictor(energy, out);
+		InspectableExactEnsemblePredictor predictor(energy, out, NULL);
 
 		predictor.addPartition(0, 0, 0, 0, Z_type(2));
 		predictor.addPartition(0, 0, 0, 0, Z_type(3));
