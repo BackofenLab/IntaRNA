@@ -25,6 +25,8 @@
 - BUGFIX : interaction assignment, seed comparison and output handling
 - reject Zall/Eall-dependent output in window mode
 
+- reduced memory use for exact non-seed ensemble prediction without trackers
+
 # IntaRNA_plotRegions.R
 
 - fix deprecation warning
@@ -105,6 +107,18 @@
    * add() : BUGFIX : handle zero storage capacity
  + tests : API and CLI regressions
  + doc/refactor/1-current-state.md : architecture and correctness audit
+
+260919 Alexander Mitrofanov
+ * IntaRNA/PredictorMfeEns2d :
+   * fillHybridZ() : stream complete boundary partitions
+ * IntaRNA/PredictorMfeEns :
+   + updateCompleteZ() : preserve virtual updateZ() dispatch and restore mode on exit
+   * updateZ() : consume complete partitions directly when no tracker is present
+     (trackers, seeded and heuristic predictions retain buffered updates)
+   + updateZisComplete : scoped mode flag; changed object layout requires C++ rebuild
+   + addPartitionContribution() : shared filtering, conversion and Zall update
+ * tests/PredictorMfeEnsRegression_test.cpp : streaming and buffered equivalence,
+   trackers, overlap modes, virtual hook and exception recovery
 
 250219 Martin Raden
  * python/CopomuS.py

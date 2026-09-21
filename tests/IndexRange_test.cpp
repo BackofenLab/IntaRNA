@@ -53,7 +53,7 @@ TEST_CASE( "IndexRange", "[IndexRange]" ) {
 
 		// write to string
 		std::stringstream s;
-		range = (4,8);
+		range = IndexRange(4,8);
 		s <<range;
 
 		// parse from string
