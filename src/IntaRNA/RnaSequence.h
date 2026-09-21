@@ -316,7 +316,7 @@ RnaSequence::RnaSequence(
 	id(id)
 	, seqString(getUpperCase(seqString))
 	, seqCode(getCodeForString(this->seqString))
-	, ambiguous(this->seqString.find('N')!=std::string::npos)
+	, ambiguous(this->seqString.contains('N'))
 	, idxPos0(idxPos0)
 	, seqNumber(seqNumber)
 {
@@ -500,7 +500,7 @@ getUpperCase( const std::string & seqString )
 			seqRet[i] = 'U';
 		}
 		// overwrite non-ACGU characters with N = ambiguous (no distinction needed)
-		if (SequenceAlphabet.find(seqRet[i]) == -1) {
+		if (!SequenceAlphabet.contains(seqRet[i])) {
 			seqRet[i] = 'N';
 		}
 	}
@@ -570,7 +570,7 @@ getCodeForChar( const char nucleotide )
 {
 #if INTARNA_IN_DEBUG_MODE
 	// check if nucleotide character is NOT supported
-	if (SequenceAlphabet.find(nucleotide) == std::string::npos)
+	if (!SequenceAlphabet.contains(nucleotide))
 		throw std::runtime_error("RnaSequence::getCodeForChar() : unsupported nucleotide character '"+toString(nucleotide)+"' in sequence");
 #endif
 

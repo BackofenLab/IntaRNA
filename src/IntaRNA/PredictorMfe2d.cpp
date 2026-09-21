@@ -131,9 +131,7 @@ fillHybridE( const size_t j1, const size_t j2
 			hybridE_pq(i1,i2) = E_INF;
 
 			// check if this cell is to be computed (!=E_INF)
-			if( energy.isAccessible1(i1)
-				&& energy.isAccessible2(i2)
-				&& energy.areComplementary(i1,i2)
+			if( energy.areComplementary(i1,i2)
 			)
 			{
 				// w2 = interaction width in seq2
@@ -162,9 +160,7 @@ fillHybridE( const size_t j1, const size_t j2
 					} else {
 						// no lp allowed
 						// check if right-side stacking of (i1,i2) is possible
-						if (energy.isAccessible1(i1+noLpShift)
-							&& energy.isAccessible2(i2+noLpShift)
-							&& energy.areComplementary(i1+noLpShift,i2+noLpShift))
+						if (energy.areComplementary(i1+noLpShift,i2+noLpShift))
 						{
 							// get stacking term to avoid recomputation
 							iStackE = energy.getE_interLeft(i1,i1+noLpShift,i2,i2+noLpShift);

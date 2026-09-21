@@ -58,9 +58,7 @@ fillHelix(const size_t i1min, const size_t i1max, const size_t i2min, const size
 			i2 = i2start+o;
 
 			// check if valid base pair
-			if( energy.isAccessible1( i1 )
-				&& energy.isAccessible2( i2 )
-				&& energy.areComplementary( i1, i2 ))
+			if (energy.areComplementary( i1, i2 ))
 			{
 				// start new canonical helix information
 				if (E_isINF(curHelixE)) {
@@ -232,9 +230,7 @@ fillHelixSeed(const size_t i1min, const size_t i1max, const size_t i2min, const 
 			j1 = seedEnd1+trailingL;
 			j2 = seedEnd2+trailingL;
 			// check if trailing based pairs are possible, otherwise stop computation
-			if (!(energy.isAccessible1(j1)
-					&& energy.isAccessible2(j2)
-					&& energy.areComplementary(j1,j2)))
+			if (!energy.areComplementary(j1,j2))
 			{
 				break;
 			}
@@ -258,9 +254,7 @@ fillHelixSeed(const size_t i1min, const size_t i1max, const size_t i2min, const 
 
 			// check if leading based pairs are possible, otherwise stop computation
 			if (leadingBP > 0
-					&&!(energy.isAccessible1(i1)
-						&& energy.isAccessible2(i2)
-						&& energy.areComplementary(i1,i2)))
+					&& !energy.areComplementary(i1,i2))
 			{
 				break;
 			}

@@ -144,9 +144,7 @@ fillHybridE_right( const size_t sj1, const size_t sj2
 
 			// skip if not accessible
 			// check if complementary
-			if ( energy.isAccessible1(j1)
-				&& energy.isAccessible2(j2)
-				&& sj1<j1
+			if (sj1<j1
 				&& sj2<j2
 				&& energy.areComplementary(j1,j2) )
 			{
@@ -154,9 +152,7 @@ fillHybridE_right( const size_t sj1, const size_t sj2
 				// left-stacking of j if no-LP
 				if (outConstraint.noLP) {
 					// skip if no stacking possible
-					if (  !energy.areComplementary(j1-noLpShift,j2-noLpShift)
-						| !energy.isAccessible1(j1-noLpShift)
-						| !energy.isAccessible2(j2-noLpShift))
+					if (!energy.areComplementary(j1-noLpShift,j2-noLpShift))
 					{
 						continue;
 					}
@@ -242,18 +238,14 @@ fillHybridE_left( const size_t si1, const size_t si2 )
 			curMinE = (i1==si1 && i2==si2) ? energy.getE_init() : E_INF;
 			// skip if not accessible
 			// check if complementary
-			if (energy.isAccessible1(i1)
-				&& energy.isAccessible2(i2)
-				&& i1<si1
+			if (i1<si1
 				&& i2<si2
 				&& energy.areComplementary(i1,i2) )
 			{
 				// left-stacking of j if no-LP
 				if (outConstraint.noLP) {
 					// skip if no stacking possible
-					if (  !energy.areComplementary(i1+noLpShift,i2+noLpShift)
-						| !energy.isAccessible1(i1+noLpShift)
-						| !energy.isAccessible2(i2+noLpShift))
+					if (!energy.areComplementary(i1+noLpShift,i2+noLpShift))
 					{
 						continue;
 					}

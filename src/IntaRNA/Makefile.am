@@ -16,6 +16,10 @@ AM_DEFAULT_SOURCE_EXT = .cpp
 # the library names to build (note we are building static libs only)
 lib_LIBRARIES = libIntaRNA.a
 
+# Diagnose non-ISO constructs in IntaRNA-owned sources.  Keep this target-local
+# so vendored support code is not subjected to project diagnostic policy.
+libIntaRNA_a_CXXFLAGS = $(AM_CXXFLAGS) @INTARNA_SYSTEM_CPPFLAGS@ -pedantic-errors
+
 # where to install the headers on the system
 libIntaRNA_adir = $(includedir)/IntaRNA
 

@@ -12,6 +12,12 @@
 
 # IntaRNA
 
+- remove redundant accessibility checks from predictor, helix and seed handling
+
+- C++23 required; build and installation checks with GCC 14 and Apple Clang
+- reduce temporary allocations and fix cleanup on error paths
+- avoid repeated partition-map lookups in exact ensemble prediction
+- add exhaustive interaction and seed oracles for short-sequence tests
 - BUGFIX : heuristic cell initialization and noLP ensemble recurrences
 - BUGFIX : ensemble filtering and seed-extension partition reset
 - BUGFIX : target accessibility limits and seed-free outMinPu filtering
@@ -31,6 +37,36 @@
 
 ################################################################################  
 ################################################################################
+
+260919 Alexander Mitrofanov
+ * IntaRNA/PredictorMfe2d* :
+ * IntaRNA/PredictorMfeEns2d* :
+   * fillHybridE*(), fillHybridZ*(), predict(), parallelExtension()
+ * IntaRNA/HelixHandlerNoBulgeMax : fillHelix(), fillHelixSeed()
+ * IntaRNA/SeedHandler : isFeasibleSeedBasePair()
+   * remove accessibility checks already covered by areComplementary()
+ * tests/SeedHandlerNoBulge_test.cpp :
+   + regression test for accessibility call counts
+
+260919 Alexander Mitrofanov
+ * configure.ac / m4 / .github/workflows/build.yml :
+   * C++23 requirement, library checks and GCC 14 / Apple Clang builds
+ * IntaRNA.pc.in :
+   * fix installed include and library flags
+ * IntaRNA/AccessibilityVrna / InteractionEnergyVrna :
+   * C++ string constraints, avoid sequence copies and ensure cleanup on errors
+ * bin/IntaRNA :
+   * automatic cleanup of accessibility, energy, output and predictor objects
+ * IntaRNA/OutputHandlerCsv / OutputHandlerEnsemble / OutputHandlerText :
+   * use stream views to avoid temporary string copies
+ * IntaRNA/PredictorMfeEns :
+   * updateZ() : single lookup for partition insertion and accumulation
+ * IntaRNA/RnaSequence :
+   * use string::contains() for alphabet and ambiguity checks
+ * tests :
+   + exhaustive interaction and seed oracles for short-sequence tests
+   + ViennaRNA constraint and repeated partition update tests
+   * update Catch to 2.13.10
 
 260919 Alexander Mitrofanov
  * IntaRNA/PredictorMfe2dHeuristic :
