@@ -18,7 +18,6 @@
 - reduce temporary allocations and fix cleanup on error paths
 - avoid repeated partition-map lookups in exact ensemble prediction
 - add exhaustive interaction and seed oracles for short-sequence tests
-
 - BUGFIX : heuristic cell initialization and noLP ensemble recurrences
 - BUGFIX : ensemble filtering and seed-extension partition reset
 - BUGFIX : target accessibility limits and seed-free outMinPu filtering
