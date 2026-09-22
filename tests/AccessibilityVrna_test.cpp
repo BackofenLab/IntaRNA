@@ -43,6 +43,16 @@ TEST_CASE("AccessibilityVrna", "[AccessibilityVrna]") {
 		// 'x' is passed at both C-string boundaries and forces unpaired bases.
 		REQUIRE( E_equal(acc.getED(0, 0), 0) );
 		REQUIRE( E_equal(acc.getED(rna.size()-1, rna.size()-1), 0) );
+		// 'p' is passed at both C-string boundaries and forces paired bases.
+		REQUIRE( E_equal(acc.getED(1, 1), Accessibility::ED_UPPER_BOUND) );
+		REQUIRE( E_equal(acc.getED(rna.size()-2, rna.size()-2), Accessibility::ED_UPPER_BOUND) );
+		
+		// check maximal length
+		REQUIRE( acc.getMaxLength() == 1 );
+		// check for ED values of length+1 regions required for dangling-end probability computation
+		REQUIRE( E_equal(acc.getED(0, 1), Accessibility::ED_UPPER_BOUND) ); // not accessible due to 'p' at position 1
+		//std::cerr << "acc.getED(2,3) = " << acc.getED(2,3) << std::endl;
+		REQUIRE( E_equal(acc.getED(2,3), 610) ); // should be accessible for dangling-end probability computation of position 2 or 3
 
 		// Exercise the same x|........|x bytes through computeES() and
 		// computeIntraEall(), including the reversed accessibility path.

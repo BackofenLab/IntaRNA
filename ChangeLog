@@ -22,6 +22,7 @@
 - BUGFIX : target accessibility limits and seed-free outMinPu filtering
 - BUGFIX : accessibility range splitting and intramolecular ensemble energies
 - BUGFIX : interaction assignment, seed comparison and output handling
+- BUGFIX : dangling-end probability computation using maxLength+1 ED values
 - add exhaustive interaction and seed oracles for short-sequence tests
 
 - reduced memory use for exact non-seed ensemble prediction without trackers
@@ -44,6 +45,12 @@
  * src/IntaRNA/Makefile.am :
  * src/bin/Makefile.am :
    * undo some diagnostic flags to allow compilation on test system
+ * IntaRNA/Accessibility* :
+   * constructors: generate/read/keep data for maxLength+1 to allow for 
+     dangling-end probability computation
+ * tests/AccessibilityFromStream_test.cpp :
+ * tests/AccessibilityVrna_test.cpp :
+   + check for maxLength+1 ED values
 
 260919 Alexander Mitrofanov
  * IntaRNA/PredictorMfe2d* :

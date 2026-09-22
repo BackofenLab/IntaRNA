@@ -83,7 +83,8 @@ AccessibilityVrna::AccessibilityVrna(
 		)
  :
 	Accessibility( seq, maxLength, accConstraint ),
-	edValues( getSequence().size(), getSequence().size(), 0, getMaxLength() )
+	edValues( getSequence().size(), getSequence().size(), 
+				0, std::min(getSequence().size(),getMaxLength()+1) ) // +1 to allow for dangling-end probability computation
 {
 	// if sequence shows minimal length
 	if (seq.size() > 4) {
@@ -134,7 +135,7 @@ callbackForStorage(FLT_OR_DBL   *pr,
 	    // copy unpaired data for all available interval lengths
 	    // but ensure interval does not contain blocked positions
 	    const bool rightEndBlocked = accConstr.isMarkedBlocked(j-1);
-	    for (int l = std::min(j,std::min(pr_size,std::min(max,(int)storageRT.first->getMaxLength()))); l>=1; l--) {
+	    for (int l = std::min(j,std::min(pr_size,std::min(max,(int)storageRT.first->getMaxLength()+1))); l>=1; l--) { // "getMaxLength()+1" to allow for dangling-end probability computation
 			// get unpaired probability
 			FLT_OR_DBL prob_unpaired = pr[l];
 //			TODO: check for [0,1] range and correct if needed (print WARNING)

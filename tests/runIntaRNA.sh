@@ -40,7 +40,8 @@ function calltest {
 	#	echo CALL $testCall
     #echo
     
-    $testCall 2>&1 | grep -v INFO > $resultfile
+	# remove color encodings from output via sed and remove INFO lines via grep
+    $testCall 2>&1 | sed 's/\x1b\[[0-9;]*m//g' | grep -v INFO > $resultfile
 
 	if [ -e "$reference_resultsfile" ] ; then
 	    if ! diff "$reference_resultsfile" "$resultfile" "${diffopts}" > $difftmp; then

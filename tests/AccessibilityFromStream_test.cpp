@@ -67,9 +67,13 @@ TEST_CASE( "AccessibilityFromStream", "[AccessibilityFromStream]" ) {
 //		std::cerr <<"orig data:\n" <<accString;
 //		std::cerr <<"ED data:\n" <<acc;
 
+		// check max length
+		REQUIRE( acc.getMaxLength() == 9 );
+
 		// check elements
-		REQUIRE( acc.getED(29, 29) == 0 );
-		REQUIRE( acc.getED(21, 29) == 690 );
+		REQUIRE( acc.getED(29, 29) == 0 );   // length 1 (0.9980056 -> -log(0.9980056)*100 = 0.19944 -> 0)
+		REQUIRE( acc.getED(21, 29) == 690 ); // length 9 (0.001002708 -> -log(0.001002708)*100 = 690.03 -> 690)
+		REQUIRE( acc.getED(20, 29) == 732 ); // check for length exceeding maxLength+1 used in dangling-end probability computation
 //		// old checks not working for integer-based ED type
 //		REQUIRE( std::exp( - acc.getED(29, 29) ) > 0.998 );
 //		REQUIRE( std::exp( - acc.getED(29, 29) ) < 0.999 );

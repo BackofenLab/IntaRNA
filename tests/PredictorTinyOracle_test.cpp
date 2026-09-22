@@ -36,7 +36,7 @@ public:
 
 	E_type getED(const size_t from, const size_t to) const override {
 		checkIndices(from, to);
-		if (to-from+1 > getMaxLength()
+		if (to-from+1 > getMaxLength() +1 // "+1" to allow for dangling-end probability computation
 				|| !getAccConstraint().isAccessible(from)
 				|| !getAccConstraint().isAccessible(to))
 		{
