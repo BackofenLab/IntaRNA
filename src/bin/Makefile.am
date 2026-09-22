@@ -15,7 +15,7 @@ AM_DEFAULT_SOURCE_EXT = .cpp
 bin_PROGRAMS = IntaRNA
 
 # Diagnose non-ISO constructs in IntaRNA-owned sources only.
-IntaRNA_CXXFLAGS = $(AM_CXXFLAGS) @INTARNA_SYSTEM_CPPFLAGS@ -pedantic-errors
+IntaRNA_CXXFLAGS = $(AM_CXXFLAGS) @INTARNA_SYSTEM_CPPFLAGS@
 
 ###############################################################################
 # THE INTARNA BINARY

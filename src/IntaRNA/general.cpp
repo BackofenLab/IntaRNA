@@ -133,7 +133,7 @@ deleteInputStream( std::istream *& inStream )
 
 	// handle file input
 	namespace bio = boost::iostreams;
-	bio::filtering_ostream * inFile = dynamic_cast<bio::filtering_ostream *>(inStream);
+	bio::filtering_istream * inFile = dynamic_cast<bio::filtering_istream *>(inStream);
 	if (inFile != NULL) {
 		// ensure devices are closed on destruction
 		inFile->set_auto_close(true);

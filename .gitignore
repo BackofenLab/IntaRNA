@@ -39,6 +39,7 @@ config.*
 Makefile
 autom4te.cache
 configure
+configure~
 missing
 install-sh
 depcomp

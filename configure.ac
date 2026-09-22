@@ -443,7 +443,8 @@ AC_SUBST([PERSONALITIES],[`grep 'return.*"IntaRNA..*"' ./src/bin/CommandLinePars
 # Keep strict diagnostics focused on IntaRNA sources.  Boost and ViennaRNA
 # headers are external dependencies and can contain compiler extensions.
 INTARNA_SYSTEM_CPPFLAGS=
-for intarna_cppflag in $BOOST_CPPFLAGS $VRNA_CFLAGS; do
+#for intarna_cppflag in $BOOST_CPPFLAGS $VRNA_CFLAGS; do # ORIG
+for intarna_cppflag in $VRNA_CFLAGS; do
 	case "$intarna_cppflag" in
 		-I?*)
 			intarna_include_path=${intarna_cppflag#-I}

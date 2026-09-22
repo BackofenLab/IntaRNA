@@ -13,17 +13,16 @@
 # IntaRNA
 
 - remove redundant accessibility checks from predictor, helix and seed handling
-
 - C++23 required; build and installation checks with GCC 14 and Apple Clang
 - reduce temporary allocations and fix cleanup on error paths
 - avoid repeated partition-map lookups in exact ensemble prediction
-- add exhaustive interaction and seed oracles for short-sequence tests
+- reject Zall/Eall-dependent output in window mode
 - BUGFIX : heuristic cell initialization and noLP ensemble recurrences
 - BUGFIX : ensemble filtering and seed-extension partition reset
 - BUGFIX : target accessibility limits and seed-free outMinPu filtering
 - BUGFIX : accessibility range splitting and intramolecular ensemble energies
 - BUGFIX : interaction assignment, seed comparison and output handling
-- reject Zall/Eall-dependent output in window mode
+- add exhaustive interaction and seed oracles for short-sequence tests
 
 # IntaRNA_plotRegions.R
 
@@ -35,6 +34,14 @@
 
 ################################################################################  
 ################################################################################
+
+260921 Martin Raden
+ * IntaRNA/general :
+   * bugfix cleanup of stream objects
+ * configure.ac :
+ * src/IntaRNA/Makefile.am :
+ * src/bin/Makefile.am :
+   * undo some diagnostic flags to allow compilation on test system
 
 260919 Alexander Mitrofanov
  * IntaRNA/PredictorMfe2d* :
