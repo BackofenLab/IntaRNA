@@ -29,7 +29,7 @@ These are diagnostic counts, not a reliable estimate of a population failure pro
 
 ## Reproduce
 
-Use the recorded executable at source revision `0a4568ad6e3da52f935221ff0da98a4a171e9833` and the archived inputs. Set `BIN` to that executable and `DATA` to the extracted `default-mode` directory. Repeat the following in fresh processes and compare sorted CSV rows against the same command with `--threads=1`:
+Use the recorded executable at source revision `0a4568ad6e3da52f935221ff0da98a4a171e9833` and the committed [target](inputs/promoters48_systematic.fa) and [query](inputs/ChiX_NC_000913.fa) inputs. Set `BIN` to that executable. From the repository root, set `DATA="$PWD/doc/profiling/2026-09-21"`; alternatively, use the extracted archive's `default-mode` directory. Repeat the following in fresh processes and compare sorted CSV rows against the same command with `--threads=1`:
 
 ```bash
 OPENBLAS_NUM_THREADS=1 OMP_DYNAMIC=FALSE OMP_PROC_BIND=close OMP_PLACES=cores LC_ALL=C \

@@ -29,6 +29,18 @@ All scientific flags above are default values. Only input sizes, sequences, and 
 - Four CPU profiles (including an independent repeat of the GcvB profile), two heap traces, and three verbose phase runs execute after clean timing. Instrumentation does not supply the timing medians.
 - Environment: `OPENBLAS_NUM_THREADS=1`, `OMP_DYNAMIC=FALSE`, `OMP_PROC_BIND=close`, `OMP_PLACES=cores`, and `LC_ALL=C`. Exact host, compiler, libraries, binary hash, affinity, limits, and governor are in [environment.json](environment.json).
 
+## Inputs available directly in the branch
+
+All 18 FASTA inputs from the evidence archive are also committed in [inputs/](inputs/), including the [48-target sample](inputs/promoters48_systematic.fa), [ChiX query](inputs/ChiX_NC_000913.fa), and the repeated-query profiling input `profile_chix384.fa`. They are byte-for-byte copies of the archived inputs; the 17 study inputs retain their recorded hashes in [manifest.json](inputs/manifest.json). The additional profiling input is preserved exactly as archived.
+
+For the commands in [OUTPUT-STABILITY.md](OUTPUT-STABILITY.md) and [ED-READER-EVIDENCE.md](ED-READER-EVIDENCE.md), set this from the repository root:
+
+```bash
+DATA="$PWD/doc/profiling/2026-09-21"
+```
+
+Archive extraction is unnecessary for those commands. The archive remains the source for the full collection scripts and raw evidence; using its extracted `default-mode` directory as `DATA` also works.
+
 ## Evidence and verification
 
 The report links its timing, CPU, heap, phase, and review-response evidence. The [immutable evidence archive](default-mode-evidence.zip) includes raw stdout/stderr and resource records, sequence inputs, scripts, profile text exports, and build/test logs. Large compiled artifacts and raw gprofng experiment directories remain local. Every archived file has a SHA-256 manifest entry; [SHA256SUMS](SHA256SUMS) protects the archive as a whole.

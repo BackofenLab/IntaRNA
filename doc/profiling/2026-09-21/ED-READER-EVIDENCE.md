@@ -41,7 +41,7 @@ The reader [parses into `double curVal` and calls `Ekcal_2_E`](https://github.co
 
 ## Reproduce
 
-Use the pinned executable and the extracted archive inputs. From a writable directory, with `BIN` pointing to that executable and `DATA` to the extracted `default-mode` directory:
+Use the pinned executable and the committed [target](inputs/t1000.fa) and [query](inputs/q100.fa) inputs. From the repository root, set `DATA="$PWD/doc/profiling/2026-09-21"`; alternatively, use the extracted archive's `default-mode` directory. From a writable directory, with `BIN` pointing to that executable and `DATA` retaining that absolute path:
 
 ```bash
 "$BIN" --target="$DATA/inputs/t1000.fa" --query="$DATA/inputs/q100.fa" \
