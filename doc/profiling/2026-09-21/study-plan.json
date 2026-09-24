@@ -1,0 +1,37 @@
+{
+  "revision": "0a4568ad6e3da52f935221ff0da98a4a171e9833",
+  "cases": 18,
+  "measured_repetitions": 5,
+  "excluded_warmups_per_case": 1,
+  "random_seed": 20260921,
+  "scientific_defaults": [
+    "--model=X",
+    "--mode=H",
+    "--acc=C",
+    "--accW=150",
+    "--accL=100",
+    "--windowWidth=0",
+    "--seedBP=7",
+    "--seedMaxUP=0",
+    "--intLenMax=0"
+  ],
+  "controlled_environment": {
+    "LC_ALL": "C",
+    "OPENBLAS_NUM_THREADS": "1",
+    "OMP_DYNAMIC": "FALSE",
+    "OMP_PROC_BIND": "close",
+    "OMP_PLACES": "cores"
+  },
+  "output": "CSV including full bpList, retaining traceback; output formatting differs from CLI default",
+  "profiles": [
+    "batch_gcvb_1t",
+    "batch_chix_1t repeated 8x as one batch",
+    "long_pair"
+  ],
+  "limitations": [
+    "One host; bounded biological sample",
+    "No comparison with historical revision",
+    "No algorithm/window/accessibility-off sweep",
+    "Diagnostics and sampling run after clean timings"
+  ]
+}

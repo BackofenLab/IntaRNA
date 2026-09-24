@@ -1,0 +1,13 @@
+{
+  "reviewer": "martin-raden",
+  "mode_comment": "https://github.com/BackofenLab/IntaRNA/pull/240#issuecomment-5762928155",
+  "ed_comment": "https://github.com/BackofenLab/IntaRNA/pull/240#issuecomment-5763250539",
+  "target_revision": "0a4568ad6e3da52f935221ff0da98a4a171e9833",
+  "requirements": [
+    "Default seed-extension heuristic",
+    "No prediction window mode",
+    "Computed local accessibility",
+    "ED-reader observation supported by source links and reproduced evidence"
+  ],
+  "comparison_scope": "Current master only; prior report remains historical; no before/after performance claim"
+}

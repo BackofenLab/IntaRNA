@@ -1,0 +1,61 @@
+{
+  "note": "Only recognized gprofng creation banner and IntaRNA # log lines excluded; original files/validation retained.",
+  "checks": [
+    {
+      "name": "biological_batch",
+      "kind": "cpu",
+      "schema_valid": true,
+      "output_equal": true,
+      "rows": 48,
+      "sha256": "a3f00b95e76f6263db801c8d8e69a55163d56b2a8e2bb402589457d0441412f4"
+    },
+    {
+      "name": "hybrid_noaccess",
+      "kind": "cpu",
+      "schema_valid": true,
+      "output_equal": true,
+      "rows": 1,
+      "sha256": "fb0749dcb5d83c31f4d41e92891e421b079f5d478de40639bb6e2570714f8e80"
+    },
+    {
+      "name": "exact_x",
+      "kind": "cpu",
+      "schema_valid": true,
+      "output_equal": true,
+      "rows": 128,
+      "sha256": "b98327afd523184e88b4852539219d06b46cdd83198b1cf0463703f3a81aa638"
+    },
+    {
+      "name": "ensemble_m",
+      "kind": "cpu",
+      "schema_valid": true,
+      "output_equal": true,
+      "rows": 32,
+      "sha256": "08c053f260227e380efb5ffb379cda5824f709a373d861f34c8390e34b979752"
+    },
+    {
+      "name": "bio_phob_gcvb",
+      "kind": "heap",
+      "output_equal": true,
+      "sha256": "1cbb12dbc0dc51f763f8761b0dc0f09f1edabff1383765f5573802b39efc2d82"
+    },
+    {
+      "name": "algorithm_exact_x",
+      "kind": "heap",
+      "output_equal": true,
+      "sha256": "56e5e9e3e2708eb4bcf8337d70e579627c7e358db58ae114d83fcefa3f3f476f"
+    },
+    {
+      "name": "memory_t3000_q800",
+      "kind": "heap",
+      "output_equal": true,
+      "sha256": "4b13141f180ec263b2ab5741978980aa0dad0358121f48e94b635b8fef4f909d"
+    },
+    {
+      "name": "memory_s",
+      "kind": "heap",
+      "output_equal": true,
+      "sha256": "4b13141f180ec263b2ab5741978980aa0dad0358121f48e94b635b8fef4f909d"
+    }
+  ]
+}

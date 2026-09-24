@@ -1,0 +1,18 @@
+[
+  {
+    "profile": "batch_gcvb_1t",
+    "peak_tracked_heap_bytes": 4635487,
+    "allocation_calls": 235805,
+    "cumulative_allocated_bytes": 429845647,
+    "outstanding_at_exit_bytes": 28322,
+    "note": "Tracked heap metrics differ from RSS. Outstanding at exit does not by itself establish an application leak."
+  },
+  {
+    "profile": "long_pair",
+    "peak_tracked_heap_bytes": 10749909,
+    "allocation_calls": 64722,
+    "cumulative_allocated_bytes": 264022639,
+    "outstanding_at_exit_bytes": 25266,
+    "note": "Tracked heap metrics differ from RSS. Outstanding at exit does not by itself establish an application leak."
+  }
+]

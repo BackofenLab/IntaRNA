@@ -1,0 +1,577 @@
+{
+  "ChiX_NC_000913.fa": {
+    "sha256": "e4f618ff30384dbba7c967df186961e484ec734cd7c1afe88cd95fb5e606b35b",
+    "records": [
+      {
+        "id": "ChiX_NC_000913",
+        "length": 84,
+        "gc_fraction": 0.36905
+      }
+    ]
+  },
+  "GcvB.ST.fa": {
+    "sha256": "29aa7864421b99697f16c84906f8b74580600eee8df787e2e963aea223dce67c",
+    "records": [
+      {
+        "id": "GcvB|NC_003197",
+        "length": 200,
+        "gc_fraction": 0.46
+      }
+    ]
+  },
+  "GcvB.fa": {
+    "sha256": "b9d342813b344437253336ec64f750ee3ca8f27cf8b3c1d247adef94a0f48a33",
+    "records": [
+      {
+        "id": "GcvB|NC_000913",
+        "length": 201,
+        "gc_fraction": 0.43781
+      }
+    ]
+  },
+  "OxyS.fa": {
+    "sha256": "5a66897c9d52e7fa683e136108460a2d074330aa086fdda3bddc0e466eab3e30",
+    "records": [
+      {
+        "id": "OxyS|NC_000913|56..164|doi:10.1006/jmbi.2000.3942:Fig7",
+        "length": 108,
+        "gc_fraction": 0.49074
+      }
+    ]
+  },
+  "au_repeatq.fa": {
+    "sha256": "d5fa9ce6fce1e2aa3ac06dfa56d14c9f76c19eba2c2cf4b2901ea671d2df4715",
+    "records": [
+      {
+        "id": "au_repeatquery",
+        "length": 100,
+        "gc_fraction": 0.0
+      }
+    ]
+  },
+  "au_repeatt.fa": {
+    "sha256": "28f13af23bd045c7304159d05576d1af9a8f10800ae497713a439f61d6b75081",
+    "records": [
+      {
+        "id": "au_repeattarget",
+        "length": 300,
+        "gc_fraction": 0.0
+      }
+    ]
+  },
+  "fhlA.fa": {
+    "sha256": "b77bf98bc7d1c8c6e086338cd8fe078401a8cb46029010398d42d7b4c57031d3",
+    "records": [
+      {
+        "id": "fhlA|NC000913|-53..+60|doi:10.1006/jmbi.2000.3942:Fig7",
+        "length": 112,
+        "gc_fraction": 0.46429
+      }
+    ]
+  },
+  "gc20q.fa": {
+    "sha256": "c46c10ed00190a0d617d630b58b964220090e37be7cc422f5f1c2f192384f8ad",
+    "records": [
+      {
+        "id": "gc20query",
+        "length": 100,
+        "gc_fraction": 0.22
+      }
+    ]
+  },
+  "gc20t.fa": {
+    "sha256": "28baff096c70fd6b1412a875bcdea9718da7d0ec8dbb53f9083089e6f23d6b36",
+    "records": [
+      {
+        "id": "gc20target",
+        "length": 300,
+        "gc_fraction": 0.19667
+      }
+    ]
+  },
+  "gc50q.fa": {
+    "sha256": "99e5c9d48558135013e480b9e09059e3c6b418cf1ce73fc92d7ef2903466c988",
+    "records": [
+      {
+        "id": "gc50query",
+        "length": 100,
+        "gc_fraction": 0.47
+      }
+    ]
+  },
+  "gc50t.fa": {
+    "sha256": "0d80cbd355caee1390e3f977f5cc503d9095da77f7026f9f0067ec29efa6327a",
+    "records": [
+      {
+        "id": "gc50target",
+        "length": 300,
+        "gc_fraction": 0.50667
+      }
+    ]
+  },
+  "gc80q.fa": {
+    "sha256": "4c823f428e79c492806105745dc8a4f65597017a5a8630d26efa7493f5b20aec",
+    "records": [
+      {
+        "id": "gc80query",
+        "length": 100,
+        "gc_fraction": 0.77
+      }
+    ]
+  },
+  "gc80t.fa": {
+    "sha256": "f53693ee5280ec41510f5671b393d459743958db2811308862209289d6446ae7",
+    "records": [
+      {
+        "id": "gc80target",
+        "length": 300,
+        "gc_fraction": 0.81667
+      }
+    ]
+  },
+  "gc_repeatq.fa": {
+    "sha256": "3891106982a4b64653045bf90a5dae9e8f350b7e1916134837399e20c640f299",
+    "records": [
+      {
+        "id": "gc_repeatquery",
+        "length": 100,
+        "gc_fraction": 1.0
+      }
+    ]
+  },
+  "gc_repeatt.fa": {
+    "sha256": "a4fbcae21cb443756c313c5ad0227c74c8e3af3850a7c23cdbe292444f9eae97",
+    "records": [
+      {
+        "id": "gc_repeattarget",
+        "length": 300,
+        "gc_fraction": 1.0
+      }
+    ]
+  },
+  "ilvE.fa": {
+    "sha256": "2be82291167679d0aa600b017abd945422d8c17ee76b972b54e7884ca2eb1e93",
+    "records": [
+      {
+        "id": "ilvE|NC_003197|STM3903|-200..+100|genom-subsequence",
+        "length": 299,
+        "gc_fraction": 0.49498
+      }
+    ]
+  },
+  "no_pairq.fa": {
+    "sha256": "de7f988e5f6484ac37987cb5a4ce68549e5577d03e5e8be3fd439586750af89f",
+    "records": [
+      {
+        "id": "no_pairquery",
+        "length": 100,
+        "gc_fraction": 0.0
+      }
+    ]
+  },
+  "no_pairt.fa": {
+    "sha256": "7d9107406bd21f64979cbb72e99dc10d475c27934282529a7f3620a096a13408",
+    "records": [
+      {
+        "id": "no_pairtarget",
+        "length": 300,
+        "gc_fraction": 0.0
+      }
+    ]
+  },
+  "phoB.fa": {
+    "sha256": "754b468f94d6ff56677581e66db4b8c7014c19eb036b03b3b7d37f0b4fc91e42",
+    "records": [
+      {
+        "id": "phoB|NC_000913|b1130|-200..+100|genom-subsequence",
+        "length": 299,
+        "gc_fraction": 0.43144
+      }
+    ]
+  },
+  "promoters48.fa": {
+    "sha256": "27574d35c4190fe5ccb0f4eee82331ce61c2392fffd0233d52488d33c49dc491",
+    "records": [
+      {
+        "id": "b0001",
+        "length": 300,
+        "gc_fraction": 0.41333
+      },
+      {
+        "id": "b0002",
+        "length": 300,
+        "gc_fraction": 0.49333
+      },
+      {
+        "id": "b0003",
+        "length": 300,
+        "gc_fraction": 0.53667
+      },
+      {
+        "id": "b0004",
+        "length": 300,
+        "gc_fraction": 0.56667
+      },
+      {
+        "id": "b0005",
+        "length": 300,
+        "gc_fraction": 0.44
+      },
+      {
+        "id": "b0006",
+        "length": 300,
+        "gc_fraction": 0.48667
+      },
+      {
+        "id": "b0007",
+        "length": 300,
+        "gc_fraction": 0.46
+      },
+      {
+        "id": "b0008",
+        "length": 300,
+        "gc_fraction": 0.5
+      },
+      {
+        "id": "b0009",
+        "length": 300,
+        "gc_fraction": 0.45667
+      },
+      {
+        "id": "b0010",
+        "length": 300,
+        "gc_fraction": 0.49333
+      },
+      {
+        "id": "b0011",
+        "length": 300,
+        "gc_fraction": 0.42
+      },
+      {
+        "id": "b0013",
+        "length": 300,
+        "gc_fraction": 0.42667
+      },
+      {
+        "id": "b0014",
+        "length": 300,
+        "gc_fraction": 0.45667
+      },
+      {
+        "id": "b0015",
+        "length": 300,
+        "gc_fraction": 0.46667
+      },
+      {
+        "id": "b0016",
+        "length": 300,
+        "gc_fraction": 0.50333
+      },
+      {
+        "id": "b0018",
+        "length": 300,
+        "gc_fraction": 0.43667
+      },
+      {
+        "id": "b4412",
+        "length": 300,
+        "gc_fraction": 0.48333
+      },
+      {
+        "id": "b0019",
+        "length": 300,
+        "gc_fraction": 0.42
+      },
+      {
+        "id": "b0020",
+        "length": 300,
+        "gc_fraction": 0.47333
+      },
+      {
+        "id": "b0021",
+        "length": 300,
+        "gc_fraction": 0.54333
+      },
+      {
+        "id": "b0022",
+        "length": 300,
+        "gc_fraction": 0.46333
+      },
+      {
+        "id": "b0023",
+        "length": 300,
+        "gc_fraction": 0.47
+      },
+      {
+        "id": "b0024",
+        "length": 300,
+        "gc_fraction": 0.47
+      },
+      {
+        "id": "b0025",
+        "length": 300,
+        "gc_fraction": 0.51
+      },
+      {
+        "id": "b0026",
+        "length": 300,
+        "gc_fraction": 0.49333
+      },
+      {
+        "id": "b0027",
+        "length": 300,
+        "gc_fraction": 0.54667
+      },
+      {
+        "id": "b0028",
+        "length": 300,
+        "gc_fraction": 0.50667
+      },
+      {
+        "id": "b0029",
+        "length": 300,
+        "gc_fraction": 0.53
+      },
+      {
+        "id": "b0030",
+        "length": 300,
+        "gc_fraction": 0.50333
+      },
+      {
+        "id": "b0031",
+        "length": 300,
+        "gc_fraction": 0.52
+      },
+      {
+        "id": "b0032",
+        "length": 300,
+        "gc_fraction": 0.43
+      },
+      {
+        "id": "b0033",
+        "length": 300,
+        "gc_fraction": 0.52333
+      },
+      {
+        "id": "b0034",
+        "length": 300,
+        "gc_fraction": 0.37
+      },
+      {
+        "id": "b0035",
+        "length": 300,
+        "gc_fraction": 0.56333
+      },
+      {
+        "id": "b0036",
+        "length": 300,
+        "gc_fraction": 0.38667
+      },
+      {
+        "id": "b0037",
+        "length": 300,
+        "gc_fraction": 0.51333
+      },
+      {
+        "id": "b0038",
+        "length": 300,
+        "gc_fraction": 0.56333
+      },
+      {
+        "id": "b0039",
+        "length": 300,
+        "gc_fraction": 0.47667
+      },
+      {
+        "id": "b0040",
+        "length": 300,
+        "gc_fraction": 0.34667
+      },
+      {
+        "id": "b0041",
+        "length": 300,
+        "gc_fraction": 0.35
+      },
+      {
+        "id": "b0042",
+        "length": 300,
+        "gc_fraction": 0.53
+      },
+      {
+        "id": "b0043",
+        "length": 300,
+        "gc_fraction": 0.56333
+      },
+      {
+        "id": "b0044",
+        "length": 300,
+        "gc_fraction": 0.51667
+      },
+      {
+        "id": "b0045",
+        "length": 300,
+        "gc_fraction": 0.54
+      },
+      {
+        "id": "b0046",
+        "length": 300,
+        "gc_fraction": 0.46333
+      },
+      {
+        "id": "b0047",
+        "length": 300,
+        "gc_fraction": 0.56
+      },
+      {
+        "id": "b0048",
+        "length": 300,
+        "gc_fraction": 0.46333
+      },
+      {
+        "id": "b0049",
+        "length": 300,
+        "gc_fraction": 0.51
+      }
+    ]
+  },
+  "q100.fa": {
+    "sha256": "6f719f3c45e527205835a360c76e31804b17ec769efd65c073b5fad6b73be18a",
+    "records": [
+      {
+        "id": "synthetic_query_100",
+        "length": 100,
+        "gc_fraction": 0.51
+      }
+    ]
+  },
+  "q200.fa": {
+    "sha256": "27ce51c975bfcfc64e9b4e0dcd6ceca7a5e4986707fa9a9bccb9975d8e358fa8",
+    "records": [
+      {
+        "id": "synthetic_query_200",
+        "length": 200,
+        "gc_fraction": 0.495
+      }
+    ]
+  },
+  "q40.fa": {
+    "sha256": "a2b68694c6027a744bb45b324791249fa2ed71093c077a7eaa0f0e7936a6c639",
+    "records": [
+      {
+        "id": "synthetic_query_40",
+        "length": 40,
+        "gc_fraction": 0.55
+      }
+    ]
+  },
+  "q400.fa": {
+    "sha256": "f9b1a6e0af1151e7013bb71ff39e939e69dd4b2de3a77a9e3b3132245d0c21fc",
+    "records": [
+      {
+        "id": "synthetic_query_400",
+        "length": 400,
+        "gc_fraction": 0.5225
+      }
+    ]
+  },
+  "q50.fa": {
+    "sha256": "a929a8eb3d96362f251e10909684243838b5e011cba672d224f11ecfc2df3598",
+    "records": [
+      {
+        "id": "synthetic_query_50",
+        "length": 50,
+        "gc_fraction": 0.54
+      }
+    ]
+  },
+  "q60.fa": {
+    "sha256": "4aa52a5354be0fac1a53124c99ada52c9a1fa2b9785e6188807ef523354322dc",
+    "records": [
+      {
+        "id": "synthetic_query_60",
+        "length": 60,
+        "gc_fraction": 0.56667
+      }
+    ]
+  },
+  "q800.fa": {
+    "sha256": "d7d7b0e5fb75f611d345f46c53846e3650184b380030aa9082c553b85cc0ff5f",
+    "records": [
+      {
+        "id": "synthetic_query_800",
+        "length": 800,
+        "gc_fraction": 0.505
+      }
+    ]
+  },
+  "t100.fa": {
+    "sha256": "bd2834d3babeb1746b369d03744a32c50ee583a0cbbeb38edd4470eb13851a0a",
+    "records": [
+      {
+        "id": "synthetic_target_100",
+        "length": 100,
+        "gc_fraction": 0.45
+      }
+    ]
+  },
+  "t1000.fa": {
+    "sha256": "7ff65c47d9f0ff8c50b7a904c919f6bbf3fe5872b56b3ae7ed8ac4060869cfef",
+    "records": [
+      {
+        "id": "synthetic_target_1000",
+        "length": 1000,
+        "gc_fraction": 0.497
+      }
+    ]
+  },
+  "t10000.fa": {
+    "sha256": "d41a34e1d2c04ac984d59ecf830c7f45565c521d0f468ef82f717caae9114aae",
+    "records": [
+      {
+        "id": "synthetic_target_10000",
+        "length": 10000,
+        "gc_fraction": 0.5082
+      }
+    ]
+  },
+  "t300.fa": {
+    "sha256": "e478214c0195c9ab610be2eace6655a68e00ce95f27bda1dad56e8232dcbbaf8",
+    "records": [
+      {
+        "id": "synthetic_target_300",
+        "length": 300,
+        "gc_fraction": 0.48667
+      }
+    ]
+  },
+  "t3000.fa": {
+    "sha256": "bac4fe443042f6cee9ecc52727d76fb37f1aff97add42b7f889ce7c7cd6cb7c4",
+    "records": [
+      {
+        "id": "synthetic_target_3000",
+        "length": 3000,
+        "gc_fraction": 0.51367
+      }
+    ]
+  },
+  "t40.fa": {
+    "sha256": "605b3250846ab20a36fc8b92efaadd73600c1295583dd4dbe40423b634b9e455",
+    "records": [
+      {
+        "id": "synthetic_target_40",
+        "length": 40,
+        "gc_fraction": 0.45
+      }
+    ]
+  },
+  "t60.fa": {
+    "sha256": "3df69f9744076c3dea82e8b2ca45a49f3eac926c760c1cd6d2105668ce7c1ea6",
+    "records": [
+      {
+        "id": "synthetic_target_60",
+        "length": 60,
+        "gc_fraction": 0.4
+      }
+    ]
+  }
+}

@@ -1,0 +1,737 @@
+[
+  {
+    "name": "bio_fhla_oxys",
+    "category": "biological",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/fhlA.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/OxyS.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "bio_phob_gcvb",
+    "category": "biological",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/phoB.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/GcvB.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "bio_ilve_gcvb",
+    "category": "biological",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/ilvE.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/GcvB.ST.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "length_t100_q100",
+    "category": "target_length",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t100.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q100.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "length_t300_q100",
+    "category": "target_length",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t300.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q100.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "length_t1000_q100",
+    "category": "target_length",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t1000.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q100.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "length_t3000_q100",
+    "category": "target_length",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t3000.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q100.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "length_t10000_q100",
+    "category": "target_length",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t10000.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q100.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "length_t300_q50",
+    "category": "query_length",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t300.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q50.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "length_t300_q200",
+    "category": "query_length",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t300.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q200.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "length_t300_q400",
+    "category": "query_length",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t300.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q400.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "length_t300_q800",
+    "category": "query_length",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t300.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q800.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "composition_gc20",
+    "category": "composition",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/gc20t.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/gc20q.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "composition_gc50",
+    "category": "composition",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/gc50t.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/gc50q.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "composition_gc80",
+    "category": "composition",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/gc80t.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/gc80q.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "au_repeat",
+    "category": "composition",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/au_repeatt.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/au_repeatq.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "gc_repeat",
+    "category": "composition",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/gc_repeatt.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/gc_repeatq.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "no_pair",
+    "category": "composition",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/no_pairt.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/no_pairq.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "algorithm_default",
+    "category": "algorithm",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t100.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q100.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "algorithm_exact_x",
+    "category": "algorithm",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t100.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q100.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1",
+      "--mode=M"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "algorithm_heuristic_s",
+    "category": "algorithm",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t100.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q100.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1",
+      "--model=S"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "algorithm_exact_s",
+    "category": "algorithm",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t100.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q100.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1",
+      "--mode=M",
+      "--model=S"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "algorithm_helix",
+    "category": "algorithm",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t100.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q100.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1",
+      "--model=B"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "algorithm_no_seed",
+    "category": "algorithm",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t100.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q100.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1",
+      "--noSeed"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "algorithm_gapped_seed",
+    "category": "algorithm",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t100.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q100.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1",
+      "--seedMaxUP=2"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "algorithm_seed_only",
+    "category": "algorithm",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t100.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q100.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1",
+      "--mode=S"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "algorithm_no_lonely_pairs",
+    "category": "algorithm",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t100.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q100.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1",
+      "--outNoLP"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "algorithm_loop0",
+    "category": "algorithm",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t100.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q100.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1",
+      "--intLoopMax=0"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "algorithm_loop30",
+    "category": "algorithm",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t100.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q100.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1",
+      "--intLoopMax=30"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "algorithm_out10",
+    "category": "algorithm",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t100.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q100.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1",
+      "--outNumber=10"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "algorithm_out100",
+    "category": "algorithm",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t100.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q100.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1",
+      "--outNumber=100"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "ensemble_H",
+    "category": "ensemble",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t40.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q40.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1",
+      "--model=P",
+      "--mode=H",
+      "--noSeed"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "ensemble_M",
+    "category": "ensemble",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t40.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q40.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1",
+      "--model=P",
+      "--mode=M",
+      "--noSeed"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "accessibility_computed",
+    "category": "accessibility",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t1000.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q100.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1",
+      "--intLenMax=150"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "accessibility_none",
+    "category": "accessibility",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t1000.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q100.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1",
+      "--intLenMax=150",
+      "--acc=N"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "accessibility_global",
+    "category": "accessibility",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t1000.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q100.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1",
+      "--intLenMax=150",
+      "--accW=0",
+      "--accL=0"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "accessibility_window75",
+    "category": "accessibility",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t1000.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q100.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1",
+      "--intLenMax=75",
+      "--accW=75",
+      "--accL=75"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "accessibility_cap75_control",
+    "category": "accessibility",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t1000.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q100.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1",
+      "--intLenMax=75"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "window_300",
+    "category": "prediction_windows",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t3000.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q100.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1",
+      "--intLenMax=150",
+      "--windowWidth=300",
+      "--windowOverlap=150"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "window_600",
+    "category": "prediction_windows",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t3000.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q100.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1",
+      "--intLenMax=150",
+      "--windowWidth=600",
+      "--windowOverlap=150"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "throughput_1t",
+    "category": "thread_scaling",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/promoters48.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/ChiX_NC_000913.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "throughput_2t",
+    "category": "thread_scaling",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/promoters48.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/ChiX_NC_000913.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=2"
+    ],
+    "threads": 2
+  },
+  {
+    "name": "throughput_4t",
+    "category": "thread_scaling",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/promoters48.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/ChiX_NC_000913.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=4"
+    ],
+    "threads": 4
+  },
+  {
+    "name": "throughput_6t",
+    "category": "thread_scaling",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/promoters48.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/ChiX_NC_000913.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=6"
+    ],
+    "threads": 6
+  },
+  {
+    "name": "throughput_12t",
+    "category": "thread_scaling",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/promoters48.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/ChiX_NC_000913.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=12"
+    ],
+    "threads": 12
+  },
+  {
+    "name": "memory_t3000_q800",
+    "category": "memory_stress",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t3000.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q800.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "memory_window300",
+    "category": "memory_stress",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t3000.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q800.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1",
+      "--intLenMax=150",
+      "--windowWidth=300",
+      "--windowOverlap=150"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "cache_computed_control",
+    "category": "accessibility",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t1000.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q100.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1",
+      "--intLenMax=150"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "cache_reused",
+    "category": "accessibility",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t1000.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q100.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1",
+      "--intLenMax=150",
+      "--tAcc=E",
+      "--tAccFile=/home/alex/CodexProjects/IntaRNA/profiling/inputs/cache/target.ed",
+      "--qAcc=E",
+      "--qAccFile=/home/alex/CodexProjects/IntaRNA/profiling/inputs/cache/query.ed"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "blas_one_control",
+    "category": "biological",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/fhlA.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/OxyS.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "blas_unset",
+    "category": "biological",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/fhlA.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/OxyS.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1"
+    ],
+    "threads": 1,
+    "env_overrides": {
+      "OPENBLAS_NUM_THREADS": null
+    }
+  },
+  {
+    "name": "blas_twelve",
+    "category": "biological",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/fhlA.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/OxyS.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1"
+    ],
+    "threads": 1,
+    "env_overrides": {
+      "OPENBLAS_NUM_THREADS": "12"
+    }
+  },
+  {
+    "name": "memory_s",
+    "category": "memory_stress",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t3000.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q800.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1",
+      "--model=S"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "memory_s_window300",
+    "category": "memory_stress",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t3000.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q800.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1",
+      "--intLenMax=150",
+      "--windowWidth=300",
+      "--windowOverlap=150",
+      "--model=S"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "cache_matched_computed",
+    "category": "accessibility",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t1000.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q100.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1",
+      "--qIntLenMax=99",
+      "--tIntLenMax=149"
+    ],
+    "threads": 1
+  },
+  {
+    "name": "cache_matched_reused",
+    "category": "accessibility",
+    "args": [
+      "--target=/home/alex/CodexProjects/IntaRNA/profiling/inputs/t1000.fa",
+      "--query=/home/alex/CodexProjects/IntaRNA/profiling/inputs/q100.fa",
+      "--outMode=C",
+      "--outCsvCols=id1,id2,start1,end1,start2,end2,E",
+      "--threads=1",
+      "--tAcc=E",
+      "--tAccFile=/home/alex/CodexProjects/IntaRNA/profiling/inputs/cache/target.ed",
+      "--qAcc=E",
+      "--qAccFile=/home/alex/CodexProjects/IntaRNA/profiling/inputs/cache/query.ed",
+      "--qIntLenMax=99",
+      "--tIntLenMax=149"
+    ],
+    "threads": 1
+  }
+]

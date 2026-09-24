@@ -1,0 +1,55 @@
+[
+  {
+    "profile": "gcvb",
+    "kind": "cpu",
+    "csv_valid": true,
+    "output_equal_bpList": true,
+    "reported_rows": 48
+  },
+  {
+    "profile": "gcvb_repeat",
+    "kind": "cpu",
+    "csv_valid": true,
+    "output_equal_bpList": true,
+    "reported_rows": 48
+  },
+  {
+    "profile": "chix384",
+    "kind": "cpu",
+    "csv_valid": true,
+    "output_equal_bpList": true,
+    "reported_rows": 376
+  },
+  {
+    "profile": "long_pair",
+    "kind": "cpu",
+    "csv_valid": true,
+    "output_equal_bpList": true,
+    "reported_rows": 1
+  },
+  {
+    "profile": "batch_gcvb_1t",
+    "kind": "phases",
+    "output_equal_bpList": true
+  },
+  {
+    "profile": "batch_chix_1t",
+    "kind": "phases",
+    "output_equal_bpList": true
+  },
+  {
+    "profile": "long_pair",
+    "kind": "phases",
+    "output_equal_bpList": true
+  },
+  {
+    "profile": "batch_gcvb_1t",
+    "kind": "heap",
+    "output_equal_bpList": true
+  },
+  {
+    "profile": "long_pair",
+    "kind": "heap",
+    "output_equal_bpList": true
+  }
+]

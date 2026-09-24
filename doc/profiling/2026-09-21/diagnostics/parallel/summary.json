@@ -1,0 +1,60 @@
+{
+  "scope": "Untimed post-profile repeat check, not additional performance measurements",
+  "reference": "results/batch_chix_1t.measure1.stdout",
+  "random_seed": 202609212,
+  "counts": {
+    "1": {
+      "runs": 3,
+      "different": 0
+    },
+    "6": {
+      "runs": 5,
+      "different": 0
+    },
+    "12": {
+      "runs": 20,
+      "different": 1
+    }
+  },
+  "observed_differences": [
+    {
+      "name": "t12_repeat08",
+      "threads": 12,
+      "command": [
+        "/home/alex/CodexProjects/IntaRNA/profiling-default-20260921/source/src/bin/IntaRNA",
+        "--target=/home/alex/CodexProjects/IntaRNA/profiling-default-20260921/inputs/promoters48_systematic.fa",
+        "--query=/home/alex/CodexProjects/IntaRNA/profiling-default-20260921/inputs/ChiX_NC_000913.fa",
+        "--model=X",
+        "--mode=H",
+        "--acc=C",
+        "--accW=150",
+        "--accL=100",
+        "--windowWidth=0",
+        "--seedBP=7",
+        "--seedMaxUP=0",
+        "--intLenMax=0",
+        "--threads=12",
+        "--outMode=C",
+        "--outCsvCols=id1,id2,start1,end1,start2,end2,E,bpList"
+      ],
+      "exit_code": 0,
+      "binary_sha256": "17e9494e49ea3ad18285954fb8c576fd8f3de9ec852bdba0c8e508f0b72eab33",
+      "stdout_sha256": "ae3cd61ff93ea297999c61b67ef9367b2d0bef44d26f03543e721d7cb8de3c05",
+      "output_equal": false,
+      "differences": [
+        {
+          "id": [
+            "b2410",
+            "ChiX_NC_000913"
+          ],
+          "fields": {
+            "E": {
+              "reference": "-5.02",
+              "observed": "-5.8"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
