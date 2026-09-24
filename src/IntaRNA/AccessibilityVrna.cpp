@@ -241,12 +241,18 @@ fillByRNAplfold( const VrnaHandler &vrnaHandler
     // and the normalized temperature for the Boltzmann weight computation
     std::pair< AccessibilityVrna*, FLT_OR_DBL > storageRT(this, (FLT_OR_DBL)vrnaHandler.getRT());
 
-	// call folding and unpaired prob calculation
-    int retVal = vrna_probs_window( fold_compound, plFoldW, VRNA_PROBS_WINDOW_UP, &callbackForStorage, (void*)(&storageRT));
-    // check if computations went fine
-    if (retVal == 0) {
-    	throw std::runtime_error("AccessibilityVrna::fillByRNAplfold() : vrna_probs_window() returned 0 status ...");
-    }
+	// VRNA is not fully thread-safe, so we need to lock the call to vrna_probs_window() to avoid race conditions
+#if INTARNA_MULITHREADING
+	#pragma omp critical(intarna_omp_vrna_probs_window)
+# endif
+	{
+		// call folding and unpaired prob calculation
+		int retVal = vrna_probs_window( fold_compound, plFoldW, VRNA_PROBS_WINDOW_UP, &callbackForStorage, (void*)(&storageRT));
+		// check if computations went fine
+		if (retVal == 0) {
+			throw std::runtime_error("AccessibilityVrna::fillByRNAplfold() : vrna_probs_window() returned 0 status ...");
+		}
+	}
 
 }
 

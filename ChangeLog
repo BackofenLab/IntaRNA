@@ -23,6 +23,8 @@
 - BUGFIX : accessibility range splitting and intramolecular ensemble energies
 - BUGFIX : interaction assignment, seed comparison and output handling
 - BUGFIX : dangling-end probability computation using maxLength+1 ED values
+- BUGFIX : multi-threading : serialization of ViennaRNA-based accessibility 
+  computation since vrna-lib not thread-safe (up to v2.7.2)
 - add exhaustive interaction and seed oracles for short-sequence tests
 
 - reduced memory use for exact non-seed ensemble prediction without trackers
@@ -37,6 +39,12 @@
 
 ################################################################################  
 ################################################################################
+
+260924 Martin Raden
+ * IntaRNA/AccessibilityVrna :
+   * fillByRNAplfold() : 
+     + multi-thread bugfix: serialize access to ViennaRNA library since not 
+       thread-safe (up to v2.7.2)
 
 260921 Martin Raden
  * IntaRNA/general :
