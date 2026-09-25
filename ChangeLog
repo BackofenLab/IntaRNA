@@ -29,6 +29,8 @@
 - too short sequences are skipped with warning if they are shorter than the 
   required seed or helix length (were causing an exception and abort before)
 - default SHAPE method changed to "D", which is the default for ViennaRNA 2.7.*
+- output buffer size increased to 512 KB for higher performance and reduced 
+  file-handle overhead
 
 - reduced memory use for exact non-seed ensemble prediction without trackers
 
@@ -53,6 +55,9 @@
      * default SHAPE methods changed to "D", which is the default for ViennaRNA 2.7.*
  * bin/IntaRNA :
    * skip too short query or target sequences 
+ * IntaRNA/general :
+   * newOutputStream() : 
+     + increased output buffer size to 512 KB for higher performance and reduced file-handle overhead
 
 260924 Martin Raden
  * IntaRNA/AccessibilityVrna :
