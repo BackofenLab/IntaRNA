@@ -176,6 +176,12 @@ int main(int argc, char **argv){
 #endif
 		for ( size_t targetNumber = 0; targetNumber < parameters.getTargetSequences().size(); ++targetNumber )
 		{
+			// sequence length checks
+			if (parameters.isToShortTarget(targetNumber)) {
+				// skip this sequence as announced
+				continue;
+			}
+
 #if INTARNA_MULITHREADING
 			#pragma omp flush (threadAborted)
 			// explicit try-catch-block due to missing OMP exception forwarding
@@ -208,6 +214,11 @@ int main(int argc, char **argv){
 					{
 						// get index of this query wrt. getQuerySequence() and queryAcc()
 						const size_t queryNumber = parameters.getQueryIndexForTarget(queryIdx, targetNumber);
+						// sequence length checks
+						if (parameters.isToShortQuery(queryNumber)) {
+							// skip this sequence as announced
+							continue;
+						}
 #if INTARNA_MULITHREADING
 						#pragma omp flush (threadAborted)
 						// explicit try-catch-block due to missing OMP exception forwarding

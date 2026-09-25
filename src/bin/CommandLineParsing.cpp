@@ -1287,12 +1287,18 @@ parse(int argc, char** argv)
 					// check for minimal sequence length (>=seedBP)
 					for( auto q : query) {
 						if (q.size() < seedBP.val) {
-							throw error("length of query "+q.getId()+" is below minimal number of seed base pairs (seedBP="+toString(seedBP.val)+")");
+							LOG(WARNING) <<"query sequence '"<<q.getId()
+									<<"' is shorter than the minimum seed length of "
+									<<seedBP.val
+									<<". No interactions will be computed for this query.";
 						}
 					}
 					for( auto t : target) {
 						if (t.size() < seedBP.val) {
-							throw error("length of target sequence "+t.getId()+" is below minimal number of seed base pairs (seedBP="+toString(seedBP.val)+")");
+							LOG(WARNING) <<"target sequence '"<<t.getId()
+									<<"' is shorter than the minimum seed length of "
+									<<seedBP.val
+									<<". No interactions will be computed for this target.";
 						}
 					}
 				} else {
@@ -1583,12 +1589,18 @@ parse(int argc, char** argv)
 				// check for minimal sequence length
 				for(size_t i=0; i<query.size(); i++) {
 					if (query.at(i).size() < helixMinBP.val) {
-						throw error("length of query sequence "+query.at(i).getId()+" is below minimal number of helix base pairs (helixMinBP="+toString(helixMinBP.val)+")");
+						LOG(WARNING) <<"query sequence '"<<query.at(i).getId()
+								<<"' is shorter than the minimum helix length of "
+								<<helixMinBP.val
+								<<". No interactions will be computed for this query.";
 					}
 				}
 				for(size_t i=0; i<target.size(); i++) {
 					if (target.at(i).size() < helixMinBP.val) {
-						throw error("length of target sequence "+target.at(i).getId()+" is below minimal number of helix base pairs (helixMinBP="+toString(helixMinBP.val)+")");
+						LOG(WARNING) <<"target sequence '"<<target.at(i).getId()
+								<<"' is shorter than the minimum helix length of "
+								<<helixMinBP.val
+								<<". No interactions will be computed for this target.";
 					}
 				}
 				// Ensure that min is smaller than max.
@@ -2558,6 +2570,42 @@ getHelixConstraint(const InteractionEnergy &energy) const
 		);
 	}
 	return *helixConstraint;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+bool
+CommandLineParsing::
+isToShortTarget( const size_t targetNumber ) const
+{
+	checkIfParsed();
+	// check if seed is required & target sequence is too short for seed length if seed is required
+	if (!noSeedRequired & target.at(targetNumber).size() < seedBP.val) {
+		return true;
+	}
+	// check if target sequence is too short for helix length if helix is required
+	if (model.val=='B' && target.at(targetNumber).size() < helixMinBP.val) {
+		return true;
+	}
+	return false;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+bool
+CommandLineParsing::
+isToShortQuery( const size_t queryNumber ) const
+{
+	checkIfParsed();
+	// check if seed is required &  query sequence is too short for seed length if seed is required
+	if (!noSeedRequired && query.at(queryNumber).size() < seedBP.val) {
+		return true;
+	}
+	// check if query sequence is too short for helix length if helix is required
+	if (model.val=='B' && query.at(queryNumber).size() < helixMinBP.val) {
+		return true;
+	}
+	return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////

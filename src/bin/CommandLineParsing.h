@@ -338,6 +338,30 @@ public:
 	bool
 	reportBestPerRegion() const;
 
+	/**
+	 * Checks whether or not the given target sequence is too short to be considered 
+	 * for interaction prediction, i.e.
+	 * - shorter than minimal seed length (if seed constraint is active)
+	 * - shorter than the minimal helix length (if helix constraint is active)
+	 *
+	 * @param targetNumber the index of the target sequence wrt. getTargetSequences()
+	 * @return true if the target sequence is too short; false otherwise
+	 */
+	bool
+	isToShortTarget( const size_t targetNumber ) const;
+
+	/**
+	 * Checks whether or not the given query sequence is too short to be considered 
+	 * for interaction prediction, i.e.
+	 * - shorter than minimal seed length (if seed constraint is active)
+	 * - shorter than the minimal helix length (if helix constraint is active)
+	 *
+	 * @param queryNumber the index of the query sequence wrt. getQuerySequences()
+	 * @return true if the query sequence is too short; false otherwise
+	 */
+	bool
+	isToShortQuery( const size_t queryNumber ) const;
+
 #if INTARNA_MULITHREADING
 	/**
 	 * Number of threads to be used for parallel processing of

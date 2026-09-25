@@ -26,6 +26,8 @@
 - BUGFIX : multi-threading : serialization of ViennaRNA-based accessibility 
   computation since vrna-lib not thread-safe (up to v2.7.2)
 - add exhaustive interaction and seed oracles for short-sequence tests
+- too short sequences are skipped with warning if they are shorter than the 
+  required seed or helix length (were causing an exception and abort before)
 
 - reduced memory use for exact non-seed ensemble prediction without trackers
 
@@ -39,6 +41,15 @@
 
 ################################################################################  
 ################################################################################
+
+260925 Martin Raden
+ * bin/CommandLineParsing :
+   * isToShortQuery() : check if query length is < seedBP or helixMinBP (if required)
+   * isToShortTarget() : check if target length is < seedBP or helixMinBP (if required)
+   * parsing: 
+     * provide warning instead of exception if query or target sequence is too short for seed or helix length
+ * bin/IntaRNA :
+   * skip too short query or target sequences 
 
 260924 Martin Raden
  * IntaRNA/AccessibilityVrna :
