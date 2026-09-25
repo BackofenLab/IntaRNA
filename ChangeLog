@@ -28,6 +28,7 @@
 - add exhaustive interaction and seed oracles for short-sequence tests
 - too short sequences are skipped with warning if they are shorter than the 
   required seed or helix length (were causing an exception and abort before)
+- default SHAPE method changed to "D", which is the default for ViennaRNA 2.7.*
 
 - reduced memory use for exact non-seed ensemble prediction without trackers
 
@@ -48,6 +49,8 @@
    * isToShortTarget() : check if target length is < seedBP or helixMinBP (if required)
    * parsing: 
      * provide warning instead of exception if query or target sequence is too short for seed or helix length
+   * default:
+     * default SHAPE methods changed to "D", which is the default for ViennaRNA 2.7.*
  * bin/IntaRNA :
    * skip too short query or target sequences 
 

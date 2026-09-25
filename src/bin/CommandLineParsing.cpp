@@ -120,7 +120,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	qRegion(),
 	qRegionLenMax("qRegionLenMax", 0, 99999, 0),
 	qShape(""),
-	qShapeMethod("Zb0.89"),
+	qShapeMethod("D"),
 	qShapeConversion("Os1.6i-2.29"),
 	qPfScale("qPfScale", 1.0, 99999.0, VrnaHandler::getPfScaleDefault()),
 
@@ -140,7 +140,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	tRegion(),
 	tRegionLenMax("tRegionLenMax", 0, 99999, 0),
 	tShape(""),
-	tShapeMethod("Zb0.89"),
+	tShapeMethod("D"),
 	tShapeConversion("Os1.6i-2.29"),
 	tPfScale("tPfScale", 1.0, 99999.0, VrnaHandler::getPfScaleDefault()),
 
