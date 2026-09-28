@@ -4,6 +4,8 @@
 ################################################################
 
 EXTRA_DIST =	\
+			mdspan-storage.md \
+			mdspan-storage-samples.tsv \
 			conda.txt \
 			doxygen.cfg \
 			latex-deps/adjcalc.sty \

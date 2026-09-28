@@ -8,7 +8,7 @@
 #include <iostream>
 
 #include <boost/algorithm/string.hpp>
-#include <boost/numeric/ublas/matrix.hpp>
+#include "IntaRNA/Matrix.h"
 
 
 namespace IntaRNA {
@@ -107,7 +107,7 @@ protected:
 	const std::string sep_string;
 
 	//! matrix type to hold the mfe energies and boundaries for interaction site starts
-	typedef boost::numeric::ublas::matrix<E_type> E2dMatrix;
+	typedef Matrix<E_type> E2dMatrix;
 
 	//! the index-pair-wise minimal energy values
 	E2dMatrix pairMinE;

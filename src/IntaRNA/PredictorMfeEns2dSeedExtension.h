@@ -3,6 +3,7 @@
 #define INTARNA_PREDICTORMFEENS2DSEEDEXTENSION_H_
 
 #include "IntaRNA/PredictorMfeEns.h"
+#include "IntaRNA/Matrix.h"
 #include "IntaRNA/SeedHandlerIdxOffset.h"
 
 namespace IntaRNA {
@@ -24,7 +25,7 @@ class PredictorMfeEns2dSeedExtension: public PredictorMfeEns {
 protected:
 
 	//! matrix type to hold the partition functions for interaction site starts
-	typedef boost::numeric::ublas::matrix<Z_type> Z2dMatrix;
+	typedef Matrix<Z_type> Z2dMatrix;
 
 public:
 

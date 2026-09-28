@@ -5,7 +5,7 @@
 #include "IntaRNA/PredictorMfe.h"
 #include "IntaRNA/Interaction.h"
 
-#include <boost/numeric/ublas/matrix.hpp>
+#include "IntaRNA/Matrix.h"
 
 namespace IntaRNA {
 
@@ -21,7 +21,7 @@ class PredictorMfe2d: public PredictorMfe {
 protected:
 
 	//! matrix type to hold the mfe energies for interaction site starts
-	typedef boost::numeric::ublas::matrix<E_type> E2dMatrix;
+	typedef Matrix<E_type> E2dMatrix;
 
 public:
 

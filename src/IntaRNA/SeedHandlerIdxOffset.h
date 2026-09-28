@@ -7,7 +7,6 @@
 
 #include <boost/multi_array.hpp>
 
-#include <boost/numeric/ublas/matrix.hpp>
 
 
 namespace IntaRNA {

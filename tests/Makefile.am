@@ -50,6 +50,7 @@ runApiTests_SOURCES =	\
 					PredictorMfeEnsRegression_test.cpp \
 					PredictorTinyOracle_test.cpp \
 					PredictorSeedOracle_test.cpp \
+					Matrix_test.cpp \
 					NussinovHandler_test.cpp \
 					RnaSequence_test.cpp \
 					OutputStreamHandlerSortedCsv_test.cpp \
@@ -70,3 +71,6 @@ LIBS= 	-L$(top_builddir)/src/IntaRNA -lIntaRNA \
 runApiTests_CXXFLAGS =	-I$(top_builddir)/src \
 						@AM_CXXFLAGS@ @CXXFLAGS@ \
 						-DELPP_NO_LOG_TO_FILE
+
+# Reproducible before/after storage performance comparison (not a test gate).
+EXTRA_DIST = benchmark/compare-matrix-storage.py

@@ -6,7 +6,6 @@
 #include "IntaRNA/Interaction.h"
 #include "IntaRNA/HelixHandlerIdxOffset.h"
 
-#include <boost/numeric/ublas/matrix.hpp>
 
 namespace IntaRNA {
 

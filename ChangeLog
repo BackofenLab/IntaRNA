@@ -23,6 +23,9 @@
 
 ## Technical changes and Optimizations
 
+- replace uBLAS storage matrices with std::vector and std::mdspan, retaining
+  compact upper-band and triangular storage; configure checks mdspan support
+
 - reduce temporary allocations and fix cleanup on error paths
 - remove redundant accessibility checks from predictor, helix and seed handling
 - C++23 required; build and installation checks with GCC 14 and Apple Clang
@@ -50,6 +53,18 @@
 
 ################################################################################  
 ################################################################################
+
+260928
+ * IntaRNA/Matrix.h and storage aliases:
+   + replace uBLAS dense, upper-band and upper-triangular storage with owned
+     std::vector data accessed through C++23 std::mdspan
+   + preserve logical resize, copy/move ownership and compact storage
+ * configure.ac, README.md:
+   + probe native mdspan library support and document the toolchain requirement
+ * tests/Matrix_test.cpp, tests/benchmark/compare-matrix-storage.py:
+   + add storage regression tests and reproducible before/after measurements
+ * doc/mdspan-storage.md:
+   + record validation and performance evaluation for issue #246
 
 260928 Martin Raden
  * IntaRNA/IndexRangeList:

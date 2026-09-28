@@ -19,7 +19,7 @@ extern "C" {
 }
 #endif
 
-#include <boost/numeric/ublas/triangular.hpp>
+#include "IntaRNA/Matrix.h"
 
 #define Evrna_2_E( e ) ( static_cast<E_type>(e) )
 
@@ -286,7 +286,7 @@ protected:
 	const int bpGC;
 
 	//! matrix to store ES values (upper triangular matrix)
-	typedef boost::numeric::ublas::triangular_matrix<E_type, boost::numeric::ublas::upper> EsMatrix;
+	typedef UpperTriangularMatrix<E_type> EsMatrix;
 
 	//! the ES values for seq1 if computed (otherwise NULL)
 	EsMatrix * esValues1;

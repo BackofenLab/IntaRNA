@@ -8,7 +8,7 @@
 #include <iostream>
 
 #include <boost/algorithm/string.hpp>
-#include <boost/numeric/ublas/matrix.hpp>
+#include "IntaRNA/Matrix.h"
 
 
 namespace IntaRNA {
@@ -111,7 +111,7 @@ protected:
 	Z_type overallZ;
 
 	//! matrix type to hold the partition function for each index pair
-	typedef boost::numeric::ublas::matrix<Z_type> Z2dMatrix;
+	typedef Matrix<Z_type> Z2dMatrix;
 
 	//! the index-pair-wise minimal energy values
 	Z2dMatrix pairZ;

@@ -180,7 +180,9 @@ you with an encapsulated IntaRNA installation.
 If you are going to compile IntaRNA from source, ensure you meet the following
 dependencies:
 
-- compiler supporting C++23 and OpenMP (GCC 14 or Apple Clang)
+- compiler supporting C++23 and OpenMP, with a standard library providing
+  `std::mdspan` (for example GCC 16/libstdc++ or Clang 18/libc++; configure
+  checks the actual library support)
 - [boost C++ library](http://www.boost.org/) version >= 1.50.0
   (ensure the following libraries are installed for development (not just runtime libraries!); or install all e.g. in Ubuntu via package `libboost-all-dev`)
     - libboost_regex
@@ -2186,7 +2188,8 @@ processed using doxygen to generate html/pdf versions.
 When IntaRNA is build while `pkg-config` is present, according pkg-config
 information is generated and installed too.
 
-IntaRNA's public headers require C++23. External consumers must therefore
+IntaRNA's public headers require C++23, including `<mdspan>` support in the
+standard library. External consumers must therefore
 select `-std=c++23` (or a newer standard) in their own build; the installed
 pkg-config metadata supplies IntaRNA and dependency flags but deliberately
 does not override the consuming project's language mode.

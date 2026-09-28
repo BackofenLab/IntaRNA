@@ -87,6 +87,24 @@ sink << stream.view();
 	 AC_MSG_ERROR([A C++23 standard library providing std::string::contains, std::string::resize_and_overwrite, and std::stringstream::view is required. Upgrade libstdc++/libc++ or select a newer C++23 toolchain.])])
 CXXFLAGS=$intarna_saved_CXXFLAGS
 
+# Require the standard C++23 mdspan API used by the owning storage matrices.
+AC_MSG_CHECKING([for C++23 std::mdspan over std::vector])
+AC_COMPILE_IFELSE(
+	[AC_LANG_PROGRAM(
+		[[#include <mdspan>
+#include <vector>
+#ifndef __cpp_lib_mdspan
+#error C++23 std::mdspan is unavailable
+#endif]],
+		[[std::vector<int> storage(6);
+std::mdspan<int, std::dextents<std::size_t, 2>> matrix(storage.data(), 2, 3);
+matrix[1, 2] = 42;
+std::mdspan<const int, std::dextents<std::size_t, 1>> packed(storage.data(), 6);
+return packed[5] != 42;]])],
+	[AC_MSG_RESULT([yes])],
+	[AC_MSG_RESULT([no])
+	 AC_MSG_ERROR([A C++23 standard library providing <mdspan>, std::mdspan, and std::dextents is required. Select a toolchain with mdspan support (for example GCC 16/libstdc++ or Clang 18/libc++).])])
+
 # check if python is available
 AM_PATH_PYTHON([$PYTHON_REQUIRED_VERSION],, [:])
 AM_CONDITIONAL([HAVE_PYTHON], [test "$PYTHON" != ":"])

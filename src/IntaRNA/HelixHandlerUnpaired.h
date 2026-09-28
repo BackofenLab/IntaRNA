@@ -8,7 +8,7 @@
 
 #include <boost/multi_array.hpp>
 
-#include <boost/numeric/ublas/matrix.hpp>
+#include "IntaRNA/Matrix.h"
 
 #include <tuple>
 
@@ -39,8 +39,8 @@ public:
 	//! it holds both the energy (first) as well as the length of the helix using
 	//! the length combination of encodeHelixLength()
 	//! The third entry is the bestBP, i.e. the optimal number of bases for this left boundary
-	typedef boost::numeric::ublas::matrix< std::tuple<E_type, size_t, size_t> > HelixMatrix;
-	typedef boost::numeric::ublas::matrix< std::pair<E_type, size_t> > HelixSeedMatrix;
+	typedef Matrix< std::tuple<E_type, size_t, size_t> > HelixMatrix;
+	typedef Matrix< std::pair<E_type, size_t> > HelixSeedMatrix;
 
 
 public:

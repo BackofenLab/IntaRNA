@@ -6,7 +6,7 @@
 
 #include <iostream>
 
-#include <boost/numeric/ublas/banded.hpp>
+#include "IntaRNA/Matrix.h"
 
 namespace IntaRNA {
 
@@ -85,7 +85,7 @@ public:
 protected:
 
 	//! type for the ED value matrix (upper triangular matrix banded by maxLength)
-	typedef boost::numeric::ublas::banded_matrix<E_type> EdMatrix;
+	typedef UpperBandedMatrix<E_type> EdMatrix;
 
 	//! the ED values for the given sequence
 	EdMatrix edValues;
