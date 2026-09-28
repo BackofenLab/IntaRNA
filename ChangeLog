@@ -23,6 +23,7 @@
 
 ## Technical changes and Optimizations
 
+- add repository-specific AI coding guidance in AGENTS.md (issue #247)
 - reduce temporary allocations and fix cleanup on error paths
 - remove redundant accessibility checks from predictor, helix and seed handling
 - C++23 required; build and installation checks with GCC 14 and Apple Clang
@@ -50,6 +51,14 @@
 
 ################################################################################  
 ################################################################################
+
+260928 Alexander Mitrofanov
+ * AGENTS.md :
+   + repository-wide AI coding guidance based on the current code and build setup
+   + C++23, Doxygen and explicit inline definitions after class declarations
+   + build/test commands, scientific invariants and two-part ChangeLog updates
+   + separate implementation branches and PRs documenting targets, changes and results
+   * resolves issue #247
 
 260928 Martin Raden
  * IntaRNA/IndexRangeList:
