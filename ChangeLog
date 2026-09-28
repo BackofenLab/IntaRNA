@@ -12,11 +12,23 @@
 
 # IntaRNA
 
+## Interface and handling
+
+- too short sequences are skipped with warning if they are shorter than the 
+  required seed or helix length (were causing an exception and abort before)
+- default SHAPE method changed to "D", which is the default for ViennaRNA 2.7.*
+- output buffer size increased to 512 KB for higher performance and reduced 
+  file-handle overhead
+- reject Zall/Eall-dependent output in window mode
+
+## Technical changes and Optimizations
+
+- reduce temporary allocations and fix cleanup on error paths
 - remove redundant accessibility checks from predictor, helix and seed handling
 - C++23 required; build and installation checks with GCC 14 and Apple Clang
-- reduce temporary allocations and fix cleanup on error paths
 - avoid repeated partition-map lookups in exact ensemble prediction
-- reject Zall/Eall-dependent output in window mode
+- add exhaustive interaction and seed oracles for short-sequence tests
+- reduced memory use for exact non-seed ensemble prediction without trackers
 - BUGFIX : heuristic cell initialization and noLP ensemble recurrences
 - BUGFIX : ensemble filtering and seed-extension partition reset
 - BUGFIX : target accessibility limits and seed-free outMinPu filtering
@@ -27,14 +39,6 @@
   computation since vrna-lib not thread-safe (up to v2.7.2)
 - BUGFIX : multi-threading : IntaRNAsTar was not thread-safe due to shared 
   storage of computed ranges
-- add exhaustive interaction and seed oracles for short-sequence tests
-- too short sequences are skipped with warning if they are shorter than the 
-  required seed or helix length (were causing an exception and abort before)
-- default SHAPE method changed to "D", which is the default for ViennaRNA 2.7.*
-- output buffer size increased to 512 KB for higher performance and reduced 
-  file-handle overhead
-
-- reduced memory use for exact non-seed ensemble prediction without trackers
 
 # IntaRNA_plotRegions.R
 
