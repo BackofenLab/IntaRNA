@@ -1964,16 +1964,17 @@ getQueryAccessibility( const size_t sequenceNumber ) const
     						, &accConstraint
     						);
 
-		case 'V' : // VRNA-based accessibilities
+		case 'V' : { // VRNA-based accessibilities
 			return new AccessibilityVrna(
-							seq
-							, std::min( qIntLenMax.val == 0 ? seq.size() : qIntLenMax.val
-										, qAccW.val == 0 ? seq.size() : qAccW.val )
-							, &accConstraint
-							, vrnaHandler
-							, qAccW.val
-							, qPfScale.val
-							);
+				seq
+				, std::min( qIntLenMax.val == 0 ? seq.size() : qIntLenMax.val
+				, qAccW.val == 0 ? seq.size() : qAccW.val )
+				, &accConstraint
+				, vrnaHandler
+				, qAccW.val
+				, qPfScale.val
+			);
+		}
 		default :
 			INTARNA_NOT_IMPLEMENTED("query accessibility computation not implemented for energy = '"+toString(energy.val)+"'. Disable via --qAcc=N.");
 		} break;
@@ -2038,7 +2039,7 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 								, &accConstraint
 								);
 
-		case 'V' : // VRNA-based accessibilities
+		case 'V' : { // VRNA-based accessibilities
 			return new AccessibilityVrna(
 								seq
 								, std::min( tIntLenMax.val == 0 ? seq.size() : tIntLenMax.val
@@ -2047,7 +2048,8 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 								, vrnaHandler
 								, tAccW.val
 								, tPfScale.val
-								);
+							);
+	}
 		default :
 			INTARNA_NOT_IMPLEMENTED("target accessibility computation not implemented for energy = '"+toString(energy.val)+"'. Disable via --tAcc=N.");
 		} break;
@@ -2674,21 +2676,32 @@ getQueryRanges( const InteractionEnergy & energy, const size_t sequenceNumber, c
 		throw std::runtime_error("CommandLineParsing::getQueryRanges("+toString(sequenceNumber)+") is empty");
 #endif
 
-	// check if ranges are to be computed
-	if (qRegionLenMax.val > 0) {
-		// check if computation is needed
-		if (qRegion.at(sequenceNumber).begin()->to - qRegion.at(sequenceNumber).begin()->from +1 > qRegionLenMax.val) {
-			// compute highly accessible regions using ED-window-size = seedBP and minRangeLength = seedBP
-			qRegion[sequenceNumber] = acc.decomposeByMaxED( qRegionLenMax.val, seedBP.val, seedBP.val);
-			// inform user
-			VLOG(1) <<"detected accessible regions for query '"<<getQuerySequences().at(sequenceNumber).getId()<<"' : "<<qRegion.at(sequenceNumber);
-		}
-	}
+#if INTARNA_MULITHREADING
+	#pragma omp critical(intarna_omp_queryRanges)
+#endif
+	{// ensure multiple-threads compute each range only once and in a thread-safe manner
 
-	if (outMinPu.val > Z_type(0) && !Z_equal(outMinPu.val, Z_type(0))) {
-		// decompose ranges based in minimal unpaired probability value per position
-		// since all ranges covering a position will have a lower unpaired probability
-		acc.decomposeByMaxED( qRegion[sequenceNumber], energy.getE( outMinPu.val ), (noSeedRequired ? 1 : seedBP.val ) );
+		// check if already computed
+		if (!qRegion.at(sequenceNumber).isComplete()) {
+
+			// check if ranges are to be computed
+			if (qRegionLenMax.val > 0) {
+				// check if computation is needed
+				if (qRegion.at(sequenceNumber).begin()->to - qRegion.at(sequenceNumber).begin()->from +1 > qRegionLenMax.val) {
+					// compute highly accessible regions using ED-window-size = seedBP and minRangeLength = seedBP
+					qRegion[sequenceNumber] = acc.decomposeByMaxED( qRegionLenMax.val, seedBP.val, seedBP.val);
+					// inform user
+					VLOG(1) <<"detected accessible regions for query '"<<getQuerySequences().at(sequenceNumber).getId()<<"' : "<<qRegion.at(sequenceNumber);
+				}
+			}
+			
+			if (outMinPu.val > Z_type(0) && !Z_equal(outMinPu.val, Z_type(0))) {
+				// decompose ranges based in minimal unpaired probability value per position
+				// since all ranges covering a position will have a lower unpaired probability
+				acc.decomposeByMaxED( qRegion[sequenceNumber], energy.getE( outMinPu.val ), (noSeedRequired ? 1 : seedBP.val ) );
+			}
+		}
+
 	}
 
 	return qRegion.at(sequenceNumber);
@@ -2708,21 +2721,31 @@ getTargetRanges( const InteractionEnergy & energy, const size_t sequenceNumber, 
 		throw std::runtime_error("CommandLineParsing::getTargetRanges("+toString(sequenceNumber)+") is empty");
 #endif
 
-	// check if to be computed
-	if (tRegionLenMax.val > 0) {
-		// check if computation is needed
-		if (tRegion.at(sequenceNumber).begin()->to - tRegion.at(sequenceNumber).begin()->from +1 > tRegionLenMax.val) {
-			// compute highly accessible regions using ED-window-size = seedBP and minRangeLength = seedBP
-			tRegion[sequenceNumber] = acc.decomposeByMaxED( tRegionLenMax.val, seedBP.val, seedBP.val);
-			// inform user
-			VLOG(1) <<"detected accessible regions for target '"<<getTargetSequences().at(sequenceNumber).getId()<<"' : "<<tRegion.at(sequenceNumber);
+#if INTARNA_MULITHREADING
+	#pragma omp critical(intarna_omp_targetRanges)
+#endif
+	{// ensure multiple-threads compute each range only once and in a thread-safe manner
+		
+		// check if already computed
+		if (!tRegion.at(sequenceNumber).isComplete()) {
+			
+				// check if to be computed
+			if (tRegionLenMax.val > 0) {
+				// check if computation is needed
+				if (tRegion.at(sequenceNumber).begin()->to - tRegion.at(sequenceNumber).begin()->from +1 > tRegionLenMax.val) {
+					// compute highly accessible regions using ED-window-size = seedBP and minRangeLength = seedBP
+					tRegion[sequenceNumber] = acc.decomposeByMaxED( tRegionLenMax.val, seedBP.val, seedBP.val);
+					// inform user
+					VLOG(1) <<"detected accessible regions for target '"<<getTargetSequences().at(sequenceNumber).getId()<<"' : "<<tRegion.at(sequenceNumber);
+				}
+			}
+			
+			if (outMinPu.val > Z_type(0) && !Z_equal(outMinPu.val, Z_type(0))) {
+				// decompose ranges based in minimal unpaired probability value per position
+				// since all ranges covering a position will have a lower unpaired probability
+				acc.decomposeByMaxED( tRegion[sequenceNumber], energy.getE( outMinPu.val ), (noSeedRequired ? 1 : seedBP.val ) );
+			}
 		}
-	}
-
-	if (outMinPu.val > Z_type(0) && !Z_equal(outMinPu.val, Z_type(0))) {
-		// decompose ranges based in minimal unpaired probability value per position
-		// since all ranges covering a position will have a lower unpaired probability
-		acc.decomposeByMaxED( tRegion[sequenceNumber], energy.getE( outMinPu.val ), (noSeedRequired ? 1 : seedBP.val ) );
 	}
 
 	return tRegion.at(sequenceNumber);

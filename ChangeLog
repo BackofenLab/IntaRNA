@@ -25,6 +25,8 @@
 - BUGFIX : dangling-end probability computation using maxLength+1 ED values
 - BUGFIX : multi-threading : serialization of ViennaRNA-based accessibility 
   computation since vrna-lib not thread-safe (up to v2.7.2)
+- BUGFIX : multi-threading : IntaRNAsTar was not thread-safe due to shared 
+  storage of computed ranges
 - add exhaustive interaction and seed oracles for short-sequence tests
 - too short sequences are skipped with warning if they are shorter than the 
   required seed or helix length (were causing an exception and abort before)
@@ -44,6 +46,15 @@
 
 ################################################################################  
 ################################################################################
+
+260928 Martin Raden
+ * IntaRNA/IndexRangeList:
+   + listIsComplete : whether or not the list is complete (no further ranges can be added)
+     + setter/getter
+ * IntaRNA/Accessibility:
+   * decomposeByMaxED() : fix issue #219
+     + bugfix: requires serialization to be thread-safe due to shared storage of computed ranges
+     + mark computed ranges as complete to avoid recomputation 
 
 260925 Martin Raden
  * bin/CommandLineParsing :

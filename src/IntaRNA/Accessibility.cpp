@@ -187,6 +187,9 @@ decomposeByMaxED( const size_t maxRangeLength, const size_t winSize, const size_
 		}
 	}
 
+	// store that computation is done
+	accessibleRanges.setComplete(true);
+
 	// return final ranges
 	return accessibleRanges;
 }
@@ -229,6 +232,9 @@ decomposeByMaxED( IndexRangeList & ranges, const E_type maxED, const size_t minR
 			out.push_back(IndexRange(lastStart,range->to));
 		}
 	}
+
+	// set as computed
+	out.setComplete(true);
 
 	// replace input ranges with final decomposed list
 	ranges = out;

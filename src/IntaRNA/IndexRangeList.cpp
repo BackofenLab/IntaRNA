@@ -140,6 +140,9 @@ void
 IndexRangeList::
 push_back( const IndexRange& range )
 {
+	if (listIsComplete) {
+		throw std::runtime_error("IndexRangeList::push_back() : cannot add to complete list");
+	}
 	if (!range.isAscending())  {
 		throw std::runtime_error("IndexRangeList::push_back("+toString(range)+") range is not ascending");
 	}
@@ -159,6 +162,9 @@ IndexRangeList::iterator
 IndexRangeList::
 insert( const IndexRange& range )
 {
+	if (listIsComplete) {
+		throw std::runtime_error("IndexRangeList::insert() : cannot add to complete list");
+	}
 	if (!range.isAscending())  {
 		throw std::runtime_error("IndexRangeList::insert("+toString(range)+") range is not ascending");
 	}

@@ -53,12 +53,14 @@ public:
 	 * @param allowOverlap whether or not overlapping ranges are allowed
 	 * @param seq if not NULL, the RnaSequence to be used to shift in/output
 	 *         indices to 0-based internal index positions
+	 * @param isComplete whether or not the list is complete (no further ranges can be added)
 	 *
 	 * @throws std::runtime_error if stringEncoding does not match regex
 	 */
 	IndexRangeList( const std::string & stringEncoding
 					, const bool allowOverlap = false
-					, const RnaSequence * seq = NULL);
+					, const RnaSequence * seq = NULL
+					, const bool isComplete = false );
 
 	/**
 	 * copy construction
@@ -282,6 +284,19 @@ public:
 	 */
 	friend std::ostream& operator<<(std::ostream& out, const IndexRangeList& l);
 
+	/**
+	 * Sets whether or not the list is complete, i.e. cannot be extended
+	 * @param isComplete true if the list is complete; false otherwise
+	 */
+	void
+	setComplete( const bool isComplete );
+
+	/**
+	 * Whether or not the list is complete, i.e. cannot be extended
+	 * @return true if the list is complete; false otherwise
+	 */
+	bool
+	isComplete() const;
 
 protected:
 
@@ -290,6 +305,9 @@ protected:
 
 	//! the list of indices
 	List list;
+
+	//! whether or not the list is complete, i.e. cannot be extended
+	bool listIsComplete;
 
 };
 
@@ -303,6 +321,7 @@ inline
 IndexRangeList::IndexRangeList( const bool allowOverlap_ )
 : allowOverlap(allowOverlap_)
 , list()
+, listIsComplete(false)
 {
 }
 
@@ -311,9 +330,11 @@ IndexRangeList::IndexRangeList( const bool allowOverlap_ )
 inline
 IndexRangeList::IndexRangeList( const std::string & stringEncoding
 							, const bool allowOverlap_
-							, const RnaSequence * seq )
+							, const RnaSequence * seq
+							, const bool isComplete )
 : allowOverlap(allowOverlap_)
 , list()
+, listIsComplete(isComplete)
 {
 	fromString(stringEncoding, seq);
 }
@@ -324,6 +345,7 @@ inline
 IndexRangeList::IndexRangeList( const IndexRangeList & toCopy )
 : allowOverlap(toCopy.allowOverlap)
 , list(toCopy.list)
+, listIsComplete(toCopy.listIsComplete)
 {
 }
 
@@ -332,6 +354,24 @@ IndexRangeList::IndexRangeList( const IndexRangeList & toCopy )
 inline
 IndexRangeList::~IndexRangeList()
 {
+}
+
+////////////////////////////////////////////////////////////////////////
+
+inline
+void
+IndexRangeList::setComplete( const bool isComplete )
+{
+	listIsComplete = isComplete;
+}
+
+/////////////////////////////////////////////////////////////////////
+
+inline
+bool
+IndexRangeList::isComplete() const
+{
+	return listIsComplete;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -360,7 +400,12 @@ reverse( const size_t seqLength ) const
 //////////////////////////////////////////////////////////////////////
 
 inline
-IndexRangeList::iterator IndexRangeList::erase( IndexRangeList::iterator i ) { return list.erase( i ); }
+IndexRangeList::iterator IndexRangeList::erase( IndexRangeList::iterator i ) { 
+	if (listIsComplete) {
+		throw std::runtime_error("IndexRangeList::erase() : cannot erase from complete list");
+	}
+	return list.erase( i ); 
+}
 
 //////////////////////////////////////////////////////////////////////
 
@@ -420,7 +465,10 @@ size_t IndexRangeList::size() const { return list.size(); }
 //////////////////////////////////////////////////////////////////////
 
 inline
-void IndexRangeList::clear() { return list.clear(); }
+void IndexRangeList::clear() { 
+	listIsComplete = false;
+	return list.clear(); 
+}
 
 //////////////////////////////////////////////////////////////////////
 
