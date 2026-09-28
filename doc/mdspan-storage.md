@@ -49,7 +49,13 @@ need `<mdspan>` and C++23.
 
 Native support is available in [GCC 16/libstdc++](https://gcc.gnu.org/onlinedocs/libstdc++/manual/status.html)
 and [LLVM 18/libc++](https://releases.llvm.org/18.1.8/projects/libcxx/docs/Status/Cxx23.html).
-The local validation below uses GCC; it does not claim a Clang/macOS build.
+The local validation below uses GCC. GitHub Actions also passed the Apple Clang
+17 release build on macOS 15, including the full test suite, independent public
+header compilation, and the installed pkg-config consumer ([CI run](https://github.com/BackofenLab/IntaRNA/actions/runs/36453446578/job/109033658550)).
+The Linux CI jobs select GCC 16 from conda-forge: GCC 14's standard library
+does not provide mdspan and correctly fails the configure check. Compiler
+implementation packages avoid activation hooks overriding configure's release
+and debug optimization flags.
 Boost remains a dependency for other project components and for the independent
 reference containers in the storage regression tests.
 

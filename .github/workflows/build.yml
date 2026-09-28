@@ -18,11 +18,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: GCC 14 release
+          - name: GCC 16 release
             os: ubuntu-24.04
             compiler: gcc
             configure_debug: --disable-debug
-          - name: GCC 14 debug
+          - name: GCC 16 debug
             os: ubuntu-24.04
             compiler: gcc
             configure_debug: --enable-debug
@@ -42,22 +42,25 @@ jobs:
           environment-file: conda-build-env.yml
           activate-environment: intarna-build-env
 
-      - name: Install and select GCC 14
+      - name: Install and select GCC 16
         if: matrix.compiler == 'gcc'
         run: |
-          sudo apt-get update
-          sudo apt-get install --yes gcc-14 g++-14
-          echo "CC=gcc-14" >> "$GITHUB_ENV"
-          echo "CXX=g++-14" >> "$GITHUB_ENV"
+          # GCC 16's libstdc++ provides the required C++23 std::mdspan.
+          # Use implementation packages so conda activation does not override
+          # configure's release/debug optimization flags.
+          conda install --yes --override-channels -c conda-forge -c bioconda \
+            "gcc_impl_linux-64=16" "gxx_impl_linux-64=16"
+          echo "CC=${CONDA_PREFIX}/bin/x86_64-conda-linux-gnu-gcc" >> "$GITHUB_ENV"
+          echo "CXX=${CONDA_PREFIX}/bin/x86_64-conda-linux-gnu-g++" >> "$GITHUB_ENV"
           echo "LDFLAGS=-L${CONDA_PREFIX}/lib -Wl,-rpath,${CONDA_PREFIX}/lib" >> "$GITHUB_ENV"
 
-      - name: Verify GCC 14
+      - name: Verify GCC 16
         if: matrix.compiler == 'gcc'
         run: |
           "$CC" --version
           "$CXX" --version
-          test "$("$CC" -dumpfullversion | cut -d. -f1)" = 14
-          test "$("$CXX" -dumpfullversion | cut -d. -f1)" = 14
+          test "$("$CC" -dumpfullversion | cut -d. -f1)" = 16
+          test "$("$CXX" -dumpfullversion | cut -d. -f1)" = 16
 
       - name: Set up Apple Clang with OpenMP
         if: matrix.compiler == 'apple-clang'
