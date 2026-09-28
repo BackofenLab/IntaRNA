@@ -27,14 +27,18 @@ def run_timed(command, env, timeout=180):
                           stderr=subprocess.PIPE, start_new_session=True) as process:
         try:
             stdout, stderr = process.communicate(timeout=timeout)
-        except subprocess.TimeoutExpired as error:
+        except BaseException as error:
+            # The child is in a separate session, so terminal interrupts must
+            # also trigger explicit cleanup of the complete process group.
             try:
                 os.killpg(process.pid, signal.SIGKILL)
             except ProcessLookupError:
                 pass
             stdout, stderr = process.communicate()
-            raise subprocess.TimeoutExpired(command, timeout, output=stdout,
-                                            stderr=stderr) from error
+            if isinstance(error, subprocess.TimeoutExpired):
+                raise subprocess.TimeoutExpired(command, timeout, output=stdout,
+                                                stderr=stderr) from error
+            raise
         return subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
 
 

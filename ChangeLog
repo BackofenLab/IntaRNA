@@ -63,7 +63,8 @@
    + probe native mdspan library support and document the toolchain requirement
  * tests/Matrix_test.cpp, tests/benchmark/compare-matrix-storage.py:
    + add storage regression tests and reproducible before/after measurements
-   + terminate the timed process group on timeout, with a regression check
+   + terminate the timed process group on timeout or interruption, with
+     regression checks
    + include the biological benchmark inputs in source distributions
  * doc/mdspan-storage.md:
    + record validation and performance evaluation for issue #246

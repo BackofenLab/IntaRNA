@@ -88,7 +88,8 @@ fhlA/OxyS inputs, randomizes execution order, excludes one warmup per binary and
 case, and retains stdout, stderr and each timing sample. It compares stdout
 bytes for every execution, failing immediately on a mismatch or process error.
 Each execution has a 180-second timeout that terminates both GNU time and its
-IntaRNA child, retaining any captured stdout and stderr. The biological input
+IntaRNA child, retaining any captured stdout and stderr. Interrupting the
+benchmark also terminates the process group. The biological input
 files are included in source distributions so the script also runs from an
 extracted release archive.
 It records binary/input hashes, exact arguments, versions, affinity and controlled
@@ -113,7 +114,8 @@ triangular storage. This is a bounded, single-host performance experiment.
 - `make install` installs `Matrix.h`; a separate C++23 consumer including the
   installed accessibility, Nussinov and seed-extension headers compiles and runs.
 - Benchmark process regression checks pass, including timeout cleanup of GNU
-  time's child process. The timeout check fails against the original runner.
+  time's child process and cleanup on interruption. Both checks reject runners
+  without the corresponding cleanup.
 - The benchmark runs from an extracted `make dist` archive: all ten workloads
   complete with matching outputs (one warmup and one measured run per binary,
   40 executions total). This is a packaging smoke check; the performance table
