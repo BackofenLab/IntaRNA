@@ -28,7 +28,7 @@
 
 - reduce temporary allocations and fix cleanup on error paths
 - remove redundant accessibility checks from predictor, helix and seed handling
-- C++23 required; build and installation checks with GCC 14 and Apple Clang
+- C++23 required; build and installation checks with GCC 16 and Apple Clang
 - avoid repeated partition-map lookups in exact ensemble prediction
 - add exhaustive interaction and seed oracles for short-sequence tests
 - reduced memory use for exact non-seed ensemble prediction without trackers
@@ -63,6 +63,8 @@
    + probe native mdspan library support and document the toolchain requirement
  * tests/Matrix_test.cpp, tests/benchmark/compare-matrix-storage.py:
    + add storage regression tests and reproducible before/after measurements
+   + terminate the timed process group on timeout, with a regression check
+   + include the biological benchmark inputs in source distributions
  * doc/mdspan-storage.md:
    + record validation and performance evaluation for issue #246
 

@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 import platform
 import random
+import signal
 import statistics
 import subprocess
 import time
@@ -18,6 +19,23 @@ import time
 
 def sha(data):
     return hashlib.sha256(data).hexdigest()
+
+
+def run_timed(command, env, timeout=180):
+    """Bound the complete process group, including GNU time's child process."""
+    with subprocess.Popen(command, env=env, stdout=subprocess.PIPE,
+                          stderr=subprocess.PIPE, start_new_session=True) as process:
+        try:
+            stdout, stderr = process.communicate(timeout=timeout)
+        except subprocess.TimeoutExpired as error:
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            stdout, stderr = process.communicate()
+            raise subprocess.TimeoutExpired(command, timeout, output=stdout,
+                                            stderr=stderr) from error
+        return subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
 
 
 def main():
@@ -86,7 +104,12 @@ def main():
             command = ["/usr/bin/time", "-f", "%U %S %M", "-o", str(stem) + ".time",
                        str(binaries[variant]), *current["args"]]
             started = time.perf_counter()
-            result = subprocess.run(command, env=env, capture_output=True, timeout=180)
+            try:
+                result = run_timed(command, env=env)
+            except subprocess.TimeoutExpired as error:
+                Path(str(stem) + ".stdout").write_bytes(error.output or b"")
+                Path(str(stem) + ".stderr").write_bytes(error.stderr or b"")
+                raise RuntimeError(f"{stem.name} timed out after {error.timeout}s") from error
             wall = time.perf_counter() - started
             Path(str(stem) + ".stdout").write_bytes(result.stdout)
             Path(str(stem) + ".stderr").write_bytes(result.stderr)

@@ -84,6 +84,10 @@ jobs:
           "$CXX" --version
           "$CXX" --version | grep -q "Apple clang"
 
+      - name: Test benchmark process cleanup
+        if: matrix.compiler == 'gcc'
+        run: python3 tests/benchmark/test_compare_matrix_storage.py
+
       - name: Bootstrap and configure
         run: |
           bash autotools-init.sh

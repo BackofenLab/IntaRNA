@@ -73,4 +73,4 @@ runApiTests_CXXFLAGS =	-I$(top_builddir)/src \
 						-DELPP_NO_LOG_TO_FILE
 
 # Reproducible before/after storage performance comparison (not a test gate).
-EXTRA_DIST = benchmark/compare-matrix-storage.py
+EXTRA_DIST = benchmark/compare-matrix-storage.py benchmark/test_compare_matrix_storage.py

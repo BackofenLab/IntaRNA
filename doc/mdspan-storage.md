@@ -87,6 +87,10 @@ The script generates seeded synthetic inputs, copies the repository's biological
 fhlA/OxyS inputs, randomizes execution order, excludes one warmup per binary and
 case, and retains stdout, stderr and each timing sample. It compares stdout
 bytes for every execution, failing immediately on a mismatch or process error.
+Each execution has a 180-second timeout that terminates both GNU time and its
+IntaRNA child, retaining any captured stdout and stderr. The biological input
+files are included in source distributions so the script also runs from an
+extracted release archive.
 It records binary/input hashes, exact arguments, versions, affinity and controlled
 environment. Wall time includes startup, loading and output; peak RSS comes from
 GNU time. The test cases cover accessibility bands, dense predictors, seed
@@ -108,6 +112,12 @@ triangular storage. This is a bounded, single-host performance experiment.
   diagnostic, after the other C++23 checks pass.
 - `make install` installs `Matrix.h`; a separate C++23 consumer including the
   installed accessibility, Nussinov and seed-extension headers compiles and runs.
+- Benchmark process regression checks pass, including timeout cleanup of GNU
+  time's child process. The timeout check fails against the original runner.
+- The benchmark runs from an extracted `make dist` archive: all ten workloads
+  complete with matching outputs (one warmup and one measured run per binary,
+  40 executions total). This is a packaging smoke check; the performance table
+  below retains the original seven-repetition measurements.
 
 The storage cases cover empty and rectangular shapes, logical preservation on
 resize, zero-initialization of new cells, const structural zeros, the last
