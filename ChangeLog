@@ -14,6 +14,8 @@
 
 ## Interface and handling
 
+- compressed binary .agz accessibility caches for repeated screens (issue #245)
+
 - too short sequences are skipped with warning if they are shorter than the 
   required seed or helix length (were causing an exception and abort before)
 - default SHAPE method changed to "D", which is the default for ViennaRNA 2.7.*
@@ -51,6 +53,25 @@
 
 ################################################################################  
 ################################################################################
+
+260929 Alexander Mitrofanov
+ * IntaRNA/Accessibility, AccessibilityArchive, AccessibilityFromStream :
+   + versioned Boost binary serialization of exact ED matrices and sequence data
+   + stream rows with bounded scratch memory, retaining dangling-end intervals
+   + validate sequence, dimensions, energies, archive format and stream integrity
+ * bin/CommandLineParsing, IntaRNA/general :
+   + select compressed binary accessibility input/output via .agz filenames
+   * support all existing accessibility producers and both P/E input modes
+   * release accessibility streams when parsing or writing fails
+ * configure.ac, src/IntaRNA/Makefile.am :
+   + check and link Boost.Serialization; distribute the internal matrix archive view
+ * tests/AccessibilityBinary_test.cpp, tests/runAccessibilityBinary.sh, tests/Makefile.am :
+   + exact round trips, malformed archives, prediction reuse and filename dispatch
+ * doc/benchmarks/accessibility.cpp, doc/benchmarks/accessibility.md, doc/Makefile.am :
+   + reproducible compressed text versus binary I/O benchmark with exact ED checks
+ * README.md and CLI help :
+   + document binary caches, unchanged text formats and compatibility requirements
+   * resolves https://github.com/BackofenLab/IntaRNA/issues/245
 
 260928 Alexander Mitrofanov
  * AGENTS.md :

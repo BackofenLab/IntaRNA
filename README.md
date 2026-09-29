@@ -187,6 +187,8 @@ dependencies:
     - libboost_program_options
     - libboost_filesystem
     - libboost_system
+    - libboost_iostreams
+    - libboost_serialization
 - [Vienna RNA package](http://www.tbi.univie.ac.at/RNA/) version >= 2.4.14
 - `pkg-config` for detailed version checks of dependencies
 - if [cloning from github](#instgithub): GNU autotools (automake, autoconf, ..)
@@ -2109,6 +2111,7 @@ formats
 | RNAplfold-styled ED values | `IntaRNA --out=*Acc:` |
 | ---- | --- |
 | .. with gzip-compression | `IntaRNA --out=*:*.gz` |
+| IntaRNA binary accessibility (gzip-compressed) | `IntaRNA --out=*Acc:*.agz` or `--out=*Pu:*.agz` |
 
 The **RNAplfold** format is a table encoding of a banded upper triangular matrix
 with band width l. First row contains a header comment on the data starting with
@@ -2131,6 +2134,42 @@ example for a sequence of length 5 with a maximal window length of 3.
 
 ```
 
+
+##### Binary accessibility caches (`.agz`)
+
+For repeated screens, use a filename ending in `.agz` to store a compressed
+Boost binary archive of the accessibility matrix. Both `qAcc:`/`tAcc:` and
+`qPu:`/`tPu:` write **exact internal ED values** to this format, including the
+extra interval length used for dangling-end probabilities. This avoids decimal
+formatting/parsing and probability-to-energy rounding. It works with every
+accessibility implementation, including disabled accessibility and loaded data.
+
+```bash
+# Add these options to otherwise identical IntaRNA calls:
+IntaRNA [..] --out=qAcc:query.agz --out=tAcc:target.agz
+IntaRNA [..] --qAcc=E --qAccFile=query.agz --tAcc=E --tAccFile=target.agz
+```
+
+The `.agz` extension (case insensitive) selects the binary reader with either
+`--qAcc=E`/`--tAcc=E` or `--qAcc=P`/`--tAcc=P`; the stored ED values are used
+unchanged in both cases. Sequence content and length must match. The requested
+interaction length can be smaller than the stored limit; larger requests are
+limited to the stored interaction length. A format version and gzip integrity
+checks reject unsupported or damaged files. Existing plain text, `.gz` text,
+`STDIN` and `STDOUT` behavior is unchanged; binary CLI I/O requires a filename.
+Multi-sequence filenames use the same `-s#` suffix convention described below.
+
+Reuse caches with the same temperature, energy model, folding window, base-pair
+span and folding constraints used to generate them. These settings are not
+stored or checked, and changing the temperature does not rescale cached EDs.
+Constraints already reflected in ED values are preserved; supplying new
+accessibility constraints while reading a cache remains unsupported.
+
+The binary format uses native Boost.Serialization archives and requires a
+compatible architecture and Boost archive version. Use RNAplfold-style text
+for portable interchange. For C++ callers, `Accessibility::writeBinary()` and
+`AccessibilityFromStream::IntaRNA_Binary` operate on decompressed archive streams;
+`newOutputStream()`/`newInputStream()` supply gzip compression for `.agz` files.
 
 ##### Use case examples for read/write accessibilities and unpaired probabilities
 

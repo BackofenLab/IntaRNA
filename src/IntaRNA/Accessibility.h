@@ -109,6 +109,15 @@ public:
 	writeRNAplfold_ED_text( std::ostream& out ) const;
 
 	/**
+	 * Write a native Boost binary archive of exact ED values, including the
+	 * extra interval length needed for dangling ends. Works for every subclass.
+	 * Compression is supplied by the stream (e.g. newOutputStream("file.agz")).
+	 * @param out binary output stream
+	 * @throw std::exception on invalid ED values or output failure
+	 */
+	void writeBinary( std::ostream & out ) const;
+
+	/**
 	 * Prints the accessibility values to stream as upper triangular matrix
 	 * @param out the ostream to write to
 	 * @param acc the Accessibility object to add

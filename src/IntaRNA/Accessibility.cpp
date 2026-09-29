@@ -1,12 +1,23 @@
 
 
 #include "IntaRNA/Accessibility.h"
+#include "IntaRNA/AccessibilityArchive.h"
+#include <boost/archive/binary_oarchive.hpp>
 
 namespace IntaRNA {
 
 ////////////////////////////////////////////////////////////////////
 
 const E_type Accessibility::ED_UPPER_BOUND = (E_type) E_INF;
+
+void
+Accessibility::writeBinary( std::ostream & out ) const
+{
+	boost::archive::binary_oarchive archive(out);
+	archive << AccessibilityArchive(*this);
+	out.flush();
+	if (!out) throw std::runtime_error("Accessibility::writeBinary: output failure");
+}
 
 ////////////////////////////////////////////////////////////////////
 

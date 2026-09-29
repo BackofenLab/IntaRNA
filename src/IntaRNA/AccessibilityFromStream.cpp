@@ -1,5 +1,7 @@
 
 #include "IntaRNA/AccessibilityFromStream.h"
+#include "IntaRNA/AccessibilityArchive.h"
+#include <boost/archive/binary_iarchive.hpp>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/regex.hpp>
@@ -31,6 +33,10 @@ AccessibilityFromStream(
 	}
 	switch( inStreamType ) {
 
+	case IntaRNA_Binary :
+		parseBinary( inStream );
+		break;
+
 	case Pu_RNAplfold_Text :
 		parsePu_RNAplfold_text( inStream, RT );
 		break;
@@ -51,6 +57,24 @@ AccessibilityFromStream::
 
 /////////////////////////////////////////////////////////////////////////
 
+
+void
+AccessibilityFromStream::parseBinary( std::istream & inStream )
+{
+	try {
+		boost::archive::binary_iarchive archive(inStream);
+		AccessibilityArchive matrix(getSequence(), availMaxLength, edValues);
+		archive >> matrix;
+		// Read through EOF so gzip trailer/CRC and truncation errors surface.
+		if (inStream.get() != std::char_traits<char>::eof() || inStream.bad())
+			throw std::runtime_error("trailing data or damaged compressed stream");
+		availMaxLength = matrix.getMaxLength();
+	} catch (const std::exception & error) {
+		throw std::runtime_error(std::string("AccessibilityFromStream: invalid binary accessibility input: ") + error.what());
+	}
+}
+
+/////////////////////////////////////////////////////////////////////////
 
 void
 AccessibilityFromStream::

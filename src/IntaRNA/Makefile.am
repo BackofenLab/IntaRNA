@@ -9,6 +9,8 @@ AUTOMAKE_OPTIONS = std-options subdir-objects
 
 AM_DEFAULT_SOURCE_EXT = .cpp
 
+noinst_HEADERS = AccessibilityArchive.h
+
 ###############################################################################
 # THE INTARNA LIBRARY
 ###############################################################################

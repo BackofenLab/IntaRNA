@@ -21,6 +21,7 @@ public:
 	enum InStreamType {
 		Pu_RNAplfold_Text //! Pu values in RNAplfold text format
 		, ED_RNAplfold_Text //!< ED values in RNAplfold text Pu format
+		, IntaRNA_Binary //!< native Boost binary ED archive, already decompressed
 	};
 
 public:
@@ -89,6 +90,9 @@ protected:
 
 	//! the ED values for the given sequence
 	EdMatrix edValues;
+
+	/** Load and validate a decompressed IntaRNA binary accessibility archive. */
+	void parseBinary( std::istream & inStream );
 
 	//! maximal available window size
 	size_t availMaxLength;
