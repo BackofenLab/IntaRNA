@@ -33,6 +33,12 @@ pkg-config and Autotools; OpenMP is used by the default multithreaded build.
 [conda-build-env.yml](conda-build-env.yml) supplies library/build dependencies,
 but does not select the C++ compiler. Use the platform setup in CI when needed.
 
+Configure prefers native `std::mdspan` and otherwise uses the bundled Kokkos
+headers. `INTARNA_USE_STD_MDSPAN` in the installed public configuration records
+the choice; `--with-mdspan=std|kokkos` can select a backend explicitly. Preserve
+the upstream headers and licenses in `src/mdspan` and `src/experimental` when
+editing project code; their provenance is recorded in `doc/mdspan-storage.md`.
+
 From the repository root, with dependencies available in standard locations:
 
 ```bash

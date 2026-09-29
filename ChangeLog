@@ -26,7 +26,8 @@
 - add repository-specific AI coding guidance in AGENTS.md (issue #247)
 - replace uBLAS storage matrices with std::vector and std::mdspan, retaining
   compact upper-band and triangular storage; configure selects native mdspan
-  or bundled Kokkos headers while preserving GCC 14 support
+  or bundled Kokkos headers while preserving GCC 14 support; document the
+  public matrix operations and align their layout with repository guidance
 
 - reduce temporary allocations and fix cleanup on error paths
 - remove redundant accessibility checks from predictor, helix and seed handling
@@ -56,7 +57,7 @@
 ################################################################################  
 ################################################################################
 
-260929
+260929 Alexander Mitrofanov
  * configure.ac, IntaRNA/Matrix.h, IntaRNA/intarna_config.h.in:
    + prefer native mdspan, falling back to bundled Kokkos with a public
      INTARNA_USE_STD_MDSPAN define; allow explicit --with-mdspan selection
@@ -68,6 +69,10 @@
    + restore GCC 14 release/debug builds and document automatic fallback
    + record a clean GCC 14/Kokkos comparison against uBLAS with all outputs
      matching across 160 executions; retain the original native measurements
+ * IntaRNA/Matrix.h, AGENTS.md:
+   + document public matrix operations and place explicit inline template
+     definitions after class declarations, following the repository guidance
+   + keep the guidance aligned with native/bundled mdspan selection (issue #246)
 
 260928
  * IntaRNA/Matrix.h and storage aliases:
