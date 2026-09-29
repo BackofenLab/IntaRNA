@@ -18,18 +18,21 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: GCC 16 release
+          - name: GCC 14 release
             os: ubuntu-24.04
             compiler: gcc
             configure_debug: --disable-debug
-          - name: GCC 16 debug
+            std_mdspan: 0
+          - name: GCC 14 debug
             os: ubuntu-24.04
             compiler: gcc
             configure_debug: --enable-debug
+            std_mdspan: 0
           - name: Apple Clang release
             os: macos-15
             compiler: apple-clang
             configure_debug: --disable-debug
+            std_mdspan: 1
 
     steps:
       - name: Check out sources
@@ -42,25 +45,22 @@ jobs:
           environment-file: conda-build-env.yml
           activate-environment: intarna-build-env
 
-      - name: Install and select GCC 16
+      - name: Install and select GCC 14
         if: matrix.compiler == 'gcc'
         run: |
-          # GCC 16's libstdc++ provides the required C++23 std::mdspan.
-          # Use implementation packages so conda activation does not override
-          # configure's release/debug optimization flags.
-          conda install --yes --override-channels -c conda-forge -c bioconda \
-            "gcc_impl_linux-64=16" "gxx_impl_linux-64=16"
-          echo "CC=${CONDA_PREFIX}/bin/x86_64-conda-linux-gnu-gcc" >> "$GITHUB_ENV"
-          echo "CXX=${CONDA_PREFIX}/bin/x86_64-conda-linux-gnu-g++" >> "$GITHUB_ENV"
+          sudo apt-get update
+          sudo apt-get install --yes gcc-14 g++-14
+          echo "CC=gcc-14" >> "$GITHUB_ENV"
+          echo "CXX=g++-14" >> "$GITHUB_ENV"
           echo "LDFLAGS=-L${CONDA_PREFIX}/lib -Wl,-rpath,${CONDA_PREFIX}/lib" >> "$GITHUB_ENV"
 
-      - name: Verify GCC 16
+      - name: Verify GCC 14
         if: matrix.compiler == 'gcc'
         run: |
           "$CC" --version
           "$CXX" --version
-          test "$("$CC" -dumpfullversion | cut -d. -f1)" = 16
-          test "$("$CXX" -dumpfullversion | cut -d. -f1)" = 16
+          test "$("$CC" -dumpfullversion | cut -d. -f1)" = 14
+          test "$("$CXX" -dumpfullversion | cut -d. -f1)" = 14
 
       - name: Set up Apple Clang with OpenMP
         if: matrix.compiler == 'apple-clang'
@@ -100,6 +100,8 @@ jobs:
             ${{ matrix.configure_debug }}
           grep -Eq '^CXX = .* -std=c\+\+23([[:space:]]|$)' Makefile
           grep -q '^#define INTARNA_MULITHREADING 1' src/config.h
+          grep -q '^#define INTARNA_USE_STD_MDSPAN ${{ matrix.std_mdspan }}$' src/config.h
+          grep -q '^#define INTARNA_USE_STD_MDSPAN ${{ matrix.std_mdspan }}$' src/IntaRNA/intarna_config.h
 
       - name: Build, install, and run full test suite
         run: |
@@ -122,7 +124,9 @@ jobs:
       - name: Compile and link an installed pkg-config consumer
         run: |
           consumer="$RUNNER_TEMP/intarna-consumer.cpp"
-          printf '#include <IntaRNA/RnaSequence.h>\nint main() { IntaRNA::RnaSequence rna("test", "ACGU"); return rna.size() == 4 ? 0 : 1; }\n' > "$consumer"
+          printf '#include <IntaRNA/RnaSequence.h>\n#include <IntaRNA/Matrix.h>\nint main() { IntaRNA::RnaSequence rna("test", "ACGU"); IntaRNA::Matrix<int> matrix(2, 3); matrix(1, 2) = 42; return rna.size() == 4 && matrix(1, 2) == 42 ? 0 : 1; }\n' > "$consumer"
+          test -f "$RUNNER_TEMP/intarna-install/include/IntaRNA/mdspan/LICENSE"
+          test -f "$RUNNER_TEMP/intarna-install/include/IntaRNA/experimental/LICENSE"
           export PKG_CONFIG_PATH="$RUNNER_TEMP/intarna-install/lib/pkgconfig"
           "$CXX" -std=c++23 ${CPPFLAGS:-} ${CXXFLAGS:-} "$consumer" \
             ${LDFLAGS:-} $(pkg-config --cflags --libs IntaRNA) \

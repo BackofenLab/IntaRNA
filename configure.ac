@@ -87,7 +87,17 @@ sink << stream.view();
 	 AC_MSG_ERROR([A C++23 standard library providing std::string::contains, std::string::resize_and_overwrite, and std::stringstream::view is required. Upgrade libstdc++/libc++ or select a newer C++23 toolchain.])])
 CXXFLAGS=$intarna_saved_CXXFLAGS
 
-# Require the standard C++23 mdspan API used by the owning storage matrices.
+# Prefer the standard implementation, falling back to bundled Kokkos headers.
+# The selected backend is also recorded in the installed public configuration.
+AC_ARG_WITH([mdspan],
+	[AS_HELP_STRING([--with-mdspan=auto|std|kokkos],
+	    [select mdspan implementation (def=auto: prefer std, otherwise Kokkos)])],
+	[intarna_mdspan="$withval"], [intarna_mdspan=auto])
+AS_CASE([$intarna_mdspan], [auto|std|kokkos], [],
+	[AC_MSG_ERROR([--with-mdspan must be auto, std, or kokkos])])
+
+INTARNA_USE_STD_MDSPAN=0
+AS_IF([test x"$intarna_mdspan" != x"kokkos"], [
 AC_MSG_CHECKING([for C++23 std::mdspan over std::vector])
 AC_COMPILE_IFELSE(
 	[AC_LANG_PROGRAM(
@@ -101,9 +111,35 @@ std::mdspan<int, std::dextents<std::size_t, 2>> matrix(storage.data(), 2, 3);
 matrix[1, 2] = 42;
 std::mdspan<const int, std::dextents<std::size_t, 1>> packed(storage.data(), 6);
 return packed[5] != 42;]])],
-	[AC_MSG_RESULT([yes])],
+	[AC_MSG_RESULT([yes])
+	 INTARNA_USE_STD_MDSPAN=1],
 	[AC_MSG_RESULT([no])
-	 AC_MSG_ERROR([A C++23 standard library providing <mdspan>, std::mdspan, and std::dextents is required. Select a toolchain with mdspan support (for example GCC 16/libstdc++ or Clang 18/libc++).])])
+	 AS_IF([test x"$intarna_mdspan" = x"std"],
+		[AC_MSG_ERROR([--with-mdspan=std requires a C++23 standard library providing std::mdspan. Use --with-mdspan=auto or --with-mdspan=kokkos for the bundled implementation.])])])
+])
+
+AS_IF([test "$INTARNA_USE_STD_MDSPAN" = 0], [
+	AC_MSG_CHECKING([for bundled Kokkos mdspan over std::vector])
+	intarna_saved_CPPFLAGS=$CPPFLAGS
+	CPPFLAGS="-I$srcdir/src $CPPFLAGS"
+	AC_COMPILE_IFELSE(
+		[AC_LANG_PROGRAM(
+			[[#include "mdspan/mdspan.hpp"
+#include <vector>
+namespace intarna_mdspan = MDSPAN_IMPL_STANDARD_NAMESPACE;]],
+			[[std::vector<int> storage(6);
+intarna_mdspan::mdspan<int, intarna_mdspan::dextents<std::size_t, 2>> matrix(storage.data(), 2, 3);
+matrix[1, 2] = 42;
+intarna_mdspan::mdspan<const int, intarna_mdspan::dextents<std::size_t, 1>> packed(storage.data(), 6);
+return packed[5] != 42;]])],
+		[AC_MSG_RESULT([yes])],
+		[AC_MSG_RESULT([no])
+		 AC_MSG_ERROR([The bundled Kokkos mdspan headers do not compile with this C++23 toolchain. See config.log and ensure src/mdspan and src/experimental are complete.])])
+	CPPFLAGS=$intarna_saved_CPPFLAGS
+])
+AC_DEFINE_UNQUOTED([INTARNA_USE_STD_MDSPAN], [$INTARNA_USE_STD_MDSPAN],
+	[Use standard mdspan (1) or the bundled Kokkos implementation (0)])
+AC_SUBST([INTARNA_USE_STD_MDSPAN])
 
 # check if python is available
 AM_PATH_PYTHON([$PYTHON_REQUIRED_VERSION],, [:])

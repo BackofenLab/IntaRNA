@@ -5,14 +5,26 @@
 #include <cassert>
 #include <cstddef>
 #include <limits>
-#include <mdspan>
 #include <stdexcept>
 #include <utility>
 #include <vector>
 
+#include "IntaRNA/intarna_config.h"
+#if INTARNA_USE_STD_MDSPAN
+#include <mdspan>
+#else
+#include "mdspan/mdspan.hpp"
+#endif
+
 namespace IntaRNA {
 
 namespace matrix_detail {
+#if INTARNA_USE_STD_MDSPAN
+namespace md = std;
+#else
+namespace md = MDSPAN_IMPL_STANDARD_NAMESPACE;
+#endif
+
 inline std::size_t product(std::size_t rows, std::size_t columns) {
 	if (columns != 0 && rows > std::numeric_limits<std::size_t>::max() / columns)
 		throw std::length_error("matrix dimensions overflow");
@@ -36,7 +48,7 @@ template<class T>
 class Matrix {
 	std::vector<T> values;
 	std::size_t rows = 0, columns = 0;
-	using Extents = std::dextents<std::size_t, 2>;
+	using Extents = matrix_detail::md::dextents<std::size_t, 2>;
 public:
 	using value_type = T;
 	Matrix() = default;
@@ -58,11 +70,11 @@ public:
 	std::size_t storageSize() const noexcept { return values.size(); }
 	T &operator()(std::size_t i, std::size_t j) {
 		assert(i < rows && j < columns);
-		return std::mdspan<T, Extents>(values.data(), rows, columns)[i, j];
+		return matrix_detail::md::mdspan<T, Extents>(values.data(), rows, columns)[i, j];
 	}
 	const T &operator()(std::size_t i, std::size_t j) const {
 		assert(i < rows && j < columns);
-		return std::mdspan<const T, Extents>(values.data(), rows, columns)[i, j];
+		return matrix_detail::md::mdspan<const T, Extents>(values.data(), rows, columns)[i, j];
 	}
 	void clear() { std::fill(values.begin(), values.end(), T{}); }
 	void swap(Matrix &other) noexcept {
@@ -95,7 +107,7 @@ template<class T>
 class UpperTriangularMatrix {
 	std::vector<T> values;
 	std::size_t n = 0;
-	using Extents = std::dextents<std::size_t, 1>;
+	using Extents = matrix_detail::md::dextents<std::size_t, 1>;
 	std::size_t offset(std::size_t i, std::size_t j) const noexcept {
 		const auto remaining = n - i;
 		// Constructor has already checked that every triangular size fits.
@@ -128,12 +140,12 @@ public:
 	std::size_t storageSize() const noexcept { return values.size(); }
 	T &operator()(std::size_t i, std::size_t j) {
 		assert(i <= j && j < n);
-		return std::mdspan<T, Extents>(values.data(), values.size())[offset(i, j)];
+		return matrix_detail::md::mdspan<T, Extents>(values.data(), values.size())[offset(i, j)];
 	}
 	const T &operator()(std::size_t i, std::size_t j) const {
 		assert(i < n && j < n);
 		static const T zero{};
-		return i > j ? zero : std::mdspan<const T, Extents>(values.data(), values.size())[offset(i, j)];
+		return i > j ? zero : matrix_detail::md::mdspan<const T, Extents>(values.data(), values.size())[offset(i, j)];
 	}
 	void clear() { std::fill(values.begin(), values.end(), T{}); }
 	void swap(UpperTriangularMatrix &other) noexcept {

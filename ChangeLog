@@ -24,11 +24,12 @@
 ## Technical changes and Optimizations
 
 - replace uBLAS storage matrices with std::vector and std::mdspan, retaining
-  compact upper-band and triangular storage; configure checks mdspan support
+  compact upper-band and triangular storage; configure selects native mdspan
+  or bundled Kokkos headers while preserving GCC 14 support
 
 - reduce temporary allocations and fix cleanup on error paths
 - remove redundant accessibility checks from predictor, helix and seed handling
-- C++23 required; build and installation checks with GCC 16 and Apple Clang
+- C++23 required; build and installation checks with GCC 14 and Apple Clang
 - avoid repeated partition-map lookups in exact ensemble prediction
 - add exhaustive interaction and seed oracles for short-sequence tests
 - reduced memory use for exact non-seed ensemble prediction without trackers
@@ -53,6 +54,19 @@
 
 ################################################################################  
 ################################################################################
+
+260929
+ * configure.ac, IntaRNA/Matrix.h, IntaRNA/intarna_config.h.in:
+   + prefer native mdspan, falling back to bundled Kokkos with a public
+     INTARNA_USE_STD_MDSPAN define; allow explicit --with-mdspan selection
+ * src/mdspan, src/experimental:
+   + vendor only the Kokkos headers and both copies of its license from
+     stable revision 8989f70749e28f337e6f7aa210db88659dba6f2f
+   + distribute and install the headers with IntaRNA for external consumers
+ * CI, README.md, doc/mdspan-storage.md:
+   + restore GCC 14 release/debug builds and document automatic fallback
+   + record a clean GCC 14/Kokkos comparison against uBLAS with all outputs
+     matching across 160 executions; retain the original native measurements
 
 260928
  * IntaRNA/Matrix.h and storage aliases:
