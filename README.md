@@ -2173,6 +2173,11 @@ compatible architecture and Boost archive version. Use RNAplfold-style text
 for portable interchange. For C++ callers, `Accessibility::writeBinary()` and
 `AccessibilityFromStream::IntaRNA_Binary` operate on decompressed archive streams;
 `newOutputStream()`/`newInputStream()` supply gzip compression for `.agz` files.
+Unconstrained `AccessibilityVrna` and `AccessibilityFromStream` export their
+stored matrix rows directly; other implementations and constrained data use
+`getED()` to preserve their accessibility semantics. Loading fills the retained
+matrix rows directly. The [I/O benchmark](doc/benchmarks/accessibility.md)
+compares direct and generic export, and quantifies gzip's size/time trade-off.
 
 ##### Use case examples for read/write accessibilities and unpaired probabilities
 

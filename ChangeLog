@@ -25,6 +25,8 @@
 
 ## Technical changes and Optimizations
 
+- serialize stored accessibility rows directly and load retained rows in place;
+  benchmark direct/generic export and raw/gzip binary I/O (PR #250)
 - add repository-specific AI coding guidance in AGENTS.md (issue #247)
 - replace uBLAS storage matrices with std::vector and std::mdspan, retaining
   compact upper-band and triangular storage; configure selects native mdspan
@@ -58,6 +60,25 @@
 
 ################################################################################  
 ################################################################################
+
+260930 Alexander Mitrofanov
+ * IntaRNA/Matrix.h :
+   + const/mutable upper-band row views that exclude structural zeros and padding
+ * IntaRNA/Accessibility, AccessibilityArchive, AccessibilityVrna, AccessibilityFromStream :
+   * export stored ED rows directly without copies or per-cell getED() calls
+   * retain generic export for other producers and constrained accessibility data
+   * deserialize retained rows into final storage; validate discarded band tails
+   * preserve version 1 archive bytes and existing constraint masking
+ * tests/AccessibilityBinary_test.cpp, tests/Matrix_test.cpp :
+   + verify row aliasing, byte-identical direct/generic output, zero interface
+     lookups on direct export, constrained short sequences and corrupt discarded data
+ * doc/benchmarks/accessibility.cpp, doc/benchmarks/accessibility.md, doc/Makefile.am :
+   * compare direct/generic and raw/gzip binary I/O with exact ED verification
+   + reproducible synthetic RNA and E. coli measurements with per-trial CSV results
+   * retain gzip: both 100,000-base datasets shrink by 58-59%, despite slower I/O
+ * README.md :
+   + document direct matrix I/O and link the compression measurements
+   * addresses review requests in https://github.com/BackofenLab/IntaRNA/pull/250
 
 260929 Alexander Mitrofanov
  * IntaRNA/Accessibility, AccessibilityArchive, AccessibilityFromStream :

@@ -20,7 +20,9 @@ namespace IntaRNA {
  * Serialization view of the logical accessibility matrix, independent of its
  * physical storage. Version 1 stores exact internal ED integers, in rows of
  * increasing start position and interval length, including maxLength+1 for
- * dangling ends. Only valid cells are stored; scratch memory is O(maxLength).
+ * dangling ends. Only valid cells are stored. Matrix-backed saves and full-band
+ * loads use row views directly; generic saves and discarded input tails need
+ * O(maxLength) scratch memory. The version 1 archive layout is unchanged.
  *
  * The input sequence and requested band bound allocations on load. Native
  * Boost binary archives require a compatible architecture and Boost version.
@@ -30,8 +32,13 @@ class AccessibilityArchive {
 public:
 	typedef UpperBandedMatrix<E_type> EdMatrix;
 
-	/** Create a read-only serialization view of any accessibility implementation. */
-	explicit AccessibilityArchive( const Accessibility & source );
+	/**
+	 * Create a read-only serialization view.
+	 * @param source accessibility data, alive until serialization finishes
+	 * @param matrix optional non-owning view of the source's unconstrained ED
+	 * values; nullptr or non-empty constraints select the generic getED() path
+	 */
+	explicit AccessibilityArchive( const Accessibility & source, const EdMatrix * matrix = nullptr );
 
 	/** Create a loading view; target is resized to the requested available band. */
 	AccessibilityArchive( const RnaSequence & sequence, size_t maxLength, EdMatrix & target );
@@ -44,6 +51,8 @@ private:
 	const RnaSequence & sequence;
 	size_t maxLength;
 	const Accessibility * source;
+	//! Optional matrix storage for direct output; never owned or modified.
+	const EdMatrix * sourceMatrix;
 	EdMatrix * target;
 
 	template<class Archive> void save( Archive & archive, unsigned int version ) const;
@@ -52,13 +61,14 @@ private:
 };
 
 inline
-AccessibilityArchive::AccessibilityArchive( const Accessibility & source )
-	: sequence(source.getSequence()), maxLength(source.getMaxLength()), source(&source), target(nullptr)
+AccessibilityArchive::AccessibilityArchive( const Accessibility & source, const EdMatrix * matrix )
+	: sequence(source.getSequence()), maxLength(source.getMaxLength()), source(&source)
+	, sourceMatrix(source.getAccConstraint().isEmpty() ? matrix : nullptr), target(nullptr)
 {}
 
 inline
 AccessibilityArchive::AccessibilityArchive( const RnaSequence & sequence, size_t maxLength, EdMatrix & target )
-	: sequence(sequence), maxLength(maxLength), source(nullptr), target(&target)
+	: sequence(sequence), maxLength(maxLength), source(nullptr), sourceMatrix(nullptr), target(&target)
 {}
 
 inline size_t
@@ -78,15 +88,25 @@ AccessibilityArchive::save( Archive & archive, unsigned int ) const
 	archive & boost::serialization::make_array(sequence.asString().data(), sequence.size());
 	// Avoid maxLength+1 overflow when the entire sequence is covered.
 	const size_t width = maxLength < sequence.size() ? maxLength+1 : sequence.size();
-	std::vector<E_type> row(width);
+	if (sourceMatrix && (sourceMatrix->size1() != sequence.size() || sourceMatrix->size2() != sequence.size()))
+		throw std::runtime_error("Accessibility archive: source matrix shape mismatch");
+	std::vector<E_type> scratch(sourceMatrix ? 0 : width);
 	for (size_t i = 0; i < sequence.size(); ++i) {
 		const size_t count = std::min(width, sequence.size()-i);
-		for (size_t k = 0; k < count; ++k) {
-			row[k] = source->getED(i, i+k);
-			if (row[k] < 0 || row[k] > infinity)
-				throw std::runtime_error("Accessibility archive: invalid ED value");
+		std::span<const E_type> row;
+		if (sourceMatrix) {
+			row = sourceMatrix->row(i);
+			if (row.size() < count)
+				throw std::runtime_error("Accessibility archive: source matrix band too narrow");
+			row = row.first(count);
+		} else {
+			for (size_t k = 0; k < count; ++k) scratch[k] = source->getED(i, i+k);
+			row = std::span<const E_type>(scratch.data(), count);
 		}
-		archive & boost::serialization::make_array(row.data(), count);
+		for (const E_type value : row)
+			if (value < 0 || value > infinity)
+				throw std::runtime_error("Accessibility archive: invalid ED value");
+		archive & boost::serialization::make_array(row.data(), row.size());
 	}
 }
 
@@ -115,15 +135,19 @@ AccessibilityArchive::load( Archive & archive, unsigned int )
 	if (sequence.size() > std::numeric_limits<size_t>::max() / width / sizeof(E_type))
 		throw std::runtime_error("Accessibility archive: matrix size overflow");
 	target->resize(sequence.size(), sequence.size(), 0, width-1, false);
-	std::vector<E_type> row(storedWidth);
+	// Read retained cells straight into their final storage. Only the discarded
+	// suffix of a wider input band needs scratch space, and it is still validated.
+	std::vector<E_type> discarded(storedWidth-width);
 	for (size_t i = 0; i < sequence.size(); ++i) {
 		const size_t count = std::min(storedWidth, sequence.size()-i);
-		archive & boost::serialization::make_array(row.data(), count);
-		for (size_t k = 0; k < count; ++k) {
-			if (row[k] < 0 || row[k] > infinity)
-				throw std::runtime_error("Accessibility archive: invalid ED value");
-			if (k < width) (*target)(i, i+k) = row[k];
-		}
+		auto row = target->row(i);
+		archive & boost::serialization::make_array(row.data(), row.size());
+		const size_t tailSize = count-row.size();
+		if (tailSize) archive & boost::serialization::make_array(discarded.data(), tailSize);
+		for (const auto values : {std::span<const E_type>(row), std::span<const E_type>(discarded.data(), tailSize)})
+			for (const E_type value : values)
+				if (value < 0 || value > infinity)
+					throw std::runtime_error("Accessibility archive: invalid ED value");
 	}
 }
 

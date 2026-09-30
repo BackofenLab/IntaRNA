@@ -13,6 +13,21 @@ using namespace IntaRNA;
 
 namespace {
 
+// Count interface lookups without changing the underlying ED semantics.
+template<class Base> class CountedAccessibility : public Base {
+public:
+	using Base::Base;
+	mutable size_t lookups = 0;
+	E_type getED(size_t from, size_t to) const override;
+};
+
+template<class Base> E_type
+CountedAccessibility<Base>::getED(size_t from, size_t to) const
+{
+	++lookups;
+	return Base::getED(from, to);
+}
+
 void checkBinaryRoundTrip( const Accessibility & source, size_t requestedLength )
 {
 	std::stringstream bytes;
@@ -121,6 +136,8 @@ TEST_CASE("Binary accessibility rejects invalid archives", "[AccessibilityBinary
 		rejects(replaceField(valid, header+16, std::uint64_t(-1)));
 		rejects(replaceField(valid, header+24, E_type(1)));
 		rejects(replaceField(valid, valid.size()-sizeof(E_type), E_type(-1)));
+		// Invalid data in the discarded suffix of the first row must still fail.
+		rejects(replaceField(valid, header+28+rna.size()+5*sizeof(E_type), E_type(-1)));
 		rejects(replaceField(valid, valid.size()-sizeof(E_type), Accessibility::ED_UPPER_BOUND+1));
 	}
 	SECTION("different sequence of the same length") {
@@ -134,4 +151,49 @@ TEST_CASE("Binary accessibility rejects invalid archives", "[AccessibilityBinary
 		output.setstate(std::ios::badbit);
 		REQUIRE_THROWS(source.writeBinary(output));
 	}
+}
+
+TEST_CASE("Stored accessibility matrices serialize without interface lookups", "[AccessibilityBinary]")
+{
+#include "testEasyLoggingSetup.icc"
+	RnaSequence rna("test", "GGGGAAAACCCCUAGC");
+	VrnaHandler vrna(37, "Turner04", false, false);
+	for (size_t length : {size_t(1), size_t(5), rna.size()}) {
+		CountedAccessibility<AccessibilityVrna> folded(rna, length, nullptr, vrna, rna.size());
+		std::stringstream direct, generic;
+		const Accessibility & polymorphic = folded;
+		polymorphic.writeBinary(direct);
+		REQUIRE(folded.lookups == 0);
+		folded.Accessibility::writeBinary(generic);
+		REQUIRE(folded.lookups > 0);
+		// Same version 1 payload, independent of matrix padding and dispatch.
+		REQUIRE(direct.str() == generic.str());
+		for (size_t requested : {size_t(0), size_t(1), size_t(3)}) {
+			std::istringstream input(direct.str());
+			CountedAccessibility<AccessibilityFromStream> loaded(rna, requested, nullptr,
+				input, AccessibilityFromStream::IntaRNA_Binary, 1.0);
+			std::stringstream stored, gathered;
+			static_cast<const Accessibility &>(loaded).writeBinary(stored);
+			REQUIRE(loaded.lookups == 0);
+			loaded.Accessibility::writeBinary(gathered);
+			REQUIRE(loaded.lookups > 0);
+			REQUIRE(stored.str() == gathered.str());
+		}
+	}
+}
+
+TEST_CASE("Constrained matrix output retains getED masking", "[AccessibilityBinary]")
+{
+#include "testEasyLoggingSetup.icc"
+	// The short-sequence matrix contains zeros even at inaccessible positions.
+	RnaSequence rna("short", "AC");
+	AccessibilityConstraint constraint(rna, "pb", 0, "", "", "");
+	VrnaHandler vrna(37, "Turner04", false, false);
+	CountedAccessibility<AccessibilityVrna> folded(rna, 1, &constraint, vrna, 0);
+	std::stringstream direct, generic;
+	folded.writeBinary(direct);
+	REQUIRE(folded.lookups > 0);
+	folded.Accessibility::writeBinary(generic);
+	REQUIRE(direct.str() == generic.str());
+	checkBinaryRoundTrip(folded, 0);
 }

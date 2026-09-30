@@ -12,6 +12,8 @@
 
 namespace IntaRNA {
 
+template<class T> class UpperBandedMatrix;
+
 /**
  * Abstract interface that represents accessibility data for a given RNA
  * sequence.
@@ -115,7 +117,7 @@ public:
 	 * @param out binary output stream
 	 * @throw std::exception on invalid ED values or output failure
 	 */
-	void writeBinary( std::ostream & out ) const;
+	virtual void writeBinary( std::ostream & out ) const;
 
 	/**
 	 * Prints the accessibility values to stream as upper triangular matrix
@@ -163,6 +165,15 @@ public:
 	decomposeByMaxED( IndexRangeList & ranges, const E_type maxED, const size_t minRangeLength ) const;
 
 protected:
+
+	/**
+	 * Write an archive using stored ED rows when available. Non-empty
+	 * constraints use getED() to preserve any masking applied by the subclass.
+	 * @param out binary output stream
+	 * @param matrix non-owning matrix with the same unconstrained ED values as
+	 * getED(), or nullptr to gather values through getED(); used only during this call
+	 */
+	void writeBinary( std::ostream & out, const UpperBandedMatrix<E_type> * matrix ) const;
 
 	//! the RNA sequence the accessibilities correspond to
 	const RnaSequence & seq;

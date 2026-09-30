@@ -1,57 +1,144 @@
-// Compare compressed text and binary accessibility I/O after one ViennaRNA fold.
-// Usage: accessibility-benchmark SEQUENCE_LENGTH EXISTING_OUTPUT_DIRECTORY
+// Compare generic/direct matrix export and raw/gzip binary I/O on identical data.
+// Usage: accessibility-benchmark SEQUENCE_LENGTH OUTPUT_DIRECTORY [FASTA_FILE]
 #include <IntaRNA/AccessibilityVrna.h>
 #include <IntaRNA/AccessibilityFromStream.h>
+#include <boost/iostreams/device/file_descriptor.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
 #include <algorithm>
+#include <array>
 #include <chrono>
-#include <cstdlib>
+#include <cstdint>
 #include <filesystem>
+#include <fstream>
 #include <iostream>
+#include <memory>
+#include <stdexcept>
 #include <string>
 
 INITIALIZE_EASYLOGGINGPP
 
-int main(int argc, char **argv) {
-    if (argc != 3) return 2;
-    el::Loggers::reconfigureAllLoggers(el::ConfigurationType::Enabled, "false");
-    const size_t n = std::stoull(argv[1]);
-    std::string sequence;
-    sequence.reserve(n);
-    unsigned state = 245;
-    for (size_t i=0;i<n;++i) {
-        state = state * 1664525u + 1013904223u;
-        sequence += "ACGU"[state >> 30];
-    }
-    IntaRNA::RnaSequence rna("benchmark", sequence);
-    IntaRNA::VrnaHandler vrna(37, "Turner04", false, false);
-    IntaRNA::AccessibilityVrna source(rna, 100, nullptr, vrna, 150);
-    using Clock = std::chrono::steady_clock;
-    for (int run=0;run<3;++run) {
-        for (bool binary : {false, true}) {
-            const auto path = std::string(argv[2]) + (binary ? "/cache.agz" : "/cache.txt.gz");
-            auto start=Clock::now();
-            auto *out=IntaRNA::newOutputStream(path);
-            if (binary) source.writeBinary(*out); else source.writeRNAplfold_ED_text(*out);
-            IntaRNA::deleteOutputStream(out);
-            auto wrote=Clock::now();
-            auto *in=IntaRNA::newInputStream(path);
-            IntaRNA::AccessibilityFromStream read(rna,100,nullptr,*in,
-                binary ? IntaRNA::AccessibilityFromStream::IntaRNA_Binary : IntaRNA::AccessibilityFromStream::ED_RNAplfold_Text, 1.0);
-            IntaRNA::deleteInputStream(in);
-            auto loaded=Clock::now();
-            if (read.getMaxLength()!=source.getMaxLength()) return 3;
-            size_t differences = 0;
-            IntaRNA::E_type maxDifference = 0;
-            for(size_t i=0;i<n;++i) for(size_t j=i;j<n && j<=i+100;++j) {
-                const auto difference = std::abs(read.getED(i,j)-source.getED(i,j));
-                if (difference != 0) ++differences;
-                maxDifference = std::max(maxDifference, difference);
-            }
-            if (binary && differences != 0) return 4;
-            std::cout << run << ',' << (binary?"agz":"text.gz") << ','
-                << std::chrono::duration<double>(wrote-start).count() << ','
-                << std::chrono::duration<double>(loaded-wrote).count() << ','
-                << std::filesystem::file_size(path) << ',' << differences << ',' << maxDifference << std::endl;
-        }
-    }
+namespace {
+using namespace IntaRNA;
+namespace bio = boost::iostreams;
+using Clock = std::chrono::steady_clock;
+constexpr size_t interactionLength = 100;
+constexpr size_t foldingWindow = 150;
+
+std::string makeSequence(size_t length, const char * fasta)
+{
+	std::string sequence;
+	sequence.reserve(length);
+	if (fasta) {
+		std::ifstream input(fasta);
+		if (!input) throw std::runtime_error("cannot open FASTA input");
+		std::string line;
+		bool inSequence = false;
+		while (sequence.size() < length && std::getline(input, line)) {
+			if (!line.empty() && line[0] == '>') {
+				if (inSequence) break;
+				inSequence = true;
+				continue;
+			}
+			for (char c : line) {
+				if (c != ' ' && c != '\t' && c != '\r' && sequence.size() < length)
+					sequence += c;
+			}
+		}
+		if (sequence.size() != length) throw std::runtime_error("first FASTA sequence is too short");
+	} else {
+		std::uint32_t state = 245;
+		for (size_t i = 0; i < length; ++i) {
+			state = state * 1664525u + 1013904223u;
+			sequence += "ACGU"[state >> 30];
+		}
+	}
+	return sequence;
+}
+
+void writeCache(const Accessibility & source, const std::string & path, bool compressed, bool generic)
+{
+	// Match production stream buffering; only the gzip filter differs.
+	constexpr std::streamsize bufferSize = 512 * 1024;
+	bio::filtering_ostream output;
+	if (compressed) output.push(bio::gzip_compressor(), bufferSize);
+	output.push(bio::file_descriptor_sink(path, std::ios::out | std::ios::binary), bufferSize);
+	if (generic) source.Accessibility::writeBinary(output);
+	else source.writeBinary(output);
+	output.reset(); // include compressor finalization and file close in timing
+}
+
+std::unique_ptr<AccessibilityFromStream> readCache(const RnaSequence & rna, const std::string & path, bool compressed)
+{
+	bio::filtering_istream input;
+	if (compressed) input.push(bio::gzip_decompressor());
+	input.push(bio::file_descriptor_source(path, std::ios::in | std::ios::binary));
+	auto result = std::make_unique<AccessibilityFromStream>(rna, interactionLength, nullptr,
+		input, AccessibilityFromStream::IntaRNA_Binary, 1.0);
+	input.reset();
+	return result;
+}
+
+size_t countDifferences(const Accessibility & source, const Accessibility & loaded)
+{
+	if (loaded.getMaxLength() != source.getMaxLength()) throw std::runtime_error("interaction length mismatch");
+	size_t differences = 0;
+	for (size_t i = 0; i < source.getSequence().size(); ++i)
+		for (size_t j = i; j < source.getSequence().size() && j-i <= source.getMaxLength(); ++j)
+			if (source.getED(i,j) != loaded.getED(i,j)) ++differences;
+	return differences;
+}
+
+void benchmark(size_t length, const std::filesystem::path & directory, const char * fasta)
+{
+	RnaSequence rna("benchmark", makeSequence(length, fasta));
+	VrnaHandler vrna(37, "Turner04", false, false);
+	AccessibilityVrna folded(rna, interactionLength, nullptr, vrna, foldingWindow);
+	const auto seed = (directory / "seed.bin").string();
+	writeCache(folded, seed, false, false);
+	auto reloaded = readCache(rna, seed, false);
+	if (countDifferences(folded, *reloaded)) throw std::runtime_error("initial reload differs");
+	std::filesystem::remove(seed);
+
+	// Rotate all eight combinations so one format/method is not always first.
+	std::cout << "trial,producer,serialization,format,write_seconds,read_seconds,bytes,different_cells\n";
+	for (size_t trial = 0; trial < 3; ++trial) {
+		for (size_t step = 0; step < 8; ++step) {
+			const size_t variant = (step + 3*trial) % 8;
+			const bool streamSource = variant & 4, generic = variant & 2, compressed = variant & 1;
+			const Accessibility & source = streamSource ? static_cast<const Accessibility &>(*reloaded) : folded;
+			const std::string producer = streamSource ? "stream" : "vrna";
+			const auto path = (directory / (producer + (compressed ? ".agz" : ".bin"))).string();
+			const auto start = Clock::now();
+			writeCache(source, path, compressed, generic);
+			const auto wrote = Clock::now();
+			auto loaded = readCache(rna, path, compressed);
+			const auto read = Clock::now();
+			const auto differences = countDifferences(folded, *loaded);
+			if (differences) throw std::runtime_error("binary ED values differ");
+			std::cout << trial << ',' << producer << ',' << (generic ? "generic" : "direct") << ','
+				<< (compressed ? "gzip" : "raw") << ','
+				<< std::chrono::duration<double>(wrote-start).count() << ','
+				<< std::chrono::duration<double>(read-wrote).count() << ','
+				<< std::filesystem::file_size(path) << ',' << differences << std::endl;
+		}
+	}
+}
+} // namespace
+
+int main(int argc, char **argv)
+{
+	if (argc < 3 || argc > 4) {
+		std::cerr << "Usage: accessibility-benchmark SEQUENCE_LENGTH OUTPUT_DIRECTORY [FASTA_FILE]\n";
+		return 2;
+	}
+	el::Loggers::reconfigureAllLoggers(el::ConfigurationType::Enabled, "false");
+	try {
+		const size_t length = std::stoull(argv[1]);
+		if (length < foldingWindow) throw std::runtime_error("use at least 150 bases");
+		benchmark(length, argv[2], argc == 4 ? argv[3] : nullptr);
+	} catch (const std::exception & error) {
+		std::cerr << error.what() << '\n';
+		return 1;
+	}
 }
