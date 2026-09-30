@@ -80,16 +80,18 @@ deleteOutputStream( std::ostream *& outStream )
 	// flush content
 	outStream->flush();
 
-	// handle file output
-	namespace bio = boost::iostreams;
-	bio::filtering_ostream * outFile = dynamic_cast<bio::filtering_ostream *>(outStream);
-	if (outFile != NULL) {
-		// ensure devices are closed on destruction
-		outFile->set_auto_close(true);
-		// close all file handles
-		outFile->clear();
-		// delete stream
-		INTARNA_CLEANUP(outStream);
+	// handle file output if not STDIN/STDOUT/STDERR
+	if (outStream != & std::cout && outStream != & std::cerr) {
+		namespace bio = boost::iostreams;
+		bio::filtering_ostream * outFile = dynamic_cast<bio::filtering_ostream *>(outStream);
+		if (outFile != NULL) {
+			// ensure devices are closed on destruction
+			outFile->set_auto_close(true);
+			// close all file handles
+			outFile->clear();
+			// delete stream
+			INTARNA_CLEANUP(outStream);
+		}
 	}
 
 	// ensure NULL setting
@@ -146,15 +148,17 @@ deleteInputStream( std::istream *& inStream )
 	}
 
 	// handle file input
-	namespace bio = boost::iostreams;
-	bio::filtering_istream * inFile = dynamic_cast<bio::filtering_istream *>(inStream);
-	if (inFile != NULL) {
-		// ensure devices are closed on destruction
-		inFile->set_auto_close(true);
-		// close all file handles
-		inFile->clear();
-		// delete stream
-		INTARNA_CLEANUP(inStream);
+	if (inStream != & std::cin) {
+		namespace bio = boost::iostreams;
+		bio::filtering_istream * inFile = dynamic_cast<bio::filtering_istream *>(inStream);
+		if (inFile != NULL) {
+			// ensure devices are closed on destruction
+			inFile->set_auto_close(true);
+			// close all file handles
+			inFile->clear();
+			// delete stream
+			INTARNA_CLEANUP(inStream);
+		}
 	}
 
 	// ensure NULL setting

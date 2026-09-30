@@ -5,9 +5,9 @@ In the following, we list some examples how to use IntaRNA in specific applicati
 The examples are presented in detail in our publication
 
 - [How to do RNA-RNA interaction prediction? A use-case driven
-handbook using IntaRNA](http://www.bioinf.uni-freiburg.de/Subpages/publications.html?de#Raden-IntaRNA-handson.abstract)
+handbook using IntaRNA](https://doi.org/10.1007/978-1-0716-3519-3_9)
   - Martin Raden and Milad Miladi
-  - Springer (in press, DOI to come)
+  - In: Lorenz, R. (eds) RNA Folding. Methods in Molecular Biology, vol 2726. Humana, New York, NY. https://doi.org/10.1007/978-1-0716-3519-3_9
 
 
 

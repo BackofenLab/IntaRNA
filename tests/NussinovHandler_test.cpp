@@ -6,7 +6,6 @@
 #include <vector>
 #include <utility>
 #include <iostream>
-#include <boost/numeric/ublas/io.hpp>
 #include "IntaRNA/NussinovHandler.h"
 
 using namespace IntaRNA;

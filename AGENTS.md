@@ -17,6 +17,9 @@ with the code and build files when their conventions change.
   [doc/refactor/](doc/refactor/) records earlier analyses and measurements;
   its phase-specific branch instructions are historical, not the current
   contribution workflow.
+- use '\n' (LF) as sole line ending in all text-based files.
+  Convert CRLF to LF in editors or with `dos2unix` when needed.
+- Use UTF-8 encoding for source and text files.
 
 ## Build and validation
 
@@ -32,6 +35,12 @@ an old toolchain. Dependencies include Boost, ViennaRNA (>= 2.4.14), zlib,
 pkg-config and Autotools; OpenMP is used by the default multithreaded build.
 [conda-build-env.yml](conda-build-env.yml) supplies library/build dependencies,
 but does not select the C++ compiler. Use the platform setup in CI when needed.
+
+Configure prefers native `std::mdspan` and otherwise uses the bundled Kokkos
+headers. `INTARNA_USE_STD_MDSPAN` in the installed public configuration records
+the choice; `--with-mdspan=std|kokkos` can select a backend explicitly. Preserve
+the upstream headers and licenses in `src/mdspan` and `src/experimental` when
+editing project code; their provenance is recorded in `doc/mdspan-storage.md`.
 
 From the repository root, with dependencies available in standard locations:
 

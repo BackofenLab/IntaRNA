@@ -28,6 +28,7 @@ libIntaRNA_adir = $(includedir)/IntaRNA
 # the list of header files that belong to the library (to be installed later)
 libIntaRNA_a_HEADERS =    \
 					intarna_config.h \
+					Matrix.h \
 					Accessibility.h \
 					AccessibilityConstraint.h \
 					AccessibilityDisabled.h \

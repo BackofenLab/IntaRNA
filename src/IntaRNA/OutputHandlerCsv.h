@@ -383,14 +383,16 @@ bool
 OutputHandlerCsv::
 needsZall( const ColTypeList & colTypes )
 {
-	for (auto it = colTypes.begin(); it != colTypes.end(); it++ ) {
+	for ( const auto& type : colTypes ) {
 		// check if type requires Zall computation
-		switch ( *it ) {
-		case Eall:
-		case EallTotal:
-		case Zall:
-		case P_E:
-			return true;
+        switch ( type ) {
+			case Eall:
+			case EallTotal:
+			case Zall:
+			case P_E:
+				return true;
+			default: // ignore all other types
+				break;
 		}
 	}
 	return false;
@@ -403,15 +405,17 @@ bool
 OutputHandlerCsv::
 needBPs( const ColTypeList & colTypes )
 {
-	for (auto it = colTypes.begin(); it != colTypes.end(); it++ ) {
+	for ( const auto& type : colTypes ) {
 		// check if type requires Zall computation
-		switch ( *it ) {
-		case hybridDB:
-		case hybridDBfull:
-		case hybridDP:
-		case hybridDPfull:
-		case bpList:
-			return true;
+		switch ( type ) {
+			case hybridDB:
+			case hybridDBfull:
+			case hybridDP:
+			case hybridDPfull:
+			case bpList:
+				return true;
+			default: // ignore all other types
+				break;
 		}
 	}
 	return false;
