@@ -2,8 +2,8 @@
 #define INTARNA_ACCESSIBILITYARCHIVE_H_
 
 #include "IntaRNA/Accessibility.h"
+#include "IntaRNA/Matrix.h"
 
-#include <boost/numeric/ublas/banded.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/array.hpp>
 #include <boost/serialization/split_member.hpp>
@@ -28,7 +28,7 @@ namespace IntaRNA {
  */
 class AccessibilityArchive {
 public:
-	typedef boost::numeric::ublas::banded_matrix<E_type> EdMatrix;
+	typedef UpperBandedMatrix<E_type> EdMatrix;
 
 	/** Create a read-only serialization view of any accessibility implementation. */
 	explicit AccessibilityArchive( const Accessibility & source );

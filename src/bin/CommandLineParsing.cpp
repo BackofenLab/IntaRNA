@@ -401,8 +401,8 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 			, std::string("accessibility computation :"
 					"\n 'N' no accessibility contributions"
 					"\n 'C' computation of accessibilities"
-					"\n 'P' unpaired probabilities in RNAplfold format or binary .agz from --qAccFile"
-					"\n 'E' ED values in RNAplfold Pu-like format or binary .agz from --qAccFile"
+					"\n 'P' unpaired probabilities in RNAplfold format or IntaRNA's binary format (.agz file) from --qAccFile"
+					"\n 'E' ED values in RNAplfold Pu-like format or IntaRNA's binary format (.agz file) from --qAccFile"
 					).c_str())
 		(qAccW.name.c_str()
 			, value<int>(&(qAccW.val))
@@ -435,7 +435,9 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 					).c_str())
 		("qAccFile"
 			, value<std::string>(&(qAccFile))
-			, std::string("accessibility computation : the file/stream to be parsed, if --qAcc is to be read from file. A .agz suffix selects IntaRNA binary ED data for either P or E; use STDIN for text input.").c_str())
+			, std::string("accessibility computation : the file/stream to be parsed, if --qAcc is to be read from file."
+				" A '.agz' file ending identifies IntaRNA binary ED output format for either P or E, otherwise an RNAplfold-like text-based format is expected."
+				" Use STDIN for text input from standard input stream.").c_str())
 		(qIntLenMax.name.c_str()
 			, value<int>(&(qIntLenMax.val))
 				->default_value(qIntLenMax.def)
@@ -516,8 +518,8 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 			, std::string("accessibility computation :"
 					"\n 'N' no accessibility contributions"
 					"\n 'C' computation of accessibilities"
-					"\n 'P' unpaired probabilities in RNAplfold format or binary .agz from --tAccFile"
-					"\n 'E' ED values in RNAplfold Pu-like format or binary .agz from --tAccFile"
+					"\n 'P' unpaired probabilities in RNAplfold format or IntaRNA's binary format (.agz file) from --tAccFile"
+					"\n 'E' ED values in RNAplfold Pu-like format or IntaRNA's binary format (.agz file) from --tAccFile"
 					).c_str())
 		(tAccW.name.c_str()
 			, value<int>(&(tAccW.val))
@@ -550,7 +552,9 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 					).c_str())
 		("tAccFile"
 			, value<std::string>(&(tAccFile))
-			, std::string("accessibility computation : the file/stream to be parsed, if --tAcc is to be read from file. A .agz suffix selects IntaRNA binary ED data for either P or E; use STDIN for text input.").c_str())
+			, std::string("accessibility computation : the file/stream to be parsed, if --tAcc is to be read from file."
+				" A '.agz' file ending identifies IntaRNA binary ED output format for either P or E, otherwise an RNAplfold-like text-based format is expected."
+				" Use STDIN for text input from standard input stream.").c_str())
 		(tIntLenMax.name.c_str()
 			, value<int>(&(tIntLenMax.val))
 				->default_value(tIntLenMax.def)
@@ -918,12 +922,12 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 					" ADDITIONAL output:"
 					"\n 'qMinE:' (query) for each position the minimal energy of any interaction covering the position (CSV format)"
 					"\n 'qSpotProb:' (query) for each position the probability that is is covered by an interaction covering (CSV format)"
-					"\n 'qAcc:' (query) ED accessibility values ('qPu'-like format; .agz for binary)."
-					"\n 'qPu:' (query) unpaired probability values (RNAplfold format; .agz stores exact ED data)."
+					"\n 'qAcc:' (query) ED accessibility values ('qPu'-like text format OR '.agz' file ending for IntaRNA's binary format)."
+					"\n 'qPu:' (query) unpaired probability values (RNAplfold format OR '.agz' file ending for IntaRNA's binary format)."
 					"\n 'tMinE:' (target) for each position the minimal energy of any interaction covering the position (CSV format)"
 					"\n 'tSpotProb:' (target) for each position the probability that is is covered by an interaction covering (CSV format)"
-					"\n 'tAcc:' (target) ED accessibility values ('tPu'-like format; .agz for binary)."
-					"\n 'tPu:' (target) unpaired probability values (RNAplfold format; .agz stores exact ED data)."
+					"\n 'tAcc:' (target) ED accessibility values ('tPu'-like format OR '.agz' file ending for IntaRNA's binary format)."
+					"\n 'tPu:' (target) unpaired probability values (RNAplfold format OR '.agz' file ending for IntaRNA's binary format)."
 					"\n 'pMinE:' (target+query) for each index pair the minimal energy of any interaction covering the pair (CSV format)"
 					"\n 'spotProb:' (target+query) tracks for a given set of interaction spots their probability to be covered by an interaction. If no spots are provided, probabilities for all index combinations are computed. Spots are encoded by comma-separated 'idxT&idxQ' pairs (target-query). For each spot a probability is provided in concert with the probability that none of the spots (encoded by '0&0') is covered (CSV format). The spot encoding is followed colon-separated by the output stream/file name, eg. '--out=\"spotProb:3&76,59&2:STDERR\"'. NOTE: value has to be quoted due to '&' symbol!"
 					"\nFor each, provide a file name or STDOUT/STDERR to write to the respective output stream."
