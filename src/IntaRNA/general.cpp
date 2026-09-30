@@ -115,7 +115,7 @@ newInputStream( const std::string & in )
 		BOOST_IOS::openmode fopenmode = BOOST_IOS::in;
 
 		// gzipped input file stream
-		if (boost::iends_with(out, ".gz")) {
+		if (boost::iends_with(in, ".gz")) {
 			// gzip compression
 			fstream->push( bio::gzip_decompressor() );
 			// binary input
