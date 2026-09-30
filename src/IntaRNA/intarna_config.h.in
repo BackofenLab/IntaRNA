@@ -53,4 +53,9 @@
 #define INTARNA_MULITHREADING @INTARNA_MULITHREADING@
 #endif
 
+/* mdspan backend selected by configure: standard (1), bundled Kokkos (0). */
+#ifndef INTARNA_USE_STD_MDSPAN
+#define INTARNA_USE_STD_MDSPAN @INTARNA_USE_STD_MDSPAN@
+#endif
+
 #endif // INTARNA_CONFIG_H

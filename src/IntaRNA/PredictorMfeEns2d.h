@@ -5,7 +5,7 @@
 #include "IntaRNA/PredictorMfeEns.h"
 #include "IntaRNA/Interaction.h"
 
-#include <boost/numeric/ublas/matrix.hpp>
+#include "IntaRNA/Matrix.h"
 
 namespace IntaRNA {
 
@@ -22,7 +22,7 @@ class PredictorMfeEns2d: public PredictorMfeEns {
 protected:
 
 	//! matrix type to hold the partition functions for interaction site starts
-	typedef boost::numeric::ublas::matrix<Z_type> Z2dMatrix;
+	typedef Matrix<Z_type> Z2dMatrix;
 
 public:
 

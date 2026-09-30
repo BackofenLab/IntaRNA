@@ -22,14 +22,17 @@ jobs:
             os: ubuntu-24.04
             compiler: gcc
             configure_debug: --disable-debug
+            std_mdspan: 0
           - name: GCC 14 debug
             os: ubuntu-24.04
             compiler: gcc
             configure_debug: --enable-debug
+            std_mdspan: 0
           - name: Apple Clang release
             os: macos-15
             compiler: apple-clang
             configure_debug: --disable-debug
+            std_mdspan: 1
 
     steps:
       - name: Check out sources
@@ -93,6 +96,8 @@ jobs:
             ${{ matrix.configure_debug }}
           grep -Eq '^CXX = .* -std=c\+\+23([[:space:]]|$)' Makefile
           grep -q '^#define INTARNA_MULITHREADING 1' src/config.h
+          grep -q '^#define INTARNA_USE_STD_MDSPAN ${{ matrix.std_mdspan }}$' src/config.h
+          grep -q '^#define INTARNA_USE_STD_MDSPAN ${{ matrix.std_mdspan }}$' src/IntaRNA/intarna_config.h
 
       - name: Build, install, and run full test suite
         run: |
@@ -115,7 +120,9 @@ jobs:
       - name: Compile and link an installed pkg-config consumer
         run: |
           consumer="$RUNNER_TEMP/intarna-consumer.cpp"
-          printf '#include <IntaRNA/RnaSequence.h>\nint main() { IntaRNA::RnaSequence rna("test", "ACGU"); return rna.size() == 4 ? 0 : 1; }\n' > "$consumer"
+          printf '#include <IntaRNA/RnaSequence.h>\n#include <IntaRNA/Matrix.h>\nint main() { IntaRNA::RnaSequence rna("test", "ACGU"); IntaRNA::Matrix<int> matrix(2, 3); matrix(1, 2) = 42; return rna.size() == 4 && matrix(1, 2) == 42 ? 0 : 1; }\n' > "$consumer"
+          test -f "$RUNNER_TEMP/intarna-install/include/IntaRNA/mdspan/LICENSE"
+          test -f "$RUNNER_TEMP/intarna-install/include/IntaRNA/experimental/LICENSE"
           export PKG_CONFIG_PATH="$RUNNER_TEMP/intarna-install/lib/pkgconfig"
           "$CXX" -std=c++23 ${CPPFLAGS:-} ${CXXFLAGS:-} "$consumer" \
             ${LDFLAGS:-} $(pkg-config --cflags --libs IntaRNA) \

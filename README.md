@@ -180,7 +180,10 @@ you with an encapsulated IntaRNA installation.
 If you are going to compile IntaRNA from source, ensure you meet the following
 dependencies:
 
-- compiler supporting C++23 and OpenMP (GCC 14 or Apple Clang)
+- compiler supporting C++23 and OpenMP (GCC 14 or Apple Clang). Configure
+  prefers native `std::mdspan` when available and otherwise uses the bundled
+  header-only [Kokkos mdspan implementation](https://github.com/kokkos/mdspan).
+  No separate mdspan installation or compiler upgrade is required.
 - [boost C++ library](http://www.boost.org/) version >= 1.50.0
   (ensure the following libraries are installed for development (not just runtime libraries!); or install all e.g. in Ubuntu via package `libboost-all-dev`)
     - libboost_regex
@@ -2191,6 +2194,16 @@ select `-std=c++23` (or a newer standard) in their own build; the installed
 pkg-config metadata supplies IntaRNA and dependency flags but deliberately
 does not override the consuming project's language mode.
 
+Configure records the selected mdspan implementation in the installed
+`IntaRNA/intarna_config.h`. By default (`--with-mdspan=auto`), native
+`std::mdspan` is preferred; the bundled Kokkos implementation is selected if
+the standard library does not provide the required API. Use
+`--with-mdspan=std` or `--with-mdspan=kokkos` to require a particular backend.
+The Kokkos headers and licenses are installed below `include/IntaRNA/mdspan`
+and `include/IntaRNA/experimental`, so the public matrix header works without
+adding another include path. See [the storage report](doc/mdspan-storage.md)
+for the pinned upstream revision, validation, and performance results.
+
 ## Mandatory `Easylogging++` initalization !
 
 Since IntaRNA makes heavy use of the `Easylogging++` library, you have to add (and adapt)
@@ -2236,4 +2249,3 @@ flags are used within the IntaRNA configuration:
 [![no](doc/figures/icon-no.39.png)](https://www.freepik.com/free-vector/icons-collection_1638275.htm)
 [![up](doc/figures/icon-up.38.png)](https://www.freepik.com/free-vector/colored-arrows_794372.htm)
 Designed by Freepik
-

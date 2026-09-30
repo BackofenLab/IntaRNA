@@ -3,7 +3,6 @@
 
 #undef NDEBUG
 
-#include <boost/numeric/ublas/io.hpp>
 #include "IntaRNA/AccessibilityBasePair.h"
 
 using namespace IntaRNA;

@@ -24,6 +24,11 @@
 ## Technical changes and Optimizations
 
 - add repository-specific AI coding guidance in AGENTS.md (issue #247)
+- replace uBLAS storage matrices with std::vector and std::mdspan, retaining
+  compact upper-band and triangular storage; configure selects native mdspan
+  or bundled Kokkos headers while preserving GCC 14 support; document the
+  public matrix operations and align their layout with repository guidance
+
 - reduce temporary allocations and fix cleanup on error paths
 - remove redundant accessibility checks from predictor, helix and seed handling
 - C++23 required; build and installation checks with GCC 14 and Apple Clang
@@ -51,6 +56,38 @@
 
 ################################################################################  
 ################################################################################
+
+260929 Alexander Mitrofanov
+ * configure.ac, IntaRNA/Matrix.h, IntaRNA/intarna_config.h.in:
+   + prefer native mdspan, falling back to bundled Kokkos with a public
+     INTARNA_USE_STD_MDSPAN define; allow explicit --with-mdspan selection
+ * src/mdspan, src/experimental:
+   + vendor only the Kokkos headers and both copies of its license from
+     stable revision 8989f70749e28f337e6f7aa210db88659dba6f2f
+   + distribute and install the headers with IntaRNA for external consumers
+ * CI, README.md, doc/mdspan-storage.md:
+   + restore GCC 14 release/debug builds and document automatic fallback
+   + record a clean GCC 14/Kokkos comparison against uBLAS with all outputs
+     matching across 160 executions; retain the original native measurements
+ * IntaRNA/Matrix.h, AGENTS.md:
+   + document public matrix operations and place explicit inline template
+     definitions after class declarations, following the repository guidance
+   + keep the guidance aligned with native/bundled mdspan selection (issue #246)
+
+260928
+ * IntaRNA/Matrix.h and storage aliases:
+   + replace uBLAS dense, upper-band and upper-triangular storage with owned
+     std::vector data accessed through C++23 std::mdspan
+   + preserve logical resize, copy/move ownership and compact storage
+ * configure.ac, README.md:
+   + probe native mdspan library support and document the toolchain requirement
+ * tests/Matrix_test.cpp, tests/benchmark/compare-matrix-storage.py:
+   + add storage regression tests and reproducible before/after measurements
+   + terminate the timed process group on timeout or interruption, with
+     regression checks
+   + include the biological benchmark inputs in source distributions
+ * doc/mdspan-storage.md:
+   + record validation and performance evaluation for issue #246
 
 260928 Alexander Mitrofanov
  * AGENTS.md :

@@ -8,7 +8,7 @@
 #include <vector>
 #include <utility>
 
-#include <boost/numeric/ublas/triangular.hpp>
+#include "IntaRNA/Matrix.h"
 
 namespace IntaRNA {
 
@@ -16,13 +16,13 @@ class NussinovHandler {
 public:
 
   //! Probability triangular matrix
-  typedef boost::numeric::ublas::triangular_matrix<Z_type, boost::numeric::ublas::upper> Z2dMatrix;
+  typedef UpperTriangularMatrix<Z_type> Z2dMatrix;
 
   //! Energy triangular matrix
-  typedef boost::numeric::ublas::triangular_matrix<E_type, boost::numeric::ublas::upper> E2dMatrix;
+  typedef UpperTriangularMatrix<E_type> E2dMatrix;
 
   //! Index triangular matrix
-  typedef boost::numeric::ublas::triangular_matrix<size_t, boost::numeric::ublas::upper> IdxMatrix;
+  typedef UpperTriangularMatrix<size_t> IdxMatrix;
 
   /***
    * Get the partition function Q between the indices (from, to)

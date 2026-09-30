@@ -3,7 +3,6 @@
 
 #undef NDEBUG
 
-#include <boost/numeric/ublas/io.hpp>
 #include "IntaRNA/AccessibilityDisabled.h"
 #include "IntaRNA/AccessibilityVrna.h"
 #include "IntaRNA/InteractionEnergyVrna.h"

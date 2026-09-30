@@ -8,7 +8,7 @@
 
 #include <boost/multi_array.hpp>
 
-#include <boost/numeric/ublas/matrix.hpp>
+#include "IntaRNA/Matrix.h"
 
 namespace IntaRNA {
 
@@ -37,7 +37,7 @@ public:
 	//! matrix to store the seed information for each seed left side (i1,i2);
 	//! it holds both the energy (first) as well as the length of the seed using
 	//! the length combination using encodeSeedLength()
-	typedef boost::numeric::ublas::matrix< std::pair<E_type, size_t> > SeedMatrix;
+	typedef Matrix< std::pair<E_type, size_t> > SeedMatrix;
 
 
 public:
