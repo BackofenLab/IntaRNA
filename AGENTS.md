@@ -17,6 +17,9 @@ with the code and build files when their conventions change.
   [doc/refactor/](doc/refactor/) records earlier analyses and measurements;
   its phase-specific branch instructions are historical, not the current
   contribution workflow.
+- use '\n' (LF) as sole line ending in all text-based files.
+  Convert CRLF to LF in editors or with `dos2unix` when needed.
+- Use UTF-8 encoding for source and text files.
 
 ## Build and validation
 

@@ -26,6 +26,8 @@
 *.exe
 *.out
 *.app
+src/bin/IntaRNA
+
 
 # eclipse files
 .project
