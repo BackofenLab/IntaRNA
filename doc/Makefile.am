@@ -4,10 +4,6 @@
 ################################################################
 
 EXTRA_DIST =	\
-			benchmarks/accessibility.cpp \
-			benchmarks/accessibility.md \
-			benchmarks/accessibility-random.csv \
-			benchmarks/accessibility-ecoli.csv \
 			conda.txt \
 			doxygen.cfg \
 			latex-deps/adjcalc.sty \
