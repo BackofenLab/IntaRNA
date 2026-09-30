@@ -4,11 +4,6 @@
 ################################################################
 
 EXTRA_DIST =	\
-			mdspan-storage.md \
-			mdspan-storage-samples.tsv \
-			mdspan-storage-gcc14-samples.tsv \
-			handson/fhlA.fasta \
-			handson/OxyS.fasta \
 			conda.txt \
 			doxygen.cfg \
 			latex-deps/adjcalc.sty \
