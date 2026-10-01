@@ -14,6 +14,8 @@
 
 ## Interface and handling
 
+- IntaRNAeval / --rri evaluates predefined RNA-RNA interactions (issue #184)
+
 - compressed binary .agz accessibility caches for repeated screens (issue #245)
 
 - too short sequences are skipped with warning if they are shorter than the 
@@ -60,6 +62,24 @@
 
 ################################################################################  
 ################################################################################
+
+261001 Alexander Mitrofanov
+ * IntaRNA/PredictorEvalOnly, src/IntaRNA/Makefile.am :
+   + parse colon-separated hybridDB structures with sequence/index/pair validation
+   + evaluate explicit base pairs with the selected energy and accessibility model
+   + report distinct structures, energies, restricted partition sums and trackers
+ * bin/CommandLineParsing, bin/IntaRNA :
+   + --rri selects evaluation; IntaRNAeval personality requires interaction input
+   + require one query/target and report ignored prediction and output constraints
+   * bypass prediction result filtering to preserve distinct structures with equal
+     energies, boundaries and base-pair counts; retain energy/accessibility settings
+ * tests/PredictorEvalOnly_test.cpp, tests/runIntaRNAeval.sh, tests/Makefile.am :
+   + check malformed structures, shifted indices, ignored filters, duplicate/tied
+     structures, tracker coordinates, partition reset and energy contributions
+   + reproduce ViennaRNA predictions through API and CLI evaluation round trips
+ * README.md and CLI help :
+   + document input format, retained settings and supplied-structure ensemble scope
+   * resolves https://github.com/BackofenLab/IntaRNA/issues/184
 
 260930 Alexander Mitrofanov
  * IntaRNA/Matrix.h :

@@ -15,7 +15,7 @@ TEST_EXTENSIONS = $(EXEEXT) .sh
 SH_LOG_COMPILER = $(SHELL)
 
 # the script needed for tests
-dist_check_SCRIPTS = runIntaRNA.sh runAccessibilityBinary.sh
+dist_check_SCRIPTS = runIntaRNA.sh runAccessibilityBinary.sh runIntaRNAeval.sh
 
 # the program to build
 check_PROGRAMS = runApiTests 
@@ -50,6 +50,7 @@ runApiTests_SOURCES =	\
 					PredictorMfeHeuristicCellState_test.cpp \
 					PredictorMfeEnsRegression_test.cpp \
 					PredictorTinyOracle_test.cpp \
+					PredictorEvalOnly_test.cpp \
 					PredictorSeedOracle_test.cpp \
 					Matrix_test.cpp \
 					NussinovHandler_test.cpp \

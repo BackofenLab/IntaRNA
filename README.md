@@ -100,6 +100,7 @@ The following topics are covered by this documentation:
     - [IntaRNAsTar - optimized for sRNA-target prediction](#IntaRNAsTar)
     - [IntaRNAseed - identifys and reports seed interactions only](#IntaRNAseed)
     - [IntaRNAens - ensemble-based prediction and partition function computation](#IntaRNAens)
+    - [IntaRNAeval - evaluate predefined interactions](#IntaRNAeval)
 - [How to constrain predicted interactions](#constraintSetup)
   - [Interaction restrictions](#interConstr)
   - [Seed constraints](#seed)
@@ -998,6 +999,62 @@ IntaRNA --personality=IntaRNAseed ...
 IntaRNA --mode=S ...
 ```
 
+
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
+
+
+### IntaRNAeval
+
+**IntaRNAeval** evaluates predefined RNA-RNA interactions with the selected
+energy and accessibility model. It requires `--rri`; supplying `--rri` to
+`IntaRNA` also enables evaluation automatically.
+
+Use the CSV `hybridDB` format, `startTdotbarT&startQdotbarQ`. Both strands are
+written in their original 5'-3' direction: `|` marks a paired nucleotide and
+`.` an unpaired nucleotide. Pairing is antiparallel, so the first target bar
+pairs with the last query bar. Starts follow `--tIdxPos0` and `--qIdxPos0`
+(default: 1), including the usual skipped zero when indexing starts negative.
+Full-length `hybridDBfull` encodings with flanking dots are also accepted.
+Separate multiple interactions with `:` and quote the argument in the shell.
+
+```sh
+IntaRNAeval -t GGGG -q CCCC --rri='1||||&1||||:2||&2||'
+# Equivalent calls:
+IntaRNA --personality=IntaRNAeval -t GGGG -q CCCC --rri='1||||&1||||:2||&2||'
+IntaRNA -t GGGG -q CCCC --rri='1||||&1||||:2||&2||'
+```
+
+Exactly one selected query and target are required. Each encoding must contain
+at least one base pair, equal numbers of bars, in-range positions, and only
+complementary AU, GC or GU pairs. Intramolecular pairs and crossing interactions
+are not represented by this format. Every distinct supplied structure is
+reported in input order, including single pairs and positive energies; repeated
+structures count once. `--outCsvSort` can change the reporting order.
+
+Evaluation ignores prediction modes/models, seed and helix restrictions,
+interaction length/loop limits, query/target search regions, prediction windows,
+and output filters (including `--outNumber`, overlap, energy/accessibility
+cutoffs, `--outNoLP` and `--outNoGUend`). Explicitly supplied ignored options
+are listed in the INFO log. Sequence selection, output formats and columns,
+energy parameters, temperature, `--energyAdd`, dangling ends, and accessibility
+settings (including SHAPE and accessibility files) still apply. Accessibility
+windows and input matrices must cover the supplied sites; structures with no
+finite energy under the selected model cause an error.
+
+The reported energy includes initiation, all intervening loops/stackings,
+accessibility penalties, dangling ends, terminal-pair penalties and the energy
+shift. CSV energy contributions and ordinary text output use the same reporting
+interfaces as predictions. No seed is assigned, so seed-related columns report
+unavailable values. `Zall`, `Eall`, `P_E` and probability/minimum-energy trackers
+refer **only to the distinct supplied structures**, not all possible
+interactions of the sequences. Intramolecular ensemble quantities retain their
+usual meaning.
+
+For library users, `IntaRNA/PredictorEvalOnly.h` provides `parseInteractions()`
+and a `Predictor` subclass accepting a list of `Interaction` objects. The energy
+model and its sequences must outlive the predictor. Library callers control
+loop/accessibility limits through their energy model and storage/filtering
+through their chosen output handler.
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
 

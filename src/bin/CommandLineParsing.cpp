@@ -8,6 +8,7 @@
 #include <fstream>
 #include <cstdio>
 #include <memory>
+#include <set>
 
 #if INTARNA_MULITHREADING
 	#include <omp.h>
@@ -41,6 +42,7 @@ extern "C" {
 #include "IntaRNA/PredictorMfe2dHeuristic.h"
 #include "IntaRNA/PredictorMfe2dHelixBlockHeuristic.h"
 #include "IntaRNA/PredictorMfe2d.h"
+#include "IntaRNA/PredictorEvalOnly.h"
 
 #include "IntaRNA/PredictorMfeSeedOnly.h"
 #include "IntaRNA/PredictorMfe2dHeuristicSeed.h"
@@ -90,6 +92,8 @@ const std::string CommandLineParsing::outCsvLstSep = ":";
 CommandLineParsing::CommandLineParsing( const Personality personality  )
 	:
 	personality( personality ),
+	rri(),
+	rriInteractions(),
 	personalityParamValue(""),
 	stdinUsed(false),
 	opts_query("Query"),
@@ -226,6 +230,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	switch (personality) {
 	case IntaRNA :
 	case IntaRNA3 :
+	case IntaRNAeval :
 		// no changes
 		break;
 	case IntaRNA1 :
@@ -786,6 +791,11 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	////  INTERACTION/ENERGY OPTIONS  ////////////////////////
 
 	opts_inter.add_options()
+		("rri", value<std::string>(&rri),
+			"evaluate predefined interactions in hybridDB format: startTdotbarT&startQdotbarQ"
+			" (e.g. '1|||&1|||'); separate interactions with ':'. Requires one query and target."
+			" Ignores prediction/seed/helix/region/window and output-filter constraints."
+			" Energy and accessibility settings remain in effect; ensemble output covers only the supplied structures.")
 		((mode.name+",m").c_str()
 			, value<char>(&(mode.val))
 				->default_value(mode.def)
@@ -1187,6 +1197,12 @@ parse(int argc, char** argv)
 	// if parsing was successful, continue with additional checks
 	if (parsingCode == ReturnCode::KEEP_GOING) {
 		try {
+			if (vm.count("rri") || personality == IntaRNAeval) {
+				if (!vm.count("rri") || vm.at("rri").as<std::string>().empty()) {
+					throw error("IntaRNAeval requires a nonempty --rri interaction input");
+				}
+				prepareEvaluation(vm);
+			}
 			// run all notifier checks
 			notify(vm);
 		} catch (required_option& e) {
@@ -1221,6 +1237,12 @@ parse(int argc, char** argv)
 			// parse the sequences
 			parseSequences("query",qId,queryArg,query,qSet,qIdxPos0.val);
 			parseSequences("target",tId,targetArg,target,tSet,tIdxPos0.val);
+			if (!rri.empty()) {
+				if (query.size() != 1 || target.size() != 1) {
+					throw error("--rri requires exactly one query and one target sequence");
+				}
+				rriInteractions = PredictorEvalOnly::parseInteractions(rri, target.front(), query.front());
+			}
 
 			// check if same number if pairwise mode
 			if (outPairwise && query.size() != target.size()) {
@@ -1637,6 +1659,41 @@ parse(int argc, char** argv)
 
 	// return validate_* dependent parsing code
 	return parsingCode;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void
+CommandLineParsing::prepareEvaluation( boost::program_options::variables_map & vm )
+{
+	// Erase before notify(), so even out-of-sequence regions and seed encodings
+	// cannot constrain or invalidate evaluation. Energy/accessibility options stay.
+	const std::set<std::string> ignored = {
+		"model", "mode", "noSeed", "intLenMax", "qIntLenMax", "tIntLenMax",
+		"intLoopMax", "qIntLoopMax", "tIntLoopMax", "qRegion", "tRegion",
+		"qRegionLenMax", "tRegionLenMax", "windowWidth", "windowOverlap",
+		"outNumber", "outOverlap", "outMaxE", "outDeltaE", "outMinPu",
+		"outNoLP", "outNoGUend", "outBestSeedOnly", "outPerRegion", "outPairwise"
+	};
+	for (auto it=vm.begin(); it!=vm.end();) {
+		if (ignored.count(it->first) || it->first.starts_with("seed") || it->first.starts_with("helix")) {
+			if (!it->second.defaulted()) LOG(INFO) <<"--rri evaluation: ignoring --"<<it->first;
+			it = vm.erase(it);
+		} else {
+			++it;
+		}
+	}
+	// Override prediction defaults, including those of another personality.
+	model.val = 'S';
+	mode.val = 'H';
+	noSeedRequired = true;
+	intLenMax.val = intLenMax.def = 0;
+	qIntLenMax.val = tIntLenMax.val = 0;
+	windowWidth.val = 0;
+	qRegionLenMax.val = tRegionLenMax.val = 0;
+	outNoLP = outNoGUend = outPerRegion = outPairwise = false;
+	LOG(INFO) <<"Evaluating predefined interactions; prediction constraints are ignored. "
+			<<"Energy/accessibility settings are retained; ensemble statistics cover only the supplied structures.";
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -2076,13 +2133,15 @@ getEnergyHandler( const Accessibility& accTarget, const ReverseAccessibility& ac
 
 	// check whether to compute ES values (for multi-site predictions)
 	const bool initES = std::string("M").find(model.val) != std::string::npos;
+	const size_t loopMax1 = rri.empty() ? tIntLoopMax.val : accTarget.getSequence().size();
+	const size_t loopMax2 = rri.empty() ? qIntLoopMax.val : accQuery.getSequence().size();
 
 	switch( energy.val ) {
 	case 'B' : return new InteractionEnergyBasePair( accTarget, accQuery
-						, tIntLoopMax.val, qIntLoopMax.val
+						, loopMax1, loopMax2
 						, initES, Z_type(1.0), Ekcal_2_E(-1), 3
 						, Ekcal_2_E(energyAdd.val), !energyNoDangles, !outNoGUend );
-	case 'V' : return new InteractionEnergyVrna( accTarget, accQuery, vrnaHandler, tIntLoopMax.val, qIntLoopMax.val, initES, Ekcal_2_E(energyAdd.val), !energyNoDangles, !outNoGUend );
+	case 'V' : return new InteractionEnergyVrna( accTarget, accQuery, vrnaHandler, loopMax1, loopMax2, initES, Ekcal_2_E(energyAdd.val), !energyNoDangles, !outNoGUend );
 	default :
 		INTARNA_NOT_IMPLEMENTED("CommandLineParsing::getEnergyHandler : energy = '"+toString(energy.val)+"' is not supported");
 	}
@@ -2097,6 +2156,10 @@ CommandLineParsing::
 getOutputConstraint( const InteractionEnergy & energy )  const
 {
 	checkIfParsed();
+	if (!rri.empty()) {
+		return OutputConstraint(rriInteractions.size(), OutputConstraint::OVERLAP_BOTH,
+				E_INF, E_INF, false, false, false, outNeedsZall, true);
+	}
 	OutputConstraint::ReportOverlap overlap = OutputConstraint::ReportOverlap::OVERLAP_BOTH;
 	switch(outOverlap.val) {
 	case 'N' : overlap = OutputConstraint::ReportOverlap::OVERLAP_NONE; break;
@@ -2423,6 +2486,10 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 		// cleanup to avoid overhead
 		INTARNA_CLEANUP(predTracker);
 		predTracker = NULL;
+	}
+
+	if (!rri.empty()) {
+		return new PredictorEvalOnly(energy, output, predTracker, rriInteractions);
 	}
 
 	if (noSeedRequired) {
@@ -2829,6 +2896,9 @@ getPersonality( int argc, char ** argv )
 	}
 
 	// parse personality
+	if (value == "IntaRNAeval") {
+		return Personality::IntaRNAeval;
+	}
 	if (boost::regex_match(value,boost::regex("IntaRNAexact"), boost::match_perl)) {
 		return Personality::IntaRNAexact;
 	}
