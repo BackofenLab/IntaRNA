@@ -28,6 +28,7 @@ libIntaRNA_a_HEADERS =    \
 					intarna_config.h \
 					Matrix.h \
 					Accessibility.h \
+					AccessibilityArchive.h \
 					AccessibilityConstraint.h \
 					AccessibilityDisabled.h \
 					AccessibilityFromStream.h \

@@ -5,6 +5,7 @@
 #include <cassert>
 #include <cstddef>
 #include <limits>
+#include <span>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -500,6 +501,21 @@ public:
 	 */
 	const T &operator()(std::size_t i, std::size_t j) const;
 	/**
+	 * View the contiguous stored cells (i,i), (i,i+1), ... in one row.
+	 * Excludes structural zeros and row-end padding. The view aliases this
+	 * matrix and must not outlive its storage or be retained across resize,
+	 * move, swap or assignment.
+	 * @param i zero-based row, less than size1()
+	 * @return mutable stored cells; empty when i >= size2() or the band is empty
+	 */
+	std::span<T> row(std::size_t i);
+	/**
+	 * Read-only view of one stored row, with the same bounds and lifetime as row().
+	 * @param i zero-based row, less than size1()
+	 * @return read-only stored cells, excluding padding and structural zeros
+	 */
+	std::span<const T> row(std::size_t i) const;
+	/**
 	 * Reset stored cells to default values without changing the shape.
 	 */
 	void clear();
@@ -584,6 +600,24 @@ const T &UpperBandedMatrix<T>::operator()(std::size_t i, std::size_t j) const
 	assert(i < size1() && j < columns);
 	static const T zero{};
 	return i > j || j - i >= band.size2() ? zero : band(i, j - i);
+}
+
+template<class T>
+inline
+std::span<T> UpperBandedMatrix<T>::row(std::size_t i)
+{
+	assert(i < size1());
+	const auto count = i < columns ? std::min(band.size2(), columns-i) : 0;
+	return count == 0 ? std::span<T>{} : std::span<T>{&band(i, 0), count};
+}
+
+template<class T>
+inline
+std::span<const T> UpperBandedMatrix<T>::row(std::size_t i) const
+{
+	assert(i < size1());
+	const auto count = i < columns ? std::min(band.size2(), columns-i) : 0;
+	return count == 0 ? std::span<const T>{} : std::span<const T>{&band(i, 0), count};
 }
 
 template<class T>

@@ -158,3 +158,24 @@ TEST_CASE("Oversized matrix dimensions fail before allocation", "[Matrix]") {
 	REQUIRE(matrix.size1() == 1);
 	REQUIRE(matrix(0, 0) == 42);
 }
+
+TEST_CASE("Upper band row views alias valid cells without padding", "[Matrix]") {
+	for (std::size_t rows : {0u, 2u, 5u}) {
+		for (std::size_t columns : {0u, 2u, 5u}) {
+			for (std::size_t upper : {0u, 1u, 5u}) {
+				UpperBandedMatrix<int> matrix(rows, columns, 0, upper);
+				for (std::size_t i = 0; i < rows; ++i) {
+					auto row = matrix.row(i);
+					const auto constRow = std::as_const(matrix).row(i);
+					REQUIRE(row.size() == (i < columns ? std::min(upper+1, columns-i) : 0));
+					REQUIRE(constRow.size() == row.size());
+					for (std::size_t k = 0; k < row.size(); ++k) {
+						row[k] = static_cast<int>(100*i+k);
+						REQUIRE(&constRow[k] == &matrix(i, i+k));
+						REQUIRE(constRow[k] == static_cast<int>(100*i+k));
+					}
+				}
+			}
+		}
+	}
+}

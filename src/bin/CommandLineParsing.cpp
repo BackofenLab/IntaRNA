@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <fstream>
 #include <cstdio>
+#include <memory>
 
 #if INTARNA_MULITHREADING
 	#include <omp.h>
@@ -400,8 +401,8 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 			, std::string("accessibility computation :"
 					"\n 'N' no accessibility contributions"
 					"\n 'C' computation of accessibilities"
-					"\n 'P' unpaired probabilities in RNAplfold format from --qAccFile"
-					"\n 'E' ED values in RNAplfold Pu-like format from --qAccFile"
+					"\n 'P' unpaired probabilities in RNAplfold format or IntaRNA's binary format (.agz file) from --qAccFile"
+					"\n 'E' ED values in RNAplfold Pu-like format or IntaRNA's binary format (.agz file) from --qAccFile"
 					).c_str())
 		(qAccW.name.c_str()
 			, value<int>(&(qAccW.val))
@@ -434,7 +435,9 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 					).c_str())
 		("qAccFile"
 			, value<std::string>(&(qAccFile))
-			, std::string("accessibility computation : the file/stream to be parsed, if --qAcc is to be read from file. Used 'STDIN' if to read from standard input stream.").c_str())
+			, std::string("accessibility computation : the file/stream to be parsed, if --qAcc is to be read from file."
+				" A '.agz' file ending identifies IntaRNA binary ED output format for either P or E, otherwise an RNAplfold-like text-based format is expected."
+				" Use STDIN for text input from standard input stream.").c_str())
 		(qIntLenMax.name.c_str()
 			, value<int>(&(qIntLenMax.val))
 				->default_value(qIntLenMax.def)
@@ -515,8 +518,8 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 			, std::string("accessibility computation :"
 					"\n 'N' no accessibility contributions"
 					"\n 'C' computation of accessibilities"
-					"\n 'P' unpaired probabilities in RNAplfold format from --tAccFile"
-					"\n 'E' ED values in RNAplfold Pu-like format from --tAccFile"
+					"\n 'P' unpaired probabilities in RNAplfold format or IntaRNA's binary format (.agz file) from --tAccFile"
+					"\n 'E' ED values in RNAplfold Pu-like format or IntaRNA's binary format (.agz file) from --tAccFile"
 					).c_str())
 		(tAccW.name.c_str()
 			, value<int>(&(tAccW.val))
@@ -549,7 +552,9 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 					).c_str())
 		("tAccFile"
 			, value<std::string>(&(tAccFile))
-			, std::string("accessibility computation : the file/stream to be parsed, if --tAcc is to be read from file. Used 'STDIN' if to read from standard input stream.").c_str())
+			, std::string("accessibility computation : the file/stream to be parsed, if --tAcc is to be read from file."
+				" A '.agz' file ending identifies IntaRNA binary ED output format for either P or E, otherwise an RNAplfold-like text-based format is expected."
+				" Use STDIN for text input from standard input stream.").c_str())
 		(tIntLenMax.name.c_str()
 			, value<int>(&(tIntLenMax.val))
 				->default_value(tIntLenMax.def)
@@ -917,12 +922,12 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 					" ADDITIONAL output:"
 					"\n 'qMinE:' (query) for each position the minimal energy of any interaction covering the position (CSV format)"
 					"\n 'qSpotProb:' (query) for each position the probability that is is covered by an interaction covering (CSV format)"
-					"\n 'qAcc:' (query) ED accessibility values ('qPu'-like format)."
-					"\n 'qPu:' (query) unpaired probabilities values (RNAplfold format)."
+					"\n 'qAcc:' (query) ED accessibility values ('qPu'-like text format OR '.agz' file ending for IntaRNA's binary format)."
+					"\n 'qPu:' (query) unpaired probability values (RNAplfold format OR '.agz' file ending for IntaRNA's binary format)."
 					"\n 'tMinE:' (target) for each position the minimal energy of any interaction covering the position (CSV format)"
 					"\n 'tSpotProb:' (target) for each position the probability that is is covered by an interaction covering (CSV format)"
-					"\n 'tAcc:' (target) ED accessibility values ('tPu'-like format)."
-					"\n 'tPu:' (target) unpaired probabilities values (RNAplfold format)."
+					"\n 'tAcc:' (target) ED accessibility values ('tPu'-like format OR '.agz' file ending for IntaRNA's binary format)."
+					"\n 'tPu:' (target) unpaired probability values (RNAplfold format OR '.agz' file ending for IntaRNA's binary format)."
 					"\n 'pMinE:' (target+query) for each index pair the minimal energy of any interaction covering the pair (CSV format)"
 					"\n 'spotProb:' (target+query) tracks for a given set of interaction spots their probability to be covered by an interaction. If no spots are provided, probabilities for all index combinations are computed. Spots are encoded by comma-separated 'idxT&idxQ' pairs (target-query). For each spot a probability is provided in concert with the probability that none of the spots (encoded by '0&0') is covered (CSV format). The spot encoding is followed colon-separated by the output stream/file name, eg. '--out=\"spotProb:3&76,59&2:STDERR\"'. NOTE: value has to be quoted due to '&' symbol!"
 					"\nFor each, provide a file name or STDOUT/STDERR to write to the respective output stream."
@@ -1938,7 +1943,9 @@ getQueryAccessibility( const size_t sequenceNumber ) const
 
 	case 'E' : // drop to next handling
 	case 'P' : { // VRNA RNAplfold unpaired probability file output
-		std::istream * accStream = newInputStream( getFullFilename(qAccFile, NULL, &(seq)) );
+		const std::string filename = getFullFilename(qAccFile, NULL, &(seq));
+		auto closeInput = [](std::istream * stream) { deleteInputStream(stream); };
+		std::unique_ptr<std::istream, decltype(closeInput)> accStream(newInputStream(filename), closeInput);
 		if (accStream == NULL) {
 			throw std::runtime_error("accessibility parsing of --qAccFile : could not open file '"+qAccFile+"'");
 		}
@@ -1946,10 +1953,9 @@ getQueryAccessibility( const size_t sequenceNumber ) const
 										, qIntLenMax.val
 										, &accConstraint
 										, *accStream
-										, (qAcc.val == 'P' ? AccessibilityFromStream::Pu_RNAplfold_Text : AccessibilityFromStream::ED_RNAplfold_Text)
+										, (boost::iends_with(filename, ".agz") ? AccessibilityFromStream::IntaRNA_Binary
+										  : (qAcc.val == 'P' ? AccessibilityFromStream::Pu_RNAplfold_Text : AccessibilityFromStream::ED_RNAplfold_Text))
 										, vrnaHandler.getRT() );
-		// cleanup
-		deleteInputStream( accStream );
 		return acc;
 	}
 
@@ -2013,7 +2019,9 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 
 	case 'E' : // drop to next handling
 	case 'P' : { // VRNA RNAplfold unpaired probability file output
-		std::istream * accStream = newInputStream( getFullFilename(tAccFile, &(seq), NULL) );
+		const std::string filename = getFullFilename(tAccFile, &(seq), NULL);
+		auto closeInput = [](std::istream * stream) { deleteInputStream(stream); };
+		std::unique_ptr<std::istream, decltype(closeInput)> accStream(newInputStream(filename), closeInput);
 		if (accStream == NULL) {
 			throw std::runtime_error("accessibility parsing of --tAccFile : could not open file '"+tAccFile+"'");
 		}
@@ -2022,10 +2030,9 @@ getTargetAccessibility( const size_t sequenceNumber ) const
 										, tIntLenMax.val
 										, &accConstraint
 										, *accStream
-										, ( tAcc.val == 'P' ? AccessibilityFromStream::Pu_RNAplfold_Text : AccessibilityFromStream::ED_RNAplfold_Text )
+										, (boost::iends_with(filename, ".agz") ? AccessibilityFromStream::IntaRNA_Binary
+										  : (tAcc.val == 'P' ? AccessibilityFromStream::Pu_RNAplfold_Text : AccessibilityFromStream::ED_RNAplfold_Text))
 										, vrnaHandler.getRT() );
-		// cleanup
-		deleteInputStream( accStream );
 		return acc;
 	}
 	case 'C' : // compute accessibilities
@@ -2761,20 +2768,28 @@ writeAccessibility( const Accessibility& acc, const std::string & fileOrStream, 
 		return;
 
 	// setup output stream
-	std::ostream * out = newOutputStream( fileOrStream );
+	auto closeOutput = [](std::ostream * stream) noexcept {
+		try { deleteOutputStream(stream); }
+		catch (...) { if (stream != &std::cout && stream != &std::cerr) delete stream; }
+	};
+	std::unique_ptr<std::ostream, decltype(closeOutput)> out(newOutputStream(fileOrStream), closeOutput);
 	if (out == NULL) {
 		throw std::runtime_error("could not open output file '"+fileOrStream +"' for "+(writeED?"accessibility":"unpaired probability")+" output");
 	}
 
 	// write data to stream
-	if (writeED) {
+	if (boost::iends_with(fileOrStream, ".agz")) {
+		acc.writeBinary(*out);
+	} else if (writeED) {
 		acc.writeRNAplfold_ED_text( *out );
 	} else {
 		acc.writeRNAplfold_Pu_text( *out, vrnaHandler.getRT() );
 	}
 
-	// clean up
-	deleteOutputStream( out );
+	// Explicit close propagates compression/file errors before releasing ownership.
+	std::ostream * stream = out.get();
+	deleteOutputStream(stream);
+	out.release();
 }
 
 ////////////////////////////////////////////////////////////////////////////

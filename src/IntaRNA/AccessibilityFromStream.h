@@ -21,6 +21,7 @@ public:
 	enum InStreamType {
 		Pu_RNAplfold_Text //! Pu values in RNAplfold text format
 		, ED_RNAplfold_Text //!< ED values in RNAplfold text Pu format
+		, IntaRNA_Binary //!< native Boost binary ED archive, already decompressed
 	};
 
 public:
@@ -82,6 +83,14 @@ public:
 	getMaxLength() const;
 
 
+	/**
+	 * Write the stored ED matrix directly, without copying rows or calling
+	 * getED() for unconstrained data. Constraints retain the generic getED()
+	 * path. Subclasses changing getED() semantics must also override this method.
+	 * @param out binary output stream; compression is supplied by the stream
+	 */
+	void writeBinary( std::ostream & out ) const override;
+
 protected:
 
 	//! type for the ED value matrix (upper triangular matrix banded by maxLength)
@@ -89,6 +98,9 @@ protected:
 
 	//! the ED values for the given sequence
 	EdMatrix edValues;
+
+	/** Load and validate a decompressed IntaRNA binary accessibility archive. */
+	void parseBinary( std::istream & inStream );
 
 	//! maximal available window size
 	size_t availMaxLength;
@@ -130,6 +142,13 @@ protected:
 };
 
 /////////////////////////////////////////////////////////////////////////
+
+inline
+void
+AccessibilityFromStream::writeBinary( std::ostream & out ) const
+{
+	Accessibility::writeBinary(out, &edValues);
+}
 
 inline
 E_type

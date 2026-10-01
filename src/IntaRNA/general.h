@@ -190,7 +190,7 @@ namespace IntaRNA {
  * - & std::cerr : if outName == STDERR
  * - new std::fstream( outName ) : else if outName non-empty
  *
- * If the filename ends in '.gz', gzip compression and binary output is enabled.
+ * If the filename ends in '.gz' or '.agz', gzip compression and binary output is enabled.
  *
  * @param outName the name of the output to open. use STDOUT/STDERR for the
  *        respective output stream or otherwise a filename to be created.
@@ -218,7 +218,7 @@ deleteOutputStream( std::ostream *& outStream );
  * - & std::cin : if inName == STDIN
  * - new std::fstream( inName ) : else inName non-empty
  *
- * If the filename ends in '.gz', gzip compression and binary input is enabled.
+ * If the filename ends in '.gz' or '.agz', gzip compression and binary input is enabled.
  *
  * @param inName the name of the input to open. use STDIN for the
  *        respective input stream or otherwise a filename to be created.

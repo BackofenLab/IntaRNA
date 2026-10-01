@@ -381,6 +381,29 @@ AS_IF([test "x$want_boost" != "xno" && test "x$FOUND_BOOST" = "x1"], [
 	AX_BOOST_PROGRAM_OPTIONS
 	AX_BOOST_REGEX
 	AX_BOOST_IOSTREAMS
+	AC_MSG_CHECKING([for Boost.Serialization binary archives])
+	intarna_saved_CPPFLAGS=$CPPFLAGS
+	intarna_saved_LDFLAGS=$LDFLAGS
+	intarna_saved_LIBS=$LIBS
+	CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
+	LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
+	LIBS="-lboost_serialization $LIBS"
+	AC_LINK_IFELSE([AC_LANG_PROGRAM(
+		[[#include <sstream>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>]],
+		[[std::stringstream stream;
+boost::archive::binary_oarchive output(stream);
+int value = 1;
+output << value;
+boost::archive::binary_iarchive input(stream);
+input >> value;]])],
+		[AC_MSG_RESULT([yes])],
+		[AC_MSG_RESULT([no])
+		 AC_MSG_ERROR([Boost.Serialization headers and library are required for .agz accessibility files. Install libboost-serialization-dev or select --with-boost and --with-boost-libdir.])])
+	CPPFLAGS=$intarna_saved_CPPFLAGS
+	LDFLAGS=$intarna_saved_LDFLAGS
+	LIBS=$intarna_saved_LIBS
 ])
 AX_CHECK_ZLIB([], [])
 
@@ -404,7 +427,7 @@ AS_IF([test $want_boost != "no" && test $FOUND_BOOST != 1], [
 ], [
 	AM_CXXFLAGS="$BOOST_CPPFLAGS $AM_CXXFLAGS"
 	AM_LDFLAGS="$BOOST_LDFLAGS $AM_LDFLAGS"
-	LIBS="$LIBS -lboost_regex -lboost_program_options -lboost_filesystem -lboost_system -lboost_iostreams -lz"
+	LIBS="$LIBS -lboost_regex -lboost_program_options -lboost_filesystem -lboost_system -lboost_iostreams -lboost_serialization -lz"
 ])
 
 

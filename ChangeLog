@@ -14,6 +14,8 @@
 
 ## Interface and handling
 
+- compressed binary .agz accessibility caches for repeated screens (issue #245)
+
 - too short sequences are skipped with warning if they are shorter than the 
   required seed or helix length (were causing an exception and abort before)
 - default SHAPE method changed to "D", which is the default for ViennaRNA 2.7.*
@@ -23,6 +25,8 @@
 
 ## Technical changes and Optimizations
 
+- serialize stored accessibility rows directly and load retained rows in place;
+  benchmark direct/generic export and raw/gzip binary I/O (PR #250)
 - add repository-specific AI coding guidance in AGENTS.md (issue #247)
 - replace uBLAS storage matrices with std::vector and std::mdspan, retaining
   compact upper-band and triangular storage; configure selects native mdspan
@@ -57,7 +61,43 @@
 ################################################################################  
 ################################################################################
 
+260930 Alexander Mitrofanov
+ * IntaRNA/Matrix.h :
+   + const/mutable upper-band row views that exclude structural zeros and padding
+ * IntaRNA/Accessibility, AccessibilityArchive, AccessibilityVrna, AccessibilityFromStream :
+   * export stored ED rows directly without copies or per-cell getED() calls
+   * retain generic export for other producers and constrained accessibility data
+   * deserialize retained rows into final storage; validate discarded band tails
+   * preserve version 1 archive bytes and existing constraint masking
+ * tests/AccessibilityBinary_test.cpp, tests/Matrix_test.cpp :
+   + verify row aliasing, byte-identical direct/generic output, zero interface
+     lookups on direct export, constrained short sequences and corrupt discarded data
+ * doc/benchmarks/accessibility.cpp, doc/benchmarks/accessibility.md, doc/Makefile.am :
+   * compare direct/generic and raw/gzip binary I/O with exact ED verification
+   + reproducible synthetic RNA and E. coli measurements with per-trial CSV results
+   * retain gzip: both 100,000-base datasets shrink by 58-59%, despite slower I/O
+ * README.md :
+   + document direct matrix I/O and link the compression measurements
+   * addresses review requests in https://github.com/BackofenLab/IntaRNA/pull/250
+
 260929 Alexander Mitrofanov
+ * IntaRNA/Accessibility, AccessibilityArchive, AccessibilityFromStream :
+   + versioned Boost binary serialization of exact ED matrices and sequence data
+   + stream rows with bounded scratch memory, retaining dangling-end intervals
+   + validate sequence, dimensions, energies, archive format and stream integrity
+ * bin/CommandLineParsing, IntaRNA/general :
+   + select compressed binary accessibility input/output via .agz filenames
+   * support all existing accessibility producers and both P/E input modes
+   * release accessibility streams when parsing or writing fails
+ * configure.ac, src/IntaRNA/Makefile.am :
+   + check and link Boost.Serialization; distribute the internal matrix archive view
+ * tests/AccessibilityBinary_test.cpp, tests/runAccessibilityBinary.sh, tests/Makefile.am :
+   + exact round trips, malformed archives, prediction reuse and filename dispatch
+ * doc/benchmarks/accessibility.cpp, doc/benchmarks/accessibility.md, doc/Makefile.am :
+   + reproducible compressed text versus binary I/O benchmark with exact ED checks
+ * README.md and CLI help :
+   + document binary caches, unchanged text formats and compatibility requirements
+   * resolves https://github.com/BackofenLab/IntaRNA/issues/245
  * configure.ac, IntaRNA/Matrix.h, IntaRNA/intarna_config.h.in:
    + prefer native mdspan, falling back to bundled Kokkos with a public
      INTARNA_USE_STD_MDSPAN define; allow explicit --with-mdspan selection

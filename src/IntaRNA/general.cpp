@@ -44,7 +44,7 @@ std::ostream* newOutputStream(const std::string& out)
     BOOST_IOS::openmode fopenmode = BOOST_IOS::out;
 
 	// Gzip-Erkennung
-	if (boost::iends_with(out, ".gz")) {
+	if (boost::iends_with(out, ".gz") || boost::iends_with(out, ".agz")) {
 		// Gzip-Kompressor mit explizit vergrößertem Puffer hinzufügen
 		fstream->push(bio::gzip_compressor(), BUFFER_SIZE);
 		fopenmode |= BOOST_IOS::binary;
@@ -117,7 +117,7 @@ newInputStream( const std::string & in )
 		BOOST_IOS::openmode fopenmode = BOOST_IOS::in;
 
 		// gzipped input file stream
-		if (boost::iends_with(in, ".gz")) {
+		if (boost::iends_with(in, ".gz") || boost::iends_with(in, ".agz")) {
 			// gzip compression
 			fstream->push( bio::gzip_decompressor() );
 			// binary input

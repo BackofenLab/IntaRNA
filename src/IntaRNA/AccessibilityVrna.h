@@ -83,6 +83,14 @@ public:
 				, const Accessibility & acc );
 
 
+	/**
+	 * Write the stored ED matrix directly, without copying rows or calling
+	 * getED() for unconstrained data. Constraints retain the generic getED()
+	 * path. Subclasses changing getED() semantics must also override this method.
+	 * @param out binary output stream; compression is supplied by the stream
+	 */
+	void writeBinary( std::ostream & out ) const override;
+
 protected:
 
 	//! type for the ED value matrix (upper triangular matrix banded by maxLength)
@@ -140,6 +148,13 @@ protected:
 /////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
+
+inline
+void
+AccessibilityVrna::writeBinary( std::ostream & out ) const
+{
+	Accessibility::writeBinary(out, &edValues);
+}
 
 inline
 E_type

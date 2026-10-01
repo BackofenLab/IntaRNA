@@ -15,7 +15,7 @@ TEST_EXTENSIONS = $(EXEEXT) .sh
 SH_LOG_COMPILER = $(SHELL)
 
 # the script needed for tests
-dist_check_SCRIPTS = runIntaRNA.sh
+dist_check_SCRIPTS = runIntaRNA.sh runAccessibilityBinary.sh
 
 # the program to build
 check_PROGRAMS = runApiTests 
@@ -26,6 +26,7 @@ runApiTests_SOURCES =	\
 					testEasyLoggingSetup.icc \
 					AccessibilityConstraint_test.cpp \
 					AccessibilityFromStream_test.cpp \
+					AccessibilityBinary_test.cpp \
 					AccessibilityBasePair_test.cpp \
 					AccessibilityVrna_test.cpp \
 					HelixConstraint_test.cpp \
