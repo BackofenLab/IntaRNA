@@ -52,6 +52,16 @@
 - BUGFIX : multi-threading : IntaRNAsTar was not thread-safe due to shared 
   storage of computed ranges
 
+# IntaRNAeval
+
+New personality of IntaRNA to evaluate predefined RNA-RNA interactions.
+Given two RNA sequences and a set of predefined interactions, IntaRNAeval 
+computes the energy and accessibility of each interaction, and reports the 
+results in a CSV file. The evaluation can be performed with different energy 
+and accessibility models, and the output can include distinct structures, 
+energies, restricted partition sums, and trackers.
+
+
 # IntaRNA_plotRegions.R
 
 - fix deprecation warning

@@ -1675,10 +1675,12 @@ CommandLineParsing::prepareEvaluation( boost::program_options::variables_map & v
 		"outNumber", "outOverlap", "outMaxE", "outDeltaE", "outMinPu",
 		"outNoLP", "outNoGUend", "outBestSeedOnly", "outPerRegion", "outPairwise"
 	};
+	bool removedSomeOptions = false;
 	for (auto it=vm.begin(); it!=vm.end();) {
 		if (ignored.count(it->first) || it->first.starts_with("seed") || it->first.starts_with("helix")) {
 			if (!it->second.defaulted()) LOG(INFO) <<"--rri evaluation: ignoring --"<<it->first;
 			it = vm.erase(it);
+			removedSomeOptions = true;
 		} else {
 			++it;
 		}
@@ -1692,8 +1694,11 @@ CommandLineParsing::prepareEvaluation( boost::program_options::variables_map & v
 	windowWidth.val = 0;
 	qRegionLenMax.val = tRegionLenMax.val = 0;
 	outNoLP = outNoGUend = outPerRegion = outPairwise = false;
-	LOG(INFO) <<"Evaluating predefined interactions; prediction constraints are ignored. "
-			<<"Energy/accessibility settings are retained; ensemble statistics cover only the supplied structures.";
+	// inform user about the ignored options and the retained settings
+	if (removedSomeOptions) {
+		LOG(INFO) <<"Evaluating predefined interactions; prediction constraints are ignored. "
+				<<"Energy/accessibility settings are retained; ensemble statistics cover only the supplied structures.";
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////
