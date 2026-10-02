@@ -729,6 +729,39 @@ minimum free energy interaction.
 Putative seed interactions (used by the `H` and `M` mode) can be enumerated 
 and studied using the `S` mode.
 
+### Greedy kinetic seed extension
+
+`--model=X --mode=K` grows each available seed along a deterministic greedy
+path. Every step compares feasible extensions on both sides using the complete
+change in interaction energy, including accessibility, terminal penalties and
+dangling ends. Only strictly negative changes are accepted. With `--outNoLP`,
+crossing a loop forms its closing pair and the immediately following stack as
+one atomic step; a favorable stack can therefore compensate for an unfavorable
+loop. Initial seeds must satisfy the selected structural constraints.
+
+`--kineticScore` selects the local move ranking:
+
+| Value | Score minimized for a move with gaps `s1`, `s2` |
+| --- | --- |
+| `A` (default) | Complete energy change |
+| `B` | Complete energy change / `(1+s1+s2)` |
+| `C` (C1 in the design) | Complete energy change / `(1+2*max(s1,s2))` |
+
+Equal scores prefer the left side, then fewer unpaired bases, then smaller
+`s1`. The denominators also apply to two-pair moves. All reportable visited
+states, including seeds, participate in the normal energy-ranked output;
+traceback preserves the actual chosen path. `--outNoGUend`, separate query and
+target loop/span limits, regions, output energy/accessibility filters and
+overlap settings remain applicable.
+
+This mode is a zippering-inspired heuristic, without a calibrated time axis or
+a guarantee of the global minimum. It evaluates all feasible local moves;
+loop-only energetic pruning is unsafe for complete loop-plus-stack steps.
+Equilibrium probability/partition-sum outputs are rejected, as are other models
+and `--noSeed`. Scores B and C are optional distance preferences, not measured
+kinetic rates. See the [design and implementation plan](doc/kinetic-seed-extension.md)
+for the precise algorithm, scientific limitations and validation cases.
+
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
 <br /><br />

@@ -5,6 +5,7 @@
 
 EXTRA_DIST =	\
 			conda.txt \
+			kinetic-seed-extension.md \
 			doxygen.cfg \
 			latex-deps/adjcalc.sty \
 			latex-deps/adjustbox.sty \
@@ -13,4 +14,3 @@ EXTRA_DIST =	\
 			latex-deps/tocloft.sty \
 			latex-deps/trimclip.sty \
 			latex-deps/xtab.sty
-
