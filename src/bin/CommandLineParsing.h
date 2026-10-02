@@ -4,6 +4,7 @@
 
 #include "IntaRNA/general.h"
 #include "IntaRNA/RnaSequence.h"
+#include "IntaRNA/Interaction.h"
 
 #include <boost/regex.hpp>
 #include <boost/program_options.hpp>
@@ -14,6 +15,7 @@
 #include <cstdarg>
 #include <fstream>
 #include <iostream>
+#include <vector>
 
 #include "IntaRNA/Accessibility.h"
 #include "IntaRNA/InteractionEnergy.h"
@@ -57,6 +59,7 @@ public:
 		IntaRNA2,		// IntaRNA v2 like setup
 		IntaRNA3,		// default IntaRNA v3 setup
 		IntaRNAens,		// ensemble-based prediction
+		IntaRNAeval,		// evaluate predefined interactions
 		IntaRNAsTar,	// sRNA-target prediction (optimized parameter)
 		IntaRNAseed,  	// seed-only predictions
 		IntaRNAhelix,  	// helix-block-based predictions
@@ -80,6 +83,7 @@ public:
 		case IntaRNA2 : return "IntaRNA2";
 		case IntaRNA3 : return "IntaRNA3";
 		case IntaRNAens : return "IntaRNAens";
+		case IntaRNAeval : return "IntaRNAeval";
 		case IntaRNAsTar : return "IntaRNAsTar";
 		case IntaRNAseed : return "IntaRNAseed";
 		case IntaRNAhelix : return "IntaRNAhelix";
@@ -140,6 +144,12 @@ public:
 	 */
 	CommandLineParsing( const Personality personality );
 	virtual ~CommandLineParsing();
+
+	/**
+	 * Whether predefined interactions are evaluated instead of predicted.
+	 * @return true if a nonempty --rri input was parsed
+	 */
+	bool isEvaluation() const;
 
 	/**
 	 * Parses the commandline arguments as passed to the 'main' method
@@ -515,6 +525,11 @@ protected:
 
 	//! what is the requested personality for which we parse the parameters
 	Personality personality;
+	//! colon-separated predefined interactions; nonempty enables evaluation
+	std::string rri;
+	//! validated structures referencing the parsed target and query sequences
+	std::vector<Interaction> rriInteractions;
+
 	//! might hold the personality string after parsing if given via parameter
 	std::string personalityParamValue;
 
@@ -1132,6 +1147,13 @@ protected:
 	void initOutputHandler();
 
 	/**
+	 * Removes prediction-only arguments before their notifiers run and reports
+	 * explicitly supplied arguments that evaluation ignores.
+	 * @param vm parsed options from the command line and parameter file
+	 */
+	void prepareEvaluation( boost::program_options::variables_map & vm );
+
+	/**
 	 * Writes the accessibility to file or stream if requested by the user
 	 * @param acc the accessibility data assigned
 	 * @param fileOrStream the name of file/stream to write to
@@ -1159,6 +1181,13 @@ protected:
 };
 
 
+
+inline
+bool
+CommandLineParsing::isEvaluation() const
+{
+	return !rri.empty();
+}
 
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////

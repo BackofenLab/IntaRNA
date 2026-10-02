@@ -285,7 +285,11 @@ int main(int argc, char **argv){
 														<<" ..."; }
 		
 												// get interaction prediction handler
-												std::unique_ptr<Predictor> predictor(parameters.getPredictor( *energy, bestInteractions ));
+												// Evaluation reports every distinct supplied structure directly.
+												// The prediction collector merges equal-energy structures with
+												// identical boundaries and pair counts, even if inner pairs differ.
+												std::unique_ptr<Predictor> predictor(parameters.getPredictor( *energy,
+														parameters.isEvaluation() ? *output : bestInteractions ));
 												INTARNA_CHECK_NOT_NULL(predictor.get(),"predictor initialization failed");
 		
 												// run prediction for this window combination
@@ -448,4 +452,3 @@ int main(int argc, char **argv){
 	el::Loggers::flushAll();
 	return 0;
 }
-

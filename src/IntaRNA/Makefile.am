@@ -65,6 +65,7 @@ libIntaRNA_a_HEADERS =    \
 					PredictionTrackerSpotProbAll.h \
 					PredictionTrackerProfileSpotProb.h \
 					Predictor.h \
+					PredictorEvalOnly.h \
 					PredictorMfe.h \
 					PredictorMfeSeedOnly.h \
 					PredictorMfe2d.h \
@@ -126,6 +127,7 @@ libIntaRNA_a_SOURCES =    \
 					PredictionTrackerSpotProb.cpp \
 					PredictionTrackerSpotProbAll.cpp \
 					PredictionTrackerProfileSpotProb.cpp \
+					PredictorEvalOnly.cpp \
 					PredictorMfe.cpp \
 					PredictorMfeSeedOnly.cpp \
 					PredictorMfe2d.cpp \
