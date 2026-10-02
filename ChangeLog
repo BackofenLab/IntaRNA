@@ -27,6 +27,10 @@
 
 ## Technical changes and Optimizations
 
+- analyse output overlap modes, regional selection and heuristic output defects;
+  provide reproducible examples and proposed fixes without changing behavior
+  (issue #212)
+
 - serialize stored accessibility rows directly and load retained rows in place;
   benchmark direct/generic export and raw/gzip binary I/O (PR #250)
 - add repository-specific AI coding guidance in AGENTS.md (issue #247)
@@ -72,6 +76,17 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261002 Alexander Mitrofanov
+ * doc/analysis/out-overlap.md, doc/analysis/out-overlap/reproduce.py :
+   + analyse all four output overlap modes and the documented enumeration limits
+   + reproduce regional overlap and energy-window violations, heuristic output
+     filtering gaps, and invalid/incomplete ensemble candidate energies
+   + provide 118 CLI observations, 64 controls and three independent site oracles
+   + propose selection semantics and repairs for consultation; no predictor changes
+   * addresses analysis request in https://github.com/BackofenLab/IntaRNA/issues/212
+ * doc/Makefile.am :
+   + distribute the analysis and standalone reproduction script
 
 261001 Alexander Mitrofanov
  * IntaRNA/PredictorEvalOnly, src/IntaRNA/Makefile.am :
