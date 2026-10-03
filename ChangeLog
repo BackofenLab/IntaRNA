@@ -14,6 +14,10 @@
 
 ## Interface and handling
 
+- deterministic kinetic seed extension with --model=X --mode=K and configurable
+  local scoring; complete-energy downhill steps, atomic noLP loop/stack moves
+  and retained greedy traceback; equilibrium probability output is unsupported
+
 - IntaRNAeval / --rri evaluates predefined RNA-RNA interactions (issue #184)
 
 - compressed binary .agz accessibility caches for repeated screens (issue #245)
@@ -72,6 +76,24 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261003 Alexander Mitrofanov
+ * IntaRNA/PredictorSeedExtensionKinetic, src/IntaRNA/Makefile.am :
+   + greedily extend seeds on either side using complete interaction-energy
+     differences and deterministic thermodynamic or distance-weighted scores
+   + support noLP macro-steps, GU restrictions, per-strand loop/span constraints,
+     explicit-seed validation and cached trajectory traceback
+   + retain valid visited prefixes and select non-overlapping output from the
+     complete retained candidate set; reject unsupported ensemble statistics
+ * bin/CommandLineParsing :
+   + expose --mode=K exclusively for --model=X and --kineticScore=A|B|C
+ * tests/PredictorSeedExtensionKinetic_test.cpp, tests/runKineticSeedExtension.sh,
+   tests/Makefile.am :
+   + validate local move choices, macro-step energetics, structural constraints,
+     traceback, output filtering and CLI compatibility
+ * README.md, doc/kinetic-seed-extension.md, doc/Makefile.am :
+   + document the council's implementation consensus, scientific scope and
+     replacement of unsafe loop-only pruning with exact move enumeration
 
 261001 Alexander Mitrofanov
  * IntaRNA/PredictorEvalOnly, src/IntaRNA/Makefile.am :

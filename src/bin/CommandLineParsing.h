@@ -721,6 +721,8 @@ protected:
 	CharParameter model;
 	//! the prediction mode (heuristic, space-efficient, exact)
 	CharParameter mode;
+	//! greedy seed-extension score: A=energy, B=Manhattan, C=asymmetry
+	CharParameter kineticScore;
 #if INTARNA_MULITHREADING
 	//! number of threads = number of parallel predictors running
 	NumberParameter<int> threads;

@@ -50,6 +50,7 @@ extern "C" {
 #include "IntaRNA/PredictorMfe2dSeed.h"
 #include "IntaRNA/PredictorMfe2dSeedExtension.h"
 #include "IntaRNA/PredictorMfe2dSeedExtensionRIblast.h"
+#include "IntaRNA/PredictorSeedExtensionKinetic.h"
 #include "IntaRNA/PredictorMfe2dHeuristicSeedExtension.h"
 
 #include "IntaRNA/PredictorMfeEnsSeedOnly.h"
@@ -183,7 +184,8 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	temperature("temperature",0,100,37),
 
 	model("model", "SPBX", 'X'),
-	mode("mode", "HMSR", 'H'),  // R for RIblast heuristic only
+	mode("mode", "HMSRK", 'H'),  // R for RIblast heuristic only
+	kineticScore("kineticScore", "ABC", 'A'),
 #if INTARNA_MULITHREADING
 	threads("threads", 0, omp_get_max_threads(), 1),
 #endif
@@ -803,8 +805,16 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 			, std::string("prediction mode : "
 					"\n 'H' = heuristic (fast and low memory), "
 					"\n 'M' = exact (slow), "
-					"\n 'S' = seed-only"
+					"\n 'S' = seed-only, "
+					"\n 'K' = downhill greedy seed extension (requires --model=X; no time or rate prediction)"
 					).c_str())
+		(kineticScore.name.c_str()
+			, value<char>(&(kineticScore.val))
+				->default_value(kineticScore.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_charArgument,this,kineticScore,_1))
+			, "candidate score for --model=X --mode=K: 'A' = complete interaction energy change, "
+			  "'B' = change/(1+s1+s2), 'C' = change/(1+2*max(s1,s2)), where s1/s2 are skipped bases. "
+			  "All modes accept strictly negative energy changes only; B/C are heuristic scores.")
 		(model.name.c_str()
 			, value<char>(&(model.val))
 				->default_value(model.def)
@@ -1221,6 +1231,24 @@ parse(int argc, char** argv)
 
 			// parsing escape literals
 			outSep = unescaped_string<std::string::const_iterator>::getUnescaped( outSep );
+
+			// K needs a seed even before the usual --noSeed model normalization.
+			if (mode.val == 'K') {
+				if (model.val != 'X') throw error("--mode=K is available only with --model=X");
+				if (noSeedRequired) throw error("--mode=K requires seeds and is incompatible with --noSeed");
+				// A selected set of greedy paths is not an equilibrium ensemble.
+				if (outMode.val == 'E'
+						|| (outMode.val == 'C' && OutputHandlerCsv::needsZall(OutputHandlerCsv::string2list(outCsvCols)))
+						|| !outPrefix2streamName.at(OutPrefixCode::OP_spotProb).empty()
+						|| !outPrefix2streamName.at(OutPrefixCode::OP_spotProbAll).empty()
+						|| !outPrefix2streamName.at(OutPrefixCode::OP_qSpotProb).empty()
+						|| !outPrefix2streamName.at(OutPrefixCode::OP_tSpotProb).empty())
+				{
+					throw error("--mode=K does not support equilibrium ensemble or interaction-probability output");
+				}
+			} else if (vm.count(kineticScore.name) && !vm.at(kineticScore.name).defaulted()) {
+				throw error("--kineticScore requires --model=X --mode=K");
+			}
 
 			// open output stream
 			{
@@ -1669,7 +1697,7 @@ CommandLineParsing::prepareEvaluation( boost::program_options::variables_map & v
 	// Erase before notify(), so even out-of-sequence regions and seed encodings
 	// cannot constrain or invalidate evaluation. Energy/accessibility options stay.
 	const std::set<std::string> ignored = {
-		"model", "mode", "noSeed", "intLenMax", "qIntLenMax", "tIntLenMax",
+		"model", "mode", "kineticScore", "noSeed", "intLenMax", "qIntLenMax", "tIntLenMax",
 		"intLoopMax", "qIntLoopMax", "tIntLoopMax", "qRegion", "tRegion",
 		"qRegionLenMax", "tRegionLenMax", "windowWidth", "windowOverlap",
 		"outNumber", "outOverlap", "outMaxE", "outDeltaE", "outMinPu",
@@ -2554,6 +2582,7 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 			case 'H' :  return new PredictorMfe2dHeuristicSeedExtension( energy, output, predTracker, getSeedHandler( energy ) );
 			case 'M' :  return new PredictorMfe2dSeedExtension( energy, output, predTracker, getSeedHandler( energy ) );
 			case 'R' :  return new PredictorMfe2dSeedExtensionRIblast( energy, output, predTracker, getSeedHandler( energy ) );
+			case 'K' :  return new PredictorSeedExtensionKinetic( energy, output, predTracker, getSeedHandler( energy ), kineticScore.val );
 			case 'S' :  return new PredictorMfeSeedOnly( energy, output, predTracker, getSeedHandler( energy ) );
 			default  :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not implemented"); return NULL;
 			}
