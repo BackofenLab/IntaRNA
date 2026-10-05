@@ -14,6 +14,9 @@
 
 ## Interface and handling
 
+- reject merged regions that cannot enforce the requested output overlap mode;
+  retain independent selection with --outPerRegion (PR #253)
+
 - clarify that suboptimal predictions have distinct interaction-site boundaries
 
 - IntaRNAeval / --rri evaluates predefined RNA-RNA interactions (issue #184)
@@ -81,6 +84,15 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261005 Alexander Mitrofanov
+ * bin/CommandLineParsing, README.md :
+   + validate manual regions and automatic decomposition against outOverlap
+   + N requires one region per RNA, T one target region, Q one query region;
+     B and independent outPerRegion output accept multiple regions (PR #253)
+ * tests/runOutputOverlap.sh, tests/Makefile.am :
+   + exercise all overlap modes, manual/automatic regions, per-region output,
+     unchanged single regions and shifted sequence indices
 
 261005 Alexander Mitrofanov
  * IntaRNA/PredictorMfeEns2dHeuristic :

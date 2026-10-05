@@ -1129,7 +1129,19 @@ and should be in the format `from1-end1,from2-end2,..` using
 integers. 
 Note, if you want to have predictions individually for each region
 combination (rather than just the best for each query-target combination) you
-want to add `--outPerRegion` to the call.
+want to add `--outPerRegion` to the call. Overlap restrictions then apply
+independently within each region combination; results from different combinations
+can overlap on either RNA.
+
+With the default `--outPerRegion=false`, region combinations are merged. To
+avoid reporting forbidden overlaps, `--outOverlap=N` requires a single region
+on each RNA, `T` requires a single target region, and `Q` requires a single query
+region. `B` permits any number of regions. For example, multiple target regions
+can reuse the same query interval, so they are allowed with `Q` or `B`, but
+rejected with `N` or `T`. The same checks apply to regions produced automatically
+by `--qRegionLenMax`, `--tRegionLenMax`, or `--outMinPu`. Use
+`--outPerRegion=true` to select interactions independently for multiple regions
+with any overlap mode.
 
 If you are dealing with very long sequences it might be useful to use the
 *automatic identification of accessible regions*, which dramatically reduces

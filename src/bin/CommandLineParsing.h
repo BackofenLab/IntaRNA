@@ -1130,6 +1130,16 @@ protected:
 				, IndexRangeListVec & rangeList );
 
 	/**
+	 * Rejects region merging that cannot enforce the requested overlap rule.
+	 * Applies to explicit regions and to the result of automatic decomposition.
+	 * @param ranges non-overlapping prediction regions for one sequence
+	 * @param isQuery whether these are query (true) or target (false) regions
+	 * @throws boost::program_options::error for unsupported merged output
+	 */
+	void
+	validateRegionOverlap( const IndexRangeList & ranges, const bool isQuery ) const;
+
+	/**
 	 * Checks whether or not any command line argument were parsed. Throws a
 	 * std::runtime_error if not.
 	 */

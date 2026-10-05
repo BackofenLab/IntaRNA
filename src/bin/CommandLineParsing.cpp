@@ -972,7 +972,9 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 					"\n 'N' in none of the sequences, "
 					"\n 'T' in the target only, "
 					"\n 'Q' in the query only, "
-					"\n 'B' in both sequences").c_str())
+					"\n 'B' in both sequences. With merged regions, N requires one region"
+					" per sequence, T one target region, Q one query region;"
+					" use --outPerRegion for independent region combinations.").c_str())
 		;
 	opts_cmdline_short.add(opts_output);
 	opts_output.add_options()
@@ -1370,6 +1372,9 @@ parse(int argc, char** argv)
 			// parse region string if available
 			parseRegion( "qRegion", qRegionString, query, qRegion );
 			parseRegion( "tRegion", tRegionString, target, tRegion );
+			for (const auto & ranges : qRegion) { validateRegionOverlap(ranges, true); }
+			for (const auto & ranges : tRegion) { validateRegionOverlap(ranges, false); }
+
 
 			//////////////// ACCESSIBILITY CONSTRAINTS ///////////////////
 
@@ -1906,6 +1911,26 @@ parseRegion( const std::string & argName, const std::string & value, const RnaSe
 		return;
 	} else {
 		throw boost::program_options::error(argName+" is not a comma-separated list of index ranges.");
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void
+CommandLineParsing::
+validateRegionOverlap( const IndexRangeList & ranges, const bool isQuery ) const
+{
+	if (isEvaluation() || outPerRegion || ranges.size() <= 1 || outOverlap.val == 'B') {
+		return;
+	}
+	// Splitting one sequence allows separate predictions to reuse the other.
+	// Thus multiple target regions require query overlap, and vice versa.
+	if (outOverlap.val == 'N' || outOverlap.val == (isQuery ? 'Q' : 'T')) {
+		throw boost::program_options::error(
+				std::string("multiple ") + (isQuery ? "query" : "target")
+				+ " regions cannot be merged with --outOverlap=" + outOverlap.val
+				+ "; use --outPerRegion=true, --outOverlap=B, or a single "
+				+ (isQuery ? "query" : "target") + " region");
 	}
 }
 
@@ -2783,6 +2808,7 @@ getQueryRanges( const InteractionEnergy & energy, const size_t sequenceNumber, c
 
 	}
 
+	validateRegionOverlap(qRegion.at(sequenceNumber), true);
 	return qRegion.at(sequenceNumber);
 }
 
@@ -2827,6 +2853,7 @@ getTargetRanges( const InteractionEnergy & energy, const size_t sequenceNumber, 
 		}
 	}
 
+	validateRegionOverlap(tRegion.at(sequenceNumber), false);
 	return tRegion.at(sequenceNumber);
 }
 
