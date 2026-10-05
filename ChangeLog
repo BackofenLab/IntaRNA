@@ -17,6 +17,8 @@
 - deterministic kinetic seed extension with --model=X --mode=K and configurable
   local scoring; complete-energy downhill steps, atomic noLP loop/stack moves
   and retained greedy traceback; equilibrium probability output is unsupported
+- kinetic modes always use stacked extensions and trust handler-provided seeds;
+  reuse candidate pairing/local energies and add experimental pruning mode L
 
 - IntaRNAeval / --rri evaluates predefined RNA-RNA interactions (issue #184)
 
@@ -76,6 +78,26 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261005 Alexander Mitrofanov
+ * IntaRNA/PredictorSeedExtensionKinetic :
+   * always evaluate single and double stacks plus atomic loop/stack extensions;
+     trust seed-handler structures/energies, including explicit lonely pairs
+   * cache each end's candidates, shared complementarity checks and local
+     energies; rebuild only the chosen end and refresh full opposite-end energy
+ * IntaRNA/PredictorSeedExtensionKineticPruned, InteractionEnergyVrna :
+   + experimental root-pair local-energy suffix bounds from active parameters;
+     prune before complementarity checks assuming monotone ED, omitting endpoint
+     changes; preserve exact full-energy evaluation of surviving moves
+ * bin/CommandLineParsing, src/IntaRNA/Makefile.am :
+   + expose subclass as --mode=L; set --outNoLP=true with INFO for K/L
+ * tests/PredictorSeedExtensionKinetic_test.cpp, tests/runKineticSeedExtension.sh :
+   * update independent oracle and CLI expectations for atomic double stacks;
+     cover trusted seeds, caching, pruning limitations and both CLI modes
+ * README.md, doc/kinetic-seed-extension.md, doc/benchmark-kinetic.py,
+   doc/Makefile.am :
+   * document revised semantics and reproducible performance evaluation in
+     response to https://github.com/BackofenLab/IntaRNA/pull/254
 
 261003 Alexander Mitrofanov
  * IntaRNA/PredictorSeedExtensionKinetic, src/IntaRNA/Makefile.am :

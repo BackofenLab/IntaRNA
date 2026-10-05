@@ -5,7 +5,7 @@
 
 EXTRA_DIST =	\
 			conda.txt \
-			kinetic-seed-extension.md \
+			kinetic-seed-extension.md benchmark-kinetic.py \
 			doxygen.cfg \
 			latex-deps/adjcalc.sty \
 			latex-deps/adjustbox.sty \

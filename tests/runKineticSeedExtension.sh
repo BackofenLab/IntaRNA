@@ -6,7 +6,8 @@ tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 common=(--target=GGGGGG --query=CCCCCC --energy=B --acc=N
         --threads=1 --default-log-file=/dev/null)
-kinetic=(--model=X --mode=K '--seedTQ=3||&3||')
+mode="${KINETIC_MODE:-K}"
+kinetic=(--model=X --mode="$mode" '--seedTQ=3||&3||')
 csv=(--outMode=C --outCsvCols=hybridDB,E)
 
 # Six base pairs have independently known energy -6 in the base-pair model.
@@ -36,14 +37,14 @@ cmp "$tmp/expected" "$tmp/boundaries"
 printf 'hybridDB;E\n2||||&2||||;-4\n' > "$tmp/expected"
 cmp "$tmp/expected" "$tmp/ranges"
 # Signed IntaRNA coordinates skip zero: target position three is labeled 1.
-"$bin" "${common[@]}" --model=X --mode=K '--seedTQ=1||&7||' "${csv[@]}" \
+"$bin" "${common[@]}" --model=X --mode="$mode" '--seedTQ=1||&7||' "${csv[@]}" \
     --tIdxPos0=-2 --qIdxPos0=5 > "$tmp/shifted"
 printf 'hybridDB;E\n-2||||||&5||||||;-6\n' > "$tmp/expected"
 cmp "$tmp/expected" "$tmp/shifted"
 
 # Every committed prefix is available for suboptimal output, in energy order.
 "$bin" "${common[@]}" "${kinetic[@]}" "${csv[@]}" --outNumber=10 > "$tmp/prefixes"
-printf 'hybridDB;E\n1||||||&1||||||;-6\n1|||||&2|||||;-5\n1||||&3||||;-4\n2|||&3|||;-3\n3||&3||;-2\n' > "$tmp/expected"
+printf 'hybridDB;E\n1||||||&1||||||;-6\n1||||&3||||;-4\n3||&3||;-2\n' > "$tmp/expected"
 cmp "$tmp/expected" "$tmp/prefixes"
 
 # A zero report count still permits energy tracking and never needs traceback.
@@ -54,16 +55,17 @@ cmp "$tmp/empty" "$tmp/zero"
 test -s "$tmp/min-energy"
 grep -q -- '-6' "$tmp/min-energy"
 
-# Output constraints apply to explicit seeds too.
-"$bin" "${common[@]}" --model=X --mode=K '--seedTQ=3|&3|' \
+# Handler-provided explicit seeds can contain lonely pairs.
+"$bin" "${common[@]}" --model=X --mode="$mode" '--seedTQ=3|&3|' \
     "${csv[@]}" --outNoLP > "$tmp/lonely"
-cmp "$tmp/empty" "$tmp/lonely"
-"$bin" --target=GG --query=UU --energy=B --acc=N --model=X --mode=K \
+printf 'hybridDB;E\n1|||||&1|||||;-5\n' > "$tmp/expected"
+cmp "$tmp/expected" "$tmp/lonely"
+"$bin" --target=GG --query=UU --energy=B --acc=N --model=X --mode="$mode" \
     '--seedTQ=1||&1||' "${csv[@]}" --outNoGUend --default-log-file=/dev/null > "$tmp/gu"
 cmp "$tmp/empty" "$tmp/gu"
 
 # Config-file selection must behave just like command-line selection.
-printf 'model=X\nmode=K\nkineticScore=C\nseedTQ=3||&3||\n' > "$tmp/parameters"
+printf 'model=X\nmode=%s\nkineticScore=C\nseedTQ=3||&3||\n' "$mode" > "$tmp/parameters"
 "$bin" "${common[@]}" "${csv[@]}" --parameterFile="$tmp/parameters" > "$tmp/configured"
 cmp "$tmp/default" "$tmp/configured"
 
@@ -75,7 +77,7 @@ thermo=(--target=AGCGACGCA --query=UGCGUCGCU --accW=0 --accL=0 --temperature=25
         --threads=1 --default-log-file=/dev/null)
 for score in A B C; do
     for dangles in false true; do
-        "$bin" "${thermo[@]}" --model=X --mode=K '--seedTQ=3|||&5|||' \
+        "$bin" "${thermo[@]}" --model=X --mode="$mode" '--seedTQ=3|||&5|||' \
             --kineticScore="$score" --energyNoDangles="$dangles" --outNoLP --outNoGUend \
             > "$tmp/predicted"
         test "$(wc -l < "$tmp/predicted")" -gt 1
@@ -94,7 +96,7 @@ expect_error() {
     grep -q -- "$expected" "$tmp/bad.out" "$tmp/bad.err"
 }
 for model in S P B; do
-    expect_error 'only with --model=X' "${common[@]}" --model="$model" --mode=K
+    expect_error 'only with --model=X' "${common[@]}" --model="$model" --mode="$mode"
 done
 expect_error 'incompatible with --noSeed' "${common[@]}" "${kinetic[@]}" --noSeed
 # Explicitly supplying the default A must be rejected outside K as well.
@@ -114,6 +116,22 @@ expect_error 'equilibrium ensemble' "${common[@]}" "${kinetic[@]}" --out="spotPr
 
 # Evaluation ignores prediction controls, including invalid kinetic scores.
 "$bin" "${common[@]}" "${csv[@]}" '--rri=1||||||&1||||||' \
-    --model=S --mode=K --kineticScore=D > "$tmp/evaluation"
+    --model=S --mode="$mode" --kineticScore=D > "$tmp/evaluation"
 cmp "$tmp/default" "$tmp/evaluation"
-echo 'Kinetic seed-extension CLI checks passed'
+# A missing or false flag is promoted once, with a visible INFO message.
+logging=("${common[@]}")
+logging[${#logging[@]}-1]="--default-log-file=$tmp/info.log"
+for setting in absent false true; do
+    : > "$tmp/info.log"
+    flags=()
+    if [ "$setting" != absent ]; then flags=(--outNoLP="$setting"); fi
+    "$bin" "${logging[@]}" "${kinetic[@]}" "${csv[@]}" "${flags[@]}" > "$tmp/info.out" 2> "$tmp/info.err"
+    if [ "$setting" = true ]; then
+        ! grep -q 'setting --outNoLP=true' "$tmp/info.log"
+    else
+        grep -q 'INFO.*setting --outNoLP=true' "$tmp/info.log"
+    fi
+done
+# Run the same API/CLI contract against the experimental subclass.
+if [ "$mode" = K ]; then KINETIC_MODE=L bash "$0"; fi
+echo "Kinetic seed-extension CLI checks passed ($mode)"

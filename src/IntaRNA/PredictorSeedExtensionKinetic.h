@@ -7,6 +7,7 @@
 #include <array>
 #include <cstdint>
 #include <map>
+#include <vector>
 
 namespace IntaRNA {
 
@@ -20,9 +21,10 @@ namespace IntaRNA {
  * not physical rates or a calibrated folding-time model. Only negative
  * energy differences are accepted, including for the normalized scores.
  *
- * With noLP, every starting seed must already contain no lonely pair and a
- * nonstacking extension adds its closing pair and the following stack
- * atomically. Ties prefer left, smaller s1+s2, then smaller s1. Every valid
+ * Extensions always add one stacked pair or two stacked pairs, including
+ * across a loop. Seeds and their energies are trusted as supplied by the seed
+ * handler, even when an explicit seed contains lonely pairs. Ties prefer left,
+ * smaller s1+s2, smaller s1, then the single-pair move. Every valid
  * visited prefix is eligible for normal MFE/suboptimal reporting; traceback
  * reproduces the actual greedy path. Equilibrium partition-function output
  * is unsupported.
@@ -76,7 +78,6 @@ protected:
 	 */
 	void getNextBest(Interaction & interaction) override;
 
-private:
 	//! Inclusive boundaries (i1,j1,i2,j2), using local energy indices.
 	using Boundary = std::array<size_t, 4>;
 	//! Best actual path for each visited, reportable set of boundaries.
@@ -91,9 +92,32 @@ private:
 		size_t s2 = 0;
 		bool left = true;
 		bool macro = false;
+		bool topologyKnown = false;
+		bool topologyAllowed = false;
+		bool active = false;
+		bool localKnown = false;
+		E_type local = E_INF;
 		E_type hybrid = E_INF;
 		E_type total = E_INF;
 		std::int64_t delta = 0;
+	};
+
+	/**
+	 * Optional filter before pairing and loop-energy lookups. The default
+	 * enumerates every move; subclasses may implement heuristic pruning.
+	 * @param candidate geometrically valid extension
+	 * @param bounds current boundaries
+	 * @return whether to skip this two-pair move and all moves with both gaps
+	 *         at least as large, in the current state (requires monotone ED)
+	 */
+	virtual bool prune(const Candidate & candidate, const Boundary & bounds) const;
+
+private:
+	/** Geometry, shared pair checks and local energies for one unchanged end. */
+	struct SideCandidates {
+		std::vector<Candidate> moves;
+		std::vector<signed char> complementary;
+		size_t columns = 0;
 	};
 
 	//! Owned seed handler with offsets matching this->energy.
@@ -102,19 +126,8 @@ private:
 	const char score;
 	//! Paths retained independently of the number of requested reports.
 	InteractionCache interactions;
-	//! Valid starting seeds with recomputed energies, keyed by original indices.
-	std::map<Interaction::BasePair, Interaction::Seed> validSeeds;
-
 	/** @return local, inclusive boundaries of a nonempty interaction */
 	Boundary getBoundary(const Interaction & interaction) const;
-
-	/**
-	 * Checks the complete seed path, including noLP and loop GU constraints.
-	 * @param interaction seed path, in original sequence coordinates
-	 * @param hybrid receives the traced path's loop energies plus initiation
-	 * @return whether every pair and adjacent loop is feasible
-	 */
-	bool isValidSeed(const Interaction & interaction, E_type & hybrid) const;
 
 	/**
 	 * Runs a complete greedy trajectory and retains its reportable prefixes.
@@ -127,14 +140,26 @@ private:
 			size_t last1, size_t last2);
 
 	/**
-	 * Checks one geometrically bounded move and evaluates its complete energy.
-	 * @param candidate move indices/side/gaps; energies are filled on success
-	 * @param bounds current interaction boundaries
-	 * @param hybrid current hybridization energy, including initiation
-	 * @param total current full interaction energy
-	 * @return whether the entire move is feasible and strictly downhill
+	 * Builds the rectangular gap table plus the single-stack move for one end.
+	 * @param side table to replace
+	 * @param bounds current boundaries
+	 * @param left whether this is the left end
+	 * @param last1 last permitted local index in sequence 1
+	 * @param last2 last permitted local index in reversed sequence 2
 	 */
-	bool evaluate(Candidate & candidate, const Boundary & bounds,
+	void buildCandidates(SideCandidates & side, const Boundary & bounds,
+			bool left, size_t last1, size_t last2) const;
+
+	/**
+	 * Resolves shared pair checks before energies, then refreshes complete
+	 * energies and selects the best downhill candidate during that traversal.
+	 * @param side candidate and pairing cache for one end
+	 * @param bounds current boundaries (the opposite end may have changed)
+	 * @param hybrid current hybridization energy including initiation
+	 * @param total current complete interaction energy
+	 * @return best move within side, or NULL if none is downhill
+	 */
+	const Candidate * updateCandidates(SideCandidates & side, const Boundary & bounds,
 			E_type hybrid, E_type total) const;
 
 	/** @return whether a move wins by exact score and deterministic ties */

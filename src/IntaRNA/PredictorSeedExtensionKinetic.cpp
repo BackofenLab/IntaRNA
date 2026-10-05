@@ -41,7 +41,6 @@ PredictorSeedExtensionKinetic::PredictorSeedExtensionKinetic(
 	, seedHandler(checkedSeedHandler(seedHandlerInstance))
 	, score(score)
 	, interactions()
-	, validSeeds()
 {
 	if (score != 'A' && score != 'B' && score != 'C') {
 		throw std::invalid_argument("PredictorSeedExtensionKinetic score must be A, B or C");
@@ -76,7 +75,6 @@ PredictorSeedExtensionKinetic::predict(const IndexRange & r1, const IndexRange &
 	const size_t last1 = std::min(r1.to, size1 - 1) - r1.from;
 	const size_t last2 = std::min(r2.to, size2 - 1) - r2.from;
 	interactions.clear();
-	validSeeds.clear();
 	initOptima();
 
 	if (seedHandler.fillSeed(0, last1, 0, last2) != 0) {
@@ -104,20 +102,13 @@ PredictorSeedExtensionKinetic::predict(const IndexRange & r1, const IndexRange &
 				interaction.basePairs.push_back(energy.getBasePair(j1, j2));
 			}
 			interaction.sort();
-			E_type hybrid = E_INF;
-			if (!isValidSeed(interaction, hybrid)
-					|| getBoundary(interaction) != Boundary{i1, j1, i2, j2}) {
-				continue;
-			}
+			const E_type hybrid = addEnergy(seedHandler.getSeedE(i1, i2), energy.getE_init());
 			interaction.energy = energy.getE(i1, j1, i2, j2, hybrid);
 			if (E_isINF(interaction.energy)) {
 				continue;
 			}
 			interaction.setSeedRange(interaction.basePairs.front(),
 					interaction.basePairs.back(), interaction.energy);
-			validSeeds.emplace(interaction.basePairs.front(),
-					Interaction::Seed(interaction.basePairs.front(),
-							interaction.basePairs.back(), interaction.energy));
 			extendSeed(interaction, hybrid, last1, last2);
 		}
 	}
@@ -149,50 +140,9 @@ PredictorSeedExtensionKinetic::getBoundary(const Interaction & interaction) cons
 //////////////////////////////////////////////////////////////////////////
 
 bool
-PredictorSeedExtensionKinetic::isValidSeed(const Interaction & interaction, E_type & hybrid) const
+PredictorSeedExtensionKinetic::prune(const Candidate &, const Boundary &) const
 {
-	if (interaction.basePairs.empty() || !interaction.isValid()) {
-		return false;
-	}
-	const auto & pairs = interaction.basePairs;
-	const auto & constraint = output.getOutputConstraint();
-	// Reconstruct rather than trust a cached explicit-seed energy: the
-	// trajectory's energy must correspond to precisely the traced structure.
-	hybrid = energy.getE_init();
-	if (E_isINF(hybrid)) {
-		return false;
-	}
-	for (size_t p = 0; p < pairs.size(); ++p) {
-		const size_t i1 = energy.getIndex1(pairs[p]);
-		const size_t i2 = energy.getIndex2(pairs[p]);
-		if (i1 >= energy.size1() || i2 >= energy.size2()
-				|| !energy.areComplementary(i1, i2)) {
-			return false;
-		}
-		const bool stackedLeft = p > 0
-				&& pairs[p].first - pairs[p-1].first == 1
-				&& pairs[p-1].second - pairs[p].second == 1;
-		const bool stackedRight = p + 1 < pairs.size()
-				&& pairs[p+1].first - pairs[p].first == 1
-				&& pairs[p].second - pairs[p+1].second == 1;
-		if (constraint.noLP && !stackedLeft && !stackedRight) {
-			return false;
-		}
-		if (p == 0) {
-			continue;
-		}
-		const size_t previous1 = energy.getIndex1(pairs[p-1]);
-		const size_t previous2 = energy.getIndex2(pairs[p-1]);
-		if (!stackedLeft && constraint.noGUend
-				&& (energy.isGU(previous1, previous2) || energy.isGU(i1, i2))) {
-			return false;
-		}
-		hybrid = addEnergy(hybrid, energy.getE_interLeft(previous1, i1, previous2, i2));
-		if (E_isINF(hybrid)) {
-			return false;
-		}
-	}
-	return true;
+	return false;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -201,66 +151,18 @@ void
 PredictorSeedExtensionKinetic::extendSeed(Interaction & interaction,
 		E_type hybrid, const size_t last1, const size_t last2)
 {
-	const size_t maxLength1 = energy.getAccessibility1().getMaxLength();
-	const size_t maxLength2 = energy.getAccessibility2().getMaxLength();
+	std::array<SideCandidates, 2> sides;
+	Boundary bounds = getBoundary(interaction);
+	buildCandidates(sides[0], bounds, true, last1, last2);
+	buildCandidates(sides[1], bounds, false, last1, last2);
 	while (true) {
 		retain(interaction);
-		const Boundary bounds = getBoundary(interaction);
-		const size_t remaining1 = maxLength1 - (bounds[1] - bounds[0] + 1);
-		const size_t remaining2 = maxLength2 - (bounds[3] - bounds[2] + 1);
-		bool found = false;
-		Candidate best;
-		for (unsigned int side = 0; side < 2; ++side) {
-			const bool left = side == 0;
-			const size_t space1 = std::min(remaining1, left ? bounds[0] : last1 - bounds[1]);
-			const size_t space2 = std::min(remaining2, left ? bounds[2] : last2 - bounds[3]);
-			if (space1 == 0 || space2 == 0) {
-				continue;
-			}
-			// A GU boundary can still grow by stacking, but cannot start a
-			// nonstacking loop when either active constraint forbids it.
-			const bool stackOnly = (output.getOutputConstraint().noGUend
-					|| !energy.isInternalLoopGUallowed())
-					&& energy.isGU(bounds[left ? 0 : 1], bounds[left ? 2 : 3]);
-			const size_t maxGap1 = stackOnly ? 0
-					: std::min(energy.getMaxInternalLoopSize1(), space1 - 1);
-			const size_t maxGap2 = stackOnly ? 0
-					: std::min(energy.getMaxInternalLoopSize2(), space2 - 1);
-			for (size_t s1 = 0; s1 <= maxGap1; ++s1) {
-				for (size_t s2 = 0; s2 <= maxGap2; ++s2) {
-					Candidate candidate;
-					candidate.left = left;
-					candidate.s1 = s1;
-					candidate.s2 = s2;
-					candidate.macro = output.getOutputConstraint().noLP && (s1 != 0 || s2 != 0);
-					const size_t addedPairs = candidate.macro ? 2 : 1;
-					if (space1 < addedPairs || space2 < addedPairs
-							|| s1 > space1 - addedPairs || s2 > space2 - addedPairs) {
-						continue;
-					}
-					candidate.bounds = bounds;
-					if (left) {
-						candidate.bounds[0] -= s1 + addedPairs;
-						candidate.bounds[2] -= s2 + addedPairs;
-						candidate.close1 = bounds[0] - s1 - 1;
-						candidate.close2 = bounds[2] - s2 - 1;
-					} else {
-						candidate.bounds[1] += s1 + addedPairs;
-						candidate.bounds[3] += s2 + addedPairs;
-						candidate.close1 = bounds[1] + s1 + 1;
-						candidate.close2 = bounds[3] + s2 + 1;
-					}
-					if (evaluate(candidate, bounds, hybrid, interaction.energy)
-							&& (!found || isBetter(candidate, best))) {
-						best = candidate;
-						found = true;
-					}
-				}
-			}
-		}
-		if (!found) {
+		const Candidate * left = updateCandidates(sides[0], bounds, hybrid, interaction.energy);
+		const Candidate * right = updateCandidates(sides[1], bounds, hybrid, interaction.energy);
+		if (left == NULL && right == NULL) {
 			break;
 		}
+		const Candidate best = left != NULL && (right == NULL || isBetter(*left, *right)) ? *left : *right;
 		const Interaction::BasePair close = energy.getBasePair(best.close1, best.close2);
 		if (best.left) {
 			interaction.basePairs.insert(interaction.basePairs.begin(), close);
@@ -276,47 +178,128 @@ PredictorSeedExtensionKinetic::extendSeed(Interaction & interaction,
 		}
 		hybrid = best.hybrid;
 		interaction.energy = best.total;
+		bounds = best.bounds;
+		// The opposite end keeps its geometry, pair checks and loop energies.
+		// Its full energy must still be refreshed (ED and BOTH dangles change).
+		buildCandidates(sides[best.left ? 0 : 1], bounds, best.left, last1, last2);
 	}
 }
 
 //////////////////////////////////////////////////////////////////////////
 
-bool
-PredictorSeedExtensionKinetic::evaluate(Candidate & candidate,
+void
+PredictorSeedExtensionKinetic::buildCandidates(SideCandidates & side,
+		const Boundary & bounds, const bool left, const size_t last1, const size_t last2) const
+{
+	side.moves.clear();
+	const size_t space1 = std::min(energy.getAccessibility1().getMaxLength() - (bounds[1]-bounds[0]+1),
+			left ? bounds[0] : last1-bounds[1]);
+	const size_t space2 = std::min(energy.getAccessibility2().getMaxLength() - (bounds[3]-bounds[2]+1),
+			left ? bounds[2] : last2-bounds[3]);
+	if (space1 == 0 || space2 == 0) {
+		return;
+	}
+	const bool stackOnly = (output.getOutputConstraint().noGUend || !energy.isInternalLoopGUallowed())
+			&& energy.isGU(bounds[left ? 0 : 1], bounds[left ? 2 : 3]);
+	const size_t maxGap1 = space1 < 2 || stackOnly ? 0 : std::min(energy.getMaxInternalLoopSize1(), space1-2);
+	const size_t maxGap2 = space2 < 2 || stackOnly ? 0 : std::min(energy.getMaxInternalLoopSize2(), space2-2);
+	side.columns = maxGap2+2;
+	side.complementary.assign((maxGap1+2)*side.columns, -1);
+	const auto append = [&](size_t s1, size_t s2, bool macro) {
+		Candidate c;
+		c.left = left; c.s1 = s1; c.s2 = s2; c.macro = macro;
+		c.bounds = bounds;
+		const size_t pairs = macro ? 2 : 1;
+		if (left) {
+			c.close1 = bounds[0]-s1-1; c.close2 = bounds[2]-s2-1;
+			c.bounds[0] -= s1+pairs; c.bounds[2] -= s2+pairs;
+		} else {
+			c.close1 = bounds[1]+s1+1; c.close2 = bounds[3]+s2+1;
+			c.bounds[1] += s1+pairs; c.bounds[3] += s2+pairs;
+		}
+		side.moves.push_back(c);
+	};
+	append(0, 0, false);
+	if (space1 >= 2 && space2 >= 2) {
+		for (size_t s1 = 0; s1 <= maxGap1; ++s1) {
+			for (size_t s2 = 0; s2 <= maxGap2; ++s2) {
+				append(s1, s2, true);
+			}
+		}
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+const PredictorSeedExtensionKinetic::Candidate *
+PredictorSeedExtensionKinetic::updateCandidates(SideCandidates & side,
 		const Boundary & bounds, const E_type hybrid, const E_type total) const
 {
-	const size_t old1 = bounds[candidate.left ? 0 : 1];
-	const size_t old2 = bounds[candidate.left ? 2 : 3];
-	const size_t outer1 = candidate.bounds[candidate.left ? 0 : 1];
-	const size_t outer2 = candidate.bounds[candidate.left ? 2 : 3];
-	if (!energy.areComplementary(candidate.close1, candidate.close2)
-			|| (candidate.macro && !energy.areComplementary(outer1, outer2))) {
-		return false;
+	// Phase one: each position pair is tested at most once per unchanged end,
+	// even when it is the closing pair of one move and outer pair of another.
+	size_t stopGap2 = std::numeric_limits<size_t>::max();
+	for (Candidate & c : side.moves) {
+		c.bounds[c.left ? 1 : 0] = bounds[c.left ? 1 : 0];
+		c.bounds[c.left ? 3 : 2] = bounds[c.left ? 3 : 2];
+		c.active = c.bounds[1]-c.bounds[0]+1 <= energy.getAccessibility1().getMaxLength()
+				&& c.bounds[3]-c.bounds[2]+1 <= energy.getAccessibility2().getMaxLength();
+		if (c.active && c.macro) {
+			if (c.s2 >= stopGap2) {
+				c.active = false;
+			} else if (prune(c, bounds)) {
+				// A suffix bound rejects this rectangle of larger gaps without
+				// further ED, complementarity or loop-energy lookups.
+				stopGap2 = c.s2;
+				c.active = false;
+			}
+		}
+		if (!c.active || c.topologyKnown) {
+			continue;
+		}
+		const auto complementary = [&](size_t s1, size_t s2) {
+			signed char & cached = side.complementary[s1*side.columns+s2];
+			if (cached < 0) {
+				cached = energy.areComplementary(c.left ? bounds[0]-s1-1 : bounds[1]+s1+1,
+						c.left ? bounds[2]-s2-1 : bounds[3]+s2+1);
+			}
+			return cached != 0;
+		};
+		c.topologyKnown = true;
+		c.topologyAllowed = complementary(c.s1, c.s2)
+				&& (!c.macro || complementary(c.s1+1, c.s2+1));
+		if (c.topologyAllowed && output.getOutputConstraint().noGUend && (c.s1 != 0 || c.s2 != 0)) {
+			c.topologyAllowed = !energy.isGU(c.close1, c.close2);
+		}
 	}
-	if (output.getOutputConstraint().noGUend && (candidate.s1 != 0 || candidate.s2 != 0)
-			&& (energy.isGU(old1, old2) || energy.isGU(candidate.close1, candidate.close2))) {
-		return false;
+	const Candidate * best = NULL;
+	for (Candidate & c : side.moves) {
+		if (!c.active || !c.topologyAllowed) {
+			continue;
+		}
+		if (!c.localKnown) {
+			c.localKnown = true;
+			c.local = c.left ? energy.getE_interLeft(c.close1, bounds[0], c.close2, bounds[2])
+					: energy.getE_interLeft(bounds[1], c.close1, bounds[3], c.close2);
+			if (c.macro && E_isNotINF(c.local)) {
+				c.local = addEnergy(c.local, c.left
+						? energy.getE_interLeft(c.bounds[0], c.close1, c.bounds[2], c.close2)
+						: energy.getE_interLeft(c.close1, c.bounds[1], c.close2, c.bounds[3]));
+			}
+		}
+		c.hybrid = addEnergy(hybrid, c.local);
+		if (E_isINF(c.hybrid)) {
+			continue;
+		}
+		c.total = energy.getE(c.bounds[0], c.bounds[1], c.bounds[2], c.bounds[3], c.hybrid);
+		if (E_isINF(c.total)) {
+			continue;
+		}
+		c.delta = std::int64_t(c.total)-std::int64_t(total);
+		if (c.delta < 0 && (best == NULL || isBetter(c, *best))) {
+			best = &c;
+		}
 	}
-	const E_type loop = candidate.left
-			? energy.getE_interLeft(candidate.close1, old1, candidate.close2, old2)
-			: energy.getE_interLeft(old1, candidate.close1, old2, candidate.close2);
-	candidate.hybrid = addEnergy(hybrid, loop);
-	if (candidate.macro && E_isNotINF(candidate.hybrid)) {
-		const E_type stack = candidate.left
-				? energy.getE_interLeft(outer1, candidate.close1, outer2, candidate.close2)
-				: energy.getE_interLeft(candidate.close1, outer1, candidate.close2, outer2);
-		candidate.hybrid = addEnergy(candidate.hybrid, stack);
-	}
-	if (E_isINF(candidate.hybrid)) {
-		return false;
-	}
-	const Boundary & b = candidate.bounds;
-	candidate.total = energy.getE(b[0], b[1], b[2], b[3], candidate.hybrid);
-	if (E_isINF(candidate.total)) {
-		return false;
-	}
-	candidate.delta = std::int64_t(candidate.total) - std::int64_t(total);
-	return candidate.delta < 0;
+	return best;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -346,7 +329,10 @@ PredictorSeedExtensionKinetic::isBetter(const Candidate & candidate, const Candi
 	}
 	const Wide size = Wide(candidate.s1) + Wide(candidate.s2);
 	const Wide bestSize = Wide(best.s1) + Wide(best.s2);
-	return size != bestSize ? size < bestSize : candidate.s1 < best.s1;
+	if (size != bestSize) return size < bestSize;
+	if (candidate.s1 != best.s1) return candidate.s1 < best.s1;
+	// Identical shape/score: retain the shorter move first.
+	return !candidate.macro && best.macro;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -386,19 +372,6 @@ PredictorSeedExtensionKinetic::traceBack(Interaction & interaction)
 	}
 	interaction = path->second;
 	seedHandler.addSeeds(interaction);
-	// The generic annotator can recognize explicit seeds that were rejected
-	// as starting states (e.g. a lonely seed end stacked only by extension).
-	// Retain only validated starts and use their reconstructed energies.
-	if (interaction.seed != NULL) {
-		Interaction::SeedSet validAnnotations;
-		for (const Interaction::Seed & seed : *interaction.seed) {
-			const auto valid = validSeeds.find(seed.bp_i);
-			if (valid != validSeeds.end() && valid->second.bp_j == seed.bp_j) {
-				validAnnotations.insert(valid->second);
-			}
-		}
-		*interaction.seed = std::move(validAnnotations);
-	}
 }
 
 //////////////////////////////////////////////////////////////////////////
