@@ -14,6 +14,9 @@
 
 ## Interface and handling
 
+- apply outDeltaE relative to the sequence pair's best interaction when merging
+  regions; preserve local windows for outPerRegion output (PR #253)
+
 - reject merged regions that cannot enforce the requested output overlap mode;
   retain independent selection with --outPerRegion (PR #253)
 
@@ -87,6 +90,14 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261005 Alexander Mitrofanov
+ * bin/IntaRNA, bin/CommandLineParsing, README.md :
+   * filter merged results by the global minimum plus outDeltaE; keep the
+     independent energy windows for outPerRegion=true (PR #253)
+ * tests/runOutputOverlap.sh :
+   + verify both region orders, zero/inclusive delta boundaries, permitted
+     overlap modes, independent regional output and empty merged results
 
 261005 Alexander Mitrofanov
  * IntaRNA/PredictorMfe, PredictorMfeEns, PredictorMfe2dHeuristic,

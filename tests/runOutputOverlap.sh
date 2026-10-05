@@ -61,3 +61,50 @@ check_regions ok -t CCAACC -q GG --tIdxPos0=10 --qIdxPos0=20 --tRegion=10-11,14-
 printf 'start1;end1;start2;end2;E\n10;11;20;21;-2\n14;15;20;21;-2\n' > "$tmp/expected"
 cmp "$tmp/expected" "$tmp/result"
 echo 'Regional output overlap checks passed'
+
+# Global energy windows must be independent of which region supplies the MFE.
+# In this base-pair energy model the optimum is exactly -2; a one-pair site is -1.
+for overlap in B T Q; do
+    for best_first in true false; do
+        if test "$best_first" = true; then seq=CCAAC; regions=1-2,5-5;
+        else seq=CAACC; regions=1-1,4-5; fi
+        if test "$overlap" = T; then
+            seq=${seq//C/G}
+            args=(-t CC -q "$seq" --qRegion="$regions")
+        else
+            args=(-t "$seq" -q GG --tRegion="$regions")
+        fi
+        for per_region in false true; do
+            for delta in 0 0.99 1; do
+                "$bin" --energy=B --acc=N --noSeed --model=S --mode=M --threads=1 \
+                    --outMode=C --outCsvCols=E --outNumber=10 --outOverlap="$overlap" \
+                    --outPerRegion="$per_region" --outDeltaE="$delta" "${args[@]}" \
+                    --default-log-file="$tmp/info.log" > "$tmp/energies"
+                awk -v delta="$delta" -v per_region="$per_region" '
+                    NR == 2 { if ($0 != -2) exit 1 }
+                    NR > 1 { if ($0 != -2 && $0 != -1) exit 1; if ($0 == -1) weak++ }
+                    END {
+                        if (NR < 2) exit 1
+                        if (per_region == "false" && delta < 1 && weak) exit 1
+                        if ((per_region == "true" || delta == 1) && !weak) exit 1
+                    }' "$tmp/energies"
+            done
+        done
+    done
+done
+
+# With independent regions all four modes retain the weaker region's optimum.
+for overlap in B N T Q; do
+    "$bin" --energy=B --acc=N --noSeed --model=S --threads=1 -t CCAAC -q GG \
+        --tRegion=1-2,5-5 --outMode=C --outCsvCols=E --outNumber=10 \
+        --outOverlap="$overlap" --outPerRegion --outDeltaE=0 \
+        --default-log-file="$tmp/info.log" > "$tmp/energies"
+    grep -q '^-1$' "$tmp/energies"
+done
+
+# An empty merged result has no minimum to dereference.
+"$bin" --energy=B --acc=N --noSeed --threads=1 -t AAAAA -q AAAAA --tRegion=1-2,4-5 \
+    --outMode=C --outCsvCols=E --outDeltaE=0 --default-log-file="$tmp/info.log" > "$tmp/energies"
+printf 'E\n' > "$tmp/expected"
+cmp "$tmp/expected" "$tmp/energies"
+echo 'Global and per-region energy window checks passed'

@@ -1695,7 +1695,10 @@ Furthermore, it is possible to *restrict (sub)optimal enumeration* using
 
 - `--outMaxE` : maximal energy for any interaction reported
 - `--outDeltaE` : maximal energy difference of suboptimal interactions' energy
-  to the minimum free energy interaction
+  to the minimum free energy interaction for the query-target pair, including
+  when results from multiple regions are merged. With `--outPerRegion=true`,
+  the minimum and energy window are determined independently for each region
+  combination
 - `--outOverlap` : defines if and where overlapping of reported interaction sites
   is allowed:
   - 'N' : no overlap neither in target nor query allowed for reported interactions

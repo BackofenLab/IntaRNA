@@ -994,7 +994,8 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 			, value<E_kcal_type>(&(outDeltaE.val))
 				->default_value(outDeltaE.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_numberArgument<E_kcal_type>,this,outDeltaE,_1))
-			, std::string("suboptimal output : only interactions with E <= (minE+deltaE) are reported"
+			, std::string("suboptimal output : only interactions with E <= (minE+deltaE) are reported;"
+					" minE is per sequence pair, or per region combination with --outPerRegion"
 					" (arg in range ["+toString(outDeltaE.min)+","+toString(outDeltaE.max)+"])").c_str())
 	    ("outBestSeedOnly"
 			, value<bool>(&(outBestSeedOnly))
