@@ -3,7 +3,49 @@
 This report examines `--outOverlap=B,N,T,Q` at master revision
 `afede020fe7d1c44cf686684dc7eb40927f91583` (2026-10-02). It answers the
 [request for analysis and consultation](https://github.com/BackofenLab/IntaRNA/issues/212#issuecomment-5927769865).
-It proposes changes but implements none of them.
+The findings, example outputs, and original proposals below describe that
+baseline. The implementation following review is summarized next; the historical
+examples are not expected output for the revised program.
+
+## Implementation following Martin's review
+
+The [review on PR #253](https://github.com/BackofenLab/IntaRNA/pull/253#issuecomment-5991808858)
+requested separate implementation steps, which are recorded in separate commits:
+
+- Define distinct prediction results by their four interaction-site boundaries
+  in the README. Alternative internal structures with the same boundaries are
+  not enumerated separately.
+- Reject unsupported merged-region output in `CommandLineParsing`, both for
+  explicit regions and after automatic decomposition (including `outMinPu`).
+  `N` requires one region per RNA, `T` one target region, and `Q` one query
+  region. `B` and explicit `outPerRegion=true` permit multiple regions.
+  This follows the actual overlap semantics: multiple target regions can reuse
+  the query, so they are unsafe for `T`; the converse applies to `Q`.
+- Use finalized per-site ensemble energies for later `P/H --noSeed` results,
+  through the base predictor's existing best-site-per-left-boundary storage.
+  This also removes the floating-point exhaustion sentinel in finding 2.
+- Share complete-site terminal GU and maximum ED validation between initial
+  selection and all four specialized MFE/helix matrix selectors. Ensemble
+  partition accumulation uses the same check.
+- Apply `outDeltaE` relative to the best result for the sequence pair when
+  merging regional output. `outPerRegion=true` retains independent local
+  energy windows and overlap selection.
+- Keep the one-right-extension strategy in finding 6, and clarify its limits
+  in the README, including its use with exact prediction mode.
+
+The new regional checks deliberately replace the proposed global overlap
+selector; no exhaustive global selection or recovery of discarded extensions
+is introduced. Existing specialized MFE/helix tie order is retained. Ensemble
+restricted selection now uses the base predictor's deterministic tie order.
+
+The capture script accepts either historical successful output or a regional
+input rejection for the formerly unsafe region examples. It remains an
+observation tool; `tests/runOutputOverlap.sh` and the predictor API tests enforce
+the revised behavior. The original controls and independent site oracles remain
+assertions in the capture script.
+
+## Baseline findings
+
 
 There are reproducible correctness bugs beyond the documented enumeration
 heuristic. Region merging can violate the requested overlap rule, and some
@@ -358,7 +400,7 @@ interval `1..4`, with the blocked positions inside a loop. A span-based selector
 must reject crossings over an excluded interval, not just forbid pairs at its
 positions.
 
-## Decisions and verification needed before implementation
+## Original recommendations before review
 
 The recommended contract is: choose the best eligible interaction first, then
 greedily choose the best eligible interaction compatible with every previously
@@ -395,7 +437,7 @@ like finding 6. The independent toy enumerator is a useful oracle for those
 regressions; the known-bug observations themselves are not correct expected
 output.
 
-## Validation and limits
+## Baseline validation and limits
 
 The analysis used a fresh release build of the stated master revision with
 GCC 14.4, bundled Kokkos mdspan, ViennaRNA 2.7.2 and Boost 1.85.0 on Linux.

@@ -1687,9 +1687,9 @@ can evaluate distinct supplied structures with identical boundaries.
 
 *Note*: suboptimal interaction enumeration is not exhaustive! That is, for each
 interaction site (defined by the left- and right-most intermolecular base pair)
-only the best interaction is reported! In heuristic prediction mode (default
-mode of IntaRNA), this is even less exhaustive, since only for each left-most
-interaction boundary one interaction is reported!
+only one prediction is reported. Heuristic predictors additionally prune
+candidate extensions during computation and can therefore consider fewer
+interaction sites.
 
 Furthermore, it is possible to *restrict (sub)optimal enumeration* using
 
@@ -1706,11 +1706,21 @@ Furthermore, it is possible to *restrict (sub)optimal enumeration* using
   - 'T' : overlap allowed for interacting subsequences in target only
   - 'Q' : overlap allowed for interacting subsequences in query only
   
-*Note*: non-overlapping output (i) is heuristic by considering for each left 
-interaction site only the best right extension for overlap computation and 
-(ii) increases runtime. To get optimized results of non-overlapping suboptimals,
-rerun IntaRNA and mark the optimal (mfe) interaction region as 
-[blocked](#accConstraints).
+Overlap refers to the entire interval between the outermost intermolecular
+base pairs, including unpaired positions inside that interval.
+
+*Note*: non-overlapping output is heuristic, even with exact prediction
+(`--mode=M`), and increases runtime. For each left interaction boundary, only
+the best right extension is retained for overlap selection. If that extension
+overlaps an earlier result, a shorter compatible extension may already have
+been discarded. Thus fewer than `outNumber` results does not imply that no
+further compatible interaction exists. This strategy keeps storage bounded.
+
+Rerunning IntaRNA with the optimal interaction region
+[blocked](#accConstraints) may reveal additional alternatives. Blocking prevents
+base pairing at those positions; an interaction can still span the blocked
+region through an internal loop, so this does not guarantee interval-disjoint
+results.
 
 
 

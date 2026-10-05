@@ -41,9 +41,9 @@
 - BUGFIX : heuristic ensemble suboptimals use finalized site energies and stop
   safely when no compatible candidate remains (PR #253)
 
-- analyse output overlap modes, regional selection and heuristic output defects;
-  provide reproducible examples and proposed fixes without changing behavior
-  (issue #212)
+- analyse output overlap modes and implement the reviewed regional guards,
+  ensemble/output-filter fixes and global energy window; retain and document
+  the one-right-extension limitation (issue #212, PR #253)
 
 - serialize stored accessibility rows directly and load retained rows in place;
   benchmark direct/generic export and raw/gzip binary I/O (PR #250)
@@ -90,6 +90,15 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261005 Alexander Mitrofanov
+ * README.md :
+   * retain and explain the one-right-extension strategy, including mode=M,
+     incomplete compatible alternatives and the limits of blocking paired bases
+ * doc/analysis/out-overlap.md, doc/analysis/out-overlap/reproduce.py :
+   + record the accepted review decisions separately from historical findings
+   * capture old output and new regional input rejections without treating
+     historical bugs as regression expectations (PR #253)
 
 261005 Alexander Mitrofanov
  * bin/IntaRNA, bin/CommandLineParsing, README.md :
