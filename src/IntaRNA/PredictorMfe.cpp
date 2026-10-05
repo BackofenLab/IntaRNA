@@ -234,6 +234,11 @@ reportOptima()
 				&& (curBest.energy < mfeDeltaE || E_equal(curBest.energy,mfeDeltaE))
 				&& reported < outConstraint.reportMax )
 		{
+			// Selectors return two boundaries, which coincide for a single pair.
+			// Normalize before either traceback or boundary-only output validation.
+			if (curBest.basePairs.size() == 2 && curBest.basePairs.front() == curBest.basePairs.back()) {
+				curBest.basePairs.resize(1);
+			}
 			// report current best
 			if (outConstraint.needBPs) {
 				// fill interaction with according base pairs

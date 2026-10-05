@@ -35,6 +35,9 @@
 
 ## Technical changes and Optimizations
 
+- BUGFIX : normalize single-pair suboptimal boundaries before traceback and
+  boundary-only output validation (PR #253)
+
 - verify restricted heuristic traces against the independent tiny oracle and
   cover output overlap checks after outMinPu decomposition (PR #253)
 
@@ -93,6 +96,14 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261005 Alexander Mitrofanov
+ * IntaRNA/PredictorMfe, tests/PredictorMfeHeuristicCellState_test.cpp,
+   tests/PredictorMfeEnsRegression_test.cpp :
+   * normalize coincident suboptimal boundaries to one base pair before
+     traceback or output, matching the initial optimum representation
+   + assert valid single-pair candidates in traced and boundary-only output;
+     fixes failures exposed by the PR #253 debug/sanitizer regressions
 
 261005 Alexander Mitrofanov
  * tests/PredictorTinyOracle_test.cpp, tests/runOutputOverlap.sh :

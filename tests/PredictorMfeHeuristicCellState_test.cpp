@@ -254,6 +254,7 @@ TEST_CASE("heuristic suboptimals respect terminal GU constraints", "[PredictorMf
 						predictor->predict(IndexRange(offset, offset+3), IndexRange(offset, offset+3));
 						REQUIRE_FALSE(output.empty());
 						for (const Interaction * interaction : output) {
+							REQUIRE(interaction->isValid());
 							for (auto bp : {interaction->basePairs.front(), interaction->basePairs.back()}) {
 								const char t = target.asString().at(bp.first), q = query.asString().at(bp.second);
 								REQUIRE_FALSE((t == 'G' && q == 'U'));
@@ -288,6 +289,7 @@ TEST_CASE("heuristic suboptimals respect complete-site accessibility limits", "[
 					predictor->predict();
 					REQUIRE(std::distance(output.begin(), output.end()) == 1);
 					for (const Interaction * interaction : output) {
+						REQUIRE(interaction->isValid());
 						REQUIRE(targetAcc.getED(interaction->basePairs.front().first,
 								interaction->basePairs.back().first) == 0);
 						REQUIRE(queryAcc.getED(interaction->basePairs.back().second,

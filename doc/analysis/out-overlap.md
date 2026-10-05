@@ -26,7 +26,9 @@ requested separate implementation steps, which are recorded in separate commits:
   This also removes the floating-point exhaustion sentinel in finding 2.
 - Share complete-site terminal GU and maximum ED validation between initial
   selection and all four specialized MFE/helix matrix selectors. Ensemble
-  partition accumulation uses the same check.
+  partition accumulation uses the same check. Debug validation also exposed
+  coincident boundaries for single-pair suboptimals; these are normalized before
+  traceback or boundary-only output.
 - Apply `outDeltaE` relative to the best result for the sequence pair when
   merging regional output. `outPerRegion=true` retains independent local
   energy windows and overlap selection.

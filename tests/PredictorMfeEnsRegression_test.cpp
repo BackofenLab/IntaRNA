@@ -362,6 +362,7 @@ TEST_CASE("heuristic ensemble suboptimals use finalized site energies", "[Predic
 					predictor.predict();
 					REQUIRE_FALSE(output.empty());
 					for (const Interaction * interaction : output) {
+						REQUIRE(interaction->isValid());
 						const Interaction * sameSite = nullptr;
 						for (const Interaction * site : reference) {
 							if (site->basePairs.front() == interaction->basePairs.front()
