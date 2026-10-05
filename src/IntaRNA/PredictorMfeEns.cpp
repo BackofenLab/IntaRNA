@@ -51,16 +51,7 @@ addPartitionContribution( const size_t i1, const size_t j1
 
 	// Apply the same site filters used for MFE candidates before changing
 	// either the global or boundary-specific partition.
-	const OutputConstraint & outConstraint = output.getOutputConstraint();
-	if (outConstraint.noGUend
-			&& (energy.isGU(i1,i2) || energy.isGU(j1,j2)))
-	{
-		return false;
-	}
-	if (outConstraint.maxED < Accessibility::ED_UPPER_BOUND
-			&& (energy.getED1(i1,j1) > outConstraint.maxED
-					|| energy.getED2(i2,j2) > outConstraint.maxED))
-	{
+	if (!isValidOutputSite(i1, j1, i2, j2)) {
 		return false;
 	}
 

@@ -7,6 +7,7 @@
 #include "IntaRNA/InteractionEnergyBasePair.h"
 #include "IntaRNA/OutputHandlerInteractionList.h"
 #include "IntaRNA/PredictorMfe2d.h"
+#include "IntaRNA/PredictorMfe2dHeuristic.h"
 #include "IntaRNA/PredictorMfeEns2d.h"
 #include "IntaRNA/ReverseAccessibility.h"
 #include "IntaRNA/RnaSequence.h"
@@ -373,5 +374,52 @@ TEST_CASE("tiny exhaustive oracle for exact predictors", "[PredictorTinyOracle]"
 		ensemblePredictor.predict(sub1, sub2);
 		REQUIRE(ensemblePredictor.getZall()
 				== Approx(oracle.partition).epsilon(1e-12));
+	}
+}
+
+TEST_CASE("restricted heuristic results belong to the filtered tiny oracle", "[PredictorTinyOracle][Overlap]") {
+	#include "testEasyLoggingSetup.icc"
+
+	RnaSequence target("target", "UUGA"), query("query", "CAUU");
+	WidthAccessibility targetAcc(target, 0, Ekcal_2_E(0.1));
+	WidthAccessibility queryAcc(query, 0, Ekcal_2_E(0.2));
+	ReverseAccessibility reverseQueryAcc(queryAcc);
+	InteractionEnergyBasePair energy(targetAcc, reverseQueryAcc);
+	for (bool noGU : {false, true}) {
+		for (E_type maxED : {Ekcal_2_E(0.5), Accessibility::ED_UPPER_BOUND}) {
+			for (auto overlap : {OutputConstraint::OVERLAP_NONE, OutputConstraint::OVERLAP_SEQ1,
+					OutputConstraint::OVERLAP_SEQ2, OutputConstraint::OVERLAP_BOTH}) {
+				CAPTURE(noGU, maxED, overlap);
+				OutputConstraint constraint(20, overlap, 0, Ekcal_2_E(100),
+						false, false, noGU, false, true, maxED);
+				const auto oracle = enumerateInteractions(energy, constraint, IndexRange(0,3), IndexRange(0,3));
+				OutputHandlerInteractionList output(constraint, 20);
+				PredictorMfe2dHeuristic predictor(energy, output, nullptr);
+				predictor.predict();
+				REQUIRE_FALSE(output.empty());
+				for (const Interaction * interaction : output) {
+					bool found = false;
+					for (const auto & candidate : oracle.interactions) {
+						if (candidate.energy == interaction->energy
+								&& toBasePairs(energy, candidate.chain) == interaction->basePairs) {
+							found = true;
+							break;
+						}
+					}
+					REQUIRE(found);
+					for (const Interaction * other : output) {
+						if (other == interaction) { break; }
+						if (overlap == OutputConstraint::OVERLAP_NONE || overlap == OutputConstraint::OVERLAP_SEQ2) {
+							REQUIRE_FALSE((interaction->basePairs.front().first <= other->basePairs.back().first
+									&& other->basePairs.front().first <= interaction->basePairs.back().first));
+						}
+						if (overlap == OutputConstraint::OVERLAP_NONE || overlap == OutputConstraint::OVERLAP_SEQ1) {
+							REQUIRE_FALSE((interaction->basePairs.back().second <= other->basePairs.front().second
+									&& other->basePairs.back().second <= interaction->basePairs.front().second));
+						}
+					}
+				}
+			}
+		}
 	}
 }

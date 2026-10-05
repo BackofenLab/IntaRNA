@@ -115,6 +115,19 @@ protected:
 	initOptima();
 
 	/**
+	 * Checks terminal GU and accessibility constraints for a complete site.
+	 * Recursion cells may be useful extensions without being valid output sites.
+	 * @param i1 inclusive start in sequence 1, relative to the energy offset
+	 * @param j1 inclusive end in sequence 1, relative to the energy offset
+	 * @param i2 inclusive start in reversed sequence 2, relative to its offset
+	 * @param j2 inclusive end in reversed sequence 2, relative to its offset
+	 * @return whether both terminal pairs and ED penalties satisfy output limits
+	 */
+	bool
+	isValidOutputSite( const size_t i1, const size_t j1,
+			const size_t i2, const size_t j2 ) const;
+
+	/**
 	 * updates the global optimum to be the mfe interaction if needed
 	 *
 	 * @param i1 the index of the first sequence interacting with i2

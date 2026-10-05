@@ -3,6 +3,7 @@
 #undef NDEBUG
 
 #include "IntaRNA/AccessibilityDisabled.h"
+#include "IntaRNA/AccessibilityBasePair.h"
 #include "IntaRNA/InteractionEnergyBasePair.h"
 #include "IntaRNA/OutputHandlerInteractionList.h"
 #include "IntaRNA/PredictorMfeEns2d.h"
@@ -14,6 +15,7 @@
 #include "IntaRNA/SeedHandlerNoBulge.h"
 
 #include <cmath>
+#include <iterator>
 #include <stdexcept>
 
 using namespace IntaRNA;
@@ -326,5 +328,89 @@ TEST_CASE("ensemble predictor regressions", "[PredictorMfeEns]") {
 		predictor.throwOnUpdate = false;
 		predictor.addBufferedForUpdateTest();
 		REQUIRE(predictor.getPartitionCount() == 1);
+	}
+}
+
+TEST_CASE("heuristic ensemble suboptimals use finalized site energies", "[PredictorMfeEns][Overlap]") {
+	#include "testEasyLoggingSetup.icc"
+
+	RnaSequence target("target", "AGAGC");
+	RnaSequence query("query", "GAUUC");
+	AccessibilityBasePair targetAcc(target, 0, nullptr);
+	AccessibilityBasePair queryAcc(query, 0, nullptr);
+	ReverseAccessibility reverseQueryAcc(queryAcc);
+	InteractionEnergyBasePair energy(targetAcc, reverseQueryAcc);
+
+	// B records the finalized boundary partitions, including nonzero ED.
+	OutputConstraint referenceConstraint(100, OutputConstraint::OVERLAP_BOTH,
+			Ekcal_2_E(100), Ekcal_2_E(100));
+	OutputHandlerInteractionList reference(referenceConstraint, 100);
+	PredictorMfeEns2dHeuristic referencePredictor(energy, reference, nullptr);
+	referencePredictor.predict();
+	REQUIRE_FALSE(reference.empty());
+
+	for (auto overlap : {OutputConstraint::OVERLAP_NONE,
+			OutputConstraint::OVERLAP_SEQ1, OutputConstraint::OVERLAP_SEQ2}) {
+		for (bool trace : {false, true}) {
+			for (E_type maxE : {E_type(0), Ekcal_2_E(100)}) {
+				for (E_type deltaE : {E_type(0), Ekcal_2_E(100)}) {
+					CAPTURE(overlap, trace, maxE, deltaE);
+					OutputConstraint constraint(100, overlap, maxE, deltaE,
+							false, false, false, false, trace);
+					OutputHandlerInteractionList output(constraint, 100);
+					PredictorMfeEns2dHeuristic predictor(energy, output, nullptr);
+					predictor.predict();
+					REQUIRE_FALSE(output.empty());
+					for (const Interaction * interaction : output) {
+						REQUIRE(interaction->isValid());
+						const Interaction * sameSite = nullptr;
+						for (const Interaction * site : reference) {
+							if (site->basePairs.front() == interaction->basePairs.front()
+									&& site->basePairs.back() == interaction->basePairs.back()) {
+								sameSite = site;
+								break;
+							}
+						}
+						REQUIRE(sameSite != nullptr);
+						REQUIRE(interaction->energy == sameSite->energy);
+						REQUIRE(interaction->energy < maxE);
+						REQUIRE(interaction->energy <= (*reference.begin())->energy + deltaE);
+					}
+					if (overlap == OutputConstraint::OVERLAP_NONE) {
+						REQUIRE(std::distance(output.begin(), output.end()) == (maxE == 0 || deltaE == 0 ? 1 : 2));
+					}
+				}
+			}
+		}
+	}
+}
+
+TEST_CASE("heuristic ensemble exhaustion stops without repeating sites", "[PredictorMfeEns][Overlap]") {
+	#include "testEasyLoggingSetup.icc"
+
+	for (auto overlap : {OutputConstraint::OVERLAP_NONE,
+			OutputConstraint::OVERLAP_SEQ1, OutputConstraint::OVERLAP_SEQ2}) {
+		for (bool trace : {false, true}) {
+			for (bool canPair : {false, true}) {
+				CAPTURE(overlap, trace, canPair);
+				RnaSequence target("target", "CC");
+				RnaSequence query("query", canPair ? "GG" : "CC");
+				AccessibilityDisabled targetAcc(target, 0, nullptr);
+				AccessibilityDisabled queryAcc(query, 0, nullptr);
+				ReverseAccessibility reverseQueryAcc(queryAcc);
+				InteractionEnergyBasePair energy(targetAcc, reverseQueryAcc);
+				OutputConstraint constraint(10, overlap, 0, Ekcal_2_E(100),
+						false, false, false, false, trace);
+				OutputHandlerInteractionList output(constraint, 10);
+				PredictorMfeEns2dHeuristic predictor(energy, output, nullptr);
+				predictor.predict();
+				REQUIRE(std::distance(output.begin(), output.end()) == (canPair ? 1 : 0));
+				if (canPair) {
+					REQUIRE((*output.begin())->energy == Ekcal_2_E(-2));
+					REQUIRE((*output.begin())->basePairs.front() == Interaction::BasePair(0, 1));
+					REQUIRE((*output.begin())->basePairs.back() == Interaction::BasePair(1, 0));
+				}
+			}
+		}
 	}
 }

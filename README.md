@@ -1129,7 +1129,19 @@ and should be in the format `from1-end1,from2-end2,..` using
 integers. 
 Note, if you want to have predictions individually for each region
 combination (rather than just the best for each query-target combination) you
-want to add `--outPerRegion` to the call.
+want to add `--outPerRegion` to the call. Overlap restrictions then apply
+independently within each region combination; results from different combinations
+can overlap on either RNA.
+
+With the default `--outPerRegion=false`, region combinations are merged. To
+avoid reporting forbidden overlaps, `--outOverlap=N` requires a single region
+on each RNA, `T` requires a single target region, and `Q` requires a single query
+region. `B` permits any number of regions. For example, multiple target regions
+can reuse the same query interval, so they are allowed with `Q` or `B`, but
+rejected with `N` or `T`. The same checks apply to regions produced automatically
+by `--qRegionLenMax`, `--tRegionLenMax`, or `--outMinPu`. Use
+`--outPerRegion=true` to select interactions independently for multiple regions
+with any overlap mode.
 
 If you are dealing with very long sequences it might be useful to use the
 *automatic identification of accessible regions*, which dramatically reduces
@@ -1666,19 +1678,27 @@ interaction energy = -6.39 kcal/mol
 Besides the identification of the optimal (e.g. minimum-free-energy) RNA-RNA
 interaction, IntaRNA enables the enumeration of suboptimal interactions. To this
 end, the argument `-n N` or `--outNumber=N` can be used to generate up to `N`
-interactions for each query-target pair (including the optimal one).
+interactions for each query-target pair (including the optimal one). Reported
+interactions have distinct interaction-site boundaries: at least one of the four
+indices `start1`, `end1`, `start2`, or `end2` differs. Different internal base-pair
+patterns with the same boundaries are not enumerated as separate predictions.
+This restriction applies to prediction; [interaction evaluation](#intarnaeval)
+can evaluate distinct supplied structures with identical boundaries.
 
 *Note*: suboptimal interaction enumeration is not exhaustive! That is, for each
 interaction site (defined by the left- and right-most intermolecular base pair)
-only the best interaction is reported! In heuristic prediction mode (default
-mode of IntaRNA), this is even less exhaustive, since only for each left-most
-interaction boundary one interaction is reported!
+only one prediction is reported. Heuristic predictors additionally prune
+candidate extensions during computation and can therefore consider fewer
+interaction sites.
 
 Furthermore, it is possible to *restrict (sub)optimal enumeration* using
 
 - `--outMaxE` : maximal energy for any interaction reported
 - `--outDeltaE` : maximal energy difference of suboptimal interactions' energy
-  to the minimum free energy interaction
+  to the minimum free energy interaction for the query-target pair, including
+  when results from multiple regions are merged. With `--outPerRegion=true`,
+  the minimum and energy window are determined independently for each region
+  combination
 - `--outOverlap` : defines if and where overlapping of reported interaction sites
   is allowed:
   - 'N' : no overlap neither in target nor query allowed for reported interactions
@@ -1686,11 +1706,21 @@ Furthermore, it is possible to *restrict (sub)optimal enumeration* using
   - 'T' : overlap allowed for interacting subsequences in target only
   - 'Q' : overlap allowed for interacting subsequences in query only
   
-*Note*: non-overlapping output (i) is heuristic by considering for each left 
-interaction site only the best right extension for overlap computation and 
-(ii) increases runtime. To get optimized results of non-overlapping suboptimals,
-rerun IntaRNA and mark the optimal (mfe) interaction region as 
-[blocked](#accConstraints).
+Overlap refers to the entire interval between the outermost intermolecular
+base pairs, including unpaired positions inside that interval.
+
+*Note*: non-overlapping output is heuristic, even with exact prediction
+(`--mode=M`), and increases runtime. For each left interaction boundary, only
+the best right extension is retained for overlap selection. If that extension
+overlaps an earlier result, a shorter compatible extension may already have
+been discarded. Thus fewer than `outNumber` results does not imply that no
+further compatible interaction exists. This strategy keeps storage bounded.
+
+Rerunning IntaRNA with the optimal interaction region
+[blocked](#accConstraints) may reveal additional alternatives. Blocking prevents
+base pairing at those positions; an interaction can still span the blocked
+region through an internal loop, so this does not guarantee interval-disjoint
+results.
 
 
 

@@ -4,6 +4,8 @@
 ################################################################
 
 EXTRA_DIST =	\
+			analysis/out-overlap.md \
+			analysis/out-overlap/reproduce.py \
 			conda.txt \
 			doxygen.cfg \
 			latex-deps/adjcalc.sty \
