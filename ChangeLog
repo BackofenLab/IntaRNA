@@ -35,6 +35,9 @@
 
 ## Technical changes and Optimizations
 
+- verify restricted heuristic traces against the independent tiny oracle and
+  cover output overlap checks after outMinPu decomposition (PR #253)
+
 - BUGFIX : apply terminal GU and accessibility output limits to later heuristic
   results, including seeded and helix predictors (PR #253)
 
@@ -90,6 +93,13 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261005 Alexander Mitrofanov
+ * tests/PredictorTinyOracle_test.cpp, tests/runOutputOverlap.sh :
+   + verify every reported heuristic trace and energy against independently
+     enumerated structures filtered by GU/ED limits; check forbidden intervals
+   + exercise automatic outMinPu region splitting on both RNAs in all overlap
+     modes with merged and independent output (PR #253)
 
 261005 Alexander Mitrofanov
  * README.md :

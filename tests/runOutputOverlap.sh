@@ -4,14 +4,15 @@ set -euo pipefail
 bin="$INTARNABINPATH/src/bin/IntaRNA"
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
-common=(--energy=B --acc=C --seedBP=2 --threads=1 --outMode=C
+region_acc=C
+common=(--energy=B --seedBP=2 --threads=1 --outMode=C
         --outCsvCols=start1,end1,start2,end2,E --outNumber=10 --default-log-file="$tmp/info.log")
 
 check_regions() {
     local expect=$1
     shift
     : > "$tmp/info.log"
-    if "$bin" "${common[@]}" "$@" > "$tmp/result" 2> "$tmp/error"; then
+    if "$bin" "${common[@]}" --acc="$region_acc" "$@" > "$tmp/result" 2> "$tmp/error"; then
         if test "$expect" != ok; then
             echo "Expected regional-overlap rejection: $*" >&2
             exit 1
@@ -54,6 +55,26 @@ for overlap in B N T Q; do
     # An automatic-region option alone is fine if no split is needed.
     check_regions ok -t CC -q GG --tRegionLenMax=4 --qRegionLenMax=4 --outOverlap="$overlap"
 done
+
+# outMinPu also decomposes regions; blocked positions supply deterministic gaps.
+region_acc=N
+for overlap in B N T Q; do
+    for per_region in false true; do
+        for side in target query; do
+            expect=ok
+            if test "$side" = target; then
+                args=(-t CCAACC -q GG --tAccConstr=b:3-4)
+                if test "$per_region" = false && [[ "$overlap" = N || "$overlap" = T ]]; then expect=reject; fi
+            else
+                args=(-t CC -q GGAAGG --qAccConstr=b:3-4)
+                if test "$per_region" = false && [[ "$overlap" = N || "$overlap" = Q ]]; then expect=reject; fi
+            fi
+            check_regions "$expect" "${args[@]}" --outMinPu=0.5 --outOverlap="$overlap" --outPerRegion="$per_region"
+        done
+    done
+done
+
+region_acc=C
 
 # Shifted indices still obey the same manual-region rule.
 check_regions reject -t CCAACC -q GG --tIdxPos0=10 --qIdxPos0=20 --tRegion=10-11,14-15 --outOverlap=T
