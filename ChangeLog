@@ -14,6 +14,8 @@
 
 ## Interface and handling
 
+- clarify that suboptimal predictions have distinct interaction-site boundaries
+
 - IntaRNAeval / --rri evaluates predefined RNA-RNA interactions (issue #184)
 
 - compressed binary .agz accessibility caches for repeated screens (issue #245)
@@ -76,6 +78,11 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261005 Alexander Mitrofanov
+ * README.md :
+   + define suboptimal predictions by distinct start/end coordinates on both RNAs
+   * distinguish site prediction from evaluation of supplied structures (PR #253)
 
 261002 Alexander Mitrofanov
  * doc/analysis/out-overlap.md, doc/analysis/out-overlap/reproduce.py :

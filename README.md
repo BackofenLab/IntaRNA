@@ -1666,7 +1666,12 @@ interaction energy = -6.39 kcal/mol
 Besides the identification of the optimal (e.g. minimum-free-energy) RNA-RNA
 interaction, IntaRNA enables the enumeration of suboptimal interactions. To this
 end, the argument `-n N` or `--outNumber=N` can be used to generate up to `N`
-interactions for each query-target pair (including the optimal one).
+interactions for each query-target pair (including the optimal one). Reported
+interactions have distinct interaction-site boundaries: at least one of the four
+indices `start1`, `end1`, `start2`, or `end2` differs. Different internal base-pair
+patterns with the same boundaries are not enumerated as separate predictions.
+This restriction applies to prediction; [interaction evaluation](#intarnaeval)
+can evaluate distinct supplied structures with identical boundaries.
 
 *Note*: suboptimal interaction enumeration is not exhaustive! That is, for each
 interaction site (defined by the left- and right-most intermolecular base pair)
