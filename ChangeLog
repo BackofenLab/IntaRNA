@@ -20,6 +20,14 @@
 - kinetic modes always use stacked extensions and trust handler-provided seeds;
   reuse candidate pairing/local energies and add experimental pruning mode L
 
+- apply outDeltaE relative to the sequence pair's best interaction when merging
+  regions; preserve local windows for outPerRegion output (PR #253)
+
+- reject merged regions that cannot enforce the requested output overlap mode;
+  retain independent selection with --outPerRegion (PR #253)
+
+- clarify that suboptimal predictions have distinct interaction-site boundaries
+
 - IntaRNAeval / --rri evaluates predefined RNA-RNA interactions (issue #184)
 
 - compressed binary .agz accessibility caches for repeated screens (issue #245)
@@ -32,6 +40,22 @@
 - reject Zall/Eall-dependent output in window mode
 
 ## Technical changes and Optimizations
+
+- BUGFIX : normalize single-pair suboptimal boundaries before traceback and
+  boundary-only output validation (PR #253)
+
+- verify restricted heuristic traces against the independent tiny oracle and
+  cover output overlap checks after outMinPu decomposition (PR #253)
+
+- BUGFIX : apply terminal GU and accessibility output limits to later heuristic
+  results, including seeded and helix predictors (PR #253)
+
+- BUGFIX : heuristic ensemble suboptimals use finalized site energies and stop
+  safely when no compatible candidate remains (PR #253)
+
+- analyse output overlap modes and implement the reviewed regional guards,
+  ensemble/output-filter fixes and global energy window; retain and document
+  the one-right-extension limitation (issue #212, PR #253)
 
 - serialize stored accessibility rows directly and load retained rows in place;
   benchmark direct/generic export and raw/gzip binary I/O (PR #250)
@@ -99,6 +123,71 @@ energies, restricted partition sums, and trackers.
    * document revised semantics and reproducible performance evaluation in
      response to https://github.com/BackofenLab/IntaRNA/pull/254
 
+261005 Alexander Mitrofanov
+ * IntaRNA/PredictorMfe, tests/PredictorMfeHeuristicCellState_test.cpp,
+   tests/PredictorMfeEnsRegression_test.cpp :
+   * normalize coincident suboptimal boundaries to one base pair before
+     traceback or output, matching the initial optimum representation
+   + assert valid single-pair candidates in traced and boundary-only output;
+     fixes failures exposed by the PR #253 debug/sanitizer regressions
+
+261005 Alexander Mitrofanov
+ * tests/PredictorTinyOracle_test.cpp, tests/runOutputOverlap.sh :
+   + verify every reported heuristic trace and energy against independently
+     enumerated structures filtered by GU/ED limits; check forbidden intervals
+   + exercise automatic outMinPu region splitting on both RNAs in all overlap
+     modes with merged and independent output (PR #253)
+
+261005 Alexander Mitrofanov
+ * README.md :
+   * retain and explain the one-right-extension strategy, including mode=M,
+     incomplete compatible alternatives and the limits of blocking paired bases
+ * doc/analysis/out-overlap.md, doc/analysis/out-overlap/reproduce.py :
+   + record the accepted review decisions separately from historical findings
+   * capture old output and new regional input rejections without treating
+     historical bugs as regression expectations (PR #253)
+
+261005 Alexander Mitrofanov
+ * bin/IntaRNA, bin/CommandLineParsing, README.md :
+   * filter merged results by the global minimum plus outDeltaE; keep the
+     independent energy windows for outPerRegion=true (PR #253)
+ * tests/runOutputOverlap.sh :
+   + verify both region orders, zero/inclusive delta boundaries, permitted
+     overlap modes, independent regional output and empty merged results
+
+261005 Alexander Mitrofanov
+ * IntaRNA/PredictorMfe, PredictorMfeEns, PredictorMfe2dHeuristic,
+   PredictorMfe2dHeuristicSeed, PredictorMfe2dHelixBlockHeuristic,
+   PredictorMfe2dHelixBlockHeuristicSeed :
+   * share complete-site GU/ED validation between initial and later candidates
+   * retain the existing matrix scan order and one-extension heuristic (PR #253)
+ * tests/PredictorMfeHeuristicCellState_test.cpp :
+   + cover all four matrix selectors, terminal GU and nonzero ED limits,
+     all overlap modes, region offsets and boundary/traced output
+
+261005 Alexander Mitrofanov
+ * bin/CommandLineParsing, README.md :
+   + validate manual regions and automatic decomposition against outOverlap
+   + N requires one region per RNA, T one target region, Q one query region;
+     B and independent outPerRegion output accept multiple regions (PR #253)
+ * tests/runOutputOverlap.sh, tests/Makefile.am :
+   + exercise all overlap modes, manual/automatic regions, per-region output,
+     unchanged single regions and shifted sequence indices
+
+261005 Alexander Mitrofanov
+ * IntaRNA/PredictorMfeEns2dHeuristic :
+   - remove raw-matrix suboptimal selection and its floating-point sentinel
+   * reuse validated, finalized per-site energies and E_INF exhaustion from
+     PredictorMfe; retain one best right extension per left boundary (PR #253)
+ * tests/PredictorMfeEnsRegression_test.cpp :
+   + compare N/T/Q energies against B with accessibility and energy cutoffs
+   + cover exhausted and empty candidate sets with and without traceback
+
+261005 Alexander Mitrofanov
+ * README.md :
+   + define suboptimal predictions by distinct start/end coordinates on both RNAs
+   * distinguish site prediction from evaluation of supplied structures (PR #253)
+
 261003 Alexander Mitrofanov
  * IntaRNA/PredictorSeedExtensionKinetic, src/IntaRNA/Makefile.am :
    + greedily extend seeds on either side using complete interaction-energy
@@ -116,6 +205,17 @@ energies, restricted partition sums, and trackers.
  * README.md, doc/kinetic-seed-extension.md, doc/Makefile.am :
    + document the council's implementation consensus, scientific scope and
      replacement of unsafe loop-only pruning with exact move enumeration
+
+261002 Alexander Mitrofanov
+ * doc/analysis/out-overlap.md, doc/analysis/out-overlap/reproduce.py :
+   + analyse all four output overlap modes and the documented enumeration limits
+   + reproduce regional overlap and energy-window violations, heuristic output
+     filtering gaps, and invalid/incomplete ensemble candidate energies
+   + provide 118 CLI observations, 64 controls and three independent site oracles
+   + propose selection semantics and repairs for consultation; no predictor changes
+   * addresses analysis request in https://github.com/BackofenLab/IntaRNA/issues/212
+ * doc/Makefile.am :
+   + distribute the analysis and standalone reproduction script
 
 261001 Alexander Mitrofanov
  * IntaRNA/PredictorEvalOnly, src/IntaRNA/Makefile.am :

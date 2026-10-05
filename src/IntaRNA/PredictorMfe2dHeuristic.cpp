@@ -378,7 +378,8 @@ getNextBest( Interaction & curBest )
 			// direct cell access
 			curCell = &(hybridE(i1,i2));
 			// check if left side can pair
-			if (E_isINF(curCell->val))
+			if (E_isINF(curCell->val)
+					|| !isValidOutputSite(i1,curCell->j1,i2,curCell->j2))
 			{
 				continue;
 			}

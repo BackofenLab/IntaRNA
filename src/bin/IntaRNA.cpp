@@ -336,8 +336,14 @@ int main(int argc, char **argv){
 								{// update final output handler
 									// copy partition function information if available
 									output->incrementZ( bestInteractions.getZ() );
-									// forward all reported interactions for all regions to final output handler
+									// Apply the energy window to the sequence pair's best candidate.
+									// Independent per-region output retains each region's local window.
+									const E_type maxMergedE = parameters.reportBestPerRegion() || bestInteractions.empty()
+											? E_INF
+											: (*bestInteractions.begin())->energy + bestInteractions.getOutputConstraint().deltaE;
+									// The collector is sorted by energy, so all later entries are worse.
 									for( const Interaction * inter : bestInteractions) {
+										if (inter->energy > maxMergedE) { break; }
 										output->add(*inter);
 									}
 								}

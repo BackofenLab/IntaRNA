@@ -15,7 +15,7 @@ TEST_EXTENSIONS = $(EXEEXT) .sh
 SH_LOG_COMPILER = $(SHELL)
 
 # the script needed for tests
-dist_check_SCRIPTS = runIntaRNA.sh runAccessibilityBinary.sh runIntaRNAeval.sh runKineticSeedExtension.sh
+dist_check_SCRIPTS = runIntaRNA.sh runAccessibilityBinary.sh runIntaRNAeval.sh runKineticSeedExtension.sh runOutputOverlap.sh
 
 # the program to build
 check_PROGRAMS = runApiTests 
