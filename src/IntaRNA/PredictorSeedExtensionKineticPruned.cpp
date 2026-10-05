@@ -48,9 +48,10 @@ PredictorSeedExtensionKineticPruned::PredictorSeedExtensionKineticPruned(
 									? params.stack[outer][reverse[close]] : params.stack[close][reverse[outer]]));
 						}
 						// Relax sequence consistency of the four mismatch bases.
-						// This can only lower the local loop/stack minimum.
-						for (int a = 1; a <= 4; ++a) for (int b = 1; b <= 4; ++b)
-						for (int c = 1; c <= 4; ++c) for (int d = 1; d <= 4; ++d) {
+						// Include unknown nucleotide code 0, which can occur inside
+						// loops. This can only lower the local loop/stack minimum.
+						for (int a = 0; a <= 4; ++a) for (int b = 0; b <= 4; ++b)
+						for (int c = 0; c <= 4; ++c) for (int d = 0; d <= 4; ++d) {
 							const E_type loop = E_IntLoop(s1, s2,
 									side == 0 ? close : root, reverse[side == 0 ? root : close], a,b,c,d, &params);
 							if (E_isNotINF(loop) && E_isNotINF(stack)) {

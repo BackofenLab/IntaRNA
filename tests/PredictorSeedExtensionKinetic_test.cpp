@@ -597,8 +597,8 @@ bool KineticPruningProbe::skips(const Bounds & before, const Bounds & after,
 
 TEST_CASE("Pruning tables bound local moves at all oriented root types", "[PredictorSeedExtensionKinetic]") {
 	#include "testEasyLoggingSetup.icc"
-	RnaSequence t("t","CGGUAUCGGUAU");
-	std::string reversedQuery = "GCUGUAGCUGUA";
+	RnaSequence t("t","CGGUAUNCGGUAU");
+	std::string reversedQuery = "GCUGUANGCUGUA";
 	std::reverse(reversedQuery.begin(),reversedQuery.end());
 	RnaSequence q("q",reversedQuery);
 	KineticAccessibility a(t), b(q);
@@ -610,12 +610,12 @@ TEST_CASE("Pruning tables bound local moves at all oriented root types", "[Predi
 		for (double temperature : {20.,37.}) {
 			VrnaHandler vrna(temperature,parameters,false,false);
 			InteractionEnergyVrna energy(a,reversed,vrna,2,3,false,0,false);
-			const auto sc = seedConstraint(seedEncoding(Chain{{0,0},{1,1}},12));
+			const auto sc = seedConstraint(seedEncoding(Chain{{0,0},{1,1}},t.size()));
 			KineticPruningProbe probe(energy,output,NULL,new SeedHandlerExplicit(energy,sc));
-			for (bool left : {false,true}) for (size_t root = 0; root < 12; ++root)
+			for (bool left : {false,true}) for (size_t root = 0; root < t.size(); ++root)
 			for (size_t s1 = 0; s1 <= 2; ++s1) for (size_t s2 = 0; s2 <= 3; ++s2) {
 				if ((left && root < std::max(s1,s2)+2)
-						|| (!left && root+std::max(s1,s2)+2 >= 12)) continue;
+						|| (!left && root+std::max(s1,s2)+2 >= t.size())) continue;
 				const size_t c1 = left ? root-s1-1 : root+s1+1;
 				const size_t c2 = left ? root-s2-1 : root+s2+1;
 				const size_t o1 = left ? c1-1 : c1+1, o2 = left ? c2-1 : c2+1;

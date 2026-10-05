@@ -110,7 +110,7 @@ For ViennaRNA, precompute local loop-plus-stack minima for each of the six
 oriented root base-pair types, both extension sides and each gap pair. Use the
 **active temperature-scaled parameter set**, including custom parameter files.
 Minimize over the closing and outer pair types and all four adjacent nucleotide
-identities. Relaxing consistency between these identities can only make this
+identities, including unknown nucleotide code 0 within loops. Relaxing consistency between these identities can only make this
 local estimate more optimistic. For the base-pair model, two added pairs have
 twice its configured base-pair energy. Unknown energy subclasses and API loop
 limits above the CLI maximum of 30 fall back to unpruned K enumeration.
@@ -157,3 +157,60 @@ ED, GU restrictions, retained prefixes, explicit seeds and annotations, cache
 reuse and repeated calls. L has differential and limitation tests. CLI tests
 exercise both modes, automatic noLP INFO logging, incompatible requests, and
 independent reevaluation of predicted structures through `--rri`.
+
+## Benchmark record (2026-10-05)
+
+Linux x86-64, AMD Ryzen 5 7530U, GCC 14.4 release (`-O3`), ViennaRNA 2.7.2,
+Boost 1.85, Kokkos mdspan. These are synthetic measurements, not a real-world
+screening benchmark. Each cell is the median of five single-threaded process
+runs after one warm-up. Run order rotates. Timing includes startup, folding,
+seed enumeration, pruning-table setup and prediction. The script records each
+sample, peak RSS and output hashes in
+[the raw results](kinetic-benchmark-20261005.json).
+
+The comparison binary uses the same revised move rules, scoring and seed
+semantics. Its only change is rebuilding **both** end tables after each move.
+It still shares complementarity checks within an update. To reproduce it in
+a separate build, replace this line in `extendSeed()`:
+
+```cpp
+buildCandidates(sides[best.left ? 0 : 1], bounds, best.left, last1, last2);
+```
+
+with:
+
+```cpp
+buildCandidates(sides[0], bounds, true, last1, last2);
+buildCandidates(sides[1], bounds, false, last1, last2);
+```
+
+Build both versions with identical release flags, then run:
+
+```sh
+python3 doc/benchmark-kinetic.py --cached /path/to/revised/IntaRNA \
+  --uncached /path/to/rebuild-both/IntaRNA --repeat 5 > measurements.json
+```
+
+The random cases use deterministic Python seed 254, a 600-nt target and 80-nt
+query; the folded case uses `accW=150`, `accL=100`. The stack-rich case uses
+100 Gs against 30 Cs without accessibility costs. All use the ViennaRNA energy
+model, seven-pair seeds, `intLenMax=60`, `intLoopMax=10`, score A and ten reports.
+
+| Input | Rebuild both ends K (s) | Cached K (s) | Experimental L (s) |
+| --- | ---: | ---: | ---: |
+| random-no-ED | 0.0173 | 0.0165 | 0.0690 |
+| random-folded | 0.2624 | 0.2539 | 0.2807 |
+| stack-rich | 0.6640 | 0.5823 | 0.6505 |
+
+Every variant produced the same ten reported structures and energies for these
+inputs. Candidate reuse reduced the stack-rich median by about 12%; the short
+random/folded runs showed only small gains. Peak RSS was about 15.5 MiB for
+random/no-ED, 20.5–20.7 MiB for folded input and 22.3–22.6 MiB for stack-rich
+input, without a meaningful memory improvement. Runtime gains vary with the
+input and host load; this does not establish a general speedup over other
+IntaRNA predictors.
+
+L was slower than cached K on all three samples. Precomputation and extra ED
+lookups outweighed any saved candidate work. Together with the endpoint and
+monotonicity limitations, this supports keeping L as an explicit experimental
+subclass for later real-world benchmarking, rather than enabling it by default.

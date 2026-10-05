@@ -68,6 +68,7 @@ def main():
                                     seconds_median=statistics.median(x[0] for x in samples),
                                     rss_KiB_max=max(x[1] for x in samples),
                                     samples_seconds=[x[0] for x in samples],
+                                    reported_rows=max(0, outputs[label].count(b'\n')-1),
                                     sha256=hashlib.sha256(outputs[label]).hexdigest(),
                                     equals_K=outputs[label] == outputs['cached-K']))
     print(json.dumps(results, indent=2))

@@ -113,13 +113,17 @@ energies, restricted partition sums, and trackers.
    + experimental root-pair local-energy suffix bounds from active parameters;
      prune before complementarity checks assuming monotone ED, omitting endpoint
      changes; preserve exact full-energy evaluation of surviving moves
+   + include all nucleotide mismatch codes in bounds, including N within loops
  * bin/CommandLineParsing, src/IntaRNA/Makefile.am :
    + expose subclass as --mode=L; set --outNoLP=true with INFO for K/L
  * tests/PredictorSeedExtensionKinetic_test.cpp, tests/runKineticSeedExtension.sh :
    * update independent oracle and CLI expectations for atomic double stacks;
      cover trusted seeds, caching, pruning limitations and both CLI modes
+   + check root orientations, temperatures and parameter sets for local bounds
  * README.md, doc/kinetic-seed-extension.md, doc/benchmark-kinetic.py,
-   doc/Makefile.am :
+   doc/kinetic-benchmark-20261005.json, doc/Makefile.am :
+   * record measured candidate reuse gains and pruning overhead with identical
+     reported results; keep mode L experimental for future real-world comparison
    * document revised semantics and reproducible performance evaluation in
      response to https://github.com/BackofenLab/IntaRNA/pull/254
 

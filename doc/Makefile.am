@@ -7,7 +7,9 @@ EXTRA_DIST =	\
 			analysis/out-overlap.md \
 			analysis/out-overlap/reproduce.py \
 			conda.txt \
-			kinetic-seed-extension.md benchmark-kinetic.py \
+			kinetic-seed-extension.md \
+			benchmark-kinetic.py \
+			kinetic-benchmark-20261005.json \
 			doxygen.cfg \
 			latex-deps/adjcalc.sty \
 			latex-deps/adjustbox.sty \

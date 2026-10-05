@@ -3,6 +3,10 @@
 
 #include "IntaRNA/PredictorSeedExtensionKinetic.h"
 
+#include <array>
+#include <cstdint>
+#include <vector>
+
 namespace IntaRNA {
 
 /**
