@@ -29,6 +29,9 @@
 
 ## Technical changes and Optimizations
 
+- BUGFIX : heuristic ensemble suboptimals use finalized site energies and stop
+  safely when no compatible candidate remains (PR #253)
+
 - analyse output overlap modes, regional selection and heuristic output defects;
   provide reproducible examples and proposed fixes without changing behavior
   (issue #212)
@@ -78,6 +81,15 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261005 Alexander Mitrofanov
+ * IntaRNA/PredictorMfeEns2dHeuristic :
+   - remove raw-matrix suboptimal selection and its floating-point sentinel
+   * reuse validated, finalized per-site energies and E_INF exhaustion from
+     PredictorMfe; retain one best right extension per left boundary (PR #253)
+ * tests/PredictorMfeEnsRegression_test.cpp :
+   + compare N/T/Q energies against B with accessibility and energy cutoffs
+   + cover exhausted and empty candidate sets with and without traceback
 
 261005 Alexander Mitrofanov
  * README.md :
