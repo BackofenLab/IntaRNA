@@ -8,12 +8,17 @@
 #include "IntaRNA/PredictorMfe2dHeuristic.h"
 #include "IntaRNA/PredictorMfe2dHeuristicSeed.h"
 #include "IntaRNA/PredictorMfeEns2dHeuristic.h"
+#include "IntaRNA/PredictorMfe2dHelixBlockHeuristic.h"
+#include "IntaRNA/PredictorMfe2dHelixBlockHeuristicSeed.h"
+#include "IntaRNA/SeedHandlerMfe.h"
 #include "IntaRNA/ReverseAccessibility.h"
 #include "IntaRNA/RnaSequence.h"
 #include "IntaRNA/SeedConstraint.h"
 #include "IntaRNA/SeedHandlerNoBulge.h"
 
 #include <cmath>
+#include <memory>
+#include <iterator>
 
 using namespace IntaRNA;
 
@@ -185,5 +190,112 @@ TEST_CASE("ensemble noLP heuristic keeps valid non-direct extensions",
 		REQUIRE(interaction.basePairs.size() == 2);
 		REQUIRE(interaction.basePairs.front() == Interaction::BasePair(0, 3));
 		REQUIRE(interaction.basePairs.back() == Interaction::BasePair(4, 0));
+	}
+}
+
+namespace {
+
+std::unique_ptr<Predictor> makeOutputFilterPredictor(const InteractionEnergy & energy,
+		OutputHandler & output, const bool seeded, const bool helix) {
+	static const SeedConstraint seed(2, 2, 2, 2, E_INF, Accessibility::ED_UPPER_BOUND, E_INF,
+			IndexRangeList(), IndexRangeList(), "", false, false, true);
+	static const HelixConstraint helixConstraint(2, 4, 2, Accessibility::ED_UPPER_BOUND, E_INF, false);
+	if (helix) {
+		if (seeded) {
+			return std::make_unique<PredictorMfe2dHelixBlockHeuristicSeed>(
+					energy, output, nullptr, helixConstraint, new SeedHandlerMfe(energy, seed));
+		}
+		return std::make_unique<PredictorMfe2dHelixBlockHeuristic>(energy, output, nullptr, helixConstraint);
+	}
+	if (seeded) {
+		return std::make_unique<PredictorMfe2dHeuristicSeed>(energy, output, nullptr,
+				new SeedHandlerMfe(energy, seed));
+	}
+	return std::make_unique<PredictorMfe2dHeuristic>(energy, output, nullptr);
+}
+
+// A small accessibility penalty confined to one end of the sequence. The
+// second disjoint two-pair site is favorable but exceeds an ED limit of zero.
+class EndPenaltyAccessibility : public AccessibilityDisabled {
+public:
+	EndPenaltyAccessibility(const RnaSequence & sequence, const bool atStart)
+	 : AccessibilityDisabled(sequence, 0, nullptr), atStart(atStart) {}
+
+	E_type getED(const size_t from, const size_t to) const override {
+		const E_type base = AccessibilityDisabled::getED(from, to);
+		return base + ((atStart ? from < 2 : to >= 5) ? Ekcal_2_E(0.25) : 0);
+	}
+private:
+	const bool atStart;
+};
+
+} // namespace
+
+TEST_CASE("heuristic suboptimals respect terminal GU constraints", "[PredictorMfeHeuristicCellState][Overlap]") {
+	#include "testEasyLoggingSetup.icc"
+
+	for (bool seeded : {false, true}) {
+		for (bool helix : {false, true}) {
+			for (bool trace : {false, true}) {
+				for (size_t offset : {size_t(0), size_t(1)}) {
+					RnaSequence target("target", offset ? "NUUGAN" : "UUGA");
+					RnaSequence query("query", offset ? "NCAUUN" : "CAUU");
+					AccessibilityDisabled targetAcc(target, 0, nullptr);
+					AccessibilityDisabled queryAcc(query, 0, nullptr);
+					ReverseAccessibility reverseQueryAcc(queryAcc);
+					InteractionEnergyBasePair energy(targetAcc, reverseQueryAcc);
+					for (auto overlap : {OutputConstraint::OVERLAP_NONE, OutputConstraint::OVERLAP_SEQ1,
+							OutputConstraint::OVERLAP_SEQ2, OutputConstraint::OVERLAP_BOTH}) {
+						CAPTURE(seeded, helix, trace, offset, overlap);
+						OutputConstraint constraint(10, overlap, 0, Ekcal_2_E(100),
+								false, false, true, false, trace);
+						OutputHandlerInteractionList output(constraint, 10);
+						auto predictor = makeOutputFilterPredictor(energy, output, seeded, helix);
+						predictor->predict(IndexRange(offset, offset+3), IndexRange(offset, offset+3));
+						REQUIRE_FALSE(output.empty());
+						for (const Interaction * interaction : output) {
+							for (auto bp : {interaction->basePairs.front(), interaction->basePairs.back()}) {
+								const char t = target.asString().at(bp.first), q = query.asString().at(bp.second);
+								REQUIRE_FALSE((t == 'G' && q == 'U'));
+								REQUIRE_FALSE((t == 'U' && q == 'G'));
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+TEST_CASE("heuristic suboptimals respect complete-site accessibility limits", "[PredictorMfeHeuristicCellState][Overlap]") {
+	#include "testEasyLoggingSetup.icc"
+
+	RnaSequence target("target", "CCCAACC");
+	RnaSequence query("query", "GGAAGGG");
+	EndPenaltyAccessibility targetAcc(target, false), queryAcc(query, true);
+	ReverseAccessibility reverseQueryAcc(queryAcc);
+	InteractionEnergyBasePair energy(targetAcc, reverseQueryAcc, 0, 0);
+	for (bool seeded : {false, true}) {
+		for (bool helix : {false, true}) {
+			for (bool trace : {false, true}) {
+				for (auto overlap : {OutputConstraint::OVERLAP_NONE,
+						OutputConstraint::OVERLAP_SEQ1, OutputConstraint::OVERLAP_SEQ2}) {
+					CAPTURE(seeded, helix, trace, overlap);
+					OutputConstraint constraint(10, overlap, 0, Ekcal_2_E(100),
+							false, false, false, false, trace, 0);
+					OutputHandlerInteractionList output(constraint, 10);
+					auto predictor = makeOutputFilterPredictor(energy, output, seeded, helix);
+					predictor->predict();
+					REQUIRE(std::distance(output.begin(), output.end()) == 1);
+					for (const Interaction * interaction : output) {
+						REQUIRE(targetAcc.getED(interaction->basePairs.front().first,
+								interaction->basePairs.back().first) == 0);
+						REQUIRE(queryAcc.getED(interaction->basePairs.back().second,
+								interaction->basePairs.front().second) == 0);
+						REQUIRE(interaction->energy == Ekcal_2_E(-3));
+					}
+				}
+			}
+		}
 	}
 }

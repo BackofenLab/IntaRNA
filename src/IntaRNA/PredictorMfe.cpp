@@ -73,6 +73,22 @@ initOptima()
 
 ////////////////////////////////////////////////////////////////////////////
 
+bool
+PredictorMfe::
+isValidOutputSite( const size_t i1, const size_t j1,
+		const size_t i2, const size_t j2 ) const
+{
+	const OutputConstraint & constraint = output.getOutputConstraint();
+	if (constraint.noGUend && (energy.isGU(i1,i2) || energy.isGU(j1,j2))) {
+		return false;
+	}
+	return constraint.maxED >= Accessibility::ED_UPPER_BOUND
+			|| (energy.getED1(i1,j1) <= constraint.maxED
+					&& energy.getED2(i2,j2) <= constraint.maxED);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
 void
 PredictorMfe::
 updateOptima( const size_t i1, const size_t j1
@@ -87,17 +103,7 @@ updateOptima( const size_t i1, const size_t j1
 		return;
 	}
 
-	// check GU ends if needed
-	if (output.getOutputConstraint().noGUend && (energy.isGU(i1,i2) || energy.isGU(j1,j2)) ) {
-		return;
-	}
-
-	// check ED penalties
-	if (output.getOutputConstraint().maxED < Accessibility::ED_UPPER_BOUND
-			&& (energy.getED1(i1,j1) > output.getOutputConstraint().maxED
-					|| energy.getED2(i2,j2) > output.getOutputConstraint().maxED)
-			)
-	{
+	if (!isValidOutputSite(i1, j1, i2, j2)) {
 		return;
 	}
 

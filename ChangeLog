@@ -32,6 +32,9 @@
 
 ## Technical changes and Optimizations
 
+- BUGFIX : apply terminal GU and accessibility output limits to later heuristic
+  results, including seeded and helix predictors (PR #253)
+
 - BUGFIX : heuristic ensemble suboptimals use finalized site energies and stop
   safely when no compatible candidate remains (PR #253)
 
@@ -84,6 +87,16 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261005 Alexander Mitrofanov
+ * IntaRNA/PredictorMfe, PredictorMfeEns, PredictorMfe2dHeuristic,
+   PredictorMfe2dHeuristicSeed, PredictorMfe2dHelixBlockHeuristic,
+   PredictorMfe2dHelixBlockHeuristicSeed :
+   * share complete-site GU/ED validation between initial and later candidates
+   * retain the existing matrix scan order and one-extension heuristic (PR #253)
+ * tests/PredictorMfeHeuristicCellState_test.cpp :
+   + cover all four matrix selectors, terminal GU and nonzero ED limits,
+     all overlap modes, region offsets and boundary/traced output
 
 261005 Alexander Mitrofanov
  * bin/CommandLineParsing, README.md :
