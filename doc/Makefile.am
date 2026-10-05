@@ -8,8 +8,16 @@ EXTRA_DIST =	\
 			analysis/out-overlap/reproduce.py \
 			conda.txt \
 			kinetic-seed-extension.md \
-			benchmark-kinetic.py \
-			kinetic-benchmark-20261005.json \
+			benchmark-kix.py \
+			kix-benchmark-20261005.json \
+			handson/README.md \
+			handson/fhlA.fasta \
+			handson/OxyS.fasta \
+			handson/phoB.fasta \
+			handson/GcvB.fasta \
+			handson/ilvE.fasta \
+			handson/GcvB.ST.fasta \
+			recursions/IntaRNAkix.PredictorSeedExtensionKinetic.svg \
 			doxygen.cfg \
 			latex-deps/adjcalc.sty \
 			latex-deps/adjustbox.sty \

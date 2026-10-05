@@ -9,16 +9,14 @@ it has no calibrated transition rates or time axis, does not cross barriers
 between committed states, and does not guarantee a global minimum. A favorable
 two-pair move does not establish a barrier-free physical reaction pathway.
 
-`--mode=L` selects the experimental subclass
-`PredictorSeedExtensionKineticPruned`. It applies local-energy and accessibility
-pruning **before** checking complementarity and evaluating full energies.
-Its additional assumptions can change the selected path; K remains the
-reference for measuring those changes. Both modes accept scores A/B/C and
-support ordinary energy trackers. They reject seedless operation, other models,
-and requests for equilibrium partition functions or probabilities.
+The `IntaRNAkix` personality (kinetic seed extension) selects
+`--model=X --mode=K --outNoLP=true`. It can be invoked through the installed
+`IntaRNAkix` executable link or `IntaRNA --personality=IntaRNAkix`. Other defaults
+remain those of IntaRNA. Ordinary energy trackers are supported; seedless
+operation, other interaction models and equilibrium partition/probability
+requests are rejected for mode K.
 
-These semantics incorporate the October 5 review of
-[PR #254](https://github.com/BackofenLab/IntaRNA/pull/254#issuecomment-5991039020).
+![Kinetic seed extension recursion](recursions/IntaRNAkix.PredictorSeedExtensionKinetic.svg)
 
 ## Seeds, states and allowed extensions
 
@@ -35,8 +33,9 @@ range offsets and conversion to original coordinates. Initially,
 `H = seedHandler.getSeedE(i1,i2) + energy.getE_init()`.
 
 Extensions **always** use the no-lonely-pair strategy, independent of the API
-output constraint. The CLI sets `--outNoLP=true` when absent or false and emits
-an INFO message using the normal logging destination. This applies to new
+output constraint. Direct `--mode=K` calls promote a missing or false
+`--outNoLP` to true with an INFO message using the normal logging destination;
+IntaRNAkix already defaults to true. This applies to new
 extensions, not to revalidation of handler-provided seeds. Allowed moves are:
 
 - One pair stacked directly onto the current boundary (`|SEED`).
@@ -58,7 +57,7 @@ available if a trajectory stops at an unreportable endpoint.
 
 ## Complete energies and deterministic scores
 
-Every candidate surviving geometric and optional pruning checks is evaluated
+Every geometrically feasible, complementary candidate is evaluated
 with the active energy model:
 
 ```
@@ -99,47 +98,9 @@ candidate as it evaluates full energies, without a separate selection pass.
 
 After committing a move, only that end's tables are rebuilt. The opposite
 end's pair checks, feasibility and local energies remain valid. Its total
-energy, span eligibility and optional pruning decision are refreshed. An
+energy and span eligibility are refreshed. An
 initially uphill candidate is retained because it may become downhill when
-the opposite end changes. Experimentally pruned entries remain unresolved and
-can be reconsidered in a later state. Tables use O((m1+2)(m2+2)) space per end.
-
-## Experimental pruning in L
-
-For ViennaRNA, precompute local loop-plus-stack minima for each of the six
-oriented root base-pair types, both extension sides and each gap pair. Use the
-**active temperature-scaled parameter set**, including custom parameter files.
-Minimize over the closing and outer pair types and all four adjacent nucleotide
-identities, including unknown nucleotide code 0 within loops. Relaxing consistency between these identities can only make this
-local estimate more optimistic. For the base-pair model, two added pairs have
-twice its configured base-pair energy. Unknown energy subclasses and API loop
-limits above the CLI maximum of 30 fall back to unpruned K enumeration.
-
-Apply componentwise suffix minima to the gap tables. Each cell then bounds
-the local loop-plus-stack term for that gap and every larger gap pair. Before
-checking candidate pairs, compare:
-
-```
-local_suffix_bound + ED1_next + ED2_next - ED1_current - ED2_current >= 0
-```
-
-If true, skip that candidate and all componentwise larger gaps. Within the
-ordered rectangular traversal this rejects suffixes without more ED, pairing
-or loop-energy lookups. A single stacked pair is always evaluated exactly.
-Surviving moves still require strictly downhill **complete** energy changes.
-
-This is deliberately an experiment, not a certified bound on the complete
-energy change. It assumes ED is monotone as intervals grow and omits changes in
-terminal and dangling contributions. Imported/nonmonotone accessibility and
-favorable endpoint changes can invalidate the filter; tests include a concrete
-case where L stops while K continues. The local table includes the mandatory
-stack, so it avoids the original bare-loop error: a Turner2004 loop of +0.50
-kcal/mol can be rescued by a -3.30 kcal/mol stack.
-
-Tables require O(12(m1+1)(m2+1)) space and parameter enumeration at construction.
-Setup and extra ED lookups may outweigh pruning benefits on small or short-path
-inputs. Thus L remains a separate subclass/mode for later real-world evaluation.
-See [the reproducible benchmark](benchmark-kinetic.py) and measurements below.
+the opposite end changes. Tables use O((m1+2)(m2+2)) space per end.
 
 ## Reporting and validation
 
@@ -148,69 +109,87 @@ boundaries, keep the lowest full energy, then lexicographically smallest chain.
 Reduce duplicates before the normal optimum collector. Overlap-constrained
 output can select shorter retained prefixes; traceback restores the selected
 path directly. Memory for retained paths is proportional to their total length,
-not constant per seed. Repeated predictions reset trajectory and ED caches.
+not constant per seed. Repeated predictions reset trajectory and candidate caches.
 
 The tests compare K with an independent absolute-endpoint oracle that rebuilds
 and reevaluates whole chains. They cover scores/ties, single and double stacks,
 positive-loop rescue, strict stopping, separate spans and regions, nonmonotone
 ED, GU restrictions, retained prefixes, explicit seeds and annotations, cache
-reuse and repeated calls. L has differential and limitation tests. CLI tests
-exercise both modes, automatic noLP INFO logging, incompatible requests, and
+reuse and repeated calls. CLI tests exercise the personality name and option,
+explicit parameter overrides, automatic noLP INFO logging, incompatible requests, and
 independent reevaluation of predicted structures through `--rri`.
 
-## Benchmark record (2026-10-05)
+## Preliminary benchmark against default IntaRNA
 
-Linux x86-64, AMD Ryzen 5 7530U, GCC 14.4 release (`-O3`), ViennaRNA 2.7.2,
-Boost 1.85, Kokkos mdspan. These are synthetic measurements, not a real-world
-screening benchmark. Each cell is the median of five single-threaded process
-runs after one warm-up. Run order rotates. Timing includes startup, folding,
-seed enumeration, pruning-table setup and prediction. The script records each
-sample, peak RSS and output hashes in
-[the raw results](kinetic-benchmark-20261005.json).
+The small panel uses the repository's tutorial sequences: fhlA/OxyS
+(112/108 nt), phoB/GcvB (299/201 nt), and ilvE/GcvB.ST (299/200 nt).
+These are the pairs in [hands-on examples 3.2, 3.4 and 3.5](handson/README.md).
+No experimental seed, region or accessibility constraints from those examples
+are applied here. The raw record includes the sequences and input hashes.
 
-The comparison binary uses the same revised move rules, scoring and seed
-semantics. Its only change is rebuilding **both** end tables after each move.
-It still shares complementarity checks within an update. To reproduce it in
-a separate build, replace this line in `extendSeed()`:
+The comparison uses the actual personality defaults: IntaRNA has model X,
+mode H and `outNoLP=false`; IntaRNAkix has model X, mode K, score A and
+`outNoLP=true`. Thus energy and length deviations reflect both the search and
+the different noLP defaults. Default IntaRNA is itself a heuristic, so the
+energy deviation is not a certified error from a global optimum.
 
-```cpp
-buildCandidates(sides[best.left ? 0 : 1], bounds, best.left, last1, last2);
-```
+The review's “noGU” setting is interpreted as `--outNoGUend=true`, the same flag
+for both programs. This prohibits GU at reported interaction ends and at
+nonstacking loop ends; it does **not** forbid all internal GU pairs.
+`--seedNoGU` stays at its default false. The other setting explicitly uses
+`--outNoGUend=false`.
 
-with:
+Each configuration has one warm-up followed by five measured runs. Execution
+order rotates across the four configurations on each pair. All runs use one
+thread and compute accessibility from the input sequences. Wall time includes
+process startup, accessibility, seed search and prediction; GNU time supplies
+the child process's peak resident memory in KiB. The table reports medians;
+all samples and min/max values are in the raw JSON. Reported structures and
+energies are deterministic across repetitions, and every result is independently
+reevaluated via `--rri` outside the timed runs.
 
-```cpp
-buildCandidates(sides[0], bounds, true, last1, last2);
-buildCandidates(sides[1], bounds, false, last1, last2);
-```
+For each reported MFE interaction, covered length is
+`L = max(end1-start1+1, end2-start2+1)` in the default one-based coordinates.
+Signed deviations are `E_kix - E_default` in kcal/mol and `L_kix - L_default`
+in nucleotides, compared within the same GU setting. Missing predictions are
+recorded as null, never as zero energy or zero length.
 
-Build both versions with identical release flags, then run:
+Measured on 2026-10-05 on Linux x86-64, AMD Ryzen 5 7530U, using GCC 14.4.0
+release (`-O3`, C++23), ViennaRNA 2.7.2, Boost 1.85 and Kokkos mdspan.
+No builds or other validation jobs ran alongside these measurements.
+
+| Pair | noGU | Default time (s) | Kix time (s) | Default peak RSS (KiB) | Kix peak RSS (KiB) |
+| --- | --- | ---: | ---: | ---: | ---: |
+| fhlA/OxyS | off | 0.0569 | 0.0381 | 16,912 | 16,648 |
+| fhlA/OxyS | on | 0.0559 | 0.0381 | 16,660 | 16,796 |
+| phoB/GcvB | off | 1.0598 | 0.1491 | 18,448 | 18,456 |
+| phoB/GcvB | on | 0.7158 | 0.1446 | 18,456 | 18,452 |
+| ilvE/GcvB.ST | off | 1.2935 | 0.1471 | 18,440 | 18,512 |
+| ilvE/GcvB.ST | on | 1.0233 | 0.1436 | 18,560 | 18,432 |
+
+| Pair | noGU | Default E | Kix E | ΔE (kcal/mol) | Default L | Kix L | ΔL (nt) |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| fhlA/OxyS | off | -5.59 | -5.57 | +0.02 | 24 | 7 | -17 |
+| fhlA/OxyS | on | -5.57 | -5.57 | +0.00 | 7 | 7 | +0 |
+| phoB/GcvB | off | -15.70 | -13.19 | +2.51 | 47 | 8 | -39 |
+| phoB/GcvB | on | -13.19 | -13.19 | +0.00 | 8 | 8 | +0 |
+| ilvE/GcvB.ST | off | -14.24 | -9.84 | +4.40 | 55 | 13 | -42 |
+| ilvE/GcvB.ST | on | -10.55 | -9.13 | +1.42 | 40 | 10 | -30 |
+
+On this small panel, Kix uses 0.11–0.68 times the default runtime. Median peak
+RSS differs by less than 2%, within the run-to-run variation. Energy deviations
+range from 0 to +4.40 kcal/mol, and length deviations from −42 to 0 nt.
+With noGU on, both programs report identical interactions for fhlA/OxyS and
+phoB/GcvB. These three selected tutorial pairs are a preliminary performance
+and output comparison, not a general speedup or biological-accuracy estimate.
+
+Reproduce from the repository root with a release binary:
 
 ```sh
-python3 doc/benchmark-kinetic.py --cached /path/to/revised/IntaRNA \
-  --uncached /path/to/rebuild-both/IntaRNA --repeat 5 > measurements.json
+python3 doc/benchmark-kix.py /path/to/release/src/bin/IntaRNA \
+  --repetitions=5 --warmups=1 --output=kix-benchmark.json
 ```
 
-The random cases use deterministic Python seed 254, a 600-nt target and 80-nt
-query; the folded case uses `accW=150`, `accL=100`. The stack-rich case uses
-100 Gs against 30 Cs without accessibility costs. All use the ViennaRNA energy
-model, seven-pair seeds, `intLenMax=60`, `intLoopMax=10`, score A and ten reports.
-
-| Input | Rebuild both ends K (s) | Cached K (s) | Experimental L (s) |
-| --- | ---: | ---: | ---: |
-| random-no-ED | 0.0173 | 0.0165 | 0.0690 |
-| random-folded | 0.2624 | 0.2539 | 0.2807 |
-| stack-rich | 0.6640 | 0.5823 | 0.6505 |
-
-Every variant produced the same ten reported structures and energies for these
-inputs. Candidate reuse reduced the stack-rich median by about 12%; the short
-random/folded runs showed only small gains. Peak RSS was about 15.5 MiB for
-random/no-ED, 20.5–20.7 MiB for folded input and 22.3–22.6 MiB for stack-rich
-input, without a meaningful memory improvement. Runtime gains vary with the
-input and host load; this does not establish a general speedup over other
-IntaRNA predictors.
-
-L was slower than cached K on all three samples. Precomputation and extra ED
-lookups outweighed any saved candidate work. Together with the endpoint and
-monotonicity limitations, this supports keeping L as an explicit experimental
-subclass for later real-world benchmarking, rather than enabling it by default.
+The [script](benchmark-kix.py) uses Python 3 and GNU time. The
+[raw results](kix-benchmark-20261005.json) record all samples, predictions,
+signed deviations, flags, sequence data, software versions and binary hash.

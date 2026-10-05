@@ -139,14 +139,6 @@ PredictorSeedExtensionKinetic::getBoundary(const Interaction & interaction) cons
 
 //////////////////////////////////////////////////////////////////////////
 
-bool
-PredictorSeedExtensionKinetic::prune(const Candidate &, const Boundary &) const
-{
-	return false;
-}
-
-//////////////////////////////////////////////////////////////////////////
-
 void
 PredictorSeedExtensionKinetic::extendSeed(Interaction & interaction,
 		E_type hybrid, const size_t last1, const size_t last2)
@@ -237,22 +229,11 @@ PredictorSeedExtensionKinetic::updateCandidates(SideCandidates & side,
 {
 	// Phase one: each position pair is tested at most once per unchanged end,
 	// even when it is the closing pair of one move and outer pair of another.
-	size_t stopGap2 = std::numeric_limits<size_t>::max();
 	for (Candidate & c : side.moves) {
 		c.bounds[c.left ? 1 : 0] = bounds[c.left ? 1 : 0];
 		c.bounds[c.left ? 3 : 2] = bounds[c.left ? 3 : 2];
 		c.active = c.bounds[1]-c.bounds[0]+1 <= energy.getAccessibility1().getMaxLength()
 				&& c.bounds[3]-c.bounds[2]+1 <= energy.getAccessibility2().getMaxLength();
-		if (c.active && c.macro) {
-			if (c.s2 >= stopGap2) {
-				c.active = false;
-			} else if (prune(c, bounds)) {
-				// A suffix bound rejects this rectangle of larger gaps without
-				// further ED, complementarity or loop-energy lookups.
-				stopGap2 = c.s2;
-				c.active = false;
-			}
-		}
 		if (!c.active || c.topologyKnown) {
 			continue;
 		}

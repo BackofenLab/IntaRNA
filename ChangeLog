@@ -17,8 +17,9 @@
 - deterministic kinetic seed extension with --model=X --mode=K and configurable
   local scoring; complete-energy downhill steps, atomic noLP loop/stack moves
   and retained greedy traceback; equilibrium probability output is unsupported
-- kinetic modes always use stacked extensions and trust handler-provided seeds;
-  reuse candidate pairing/local energies and add experimental pruning mode L
+- kinetic mode always uses stacked extensions and trusts handler-provided seeds;
+  reuse candidate pairing/local energies
+- IntaRNAkix personality enables kinetic seed extension with noLP by default
 
 - apply outDeltaE relative to the sequence pair's best interaction when merging
   regions; preserve local windows for outPerRegion output (PR #253)
@@ -40,6 +41,8 @@
 - reject Zall/Eall-dependent output in window mode
 
 ## Technical changes and Optimizations
+
+- install personality links in out-of-tree builds, including IntaRNAkix
 
 - BUGFIX : normalize single-pair suboptimal boundaries before traceback and
   boundary-only output validation (PR #253)
@@ -104,28 +107,36 @@ energies, restricted partition sums, and trackers.
 ################################################################################
 
 261005 Alexander Mitrofanov
+ * bin/CommandLineParsing, tests/runKineticSeedExtension.sh :
+   + add IntaRNAkix personality with model=X, mode=K and outNoLP=true defaults;
+     support executable-name and explicit personality selection
+ * configure.ac :
+   * find personality declarations via srcdir so out-of-tree installations
+     create the executable links, including IntaRNAkix
+ * README.md, doc/kinetic-seed-extension.md,
+   doc/recursions/IntaRNAkix.PredictorSeedExtensionKinetic.svg, doc/Makefile.am :
+   + document personality usage and depict seed initialization, allowed moves,
+     complete-energy greedy selection, stopping and prefix reporting
+   + distribute the benchmark's tutorial sequences with its script and results
+ * doc/benchmark-kix.py, doc/kix-benchmark-20261005.json :
+   + compare IntaRNAkix with default IntaRNA with and without GU-end constraints;
+     record wall time, peak RSS, MFE energy and maximum covered strand length
+   * implement https://github.com/BackofenLab/IntaRNA/pull/254#issuecomment-5995041057
+
+261005 Alexander Mitrofanov
  * IntaRNA/PredictorSeedExtensionKinetic :
    * always evaluate single and double stacks plus atomic loop/stack extensions;
      trust seed-handler structures/energies, including explicit lonely pairs
    * cache each end's candidates, shared complementarity checks and local
      energies; rebuild only the chosen end and refresh full opposite-end energy
- * IntaRNA/PredictorSeedExtensionKineticPruned, InteractionEnergyVrna :
-   + experimental root-pair local-energy suffix bounds from active parameters;
-     prune before complementarity checks assuming monotone ED, omitting endpoint
-     changes; preserve exact full-energy evaluation of surviving moves
-   + include all nucleotide mismatch codes in bounds, including N within loops
- * bin/CommandLineParsing, src/IntaRNA/Makefile.am :
-   + expose subclass as --mode=L; set --outNoLP=true with INFO for K/L
+ * bin/CommandLineParsing :
+   * set --outNoLP=true with INFO for kinetic mode K
  * tests/PredictorSeedExtensionKinetic_test.cpp, tests/runKineticSeedExtension.sh :
    * update independent oracle and CLI expectations for atomic double stacks;
-     cover trusted seeds, caching, pruning limitations and both CLI modes
-   + check root orientations, temperatures and parameter sets for local bounds
- * README.md, doc/kinetic-seed-extension.md, doc/benchmark-kinetic.py,
-   doc/kinetic-benchmark-20261005.json, doc/Makefile.am :
-   * record measured candidate reuse gains and pruning overhead with identical
-     reported results; keep mode L experimental for future real-world comparison
-   * document revised semantics and reproducible performance evaluation in
-     response to https://github.com/BackofenLab/IntaRNA/pull/254
+     cover trusted seeds, caching and kinetic mode K
+ * README.md, doc/kinetic-seed-extension.md :
+   * document revised semantics in response to
+     https://github.com/BackofenLab/IntaRNA/pull/254
 
 261005 Alexander Mitrofanov
  * IntaRNA/PredictorMfe, tests/PredictorMfeHeuristicCellState_test.cpp,
@@ -207,8 +218,7 @@ energies, restricted partition sums, and trackers.
    + validate local move choices, macro-step energetics, structural constraints,
      traceback, output filtering and CLI compatibility
  * README.md, doc/kinetic-seed-extension.md, doc/Makefile.am :
-   + document the council's implementation consensus, scientific scope and
-     replacement of unsafe loop-only pruning with exact move enumeration
+   + document scientific scope and complete-energy move enumeration
 
 261002 Alexander Mitrofanov
  * doc/analysis/out-overlap.md, doc/analysis/out-overlap/reproduce.py :

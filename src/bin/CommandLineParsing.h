@@ -60,6 +60,7 @@ public:
 		IntaRNA3,		// default IntaRNA v3 setup
 		IntaRNAens,		// ensemble-based prediction
 		IntaRNAeval,		// evaluate predefined interactions
+		IntaRNAkix,		// kinetic seed extension
 		IntaRNAsTar,	// sRNA-target prediction (optimized parameter)
 		IntaRNAseed,  	// seed-only predictions
 		IntaRNAhelix,  	// helix-block-based predictions
@@ -84,6 +85,7 @@ public:
 		case IntaRNA3 : return "IntaRNA3";
 		case IntaRNAens : return "IntaRNAens";
 		case IntaRNAeval : return "IntaRNAeval";
+		case IntaRNAkix : return "IntaRNAkix";
 		case IntaRNAsTar : return "IntaRNAsTar";
 		case IntaRNAseed : return "IntaRNAseed";
 		case IntaRNAhelix : return "IntaRNAhelix";

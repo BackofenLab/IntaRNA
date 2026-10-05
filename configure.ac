@@ -514,7 +514,7 @@ AS_IF([test "$DEPENDENCYNOTFOUND" = "1"], [
 ##########################################################################
 
 # get available personalities
-AC_SUBST([PERSONALITIES],[`grep 'return.*"IntaRNA..*"' ./src/bin/CommandLineParsing.h | grep -o '".*"' | tr -d '"' | tr "\n" " "`])
+AC_SUBST([PERSONALITIES],[`grep 'return.*"IntaRNA..*"' "$srcdir/src/bin/CommandLineParsing.h" | grep -o '".*"' | tr -d '"' | tr "\n" " "`])
 ##########################################################################
 
 # Keep strict diagnostics focused on IntaRNA sources.  Boost and ViennaRNA

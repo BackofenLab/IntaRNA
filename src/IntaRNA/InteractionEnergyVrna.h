@@ -266,13 +266,6 @@ public:
 	Z_type
 	getRT() const;
 
-	/**
-	 * Read-only access to the active, temperature-scaled nearest-neighbor
-	 * parameters, e.g. for precomputing local extension-energy estimates.
-	 * @return parameters owned by this energy model, valid for its lifetime
-	 */
-	const vrna_param_t & getVrnaParams() const;
-
 protected:
 
 
@@ -337,15 +330,6 @@ protected:
 
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////
-
-inline
-const vrna_param_t &
-InteractionEnergyVrna::getVrnaParams() const
-{
-	return *foldParams;
-}
-
 ////////////////////////////////////////////////////////////////////////////
 
 inline

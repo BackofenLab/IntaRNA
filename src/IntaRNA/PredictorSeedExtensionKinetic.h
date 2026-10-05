@@ -30,9 +30,8 @@ namespace IntaRNA {
  * is unsupported.
  *
  * Candidate enumeration uses the active energy model and separate loop/span
- * limits for both RNAs. It deliberately has no loop-only energy pruning:
- * such bounds omit favorable mandatory stacks and changes to the opposite
- * dangling end, and accessibility differences need not be monotone.
+ * limits for both RNAs. Every feasible move is evaluated with its complete
+ * energy change.
  */
 class PredictorSeedExtensionKinetic : public PredictorMfe {
 public:
@@ -78,6 +77,7 @@ protected:
 	 */
 	void getNextBest(Interaction & interaction) override;
 
+private:
 	//! Inclusive boundaries (i1,j1,i2,j2), using local energy indices.
 	using Boundary = std::array<size_t, 4>;
 	//! Best actual path for each visited, reportable set of boundaries.
@@ -102,17 +102,6 @@ protected:
 		std::int64_t delta = 0;
 	};
 
-	/**
-	 * Optional filter before pairing and loop-energy lookups. The default
-	 * enumerates every move; subclasses may implement heuristic pruning.
-	 * @param candidate geometrically valid extension
-	 * @param bounds current boundaries
-	 * @return whether to skip this two-pair move and all moves with both gaps
-	 *         at least as large, in the current state (requires monotone ED)
-	 */
-	virtual bool prune(const Candidate & candidate, const Boundary & bounds) const;
-
-private:
 	/** Geometry, shared pair checks and local energies for one unchanged end. */
 	struct SideCandidates {
 		std::vector<Candidate> moves;

@@ -100,6 +100,7 @@ The following topics are covered by this documentation:
     - [IntaRNAsTar - optimized for sRNA-target prediction](#IntaRNAsTar)
     - [IntaRNAseed - identifys and reports seed interactions only](#IntaRNAseed)
     - [IntaRNAens - ensemble-based prediction and partition function computation](#IntaRNAens)
+    - [IntaRNAkix - kinetic seed extension](#IntaRNAkix)
     - [IntaRNAeval - evaluate predefined interactions](#IntaRNAeval)
 - [How to constrain predicted interactions](#constraintSetup)
   - [Interaction restrictions](#interConstr)
@@ -755,18 +756,13 @@ traceback preserves the actual chosen path. `--outNoGUend`, separate query and
 target loop/span limits, regions, output energy/accessibility filters and
 overlap settings remain applicable.
 
-`--mode=L` provides an experimental subclass with root-pair-specific local
-loop-plus-stack tables and early pruning before complementarity checks. It
-uses active energy parameters, assumes monotone accessibility costs, and
-ignores terminal/dangling changes in its pruning estimate. It can choose
-different paths from K and is available for comparative benchmarking.
-
-Both modes are zippering-inspired heuristics, without a calibrated time axis
+The [IntaRNAkix personality](#IntaRNAkix) selects this mode with noLP enabled
+by default. It is a zippering-inspired heuristic without a calibrated time axis
 or a guarantee of the global minimum. Equilibrium probability/partition-sum
 outputs are rejected, as are other models and `--noSeed`. Scores B and C are
 optional distance preferences, not measured kinetic rates. See the
-[algorithm and benchmark documentation](doc/kinetic-seed-extension.md) for
-precise semantics, pruning limitations and validation cases.
+[algorithm and preliminary benchmark](doc/kinetic-seed-extension.md).
+
 
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
@@ -1038,6 +1034,37 @@ IntaRNA --personality=IntaRNAseed ...
 IntaRNA --mode=S ...
 ```
 
+
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
+
+
+### IntaRNAkix
+
+**IntaRNAkix** (kinetic seed extension) grows every handler-provided seed by
+choosing the most favorable complete energy change at either end. It sets
+`--model=X --mode=K --outNoLP=true`; other defaults are those of IntaRNA.
+Each move adds one stacked pair, two stacked pairs, or a loop-closing pair
+plus its outward stack. Two-pair moves are evaluated and committed together.
+Seeds themselves may contain lonely pairs when supplied by the seed handler.
+
+The following calls are equivalent:
+
+```sh
+IntaRNAkix -t target.fasta -q query.fasta
+IntaRNA --personality=IntaRNAkix -t target.fasta -q query.fasta
+IntaRNA --model=X --mode=K --outNoLP=true -t target.fasta -q query.fasta
+```
+
+Only strictly downhill moves are accepted. The default score A chooses the
+largest energy decrease; `--kineticScore=B|C` adds distance preferences.
+The reported MFE is the best visited, reportable interaction across seeds;
+this greedy search has no global-optimum or physical folding-time guarantee.
+
+![IntaRNAkix initialization, allowed extensions, greedy update and stopping rule](doc/recursions/IntaRNAkix.PredictorSeedExtensionKinetic.svg)
+
+See the [algorithm and preliminary benchmark](doc/kinetic-seed-extension.md)
+for time, peak-memory, energy and interaction-length comparisons with default
+IntaRNA, with and without GU-end restrictions.
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
 

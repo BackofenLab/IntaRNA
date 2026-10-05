@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="1300" viewBox="0 0 1240 1300" role="img" aria-labelledby="title description">
+  <title id="title">IntaRNAkix: deterministic kinetic seed-extension recurrence</title>
+  <desc id="description">For each handler-provided seed, enumerate single stacks, double stacks and loop-plus-stack moves at both ends. Recompute complete interaction energies, choose the best strictly downhill move, and retain reportable visited prefixes. Stop when no downhill move exists.</desc>
+  <defs>
+    <pattern id="seed" width="8" height="8" patternUnits="userSpaceOnUse">
+      <rect width="8" height="8" fill="#eeeeee"/>
+      <path d="M-2,2 L2,-2 M0,8 L8,0 M6,10 L10,6" stroke="#888888" stroke-width="1"/>
+    </pattern>
+    <g id="current">
+      <rect width="116" height="72" fill="#d9d9d9" stroke="#222222" stroke-width="1.5"/>
+      <path d="M0,0 V72 M116,0 V72" stroke="#222222" stroke-width="3"/>
+    </g>
+    <!-- New pairs are vertical bars, with RNA backbones at top and bottom. -->
+    <g id="single">
+      <use href="#current" x="54"/>
+      <path d="M20,0 H54 M20,72 H54 M20,0 V72" fill="none" stroke="#222222" stroke-width="2"/>
+    </g>
+    <g id="double">
+      <use href="#current" x="78"/>
+      <path d="M20,0 H78 M20,72 H78 M20,0 V72 M49,0 V72" fill="none" stroke="#222222" stroke-width="2"/>
+    </g>
+    <g id="loopstack">
+      <use href="#current" x="164"/>
+      <path d="M20,0 H49 C76,-34 137,-34 164,0 M20,72 H49 C76,106 137,106 164,72 M20,0 V72 M49,0 V72" fill="none" stroke="#222222" stroke-width="2"/>
+    </g>
+  </defs>
+  <rect width="1240" height="1300" fill="white"/>
+  <g fill="#161616" font-family="DejaVu Sans, sans-serif">
+    <text x="52" y="58" font-size="30" font-weight="bold">IntaRNAkix</text>
+    <text x="52" y="91" font-size="19">Deterministic kinetic seed extension · model X, mode K · noLP extensions</text>
+    <path d="M52,111 H1188" stroke="#888888"/>
+    <text x="52" y="151" font-size="21" font-weight="bold">1. Initialize one trajectory per seed</text>
+    <rect x="70" y="179" width="158" height="76" fill="url(#seed)" stroke="#222222" stroke-width="1.5"/>
+    <text x="149" y="224" font-family="DejaVu Serif, serif" text-anchor="middle" font-size="24">seed</text>
+    <g font-family="DejaVu Serif, serif" font-size="24">
+      <text x="282" y="205">S₀ = seed;   H₀ = H<tspan font-size="17" baseline-shift="sub">seed</tspan> + E<tspan font-size="17" baseline-shift="sub">init</tspan>;   E₀ = E(b₀, H₀)</text>
+    </g>
+    <text x="282" y="242" font-size="18">Trust the seed handler’s pairs and energy, including explicit lonely pairs.</text>
+    <text x="52" y="291" font-size="18">Sₜ = actual pair chain;  bₜ = (i₁, j₁, i₂, j₂);  Hₜ = hybridization energy including initiation.</text>
+    <text x="52" y="318" font-size="18">Indices of RNA 2 are reversed; left/right refer to the energy-index coordinate system.</text>
+
+    <text x="52" y="374" font-size="21" font-weight="bold">2. Enumerate feasible extensions at both ends</text>
+    <g text-anchor="middle" font-size="19">
+      <text x="266" y="404">Single stack</text>
+      <text x="622" y="404">Double stack</text>
+      <text x="997" y="404">Loop + outward stack</text>
+    </g>
+    <text x="52" y="482" font-size="18">Left</text>
+    <g transform="translate(170 444)"><use href="#single"/><text x="112" y="44" text-anchor="middle" font-family="DejaVu Serif, serif" font-size="24">Sₜ</text></g>
+    <g transform="translate(514 444)"><use href="#double"/><text x="136" y="44" text-anchor="middle" font-family="DejaVu Serif, serif" font-size="24">Sₜ</text></g>
+    <g transform="translate(847 444)"><use href="#loopstack"/><text x="222" y="44" text-anchor="middle" font-family="DejaVu Serif, serif" font-size="24">Sₜ</text></g>
+    <text x="52" y="609" font-size="18">Right</text>
+    <g transform="translate(360 570) scale(-1 1)"><use href="#single"/></g>
+    <g transform="translate(728 570) scale(-1 1)"><use href="#double"/></g>
+    <g transform="translate(1147 570) scale(-1 1)"><use href="#loopstack"/></g>
+    <g text-anchor="middle" font-family="DejaVu Serif, serif" font-size="24">
+      <text x="248" y="614">Sₜ</text><text x="592" y="614">Sₜ</text><text x="925" y="614">Sₜ</text>
+    </g>
+    <g text-anchor="middle" font-size="18">
+      <text x="266" y="685">1 new pair;  s₁ = s₂ = 0</text>
+      <text x="622" y="685">2 new pairs;  s₁ = s₂ = 0</text>
+      <text x="997" y="685">2 new pairs;  s₁ + s₂ &gt; 0</text>
+    </g>
+    <text x="52" y="726" font-size="18">sₖ = skipped bases on RNA k;  0 ≤ sₖ ≤ mₖ (its loop limit). Two-pair moves are atomic.</text>
+    <text x="52" y="753" font-size="18">Enforce pairing, GU-loop policy, prediction ranges and both span limits. No isolated loop closure.</text>
+    <text x="52" y="780" font-size="18">New boundaries advance by sₖ + 1 or sₖ + 2; the opposite boundaries stay fixed.</text>
+
+    <text x="52" y="834" font-size="21" font-weight="bold">3. Recompute full energies and choose the best downhill move</text>
+    <g font-family="DejaVu Serif, serif" font-size="23">
+      <text x="72" y="876">H′ = Hₜ + E<tspan font-size="16" baseline-shift="sub">loop</tspan> + E<tspan font-size="16" baseline-shift="sub">outward stack, if two pairs</tspan></text>
+      <text x="72" y="912">ΔE(c) = E(b′, H′) − Eₜ;   C₋ = { feasible finite moves c : ΔE(c) &lt; 0 }</text>
+      <text x="72" y="954">c* = arg min<tspan font-size="16" baseline-shift="sub">c ∈ C₋</tspan> ΔE(c) / D(c)</text>
+    </g>
+    <text x="72" y="990" font-size="18">D = 1 (score A, default),  1 + s₁ + s₂ (B),  or 1 + 2 max(s₁, s₂) (C).</text>
+    <text x="72" y="1017" font-size="18">Ties: left end, smaller s₁ + s₂, smaller s₁, then single pair. Compare exact ratios.</text>
+    <text x="72" y="1044" font-size="18">E includes ED₁, ED₂, terminal terms, both weighted dangles and the additive term.</text>
+    <text x="72" y="1071" font-size="18">Refresh full energies at both ends, even when pairing and local energies are cached.</text>
+
+    <text x="52" y="1127" font-size="21" font-weight="bold">4. Commit, retain and repeat</text>
+    <text x="72" y="1163" font-family="DejaVu Serif, serif" font-size="23">|C₋| &gt; 0:  (Sₜ₊₁, Hₜ₊₁, Eₜ₊₁) = (Sₜ extended by c*, H′, E(b′, H′)).</text>
+    <text x="72" y="1196" font-size="18">Retain reportable visited states, including the seed; repeat step 2. If C₋ is empty, stop.</text>
+    <text x="72" y="1223" font-size="18">Deduplicate boundaries, rank by full E, apply output constraints and restore the actual pair chain.</text>
+    <path d="M52,1244 H1188" stroke="#888888"/>
+    <text x="52" y="1274" font-size="17">Greedy trajectory heuristic: no global-MFE guarantee, transition rates or physical time axis.</text>
+  </g>
+</svg>

@@ -6,8 +6,7 @@ tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 common=(--target=GGGGGG --query=CCCCCC --energy=B --acc=N
         --threads=1 --default-log-file=/dev/null)
-mode="${KINETIC_MODE:-K}"
-kinetic=(--model=X --mode="$mode" '--seedTQ=3||&3||')
+kinetic=(--model=X --mode=K '--seedTQ=3||&3||')
 csv=(--outMode=C --outCsvCols=hybridDB,E)
 
 # Six base pairs have independently known energy -6 in the base-pair model.
@@ -37,7 +36,7 @@ cmp "$tmp/expected" "$tmp/boundaries"
 printf 'hybridDB;E\n2||||&2||||;-4\n' > "$tmp/expected"
 cmp "$tmp/expected" "$tmp/ranges"
 # Signed IntaRNA coordinates skip zero: target position three is labeled 1.
-"$bin" "${common[@]}" --model=X --mode="$mode" '--seedTQ=1||&7||' "${csv[@]}" \
+"$bin" "${common[@]}" --model=X --mode=K '--seedTQ=1||&7||' "${csv[@]}" \
     --tIdxPos0=-2 --qIdxPos0=5 > "$tmp/shifted"
 printf 'hybridDB;E\n-2||||||&5||||||;-6\n' > "$tmp/expected"
 cmp "$tmp/expected" "$tmp/shifted"
@@ -56,16 +55,16 @@ test -s "$tmp/min-energy"
 grep -q -- '-6' "$tmp/min-energy"
 
 # Handler-provided explicit seeds can contain lonely pairs.
-"$bin" "${common[@]}" --model=X --mode="$mode" '--seedTQ=3|&3|' \
+"$bin" "${common[@]}" --model=X --mode=K '--seedTQ=3|&3|' \
     "${csv[@]}" --outNoLP > "$tmp/lonely"
 printf 'hybridDB;E\n1|||||&1|||||;-5\n' > "$tmp/expected"
 cmp "$tmp/expected" "$tmp/lonely"
-"$bin" --target=GG --query=UU --energy=B --acc=N --model=X --mode="$mode" \
+"$bin" --target=GG --query=UU --energy=B --acc=N --model=X --mode=K \
     '--seedTQ=1||&1||' "${csv[@]}" --outNoGUend --default-log-file=/dev/null > "$tmp/gu"
 cmp "$tmp/empty" "$tmp/gu"
 
 # Config-file selection must behave just like command-line selection.
-printf 'model=X\nmode=%s\nkineticScore=C\nseedTQ=3||&3||\n' "$mode" > "$tmp/parameters"
+printf 'model=X\nmode=K\nkineticScore=C\nseedTQ=3||&3||\n' > "$tmp/parameters"
 "$bin" "${common[@]}" "${csv[@]}" --parameterFile="$tmp/parameters" > "$tmp/configured"
 cmp "$tmp/default" "$tmp/configured"
 
@@ -77,7 +76,7 @@ thermo=(--target=AGCGACGCA --query=UGCGUCGCU --accW=0 --accL=0 --temperature=25
         --threads=1 --default-log-file=/dev/null)
 for score in A B C; do
     for dangles in false true; do
-        "$bin" "${thermo[@]}" --model=X --mode="$mode" '--seedTQ=3|||&5|||' \
+        "$bin" "${thermo[@]}" --model=X --mode=K '--seedTQ=3|||&5|||' \
             --kineticScore="$score" --energyNoDangles="$dangles" --outNoLP --outNoGUend \
             > "$tmp/predicted"
         test "$(wc -l < "$tmp/predicted")" -gt 1
@@ -96,7 +95,7 @@ expect_error() {
     grep -q -- "$expected" "$tmp/bad.out" "$tmp/bad.err"
 }
 for model in S P B; do
-    expect_error 'only with --model=X' "${common[@]}" --model="$model" --mode="$mode"
+    expect_error 'only with --model=X' "${common[@]}" --model="$model" --mode=K
 done
 expect_error 'incompatible with --noSeed' "${common[@]}" "${kinetic[@]}" --noSeed
 # Explicitly supplying the default A must be rejected outside K as well.
@@ -116,7 +115,7 @@ expect_error 'equilibrium ensemble' "${common[@]}" "${kinetic[@]}" --out="spotPr
 
 # Evaluation ignores prediction controls, including invalid kinetic scores.
 "$bin" "${common[@]}" "${csv[@]}" '--rri=1||||||&1||||||' \
-    --model=S --mode="$mode" --kineticScore=D > "$tmp/evaluation"
+    --model=S --mode=K --kineticScore=D > "$tmp/evaluation"
 cmp "$tmp/default" "$tmp/evaluation"
 # A missing or false flag is promoted once, with a visible INFO message.
 logging=("${common[@]}")
@@ -132,6 +131,31 @@ for setting in absent false true; do
         grep -q 'INFO.*setting --outNoLP=true' "$tmp/info.log"
     fi
 done
-# Run the same API/CLI contract against the experimental subclass.
-if [ "$mode" = K ]; then KINETIC_MODE=L bash "$0"; fi
-echo "Kinetic seed-extension CLI checks passed ($mode)"
+# Both personality entry points select mode K and noLP by default.
+ln -s "$bin" "$tmp/IntaRNAkix"
+for invocation in binary option; do
+    args=()
+    executable="$tmp/IntaRNAkix"
+    if [ "$invocation" = option ]; then
+        executable="$bin"
+        args=(--personality=IntaRNAkix)
+    fi
+    : > "$tmp/info.log"
+    "$executable" "${args[@]}" "${logging[@]}" '--seedTQ=3||&3||' "${csv[@]}" \
+        --outNumber=10 > "$tmp/kix-prefixes"
+    cmp "$tmp/prefixes" "$tmp/kix-prefixes"
+    ! grep -q 'setting --outNoLP=true' "$tmp/info.log"
+    "$executable" "${args[@]}" "${common[@]}" '--seedTQ=3||&3||' "${csv[@]}" \
+        --mode=S > "$tmp/seed-only"
+    printf 'hybridDB;E\n3||&3||;-2\n' > "$tmp/expected"
+    cmp "$tmp/expected" "$tmp/seed-only"
+done
+# Explicitly disabling noLP cannot disable the mode K extension invariant.
+"$bin" --personality=IntaRNAkix "${logging[@]}" '--seedTQ=3||&3||' "${csv[@]}" \
+    --outNoLP=false > "$tmp/kix-noLP"
+cmp "$tmp/default" "$tmp/kix-noLP"
+grep -q 'setting --outNoLP=true' "$tmp/info.log"
+# Evaluation remains available under the personality and ignores its defaults.
+"$tmp/IntaRNAkix" "${common[@]}" "${csv[@]}" '--rri=1||||||&1||||||' > "$tmp/kix-eval"
+cmp "$tmp/default" "$tmp/kix-eval"
+echo 'Kinetic seed-extension and IntaRNAkix CLI checks passed'
