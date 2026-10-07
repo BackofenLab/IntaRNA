@@ -20,9 +20,9 @@
   "memory": "GNU time %M: maximum resident set size of each child process, KiB",
   "noGU": "--outNoGUend=true; seedNoGU remains false for both programs",
   "baseline": "default IntaRNA (model X, mode H, outNoLP false)",
-  "comparison": "IntaRNAkix defaults (model X, mode K, outNoLP true, kineticScore A)",
+  "comparison": "IntaRNAsnap defaults (model X, mode K, outNoLP true, kineticScore A)",
   "length": "max(end1-start1+1, end2-start2+1), nt; default one-based coordinates",
-  "deviations": "signed IntaRNAkix minus default IntaRNA, within each GU setting; not a global-optimum error bound",
+  "deviations": "signed IntaRNAsnap minus default IntaRNA, within each GU setting; not a global-optimum error bound",
   "cases": [
     {
       "name": "fhlA/OxyS",
@@ -91,10 +91,10 @@
           "structure_reevaluation_matches": true
         },
         {
-          "program": "IntaRNAkix",
+          "program": "IntaRNAsnap",
           "noGU": false,
           "arguments": [
-            "--personality=IntaRNAkix",
+            "--personality=IntaRNAsnap",
             "--outNoGUend=false"
           ],
           "samples": [
@@ -190,10 +190,10 @@
           "structure_reevaluation_matches": true
         },
         {
-          "program": "IntaRNAkix",
+          "program": "IntaRNAsnap",
           "noGU": true,
           "arguments": [
-            "--personality=IntaRNAkix",
+            "--personality=IntaRNAsnap",
             "--outNoGUend=true"
           ],
           "samples": [
@@ -324,10 +324,10 @@
           "structure_reevaluation_matches": true
         },
         {
-          "program": "IntaRNAkix",
+          "program": "IntaRNAsnap",
           "noGU": false,
           "arguments": [
-            "--personality=IntaRNAkix",
+            "--personality=IntaRNAsnap",
             "--outNoGUend=false"
           ],
           "samples": [
@@ -423,10 +423,10 @@
           "structure_reevaluation_matches": true
         },
         {
-          "program": "IntaRNAkix",
+          "program": "IntaRNAsnap",
           "noGU": true,
           "arguments": [
-            "--personality=IntaRNAkix",
+            "--personality=IntaRNAsnap",
             "--outNoGUend=true"
           ],
           "samples": [
@@ -557,10 +557,10 @@
           "structure_reevaluation_matches": true
         },
         {
-          "program": "IntaRNAkix",
+          "program": "IntaRNAsnap",
           "noGU": false,
           "arguments": [
-            "--personality=IntaRNAkix",
+            "--personality=IntaRNAsnap",
             "--outNoGUend=false"
           ],
           "samples": [
@@ -656,10 +656,10 @@
           "structure_reevaluation_matches": true
         },
         {
-          "program": "IntaRNAkix",
+          "program": "IntaRNAsnap",
           "noGU": true,
           "arguments": [
-            "--personality=IntaRNAkix",
+            "--personality=IntaRNAsnap",
             "--outNoGUend=true"
           ],
           "samples": [

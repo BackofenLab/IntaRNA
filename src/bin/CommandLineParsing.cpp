@@ -332,7 +332,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 		resetParamDefault<>(accL, 0);
 		resetParamDefault<>(intLenMax, 60);
 		break;
-	case IntaRNAkix :
+	case IntaRNAsnap :
 		// deterministic kinetic seed extension
 		resetParamDefault<>(model, 'X');
 		resetParamDefault<>(mode, 'K');
@@ -812,7 +812,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 					"\n 'H' = heuristic (fast and low memory), "
 					"\n 'M' = exact (slow), "
 					"\n 'S' = seed-only, "
-					"\n 'K' = downhill greedy seed extension (IntaRNAkix; requires --model=X; always noLP extensions)"
+					"\n 'K' = downhill greedy seed extension (IntaRNAsnap; requires --model=X; always noLP extensions)"
 					).c_str())
 		(kineticScore.name.c_str()
 			, value<char>(&(kineticScore.val))
@@ -2968,8 +2968,8 @@ getPersonality( int argc, char ** argv )
 	}
 
 	// parse personality
-	if (value == "IntaRNAkix") {
-		return Personality::IntaRNAkix;
+	if (value == "IntaRNAsnap") {
+		return Personality::IntaRNAsnap;
 	}
 	if (value == "IntaRNAeval") {
 		return Personality::IntaRNAeval;

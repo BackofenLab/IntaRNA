@@ -17,7 +17,7 @@ EXTRA_DIST =	\
 			handson/GcvB.fasta \
 			handson/ilvE.fasta \
 			handson/GcvB.ST.fasta \
-			recursions/IntaRNAkix.PredictorSeedExtensionKinetic.svg \
+			recursions/IntaRNAsnap.PredictorSeedExtensionKinetic.svg \
 			doxygen.cfg \
 			latex-deps/adjcalc.sty \
 			latex-deps/adjustbox.sty \

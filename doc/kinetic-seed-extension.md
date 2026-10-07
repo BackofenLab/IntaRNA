@@ -9,14 +9,14 @@ it has no calibrated transition rates or time axis, does not cross barriers
 between committed states, and does not guarantee a global minimum. A favorable
 two-pair move does not establish a barrier-free physical reaction pathway.
 
-The `IntaRNAkix` personality (kinetic seed extension) selects
+The `IntaRNAsnap` personality (kinetic seed extension) selects
 `--model=X --mode=K --outNoLP=true`. It can be invoked through the installed
-`IntaRNAkix` executable link or `IntaRNA --personality=IntaRNAkix`. Other defaults
+`IntaRNAsnap` executable link or `IntaRNA --personality=IntaRNAsnap`. Other defaults
 remain those of IntaRNA. Ordinary energy trackers are supported; seedless
 operation, other interaction models and equilibrium partition/probability
 requests are rejected for mode K.
 
-![Kinetic seed extension recursion](recursions/IntaRNAkix.PredictorSeedExtensionKinetic.svg)
+![Kinetic seed extension recursion](recursions/IntaRNAsnap.PredictorSeedExtensionKinetic.svg)
 
 ## Seeds, states and allowed extensions
 
@@ -35,7 +35,7 @@ range offsets and conversion to original coordinates. Initially,
 Extensions **always** use the no-lonely-pair strategy, independent of the API
 output constraint. Direct `--mode=K` calls promote a missing or false
 `--outNoLP` to true with an INFO message using the normal logging destination;
-IntaRNAkix already defaults to true. This applies to new
+IntaRNAsnap already defaults to true. This applies to new
 extensions, not to revalidation of handler-provided seeds. Allowed moves are:
 
 - One pair stacked directly onto the current boundary (`|SEED`).
@@ -128,7 +128,7 @@ No experimental seed, region or accessibility constraints from those examples
 are applied here. The raw record includes the sequences and input hashes.
 
 The comparison uses the actual personality defaults: IntaRNA has model X,
-mode H and `outNoLP=false`; IntaRNAkix has model X, mode K, score A and
+mode H and `outNoLP=false`; IntaRNAsnap has model X, mode K, score A and
 `outNoLP=true`. Thus energy and length deviations reflect both the search and
 the different noLP defaults. Default IntaRNA is itself a heuristic, so the
 energy deviation is not a certified error from a global optimum.

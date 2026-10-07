@@ -19,7 +19,7 @@
   and retained greedy traceback; equilibrium probability output is unsupported
 - kinetic mode always uses stacked extensions and trusts handler-provided seeds;
   reuse candidate pairing/local energies
-- IntaRNAkix personality enables kinetic seed extension with noLP by default
+- IntaRNAsnap personality enables kinetic seed extension with noLP by default
 
 - apply outDeltaE relative to the sequence pair's best interaction when merging
   regions; preserve local windows for outPerRegion output (PR #253)
@@ -42,7 +42,7 @@
 
 ## Technical changes and Optimizations
 
-- install personality links in out-of-tree builds, including IntaRNAkix
+- install personality links in out-of-tree builds, including IntaRNAsnap
 
 - BUGFIX : normalize single-pair suboptimal boundaries before traceback and
   boundary-only output validation (PR #253)
@@ -85,6 +85,26 @@
 - BUGFIX : multi-threading : IntaRNAsTar was not thread-safe due to shared 
   storage of computed ranges
 
+# IntaRNAsnap
+
+New personality IntaRNAsnap identifies the fastest "folding path" to a (locally) 
+optimal interaction after seed formation, rather than finding the global optimum 
+under the assumption of thermodynamic equilibrium. 
+
+To this end, IntaRNAsnap implements a kinetics-motivated greedy search for the 
+best interaction that can be reached from the given seed(s) by a series of 
+complete-energy downhill local moves. 
+Local moves are direct stack extensions or 2-base-pair loop/stack moves, i.e. 
+the same moves as used in the IntaRNA noLP model. That way, kinetic energy 
+barriers posed by the formation of loops and bulges are avoided, which mimics 
+the continuation of the zipping process after "jumping" over a loop or bulge.
+
+This personality is only available with --model=X and --mode=K, and equilibrium 
+probability output is unsupported. The local scoring can be configured with 
+--kineticScore=A|B|C, and the output can include distinct structures, energies,
+restricted partition sums, and trackers.
+
+
 # IntaRNAeval
 
 New personality of IntaRNA to evaluate predefined RNA-RNA interactions.
@@ -108,18 +128,18 @@ energies, restricted partition sums, and trackers.
 
 261005 Alexander Mitrofanov
  * bin/CommandLineParsing, tests/runKineticSeedExtension.sh :
-   + add IntaRNAkix personality with model=X, mode=K and outNoLP=true defaults;
+   + add IntaRNAsnap personality with model=X, mode=K and outNoLP=true defaults;
      support executable-name and explicit personality selection
  * configure.ac :
    * find personality declarations via srcdir so out-of-tree installations
-     create the executable links, including IntaRNAkix
+     create the executable links, including IntaRNAsnap
  * README.md, doc/kinetic-seed-extension.md,
-   doc/recursions/IntaRNAkix.PredictorSeedExtensionKinetic.svg, doc/Makefile.am :
+   doc/recursions/IntaRNAsnap.PredictorSeedExtensionKinetic.svg, doc/Makefile.am :
    + document personality usage and depict seed initialization, allowed moves,
      complete-energy greedy selection, stopping and prefix reporting
    + distribute the benchmark's tutorial sequences with its script and results
  * doc/benchmark-kix.py, doc/kix-benchmark-20261005.json :
-   + compare IntaRNAkix with default IntaRNA with and without GU-end constraints;
+   + compare IntaRNAsnap with default IntaRNA with and without GU-end constraints;
      record wall time, peak RSS, MFE energy and maximum covered strand length
    * implement https://github.com/BackofenLab/IntaRNA/pull/254#issuecomment-5995041057
 

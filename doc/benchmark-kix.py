@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Small, single-thread comparison of IntaRNAkix and default IntaRNA.
+"""Small, single-thread comparison of IntaRNAsnap and default IntaRNA.
 
 Requires Python 3, GNU time and a release IntaRNA binary. Run from any directory:
   python3 doc/benchmark-kix.py /path/to/IntaRNA --output results.json
@@ -82,9 +82,9 @@ def main():
         "memory": "GNU time %M: maximum resident set size of each child process, KiB",
         "noGU": "--outNoGUend=true; seedNoGU remains false for both programs",
         "baseline": "default IntaRNA (model X, mode H, outNoLP false)",
-        "comparison": "IntaRNAkix defaults (model X, mode K, outNoLP true, kineticScore A)",
+        "comparison": "IntaRNAsnap defaults (model X, mode K, outNoLP true, kineticScore A)",
         "length": "max(end1-start1+1, end2-start2+1), nt; default one-based coordinates",
-        "deviations": "signed IntaRNAkix minus default IntaRNA, within each GU setting; not a global-optimum error bound",
+        "deviations": "signed IntaRNAsnap minus default IntaRNA, within each GU setting; not a global-optimum error bound",
         "cases": [],
     }
     with tempfile.TemporaryDirectory(prefix="intarna-kix-benchmark-") as directory:
@@ -97,8 +97,8 @@ def main():
                     "query": read_fasta(fixtures / (query + ".fasta")), "runs": [], "comparisons": []}
             configurations = []
             for no_gu in (False, True):
-                for program in ("IntaRNA", "IntaRNAkix"):
-                    options = [] if program == "IntaRNA" else ["--personality=IntaRNAkix"]
+                for program in ("IntaRNA", "IntaRNAsnap"):
+                    options = [] if program == "IntaRNA" else ["--personality=IntaRNAsnap"]
                     options.append("--outNoGUend=" + str(no_gu).lower())
                     configurations.append((program, no_gu, options))
                     case["runs"].append({"program": program, "noGU": no_gu,

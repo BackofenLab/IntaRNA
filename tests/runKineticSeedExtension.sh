@@ -132,13 +132,13 @@ for setting in absent false true; do
     fi
 done
 # Both personality entry points select mode K and noLP by default.
-ln -s "$bin" "$tmp/IntaRNAkix"
+ln -s "$bin" "$tmp/IntaRNAsnap"
 for invocation in binary option; do
     args=()
-    executable="$tmp/IntaRNAkix"
+    executable="$tmp/IntaRNAsnap"
     if [ "$invocation" = option ]; then
         executable="$bin"
-        args=(--personality=IntaRNAkix)
+        args=(--personality=IntaRNAsnap)
     fi
     : > "$tmp/info.log"
     "$executable" "${args[@]}" "${logging[@]}" '--seedTQ=3||&3||' "${csv[@]}" \
@@ -151,11 +151,11 @@ for invocation in binary option; do
     cmp "$tmp/expected" "$tmp/seed-only"
 done
 # Explicitly disabling noLP cannot disable the mode K extension invariant.
-"$bin" --personality=IntaRNAkix "${logging[@]}" '--seedTQ=3||&3||' "${csv[@]}" \
+"$bin" --personality=IntaRNAsnap "${logging[@]}" '--seedTQ=3||&3||' "${csv[@]}" \
     --outNoLP=false > "$tmp/kix-noLP"
 cmp "$tmp/default" "$tmp/kix-noLP"
 grep -q 'setting --outNoLP=true' "$tmp/info.log"
 # Evaluation remains available under the personality and ignores its defaults.
-"$tmp/IntaRNAkix" "${common[@]}" "${csv[@]}" '--rri=1||||||&1||||||' > "$tmp/kix-eval"
+"$tmp/IntaRNAsnap" "${common[@]}" "${csv[@]}" '--rri=1||||||&1||||||' > "$tmp/kix-eval"
 cmp "$tmp/default" "$tmp/kix-eval"
-echo 'Kinetic seed-extension and IntaRNAkix CLI checks passed'
+echo 'Kinetic seed-extension and IntaRNAsnap CLI checks passed'

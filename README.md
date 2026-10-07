@@ -100,7 +100,7 @@ The following topics are covered by this documentation:
     - [IntaRNAsTar - optimized for sRNA-target prediction](#IntaRNAsTar)
     - [IntaRNAseed - identifys and reports seed interactions only](#IntaRNAseed)
     - [IntaRNAens - ensemble-based prediction and partition function computation](#IntaRNAens)
-    - [IntaRNAkix - kinetic seed extension](#IntaRNAkix)
+    - [IntaRNAsnap - kinetic seed extension](#IntaRNAsnap)
     - [IntaRNAeval - evaluate predefined interactions](#IntaRNAeval)
 - [How to constrain predicted interactions](#constraintSetup)
   - [Interaction restrictions](#interConstr)
@@ -756,7 +756,7 @@ traceback preserves the actual chosen path. `--outNoGUend`, separate query and
 target loop/span limits, regions, output energy/accessibility filters and
 overlap settings remain applicable.
 
-The [IntaRNAkix personality](#IntaRNAkix) selects this mode with noLP enabled
+The [IntaRNAsnap personality](#IntaRNAsnap) selects this mode with noLP enabled
 by default. It is a zippering-inspired heuristic without a calibrated time axis
 or a guarantee of the global minimum. Equilibrium probability/partition-sum
 outputs are rejected, as are other models and `--noSeed`. Scores B and C are
@@ -1038,9 +1038,9 @@ IntaRNA --mode=S ...
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
 
-### IntaRNAkix
+### IntaRNAsnap
 
-**IntaRNAkix** (kinetic seed extension) grows every handler-provided seed by
+**IntaRNAsnap** (kinetic seed extension) grows every handler-provided seed by
 choosing the most favorable complete energy change at either end. It sets
 `--model=X --mode=K --outNoLP=true`; other defaults are those of IntaRNA.
 Each move adds one stacked pair, two stacked pairs, or a loop-closing pair
@@ -1050,8 +1050,8 @@ Seeds themselves may contain lonely pairs when supplied by the seed handler.
 The following calls are equivalent:
 
 ```sh
-IntaRNAkix -t target.fasta -q query.fasta
-IntaRNA --personality=IntaRNAkix -t target.fasta -q query.fasta
+IntaRNAsnap -t target.fasta -q query.fasta
+IntaRNA --personality=IntaRNAsnap -t target.fasta -q query.fasta
 IntaRNA --model=X --mode=K --outNoLP=true -t target.fasta -q query.fasta
 ```
 
@@ -1060,7 +1060,7 @@ largest energy decrease; `--kineticScore=B|C` adds distance preferences.
 The reported MFE is the best visited, reportable interaction across seeds;
 this greedy search has no global-optimum or physical folding-time guarantee.
 
-![IntaRNAkix initialization, allowed extensions, greedy update and stopping rule](doc/recursions/IntaRNAkix.PredictorSeedExtensionKinetic.svg)
+![IntaRNAsnap initialization, allowed extensions, greedy update and stopping rule](doc/recursions/IntaRNAsnap.PredictorSeedExtensionKinetic.svg)
 
 See the [algorithm and preliminary benchmark](doc/kinetic-seed-extension.md)
 for time, peak-memory, energy and interaction-length comparisons with default

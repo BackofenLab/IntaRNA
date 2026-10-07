@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1240" height="1300" viewBox="0 0 1240 1300" role="img" aria-labelledby="title description">
-  <title id="title">IntaRNAkix: deterministic kinetic seed-extension recurrence</title>
+  <title id="title">IntaRNAsnap: deterministic kinetic seed-extension recurrence</title>
   <desc id="description">For each handler-provided seed, enumerate single stacks, double stacks and loop-plus-stack moves at both ends. Recompute complete interaction energies, choose the best strictly downhill move, and retain reportable visited prefixes. Stop when no downhill move exists.</desc>
   <defs>
     <pattern id="seed" width="8" height="8" patternUnits="userSpaceOnUse">
@@ -26,7 +26,7 @@
   </defs>
   <rect width="1240" height="1300" fill="white"/>
   <g fill="#161616" font-family="DejaVu Sans, sans-serif">
-    <text x="52" y="58" font-size="30" font-weight="bold">IntaRNAkix</text>
+    <text x="52" y="58" font-size="30" font-weight="bold">IntaRNAsnap</text>
     <text x="52" y="91" font-size="19">Deterministic kinetic seed extension · model X, mode K · noLP extensions</text>
     <path d="M52,111 H1188" stroke="#888888"/>
     <text x="52" y="151" font-size="21" font-weight="bold">1. Initialize one trajectory per seed</text>
