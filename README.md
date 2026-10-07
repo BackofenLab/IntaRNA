@@ -1058,13 +1058,8 @@ IntaRNA --model=X --mode=K --outNoLP=true -t target.fasta -q query.fasta
 Only strictly downhill moves are accepted. The default score A chooses the
 largest energy decrease; `--kineticScore=B|C` adds distance preferences.
 The reported MFE is the best visited, reportable interaction across seeds;
-this greedy search has no global-optimum or physical folding-time guarantee.
+this heuristic greedy search has no global-optimum or physical folding-time guarantee.
 
-![IntaRNAsnap initialization, allowed extensions, greedy update and stopping rule](doc/recursions/IntaRNAsnap.PredictorSeedExtensionKinetic.svg)
-
-See the [algorithm and preliminary benchmark](doc/kinetic-seed-extension.md)
-for time, peak-memory, energy and interaction-length comparisons with default
-IntaRNA, with and without GU-end restrictions.
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
