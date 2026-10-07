@@ -1,0 +1,86 @@
+/* Keep Doxygen's layout and navigation; add the IntaRNA project identity. */
+#titlearea {
+  background: #123c3f;
+  color: #ffffff;
+  border-bottom: 4px solid #67c5b5;
+  padding: 18px 24px;
+  box-sizing: border-box;
+}
+
+#projectname {
+  font-family: system-ui, sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -1px;
+}
+
+#projectnumber {
+  color: #c9e8e3;
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: normal;
+}
+
+#projectbrief {
+  color: #e1f2ef;
+  font: 14px/1.6 system-ui, sans-serif;
+}
+
+.intarna-links {
+  float: right;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  padding-top: 12px;
+  font: 14px/1.5 system-ui, sans-serif;
+}
+
+.intarna-links a,
+.intarna-links a:visited {
+  color: #ffffff;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.intarna-links a:focus-visible,
+.intarna-footer a:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
+
+div.contents {
+  line-height: 1.65;
+}
+
+.intarna-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin-top: 32px;
+  padding: 16px 24px;
+  border-top: 2px solid #67c5b5;
+  background: #123c3f;
+  color: #e1f2ef;
+  font: 13px/1.6 system-ui, sans-serif;
+}
+
+.intarna-footer a,
+.intarna-footer a:visited {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+@media (max-width: 700px) {
+  #titlearea {
+    padding: 14px 12px;
+  }
+
+  .intarna-links {
+    float: none;
+    padding: 0 0 16px;
+  }
+
+  #projectbrief {
+    font-size: 12px;
+  }
+}

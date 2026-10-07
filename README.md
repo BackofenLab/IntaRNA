@@ -2317,6 +2317,14 @@ and functionalities used within the IntaRNA tool. The whole library comes with
 an `IntaRNA` namespace and exhaustive class and member API documentation that is
 processed using doxygen to generate html/pdf versions.
 
+Browse the [C++ API reference](https://backofenlab.github.io/IntaRNA/api/)
+for an overview of the library components and links to the class documentation.
+The online reference follows `master`. To generate it for your checkout, install
+Doxygen and Graphviz and run `bash doc/build-api.sh`, then open
+`doxygen-doc/html/index.html`. See the
+[API documentation build guide](doc/api-documentation.md) for validation,
+Autotools, and publishing instructions.
+
 When IntaRNA is build while `pkg-config` is present, according pkg-config
 information is generated and installed too.
 
