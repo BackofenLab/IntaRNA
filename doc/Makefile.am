@@ -4,8 +4,6 @@
 ################################################################
 
 EXTRA_DIST =	\
-			analysis/out-overlap.md \
-			analysis/out-overlap/reproduce.py \
 			conda.txt \
 			api-documentation.md \
 			build-api.sh \
