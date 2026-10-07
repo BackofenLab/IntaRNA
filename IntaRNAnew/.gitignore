@@ -1,0 +1,12 @@
+IntaRNAnew
+IntaRNAnewBenchmark
+IntaRNAnewPvalue
+IntaRNAnewSvg
+IntaRNAnewTspot
+*.a
+*.d
+*.o
+*.dot
+/Testing/
+/cmake-build-*/
+/build/

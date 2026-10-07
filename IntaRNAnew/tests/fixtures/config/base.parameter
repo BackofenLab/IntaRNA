@@ -1,0 +1,5 @@
+query=GGGG
+target=CCCC
+mode=M
+out=file-from-base
+parameterFile=nested.parameter
