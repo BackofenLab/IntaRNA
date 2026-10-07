@@ -100,6 +100,7 @@ The following topics are covered by this documentation:
     - [IntaRNAsTar - optimized for sRNA-target prediction](#IntaRNAsTar)
     - [IntaRNAseed - identifys and reports seed interactions only](#IntaRNAseed)
     - [IntaRNAens - ensemble-based prediction and partition function computation](#IntaRNAens)
+    - [IntaRNAsnap - kinetic seed extension](#IntaRNAsnap)
     - [IntaRNAeval - evaluate predefined interactions](#IntaRNAeval)
 - [How to constrain predicted interactions](#constraintSetup)
   - [Interaction restrictions](#interConstr)
@@ -729,6 +730,40 @@ minimum free energy interaction.
 Putative seed interactions (used by the `H` and `M` mode) can be enumerated 
 and studied using the `S` mode.
 
+### Greedy kinetic seed extension
+
+`--model=X --mode=K` grows each available seed along a deterministic greedy
+path. Every step compares feasible extensions on both sides using the complete
+change in interaction energy, including accessibility, terminal penalties and
+dangling ends. Only strictly negative changes are accepted. Extensions always
+add one stacked pair or two stacked pairs, including across a loop; two-pair
+moves are evaluated and committed atomically. The CLI sets `--outNoLP=true`
+when absent or false and logs an INFO message. Seeds and their energies are
+accepted from the seed handler, including explicit seeds with lonely pairs.
+
+`--kineticScore` selects the local move ranking:
+
+| Value | Score minimized for a move with gaps `s1`, `s2` |
+| --- | --- |
+| `A` (default) | Complete energy change |
+| `B` | Complete energy change / `(1+s1+s2)` |
+| `C` (C1 in the design) | Complete energy change / `(1+2*max(s1,s2))` |
+
+Equal scores prefer the left side, then fewer unpaired bases, then smaller
+`s1`, then the single-pair move. The denominators also apply to two-pair moves. All reportable visited
+states, including seeds, participate in the normal energy-ranked output;
+traceback preserves the actual chosen path. `--outNoGUend`, separate query and
+target loop/span limits, regions, output energy/accessibility filters and
+overlap settings remain applicable.
+
+The [IntaRNAsnap personality](#IntaRNAsnap) selects this mode with noLP enabled
+by default. It is a zippering-inspired heuristic without a calibrated time axis
+or a guarantee of the global minimum. Equilibrium probability/partition-sum
+outputs are rejected, as are other models and `--noSeed`. Scores B and C are
+optional distance preferences, not measured kinetic rates. See the
+[algorithm and preliminary benchmark](doc/kinetic-seed-extension.md).
+
+
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
 <br /><br />
@@ -998,6 +1033,32 @@ IntaRNAseed ...
 IntaRNA --personality=IntaRNAseed ...
 IntaRNA --mode=S ...
 ```
+
+
+[![up](doc/figures/icon-up.28.png) back to overview](#overview)
+
+
+### IntaRNAsnap
+
+**IntaRNAsnap** (kinetic seed extension) grows every handler-provided seed by
+choosing the most favorable complete energy change at either end. It sets
+`--model=X --mode=K --outNoLP=true`; other defaults are those of IntaRNA.
+Each move adds one stacked pair, two stacked pairs, or a loop-closing pair
+plus its outward stack. Two-pair moves are evaluated and committed together.
+Seeds themselves may contain lonely pairs when supplied by the seed handler.
+
+The following calls are equivalent:
+
+```sh
+IntaRNAsnap -t target.fasta -q query.fasta
+IntaRNA --personality=IntaRNAsnap -t target.fasta -q query.fasta
+IntaRNA --model=X --mode=K --outNoLP=true -t target.fasta -q query.fasta
+```
+
+Only strictly downhill moves are accepted. The default score A chooses the
+largest energy decrease; `--kineticScore=B|C` adds distance preferences.
+The reported MFE is the best visited, reportable interaction across seeds;
+this heuristic greedy search has no global-optimum or physical folding-time guarantee.
 
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
@@ -2316,6 +2377,14 @@ The IntaRNA package also comes with a C++ library `libIntaRNA.a` containing the 
 and functionalities used within the IntaRNA tool. The whole library comes with
 an `IntaRNA` namespace and exhaustive class and member API documentation that is
 processed using doxygen to generate html/pdf versions.
+
+Browse the [C++ API reference](https://backofenlab.github.io/IntaRNA/api/)
+for an overview of the library components and links to the class documentation.
+The online reference follows `master`. To generate it for your checkout, install
+Doxygen and Graphviz and run `bash doc/build-api.sh`, then open
+`doxygen-doc/html/index.html`. See the
+[API documentation build guide](doc/api-documentation.md) for validation,
+Autotools, and publishing instructions.
 
 When IntaRNA is build while `pkg-config` is present, according pkg-config
 information is generated and installed too.

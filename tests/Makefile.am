@@ -15,7 +15,7 @@ TEST_EXTENSIONS = $(EXEEXT) .sh
 SH_LOG_COMPILER = $(SHELL)
 
 # the script needed for tests
-dist_check_SCRIPTS = runIntaRNA.sh runAccessibilityBinary.sh runIntaRNAeval.sh runOutputOverlap.sh
+dist_check_SCRIPTS = runIntaRNA.sh runAccessibilityBinary.sh runIntaRNAeval.sh runKineticSeedExtension.sh runOutputOverlap.sh
 
 # the program to build
 check_PROGRAMS = runApiTests 
@@ -52,6 +52,7 @@ runApiTests_SOURCES =	\
 					PredictorTinyOracle_test.cpp \
 					PredictorEvalOnly_test.cpp \
 					PredictorSeedOracle_test.cpp \
+					PredictorSeedExtensionKinetic_test.cpp \
 					Matrix_test.cpp \
 					NussinovHandler_test.cpp \
 					RnaSequence_test.cpp \
