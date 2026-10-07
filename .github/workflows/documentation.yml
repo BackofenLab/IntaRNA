@@ -37,6 +37,8 @@ jobs:
       - name: Build API reference
         run: |
           bash doc/build-api.sh "$RUNNER_TEMP/intarna-api"
+          # The Jekyll container creates its output as root.
+          sudo chown -R "$(id -u):$(id -g)" _site
           cp -R "$RUNNER_TEMP/intarna-api/html" _site/api
 
       - name: Check generated documentation
