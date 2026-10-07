@@ -42,6 +42,9 @@
 
 ## Technical changes and Optimizations
 
+- add an API overview, IntaRNA Doxygen styling, and automated documentation
+  builds and GitHub Pages publishing alongside the user guide (issue #22)
+  
 - install personality links in out-of-tree builds, including IntaRNAsnap
 
 - BUGFIX : normalize single-pair suboptimal boundaries before traceback and
@@ -125,6 +128,22 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261007 Alexander Mitrofanov
+ * doc/doxygen.cfg, doc/doxygen/* :
+   + introduce the API main page with component links, prediction flow,
+     coordinate/energy conventions, and library integration guidance
+   + add IntaRNA header/footer navigation and responsive project styling
+ * doc/build-api.sh, doc/check-api.py, doc/api-documentation.md, README.md :
+   + build HTML without C++ dependencies and check entry-page links/assets
+   + document local generation and the one-time Pages activation after merge
+ * .github/workflows/documentation.yml :
+   + build the existing Jekyll guide and API on PRs and master commits;
+     publish both together from master only, with API content under /api/
+ * Makefile.am, doc/Makefile.am :
+   * rebuild documentation when headers or documentation assets change and
+     include all documentation sources and build helpers in distributions
+   * addresses https://github.com/BackofenLab/IntaRNA/issues/22
 
 261005 Alexander Mitrofanov
  * bin/CommandLineParsing, tests/runKineticSeedExtension.sh :
