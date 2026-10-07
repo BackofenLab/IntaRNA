@@ -14,6 +14,13 @@
 
 ## Interface and handling
 
+- deterministic kinetic seed extension with --model=X --mode=K and configurable
+  local scoring; complete-energy downhill steps, atomic noLP loop/stack moves
+  and retained greedy traceback; equilibrium probability output is unsupported
+- kinetic mode always uses stacked extensions and trusts handler-provided seeds;
+  reuse candidate pairing/local energies
+- IntaRNAsnap personality enables kinetic seed extension with noLP by default
+
 - apply outDeltaE relative to the sequence pair's best interaction when merging
   regions; preserve local windows for outPerRegion output (PR #253)
 
@@ -34,6 +41,8 @@
 - reject Zall/Eall-dependent output in window mode
 
 ## Technical changes and Optimizations
+
+- install personality links in out-of-tree builds, including IntaRNAsnap
 
 - BUGFIX : normalize single-pair suboptimal boundaries before traceback and
   boundary-only output validation (PR #253)
@@ -76,6 +85,26 @@
 - BUGFIX : multi-threading : IntaRNAsTar was not thread-safe due to shared 
   storage of computed ranges
 
+# IntaRNAsnap
+
+New personality IntaRNAsnap identifies the fastest "folding path" to a (locally) 
+optimal interaction after seed formation, rather than finding the global optimum 
+under the assumption of thermodynamic equilibrium. 
+
+To this end, IntaRNAsnap implements a kinetics-motivated greedy search for the 
+best interaction that can be reached from the given seed(s) by a series of 
+complete-energy downhill local moves. 
+Local moves are direct stack extensions or 2-base-pair loop/stack moves, i.e. 
+the same moves as used in the IntaRNA noLP model. That way, kinetic energy 
+barriers posed by the formation of loops and bulges are avoided, which mimics 
+the continuation of the zipping process after "jumping" over a loop or bulge.
+
+This personality is only available with --model=X and --mode=K, and equilibrium 
+probability output is unsupported. The local scoring can be configured with 
+--kineticScore=A|B|C, and the output can include distinct structures, energies,
+restricted partition sums, and trackers.
+
+
 # IntaRNAeval
 
 New personality of IntaRNA to evaluate predefined RNA-RNA interactions.
@@ -96,6 +125,38 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261005 Alexander Mitrofanov
+ * bin/CommandLineParsing, tests/runKineticSeedExtension.sh :
+   + add IntaRNAsnap personality with model=X, mode=K and outNoLP=true defaults;
+     support executable-name and explicit personality selection
+ * configure.ac :
+   * find personality declarations via srcdir so out-of-tree installations
+     create the executable links, including IntaRNAsnap
+ * README.md, doc/kinetic-seed-extension.md,
+   doc/recursions/IntaRNAsnap.PredictorSeedExtensionKinetic.svg, doc/Makefile.am :
+   + document personality usage and depict seed initialization, allowed moves,
+     complete-energy greedy selection, stopping and prefix reporting
+   + distribute the benchmark's tutorial sequences with its script and results
+ * doc/benchmark-kix.py, doc/kix-benchmark-20261005.json :
+   + compare IntaRNAsnap with default IntaRNA with and without GU-end constraints;
+     record wall time, peak RSS, MFE energy and maximum covered strand length
+   * implement https://github.com/BackofenLab/IntaRNA/pull/254#issuecomment-5995041057
+
+261005 Alexander Mitrofanov
+ * IntaRNA/PredictorSeedExtensionKinetic :
+   * always evaluate single and double stacks plus atomic loop/stack extensions;
+     trust seed-handler structures/energies, including explicit lonely pairs
+   * cache each end's candidates, shared complementarity checks and local
+     energies; rebuild only the chosen end and refresh full opposite-end energy
+ * bin/CommandLineParsing :
+   * set --outNoLP=true with INFO for kinetic mode K
+ * tests/PredictorSeedExtensionKinetic_test.cpp, tests/runKineticSeedExtension.sh :
+   * update independent oracle and CLI expectations for atomic double stacks;
+     cover trusted seeds, caching and kinetic mode K
+ * README.md, doc/kinetic-seed-extension.md :
+   * document revised semantics in response to
+     https://github.com/BackofenLab/IntaRNA/pull/254
 
 261005 Alexander Mitrofanov
  * IntaRNA/PredictorMfe, tests/PredictorMfeHeuristicCellState_test.cpp,
@@ -161,6 +222,23 @@ energies, restricted partition sums, and trackers.
  * README.md :
    + define suboptimal predictions by distinct start/end coordinates on both RNAs
    * distinguish site prediction from evaluation of supplied structures (PR #253)
+
+261003 Alexander Mitrofanov
+ * IntaRNA/PredictorSeedExtensionKinetic, src/IntaRNA/Makefile.am :
+   + greedily extend seeds on either side using complete interaction-energy
+     differences and deterministic thermodynamic or distance-weighted scores
+   + support noLP macro-steps, GU restrictions, per-strand loop/span constraints,
+     explicit-seed validation and cached trajectory traceback
+   + retain valid visited prefixes and select non-overlapping output from the
+     complete retained candidate set; reject unsupported ensemble statistics
+ * bin/CommandLineParsing :
+   + expose --mode=K exclusively for --model=X and --kineticScore=A|B|C
+ * tests/PredictorSeedExtensionKinetic_test.cpp, tests/runKineticSeedExtension.sh,
+   tests/Makefile.am :
+   + validate local move choices, macro-step energetics, structural constraints,
+     traceback, output filtering and CLI compatibility
+ * README.md, doc/kinetic-seed-extension.md, doc/Makefile.am :
+   + document scientific scope and complete-energy move enumeration
 
 261002 Alexander Mitrofanov
  * doc/analysis/out-overlap.md, doc/analysis/out-overlap/reproduce.py :

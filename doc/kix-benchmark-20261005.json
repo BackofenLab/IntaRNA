@@ -1,0 +1,727 @@
+{
+  "schema": 1,
+  "binary_sha256": "3779a676dd6a96e6edf9fe9a7316c2125466d0c33be51723661eb1513dfcdd64",
+  "version": "IntaRNA 3.4.1\n using Vienna RNA package 2.7.2 and boost 1.85.0",
+  "build": "GCC 14.4.0 release (-O3), C++23, ViennaRNA 2.7.2, Boost 1.85, Kokkos mdspan; AMD Ryzen 5 7530U; 2026-10-05",
+  "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+  "machine": "x86_64",
+  "python": "3.12.7",
+  "timer": "time (GNU Time) UNKNOWN",
+  "common_arguments": [
+    "--threads=1",
+    "--outMode=C",
+    "--outCsvCols=start1,end1,start2,end2,E,hybridDB",
+    "--outNumber=1",
+    "--default-log-file=/dev/null"
+  ],
+  "repetitions": 5,
+  "warmups_per_configuration": 1,
+  "timing": "perf_counter wall seconds around GNU time + binary; includes startup, folding, seed search and prediction",
+  "memory": "GNU time %M: maximum resident set size of each child process, KiB",
+  "noGU": "--outNoGUend=true; seedNoGU remains false for both programs",
+  "baseline": "default IntaRNA (model X, mode H, outNoLP false)",
+  "comparison": "IntaRNAsnap defaults (model X, mode K, outNoLP true, kineticScore A)",
+  "length": "max(end1-start1+1, end2-start2+1), nt; default one-based coordinates",
+  "deviations": "signed IntaRNAsnap minus default IntaRNA, within each GU setting; not a global-optimum error bound",
+  "cases": [
+    {
+      "name": "fhlA/OxyS",
+      "target": {
+        "file": "handson/fhlA.fasta",
+        "header": "fhlA|NC000913|-53..+60|doi:10.1006/jmbi.2000.3942:Fig7",
+        "length_nt": 112,
+        "sequence": "AGUUAGUCAAUGACCUUUUGCACCGCUUUGCGGUGCUUUCCUGGAACAACAAAAUGUCAUAUACACCGAUGAGUGAUCUCGGACAACAAGGGUUGUUCGACAUCACUCGGAC",
+        "sha256": "667e0df26bf5b8635df5fb5b0eca299cb0484d1c07d0bfd93fff674c2cab9c31"
+      },
+      "query": {
+        "file": "handson/OxyS.fasta",
+        "header": "OxyS|NC_000913|56..164|doi:10.1006/jmbi.2000.3942:Fig7",
+        "length_nt": 108,
+        "sequence": "GAAACGGAGCGGCACCUCUUUUAACCCUUGAAGUCACUGCCCGUUUCGAGAGUUUCUCAACUCGAAUAACUAAAGCCAACGUGAACUUUUGCGGAUCUCCAGGAUCCG",
+        "sha256": "bd336bf7f10104837bd7f5e56315dd0f03ba2eb9784d88280588b464adf1a30d"
+      },
+      "runs": [
+        {
+          "program": "IntaRNA",
+          "noGU": false,
+          "arguments": [
+            "--outNoGUend=false"
+          ],
+          "samples": [
+            {
+              "wall_s": 0.054906384088099,
+              "peak_rss_kib": 16448
+            },
+            {
+              "wall_s": 0.055035896017216146,
+              "peak_rss_kib": 16912
+            },
+            {
+              "wall_s": 0.056886381935328245,
+              "peak_rss_kib": 16912
+            },
+            {
+              "wall_s": 0.057665151078253984,
+              "peak_rss_kib": 17088
+            },
+            {
+              "wall_s": 0.05727210489567369,
+              "peak_rss_kib": 16788
+            }
+          ],
+          "prediction": {
+            "start1": 39,
+            "end1": 60,
+            "start2": 81,
+            "end2": 104,
+            "E_kcal_mol": -5.59,
+            "hybridDB": "39|||||||.|..|||||..||||&81||||..|||||..|...|||||||",
+            "length_nt": 24
+          },
+          "wall_s": {
+            "median": 0.056886381935328245,
+            "min": 0.054906384088099,
+            "max": 0.057665151078253984
+          },
+          "peak_rss_kib": {
+            "median": 16912,
+            "min": 16448,
+            "max": 17088
+          },
+          "structure_reevaluation_matches": true
+        },
+        {
+          "program": "IntaRNAsnap",
+          "noGU": false,
+          "arguments": [
+            "--personality=IntaRNAsnap",
+            "--outNoGUend=false"
+          ],
+          "samples": [
+            {
+              "wall_s": 0.038167160004377365,
+              "peak_rss_kib": 16648
+            },
+            {
+              "wall_s": 0.03802963194902986,
+              "peak_rss_kib": 16576
+            },
+            {
+              "wall_s": 0.03889605507720262,
+              "peak_rss_kib": 16652
+            },
+            {
+              "wall_s": 0.03797265503089875,
+              "peak_rss_kib": 16784
+            },
+            {
+              "wall_s": 0.03807136998511851,
+              "peak_rss_kib": 16620
+            }
+          ],
+          "prediction": {
+            "start1": 39,
+            "end1": 45,
+            "start2": 98,
+            "end2": 104,
+            "E_kcal_mol": -5.57,
+            "hybridDB": "39|||||||&98|||||||",
+            "length_nt": 7
+          },
+          "wall_s": {
+            "median": 0.03807136998511851,
+            "min": 0.03797265503089875,
+            "max": 0.03889605507720262
+          },
+          "peak_rss_kib": {
+            "median": 16648,
+            "min": 16576,
+            "max": 16784
+          },
+          "structure_reevaluation_matches": true
+        },
+        {
+          "program": "IntaRNA",
+          "noGU": true,
+          "arguments": [
+            "--outNoGUend=true"
+          ],
+          "samples": [
+            {
+              "wall_s": 0.05764365091454238,
+              "peak_rss_kib": 16660
+            },
+            {
+              "wall_s": 0.055861442000605166,
+              "peak_rss_kib": 16660
+            },
+            {
+              "wall_s": 0.0561534590087831,
+              "peak_rss_kib": 16968
+            },
+            {
+              "wall_s": 0.05309296608902514,
+              "peak_rss_kib": 16640
+            },
+            {
+              "wall_s": 0.055408544023521245,
+              "peak_rss_kib": 16836
+            }
+          ],
+          "prediction": {
+            "start1": 39,
+            "end1": 45,
+            "start2": 98,
+            "end2": 104,
+            "E_kcal_mol": -5.57,
+            "hybridDB": "39|||||||&98|||||||",
+            "length_nt": 7
+          },
+          "wall_s": {
+            "median": 0.055861442000605166,
+            "min": 0.05309296608902514,
+            "max": 0.05764365091454238
+          },
+          "peak_rss_kib": {
+            "median": 16660,
+            "min": 16640,
+            "max": 16968
+          },
+          "structure_reevaluation_matches": true
+        },
+        {
+          "program": "IntaRNAsnap",
+          "noGU": true,
+          "arguments": [
+            "--personality=IntaRNAsnap",
+            "--outNoGUend=true"
+          ],
+          "samples": [
+            {
+              "wall_s": 0.038256115978583694,
+              "peak_rss_kib": 16912
+            },
+            {
+              "wall_s": 0.03771536401472986,
+              "peak_rss_kib": 16772
+            },
+            {
+              "wall_s": 0.0362653280608356,
+              "peak_rss_kib": 16960
+            },
+            {
+              "wall_s": 0.03812957904301584,
+              "peak_rss_kib": 16784
+            },
+            {
+              "wall_s": 0.038168090977706015,
+              "peak_rss_kib": 16796
+            }
+          ],
+          "prediction": {
+            "start1": 39,
+            "end1": 45,
+            "start2": 98,
+            "end2": 104,
+            "E_kcal_mol": -5.57,
+            "hybridDB": "39|||||||&98|||||||",
+            "length_nt": 7
+          },
+          "wall_s": {
+            "median": 0.03812957904301584,
+            "min": 0.0362653280608356,
+            "max": 0.038256115978583694
+          },
+          "peak_rss_kib": {
+            "median": 16796,
+            "min": 16772,
+            "max": 16960
+          },
+          "structure_reevaluation_matches": true
+        }
+      ],
+      "comparisons": [
+        {
+          "noGU": false,
+          "delta_E_kcal_mol": 0.02,
+          "delta_length_nt": -17,
+          "wall_ratio_kix_over_default": 0.6692527928459269,
+          "rss_ratio_kix_over_default": 0.9843897824030274
+        },
+        {
+          "noGU": true,
+          "delta_E_kcal_mol": 0.0,
+          "delta_length_nt": 0,
+          "wall_ratio_kix_over_default": 0.6825741992589945,
+          "rss_ratio_kix_over_default": 1.0081632653061225
+        }
+      ]
+    },
+    {
+      "name": "phoB/GcvB",
+      "target": {
+        "file": "handson/phoB.fasta",
+        "header": "phoB|NC_000913|b1130|-200..+100|genom-subsequence",
+        "length_nt": 299,
+        "sequence": "GAGCTATCACGATGGTTGATGAGCTGAAATAAACCTCGTATCAGTGCCGGATGGCGATGCTGTCCGGCCTGCTTATTAAGATTATCCGCTTTTTATTTTTTCACTTTACCTCCCCTCCCCGCTGGTTTATTTAATGTTTACCCCCATAACCACATAATCGCGTTACACTATTTTAATAATTAAGACAGGGAGAAATAAAAATGCGCGTACTGGTTGTTGAAGACAATGCGTTGTTACGTCACCACCTTAAAGTTCAGATTCAGGATGCTGGTCATCAGGTCGATGACGCAGAAGATGCC",
+        "sha256": "ce42dc25417d696c2402cc1daaf22ee5045e68c095fcd578b4072395a09ffa98"
+      },
+      "query": {
+        "file": "handson/GcvB.fasta",
+        "header": "GcvB|NC_000913",
+        "length_nt": 201,
+        "sequence": "ACUUCCUGAGCCGGAACGAAAAGUUUUAUCGGAAUGCGUGUUCUGGUGAACUUUUGGCUUACGGUUGUGAUGUUGUGUUGUUGUGUUUGCAAUUGGUCUGCGAUUCAGACCAUGGUAGCAAAGCUACCUUUUUUCACUUCCUGUACAUUUACCCUGUCUGUCCAUAGUGAUUAAUGUAGCACCGCCUAAUUGCGGUGCUUU",
+        "sha256": "580180ec3b79266f0684c4c60d44b7b86ef6dbba087f67110d7c25c9ef31bcf7"
+      },
+      "runs": [
+        {
+          "program": "IntaRNA",
+          "noGU": false,
+          "arguments": [
+            "--outNoGUend=false"
+          ],
+          "samples": [
+            {
+              "wall_s": 1.0826977379620075,
+              "peak_rss_kib": 18528
+            },
+            {
+              "wall_s": 1.0389898010762408,
+              "peak_rss_kib": 18660
+            },
+            {
+              "wall_s": 1.0598379949806258,
+              "peak_rss_kib": 18448
+            },
+            {
+              "wall_s": 1.0448508230037987,
+              "peak_rss_kib": 18436
+            },
+            {
+              "wall_s": 1.0702672540210187,
+              "peak_rss_kib": 18336
+            }
+          ],
+          "prediction": {
+            "start1": 222,
+            "end1": 268,
+            "start2": 38,
+            "end2": 82,
+            "E_kcal_mol": -15.7,
+            "hybridDB": "222|||||||||.....|||||||.|||..||||||||...|||||||||&38|||||||||||||||||........|||.||||||||||||||||",
+            "length_nt": 47
+          },
+          "wall_s": {
+            "median": 1.0598379949806258,
+            "min": 1.0389898010762408,
+            "max": 1.0826977379620075
+          },
+          "peak_rss_kib": {
+            "median": 18448,
+            "min": 18336,
+            "max": 18660
+          },
+          "structure_reevaluation_matches": true
+        },
+        {
+          "program": "IntaRNAsnap",
+          "noGU": false,
+          "arguments": [
+            "--personality=IntaRNAsnap",
+            "--outNoGUend=false"
+          ],
+          "samples": [
+            {
+              "wall_s": 0.14911555196158588,
+              "peak_rss_kib": 18632
+            },
+            {
+              "wall_s": 0.1491208989173174,
+              "peak_rss_kib": 18456
+            },
+            {
+              "wall_s": 0.14401900197844952,
+              "peak_rss_kib": 18652
+            },
+            {
+              "wall_s": 0.15017399890348315,
+              "peak_rss_kib": 18356
+            },
+            {
+              "wall_s": 0.147206068970263,
+              "peak_rss_kib": 18068
+            }
+          ],
+          "prediction": {
+            "start1": 183,
+            "end1": 190,
+            "start2": 152,
+            "end2": 159,
+            "E_kcal_mol": -13.19,
+            "hybridDB": "183||||||||&152||||||||",
+            "length_nt": 8
+          },
+          "wall_s": {
+            "median": 0.14911555196158588,
+            "min": 0.14401900197844952,
+            "max": 0.15017399890348315
+          },
+          "peak_rss_kib": {
+            "median": 18456,
+            "min": 18068,
+            "max": 18652
+          },
+          "structure_reevaluation_matches": true
+        },
+        {
+          "program": "IntaRNA",
+          "noGU": true,
+          "arguments": [
+            "--outNoGUend=true"
+          ],
+          "samples": [
+            {
+              "wall_s": 0.7203351480420679,
+              "peak_rss_kib": 18328
+            },
+            {
+              "wall_s": 0.6980774619150907,
+              "peak_rss_kib": 18456
+            },
+            {
+              "wall_s": 0.7028307840228081,
+              "peak_rss_kib": 18396
+            },
+            {
+              "wall_s": 0.7158402650384232,
+              "peak_rss_kib": 18456
+            },
+            {
+              "wall_s": 0.7222581719979644,
+              "peak_rss_kib": 18508
+            }
+          ],
+          "prediction": {
+            "start1": 183,
+            "end1": 190,
+            "start2": 152,
+            "end2": 159,
+            "E_kcal_mol": -13.19,
+            "hybridDB": "183||||||||&152||||||||",
+            "length_nt": 8
+          },
+          "wall_s": {
+            "median": 0.7158402650384232,
+            "min": 0.6980774619150907,
+            "max": 0.7222581719979644
+          },
+          "peak_rss_kib": {
+            "median": 18456,
+            "min": 18328,
+            "max": 18508
+          },
+          "structure_reevaluation_matches": true
+        },
+        {
+          "program": "IntaRNAsnap",
+          "noGU": true,
+          "arguments": [
+            "--personality=IntaRNAsnap",
+            "--outNoGUend=true"
+          ],
+          "samples": [
+            {
+              "wall_s": 0.14456413604784757,
+              "peak_rss_kib": 18192
+            },
+            {
+              "wall_s": 0.14236011693719774,
+              "peak_rss_kib": 18364
+            },
+            {
+              "wall_s": 0.1507548289373517,
+              "peak_rss_kib": 18660
+            },
+            {
+              "wall_s": 0.14155757101252675,
+              "peak_rss_kib": 18452
+            },
+            {
+              "wall_s": 0.15410517202690244,
+              "peak_rss_kib": 18656
+            }
+          ],
+          "prediction": {
+            "start1": 183,
+            "end1": 190,
+            "start2": 152,
+            "end2": 159,
+            "E_kcal_mol": -13.19,
+            "hybridDB": "183||||||||&152||||||||",
+            "length_nt": 8
+          },
+          "wall_s": {
+            "median": 0.14456413604784757,
+            "min": 0.14155757101252675,
+            "max": 0.15410517202690244
+          },
+          "peak_rss_kib": {
+            "median": 18452,
+            "min": 18192,
+            "max": 18660
+          },
+          "structure_reevaluation_matches": true
+        }
+      ],
+      "comparisons": [
+        {
+          "noGU": false,
+          "delta_E_kcal_mol": 2.51,
+          "delta_length_nt": -39,
+          "wall_ratio_kix_over_default": 0.1406965523672434,
+          "rss_ratio_kix_over_default": 1.0004336513443193
+        },
+        {
+          "noGU": true,
+          "delta_E_kcal_mol": 0.0,
+          "delta_length_nt": 0,
+          "wall_ratio_kix_over_default": 0.20195027174126337,
+          "rss_ratio_kix_over_default": 0.9997832683138275
+        }
+      ]
+    },
+    {
+      "name": "ilvE/GcvB.ST",
+      "target": {
+        "file": "handson/ilvE.fasta",
+        "header": "ilvE|NC_003197|STM3903|-200..+100|genom-subsequence",
+        "length_nt": 299,
+        "sequence": "GGTTTTCAGGTGTGCTCCATGAATATGGAAGCCGCGACCGATGCGCAGAATATAAATATTGAATTGACCGTTGCCAGTCCCCGGTCGGTCGACTTACTGTTTAGTCAGTTAAGTAAACTGGTAGATGTTGCGCATGTCGCGATCTGCCAGAGCGCTGCCACATCACAACAAATCCGCGCCTGAGCGCAAAAGGAAGAAAAATGACGACGAAAAAAGCTGATTATATTTGGTTCAATGGCGAGATGGTGCGCTGGGAAGACGCGAAGGTTCACGTAATGTCTCACGCGCTGCACTACGGT",
+        "sha256": "6fd5cab8545dd5cede4b8d2d23a276f7346a56706b3121de3bcf954d60a2068e"
+      },
+      "query": {
+        "file": "handson/GcvB.ST.fasta",
+        "header": "GcvB|NC_003197",
+        "length_nt": 200,
+        "sequence": "ACUUCCUGAGCCGGAACGAAAAGUUUUAUCGGAAUGCGUGUUCUGAUGGGCUUUUGGCUUACGGUUGUGAUGUUGUGUUGUUGUGUUUGCAAUUGGUCUGCGAUUCAGACCACGGUAGCGAGACUACCCUUUUUCACUUCCUGUACAUUUACCCUGUCUGUCCAUAGUGAUUAAUGUAGCACCGCCAUAUUGCGGUGCUU",
+        "sha256": "529466282586ededdea0ed04199197f04978e2be14245feed0655bc6850206bb"
+      },
+      "runs": [
+        {
+          "program": "IntaRNA",
+          "noGU": false,
+          "arguments": [
+            "--outNoGUend=false"
+          ],
+          "samples": [
+            {
+              "wall_s": 1.3832573930267245,
+              "peak_rss_kib": 18452
+            },
+            {
+              "wall_s": 1.286010636948049,
+              "peak_rss_kib": 18452
+            },
+            {
+              "wall_s": 1.3232459670398384,
+              "peak_rss_kib": 18064
+            },
+            {
+              "wall_s": 1.2741687439847738,
+              "peak_rss_kib": 18440
+            },
+            {
+              "wall_s": 1.2935187839902937,
+              "peak_rss_kib": 18336
+            }
+          ],
+          "prediction": {
+            "start1": 33,
+            "end1": 81,
+            "start2": 48,
+            "end2": 102,
+            "E_kcal_mol": -14.24,
+            "hybridDB": "33||||||||||..||||||||..|||||...|||||||||.|||||.|||&48|||...|||||..||||||..|||...|||||..|||.|||||.|||||||.|||",
+            "length_nt": 55
+          },
+          "wall_s": {
+            "median": 1.2935187839902937,
+            "min": 1.2741687439847738,
+            "max": 1.3832573930267245
+          },
+          "peak_rss_kib": {
+            "median": 18440,
+            "min": 18064,
+            "max": 18452
+          },
+          "structure_reevaluation_matches": true
+        },
+        {
+          "program": "IntaRNAsnap",
+          "noGU": false,
+          "arguments": [
+            "--personality=IntaRNAsnap",
+            "--outNoGUend=false"
+          ],
+          "samples": [
+            {
+              "wall_s": 0.14518713497091085,
+              "peak_rss_kib": 18452
+            },
+            {
+              "wall_s": 0.1470703890081495,
+              "peak_rss_kib": 18512
+            },
+            {
+              "wall_s": 0.14972956804558635,
+              "peak_rss_kib": 18512
+            },
+            {
+              "wall_s": 0.1487087750574574,
+              "peak_rss_kib": 18772
+            },
+            {
+              "wall_s": 0.1428277890663594,
+              "peak_rss_kib": 18452
+            }
+          ],
+          "prediction": {
+            "start1": 157,
+            "end1": 169,
+            "start2": 64,
+            "end2": 76,
+            "E_kcal_mol": -9.84,
+            "hybridDB": "157||.||||||||||&64||||||||||.||",
+            "length_nt": 13
+          },
+          "wall_s": {
+            "median": 0.1470703890081495,
+            "min": 0.1428277890663594,
+            "max": 0.14972956804558635
+          },
+          "peak_rss_kib": {
+            "median": 18512,
+            "min": 18452,
+            "max": 18772
+          },
+          "structure_reevaluation_matches": true
+        },
+        {
+          "program": "IntaRNA",
+          "noGU": true,
+          "arguments": [
+            "--outNoGUend=true"
+          ],
+          "samples": [
+            {
+              "wall_s": 1.0233468420337886,
+              "peak_rss_kib": 18588
+            },
+            {
+              "wall_s": 1.0323557329829782,
+              "peak_rss_kib": 18448
+            },
+            {
+              "wall_s": 1.0218827379867435,
+              "peak_rss_kib": 18648
+            },
+            {
+              "wall_s": 1.0279411339433864,
+              "peak_rss_kib": 18560
+            },
+            {
+              "wall_s": 0.9871100430609658,
+              "peak_rss_kib": 18520
+            }
+          ],
+          "prediction": {
+            "start1": 131,
+            "end1": 170,
+            "start2": 39,
+            "end2": 77,
+            "E_kcal_mol": -10.55,
+            "hybridDB": "131||||||||||||||.||||||.....|||.|||||.||||&39||||.||||||||.||||||....|||||||||||.|||",
+            "length_nt": 40
+          },
+          "wall_s": {
+            "median": 1.0233468420337886,
+            "min": 0.9871100430609658,
+            "max": 1.0323557329829782
+          },
+          "peak_rss_kib": {
+            "median": 18560,
+            "min": 18448,
+            "max": 18648
+          },
+          "structure_reevaluation_matches": true
+        },
+        {
+          "program": "IntaRNAsnap",
+          "noGU": true,
+          "arguments": [
+            "--personality=IntaRNAsnap",
+            "--outNoGUend=true"
+          ],
+          "samples": [
+            {
+              "wall_s": 0.14092493208590895,
+              "peak_rss_kib": 18624
+            },
+            {
+              "wall_s": 0.14769695396535099,
+              "peak_rss_kib": 18432
+            },
+            {
+              "wall_s": 0.143615689012222,
+              "peak_rss_kib": 18500
+            },
+            {
+              "wall_s": 0.14164107700344175,
+              "peak_rss_kib": 18388
+            },
+            {
+              "wall_s": 0.1450244919396937,
+              "peak_rss_kib": 18300
+            }
+          ],
+          "prediction": {
+            "start1": 160,
+            "end1": 169,
+            "start2": 64,
+            "end2": 73,
+            "E_kcal_mol": -9.13,
+            "hybridDB": "160||||||||||&64||||||||||",
+            "length_nt": 10
+          },
+          "wall_s": {
+            "median": 0.143615689012222,
+            "min": 0.14092493208590895,
+            "max": 0.14769695396535099
+          },
+          "peak_rss_kib": {
+            "median": 18432,
+            "min": 18300,
+            "max": 18624
+          },
+          "structure_reevaluation_matches": true
+        }
+      ],
+      "comparisons": [
+        {
+          "noGU": false,
+          "delta_E_kcal_mol": 4.4,
+          "delta_length_nt": -42,
+          "wall_ratio_kix_over_default": 0.11369791519722769,
+          "rss_ratio_kix_over_default": 1.0039045553145336
+        },
+        {
+          "noGU": true,
+          "delta_E_kcal_mol": 1.42,
+          "delta_length_nt": -30,
+          "wall_ratio_kix_over_default": 0.14033921160767127,
+          "rss_ratio_kix_over_default": 0.993103448275862
+        }
+      ]
+    }
+  ]
+}
