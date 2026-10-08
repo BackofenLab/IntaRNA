@@ -23,6 +23,9 @@ check_PROGRAMS = runApiTests
 # test sources
 runApiTests_SOURCES =	\
 					catch.hpp \
+					SeededChainOracle.h \
+					SeededTheoryFixtures.h \
+					SeededPartitionFunction_test.cpp \
 					testEasyLoggingSetup.icc \
 					AccessibilityConstraint_test.cpp \
 					AccessibilityFromStream_test.cpp \
@@ -73,6 +76,9 @@ LIBS= 	-L$(top_builddir)/src/IntaRNA -lIntaRNA \
 # add source include for compilation
 runApiTests_CXXFLAGS =	-I$(top_builddir)/src \
 						@AM_CXXFLAGS@ @CXXFLAGS@ \
-						-DELPP_NO_LOG_TO_FILE
+						-DELPP_NO_LOG_TO_FILE \
+						-DINTARNA_TEST_DATA_DIR=\"$(abs_srcdir)/data\"
 
 
+
+EXTRA_DIST = tools/export-seeded-theory.py

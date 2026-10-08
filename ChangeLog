@@ -42,6 +42,9 @@
 
 ## Technical changes and Optimizations
 
+- establish independent weighted-chain fixtures for seeded pair probabilities
+  (issue #257, implementation step 1)
+
 - document the implementation plan for exact seeded base-pair probabilities,
   including algorithm comparison, numerical/output contracts and validation;
   no prediction or probability implementation changes (issue #257)
@@ -132,6 +135,13 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261008 Alexander Mitrofanov
+ * tests/SeededChainOracle.h, tests/SeededPartitionFunction_test.cpp, tests/Makefile.am :
+   + independently enumerate weighted chains, raw boundaries and pair masses;
+     verify overlapping witnesses and singleton/noLP semantics (PR #258, step 1)
+   + preserve all ten high-precision theory fixtures with an explicit coordinate
+     conversion and reproducible exporter; do not quantize their accessibility
 
 261008 Alexander Mitrofanov
  * doc/analysis/base-pair-probabilities-plan.md :
