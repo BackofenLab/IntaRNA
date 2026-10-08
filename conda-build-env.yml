@@ -14,3 +14,4 @@ dependencies:
   - boost-cpp
   - viennarna>=2.4.14
   - cxx-compiler
+  - make
