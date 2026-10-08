@@ -160,6 +160,7 @@ OutputHandlerHub
 	// dont delete on destruction (should be done by original) to avoid double cleanup
 	, deleteOutListOnDestruction(false)
 {
+	exactPartition=toCopy.exactPartition;
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -298,6 +299,7 @@ operator= ( const OutputHandlerHub & toCopy)
 	outList.clear();
 
 	// copy data
+	exactPartition=toCopy.exactPartition;
 	outList = toCopy.outList;
 	// ensure this copy doesnt delete the list content
 	deleteOutListOnDestruction = false;

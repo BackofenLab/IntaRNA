@@ -69,6 +69,7 @@ extern "C" {
 
 #include "IntaRNA/SeedHandlerMfe.h"
 #include "IntaRNA/BasePairProbabilityWriter.h"
+#include <mutex>
 #include "IntaRNA/SeedHandlerNoBulge.h"
 
 #include "IntaRNA/OutputStreamHandlerSortedCsv.h"
@@ -2491,6 +2492,13 @@ getTemperature() const {
 bool CommandLineParsing::hasBasePairProbabilityOutput() const {
 	return !outPrefix2streamName.at(OutPrefixCode::OP_bpProb).empty();
 }
+BasePairProbabilities * CommandLineParsing::getBasePairProbabilityResult(const InteractionEnergy & energy) const {
+	if (!hasBasePairProbabilityOutput()) return nullptr;
+	std::unique_ptr<SeedHandler> handler(getSeedHandler(energy));
+	if (!handler->guaranteesStackOnlySeeds())
+		throw std::invalid_argument("bpProb requires a stack-only seed handler; bulged seeds are unsupported");
+	return new BasePairProbabilities(energy.size1(),energy.size2());
+}
 void CommandLineParsing::writeBasePairProbabilities(const BasePairProbabilities & result,const InteractionEnergy & energy) const {
 	const auto & t=energy.getAccessibility1().getSequence();
 	const auto & q=energy.getAccessibility2().getAccessibilityOrigin().getSequence();
@@ -2787,6 +2795,8 @@ const SeedConstraint &
 CommandLineParsing::
 getSeedConstraint( const InteractionEnergy & energy ) const
 {
+	static std::mutex seedInitialization;
+	const std::lock_guard<std::mutex> lock(seedInitialization);
 	if (seedConstraint == NULL) {
 		// setup according to user data
 		seedConstraint = new SeedConstraint(

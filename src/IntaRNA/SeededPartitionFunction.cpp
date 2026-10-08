@@ -20,7 +20,7 @@ SeededPartitionFunction::Result SeededPartitionFunction::compute(
 	seeds.forEachStart([&](size_t p1,size_t p2) {
 		const Pair p{p1,p2}; if (!w.valid(p)) return;
 		const size_t n=std::min(d.span1,d.n-p1),m=std::min(d.span2,d.m-p2);
-		Matrix<Z_type> h(n*m,states),dh;
+		Matrix<Z_type> h(matrix_detail::product(n,m),states),dh;
 		Matrix<std::array<Z_type,2>> total(n,m),dt;
 		Matrix<unsigned char> valid(n,m);
 		Matrix<size_t> ending(n,m);

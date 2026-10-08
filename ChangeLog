@@ -46,6 +46,10 @@
 
 ## Technical changes and Optimizations
 
+- validate exact pair probabilities on independent mathematical/native oracles,
+  release/debug suites and installed consumers; document measured runtime and
+  storage, and supply the required logging link dependency (issue #257, step 7)
+
 - collect raw actual-pair masses and disjoint regional denominators with explicit
   successful-empty/nonempty/failed lifecycle (issue #257, step 5)
 
@@ -151,6 +155,21 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261008 Alexander Mitrofanov
+ * tests, README.md, doc/analysis, doc/seeded-probabilities-example.cpp :
+   + finish probability regression and native performance gates, document the
+     selected algorithm, supported ensemble, public API and numerical limits
+ * CommandLineParsing, IntaRNA.cpp, OutputHandlerHub, SeededPartitionFunction :
+   + retain copied output policy, check dense-grid dimension products, serialize
+     seed-constraint initialization and emit empty matrices for too-short pairs
+   + preserve dynamic OpenMP exceptions and report fatal failures as errors even
+     with redirected warning logs; reject unsupported empty searches (PR #258)
+ * IntaRNA.pc.in, .github/workflows/build.yml, Makefile.am :
+   + link the logging dependency required by installed predictor consumers;
+     compile/run a real probability consumer in CI and distribute new artifacts
+   + GCC 14 release/debug: seven suites pass, 91,361 API assertions; all 74
+     installed headers, installed consumer and source distribution checks pass
 
 261008 Alexander Mitrofanov
  * BasePairProbabilityWriter, CommandLineParsing, IntaRNA.cpp, CLI/API tests :

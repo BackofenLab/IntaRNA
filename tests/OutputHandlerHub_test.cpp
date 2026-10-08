@@ -49,3 +49,14 @@ TEST_CASE("OutputHandlerHub reports the largest child count", "[OutputHandlerHub
 	REQUIRE(second.reported() == 2);
 	REQUIRE(hub.reported() == 2);
 }
+
+TEST_CASE("exact-zero partition status follows copied hubs and new children", "[OutputHandlerHub]") {
+	OutputConstraint constraint;
+	CountingOutputHandler output(constraint),other(constraint);
+	OutputHandlerHub hub(constraint,false);hub.addOutputHandler(&output);hub.setExactPartition(true);
+	hub.incrementZ(1e-100);
+	REQUIRE(hub.hasNonzeroZ());
+	OutputHandlerHub copy(hub);REQUIRE(copy.usesExactPartition());REQUIRE(copy.hasNonzeroZ());
+	copy.addOutputHandler(&other);REQUIRE(other.usesExactPartition());
+	OutputHandlerHub assigned(constraint,false);assigned=hub;REQUIRE(assigned.usesExactPartition());
+}

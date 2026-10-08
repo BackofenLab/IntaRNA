@@ -70,3 +70,18 @@ TEST_CASE("stack-domain admission preserves handler-specific threshold equality"
 	SeedHandlerExplicit ex(e,explicitC);REQUIRE(ex.fillSeed(0,2,0,2)==2);
 	REQUIRE(StackSeedDomain(ex,3,3,3,3).maxSeedLength()==2);
 }
+
+TEST_CASE("explicit stack capability inspects the retained minimum-energy pattern", "[StackSeedDomain]") {
+	#include "testEasyLoggingSetup.icc"
+	RnaSequence t("t","GGGG"),q("q","CCCC");
+	AccessibilityDisabled at(t,0,nullptr),aq(q,0,nullptr);ReverseAccessibility ar(aq);
+	InteractionEnergyBasePair e(at,ar);
+	SeedConstraint sc(2,0,0,0,E_INF,Accessibility::ED_UPPER_BOUND,E_INF,
+			IndexRangeList(),IndexRangeList(),"1|.|&2|.|,1|||&2|||",false,false,false);
+	SeedHandlerExplicit handler(e,sc);
+	REQUIRE(handler.guaranteesStackOnlySeeds());
+	REQUIRE(handler.fillSeed(0,3,0,3)==1);
+	StackSeedDomain domain(handler,4,4,4,4);
+	REQUIRE(domain.seedLength(0,0)==3);
+	REQUIRE(domain.maxSeedLength()==3); // constraint's minimum BP is only two
+}

@@ -291,6 +291,10 @@ public:
 
 	/** @return whether actual base-pair matrix output was requested */
 	bool hasBasePairProbabilityOutput() const;
+	/** Allocate a pair result after validating the actual seed capability.
+	 * @return owned result or nullptr when pair output is not requested
+	 */
+	BasePairProbabilities * getBasePairProbabilityResult(const InteractionEnergy & energy) const;
 	/** Publish a successful sequence-pair result using ordinary filename rules. */
 	void writeBasePairProbabilities(const BasePairProbabilities & result,const InteractionEnergy & energy) const;
 

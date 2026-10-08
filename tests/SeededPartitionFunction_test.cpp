@@ -64,6 +64,14 @@ void compareKernels(const seeded_oracle::Model & m) {
 	const auto oracle=seeded_oracle::enumerate(m);
 	const auto seeds=domainFor(m);
 	Kernel::Domain d{m.n,m.m,m.span1,m.span2,m.n,m.m,m.noLP};
+	// Every allowed vertex as a singleton seed denotes the unconstrained domain.
+	// Check the partition decomposition on all starts, including those pruned in
+	// the original sparse-seed calculation.
+	auto all=m;all.seeds.clear();
+	for(size_t i=0;i<m.n;++i) for(size_t j=0;j<m.m;++j)
+		if(m.valid({i,j})) all.seeds.push_back({{i,j}});
+	const auto unconstrained=Kernel::compute(d,domainFor(all),weightsFor(all),false);
+	REQUIRE(double(unconstrained.z)==Approx(double(oracle.z+oracle.unseeded)).epsilon(2e-12));
 	for(bool suffix:{false,true}) {
 		CAPTURE(suffix);
 		auto w=weightsFor(m);
@@ -113,8 +121,8 @@ TEST_CASE("checked partition arithmetic distinguishes empty and range failure", 
 	REQUIRE(A::multiply(0,1)==0);
 	REQUIRE_THROWS_AS(A::exp(-1e6),std::range_error);
 	REQUIRE_THROWS_AS(A::exp(1e6),std::range_error);
-	REQUIRE_THROWS_AS(A::multiply(1e-200,1e-200),std::range_error);
-	REQUIRE_THROWS_AS(A::divide(1e-200,1e200),std::range_error);
+	REQUIRE_THROWS_AS(A::multiply(std::numeric_limits<Z_type>::min(),Z_type(.1)),std::range_error);
+	REQUIRE_THROWS_AS(A::divide(std::numeric_limits<Z_type>::min(),std::numeric_limits<Z_type>::max()),std::range_error);
 	REQUIRE_THROWS_AS(A::check(std::numeric_limits<Z_type>::quiet_NaN()),std::range_error);
 	REQUIRE_THROWS_AS(A::add(std::numeric_limits<Z_type>::max(),std::numeric_limits<Z_type>::max()),std::range_error);
 }

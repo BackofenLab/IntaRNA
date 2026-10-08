@@ -118,6 +118,7 @@ The following topics are covered by this documentation:
     - [Minimal energy profiles](#profileMinE)
     - [Minimal energy for all intermolecular index pairs](#pairMinE)
     - [Spot probability profiles](#profileSpotProb) using partition functions
+    - [Actual base-pair probabilities](#bpProb)
     - [Interaction probabilities for interaction spots of interest](#spotProb)
     - [Accessibility and unpaired probabilities](#accessibility)
       - [Local versus global unpaired probabilities](#accLocalGlobal)
@@ -1875,13 +1876,14 @@ targeted file/stream name:
 
 - `qSpotProb:`/`tSpotProb:` [query/target's spot probability profile](#profileSpotProb) (CSV format), respectively
 - `spotProb:` [all spot probabilities](#spotProb) (CSV format)
+- `bpProb:` [actual base-pair probabilities](#bpProb) for exact stack-seeded ensembles (CSV matrix)
 - `qMinE:`/`tMinE:` [the query/target's minimal interaction energy profile](profileMinE) (CSV format), respectively
 - `pMinE:` [minimal interaction energy for all query-target index pairs](pairMinE) (CSV format)
 - `qAcc:`/`tAcc:` the [query/target's ED accessibility values](#accessibility) (RNAplfold-like format), respectively
 - `qPu:`/`tPu:` the [query/target's unpaired probabilities](#accessibility) (RNAplfold format; rounded!!), respectively
 
 Note, for *multiple sequences* in FASTA input, the provided file names are suffixed by
-- `-t#q#` : for `*spotProb` and `*minE` output, and
+- `-t#q#` : for `bpProb`, `*spotProb` and `*minE` output, and
 - `-s#` : for `*Acc` and `*Pu` output,
 where `#` denotes the according target/query sequence number
 within the input where numbering starts with 1.
@@ -2005,6 +2007,63 @@ or `STDERR` instead of a file name.
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
 <br />
+<a name="bpProb" />
+
+## Actual base-pair probabilities
+
+`--out=bpProb:FILE` writes the probability that each target/query nucleotide pair
+actually pairs, conditional on an allowed seeded interaction. It requires
+`--model=P --mode=M` and a stack-only seed handler. For example:
+
+```sh
+IntaRNA -t GGAGGG -q CCCC --energy=B --acc=N --seedBP=2 \
+  --model=P --mode=M --out=bpProb:pairs.csv
+```
+
+Every complete ordered interaction is counted once, even when it contains
+several overlapping or disjoint seeds. The exact stack-seeded partition backend
+is also used without `bpProb`, so requesting the matrix does not change `Zall`.
+Computed seeds preserve their handler-specific admission thresholds. Explicit
+stacked seeds may have different lengths, including singletons; competing
+explicit patterns at the same start still retain only the selected minimum-energy
+pattern. Other predictors retain their existing behavior. Heuristic, kinetic,
+evaluation, seed-only, unseeded and bulged-seed `bpProb` requests are rejected.
+
+Rows follow the original target and columns the original query, both 5' to 3'.
+The header starts with `bpProb`; labels contain each nucleotide and its display
+index (including `tIdxPos0`/`qIdxPos0` shifts). Entries use sufficient significant
+digits for the partition type, with scientific notation for small probabilities.
+A successful empty ensemble contains `NA`; pairs absent from a nonempty ensemble
+have probability zero. The output uses `outSep`, the usual multi-FASTA filename
+suffixes and gzip support. `STDOUT`/`STDERR` receive synchronized complete blocks.
+
+The ensemble is the union of the searched, disjoint target/query region pairs.
+Interactions crossing excluded region boundaries are absent. Region selection,
+`outMinPu`, accessibility, seed admission, loop/span limits, `outNoLP` and
+`outNoGUend` can restrict it. Ranked reporting options (`outNumber`, `outMaxE`,
+`outDeltaE`, overlap selection and `outPerRegion`) do not select the probability
+ensemble. Raw numerators and denominators are merged before normalization.
+Model P continues to reject nonzero `windowWidth`.
+
+Unlike `spotProb` coverage, this output uses interior pair chains: an unpaired
+bulge can have positive site coverage and zero actual-pair probability. There
+is no added unbound-state weight. Individual pair events can coexist, so
+`1 - sum(pair probabilities)` is not a probability of no interaction.
+
+The backend checks nonnegative arithmetic and reports numerical range failures
+as errors, including underflow, overflow and NaN. Positive subnormals are rejected;
+there is currently no scaling fallback. Failed or cancelled regional work never
+produces a successful-looking probability matrix. Ordinary floating-point
+rounding remains; "exact" describes the enumerated ensemble, not real arithmetic.
+
+For library use, keep a `BasePairProbabilities` owner alive across predictions,
+pass its optional non-owning pointer to `PredictorMfeEns2dSeedExtension`, and call
+`finalize()` only after all requested disjoint regions succeed. A writer is called
+explicitly after finalization; its destructor publishes nothing. The output
+constraint must enable `needZall`. The [standalone API example](doc/seeded-probabilities-example.cpp)
+and [implementation validation report](doc/analysis/seeded-probabilities-validation.md)
+show the public API and measured limits.
+
 <a name="spotProb" />
 
 ### Interaction probabilities for interaction spots of interest
@@ -2387,8 +2446,10 @@ Doxygen and Graphviz and run `bash doc/build-api.sh`, then open
 Autotools, and publishing instructions.
 
 The [seeded base-pair probability implementation plan](doc/analysis/base-pair-probabilities-plan.md)
-records the proposed algorithms, numerical contracts, integration, and validation
-for issue #257. It is a design document; the proposed output is not implemented.
+records the reviewed algorithms, numerical contracts, integration, and validation
+for issue #257. The implementation selects the suffix backend after the
+[measured kernel comparison](doc/analysis/seeded-kernel-comparison.md);
+[actual base-pair output](#bpProb) is available for exact stack-seeded ensembles.
 
 When IntaRNA is build while `pkg-config` is present, according pkg-config
 information is generated and installed too.

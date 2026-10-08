@@ -670,6 +670,7 @@ TEST_CASE("tiny exhaustive seed oracle for exact predictor families",
 }
 
 #include "IntaRNA/AccessibilityBasePair.h"
+#include "IntaRNA/AccessibilityVrna.h"
 #include "IntaRNA/InteractionEnergyVrna.h"
 #include "IntaRNA/SeedHandlerNoBulge.h"
 #include "IntaRNA/OutputHandlerHub.h"
@@ -717,7 +718,9 @@ TEST_CASE("native exact stacked partitions agree beyond the unique-anchor domain
 	ReverseAccessibility ar(aq);
 	InteractionEnergyBasePair simple(at,ar,2,1);
 	VrnaHandler vrna;
-	InteractionEnergyVrna nearest(at,ar,vrna,2,1);
+	AccessibilityVrna nativeTarget(t,6,nullptr,vrna),nativeQuery(q,5,nullptr,vrna);
+	ReverseAccessibility nativeReverse(nativeQuery);
+	InteractionEnergyVrna nearest(nativeTarget,nativeReverse,vrna,2,1);
 	for(bool noLP:{false,true}) for(bool noGU:{false,true}) {
 		checkNativeStackPartition(simple,noLP,noGU);
 		checkNativeStackPartition(nearest,noLP,noGU);

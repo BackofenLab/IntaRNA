@@ -20,6 +20,8 @@ def run(t='GGAGGG', q='CCCC', options=(), success=True):
     p = subprocess.run([BIN, f'--target={t}', f'--query={q}', *common, *options],
                        text=True, capture_output=True)
     assert (p.returncode == 0) == success, (p.args, p.returncode, p.stdout, p.stderr)
+    if not success:
+        assert p.returncode>0 and 'ERROR' in p.stdout+p.stderr, (p.returncode,p.stdout,p.stderr)
     return p
 
 def matrix(path):
@@ -86,13 +88,19 @@ with tempfile.TemporaryDirectory(prefix='intarna-bpp-') as tmp:
     tiny,tiny_values=predict('GGGG','CCCC',seedopt+['--energyAdd=100','--outMaxE=999'])
     same(tiny_values,single)
     ztext,etext=tiny.stdout.splitlines()[1].split(';');assert 0<float(ztext)<1e-19 and etext!='NA'
+    diagnostics=run('GGGG','CCCC',seedopt+['--energyAdd=100','--outMaxE=999','--outCsvCols=Zall,Eall,EallTotal,P_E'])
+    assert 'NA' not in diagnostics.stdout and float(diagnostics.stdout.splitlines()[1].split(';')[-1])>0
     ensemble=run('GGGG','CCCC',seedopt+['--energyAdd=100','--outMode=E'])
     assert 'Eall 0.00\n' not in ensemble.stdout
+    # Explicit GU seed admission is separate from complete-interaction GU ends.
+    _,gu=predict('GGG','CUC',['--seedTQ=2|&2|','--seedNoGU','--seedNoGUend','--outNoGUend'])
+    same(gu,[[0,0,1],[0,1,0],[1,0,0]])
     # Labels use original sequence order and signed display shifts that skip zero.
     _,normal=predict('GAGGG','CCUCC')
     _,shifted=predict('GAGGG','CCUCC',['--tIdxPos0=-2','--qIdxPos0=5'])
     cols,rows,_=matrix(path);assert cols==['C_5','C_6','U_7','C_8','C_9'];assert rows==['G_-2','A_-1','G_1','G_2','G_3'];same(normal,shifted)
     _,empty=predict('AAAA','AAAA');assert all(v is None for row in empty for v in row)
+    _,short=predict('G','C');assert short==[[None]]
     # Coverage and actual pairing differ at the unpaired A bulge.
     spot=d/'spot.csv';_,with_spot=predict(extra=[f'--out=spotProb:{spot}'])
     same(with_spot,values)

@@ -1,7 +1,11 @@
 # Implementation plan: seeded base-pair probabilities
 
-Status: design only. This document addresses [issue #257](https://github.com/BackofenLab/IntaRNA/issues/257);
-it does not implement the recurrences, proposed APIs, or proposed output options.
+Status: implemented in the seven milestone commits of [PR #258](https://github.com/BackofenLab/IntaRNA/pull/258).
+This document preserves the reviewed design for [issue #257](https://github.com/BackofenLab/IntaRNA/issues/257).
+The [kernel comparison](seeded-kernel-comparison.md) selected the suffix automaton
+for production; sections 6–7 below describe the retained test-only maximal-stack
+candidate. See [implementation validation](seeded-probabilities-validation.md)
+for the delivered API, tests, measurements and numerical limits.
 
 The code assessment uses IntaRNA revision
 [`5454030a04bbcde79b2e75a0614dadf6f1115e6f`](https://github.com/BackofenLab/IntaRNA/tree/5454030a04bbcde79b2e75a0614dadf6f1115e6f).
@@ -490,7 +494,7 @@ seed-locality and memory cases used in the early algorithm comparison.
 
 ## 11. Implementation sequence and affected components
 
-Each milestone has an exit condition; none is implemented by this document.
+Each milestone has an exit condition and a separate implementation commit in PR #258.
 
 | Order | Work | Main files/components | Exit condition |
 | --- | --- | --- | --- |
@@ -514,6 +518,6 @@ Record toolchain, options, inputs, timings, peak memory, and numerical differenc
 An intentionally corrected partition can change ensemble rankings; justify those
 changes against the oracle instead of regenerating expected files blindly.
 
-For this documentation-only plan, validate references, equations, pseudocode
-contracts, Markdown structure, distribution registration, and `git diff --check`.
-No C++ implementation build or performance result is claimed by this plan.
+The original plan was validated as documentation only. Implementation builds,
+independent numerical checks and performance measurements are recorded in the
+linked validation report.

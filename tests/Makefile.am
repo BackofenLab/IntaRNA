@@ -27,6 +27,7 @@ runApiTests_SOURCES =	\
 					SeededTheoryFixtures.h \
 					SeededStackKernel.h \
 					SeededPartitionFunction_test.cpp \
+					SeededNativeBenchmark_test.cpp \
 					StackSeedDomain_test.cpp \
 					BasePairProbabilities_test.cpp \
 					testEasyLoggingSetup.icc \
