@@ -15,3 +15,4 @@ dependencies:
   - viennarna>=2.4.14
   - cxx-compiler
   - make
+  - unix-ar
