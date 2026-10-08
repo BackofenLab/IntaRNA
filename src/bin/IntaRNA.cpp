@@ -243,6 +243,11 @@ int main(int argc, char **argv){
 										(parameters.reportBestPerRegion() ? std::numeric_limits<size_t>::max() : 1 )
 											* parameters.getOutputConstraint(*energy).reportMax );
 
+								// One owner spans all disjoint searched regions for this sequence pair.
+								std::unique_ptr<BasePairProbabilities> pairProbabilities;
+								if (parameters.hasBasePairProbabilityOutput())
+									pairProbabilities=std::make_unique<BasePairProbabilities>(energy->size1(),energy->size2());
+
 								// run prediction for all range combinations
 								for(const IndexRange & tRange : parameters.getTargetRanges(*energy, targetNumber, *targetAcc)) {
 								for(const IndexRange & qRange : parameters.getQueryRanges(*energy, queryNumber, *queryAcc.at(queryNumber).original)) {
@@ -289,7 +294,7 @@ int main(int argc, char **argv){
 												// The prediction collector merges equal-energy structures with
 												// identical boundaries and pair counts, even if inner pairs differ.
 												std::unique_ptr<Predictor> predictor(parameters.getPredictor( *energy,
-														parameters.isEvaluation() ? *output : bestInteractions ));
+														parameters.isEvaluation() ? *output : bestInteractions, pairProbabilities.get() ));
 												INTARNA_CHECK_NOT_NULL(predictor.get(),"predictor initialization failed");
 		
 												// run prediction for this window combination
@@ -330,6 +335,15 @@ int main(int argc, char **argv){
 									}} // window combinations
 								} // target ranges
 								} // query ranges
+								bool publish=true;
+#if INTARNA_MULITHREADING
+								#pragma omp flush(threadAborted)
+								publish=!threadAborted;
+#endif
+								if (pairProbabilities) {
+									if (publish) pairProbabilities->finalize(); else pairProbabilities->fail();
+								}
+								if (publish) {
 #if INTARNA_MULITHREADING
 								#pragma omp critical(intarna_omp_outputHandlerUpdate)
 #endif
@@ -348,6 +362,9 @@ int main(int argc, char **argv){
 										output->add(*inter);
 									}
 								}
+
+								if (pairProbabilities) parameters.writeBasePairProbabilities(*pairProbabilities,*energy);
+								} // successful sequence-pair computation
 
 #if INTARNA_MULITHREADING
 								#pragma omp atomic update

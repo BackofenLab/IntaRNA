@@ -48,3 +48,25 @@ TEST_CASE("stack capability and active occurrence domain", "[StackSeedDomain]") 
 	SeedHandlerExplicit eb(energy,explicitB);
 	REQUIRE_FALSE(eb.guaranteesStackOnlySeeds());
 }
+
+TEST_CASE("stack-domain admission preserves handler-specific threshold equality", "[StackSeedDomain]") {
+	#include "testEasyLoggingSetup.icc"
+	RnaSequence t("t","GGG"),q("q","CCC");
+	AccessibilityDisabled at(t,0,nullptr),aq(q,0,nullptr);ReverseAccessibility ar(aq);
+	InteractionEnergyBasePair e(at,ar);
+	for(bool hybrid:{false,true}) {
+		SeedConstraint sc(2,0,0,0,hybrid?E_INF:-200,Accessibility::ED_UPPER_BOUND,hybrid?-200:E_INF,IndexRangeList(),IndexRangeList(),"",false,false,false);
+		SeedHandlerMfe mfe(e,sc);SeedHandlerNoBulge nb(e,sc);
+		REQUIRE(mfe.fillSeed(0,2,0,2)==4);
+		REQUIRE(nb.fillSeed(0,2,0,2)==0);
+		REQUIRE(StackSeedDomain(mfe,3,3,3,3).maxSeedLength()==2);
+		REQUIRE(StackSeedDomain(nb,3,3,3,3).maxSeedLength()==0);
+	}
+	SeedConstraint exactED(2,0,0,0,E_INF,0,E_INF,IndexRangeList(),IndexRangeList(),"",false,false,false);
+	SeedHandlerMfe mfe(e,exactED);SeedHandlerNoBulge nb(e,exactED);
+	REQUIRE(mfe.fillSeed(0,2,0,2)==0);REQUIRE(nb.fillSeed(0,2,0,2)==0);
+	// Explicit seeds ignore these computed-seed admission thresholds.
+	SeedConstraint explicitC(1,0,0,0,-10000,0,-10000,IndexRangeList(),IndexRangeList(),"1|&3|,2||&1||",true,true,true);
+	SeedHandlerExplicit ex(e,explicitC);REQUIRE(ex.fillSeed(0,2,0,2)==2);
+	REQUIRE(StackSeedDomain(ex,3,3,3,3).maxSeedLength()==2);
+}

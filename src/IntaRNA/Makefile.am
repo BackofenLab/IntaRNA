@@ -29,6 +29,7 @@ libIntaRNA_a_HEADERS =    \
 					Matrix.h \
 					StackSeedDomain.h \
 					BasePairProbabilities.h \
+					BasePairProbabilityWriter.h \
 					PartitionArithmetic.h \
 					SeededPartitionFunction.h \
 					Accessibility.h \
@@ -104,6 +105,7 @@ libIntaRNA_a_HEADERS =    \
 libIntaRNA_a_SOURCES = \
 					StackSeedDomain.cpp \
 					BasePairProbabilities.cpp \
+					BasePairProbabilityWriter.cpp \
 					SeededPartitionFunction.cpp \
                     $(libmylib_a_HEADERS) \
 					Accessibility.cpp \

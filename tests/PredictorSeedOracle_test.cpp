@@ -798,3 +798,25 @@ TEST_CASE("raw pair owner excludes region crossings and invalidates partial resu
 	REQUIRE(failed.status()==BasePairProbabilities::Status::failed);
 	REQUIRE_THROWS(failed.finalize());REQUIRE(p2.restored());
 }
+
+#include "SeededChainOracle.h"
+#include "IntaRNA/SeedHandlerExplicit.h"
+TEST_CASE("native singleton and mixed explicit seeds count overlapping witnesses once", "[BasePairProbabilities][PredictorSeedOracle]") {
+	#include "testEasyLoggingSetup.icc"
+	using namespace seeded_oracle;
+	RnaSequence t("t","GGGG"),q("q","CCCC");
+	AccessibilityDisabled at(t,0,nullptr),aq(q,0,nullptr);ReverseAccessibility ar(aq);
+	InteractionEnergyBasePair energy(at,ar,2,2);
+	SeedConstraint sc(1,0,0,0,-10000,0,-10000,IndexRangeList(),IndexRangeList(),"1|&4|,2||&2||",true,true,true);
+	for(bool noLP:{false,true}) {
+		BasePairProbabilities result(4,4);auto oc=makeOutputConstraint(noLP);OutputHandlerInteractionList output(oc,1);
+		ExactSeedProbe p(energy,output,nullptr,new SeedHandlerExplicit(energy,sc),&result);
+		p.predict();result.finalize();
+		Model model{4,4,4,4,noLP,{{{0,0}},{{1,1},{2,2}}},[](Pair){return true;},
+			[](Pair){return std::exp(1.L);},[](Pair,Pair){return std::exp(1.L);},[](Pair,Pair){return 1.L;}};
+		auto ref=enumerate(model);
+		REQUIRE(double(result.getZ())==Approx(double(ref.z)).epsilon(2e-12));
+		for(size_t i=0;i<4;++i) for(size_t j=0;j<4;++j)
+			REQUIRE(double(result.rawMasses()(i,3-j))==Approx(double(ref.mass[{i,j}])).epsilon(2e-12));
+	}
+}

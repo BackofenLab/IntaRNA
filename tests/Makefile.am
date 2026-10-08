@@ -15,7 +15,7 @@ TEST_EXTENSIONS = $(EXEEXT) .sh
 SH_LOG_COMPILER = $(SHELL)
 
 # the script needed for tests
-dist_check_SCRIPTS = runIntaRNA.sh runAccessibilityBinary.sh runIntaRNAeval.sh runKineticSeedExtension.sh runOutputOverlap.sh
+dist_check_SCRIPTS = runIntaRNA.sh runAccessibilityBinary.sh runIntaRNAeval.sh runKineticSeedExtension.sh runOutputOverlap.sh runBasePairProbabilities.sh
 
 # the program to build
 check_PROGRAMS = runApiTests 
@@ -84,4 +84,4 @@ runApiTests_CXXFLAGS =	-I$(top_builddir)/src \
 
 
 
-EXTRA_DIST = tools/export-seeded-theory.py
+EXTRA_DIST = tools/export-seeded-theory.py testBasePairProbabilities.py

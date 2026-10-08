@@ -31,3 +31,20 @@ TEST_CASE("pair result rejects inconsistent and out-of-range numerical results",
 	REQUIRE_THROWS(overflow.addRegion({1,1},{0,0},m(0,0),m));
 	REQUIRE(overflow.status()==BasePairProbabilities::Status::failed);
 }
+
+#include "IntaRNA/BasePairProbabilityWriter.h"
+#include <sstream>
+TEST_CASE("pair writer validates before emitting and checks stream failure", "[BasePairProbabilities]") {
+	RnaSequence t("target","GA"),q("query","UC");
+	BasePairProbabilities r(2,2);std::ostringstream out;
+	REQUIRE_THROWS(BasePairProbabilityWriter::write(out,r,t,q));REQUIRE(out.str().empty());
+	Matrix<Z_type> m(2,2,0);m(0,1)=1e-100;
+	r.addRegion({0,1},{0,1},1,m);r.finalize();
+	BasePairProbabilityWriter::write(out,r,t,q);
+	REQUIRE(out.str().find("bpProb;U_1;C_2\nG_1;0;1e-100\nA_2;0;0\n")==0);
+	std::ostringstream broken;broken.setstate(std::ios::badbit);
+	REQUIRE_THROWS(BasePairProbabilityWriter::write(broken,r,t,q));
+	BasePairProbabilities empty(2,2);empty.finalize();std::ostringstream na;
+	BasePairProbabilityWriter::write(na,empty,t,q);
+	REQUIRE(na.str()=="bpProb;U_1;C_2\nG_1;NA;NA\nA_2;NA;NA\n");
+}

@@ -14,6 +14,10 @@
 
 ## Interface and handling
 
+- --out=bpProb:FILE writes actual-pair conditional probabilities for exact
+  model P/mode M stack-seed ensembles, with disjoint-region merging, original
+  coordinates and success-only publication (issue #257, implementation step 6)
+
 - deterministic kinetic seed extension with --model=X --mode=K and configurable
   local scoring; complete-energy downhill steps, atomic noLP loop/stack moves
   and retained greedy traceback; equilibrium probability output is unsupported
@@ -147,6 +151,14 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261008 Alexander Mitrofanov
+ * BasePairProbabilityWriter, CommandLineParsing, IntaRNA.cpp, CLI/API tests :
+   + add bpProb matrix output, capability/mode validation, multi-FASTA naming,
+     gzip and synchronized standard-stream blocks; preserve spot coverage
+   + guard OpenMP cancellation before publication, propagate write errors, keep
+     tiny totals, support ranked count zero and mixed explicit seeds in debug
+     validation (PR #258, step 6)
 
 261008 Alexander Mitrofanov
  * BasePairProbabilities, PredictorMfeEns2dSeedExtension, API tests, Makefile.am :

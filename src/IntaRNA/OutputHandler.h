@@ -8,6 +8,7 @@
 #include "IntaRNA/InteractionRange.h"
 #include "IntaRNA/OutputConstraint.h"
 #include <string>
+#include <exception>
 
 namespace IntaRNA {
 
@@ -193,11 +194,16 @@ incrementZ( const Z_type subZ )
 		LOG(WARNING) <<"OutputHandler::incrementZ() : partition function overflow! Recompile with larger partition function data type!";
 	}
 #endif
-	// increment partition function
+	// Capture range failures within the OpenMP structured block.
+	std::exception_ptr failure;
 #if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_omp_outputHandlerIncrementZ)
 #endif
-	{Z = exactPartition ? PartitionArithmetic::add(Z,subZ) : Z+subZ;}
+	{
+		try { Z = exactPartition ? PartitionArithmetic::add(Z,subZ) : Z+subZ; }
+		catch (...) { failure=std::current_exception(); }
+	}
+	if (failure) std::rethrow_exception(failure);
 }
 
 ////////////////////////////////////////////////////////////////////////////
