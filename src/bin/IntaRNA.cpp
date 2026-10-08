@@ -335,6 +335,7 @@ int main(int argc, char **argv){
 #endif
 								{// update final output handler
 									// copy partition function information if available
+									output->setExactPartition(bestInteractions.usesExactPartition());
 									output->incrementZ( bestInteractions.getZ() );
 									// Apply the energy window to the sequence pair's best candidate.
 									// Independent per-region output retains each region's local window.

@@ -42,6 +42,9 @@
 
 ## Technical changes and Optimizations
 
+- count each exact stack-seeded interaction once; preserve tiny positive totals
+  through complete updates and output forwarding (issue #257, step 4)
+
 - select the checked suffix inside/outside kernel after independent correctness
   and maximal-stack timing comparisons (issue #257, implementation step 3)
 
@@ -141,6 +144,14 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261008 Alexander Mitrofanov
+ * PredictorMfeEns*, OutputHandler*, IntaRNA.cpp, predictor oracle tests :
+   + use the suffix kernel on the exact stack-only path, preserving virtual
+     update hooks and the legacy heuristic/bulged paths; share the boundary
+     objective with the outside pass and restore update scopes after exceptions
+   + retain exact-zero status through collectors, hubs and ensemble diagnostics;
+     test native Nussinov/nearest-neighbor boundary sums (PR #258, step 4)
 
 261008 Alexander Mitrofanov
  * SeededPartitionFunction, PartitionArithmetic, StackSeedDomain, tests, doc/analysis :

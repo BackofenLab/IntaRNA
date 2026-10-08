@@ -26,6 +26,9 @@ protected:
 
 public:
 
+	/** Forward the exact partition policy to every registered output. */
+	void setExactPartition(bool exact) override;
+
 	/**
 	 * construction
 	 * @param outConstraint the output constraint applied to find the reported
@@ -195,6 +198,7 @@ addOutputHandler( OutputHandler * handler )
 #endif
 	// add if not null
 	if (handler != NULL) {
+		handler->setExactPartition(usesExactPartition());
 		outList.push_back(handler);
 	}
 }
@@ -303,6 +307,11 @@ operator= ( const OutputHandlerHub & toCopy)
 }
 
 /////////////////////////////////////////////////////////////////////////
+
+inline void OutputHandlerHub::setExactPartition(bool exact) {
+	OutputHandler::setExactPartition(exact);
+	for (auto handler:outList) handler->setExactPartition(exact);
+}
 
 } // namespace
 

@@ -73,6 +73,13 @@ public:
 
 protected:
 
+	/** Shared forward/outside objective coefficient. Override here for supported
+	 * reweighting; return zero for forbidden boundaries. Coordinates are local.
+	 * @return complete boundary Boltzmann factor (ED, dangles, ends, energyAdd)
+	 */
+	virtual Z_type exactBoundaryWeight(size_t i1,size_t j1,size_t i2,size_t j2) const;
+	/** Run the selected disjoint stack-seed partition backend. */
+	void predictStackSeeds(const IndexRange & r1,const IndexRange & r2);
 
 	//! access to the interaction energy handler of the super class
 	using PredictorMfeEns::energy;

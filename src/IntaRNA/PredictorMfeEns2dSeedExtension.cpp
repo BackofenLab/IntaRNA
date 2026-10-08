@@ -1,5 +1,7 @@
 
 #include "IntaRNA/PredictorMfeEns2dSeedExtension.h"
+#include "IntaRNA/SeededPartitionFunction.h"
+#include "IntaRNA/PartitionArithmetic.h"
 
 namespace IntaRNA {
 
@@ -17,7 +19,7 @@ PredictorMfeEns2dSeedExtension(
 	, hybridZ_left( 0,0 )
 	, hybridZ_right( 0,0 )
 {
-	assert( seedHandler.getConstraint().getBasePairs() > 1 );
+
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -33,6 +35,9 @@ void
 PredictorMfeEns2dSeedExtension::
 predict( const IndexRange & r1, const IndexRange & r2 )
 {
+	if (seedHandler.guaranteesStackOnlySeeds()) { predictStackSeeds(r1,r2); return; }
+	if (seedHandler.getConstraint().getBasePairs()<2)
+		throw std::invalid_argument("legacy bulged seed extension requires at least two seed pairs");
 #if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_omp_logOutput)
 #endif
@@ -129,6 +134,49 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 }
 
 //////////////////////////////////////////////////////////////////////////
+
+Z_type
+PredictorMfeEns2dSeedExtension::exactBoundaryWeight(size_t i1,size_t j1,size_t i2,size_t j2) const
+{
+	if (!isValidOutputSite(i1,j1,i2,j2)) return 0;
+	const E_type e=energy.getE(i1,j1,i2,j2,E_type(0));
+	return E_isINF(e)?Z_type(0):PartitionArithmetic::exp(-E_2_Z(e)/energy.getRT());
+}
+
+void
+PredictorMfeEns2dSeedExtension::predictStackSeeds(const IndexRange & r1,const IndexRange & r2)
+{
+	const size_t size1=energy.getAccessibility1().getSequence().size();
+	const size_t size2=energy.getAccessibility2().getSequence().size();
+	if (!r1.isAscending() || !r2.isAscending() || r1.from>=size1 || r2.from>=size2)
+		throw std::invalid_argument("exact seeded prediction: invalid region");
+	energy.setOffset1(r1.from); energy.setOffset2(r2.from);
+	seedHandler.setOffset1(r1.from); seedHandler.setOffset2(r2.from);
+	const size_t n=r1.to==RnaSequence::lastPos?energy.size1():std::min(energy.size1(),r1.to-r1.from+1);
+	const size_t m=r2.to==RnaSequence::lastPos?energy.size2():std::min(energy.size2(),r2.to-r2.from+1);
+	initOptima(); initZ(); Zall=0;
+	if (seedHandler.fillSeed(0,n-1,0,m-1)==0) {
+		output.setExactPartition(true);
+		reportOptima(); return;
+	}
+	const size_t span1=std::min(n,energy.getAccessibility1().getMaxLength());
+	const size_t span2=std::min(m,energy.getAccessibility2().getMaxLength());
+	StackSeedDomain seeds(seedHandler,n,m,span1,span2);
+	using K=SeededPartitionFunction;
+	const K::Domain domain{n,m,span1,span2,energy.getMaxInternalLoopSize1(),energy.getMaxInternalLoopSize2(),output.getOutputConstraint().noLP};
+	auto boltzmann=[&](E_type e) { return E_isINF(e)?Z_type(0):PartitionArithmetic::exp(-E_2_Z(e)/energy.getRT()); };
+	K::Weights weights{
+		[&](K::Pair p){return energy.isAccessible1(p[0]) && energy.isAccessible2(p[1]) && energy.areComplementary(p[0],p[1]);},
+		[&](K::Pair){return boltzmann(energy.getE_init());},
+		[&](K::Pair p,K::Pair q){return boltzmann(energy.getE_interLeft(p[0],q[0],p[1],q[1]));},
+		[&](K::Pair p,K::Pair q){return exactBoundaryWeight(p[0],q[0],p[1],q[1]);},
+		[&](K::Pair p,K::Pair q,Z_type h,Z_type b){updateExactCompleteZ(p[0],q[0],p[1],q[1],h,b);}
+	};
+	const auto result=K::compute(domain,seeds,weights,false);
+	if (result.z!=Zall) throw std::logic_error("exact seeded updateZ override did not preserve the partition objective");
+	output.setExactPartition(true);
+	reportOptima();
+}
 
 E_type
 PredictorMfeEns2dSeedExtension::

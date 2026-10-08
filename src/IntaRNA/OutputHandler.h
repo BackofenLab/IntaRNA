@@ -3,6 +3,7 @@
 #define INTARNA_OUTPUTHANDLER_H_
 
 #include "IntaRNA/general.h"
+#include "IntaRNA/PartitionArithmetic.h"
 #include "IntaRNA/Interaction.h"
 #include "IntaRNA/InteractionRange.h"
 #include "IntaRNA/OutputConstraint.h"
@@ -97,7 +98,18 @@ public:
 	getOutputConstraint() const;
 
 
+	/** Select exact-zero, checked partition accumulation for the seeded backend.
+	 * @param exact whether this sequence pair uses the checked exact backend
+	 */
+	virtual void setExactPartition(bool exact);
+	/** @return whether exact-zero presentation/merging is enabled */
+	bool usesExactPartition() const;
+	/** @return whether the accumulated partition is nonempty under its policy */
+	bool hasNonzeroZ() const;
+
 protected:
+	//! scoped to a supported sequence-pair ensemble, legacy outputs default false
+	bool exactPartition = false;
 
 	//! the output constraints to be applied
 	const OutputConstraint outConstraint;
@@ -185,10 +197,14 @@ incrementZ( const Z_type subZ )
 #if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_omp_outputHandlerIncrementZ)
 #endif
-	{Z += subZ;}
+	{Z = exactPartition ? PartitionArithmetic::add(Z,subZ) : Z+subZ;}
 }
 
 ////////////////////////////////////////////////////////////////////////////
+
+inline void OutputHandler::setExactPartition(bool exact) { exactPartition=exact; }
+inline bool OutputHandler::usesExactPartition() const { return exactPartition; }
+inline bool OutputHandler::hasNonzeroZ() const { return exactPartition ? getZ()!=0 : !Z_equal(getZ(),Z_type(0)); }
 
 } // namespace
 
