@@ -26,6 +26,7 @@ runApiTests_SOURCES =	\
 					SeededChainOracle.h \
 					SeededTheoryFixtures.h \
 					SeededPartitionFunction_test.cpp \
+					StackSeedDomain_test.cpp \
 					testEasyLoggingSetup.icc \
 					AccessibilityConstraint_test.cpp \
 					AccessibilityFromStream_test.cpp \

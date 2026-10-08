@@ -42,6 +42,9 @@
 
 ## Technical changes and Optimizations
 
+- expose geometric stack-seed capability and compile contained occurrences plus
+  deduplicated eligible-start boxes (issue #257, implementation step 2)
+
 - establish independent weighted-chain fixtures for seeded pair probabilities
   (issue #257, implementation step 1)
 
@@ -135,6 +138,11 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261008 Alexander Mitrofanov
+ * SeedHandler*, StackSeedDomain, tests/StackSeedDomain_test.cpp, Makefile.am :
+   + preserve each handler's admission rules, normalized allowances and retained
+     explicit patterns; filter complete endpoints and span limits (PR #258, step 2)
 
 261008 Alexander Mitrofanov
  * tests/SeededChainOracle.h, tests/SeededPartitionFunction_test.cpp, tests/Makefile.am :

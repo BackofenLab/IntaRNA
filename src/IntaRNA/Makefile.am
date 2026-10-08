@@ -27,6 +27,7 @@ libIntaRNA_adir = $(includedir)/IntaRNA
 libIntaRNA_a_HEADERS =    \
 					intarna_config.h \
 					Matrix.h \
+					StackSeedDomain.h \
 					Accessibility.h \
 					AccessibilityArchive.h \
 					AccessibilityConstraint.h \
@@ -97,7 +98,8 @@ libIntaRNA_a_HEADERS =    \
 
 
 # the sources to add to the library and to add to the source distribution
-libIntaRNA_a_SOURCES =    \
+libIntaRNA_a_SOURCES = \
+					StackSeedDomain.cpp \
                     $(libmylib_a_HEADERS) \
 					Accessibility.cpp \
 					AccessibilityConstraint.cpp \
@@ -158,7 +160,7 @@ libIntaRNA_a_SOURCES =    \
 
 
 # generated intaRNA sources
-nodist_libIntaRNA_a_SOURCES = 	\
+nodist_libIntaRNA_a_SOURCES = \
 					../config.h \
 					intarna_config.h
 

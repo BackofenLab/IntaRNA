@@ -447,4 +447,14 @@ updateToNextSeed( size_t & i1_out, size_t & i2_out
 
 //////////////////////////////////////////////////////////////////////////
 
+bool
+SeedHandlerExplicit::guaranteesStackOnlySeeds() const
+{
+	for (const auto & entry : seedForLeftEnd) {
+		if (entry.second.dotBar1.find('.') != std::string::npos
+				|| entry.second.dotBar2.find('.') != std::string::npos) return false;
+	}
+	return true;
+}
+
 } /* namespace IntaRNA */
