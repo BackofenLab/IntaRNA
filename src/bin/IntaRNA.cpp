@@ -137,7 +137,7 @@ int main(int argc, char **argv){
 					{
 						if (!threadAborted) {
 							// store exception information
-							exceptionPtrDuringOmp = std::make_exception_ptr(e);
+							exceptionPtrDuringOmp = std::current_exception();
 							exceptionInfoDuringOmp <<" #thread "<<omp_get_thread_num() <<" #query "<<qi <<" : "<<e.what();
 							// trigger abortion of all threads
 							threadAborted = true;
@@ -177,7 +177,7 @@ int main(int argc, char **argv){
 		for ( size_t targetNumber = 0; targetNumber < parameters.getTargetSequences().size(); ++targetNumber )
 		{
 			// sequence length checks
-			if (parameters.isToShortTarget(targetNumber)) {
+			if (parameters.isToShortTarget(targetNumber) && !parameters.hasBasePairProbabilityOutput()) {
 				// skip this sequence as announced
 				continue;
 			}
@@ -215,7 +215,7 @@ int main(int argc, char **argv){
 						// get index of this query wrt. getQuerySequence() and queryAcc()
 						const size_t queryNumber = parameters.getQueryIndexForTarget(queryIdx, targetNumber);
 						// sequence length checks
-						if (parameters.isToShortQuery(queryNumber)) {
+						if (parameters.isToShortQuery(queryNumber) && !parameters.hasBasePairProbabilityOutput()) {
 							// skip this sequence as announced
 							continue;
 						}
@@ -242,6 +242,9 @@ int main(int argc, char **argv){
 								OutputHandlerInteractionList bestInteractions( parameters.getOutputConstraint(*energy),
 										(parameters.reportBestPerRegion() ? std::numeric_limits<size_t>::max() : 1 )
 											* parameters.getOutputConstraint(*energy).reportMax );
+
+								// One owner spans all disjoint searched regions for this sequence pair.
+								std::unique_ptr<BasePairProbabilities> pairProbabilities(parameters.getBasePairProbabilityResult(*energy));
 
 								// run prediction for all range combinations
 								for(const IndexRange & tRange : parameters.getTargetRanges(*energy, targetNumber, *targetAcc)) {
@@ -289,7 +292,7 @@ int main(int argc, char **argv){
 												// The prediction collector merges equal-energy structures with
 												// identical boundaries and pair counts, even if inner pairs differ.
 												std::unique_ptr<Predictor> predictor(parameters.getPredictor( *energy,
-														parameters.isEvaluation() ? *output : bestInteractions ));
+														parameters.isEvaluation() ? *output : bestInteractions, pairProbabilities.get() ));
 												INTARNA_CHECK_NOT_NULL(predictor.get(),"predictor initialization failed");
 		
 												// run prediction for this window combination
@@ -304,7 +307,7 @@ int main(int argc, char **argv){
 												{
 													if (!threadAborted) {
 														// store exception information
-														exceptionPtrDuringOmp = std::make_exception_ptr(e);
+														exceptionPtrDuringOmp = std::current_exception();
 														exceptionInfoDuringOmp <<" #thread "<<omp_get_thread_num() <<" #target "<<targetNumber <<" #query " <<queryNumber <<" : "<<e.what();
 														// trigger abortion of all threads
 														threadAborted = true;
@@ -330,11 +333,21 @@ int main(int argc, char **argv){
 									}} // window combinations
 								} // target ranges
 								} // query ranges
+								bool publish=true;
+#if INTARNA_MULITHREADING
+								#pragma omp flush(threadAborted)
+								publish=!threadAborted;
+#endif
+								if (pairProbabilities) {
+									if (publish) pairProbabilities->finalize(); else pairProbabilities->fail();
+								}
+								if (publish) {
 #if INTARNA_MULITHREADING
 								#pragma omp critical(intarna_omp_outputHandlerUpdate)
 #endif
 								{// update final output handler
 									// copy partition function information if available
+									output->setExactPartition(bestInteractions.usesExactPartition());
 									output->incrementZ( bestInteractions.getZ() );
 									// Apply the energy window to the sequence pair's best candidate.
 									// Independent per-region output retains each region's local window.
@@ -347,6 +360,9 @@ int main(int argc, char **argv){
 										output->add(*inter);
 									}
 								}
+
+								if (pairProbabilities) parameters.writeBasePairProbabilities(*pairProbabilities,*energy);
+								} // successful sequence-pair computation
 
 #if INTARNA_MULITHREADING
 								#pragma omp atomic update
@@ -361,7 +377,7 @@ int main(int argc, char **argv){
 								{
 									if (!threadAborted) {
 										// store exception information
-										exceptionPtrDuringOmp = std::make_exception_ptr(e);
+										exceptionPtrDuringOmp = std::current_exception();
 										exceptionInfoDuringOmp <<" #thread "<<omp_get_thread_num() <<" #target "<<targetNumber <<" #query " <<queryNumber <<" : "<<e.what();
 										// trigger abortion of all threads
 										threadAborted = true;
@@ -397,7 +413,7 @@ int main(int argc, char **argv){
 					{
 						if (!threadAborted) {
 							// store exception information
-							exceptionPtrDuringOmp = std::make_exception_ptr(e);
+							exceptionPtrDuringOmp = std::current_exception();
 							exceptionInfoDuringOmp <<" #thread "<<omp_get_thread_num() <<" #target "<<targetNumber <<" : "<<e.what();
 							// trigger abortion of all threads
 							threadAborted = true;
@@ -442,13 +458,12 @@ int main(int argc, char **argv){
 
 	////////////////////// exception handling ///////////////////////////
 	} catch (std::exception & e) {
-		LOG(WARNING) <<"Exception raised : " <<e.what() <<"\n\n"
-			<<"  ==> Please report (including input) to the IntaRNA development team! Thanks!\n";
+		LOG(ERROR) <<e.what();
 		el::Loggers::flushAll();
 		return -1;
 	} catch (...) {
 		std::exception_ptr eptr = std::current_exception();
-		LOG(WARNING) <<"Unknown exception raised \n\n"
+		LOG(ERROR) <<"Unknown exception raised \n\n"
 			<<"  ==> Please report (including input) to the IntaRNA development team! Thanks!\n";
 		el::Loggers::flushAll();
 		return -1;

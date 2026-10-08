@@ -20,6 +20,9 @@ class SeedHandlerExplicit : public SeedHandler
 {
 public:
 
+	/** @return true if all retained accepted patterns contain only paired positions. */
+	bool guaranteesStackOnlySeeds() const override;
+
 	/**
 	 * Construction
 	 * @param energy the energy function to be used for seed prediction

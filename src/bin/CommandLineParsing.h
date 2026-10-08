@@ -26,6 +26,7 @@
 #include "IntaRNA/Predictor.h"
 #include "IntaRNA/SeedConstraint.h"
 #include "IntaRNA/SeedHandler.h"
+#include "IntaRNA/BasePairProbabilities.h"
 #include "IntaRNA/SeedHandlerExplicit.h"
 #include "IntaRNA/PredictionTrackerSpotProb.h"
 #include "IntaRNA/VrnaHandler.h"
@@ -281,11 +282,21 @@ public:
 	 * parameters
 	 * @param energy the interaction energy handler to be used
 	 * @param output the output handler to be used
+	 * @param pairProbabilities optional non-owning raw result sink for exact stack seeds
 	 * @return the newly allocated Predictor object to be deleted by the calling
 	 * function
 	 */
 	Predictor* getPredictor( const InteractionEnergy & energy
-			, OutputHandler & output ) const;
+			, OutputHandler & output, BasePairProbabilities * pairProbabilities = nullptr ) const;
+
+	/** @return whether actual base-pair matrix output was requested */
+	bool hasBasePairProbabilityOutput() const;
+	/** Allocate a pair result after validating the actual seed capability.
+	 * @return owned result or nullptr when pair output is not requested
+	 */
+	BasePairProbabilities * getBasePairProbabilityResult(const InteractionEnergy & energy) const;
+	/** Publish a successful sequence-pair result using ordinary filename rules. */
+	void writeBasePairProbabilities(const BasePairProbabilities & result,const InteractionEnergy & energy) const;
 
 	/**
 	 * Provides the seed constraint according to the user settings
@@ -404,6 +415,7 @@ protected:
 		OP_tPu,
 		OP_spotProb,
 		OP_spotProbAll,
+		OP_bpProb,
 		OP_UNKNOWN
 	};
 
@@ -430,6 +442,7 @@ protected:
 		if (prefLC == "tacc")	{ return OutPrefixCode::OP_tAcc; } else
 		if (prefLC == "qpu")	{ return OutPrefixCode::OP_qPu; } else
 		if (prefLC == "tpu")	{ return OutPrefixCode::OP_tPu; } else
+		if (prefLC == "bpprob")	{ return OutPrefixCode::OP_bpProb; } else
 		if (prefLC == "spotprob")	{ return OutPrefixCode::OP_spotProb; } else
 		// not known
 		return OutPrefixCode::OP_UNKNOWN;

@@ -18,6 +18,13 @@ class SeedHandler
 
 public:
 
+	/** Whether every exposed seed is a consecutive diagonal pair chain.
+	 * This geometric guarantee does not imply existence or a common length.
+	 * @return false for unknown handlers; offsets preserve this capability
+	 */
+	virtual bool guaranteesStackOnlySeeds() const;
+
+
 	/**
 	 * Construction
 	 * @param energy the energy function to be used for seed prediction
@@ -250,6 +257,12 @@ getInteractionEnergy() const
 }
 
 //////////////////////////////////////////////////////////////////////////
+
+inline bool
+SeedHandler::guaranteesStackOnlySeeds() const
+{
+	return false;
+}
 
 } // namespace
 

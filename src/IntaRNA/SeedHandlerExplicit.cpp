@@ -86,7 +86,14 @@ getSeedMinBP( const std::string & seedEncoding )
 	size_t minBP = 99999;
 	if (!seedEncoding.empty()) {
 #if INTARNA_IN_DEBUG_MODE
-		if (!checkSeedEncoding(seedEncoding).empty()) throw std::runtime_error("SeedHandlerExplicit::getSeedMinBP() : no valid seed encoding : "+checkSeedEncoding(seedEncoding));
+		size_t begin=0;
+		while(begin<seedEncoding.size()) {
+			const size_t end=seedEncoding.find(',',begin);
+			const auto one=seedEncoding.substr(begin,end==std::string::npos?end:end-begin);
+			if (!checkSeedEncoding(one).empty()) throw std::runtime_error("SeedHandlerExplicit::getSeedMinBP() : no valid seed encoding : "+checkSeedEncoding(one));
+			if(end==std::string::npos) break;
+			begin=end+1;
+		}
 #endif
 		size_t curBP = 0;
 		for( const char & c : seedEncoding ) {
@@ -446,5 +453,15 @@ updateToNextSeed( size_t & i1_out, size_t & i2_out
 }
 
 //////////////////////////////////////////////////////////////////////////
+
+bool
+SeedHandlerExplicit::guaranteesStackOnlySeeds() const
+{
+	for (const auto & entry : seedForLeftEnd) {
+		if (entry.second.dotBar1.find('.') != std::string::npos
+				|| entry.second.dotBar2.find('.') != std::string::npos) return false;
+	}
+	return true;
+}
 
 } /* namespace IntaRNA */

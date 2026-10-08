@@ -34,6 +34,13 @@ protected:
 
 public:
 
+	/** Whether every exposed seed is a consecutive diagonal pair chain.
+	 * This geometric guarantee does not imply existence or a common length.
+	 * @return false for unknown handlers; offsets preserve this capability
+	 */
+	virtual bool guaranteesStackOnlySeeds() const override;
+
+
 	/**
 	 * Construction
 	 * @param energy the energy function to be used for seed prediction
@@ -313,6 +320,12 @@ storeSeed( const size_t j1, const size_t j2, const StackingEnergyList & bpE )
 }
 
 //////////////////////////////////////////////////////////////////////////
+
+inline bool
+SeedHandlerNoBulge::guaranteesStackOnlySeeds() const
+{
+	return true;
+}
 
 } // namespace
 

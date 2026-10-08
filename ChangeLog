@@ -14,6 +14,10 @@
 
 ## Interface and handling
 
+- --out=bpProb:FILE writes actual-pair conditional probabilities for exact
+  model P/mode M stack-seed ensembles, with disjoint-region merging, original
+  coordinates and success-only publication (issue #257, implementation step 6)
+
 - deterministic kinetic seed extension with --model=X --mode=K and configurable
   local scoring; complete-energy downhill steps, atomic noLP loop/stack moves
   and retained greedy traceback; equilibrium probability output is unsupported
@@ -41,6 +45,29 @@
 - reject Zall/Eall-dependent output in window mode
 
 ## Technical changes and Optimizations
+
+- validate exact pair probabilities on independent mathematical/native oracles,
+  release/debug suites and installed consumers; document measured runtime and
+  storage, and supply the required logging link dependency (issue #257, step 7)
+
+- collect raw actual-pair masses and disjoint regional denominators with explicit
+  successful-empty/nonempty/failed lifecycle (issue #257, step 5)
+
+- count each exact stack-seeded interaction once; preserve tiny positive totals
+  through complete updates and output forwarding (issue #257, step 4)
+
+- select the checked suffix inside/outside kernel after independent correctness
+  and maximal-stack timing comparisons (issue #257, implementation step 3)
+
+- expose geometric stack-seed capability and compile contained occurrences plus
+  deduplicated eligible-start boxes (issue #257, implementation step 2)
+
+- establish independent weighted-chain fixtures for seeded pair probabilities
+  (issue #257, implementation step 1)
+
+- document the implementation plan for exact seeded base-pair probabilities,
+  including algorithm comparison, numerical/output contracts and validation;
+  no prediction or probability implementation changes (issue #257)
 
 - add an API overview, IntaRNA Doxygen styling, and automated documentation
   builds and GitHub Pages publishing alongside the user guide (issue #22)
@@ -128,6 +155,71 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261008 Alexander Mitrofanov
+ * tests, README.md, doc/analysis, doc/seeded-probabilities-example.cpp :
+   + finish probability regression and native performance gates, document the
+     selected algorithm, supported ensemble, public API and numerical limits
+ * CommandLineParsing, IntaRNA.cpp, OutputHandlerHub, SeededPartitionFunction :
+   + retain copied output policy, check dense-grid dimension products, serialize
+     seed-constraint initialization and emit empty matrices for too-short pairs
+   + preserve dynamic OpenMP exceptions and report fatal failures as errors even
+     with redirected warning logs; reject unsupported empty searches (PR #258)
+ * IntaRNA.pc.in, .github/workflows/build.yml, Makefile.am :
+   + link the logging dependency required by installed predictor consumers;
+     compile/run a real probability consumer in CI and distribute new artifacts
+   + GCC 14 release/debug: seven suites pass, 91,361 API assertions; all 74
+     installed headers, installed consumer and source distribution checks pass
+
+261008 Alexander Mitrofanov
+ * BasePairProbabilityWriter, CommandLineParsing, IntaRNA.cpp, CLI/API tests :
+   + add bpProb matrix output, capability/mode validation, multi-FASTA naming,
+     gzip and synchronized standard-stream blocks; preserve spot coverage
+   + guard OpenMP cancellation before publication, propagate write errors, keep
+     tiny totals, support ranked count zero and mixed explicit seeds in debug
+     validation (PR #258, step 6)
+
+261008 Alexander Mitrofanov
+ * BasePairProbabilities, PredictorMfeEns2dSeedExtension, API tests, Makefile.am :
+   + add optional non-owning pair sink, original-coordinate raw regional commits
+     and explicit success-only finalization; reject overlap and range failures
+   + verify tracker parity, offsets, region crossings and injected failure after
+     a successful region; pair-only computation retains no boundary map (PR #258, step 5)
+
+261008 Alexander Mitrofanov
+ * PredictorMfeEns*, OutputHandler*, IntaRNA.cpp, predictor oracle tests :
+   + use the suffix kernel on the exact stack-only path, preserving virtual
+     update hooks and the legacy heuristic/bulged paths; share the boundary
+     objective with the outside pass and restore update scopes after exceptions
+   + retain exact-zero status through collectors, hubs and ensemble diagnostics;
+     test native Nussinov/nearest-neighbor boundary sums (PR #258, step 4)
+
+261008 Alexander Mitrofanov
+ * SeededPartitionFunction, PartitionArithmetic, StackSeedDomain, tests, doc/analysis :
+   + add checked nonnegative kernels and raw pair differentiation; compare both
+     against exhaustive and high-precision gold values and record time/storage
+     tradeoffs before selecting the suffix backend (PR #258, step 3)
+
+261008 Alexander Mitrofanov
+ * SeedHandler*, StackSeedDomain, tests/StackSeedDomain_test.cpp, Makefile.am :
+   + preserve each handler's admission rules, normalized allowances and retained
+     explicit patterns; filter complete endpoints and span limits (PR #258, step 2)
+
+261008 Alexander Mitrofanov
+ * tests/SeededChainOracle.h, tests/SeededPartitionFunction_test.cpp, tests/Makefile.am :
+   + independently enumerate weighted chains, raw boundaries and pair masses;
+     verify overlapping witnesses and singleton/noLP semantics (PR #258, step 1)
+   + preserve all ten high-precision theory fixtures with an explicit coordinate
+     conversion and reproducible exporter; do not quantize their accessibility
+
+261008 Alexander Mitrofanov
+ * doc/analysis/base-pair-probabilities-plan.md :
+   + specify the stack-seed partition and outside recurrences, sparse domain,
+     suffix-automaton comparison, numerical policy, output integration and
+     independent validation for https://github.com/BackofenLab/IntaRNA/issues/257
+   + distinguish planned implementation from current supported behavior
+ * README.md, doc/Makefile.am :
+   + link the plan and include it in source distributions
 
 261007 Alexander Mitrofanov
  * doc/doxygen.cfg, doc/doxygen/* :

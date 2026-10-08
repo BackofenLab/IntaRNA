@@ -3,6 +3,7 @@
 #define INTARNA_PREDICTORMFEENS2DSEEDEXTENSION_H_
 
 #include "IntaRNA/PredictorMfeEns.h"
+#include "IntaRNA/BasePairProbabilities.h"
 #include "IntaRNA/Matrix.h"
 #include "IntaRNA/SeedHandlerIdxOffset.h"
 
@@ -38,13 +39,16 @@ public:
 	 * @param predTracker the prediction tracker to be used or NULL if no
 	 *         tracking is to be done; if non-NULL, the tracker gets deleted
 	 *         on this->destruction.
+	 * @param pairProbabilities optional non-owning sink; must outlive predictions
+	 *        and remain pending until all disjoint regions have succeeded
 	 * @param seedHandler the seed handler to be used
 	 */
 	PredictorMfeEns2dSeedExtension(
 			const InteractionEnergy & energy
 			, OutputHandler & output
 			, PredictionTracker * predTracker
-			, SeedHandler * seedHandler );
+			, SeedHandler * seedHandler
+			, BasePairProbabilities * pairProbabilities = nullptr );
 
 
 	/**
@@ -73,6 +77,16 @@ public:
 
 protected:
 
+	/** Shared forward/outside objective coefficient. Override here for supported
+	 * reweighting; return zero for forbidden boundaries. Coordinates are local.
+	 * @return complete boundary Boltzmann factor (ED, dangles, ends, energyAdd)
+	 */
+	virtual Z_type exactBoundaryWeight(size_t i1,size_t j1,size_t i2,size_t j2) const;
+	/** Run the selected disjoint stack-seed partition backend. */
+	void predictStackSeeds(const IndexRange & r1,const IndexRange & r2);
+
+	//! optional sequence-pair owner, never deleted or finalized by the predictor
+	BasePairProbabilities * pairProbabilities;
 
 	//! access to the interaction energy handler of the super class
 	using PredictorMfeEns::energy;

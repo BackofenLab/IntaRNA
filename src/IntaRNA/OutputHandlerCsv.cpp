@@ -424,7 +424,7 @@ add( const Interaction & i )
 				break;
 
 			case Eall:
-				if ( Z_equal(Z,Z_type(0)) ) outTmp << notAvailable; else outTmp <<E_2_Ekcal(energy.getE(Z));
+				if ( !hasNonzeroZ() ) outTmp << notAvailable; else outTmp <<E_2_Ekcal(energy.getE(Z));
 				break;
 
 			case Eall1:
@@ -436,14 +436,14 @@ add( const Interaction & i )
 				break;
 
 			case EallTotal:
-				if ( Z_equal(Z,Z_type(0)) || E_isINF(energy.getEall1()) || E_isINF(energy.getEall2()) )
+				if ( !hasNonzeroZ() || E_isINF(energy.getEall1()) || E_isINF(energy.getEall2()) )
 					outTmp << notAvailable;
 				else
 					outTmp <<E_2_Ekcal( energy.getE(Z) + energy.getEall1() + energy.getEall2() );
 				break;
 
 			case Zall:
-				if ( Z_equal(Z,Z_type(0)) ) outTmp << notAvailable; else outTmp <<Z;
+				if ( !hasNonzeroZ() ) outTmp << notAvailable; else outTmp <<Z;
 				break;
 
 			case Zall1:
@@ -455,7 +455,7 @@ add( const Interaction & i )
 				break;
 
 			case P_E:
-				if ( Z_equal(Z,Z_type(0)) ) outTmp << notAvailable; else outTmp <<(energy.getBoltzmannWeight(i.energy)/Z);
+				if ( !hasNonzeroZ() ) outTmp << notAvailable; else outTmp <<(energy.getBoltzmannWeight(i.energy)/Z);
 				break;
 
 			case RT:

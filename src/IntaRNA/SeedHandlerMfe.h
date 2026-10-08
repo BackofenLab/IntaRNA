@@ -21,6 +21,13 @@ class SeedHandlerMfe : public SeedHandler
 {
 public:
 
+	/** Whether every exposed seed is a consecutive diagonal pair chain.
+	 * This geometric guarantee does not imply existence or a common length.
+	 * @return false for unknown handlers; offsets preserve this capability
+	 */
+	virtual bool guaranteesStackOnlySeeds() const override;
+
+
 	//! 5D matrix type to hold the mfe energies for seed interactions
 	//! of the ranges i1..(i1+bp+u1-1) with i2..(i2+bp+u2-1), with
 	//! i1,i2 = the start index of the seed in seq1/2
@@ -402,6 +409,12 @@ decodeSeedLength2( const size_t code ) const
 }
 
 //////////////////////////////////////////////////////////////////////////
+
+inline bool
+SeedHandlerMfe::guaranteesStackOnlySeeds() const
+{
+	return getConstraint().getMaxUnpaired1() == 0 && getConstraint().getMaxUnpaired2() == 0;
+}
 
 } // namespace
 
