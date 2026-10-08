@@ -42,6 +42,9 @@
 
 ## Technical changes and Optimizations
 
+- collect raw actual-pair masses and disjoint regional denominators with explicit
+  successful-empty/nonempty/failed lifecycle (issue #257, step 5)
+
 - count each exact stack-seeded interaction once; preserve tiny positive totals
   through complete updates and output forwarding (issue #257, step 4)
 
@@ -144,6 +147,13 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261008 Alexander Mitrofanov
+ * BasePairProbabilities, PredictorMfeEns2dSeedExtension, API tests, Makefile.am :
+   + add optional non-owning pair sink, original-coordinate raw regional commits
+     and explicit success-only finalization; reject overlap and range failures
+   + verify tracker parity, offsets, region crossings and injected failure after
+     a successful region; pair-only computation retains no boundary map (PR #258, step 5)
 
 261008 Alexander Mitrofanov
  * PredictorMfeEns*, OutputHandler*, IntaRNA.cpp, predictor oracle tests :

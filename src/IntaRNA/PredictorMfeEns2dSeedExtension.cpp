@@ -12,14 +12,17 @@ PredictorMfeEns2dSeedExtension(
 		const InteractionEnergy & energy
 		, OutputHandler & output
 		, PredictionTracker * predTracker
-		, SeedHandler * seedHandlerInstance )
+		, SeedHandler * seedHandlerInstance
+		, BasePairProbabilities * pairProbabilities )
  :
 	PredictorMfeEns(energy,output,predTracker)
+	, pairProbabilities(pairProbabilities)
 	, seedHandler(seedHandlerInstance)
 	, hybridZ_left( 0,0 )
 	, hybridZ_right( 0,0 )
 {
-
+	if (pairProbabilities && (!seedHandler.guaranteesStackOnlySeeds() || !output.getOutputConstraint().needZall))
+		throw std::invalid_argument("pair probabilities require a stack-only exact predictor and needZall");
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -35,7 +38,11 @@ void
 PredictorMfeEns2dSeedExtension::
 predict( const IndexRange & r1, const IndexRange & r2 )
 {
-	if (seedHandler.guaranteesStackOnlySeeds()) { predictStackSeeds(r1,r2); return; }
+	if (seedHandler.guaranteesStackOnlySeeds()) {
+		try { predictStackSeeds(r1,r2); }
+		catch (...) { if (pairProbabilities) pairProbabilities->fail(); throw; }
+		return;
+	}
 	if (seedHandler.getConstraint().getBasePairs()<2)
 		throw std::invalid_argument("legacy bulged seed extension requires at least two seed pairs");
 #if INTARNA_MULITHREADING
@@ -155,13 +162,11 @@ PredictorMfeEns2dSeedExtension::predictStackSeeds(const IndexRange & r1,const In
 	const size_t n=r1.to==RnaSequence::lastPos?energy.size1():std::min(energy.size1(),r1.to-r1.from+1);
 	const size_t m=r2.to==RnaSequence::lastPos?energy.size2():std::min(energy.size2(),r2.to-r2.from+1);
 	initOptima(); initZ(); Zall=0;
-	if (seedHandler.fillSeed(0,n-1,0,m-1)==0) {
-		output.setExactPartition(true);
-		reportOptima(); return;
-	}
+	const size_t seedCount=seedHandler.fillSeed(0,n-1,0,m-1);
 	const size_t span1=std::min(n,energy.getAccessibility1().getMaxLength());
 	const size_t span2=std::min(m,energy.getAccessibility2().getMaxLength());
-	StackSeedDomain seeds(seedHandler,n,m,span1,span2);
+	StackSeedDomain seeds=seedCount ? StackSeedDomain(seedHandler,n,m,span1,span2)
+			: StackSeedDomain(std::vector<StackSeedDomain::Occurrence>(),n,m,span1,span2);
 	using K=SeededPartitionFunction;
 	const K::Domain domain{n,m,span1,span2,energy.getMaxInternalLoopSize1(),energy.getMaxInternalLoopSize2(),output.getOutputConstraint().noLP};
 	auto boltzmann=[&](E_type e) { return E_isINF(e)?Z_type(0):PartitionArithmetic::exp(-E_2_Z(e)/energy.getRT()); };
@@ -172,10 +177,20 @@ PredictorMfeEns2dSeedExtension::predictStackSeeds(const IndexRange & r1,const In
 		[&](K::Pair p,K::Pair q){return exactBoundaryWeight(p[0],q[0],p[1],q[1]);},
 		[&](K::Pair p,K::Pair q,Z_type h,Z_type b){updateExactCompleteZ(p[0],q[0],p[1],q[1],h,b);}
 	};
-	const auto result=K::compute(domain,seeds,weights,false);
+	const auto result=K::compute(domain,seeds,weights,pairProbabilities!=nullptr);
 	if (result.z!=Zall) throw std::logic_error("exact seeded updateZ override did not preserve the partition objective");
 	output.setExactPartition(true);
 	reportOptima();
+	if (pairProbabilities) {
+		const auto first=energy.getBasePair(0,0), last=energy.getBasePair(n-1,m-1);
+		const IndexRange target(first.first,last.first), query(last.second,first.second);
+		Matrix<Z_type> original(n,m,0);
+		for(size_t i=0;i<n;++i) for(size_t j=0;j<m;++j) {
+			const auto bp=energy.getBasePair(i,j);
+			original(bp.first-target.from,bp.second-query.from)=result.mass(i,j);
+		}
+		pairProbabilities->addRegion(target,query,result.z,original);
+	}
 }
 
 E_type

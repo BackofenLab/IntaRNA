@@ -746,3 +746,55 @@ TEST_CASE("exact seeded updates retain tiny weights and restore scopes on except
 	auto sub=enumerateSeededInteractions(energy,sc,oc,IndexRange(1,3),IndexRange(1,3));
 	REQUIRE(double(p.getZall()/sub.unionPartition)==Approx(1).epsilon(2e-12));
 }
+
+namespace {
+class PairTestTracker : public PredictionTracker {
+public:
+	void updateOptimumCalled(size_t,size_t,size_t,size_t,E_type) override {}
+};
+}
+TEST_CASE("raw native pair masses share the exact forward denominator", "[BasePairProbabilities][PredictorSeedOracle]") {
+	#include "testEasyLoggingSetup.icc"
+	RnaSequence t("target","GGAGGG"),q("query","CCUCCC");
+	AccessibilityBasePair at(t,5,nullptr),aq(q,4,nullptr);ReverseAccessibility ar(aq);
+	InteractionEnergyBasePair energy(at,ar,2,1);
+	const auto sc=makeSeedConstraint(2,0,0,0,false);
+	for(bool noLP:{false,true}) for(bool tracker:{false,true}) {
+		auto oc=makeOutputConstraint(noLP);
+		BasePairProbabilities result(t.size(),q.size());
+		OutputHandlerInteractionList output(oc,1);
+		ExactSeedProbe p(energy,output,tracker?new PairTestTracker():nullptr,new SeedHandlerMfe(energy,sc),&result);
+		const IndexRange r1(1,5),r2(1,4);
+		p.predict(r1,r2);result.finalize();
+		auto oracle=enumerateSeededInteractions(energy,sc,oc,r1,r2);
+		REQUIRE(result.getZ()==p.getZall());
+		REQUIRE(result.getZ()==Approx(oracle.unionPartition).epsilon(2e-12));
+		REQUIRE((p.retained()>0)==tracker);
+		Matrix<Z_type> expected(t.size(),q.size(),0);
+		for(const auto & chain:oracle.interactions) for(const auto & pair:chain.chain) {
+			const auto bp=energy.getBasePair(pair.i1,pair.i2);
+			expected(bp.first,bp.second)+=energy.getBoltzmannWeight(chain.energy);
+		}
+		for(size_t i=0;i<t.size();++i) for(size_t j=0;j<q.size();++j)
+			REQUIRE(result.rawMasses()(i,j)==Approx(expected(i,j)).epsilon(2e-12));
+	}
+}
+TEST_CASE("raw pair owner excludes region crossings and invalidates partial results", "[BasePairProbabilities][PredictorSeedOracle]") {
+	#include "testEasyLoggingSetup.icc"
+	RnaSequence t("t","GGGGGG"),q("q","CCCCCC");
+	AccessibilityDisabled at(t,0,nullptr),aq(q,0,nullptr);ReverseAccessibility ar(aq);
+	InteractionEnergyBasePair energy(at,ar,2,2);
+	const auto sc=makeSeedConstraint(2,0,0,0,false);const auto oc=makeOutputConstraint(false);
+	BasePairProbabilities owner(6,6);OutputHandlerInteractionList output(oc,1);
+	ExactSeedProbe p(energy,output,nullptr,new SeedHandlerMfe(energy,sc),&owner);
+	p.predict({0,2},{0,2});const Z_type first=p.getZall();
+	p.predict({3,5},{3,5});REQUIRE(p.getZall()==first);
+	owner.finalize();REQUIRE(owner.getZ()==2*first);
+	REQUIRE(owner.probabilities()(0,0)==0);
+	BasePairProbabilities failed(6,6);OutputHandlerInteractionList output2(oc,1);
+	ExactSeedProbe p2(energy,output2,nullptr,new SeedHandlerMfe(energy,sc),&failed);
+	p2.predict({0,2},{0,2});p2.throwUpdate=true;
+	REQUIRE_THROWS(p2.predict({3,5},{3,5}));
+	REQUIRE(failed.status()==BasePairProbabilities::Status::failed);
+	REQUIRE_THROWS(failed.finalize());REQUIRE(p2.restored());
+}
