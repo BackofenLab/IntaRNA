@@ -25,6 +25,7 @@ runApiTests_SOURCES =	\
 					catch.hpp \
 					SeededChainOracle.h \
 					SeededTheoryFixtures.h \
+					SeededStackKernel.h \
 					SeededPartitionFunction_test.cpp \
 					StackSeedDomain_test.cpp \
 					testEasyLoggingSetup.icc \

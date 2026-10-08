@@ -42,6 +42,9 @@
 
 ## Technical changes and Optimizations
 
+- select the checked suffix inside/outside kernel after independent correctness
+  and maximal-stack timing comparisons (issue #257, implementation step 3)
+
 - expose geometric stack-seed capability and compile contained occurrences plus
   deduplicated eligible-start boxes (issue #257, implementation step 2)
 
@@ -138,6 +141,12 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261008 Alexander Mitrofanov
+ * SeededPartitionFunction, PartitionArithmetic, StackSeedDomain, tests, doc/analysis :
+   + add checked nonnegative kernels and raw pair differentiation; compare both
+     against exhaustive and high-precision gold values and record time/storage
+     tradeoffs before selecting the suffix backend (PR #258, step 3)
 
 261008 Alexander Mitrofanov
  * SeedHandler*, StackSeedDomain, tests/StackSeedDomain_test.cpp, Makefile.am :

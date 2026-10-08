@@ -28,6 +28,8 @@ libIntaRNA_a_HEADERS =    \
 					intarna_config.h \
 					Matrix.h \
 					StackSeedDomain.h \
+					PartitionArithmetic.h \
+					SeededPartitionFunction.h \
 					Accessibility.h \
 					AccessibilityArchive.h \
 					AccessibilityConstraint.h \
@@ -100,6 +102,7 @@ libIntaRNA_a_HEADERS =    \
 # the sources to add to the library and to add to the source distribution
 libIntaRNA_a_SOURCES = \
 					StackSeedDomain.cpp \
+					SeededPartitionFunction.cpp \
                     $(libmylib_a_HEADERS) \
 					Accessibility.cpp \
 					AccessibilityConstraint.cpp \

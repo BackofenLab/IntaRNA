@@ -23,6 +23,8 @@ void StackSeedDomain::add(Occurrence s, size_t n, size_t m, size_t w1, size_t w2
 			|| s.length>w1 || s.length>w2) return;
 	auto [p,inserted]=lengths.emplace(std::make_pair(s.i,s.j),s.length);
 	if (!inserted && p->second!=s.length) throw std::invalid_argument("multiple retained seed lengths at one start");
+	auto [end, fresh]=endingLengths.emplace(std::make_pair(s.i+s.length-1,s.j+s.length-1),s.length);
+	if (!fresh) end->second=std::min(end->second,s.length);
 	maximum=std::max(maximum,s.length);
 	const size_t end1=s.i+s.length, end2=s.j+s.length;
 	boxes.push_back({end1>w1?end1-w1:0,s.i,end2>w2?end2-w2:0,s.j});

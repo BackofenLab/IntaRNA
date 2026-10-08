@@ -34,6 +34,8 @@ public:
 	StackSeedDomain(const std::vector<Occurrence> & occurrences, size_t n, size_t m, size_t span1, size_t span2);
 	/** @return retained length at this start, or zero if no occurrence starts here */
 	size_t seedLength(size_t i, size_t j) const;
+	/** @return shortest admitted occurrence ending here, or zero */
+	size_t seedEndingLength(size_t i, size_t j) const;
 	/** @return maximum retained occurrence length, zero for an empty family */
 	size_t maxSeedLength() const;
 	/** Enumerate each eligible left boundary once, in row-major order.
@@ -44,6 +46,8 @@ public:
 private:
 	//! admitted occurrences keyed by local start
 	std::map<std::pair<size_t,size_t>, size_t> lengths;
+	//! shortest retained length per ending vertex for suffix acceptance
+	std::map<std::pair<size_t,size_t>, size_t> endingLengths;
 	//! eligible inclusive rectangles [i0,i1] x [j0,j1]
 	struct Box { size_t i0, i1, j0, j1; };
 	std::vector<Box> boxes;
@@ -52,6 +56,9 @@ private:
 };
 inline size_t StackSeedDomain::seedLength(size_t i, size_t j) const {
 	auto p=lengths.find({i,j}); return p==lengths.end()?0:p->second;
+}
+inline size_t StackSeedDomain::seedEndingLength(size_t i, size_t j) const {
+	auto p=endingLengths.find({i,j}); return p==endingLengths.end()?0:p->second;
 }
 inline size_t StackSeedDomain::maxSeedLength() const { return maximum; }
 }
