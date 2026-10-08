@@ -11,7 +11,7 @@ dependencies:
   - libtool
   - pkgconfig
   - zlib
-  - libboost-devel
+  - boost-cpp
   - viennarna>=2.4.14
   - cxx-compiler
   - make
