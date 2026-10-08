@@ -5,6 +5,7 @@
 
 EXTRA_DIST =	\
 			conda.txt \
+			analysis/base-pair-probabilities-plan.md \
 			api-documentation.md \
 			build-api.sh \
 			check-api.py \

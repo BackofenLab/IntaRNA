@@ -42,6 +42,10 @@
 
 ## Technical changes and Optimizations
 
+- document the implementation plan for exact seeded base-pair probabilities,
+  including algorithm comparison, numerical/output contracts and validation;
+  no prediction or probability implementation changes (issue #257)
+
 - add an API overview, IntaRNA Doxygen styling, and automated documentation
   builds and GitHub Pages publishing alongside the user guide (issue #22)
   
@@ -128,6 +132,15 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261008 Alexander Mitrofanov
+ * doc/analysis/base-pair-probabilities-plan.md :
+   + specify the stack-seed partition and outside recurrences, sparse domain,
+     suffix-automaton comparison, numerical policy, output integration and
+     independent validation for https://github.com/BackofenLab/IntaRNA/issues/257
+   + distinguish planned implementation from current supported behavior
+ * README.md, doc/Makefile.am :
+   + link the plan and include it in source distributions
 
 261007 Alexander Mitrofanov
  * doc/doxygen.cfg, doc/doxygen/* :

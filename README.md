@@ -2386,6 +2386,10 @@ Doxygen and Graphviz and run `bash doc/build-api.sh`, then open
 [API documentation build guide](doc/api-documentation.md) for validation,
 Autotools, and publishing instructions.
 
+The [seeded base-pair probability implementation plan](doc/analysis/base-pair-probabilities-plan.md)
+records the proposed algorithms, numerical contracts, integration, and validation
+for issue #257. It is a design document; the proposed output is not implemented.
+
 When IntaRNA is build while `pkg-config` is present, according pkg-config
 information is generated and installed too.
 
