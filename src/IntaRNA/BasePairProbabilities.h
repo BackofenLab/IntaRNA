@@ -20,17 +20,20 @@ public:
 	/** Allocate raw masses for the full original target/query sequences.
 	 * @param targetLength number of target positions
 	 * @param queryLength number of query positions
+	 * @param collectSeedPairs retain admitted seed-cell annotations for SVG output
 	 */
-	BasePairProbabilities(size_t targetLength,size_t queryLength);
+	BasePairProbabilities(size_t targetLength,size_t queryLength,bool collectSeedPairs=false);
 	/** Commit one completed region, after validating ALL sums and disjointness.
 	 * @param target inclusive original target region
 	 * @param query inclusive original query region
 	 * @param denominator raw region Z
 	 * @param masses raw region numerators in original orientation (local indices)
+	 * @param seedPairs optional regional seed mask in the same orientation as masses;
+	 * required when collecting annotations (nonzero denotes an admitted seed pair)
 	 * @throws on invalid/overlapping regions or numerical failure, marking failed
 	 */
 	void addRegion(const IndexRange & target,const IndexRange & query,
-			Z_type denominator,const Matrix<Z_type> & masses);
+			Z_type denominator,const Matrix<Z_type> & masses,const Matrix<unsigned char> * seedPairs=nullptr);
 	/** Finalize only after all requested regions succeeded; validate normalized
 	 * masses, row/column exclusivity and numerical range before publication.
 	 * @throws on failed computation or inconsistent masses
@@ -44,6 +47,10 @@ public:
 	Z_type getZ() const;
 	/** @return raw merged pair numerators (original coordinates) */
 	const Matrix<Z_type> & rawMasses() const;
+	/** @return whether this sink requests admitted seed-cell annotations */
+	bool collectsSeedPairs() const;
+	/** @return seed-cell mask in original coordinates, empty when not requested */
+	const Matrix<unsigned char> & seedPairs() const;
 	/** @return validated matrix; only available for finalized nonempty results.
 	 * Successful empty output is represented by status()==empty, not zeroes.
 	 */
@@ -52,11 +59,15 @@ private:
 	Status state=Status::pending;
 	Z_type z=0;
 	Matrix<Z_type> mass;
+	const bool collectSeeds;
+	Matrix<unsigned char> seeds;
 	std::vector<std::pair<IndexRange,IndexRange>> regions;
 };
 inline BasePairProbabilities::Status BasePairProbabilities::status() const { return state; }
 inline Z_type BasePairProbabilities::getZ() const { return z; }
 inline const Matrix<Z_type> & BasePairProbabilities::rawMasses() const { return mass; }
+inline bool BasePairProbabilities::collectsSeedPairs() const { return collectSeeds; }
+inline const Matrix<unsigned char> & BasePairProbabilities::seedPairs() const { return seeds; }
 inline void BasePairProbabilities::fail() noexcept { state=Status::failed; }
 }
 #endif

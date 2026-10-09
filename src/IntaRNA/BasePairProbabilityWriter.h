@@ -6,6 +6,7 @@
 #include <string>
 
 namespace IntaRNA {
+class InteractionEnergy;
 /** Explicit writer for a completed actual-pair matrix, independent of trackers.
  * Whole blocks are synchronized for shared streams. No destructor emits data.
  */
@@ -30,7 +31,26 @@ public:
 	 */
 	static void writeFile(const std::string & filename,const BasePairProbabilities & result,
 			const RnaSequence & target,const RnaSequence & query,const std::string & separator=";");
+	/** Write a complete SVG dot plot with original target rows/query columns.
+	 * Includes 1-nt accessibility, signed coordinate guides and a CSS color legend.
+	 * Seed outlines are included if the result collected admitted seed pairs.
+	 * @param out destination stream; an I/O failure throws
+	 * @param result explicitly finalized raw result
+	 * @param energy original, unshifted energy/accessibility model used in prediction
+	 */
+	static void writeSvg(std::ostream & out,const BasePairProbabilities & result,
+			const InteractionEnergy & energy);
+	/** Write a complete SVG to a file or STDOUT/STDERR, including gzip support.
+	 * Validates the whole document before opening the destination.
+	 * @param filename destination (already expanded for multi-FASTA)
+	 * @param result explicitly finalized raw result
+	 * @param energy original, unshifted energy/accessibility model
+	 */
+	static void writeSvgFile(const std::string & filename,const BasePairProbabilities & result,
+			const InteractionEnergy & energy);
 private:
+	static std::string svgBlock(const BasePairProbabilities & result,const InteractionEnergy & energy);
+	static void emitFile(const std::string & name,const std::string & data);
 	static std::string block(const BasePairProbabilities & result,const RnaSequence & target,
 			const RnaSequence & query,const std::string & separator);
 	static void emit(std::ostream & out,const std::string & data);

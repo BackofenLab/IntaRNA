@@ -289,7 +289,7 @@ public:
 	Predictor* getPredictor( const InteractionEnergy & energy
 			, OutputHandler & output, BasePairProbabilities * pairProbabilities = nullptr ) const;
 
-	/** @return whether actual base-pair matrix output was requested */
+	/** @return whether actual base-pair CSV or SVG output was requested */
 	bool hasBasePairProbabilityOutput() const;
 	/** Allocate a pair result after validating the actual seed capability.
 	 * @return owned result or nullptr when pair output is not requested
@@ -416,6 +416,7 @@ protected:
 		OP_spotProb,
 		OP_spotProbAll,
 		OP_bpProb,
+		OP_bpsvg,
 		OP_UNKNOWN
 	};
 
@@ -442,6 +443,7 @@ protected:
 		if (prefLC == "tacc")	{ return OutPrefixCode::OP_tAcc; } else
 		if (prefLC == "qpu")	{ return OutPrefixCode::OP_qPu; } else
 		if (prefLC == "tpu")	{ return OutPrefixCode::OP_tPu; } else
+		if (prefLC == "bpsvg")	{ return OutPrefixCode::OP_bpsvg; } else
 		if (prefLC == "bpprob")	{ return OutPrefixCode::OP_bpProb; } else
 		if (prefLC == "spotprob")	{ return OutPrefixCode::OP_spotProb; } else
 		// not known

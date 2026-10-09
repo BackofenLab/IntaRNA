@@ -1,0 +1,157 @@
+"""SVG semantics, original coordinates, seed provenance and output lifecycle."""
+import csv
+import gzip
+import math
+from pathlib import Path
+import re
+import subprocess
+import sys
+import tempfile
+import xml.etree.ElementTree as ET
+
+BIN = sys.argv[1]
+COMMON = ['--energy=B', '--acc=N', '--model=P', '--mode=M', '--seedBP=2',
+          '--threads=1', '--outNoLP=false', '--outNoGUend=false', '--outNumber=0',
+          '--default-log-file=/dev/null']
+NS = {'s': 'http://www.w3.org/2000/svg'}
+
+
+def run(t='GGAGGG', q='CCCC', options=(), success=True):
+    keys = {o.split('=')[0] for o in options}
+    p = subprocess.run([BIN, f'--target={t}', f'--query={q}',
+                        *[o for o in COMMON if o.split('=')[0] not in keys], *options],
+                       text=True, capture_output=True)
+    assert (p.returncode == 0) == success, (options, p.stdout, p.stderr)
+    return p
+
+
+def load(path):
+    return ET.fromstring(gzip.decompress(path.read_bytes()) if str(path).endswith('.gz') else path.read_bytes())
+
+
+def pairs(root):
+    return {(int(r.attrib['data-target']), int(r.attrib['data-query'])): r
+            for r in root.findall('.//s:rect[@data-type="base-pair"]', NS)}
+
+
+def seeds(root):
+    return {(int(r.attrib['data-target']), int(r.attrib['data-query']))
+            for r in root.findall('.//s:rect[@class="seed"][@data-target]', NS)}
+
+
+with tempfile.TemporaryDirectory(prefix='intarna-bpsvg-') as tmp:
+    d = Path(tmp)
+    svg, table = d/'pairs.svg', d/'pairs.csv'
+
+    def plot(t='GGAGGG', q='CCCC', opts=()):
+        run(t, q, [f'--out=bpsvg:{svg}', *opts])
+        return load(svg)
+
+    root = plot(opts=[f'--out=bpProb:{table}'])
+    cells = pairs(root)
+    rows = list(csv.reader(table.open(), delimiter=';'))
+    assert len(cells) == 24
+    assert '+1' in [e.text for e in root.findall('.//s:text[@class="index"]', NS)]
+    assert not root.findall('.//s:line[@data-index="1"]', NS)
+    for i, row in enumerate(rows[1:], 1):
+        for j, value in enumerate(row[1:], 1):
+            r = cells[i, j]
+            assert float(r.attrib['data-probability']) == float(value)
+            bounds = [0.01, 0.1, 0.25, 0.5, 0.75, 0.9]
+            expected_color = sum(float(value) >= boundary for boundary in bounds)
+            assert f'p{expected_color}' in r.attrib['class'].split()
+            assert 'Base-pair probability' in r.find('s:title', NS).text
+    assert all(float(cells[3, j].attrib['data-probability']) == 0 for j in range(1, 5))
+    frame = root.findall('.//s:rect[@data-type="unpaired"]', NS)
+    assert len(frame) == 2*(6+4)
+    assert all(float(r.attrib['data-probability']) == 1 for r in frame)
+    assert all('Unpaired probability' in r.find('s:title', NS).text for r in frame)
+    css = root.find('s:style', NS).text
+    assert all(f'.p{i} {{ fill:' in css for i in range(7))
+    assert len(root.findall('.//s:g[@class="probability-legend"]/s:rect', NS)) == 7
+    # All admitted computed two-pair stacks, in original query orientation.
+    expected = {(i+k+1, 4-j-k) for i in (0, 3, 4) for j in range(3) for k in range(2)}
+    assert seeds(root) == expected, seeds(root)
+    # Requesting SVG must not affect CSV or ensemble/ranked output.
+    baseline = run(options=['--outNumber=1', '--outMode=C', '--outCsvCols=Zall,Eall'])
+    plotted = run(options=['--outNumber=1', '--outMode=C', '--outCsvCols=Zall,Eall', f'--out=bpsvg:{svg}'])
+    assert baseline.stdout == plotted.stdout
+    # Explicit singleton/mixed seed masks exclude extension-only cells.
+    opts = ['--seedTQ=1|&4|,2||&2||']
+    mixed = plot('GGGG', 'CCCC', opts)
+    assert seeds(mixed) == {(1,4), (2,3), (3,2)}
+    restricted = plot('GGGG', 'CCCC', [*opts, '--tRegion=2-4', '--qRegion=1-3'])
+    assert seeds(restricted) == {(2,3), (3,2)}
+    # A seed crossing a searched region boundary is not annotated.
+    cut = plot('GGGG', 'CCCC', ['--seedTQ=2||&2||', '--tRegion=1-2,3-4'])
+    assert not seeds(cut)
+    assert all(r.attrib['data-probability'] == 'NA' for r in pairs(cut).values())
+    # Four disjoint rectangles merge both probabilities and masks.
+    regional = plot('GGGG', 'CCCC', ['--tRegion=1-2,3-4', '--qRegion=1-2,3-4'])
+    assert seeds(regional) == {(1,2),(2,1),(1,4),(2,3),(3,2),(4,1),(3,4),(4,3)}
+    # Signed guides follow displayed coordinates; there is no zero nucleotide.
+    signed = plot('A'*72, 'A'*18, ['--tIdxPos0=-15', '--qIdxPos0=-15'])
+    signed_cells = pairs(signed)
+    for strand, length in (('target',72), ('query',18)):
+        guides = signed.findall(f'.//s:line[@data-strand="{strand}"]', NS)
+        expected_indices = {-10, 1} | ({10,20,30,40,50} if length == 72 else set())
+        assert {int(g.attrib['data-index']) for g in guides} == expected_indices
+        assert not any(0 in k for k in signed_cells)
+        for g in guides:
+            idx = int(g.attrib['data-index'])
+            r = signed_cells[idx,-15] if strand == 'target' else signed_cells[-15,idx]
+            axis = 'y' if strand == 'target' else 'x'
+            expected_pos = float(r.attrib[axis]) + (20 if idx > 1 else 0)
+            assert float(g.attrib[axis+'1']) == expected_pos
+            assert ('major' in g.attrib['class']) == (idx % 50 == 0)
+            assert ('origin' in g.attrib['class']) == (idx == 1)
+    negative = plot('A'*13, 'A'*13, ['--tIdxPos0=-55', '--qIdxPos0=45'])
+    assert 'major' in negative.find('.//s:line[@data-strand="target"][@data-index="-50"]', NS).attrib['class']
+    # User sequence identifiers must round-trip through XML escaping.
+    name = '<target & "quoted">'
+    named = plot(opts=[f'--tId={name}'])
+    assert name in named.find('s:title', NS).text
+    assert name+" (5' to 3')" in [e.text for e in named.findall('.//s:text', NS)]
+    # Native accessibility values must use original (not reversed) query order.
+    pu_t, pu_q = d/'target.pu', d/'query.pu'
+    native = plot('GGGGAAAACCCC', 'GCGCGAAAACGCGC',
+                  ['--energy=V', '--acc=C', f'--out=tPu:{pu_t}', f'--out=qPu:{pu_q}'])
+    for strand, path in (('target', pu_t), ('query', pu_q)):
+        expected_pu = [float(line.split()[1]) for line in path.read_text().splitlines()
+                       if line.strip() and not line.lstrip().startswith('#')]
+        assert any(0 < v < .9 for v in expected_pu)
+        for r in native.findall(f'.//s:rect[@data-type="unpaired"][@data-strand="{strand}"]', NS):
+            assert math.isclose(float(r.attrib['data-probability']), expected_pu[int(r.attrib['data-index'])-1],
+                                rel_tol=2e-5, abs_tol=1e-6)
+    for t,q in (('AAAA','AAAA'), ('G','C')):
+        empty = plot(t,q)
+        assert all(r.attrib['data-probability'] == 'NA' for r in pairs(empty).values())
+        assert not seeds(empty)
+        assert 'empty interaction ensemble' in ''.join(empty.itertext())
+    compressed = d/'pairs.svg.gz'
+    run(options=[f'--out=bpsvg:{compressed}'])
+    assert len(pairs(load(compressed))) == 24
+    # Validation/numerical failures must not publish a partial document.
+    for opts in (['--mode=H'], ['--noSeed'], ['--seedMaxUP=1'], ['--model=X', '--mode=K'],
+                 ['--windowWidth=3'], ['--seedTQ=1|&4|','--energyAdd=900']):
+        failure = d/'failure.svg'
+        run(options=[f'--out=bpsvg:{failure}', *opts], success=False)
+        assert not failure.exists()
+    run(options=['--out=bpsvg:/dev/full'], success=False)
+    run(options=[f'--out=bpsvg:{svg}', f'--out=bpProb:{svg}'], success=False)
+    # Multi-FASTA creates one SVG per pair; shared streams emit indivisible roots.
+    fasta=d/'targets.fa'; fasta.write_text('>a\nGGGG\n>b\nGAGG\n')
+    for threads in (1,2):
+        prefix=d/f'multi{threads}.svg'
+        run(str(fasta), 'CCCC', [f'--threads={threads}', f'--out=bpsvg:{prefix}'])
+        files=sorted(d.glob(f'multi{threads}*.svg'))
+        assert len(files)==2
+        assert all(len(pairs(load(file)))==16 for file in files)
+        for stream in ('STDOUT', 'STDERR'):
+            shared=run(str(fasta), 'CCCC', [f'--threads={threads}', f'--out=bpsvg:{stream}'])
+            data=shared.stdout if stream=='STDOUT' else shared.stderr
+            blocks=re.findall(r'<svg\b.*?</svg>', data, re.S)
+            assert len(blocks)==2
+            assert all(len(pairs(ET.fromstring(block)))==16 for block in blocks)
+
+print('base-pair probability SVG regressions passed')

@@ -4,9 +4,10 @@
 #include <stdexcept>
 
 namespace IntaRNA {
-BasePairProbabilities::BasePairProbabilities(size_t n,size_t m):mass(n,m,0) {}
+BasePairProbabilities::BasePairProbabilities(size_t n,size_t m,bool collectSeedPairs)
+	: mass(n,m,0), collectSeeds(collectSeedPairs), seeds(collectSeedPairs?n:0,collectSeedPairs?m:0,0) {}
 void BasePairProbabilities::addRegion(const IndexRange & t,const IndexRange & q,
-		Z_type denominator,const Matrix<Z_type> & values)
+		Z_type denominator,const Matrix<Z_type> & values,const Matrix<unsigned char> * seedPairs)
 {
 	using A=PartitionArithmetic;
 	try {
@@ -14,6 +15,8 @@ void BasePairProbabilities::addRegion(const IndexRange & t,const IndexRange & q,
 		if (!t.isAscending() || !q.isAscending() || t.to>=mass.size1() || q.to>=mass.size2()
 				|| values.size1()!=t.to-t.from+1 || values.size2()!=q.to-q.from+1)
 			throw std::invalid_argument("pair probabilities: invalid region dimensions");
+		if (collectSeeds && (!seedPairs || seedPairs->size1()!=values.size1() || seedPairs->size2()!=values.size2()))
+			throw std::invalid_argument("pair probabilities: missing or invalid regional seed mask");
 		for (const auto & r:regions)
 			if (t.from<=r.first.to && r.first.from<=t.to && q.from<=r.second.to && r.second.from<=q.to)
 				throw std::invalid_argument("pair probabilities: searched regions overlap");
@@ -26,7 +29,10 @@ void BasePairProbabilities::addRegion(const IndexRange & t,const IndexRange & q,
 		// Allocation and all potentially failing arithmetic precede modification.
 		regions.emplace_back(t,q);
 		for (size_t i=0;i<values.size1();++i) for(size_t j=0;j<values.size2();++j)
+		{
 			mass(t.from+i,q.from+j)+=values(i,j);
+			if (collectSeeds) seeds(t.from+i,q.from+j)=(*seedPairs)(i,j)!=0;
+		}
 		z=merged;
 	} catch (...) { fail(); throw; }
 }

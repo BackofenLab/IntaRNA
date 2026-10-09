@@ -185,11 +185,18 @@ PredictorMfeEns2dSeedExtension::predictStackSeeds(const IndexRange & r1,const In
 		const auto first=energy.getBasePair(0,0), last=energy.getBasePair(n-1,m-1);
 		const IndexRange target(first.first,last.first), query(last.second,first.second);
 		Matrix<Z_type> original(n,m,0);
+		const bool annotate=pairProbabilities->collectsSeedPairs();
+		Matrix<unsigned char> seedPairs(annotate?n:0,annotate?m:0,0);
 		for(size_t i=0;i<n;++i) for(size_t j=0;j<m;++j) {
 			const auto bp=energy.getBasePair(i,j);
 			original(bp.first-target.from,bp.second-query.from)=result.mass(i,j);
+			// Mark the same admitted, contained occurrences used by the kernel.
+			if (annotate) for(size_t k=0;k<seeds.seedLength(i,j);++k) {
+				const auto seedPair=energy.getBasePair(i+k,j+k);
+				seedPairs(seedPair.first-target.from,seedPair.second-query.from)=1;
+			}
 		}
-		pairProbabilities->addRegion(target,query,result.z,original);
+		pairProbabilities->addRegion(target,query,result.z,original,annotate?&seedPairs:nullptr);
 	}
 }
 

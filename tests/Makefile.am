@@ -85,4 +85,4 @@ runApiTests_CXXFLAGS =	-I$(top_builddir)/src \
 
 
 
-EXTRA_DIST = tools/export-seeded-theory.py testBasePairProbabilities.py
+EXTRA_DIST = tools/export-seeded-theory.py testBasePairProbabilities.py testBasePairProbabilitySvg.py

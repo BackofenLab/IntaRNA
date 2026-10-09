@@ -1876,6 +1876,7 @@ targeted file/stream name:
 
 - `qSpotProb:`/`tSpotProb:` [query/target's spot probability profile](#profileSpotProb) (CSV format), respectively
 - `spotProb:` [all spot probabilities](#spotProb) (CSV format)
+- `bpsvg:` [SVG base-pair probability dot plot](#bpsvg), with accessibility frames and seed outlines
 - `bpProb:` [actual base-pair probabilities](#bpProb) for exact stack-seeded ensembles (CSV matrix)
 - `qMinE:`/`tMinE:` [the query/target's minimal interaction energy profile](profileMinE) (CSV format), respectively
 - `pMinE:` [minimal interaction energy for all query-target index pairs](pairMinE) (CSV format)
@@ -1883,7 +1884,7 @@ targeted file/stream name:
 - `qPu:`/`tPu:` the [query/target's unpaired probabilities](#accessibility) (RNAplfold format; rounded!!), respectively
 
 Note, for *multiple sequences* in FASTA input, the provided file names are suffixed by
-- `-t#q#` : for `bpProb`, `*spotProb` and `*minE` output, and
+- `-t#q#` : for `bpProb`, `bpsvg`, `*spotProb` and `*minE` output, and
 - `-s#` : for `*Acc` and `*Pu` output,
 where `#` denotes the according target/query sequence number
 within the input where numbering starts with 1.
@@ -2063,6 +2064,63 @@ explicitly after finalization; its destructor publishes nothing. The output
 constraint must enable `needZall`. The [standalone API example](doc/seeded-probabilities-example.cpp)
 and [implementation validation report](doc/analysis/seeded-probabilities-validation.md)
 show the public API and measured limits.
+
+<a name="bpsvg" />
+
+### SVG base-pair probability dot plots
+
+`--out=bpsvg:FILE` renders the same actual-pair probabilities as `bpProb` in a
+standalone SVG. Both outputs can be requested together. The same exact
+`--model=P --mode=M` stack-seed restrictions, regional ensemble, normalization
+and success-only publication rules apply.
+
+```sh
+IntaRNA -t GGAGGG -q CCCC --energy=B --acc=N --seedBP=2 \
+  --model=P --mode=M --out=bpsvg:pairs.svg --out=bpProb:pairs.csv
+```
+
+The query is the horizontal axis and the target the vertical axis, both in
+original 5' to 3' order. Sequence names label the axes; nucleotides appear on all
+four sides. Their colored backgrounds show **single-nucleotide unpaired
+probabilities**, computed from the prediction accessibility model's opening
+energies. These are distinct from the interaction-conditional probabilities in
+the matrix. Disabled accessibility gives probability one at unconstrained bases.
+Each probability rectangle has a hover title with its index (pair), type and
+full-precision value. An empty interaction ensemble uses gray `NA` cells while
+its accessibility frame remains defined.
+
+A shared seven-step, white-to-dark-blue palette encodes both probability types:
+`[0,0.01)`, `[0.01,0.1)`, `[0.1,0.25)`, `[0.25,0.5)`, `[0.5,0.75)`,
+`[0.75,0.9)`, and `[0.9,1]`. The legend appears below the plot. Edit the `.p0`
+through `.p6` fill rules in the SVG's `<style>` element to recolor the matrix,
+frames and legend together. No external stylesheet or JavaScript is needed.
+
+Gray guides use the final, shifted sequence indices: every tenth nucleotide,
+with stronger lines at multiples of 50. For a negative multiple, the line is
+before the labelled nucleotide (for example `-11 | -10`); for a positive one,
+it is after it (`10 | 11`). A dashed guide marks `-1 | +1` when both occur.
+Guide labels sit beside the associated nucleotide, on both sides of the plot;
+`+1` is also labelled when it starts a sequence.
+
+Dark orange outlines mark the union of pairs belonging to **admitted seeds**
+contained in searched regions, including overlapping, singleton and mixed-length
+explicit seeds. This annotation uses the predictor's retained seed family and
+span limits; it is independent of ranked interaction reporting and can include
+zero-probability cells. Extension-only pairs have no outline. A seed legend is
+included whenever an outline is present.
+
+Filenames support `.gz` compression and the usual `-t#q#` multi-FASTA suffixes.
+`STDOUT` and `STDERR` emit each complete SVG as one synchronized block. To obtain
+a standalone SVG on standard output, redirect ordinary output, for example
+`--out=/dev/null --out=bpsvg:STDOUT`. Multiple sequence pairs on a shared stream
+produce consecutive SVG documents; use filenames for separate viewable files.
+
+Library callers can use `BasePairProbabilityWriter::writeSvg()` or
+`writeSvgFile()` with a finalized result and the original energy model. Construct
+`BasePairProbabilities(targetLength, queryLength, true)` to retain seed annotations;
+the default CSV-only result does not allocate that mask. SVG creation buffers
+the document and uses one rectangle per pair plus the frames, so its size grows
+with the full target-by-query matrix.
 
 <a name="spotProb" />
 

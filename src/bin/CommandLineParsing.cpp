@@ -957,6 +957,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 					"\n 'tAcc:' (target) ED accessibility values ('tPu'-like format OR '.agz' file ending for IntaRNA's binary format)."
 					"\n 'tPu:' (target) unpaired probability values (RNAplfold format OR '.agz' file ending for IntaRNA's binary format)."
 					"\n 'pMinE:' (target+query) for each index pair the minimal energy of any interaction covering the pair (CSV format)"
+					"\n 'bpsvg:' (target+query) SVG actual-pair probability plot with accessibility frame and seed annotations; same requirements as bpProb"
 					"\n 'bpProb:' (target+query) actual-pair conditional probabilities for exact --model=P --mode=M stack-seed ensembles (CSV matrix, original strand order; NA for an empty ensemble)"
 					"\n 'spotProb:' (target+query) tracks for a given set of interaction spots their probability to be covered by an interaction. If no spots are provided, probabilities for all index combinations are computed. Spots are encoded by comma-separated 'idxT&idxQ' pairs (target-query). For each spot a probability is provided in concert with the probability that none of the spots (encoded by '0&0') is covered (CSV format). The spot encoding is followed colon-separated by the output stream/file name, eg. '--out=\"spotProb:3&76,59&2:STDERR\"'. NOTE: value has to be quoted due to '&' symbol!"
 					"\nFor each, provide a file name or STDOUT/STDERR to write to the respective output stream."
@@ -1246,7 +1247,7 @@ parse(int argc, char** argv)
 
 			if (hasBasePairProbabilityOutput()) {
 				if (model.val!='P' || mode.val!='M' || noSeedRequired || !rri.empty() || windowWidth.val!=0)
-					throw error("bpProb requires --model=P --mode=M with stack-only seeds and no windows");
+					throw error("bpProb/bpsvg requires --model=P --mode=M with stack-only seeds and no windows");
 				outNeedsZall=true;
 			}
 			// K needs a seed even before the usual --noSeed model normalization.
@@ -1582,7 +1583,7 @@ parse(int argc, char** argv)
 					for (auto c2=c1; noDuplicate && (++c2)!=outPrefix2streamName.end();) {
 						if ( ! c2->second.empty() && boost::iequals( c1->second, c2->second ) ) {
 							// Pair matrices emit synchronized complete blocks on shared standard streams.
-							if ((c1->first==OP_bpProb || c2->first==OP_bpProb)
+							if ((c1->first==OP_bpProb || c2->first==OP_bpProb || c1->first==OP_bpsvg || c2->first==OP_bpsvg)
 									&& (boost::iequals(c1->second,"STDOUT") || boost::iequals(c1->second,"STDERR"))) continue;
 							noDuplicate = false;
 							throw error("--out argument shows multiple times '"+toString(c1->second)+"' as target file/stream.");
@@ -2490,19 +2491,23 @@ getTemperature() const {
 ////////////////////////////////////////////////////////////////////////////
 
 bool CommandLineParsing::hasBasePairProbabilityOutput() const {
-	return !outPrefix2streamName.at(OutPrefixCode::OP_bpProb).empty();
+	return !outPrefix2streamName.at(OutPrefixCode::OP_bpProb).empty()
+		|| !outPrefix2streamName.at(OutPrefixCode::OP_bpsvg).empty();
 }
 BasePairProbabilities * CommandLineParsing::getBasePairProbabilityResult(const InteractionEnergy & energy) const {
 	if (!hasBasePairProbabilityOutput()) return nullptr;
 	std::unique_ptr<SeedHandler> handler(getSeedHandler(energy));
 	if (!handler->guaranteesStackOnlySeeds())
-		throw std::invalid_argument("bpProb requires a stack-only seed handler; bulged seeds are unsupported");
-	return new BasePairProbabilities(energy.size1(),energy.size2());
+		throw std::invalid_argument("bpProb/bpsvg requires a stack-only seed handler; bulged seeds are unsupported");
+	return new BasePairProbabilities(energy.size1(),energy.size2(),!outPrefix2streamName.at(OP_bpsvg).empty());
 }
 void CommandLineParsing::writeBasePairProbabilities(const BasePairProbabilities & result,const InteractionEnergy & energy) const {
 	const auto & t=energy.getAccessibility1().getSequence();
 	const auto & q=energy.getAccessibility2().getAccessibilityOrigin().getSequence();
-	BasePairProbabilityWriter::writeFile(getFullFilename(outPrefix2streamName.at(OutPrefixCode::OP_bpProb),&t,&q),result,t,q,outSep);
+	if (!outPrefix2streamName.at(OP_bpProb).empty())
+		BasePairProbabilityWriter::writeFile(getFullFilename(outPrefix2streamName.at(OP_bpProb),&t,&q),result,t,q,outSep);
+	if (!outPrefix2streamName.at(OP_bpsvg).empty())
+		BasePairProbabilityWriter::writeSvgFile(getFullFilename(outPrefix2streamName.at(OP_bpsvg),&t,&q),result,energy);
 }
 
 Predictor*
@@ -2512,10 +2517,10 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output, BasePair
 	std::unique_ptr<SeedHandler> pairSeeds;
 	if (pairProbabilities) {
 		if(model.val!='P' || mode.val!='M' || noSeedRequired || !rri.empty() || windowWidth.val!=0)
-			throw std::invalid_argument("bpProb requires --model=P --mode=M with stack-only seeds and no windows");
+			throw std::invalid_argument("bpProb/bpsvg requires --model=P --mode=M with stack-only seeds and no windows");
 		pairSeeds.reset(getSeedHandler(energy));
 		if(!pairSeeds->guaranteesStackOnlySeeds())
-			throw std::invalid_argument("bpProb requires a stack-only seed handler; bulged seeds are unsupported");
+			throw std::invalid_argument("bpProb/bpsvg requires a stack-only seed handler; bulged seeds are unsupported");
 	}
 	// set up hub for prediction tracking (if needed)
 	PredictionTrackerHub * predTracker = new PredictionTrackerHub();

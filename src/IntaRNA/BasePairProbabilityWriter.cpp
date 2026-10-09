@@ -36,7 +36,7 @@ void BasePairProbabilityWriter::emit(std::ostream & out,const std::string & data
 	{
 		try {
 			out<<data;out.flush();
-			if(!out) throw std::runtime_error("bpProb output write failed");
+			if(!out) throw std::runtime_error("base-pair probability output write failed");
 		} catch (...) { failure=std::current_exception(); }
 	}
 	if(failure) std::rethrow_exception(failure);
@@ -47,9 +47,11 @@ void BasePairProbabilityWriter::write(std::ostream & out,const BasePairProbabili
 }
 void BasePairProbabilityWriter::writeFile(const std::string & name,const BasePairProbabilities & result,
 		const RnaSequence & t,const RnaSequence & q,const std::string & sep) {
-	const auto data=block(result,t,q,sep);
+	emitFile(name,block(result,t,q,sep));
+}
+void BasePairProbabilityWriter::emitFile(const std::string & name,const std::string & data) {
 	std::ostream * out=newOutputStream(name);
-	if(!out) throw std::runtime_error("could not open bpProb output '"+name+"'");
+	if(!out) throw std::runtime_error("could not open base-pair probability output '"+name+"'");
 	// Standard streams are borrowed; file streams are owned here. Explicit reset
 	// closes gzip before success is returned, exposing compression/close failures.
 	std::unique_ptr<std::ostream> file(out==&std::cout || out==&std::cerr?nullptr:out);
