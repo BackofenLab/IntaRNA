@@ -18,7 +18,8 @@ std::string BasePairProbabilityWriter::block(const BasePairProbabilities & resul
 	// Validate every normalized value before opening a file or writing a header.
 	const auto p=empty?Matrix<Z_type>():result.probabilities();
 	std::ostringstream data;
-	data<<std::setprecision(std::numeric_limits<Z_type>::max_digits10)<<"bpProb";
+	data<<std::setprecision(std::numeric_limits<Z_type>::max_digits10)
+		<<(result.isApproximate()?"bpProbApproximate":"bpProb");
 	for(size_t j=0;j<query.size();++j) data<<sep<<query.asString().at(j)<<'_'<<query.getInOutIndex(j);
 	data<<'\n';
 	for(size_t i=0;i<target.size();++i) {

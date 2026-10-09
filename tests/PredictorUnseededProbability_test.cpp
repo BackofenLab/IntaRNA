@@ -214,4 +214,10 @@ TEST_CASE("unseeded probability collection follows legacy numerical gates and fa
 	PredictorMfeEns2d huge(extreme,output,nullptr,&overflow);
 	REQUIRE_THROWS(huge.predict());
 	REQUIRE(overflow.status()==BasePairProbabilities::Status::failed);
+	BasePairProbabilities underflow(5,5);
+	InteractionEnergyBasePair underflowEnergy(targetAcc,reverse,2,2,false,1,
+			Ekcal_2_E(-1),3,Ekcal_2_E(1000));
+	PredictorMfeEns2d disappearing(underflowEnergy,output,nullptr,&underflow);
+	REQUIRE_THROWS(disappearing.predict());
+	REQUIRE(underflow.status()==BasePairProbabilities::Status::failed);
 }

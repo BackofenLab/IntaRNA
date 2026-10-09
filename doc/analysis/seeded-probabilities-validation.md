@@ -270,3 +270,51 @@ Seven interleaved runs gave wall medians 0.412419→0.390979 seconds (ranges
 RSS 87,744→84,544 KiB. The slowdown did not reproduce without filesystem writes;
 the fixed serializer was 5.2% faster in this specific control. Use the same
 sparse400 command with `--out=STDOUT --out=bpsvg:/dev/null > /dev/null` to repeat.
+
+## PR #259 review: SVG revisions and steps 10–11 (2026-10-09)
+
+Martin's review adds unseeded and heuristic probability outputs to the original
+SVG/documentation scope. Exact unseeded mode M now reverses each fixed-right-end
+inside table. Unseeded mode H reverses its retained continuation chains; seeded
+mode H traces its signed left/right extension arithmetic, including the existing
+seed-overlap corrections and selected right extensions. Heuristic output is
+explicitly approximate (`bpProbApproximate` and an approximate SVG title). Its
+candidate ensemble can retain path multiplicities and is not the exact seeded
+unique-chain ensemble. Existing numerical-zero cutoffs remain in the legacy
+unseeded/heuristic objectives.
+
+The SVG now starts both strands at the bottom-left origin, places the query name
+below the matrix, uses sequence names and rounded values in tooltips, displays
+intramolecular pairing as `1-Pu`, and outlines the best reported interaction region
+in green. Machine-readable probability attributes keep full precision. The MFE
+outline is available with `--outNumber=0`; ordinary ranked output stays suppressed.
+An outline is omitted if no interaction passes the reporting filters.
+
+Independent agents implemented and reviewed the recurrences, checked actual-pair
+ownership, and evaluated performance before push. The new API tests compare exact
+and unseeded heuristic results with independently enumerated tiny-chain ensembles.
+Seeded heuristic tests change one pair's Boltzmann fugacity and compare the change
+in the scalar partition function with that pair's numerator. They freeze the
+baseline selected right extension and concrete computed seed family, so the test
+checks marginals of the implemented conditional ensemble rather than a different
+family selected after perturbation. Cases include overlapping/disjoint and bulged
+seeds, LP/noLP, regions, seed annotations, successful empty results, singleton seed
+rejection, and failure publication. Separate symbolic checks of 500 randomized
+small legacy seeded extension polynomials found no negative or over-total pair
+masses in the sampled cases.
+
+The review found and fixed active-region offset/dimension errors, finite-boundary
+Boltzmann underflow masquerading as an empty result, and a nonfinite seeded-H
+denominator bypassing a relative-tolerance comparison. These fixes have regression
+coverage. CSV/SVG CLI tests cover approximation metadata, numeric parity, seed
+masks, MFE geometry, signed coordinates and unchanged ordinary output.
+
+The final GCC 14.4 release and debug runs each pass all seven `make tests -j2`
+suites and 100,947 API assertions in 97 cases. All 74 installed public headers
+compile independently. Installed pkg-config consumers for exact/heuristic,
+seeded/unseeded predictors compile, link and produce CSV/SVG with the expected
+approximation metadata. `make dist` contains the new predictor tests
+and implementation. All revised text is UTF-8/LF and `git diff --check` passes.
+Both new recurrence SVGs parse, render and passed independent equation review;
+representative output SVGs were rendered and visually inspected. Apple Clang was
+not available locally.

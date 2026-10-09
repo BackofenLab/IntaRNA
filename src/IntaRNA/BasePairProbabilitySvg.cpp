@@ -94,9 +94,10 @@ BasePairProbabilityWriter::svgBlock(const BasePairProbabilities & result,const I
 	out<<std::setprecision(std::numeric_limits<Z_type>::max_digits10);
 	out<<"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\""<<width<<"\" height=\""<<height
 		<<"\" viewBox=\"0 0 "<<width<<' '<<height<<"\" role=\"img\">\n"
-		<<"<title>Base-pair probabilities: "<<xml(t.getId())<<" / "<<xml(q.getId())<<"</title>\n"
+		<<"<title>"<<(result.isApproximate()?"Approximate base-pair probabilities: ":"Base-pair probabilities: ")<<xml(t.getId())<<" / "<<xml(q.getId())<<"</title>\n"
 		<<"<desc>Target rows run 5' to 3' upwards and query columns run 5' to 3' to the right. Pair probabilities are conditional on an allowed interaction. "
-		<<"The frame shows single-nucleotide intramolecular pairing probabilities (1 - Pu) from the accessibility model.</desc>\n"
+		<<"The frame shows single-nucleotide intramolecular pairing probabilities (1 - Pu) from the accessibility model. "
+		<<(result.isApproximate()?"Approximate probabilities describe the retained heuristic ensemble.":"Probabilities describe the exact predictor ensemble.")<<"</desc>\n"
 		<<R"SVG(<style>
 text { font-family: sans-serif; fill: #243247; }
 .heading { font-size: 18px; font-weight: bold; }
@@ -126,7 +127,7 @@ text { font-family: sans-serif; fill: #243247; }
 	auto text=[&](double tx,double ty,const std::string & value,const std::string & cls,const char * anchor="middle") {
 		out<<"<text class=\""<<cls<<"\" x=\""<<tx<<"\" y=\""<<ty<<"\" text-anchor=\""<<anchor<<"\">"<<xml(value)<<"</text>\n";
 	};
-	text(width/2,30,"Base-pair probabilities","heading");
+	text(width/2,30,result.isApproximate()?"Approximate base-pair probabilities":"Base-pair probabilities","heading");
 	if (t.getId()!="target" || q.getId()!="query")
 		text(width/2,53,t.getId()+" / "+q.getId(),"subtitle");
 	text(x+w/2,y+h+65,q.getId()+" (5' to 3')","axis");

@@ -27,7 +27,7 @@ def run(t='GGAGGG', q='CCCC', options=(), success=True):
 def matrix(path):
     with (gzip.open(path, 'rt') if str(path).endswith('.gz') else open(path)) as f:
         rows = list(csv.reader(f, delimiter=';'))
-    assert rows[0][0] == 'bpProb', rows
+    assert rows[0][0] in ('bpProb', 'bpProbApproximate'), rows
     return rows[0][1:], [r[0] for r in rows[1:]], [[None if v=='NA' else float(v) for v in r[1:]] for r in rows[1:]]
 
 def oracle(t, q, regions=None, no_lp=False, seeds=None, unseeded=False):
@@ -116,8 +116,16 @@ with tempfile.TemporaryDirectory(prefix='intarna-bpp-') as tmp:
     covered=list(csv.reader(spot.open(),delimiter=';'))
     assert any(float(v)>0 for v in covered[3][1:]);assert all(v==0 for v in with_spot[2])
     compressed=d/'pairs.csv.gz';run(options=[f'--out=bpProb:{compressed}']);same(matrix(compressed)[2],values)
+    # Heuristic outputs retain their own denominator and declare approximation.
+    for seed_opts in ([], ['--noSeed'], ['--seedMaxUP=1']):
+        for no_lp in ('false', 'true'):
+            opts=['--mode=H', f'--outNoLP={no_lp}', *seed_opts]
+            predicted, probs=predict(extra=opts)
+            assert predicted.stdout==run(options=opts).stdout
+            assert path.read_text().startswith('bpProbApproximate;')
+            assert all(v is None or 0<=v<=1 for row in probs for v in row)
     # Unsupported requests fail explicitly and never create a probability file.
-    for opts in (['--mode=H'],['--mode=S'],['--model=X','--mode=K'],['--windowWidth=3','--windowOverlap=2'],['--seedMaxUP=1'],['--seedTQ=1|.|&2||']):
+    for opts in (['--mode=S'],['--model=X','--mode=K'],['--windowWidth=3','--windowOverlap=2'],['--seedMaxUP=1'],['--seedTQ=1|.|&2||']):
         fail=d/'unsupported.csv';run(options=[f'--out=bpProb:{fail}',*opts],success=False);assert not fail.exists()
     fail=d/'range.csv';run('GGGG','CCCC',[f'--out=bpProb:{fail}',*seedopt,'--energyAdd=900'],success=False);assert not fail.exists()
     run(options=['--out=bpProb:/dev/full'],success=False)

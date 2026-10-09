@@ -4,6 +4,10 @@
 #include <stdexcept>
 
 namespace IntaRNA {
+void BasePairProbabilities::markApproximate() {
+	if (state!=Status::pending) throw std::logic_error("pair probabilities: accumulator is not pending");
+	approximate=true;
+}
 BasePairProbabilities::BasePairProbabilities(size_t n,size_t m,bool collectSeedPairs)
 	: mass(n,m,0), collectSeeds(collectSeedPairs), seeds(collectSeedPairs?n:0,collectSeedPairs?m:0,0) {}
 void BasePairProbabilities::addRegion(const IndexRange & t,const IndexRange & q,

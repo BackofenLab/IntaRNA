@@ -14,6 +14,12 @@
 
 ## Interface and handling
 
+- enable approximate actual-pair CSV/SVG probabilities for unseeded and seeded
+  heuristic ensembles, labelled explicitly as approximate (PR #259, step 11)
+
+- reject nonfinite partition totals and finite-energy boundary underflow before
+  publishing exact unseeded or heuristic pair probabilities (PR #259 review)
+
 - enable base-pair CSV/SVG probabilities for exact unseeded model P/mode M
   predictions (PR #259, step 10)
 
@@ -174,6 +180,22 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261009 Alexander Mitrofanov
+ * PredictorMfeEns2dHeuristic, PredictorMfeEns2dHeuristicSeedExtension,
+   PredictorMfeEns2dSeedExtension, BasePairProbabilities, probability writers :
+   + reverse retained candidate chains and signed seed-extension recurrences to
+     obtain marginals of the existing heuristic ensemble; preserve denominator
+     and seed-overlap corrections, validate all masses before publication
+   + expose approximation metadata in CSV/SVG and retain seed provenance
+   * bound cropped noLP continuations by the active region and correct default
+     region offsets; reject unsupported singleton heuristic seeds explicitly
+ * CommandLineParsing, tests, README.md, doc/recursions :
+   + enable model P/mode H probability output; add independent tiny-chain and
+     signed-extension checks plus CLI parity/metadata coverage (PR #259 step 11)
+ * PredictorMfeEns2d, probability validation tests and report :
+   * reject finite-energy boundary underflow and nonfinite heuristic denominators
+     before publication; record independent review, full suites and performance
 
 261009 Alexander Mitrofanov
  * PredictorMfeEns2d, CommandLineParsing :

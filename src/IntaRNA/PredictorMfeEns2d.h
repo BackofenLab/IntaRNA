@@ -36,7 +36,9 @@ public:
 	 *         tracking is to be done; if non-NULL, the tracker gets deleted
 	 *         on this->destruction.
 	 * @param pairProbabilities optional non-owning sink; requires needZall and
-	 *         must remain pending until all disjoint regions have succeeded
+	 *         must remain pending until all disjoint regions have succeeded.
+	 *         Collection reverses this class's fillHybridZ recurrence; subclasses
+	 *         changing that recurrence must also supply their own collection.
 	 */
 	PredictorMfeEns2d( const InteractionEnergy & energy
 					, OutputHandler & output

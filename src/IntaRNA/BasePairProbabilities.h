@@ -49,6 +49,12 @@ public:
 	const Matrix<Z_type> & rawMasses() const;
 	/** @return whether this sink requests admitted seed-cell annotations */
 	bool collectsSeedPairs() const;
+	/** Mark an ensemble restricted by heuristic continuation choices.
+	 * Must be called while pending, before publication.
+	 */
+	void markApproximate();
+	/** @return whether the represented interaction ensemble is heuristic */
+	bool isApproximate() const;
 	/** @return seed-cell mask in original coordinates, empty when not requested */
 	const Matrix<unsigned char> & seedPairs() const;
 	/** @return validated matrix; only available for finalized nonempty results.
@@ -57,6 +63,7 @@ public:
 	Matrix<Z_type> probabilities() const;
 private:
 	Status state=Status::pending;
+	bool approximate=false;
 	Z_type z=0;
 	Matrix<Z_type> mass;
 	const bool collectSeeds;
@@ -67,6 +74,7 @@ inline BasePairProbabilities::Status BasePairProbabilities::status() const { ret
 inline Z_type BasePairProbabilities::getZ() const { return z; }
 inline const Matrix<Z_type> & BasePairProbabilities::rawMasses() const { return mass; }
 inline bool BasePairProbabilities::collectsSeedPairs() const { return collectSeeds; }
+inline bool BasePairProbabilities::isApproximate() const { return approximate; }
 inline const Matrix<unsigned char> & BasePairProbabilities::seedPairs() const { return seeds; }
 inline void BasePairProbabilities::fail() noexcept { state=Status::failed; }
 }

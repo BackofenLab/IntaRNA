@@ -2017,7 +2017,8 @@ or `STDERR` instead of a file name.
 
 `--out=bpProb:FILE` writes the probability that each target/query nucleotide pair
 actually pairs, conditional on an allowed interaction. It requires
-`--model=P --mode=M` with `--noSeed` or a stack-only seed handler. For example:
+`--model=P --mode=M` with `--noSeed` or a stack-only seed handler, or
+`--model=P --mode=H` for an approximate heuristic ensemble. For example:
 
 ```sh
 IntaRNA -t GGAGGG -q CCCC --energy=B --acc=N --seedBP=2 \
@@ -2030,12 +2031,19 @@ is also used without `bpProb`, so requesting the matrix does not change `Zall`.
 Computed seeds preserve their handler-specific admission thresholds. Explicit
 stacked seeds may have different lengths, including singletons; competing
 explicit patterns at the same start still retain only the selected minimum-energy
-pattern. Other predictors retain their existing behavior. Heuristic, kinetic,
-evaluation, seed-only and bulged-seed `bpProb` requests are rejected.
+pattern. With `--mode=H`, probabilities describe the predictor's retained
+candidate ensemble, not all possible interactions. Unseeded H retains one
+continuation per left pair; seeded H retains its seed-extension candidates and
+selected right extension, including the existing seed-overlap corrections.
+Seeded H supports computed or explicit seeds with at least two pairs, including
+bulged seeds. These heuristic ensembles can retain path multiplicities and
+must not be interpreted as the exact unique-chain ensemble of mode M.
+Kinetic, evaluation, seed-only and exact bulged-seed probability requests remain
+unsupported.
 
 Rows follow the original target and columns the original query, both 5' to 3'.
-The header starts with `bpProb`; labels contain each nucleotide and its display
-index (including `tIdxPos0`/`qIdxPos0` shifts). Entries use sufficient significant
+The header starts with `bpProb` (exact) or `bpProbApproximate` (heuristic); labels
+contain each nucleotide and its display index (including `tIdxPos0`/`qIdxPos0` shifts). Entries use sufficient significant
 digits for the partition type, with scientific notation for small probabilities.
 A successful empty ensemble contains `NA`; pairs absent from a nonempty ensemble
 have probability zero. The output uses `outSep`, the usual multi-FASTA filename
@@ -2061,12 +2069,14 @@ including its numerical zero cutoffs, without changing ordinary prediction.
 The seeded backend checks nonnegative arithmetic and reports numerical range failures
 as errors, including underflow, overflow and NaN. Positive subnormals are rejected;
 there is currently no scaling fallback. Failed or cancelled regional work never
-produces a successful-looking probability matrix. Ordinary floating-point
-rounding remains; "exact" describes the enumerated ensemble, not real arithmetic.
+produces a successful-looking probability matrix. Heuristic reverse passes likewise
+validate finite arithmetic and reject invalid masses before publication. Ordinary
+floating-point rounding remains; "exact" describes the enumerated ensemble, not
+real arithmetic.
 
 For library use, keep a `BasePairProbabilities` owner alive across predictions,
 pass its optional non-owning pointer to `PredictorMfeEns2dSeedExtension` (stack
-seeds) or `PredictorMfeEns2d` (unseeded), and call
+seeds), `PredictorMfeEns2d` (unseeded), or their heuristic subclasses, and call
 `finalize()` only after all requested disjoint regions succeed. A writer is called
 explicitly after finalization; its destructor publishes nothing. The output
 constraint must enable `needZall`. The [standalone API example](doc/seeded-probabilities-example.cpp)
@@ -2078,9 +2088,9 @@ show the public API and measured limits.
 ### SVG base-pair probability dot plots
 
 `--out=bpsvg:FILE` renders the same actual-pair probabilities as `bpProb` in a
-standalone SVG. Both outputs can be requested together. The same exact
-`--model=P --mode=M` unseeded/stack-seed restrictions, regional ensemble, normalization
-and success-only publication rules apply.
+standalone SVG. Both outputs can be requested together. The same supported
+model/mode combinations, regional ensemble, normalization and success-only
+publication rules apply. Heuristic SVGs are explicitly labelled approximate.
 
 ```sh
 IntaRNA -t GGAGGG -q CCCC --energy=B --acc=N --seedBP=2 \

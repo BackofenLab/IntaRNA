@@ -18,6 +18,10 @@ namespace IntaRNA {
  * all possible interaction ranges.
  *
  * This yields a quadratic time and space complexity.
+ * Optional pair probabilities refer to all admitted candidate chains considered
+ * by this pruning rule, with the same Zall as ordinary heuristic prediction.
+ * They approximate the unrestricted interaction ensemble. Collection adds
+ * quadratic storage and a reverse traversal of the retained continuations.
  *
  * @author Martin Raden
  * @author Frank Gelhausen
@@ -40,10 +44,13 @@ public:
 	 * @param predTracker the prediction tracker to be used or NULL if no
 	 *         tracking is to be done; if non-NULL, the tracker gets deleted
 	 *         on this->destruction.
+	 * @param pairProbabilities optional non-owning sink for probabilities of the
+	 *         pruned candidate ensemble; requires needZall
 	 */
 	PredictorMfeEns2dHeuristic( const InteractionEnergy & energy
 							, OutputHandler & output
-							, PredictionTracker * predTracker );
+							, PredictionTracker * predTracker
+							, BasePairProbabilities * pairProbabilities = nullptr );
 
 	virtual ~PredictorMfeEns2dHeuristic();
 
@@ -75,7 +82,34 @@ protected:
 	//! energy of all interaction hybrids starting in i1,i2
 	Z2dMatrix hybridZ;
 
+	//! The selected chain owns its first pair and, optionally, its next stack pair.
+	struct ProbabilityContinuation {
+		size_t next1 = RnaSequence::lastPos, next2 = RnaSequence::lastPos;
+		bool extraPair = false;
+	};
+	//! Allocated only for probability output; selected continuations form a DAG.
+	Matrix<ProbabilityContinuation> probabilityContinuation;
+	//! Complete candidate weight flowing into each retained continuation.
+	Matrix<Z_type> probabilityFlow;
+	//! Numerators in local target/reversed-query coordinates until region commit.
+	Matrix<Z_type> probabilityMass;
+	//! Independently accumulated objective, required to agree exactly with Zall.
+	Z_type probabilityDenominator = 0;
+
 protected:
+
+	/** Compute one region under predict()'s failure guard. */
+	void predictRegionHeuristic(const IndexRange & r1,const IndexRange & r2);
+
+	/** Record precisely the accepted updateZ candidate, crediting newly prepended
+	 * pairs and routing its full weight to the retained child chain. Coordinates
+	 * are local and the query is reversed; lastPos denotes an initial candidate.
+	 */
+	void recordProbabilityCandidate(size_t i1,size_t j1,size_t i2,size_t j2,
+			Z_type hybrid,const ProbabilityContinuation & continuation);
+
+	/** Propagate candidate weights through selected chains and commit this region. */
+	void commitProbabilityRegion();
 
 	/**
 	 * Computes all entries of the hybridE matrix

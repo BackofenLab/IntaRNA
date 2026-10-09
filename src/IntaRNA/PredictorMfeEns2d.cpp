@@ -256,7 +256,10 @@ PredictorMfeEns2d::accumulatePairMasses(size_t j1,size_t j2,Z2dMatrix & outside,
 		outside(i1,i2)=0;
 		const Z_type h=A::check(hybridZ(i1,i2));
 		if (!Z_equal(h,0) && isValidOutputSite(i1,j1,i2,j2)) {
-			const Z_type b=A::check(energy.getBoltzmannWeight(energy.getE(i1,j1,i2,j2,E_type(0))));
+			const E_type boundaryEnergy=energy.getE(i1,j1,i2,j2,E_type(0));
+			const Z_type b=A::check(energy.getBoltzmannWeight(boundaryEnergy));
+			if (b==0 && E_isNotINF(boundaryEnergy))
+				throw std::range_error("unseeded pair probabilities: boundary weight underflow");
 			outside(i1,i2)=b;
 			denominator=A::add(denominator,A::multiply(h,b));
 		}

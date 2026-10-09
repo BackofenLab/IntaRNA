@@ -127,6 +127,15 @@ with tempfile.TemporaryDirectory(prefix='intarna-bpsvg-') as tmp:
     rows = list(csv.reader(table.open(), delimiter=';'))
     assert all(float(pairs(unseeded)[i,j].attrib['data-probability']) == float(rows[i][j])
                for i in range(1,7) for j in range(1,5))
+    for seed_opts in ([], ['--noSeed'], ['--seedMaxUP=1']):
+        approximate=plot(opts=['--mode=H', f'--out=bpProb:{table}', *seed_opts])
+        assert 'Approximate' in approximate.find('s:title', NS).text
+        rows=list(csv.reader(table.open(), delimiter=';'))
+        assert rows[0][0]=='bpProbApproximate'
+        assert all(float(pairs(approximate)[i,j].attrib['data-probability']) == float(rows[i][j])
+                   for i in range(1,7) for j in range(1,5))
+        if '--noSeed' in seed_opts:
+            assert not seeds(approximate)
     # Explicit singleton/mixed seed masks exclude extension-only cells.
     opts = ['--seedTQ=1|&4|,2||&2||']
     mixed = plot('GGGG', 'CCCC', opts)
@@ -219,7 +228,7 @@ with tempfile.TemporaryDirectory(prefix='intarna-bpsvg-') as tmp:
     run(options=[f'--out=bpsvg:{compressed}'])
     assert len(pairs(load(compressed))) == 24
     # Validation/numerical failures must not publish a partial document.
-    for opts in (['--mode=H'], ['--seedMaxUP=1'], ['--model=X', '--mode=K'],
+    for opts in (['--mode=S'], ['--seedMaxUP=1'], ['--model=X', '--mode=K'],
                  ['--windowWidth=3'], ['--seedTQ=1|&4|','--energyAdd=900']):
         failure = d/'failure.svg'
         run(options=[f'--out=bpsvg:{failure}', *opts], success=False)
