@@ -318,3 +318,68 @@ and implementation. All revised text is UTF-8/LF and `git diff --check` passes.
 Both new recurrence SVGs parse, render and passed independent equation review;
 representative output SVGs were rendered and visually inspected. Apple Clang was
 not available locally.
+
+### Controlled revision performance
+
+A separate agent compared the retained `202651e` executable with the final
+implementation at `ae0eb78`, using the same GCC 14.4 release configuration,
+ViennaRNA 2.7.2, Boost 1.85 and Kokkos mdspan on the machine described above.
+Each configuration has one correctness/warmup run and seven deterministically
+shuffled, interleaved fresh-process measurements, pinned to CPU 0 and one thread.
+No build or test ran during timing. Both ensemble and probability outputs went to
+`/dev/null` for timing; separate file-output checks compared complete ensemble
+bytes and every CSV/SVG probability cell.
+
+Wall seconds (median [minimum, maximum], including process startup):
+
+| Input / predictor | Before, output off | Revised, output off | Revised CSV | Revised SVG |
+| --- | ---: | ---: | ---: | ---: |
+| OxyS-fhlA / noSeed-M | 0.4116 [0.4077, 0.4262] | 0.4165 [0.4105, 0.4220] | 0.7309 [0.7236, 0.7500] | 0.8490 [0.8415, 0.8668] |
+| OxyS-fhlA / noSeed-H | 0.0644 [0.0641, 0.0661] | 0.0646 [0.0637, 0.0668] | 0.0728 [0.0720, 0.0767] | 0.0971 [0.0962, 0.1041] |
+| OxyS-fhlA / seeded-H | 0.0517 [0.0510, 0.0532] | 0.0517 [0.0513, 0.0557] | 0.0566 [0.0562, 0.0569] | 0.0772 [0.0771, 0.0784] |
+| dense40 / noSeed-M | 0.3409 [0.3396, 0.3412] | 0.3489 [0.3455, 0.3559] | 0.6691 [0.6619, 0.6936] | 0.7231 [0.7143, 0.7377] |
+| dense40 / noSeed-H | 0.0195 [0.0194, 0.0207] | 0.0195 [0.0191, 0.0197] | 0.0227 [0.0223, 0.0234] | 0.0264 [0.0261, 0.0271] |
+| dense40 / seeded-H | 1.8790 [1.8324, 1.8980] | 1.8767 [1.8584, 1.8861] | 2.7876 [2.7391, 2.8202] | 2.8354 [2.7850, 2.8720] |
+| dense32-noLP / noSeed-M | 0.1001 [0.0991, 0.1021] | 0.1014 [0.1000, 0.1042] | 0.1873 [0.1861, 0.1903] | 0.2041 [0.2023, 0.2078] |
+| dense32-noLP / noSeed-H | 0.0159 [0.0158, 0.0169] | 0.0157 [0.0155, 0.0159] | 0.0174 [0.0172, 0.0186] | 0.0198 [0.0195, 0.0204] |
+| dense32-noLP / seeded-H | 0.5690 [0.5631, 0.5791] | 0.5692 [0.5652, 0.5783] | 0.8398 [0.8290, 0.9217] | 0.8561 [0.8473, 0.8731] |
+
+Maximum observed process RSS (KiB):
+
+| Input / predictor | Before, output off | Revised, output off | Revised CSV | Revised SVG |
+| --- | ---: | ---: | ---: | ---: |
+| OxyS-fhlA / noSeed-M | 17,180 | 17,308 | 17,312 | 20,844 |
+| OxyS-fhlA / noSeed-H | 18,208 | 18,204 | 18,844 | 22,328 |
+| OxyS-fhlA / seeded-H | 17,184 | 17,180 | 17,184 | 20,848 |
+| dense40 / noSeed-M | 16,388 | 16,392 | 16,256 | 16,292 |
+| dense40 / noSeed-H | 16,736 | 16,608 | 16,720 | 16,724 |
+| dense40 / seeded-H | 34,740 | 34,744 | 35,564 | 35,696 |
+| dense32-noLP / noSeed-M | 16,376 | 16,380 | 16,256 | 16,152 |
+| dense32-noLP / noSeed-H | 16,564 | 16,564 | 16,608 | 16,604 |
+| dense32-noLP / seeded-H | 21,508 | 21,504 | 22,324 | 22,592 |
+
+Existing output-off medians vary from −1.2% to +2.4% against the pre-revision
+binary across these nine cases. All ensemble outputs are byte-identical across
+both binaries and all output configurations; every SVG pair value matches CSV.
+Probability collection has a measured additional cost: CSV is 1.09–1.92 times
+revised output-off wall time here, and SVG is 1.26–2.07 times. These are local
+workload measurements, not a universal overhead bound or speedup claim.
+
+Reproduce one process from each corresponding build (change mode to H for the
+unseeded heuristic; remove `--noSeed` for seeded H):
+
+```sh
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 OMP_DYNAMIC=FALSE \
+  /usr/bin/time -f '%e %U %S %M' taskset -c 0 src/bin/IntaRNA \
+  --target=doc/handson/fhlA.fasta --query=doc/handson/OxyS.fasta \
+  --model=P --mode=M --noSeed --seedBP=4 --intLenMax=30 \
+  --qIntLoopMax=3 --tIntLoopMax=3 --threads=1 \
+  --outNoLP=false --outNoGUend=false --outNumber=0 --outMode=E \
+  --default-log-file=/dev/null --out=STDOUT > /dev/null
+# Add --out=bpProb:/dev/null or --out=bpsvg:/dev/null.
+```
+
+For dense40, replace target/query with G×40/C×40 and add `--tAcc=N --qAcc=N`.
+For dense32-noLP, use G×32/C×32 with disabled accessibility and
+`--outNoLP=true`. Keep all remaining flags identical. Repeat seven times with
+interleaved configurations; capture process RSS with GNU time `%M`.

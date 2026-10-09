@@ -65,6 +65,9 @@
 
 ## Technical changes and Optimizations
 
+- document independent release/debug, installed-API and performance validation
+  for the reviewed unseeded and heuristic probability outputs (PR #259)
+
 - transfer completed probability-output buffers without copying; independently
   audit performance, accessibility conversion and recurrence depictions (PR #259)
 
@@ -180,6 +183,11 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261009 Alexander Mitrofanov
+ * doc/analysis/seeded-probabilities-validation.md, doc/recursions :
+   * record final review validation and controlled runtime/memory measurements;
+     update the seeded-heuristic depiction for approximate pair output (PR #259)
 
 261009 Alexander Mitrofanov
  * PredictorMfeEns2dHeuristic, PredictorMfeEns2dHeuristicSeedExtension,

@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1200" viewBox="0 0 1440 1200" role="img" aria-labelledby="title desc">
 <title id="title">Seeded ensemble · one selected right extension</title>
-<desc id="desc">PredictorMfeEns2dHeuristicSeedExtension  |  --model=P --mode=H. Internal recurrence documentation for step 9 of PR 258. Equations describe the current implementation; RNA 2 uses reversed energy coordinates.</desc>
+<desc id="desc">PredictorMfeEns2dHeuristicSeedExtension  |  --model=P --mode=H. Internal recurrence documentation for steps 9 and 11 of PR 258 / PR 259. Equations describe the current implementation; RNA 2 uses reversed energy coordinates.</desc>
 <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#60798e"/></marker>
 <pattern id="seed-hatch" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#fff0dc"/><path d="M-2 2 L2 -2 M0 8 L8 0 M6 10 L10 6" stroke="#e0b27a" stroke-width="1"/></pattern></defs>
 <rect width="1440" height="100%" fill="white"/>
@@ -42,7 +42,7 @@
 <text x="73" y="916" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">All true right-only extensions + all corrected left-only extensions + left extensions paired with just j*.</text>
 <text x="73" y="945" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">The second phase runs if noGUend is off, or a valid right optimum exists, or anchor end b is not GU.</text>
 <text x="73" y="974" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Initialize j*=b and E_right_opt=∞. A positive selected R is required before combining both sides.</text>
-<text x="73" y="1003" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">No full Cartesian product of left and right boundaries is retained, and bpProb / bpsvg are unsupported.</text>
+<text x="73" y="1003" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">No full left/right Cartesian product; bpProb / bpsvg trace this retained family and are labelled approximate.</text>
 <text x="48" y="1082" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Every update is filtered and accumulated by PredictorMfeEns::updateZ; ranked reporting is a separate step.</text>
 <path d="M48 1105 L1392 1105" fill="none" stroke="#c4d0da" stroke-width="1.2"/>
 <text x="48" y="1129" font-family="DejaVu Sans, sans-serif" font-size="14" fill="#275f8c" text-anchor="start" font-weight="bold">Implementation anchors (src/IntaRNA/) · BW(E)=exp(−E/RT) after native energy-unit conversion</text>
