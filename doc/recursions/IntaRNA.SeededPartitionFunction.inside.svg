@@ -35,12 +35,12 @@
 <text x="73" y="599" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">For Uℓ: let ℓ′=min(C,ℓ+1); D=Uℓ′ unless the ending seed is accepted, then D=S₂.</text>
 <text x="73" y="628" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">For S₁ or S₂: D=S₂. Once seeded, a later seed never creates a second copy of the path.</text>
 <rect x="48" y="697" width="1344" height="260" rx="8" fill="#edf6f2" stroke="#d0dbe3"/>
-<text x="70" y="731" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#23796a" text-anchor="start" font-weight="bold">2  Aggregate eligible departures, then handle nonstack edges</text>
-<text x="73" y="764" font-family="DejaVu Serif, sans-serif" font-size="25" fill="#203244" text-anchor="start">T₀(q)=∑ H(q,U<tspan font-family="DejaVu Sans, sans-serif">ℓ</tspan>)   over <tspan font-family="DejaVu Sans, sans-serif">ℓ</tspan>≥(noLP ? 2 : 1)</text>
-<text x="73" y="809" font-family="DejaVu Serif, sans-serif" font-size="25" fill="#203244" text-anchor="start">T₁(q)=H(q,S₂) + (noLP ? 0 : H(q,S₁))</text>
-<text x="73" y="854" font-family="DejaVu Serif, sans-serif" font-size="24" fill="#203244" text-anchor="start">For each nonstack r→q and b∈{0,1}:  H(q,D(b,loop)) += t(r,q) · T_b(r)</text>
-<text x="73" y="897" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Nonstack means both coordinates increase, within loop limits, excluding r=q−(1,1).</text>
-<text x="73" y="926" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Reset the suffix to 1; remain seeded if b=1, or accept a singleton seed at q if b=0.</text>
+<text x="70" y="731" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#23796a" text-anchor="start" font-weight="bold">2  Add nonstack arrivals, then aggregate eligible departures</text>
+<text x="73" y="764" font-family="DejaVu Serif, sans-serif" font-size="24" fill="#203244" text-anchor="start">For each nonstack r→q and b∈{0,1}:  H(q,D(b,loop)) += t(r,q) · T_b(r)</text>
+<text x="73" y="809" font-family="DejaVu Serif, sans-serif" font-size="25" fill="#203244" text-anchor="start">T₀(q)=∑ H(q,U<tspan font-family="DejaVu Sans, sans-serif">ℓ</tspan>)   over <tspan font-family="DejaVu Sans, sans-serif">ℓ</tspan>≥(noLP ? 2 : 1)</text>
+<text x="73" y="854" font-family="DejaVu Serif, sans-serif" font-size="25" fill="#203244" text-anchor="start">T₁(q)=H(q,S₂) + (noLP ? 0 : H(q,S₁))</text>
+<text x="73" y="891" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">T_b(r) is already computed. Nonstack: strict increase within loop limits, excluding r=q−(1,1).</text>
+<text x="73" y="920" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Reset the suffix to 1; remain seeded if b=1, or accept a singleton seed at q if b=0.</text>
 <rect x="48" y="995" width="1344" height="174" rx="8" fill="#fff7ed" stroke="#d0dbe3"/>
 <text x="70" y="1029" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#bd6518" text-anchor="start" font-weight="bold">3  Complete seeded paths at every q</text>
 <text x="73" y="1064" font-family="DejaVu Serif, sans-serif" font-size="29" fill="#203244" text-anchor="start">Z += B(p,q) · T₁(q)</text>

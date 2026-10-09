@@ -1186,9 +1186,16 @@ protected:
 	 * Writes the accessibility to file or stream if requested by the user
 	 * @param acc the accessibility data assigned
 	 * @param fileOrStream the name of file/stream to write to
-	 * @param (true) writes ED values, (false) writes Pu values
+	 * @param writeED (true) writes ED values, (false) writes Pu values
+	 * @param mode accessibility source mode of the strand (C/N/P/E)
 	 */
-	void writeAccessibility( const Accessibility& acc, const std::string & fileOrStream, const bool writeED ) const;
+	void writeAccessibility( const Accessibility& acc, const std::string & fileOrStream, const bool writeED,
+			const char mode ) const;
+	/** Energy scale for converting a strand's accessibility ED to Pu.
+	 * @param mode accessibility source mode of the strand (C/N/P/E)
+	 * @return RT used by that accessibility source, independent of interaction RT
+	 */
+	Z_type getAccessibilityRT(const char mode) const;
 
 	/**
 	 * Adds a generic file prefix for input/output files for the given query
@@ -1630,14 +1637,14 @@ writeQueryAccessibility( const Accessibility & acc ) const
 		writeAccessibility( acc
 				// get file name prefixed with sequence number if needed
 				, getFullFilename(outPrefix2streamName.at(OutPrefixCode::OP_qAcc), NULL, &(acc.getSequence()))
-				, true );
+				, true, qAcc.val );
 	}
 	if (!outPrefix2streamName.at(OutPrefixCode::OP_qPu).empty()) {
 		VLOG(2) <<"writing unpaired probabilities for query '"<<acc.getSequence().getId()<<"' to "<<outPrefix2streamName.at(OutPrefixCode::OP_qPu);
 		writeAccessibility( acc
 				// get file name prefixed with sequence number if needed
 				, getFullFilename(outPrefix2streamName.at(OutPrefixCode::OP_qPu), NULL, &(acc.getSequence()))
-				, false );
+				, false, qAcc.val );
 	}
 }
 
@@ -1654,14 +1661,14 @@ writeTargetAccessibility( const Accessibility & acc ) const
 		writeAccessibility( acc
 				// get file name prefixed with sequence number if needed
 				, getFullFilename(outPrefix2streamName.at(OutPrefixCode::OP_tAcc), &(acc.getSequence()), NULL)
-				, true );
+				, true, tAcc.val );
 	}
 	if (!outPrefix2streamName.at(OutPrefixCode::OP_tPu).empty()) {
 		VLOG(2) <<"writing unpaired probabilities for target '"<<acc.getSequence().getId()<<"' to "<<outPrefix2streamName.at(OutPrefixCode::OP_tPu);
 		writeAccessibility( acc
 				// get file name prefixed with sequence number if needed
 				, getFullFilename(outPrefix2streamName.at(OutPrefixCode::OP_tPu), &(acc.getSequence()), NULL)
-				, false );
+				, false, tAcc.val );
 	}
 }
 

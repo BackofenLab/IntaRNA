@@ -3,6 +3,7 @@
 #include <sstream>
 #include <iostream>
 #include <memory>
+#include <utility>
 #include <boost/iostreams/filtering_stream.hpp>
 
 namespace IntaRNA {
@@ -25,7 +26,7 @@ std::string BasePairProbabilityWriter::block(const BasePairProbabilities & resul
 		for(size_t j=0;j<query.size();++j) { data<<sep;if(empty) data<<"NA";else data<<p(i,j); }
 		data<<'\n';
 	}
-	return data.str();
+	return std::move(data).str();
 }
 void BasePairProbabilityWriter::emit(std::ostream & out,const std::string & data) {
 	// Exceptions must leave the OpenMP structured block on the same thread.

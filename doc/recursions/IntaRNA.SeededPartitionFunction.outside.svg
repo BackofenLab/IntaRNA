@@ -45,7 +45,7 @@
 <rect x="720" y="659" width="672" height="274" rx="8" fill="#f3f7fa" stroke="#d0dbe3"/>
 <text x="742" y="693" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#275f8c" text-anchor="start" font-weight="bold">3b  Reverse a nonstack edge r→q</text>
 <text x="743" y="724" font-family="DejaVu Serif, sans-serif" font-size="24" fill="#203244" text-anchor="start">a = A(q,D(b,loop)) · t(r,q)</text>
-<text x="743" y="770" font-family="DejaVu Serif, sans-serif" font-size="27" fill="#203244" text-anchor="start">Gᵦ(r) += a</text>
+<text x="743" y="770" font-family="DejaVu Serif, sans-serif" font-size="27" fill="#203244" text-anchor="start">G_b(r) += a</text>
 <text x="743" y="816" font-family="DejaVu Serif, sans-serif" font-size="27" fill="#203244" text-anchor="start">M(q) += a · T_b(r)</text>
 <text x="743" y="860" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Repeat for b=0 and b=1 using the same forward totals.</text>
 <text x="743" y="889" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Do not mark the unpaired nucleotides in the loop.</text>

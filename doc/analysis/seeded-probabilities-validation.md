@@ -157,3 +157,116 @@ OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 /usr/bin/time -v src/bin/IntaRNA \
 Both runs report Eall=-6.52 kcal/mol with the native presentation convention.
 These measurements quantify added output work; they are not a speedup claim over
 the legacy seeded ensemble, whose multi-anchor partition is a different result.
+
+
+## Steps 8–9: independent output and documentation audit (2026-10-09)
+
+Separate agents reviewed code correctness, recurrence depictions, and performance
+before the audit fixes were pushed to PR #259. The audit found and corrected:
+
+- SVG accessibility frames used the interaction model's RT for imported Pu/ED.
+  The writer now requires separate target/query accessibility RT values. CLI
+  conversion selects RT=1 for computed base-pair accessibility and the configured
+  physical temperature for ViennaRNA/imported accessibility. The same selection
+  fixes the pre-existing `tPu`/`qPu` conversion of computed base-pair ED.
+- SVG and CSV stream buffers were copied when returned; moving the completed
+  strings removes that duplicate allocation without changing document bytes.
+- The heuristic depiction omitted its initial right-end GU gate, and the inside
+  depiction placed aggregation before incoming nonstack contributions. These
+  were corrected, along with complete-site filtering and outside-index notation.
+
+The added CLI regressions fail on the pre-audit binary and pass after the fix.
+They cover Pu/ED imports, mixed computed/imported strands, 22/37°C, original
+query orientation, independent input-Pu round trips (allowing ED quantization),
+and computed-base-pair ED conversion at RT=1. API tests reject nonpositive or
+nonfinite accessibility scales without writing output. GCC 14.4 release and
+debug `make tests -j2` each pass all seven suites, with 91,394 API assertions in
+86 cases. Installed public headers and an installed SVG consumer compile; the
+consumer produces the expected matrix and seed annotations. Corrected SVG
+recurrence documents parse, render, and were visually inspected. Apple Clang
+was not available locally.
+
+### Performance method and existing-mode comparison
+
+Compared base `48efc541e23571ce1bab88e2754e1db7445cbc89` with steps 8–9 at
+`fa2f84d6cdbb1e120a98eab9d2dfe3f8154ebad5`, then compared that saved binary with
+the audit fixes. All builds use identical GCC 14.4 C++23 `-O3
+-fno-strict-aliasing -fopenmp`, ViennaRNA 2.7.2, Boost 1.85 and Kokkos mdspan
+settings on Linux x86-64 / Ryzen 5 7530U. Processes are pinned to CPU 0 with
+`--threads=1`, `OMP_NUM_THREADS=1`, `OPENBLAS_NUM_THREADS=1`, and
+`OMP_DYNAMIC=FALSE`. Builds and tests are stopped during measurements.
+
+There is one warmup per configuration, then seven fresh-process runs in shuffled,
+interleaved order for the base comparison. Time is wall time around the GNU time
+subprocess; RSS is GNU time `%M`, including executable/libraries, prediction and
+serialization. Output goes to the same local filesystem. Initial median seconds:
+
+| Input | Base ensemble only | Steps 8–9 ensemble only | Base CSV | Steps 8–9 CSV | Steps 8–9 SVG | Steps 8–9 both |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| OxyS/fhlA | 0.0975 | 0.0978 | 0.1710 | 0.1703 | 0.1910 | 0.1947 |
+| dense40 | 0.3876 | 0.3913 | 0.8958 | 0.9026 | 0.9090 | 0.9060 |
+| sparse400 | 0.1191 | 0.1202 | 0.1616 | 0.1633 | 0.7326 | 0.8260 |
+| sparse1000 | 1.5816 | 1.5801 | 1.8284 | 1.8372 | 4.0202 | 4.2578 |
+
+Existing-mode medians differ by −0.4% to +1.1%, within observed timing variation.
+Ensemble outputs and CSVs are byte-identical across base/candidate and modes;
+all SVG pair values equal their CSV values. Sparse SVG timings have wider
+variation than the compute-heavy cases; these are local workload measurements,
+not a general throughput guarantee. Full SVG size scales with all target/query
+pairs: the sparse1000 document is 220,685,460 bytes despite having few seed cells.
+
+Reproduce each process with the following command from the corresponding build;
+add either/both output options for the CSV/SVG configurations:
+
+```sh
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 OMP_DYNAMIC=FALSE \
+  /usr/bin/time -f '%e %U %S %M' taskset -c 0 src/bin/IntaRNA \
+  --target=doc/handson/fhlA.fasta --query=doc/handson/OxyS.fasta \
+  --model=P --mode=M --seedBP=4 --intLenMax=30 \
+  --qIntLoopMax=3 --tIntLoopMax=3 --threads=1 \
+  --outNoLP=false --outNoGUend=false --outNumber=0 --outMode=E \
+  --default-log-file=/dev/null --out=ensemble.txt
+# Optional: --out=bpProb:pairs.csv --out=bpsvg:plot.svg
+```
+
+For dense40, replace the inputs with `G`×40 and `C`×40 and add `--tAcc=N
+--qAcc=N`. For sparse length n (400 or 1000), use target `A`×(n/2) + `G`×8 +
+`A`×(n/2−8), query with `C`×8 instead of `G`×8, and the same disabled-accessibility
+options. All other flags remain identical.
+
+
+### Audit-fix comparison
+
+Five interleaved fresh-process runs per configuration compare the retained
+`fa2f84d` binary with the rebuilt audit fix. All complete SVG, CSV and ensemble
+outputs match byte-for-byte on these native-energy inputs. Time is median
+[min, max] seconds; RSS is the maximum over the five runs, in KiB.
+
+| Input/output | Before time | Fixed time | Before RSS | Fixed RSS |
+| --- | ---: | ---: | ---: | ---: |
+| OxyS SVG | 0.1938 [0.1932, 0.1968] | 0.1934 [0.1918, 0.1938] | 22,132 | 20,720 |
+| OxyS both | 0.1965 [0.1945, 0.1976] | 0.1959 [0.1955, 0.1967] | 22,004 | 20,596 |
+| sparse400 SVG | 0.5020 [0.5003, 0.7993] | 0.7491 [0.4806, 0.9672] | 87,876 | 84,548 |
+| sparse400 both | 0.5553 [0.5441, 0.8527] | 0.7544 [0.5118, 0.8899] | 87,872 | 84,420 |
+| sparse1000 SVG | 4.0260 [3.9535, 5.8240] | 3.8527 [3.8373, 5.5779] | 470,084 | 301,128 |
+| sparse1000 both | 4.2407 [4.2148, 6.2242] | 4.0592 [4.0216, 4.1580] | 469,960 | 301,260 |
+
+Transferring the document buffer reduces 1000×1000 SVG peak RSS by **35.9%**.
+There is no general elapsed-time speedup claim: filesystem writes varied widely,
+and the sparse400 median increased even though its median process CPU time fell
+from 0.44 to 0.42 seconds (SVG) and 0.48 to 0.46 seconds (both). Dense40 controls
+remain comparable: ensemble-only 0.3848→0.3902 seconds (+1.4%) and CSV
+0.8982→0.8869 seconds (−1.3%), with unchanged output bytes. The output is still
+buffered as a full document, so very large matrices remain memory intensive.
+
+One comparison process received an unexplained SIGTERM after the shorter cases;
+partial long-case warmups were discarded and the long case completed in a new
+process. The table includes only complete five-run groups.
+
+To separate serializer cost from file-write stalls, a final sparse400 control
+sent SVG to `/dev/null` and ensemble output to STDOUT redirected to `/dev/null`.
+Seven interleaved runs gave wall medians 0.412419→0.390979 seconds (ranges
+0.411222–0.413401 and 0.388902–0.392267), CPU medians 0.40→0.38 seconds, and peak
+RSS 87,744→84,544 KiB. The slowdown did not reproduce without filesystem writes;
+the fixed serializer was 5.2% faster in this specific control. Use the same
+sparse400 command with `--out=STDOUT --out=bpsvg:/dev/null > /dev/null` to repeat.

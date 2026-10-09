@@ -7,6 +7,7 @@
 #include <locale>
 #include <sstream>
 #include <stdexcept>
+#include <utility>
 
 namespace IntaRNA {
 namespace {
@@ -42,10 +43,10 @@ size_t colorClass(Z_type probability)
 	return breaks.size()-2;
 }
 
-Z_type unpaired(const Accessibility & accessibility,size_t i,const InteractionEnergy & energy)
+Z_type unpaired(const Accessibility & accessibility,size_t i,Z_type RT)
 {
 	const E_type ed=accessibility.getED(i,i);
-	const Z_type p=E_isINF(ed)?Z_type(0):energy.getBoltzmannWeight(ed);
+	const Z_type p=E_isINF(ed)?Z_type(0):Z_exp(-E_2_Z(ed)/RT);
 	if (!std::isfinite(p) || p<0 || p>1)
 		throw std::runtime_error("bpsvg: invalid single-nucleotide unpaired probability");
 	return p;
@@ -54,8 +55,11 @@ Z_type unpaired(const Accessibility & accessibility,size_t i,const InteractionEn
 } // namespace
 
 std::string
-BasePairProbabilityWriter::svgBlock(const BasePairProbabilities & result,const InteractionEnergy & energy)
+BasePairProbabilityWriter::svgBlock(const BasePairProbabilities & result,const InteractionEnergy & energy,
+		Z_type targetRT,Z_type queryRT)
 {
+	if (!std::isfinite(targetRT) || targetRT<=0 || !std::isfinite(queryRT) || queryRT<=0)
+		throw std::invalid_argument("bpsvg: accessibility energy scales must be positive and finite");
 	const auto & at=energy.getAccessibility1();
 	const auto & aq=energy.getAccessibility2().getAccessibilityOrigin();
 	const auto & t=at.getSequence();
@@ -131,7 +135,7 @@ text { font-family: sans-serif; fill: #243247; }
 		const auto & seq=target?t:q;
 		const auto & acc=target?at:aq;
 		for(size_t i=0;i<seq.size();++i) {
-			const Z_type value=unpaired(acc,i,energy);
+			const Z_type value=unpaired(acc,i,target?targetRT:queryRT);
 			const auto idx=std::to_string(seq.getInOutIndex(i));
 			for(bool far:{false,true}) {
 				const double rx=target?(far?x+w:x-cell):x+cell*i;
@@ -194,17 +198,20 @@ text { font-family: sans-serif; fill: #243247; }
 	}
 	if(empty) text(width/2,legendY+90,"Gray / NA: empty interaction ensemble; accessibility remains defined","legend");
 	out<<"</svg>\n";
-	return out.str();
+	// Transfer the potentially large document instead of copying its buffer.
+	return std::move(out).str();
 }
 
-void BasePairProbabilityWriter::writeSvg(std::ostream & out,const BasePairProbabilities & result,const InteractionEnergy & energy)
+void BasePairProbabilityWriter::writeSvg(std::ostream & out,const BasePairProbabilities & result,const InteractionEnergy & energy,
+		Z_type targetRT,Z_type queryRT)
 {
-	emit(out,svgBlock(result,energy));
+	emit(out,svgBlock(result,energy,targetRT,queryRT));
 }
 
-void BasePairProbabilityWriter::writeSvgFile(const std::string & filename,const BasePairProbabilities & result,const InteractionEnergy & energy)
+void BasePairProbabilityWriter::writeSvgFile(const std::string & filename,const BasePairProbabilities & result,const InteractionEnergy & energy,
+		Z_type targetRT,Z_type queryRT)
 {
-	emitFile(filename,svgBlock(result,energy));
+	emitFile(filename,svgBlock(result,energy,targetRT,queryRT));
 }
 
 } // namespace IntaRNA

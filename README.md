@@ -1893,6 +1893,9 @@ The column separator within tabular CSV output (defaulting to `;`) can be change
 using `--outSep`, e.g. to produce tab-separated `.tsv` output.
 
 Note further, `qPu:`|`tPu:` will report unpaired probability values based on rounded accessibility (ED) values.
+The ED-to-probability conversion uses each strand's accessibility energy scale:
+computed base-pair accessibility uses RT=1, while ViennaRNA and imported
+accessibility use the configured temperature, independently of the interaction model.
 Thus, these values will most likely differ from values eg. produced by the program RNAplfold.
 We therefore strongly recommend to store `qAcc:`|`tAcc:` values when you want to use them
 as input for subsequent IntaRNA calls!
@@ -2116,7 +2119,10 @@ a standalone SVG on standard output, redirect ordinary output, for example
 produce consecutive SVG documents; use filenames for separate viewable files.
 
 Library callers can use `BasePairProbabilityWriter::writeSvg()` or
-`writeSvgFile()` with a finalized result and the original energy model. Construct
+`writeSvgFile()` with a finalized result, the original energy model, and separate
+target/query accessibility RT values. These must match the ED conversion scales
+of the accessibility sources, which can differ from the interaction model's RT
+(for example, imported Pu with a base-pair interaction model). Construct
 `BasePairProbabilities(targetLength, queryLength, true)` to retain seed annotations;
 the default CSV-only result does not allocate that mask. SVG creation buffers
 the document and uses one rectangle per pair plus the frames, so its size grows

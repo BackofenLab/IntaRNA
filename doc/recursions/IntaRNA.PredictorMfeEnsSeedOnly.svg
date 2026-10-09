@@ -28,7 +28,8 @@
 <text x="480" y="512" font-family="DejaVu Serif, sans-serif" font-size="17" fill="#203244" text-anchor="middle">e</text>
 <text x="540" y="522" font-family="DejaVu Serif, sans-serif" font-size="26" fill="#203244" text-anchor="start">H_seed = E_seed(a) + E_init</text>
 <text x="540" y="566" font-family="DejaVu Serif, sans-serif" font-size="24" fill="#203244" text-anchor="start">E_full = energy.getE(a₁,e₁,a₂,e₂,H_seed)</text>
-<text x="540" y="610" font-family="DejaVu Serif, sans-serif" font-size="23" fill="#203244" text-anchor="start">Zall += BW(E_full)   when needZall is enabled</text>
+<text x="540" y="605" font-family="DejaVu Serif, sans-serif" font-size="23" fill="#203244" text-anchor="start">Zall += BW(E_full)</text>
+<text x="540" y="637" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Only when needZall is enabled and complete-site filters pass.</text>
 <rect x="48" y="702" width="1344" height="154" rx="8" fill="#f3f7fa" stroke="#d0dbe3"/>
 <text x="70" y="736" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#275f8c" text-anchor="start" font-weight="bold">3  Report and trace the retained seed</text>
 <text x="72" y="765" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">updateOptima(..., isHybridE=true, incrementZall=true) applies the complete-site filters and ranking.</text>

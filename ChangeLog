@@ -14,6 +14,9 @@
 
 ## Interface and handling
 
+- BUGFIX : use each strand's accessibility energy scale for SVG frames and
+  unpaired-probability exports, including mixed computed/imported inputs
+
 - --out=bpsvg:FILE renders actual-pair probabilities with nucleotide/accessibility
   frames, a shared CSS palette, signed-coordinate guides, hover values and admitted
   seed outlines (PR #258, step 8)
@@ -49,6 +52,9 @@
 - reject Zall/Eall-dependent output in window mode
 
 ## Technical changes and Optimizations
+
+- transfer completed probability-output buffers without copying; independently
+  audit performance, accessibility conversion and recurrence depictions (PR #259)
 
 - depict ensemble predictor recurrences and the exact base-pair inside/outside
   computation in internal SVG documentation (PR #258, step 9)
@@ -162,6 +168,24 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261009 Alexander Mitrofanov
+ * BasePairProbabilityWriter, BasePairProbabilitySvg, CommandLineParsing :
+   * pass and validate separate target/query accessibility RT values for SVG
+     frames; imported probabilities no longer inherit the interaction model RT
+   * share the source-specific conversion with tPu/qPu, correcting their earlier
+     physical-temperature conversion of computed base-pair accessibility (RT=1)
+   * move completed SVG/CSV stream buffers instead of copying large documents
+ * tests, README.md, doc/analysis/seeded-probabilities-validation.md :
+   + cover imported Pu/ED, mixed sources, nondefault temperatures and invalid RT;
+     compare against input probabilities and independent ED conversion
+   + document independent review, controlled runtime/RSS comparisons and final
+     release/debug, installation and public-header checks (PR #259)
+ * doc/recursions/IntaRNA.PredictorMfeEns2dHeuristic.svg,
+   doc/recursions/IntaRNA.PredictorMfeEnsSeedOnly.svg,
+   doc/recursions/IntaRNA.SeededPartitionFunction.*.svg :
+   * show the heuristic initial right-end GU gate and complete-site filters;
+     place nonstack arrivals before inside aggregation and clarify outside notation
 
 261009 Alexander Mitrofanov
  * doc/recursions/IntaRNA.PredictorMfeEns*.svg,

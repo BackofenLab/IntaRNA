@@ -64,16 +64,23 @@ TEST_CASE("seed annotations commit with regional masses and SVG requires success
 	REQUIRE(r.collectsSeedPairs());REQUIRE(r.seedPairs()(0,2)==1);
 	REQUIRE(r.seedPairs()(2,4)==1);REQUIRE(r.seedPairs()(1,1)==0);
 	std::ostringstream pending;
-	REQUIRE_THROWS(BasePairProbabilityWriter::writeSvg(pending,r,energy));
+	REQUIRE_THROWS(BasePairProbabilityWriter::writeSvg(pending,r,energy,1,1));
 	REQUIRE(pending.str().empty());
 	r.finalize();std::ostringstream svg;
-	BasePairProbabilityWriter::writeSvg(svg,r,energy);
+	for (Z_type rt : {Z_type(0), Z_type(-1), std::numeric_limits<Z_type>::infinity(),
+			std::numeric_limits<Z_type>::quiet_NaN()}) {
+		std::ostringstream invalid;
+		REQUIRE_THROWS(BasePairProbabilityWriter::writeSvg(invalid,r,energy,rt,1));
+		REQUIRE_THROWS(BasePairProbabilityWriter::writeSvg(invalid,r,energy,1,rt));
+		REQUIRE(invalid.str().empty());
+	}
+	BasePairProbabilityWriter::writeSvg(svg,r,energy,1,1);
 	REQUIRE(svg.str().find("target&lt;&amp;")!=std::string::npos);
 	REQUIRE(svg.str().find("Orange outline:")!=std::string::npos);
 	std::ostringstream broken;broken.setstate(std::ios::badbit);
-	REQUIRE_THROWS(BasePairProbabilityWriter::writeSvg(broken,r,energy));
+	REQUIRE_THROWS(BasePairProbabilityWriter::writeSvg(broken,r,energy,1,1));
 	r.fail();std::ostringstream failed;
-	REQUIRE_THROWS(BasePairProbabilityWriter::writeSvg(failed,r,energy));
+	REQUIRE_THROWS(BasePairProbabilityWriter::writeSvg(failed,r,energy,1,1));
 	REQUIRE(failed.str().empty());
 	BasePairProbabilities missing(4,5,true);
 	REQUIRE_THROWS(missing.addRegion({0,1},{1,2},2,mass));
@@ -82,10 +89,10 @@ TEST_CASE("seed annotations commit with regional masses and SVG requires success
 	BasePairProbabilities plain(4,5);
 	REQUIRE_FALSE(plain.collectsSeedPairs());REQUIRE(plain.seedPairs().size1()==0);
 	plain.finalize();std::ostringstream empty;
-	BasePairProbabilityWriter::writeSvg(empty,plain,energy);
+	BasePairProbabilityWriter::writeSvg(empty,plain,energy,1,1);
 	REQUIRE(empty.str().find("data-probability=\"NA\"")!=std::string::npos);
 	REQUIRE(empty.str().find("Orange outline:")==std::string::npos);
 	BasePairProbabilities wrongSize(1,1);wrongSize.finalize();std::ostringstream wrong;
-	REQUIRE_THROWS(BasePairProbabilityWriter::writeSvg(wrong,wrongSize,energy));
+	REQUIRE_THROWS(BasePairProbabilityWriter::writeSvg(wrong,wrongSize,energy,1,1));
 	REQUIRE(wrong.str().empty());
 }

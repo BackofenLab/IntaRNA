@@ -18,6 +18,8 @@ NS = {'s': 'http://www.w3.org/2000/svg'}
 
 def run(t='GGAGGG', q='CCCC', options=(), success=True):
     keys = {o.split('=')[0] for o in options}
+    if keys & {'--tAcc', '--qAcc'}:
+        keys.add('--acc')
     p = subprocess.run([BIN, f'--target={t}', f'--query={q}',
                         *[o for o in COMMON if o.split('=')[0] not in keys], *options],
                        text=True, capture_output=True)
@@ -112,17 +114,48 @@ with tempfile.TemporaryDirectory(prefix='intarna-bpsvg-') as tmp:
     named = plot(opts=[f'--tId={name}'])
     assert name in named.find('s:title', NS).text
     assert name+" (5' to 3')" in [e.text for e in named.findall('.//s:text', NS)]
-    # Native accessibility values must use original (not reversed) query order.
+    # Accessibility uses its own per-strand scale and original query order.
     pu_t, pu_q = d/'target.pu', d/'query.pu'
-    native = plot('GGGGAAAACCCC', 'GCGCGAAAACGCGC',
-                  ['--energy=V', '--acc=C', f'--out=tPu:{pu_t}', f'--out=qPu:{pu_q}'])
-    for strand, path in (('target', pu_t), ('query', pu_q)):
-        expected_pu = [float(line.split()[1]) for line in path.read_text().splitlines()
-                       if line.strip() and not line.lstrip().startswith('#')]
-        assert any(0 < v < .9 for v in expected_pu)
-        for r in native.findall(f'.//s:rect[@data-type="unpaired"][@data-strand="{strand}"]', NS):
-            assert math.isclose(float(r.attrib['data-probability']), expected_pu[int(r.attrib['data-index'])-1],
-                                rel_tol=2e-5, abs_tol=1e-6)
+
+    def one_nt(path):
+        return [float(line.split()[1]) for line in path.read_text().splitlines()
+                if line.strip() and not line.lstrip().startswith('#')]
+
+    def check_frame(root, target_pu, query_pu):
+        for strand, values in (('target', target_pu), ('query', query_pu)):
+            assert any(0 < v < .9 for v in values)
+            for r in root.findall(f'.//s:rect[@data-type="unpaired"][@data-strand="{strand}"]', NS):
+                assert math.isclose(float(r.attrib['data-probability']), values[int(r.attrib['data-index'])-1],
+                                    rel_tol=2e-5, abs_tol=1e-6), (strand, r.attrib, values)
+
+    for temperature in (22, 37):
+        acc_options = [f'--temperature={temperature}', f'--out=tPu:{pu_t}', f'--out=qPu:{pu_q}']
+        native = plot('GGGGAAAACCCC', 'GCGCGAAAACGCGC', ['--energy=V', '--acc=C', *acc_options])
+        check_frame(native, one_nt(pu_t), one_nt(pu_q))
+        input_t, input_q = d/'input-target.pu', d/'input-query.pu'
+        input_t.write_bytes(pu_t.read_bytes()); input_q.write_bytes(pu_q.read_bytes())
+        for t_mode, q_mode in (('P', 'P'), ('P', 'C'), ('C', 'P'), ('E', 'E'), ('C', 'C')):
+            ed_t, ed_q = d/'target.ed', d/'query.ed'
+            options = ['--energy=B', f'--tAcc={t_mode}', f'--qAcc={q_mode}', *acc_options]
+            if t_mode in ('P', 'E'):
+                options.append(f'--tAccFile={input_t if t_mode == "P" else ed_t}')
+            if q_mode in ('P', 'E'):
+                options.append(f'--qAccFile={input_q if q_mode == "P" else ed_q}')
+            # The first imported-Pu run also supplies ED fixtures for the E case.
+            if (t_mode, q_mode) in (('P', 'P'), ('C', 'C')):
+                options += [f'--out=tAcc:{ed_t}', f'--out=qAcc:{ed_q}']
+            converted = plot('GGGGAAAACCCC', 'GCGCGAAAACGCGC', options)
+            check_frame(converted, one_nt(pu_t), one_nt(pu_q))
+            for mode, input_pu, output_pu in ((t_mode, input_t, pu_t), (q_mode, input_q, pu_q)):
+                if mode in ('P', 'E'):
+                    # Independent input reference; ED quantization loses <2%
+                    # at either temperature, but using interaction RT loses far more.
+                    assert all(math.isclose(actual, original, rel_tol=.02, abs_tol=1e-10)
+                               for actual, original in zip(one_nt(output_pu), one_nt(input_pu)))
+            if t_mode == q_mode == 'C':
+                # Nussinov accessibility has RT=1, independent of temperature.
+                check_frame(converted, [math.exp(-ed) for ed in one_nt(ed_t)],
+                            [math.exp(-ed) for ed in one_nt(ed_q)])
     for t,q in (('AAAA','AAAA'), ('G','C')):
         empty = plot(t,q)
         assert all(r.attrib['data-probability'] == 'NA' for r in pairs(empty).values())

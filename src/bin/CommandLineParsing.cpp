@@ -2507,7 +2507,8 @@ void CommandLineParsing::writeBasePairProbabilities(const BasePairProbabilities 
 	if (!outPrefix2streamName.at(OP_bpProb).empty())
 		BasePairProbabilityWriter::writeFile(getFullFilename(outPrefix2streamName.at(OP_bpProb),&t,&q),result,t,q,outSep);
 	if (!outPrefix2streamName.at(OP_bpsvg).empty())
-		BasePairProbabilityWriter::writeSvgFile(getFullFilename(outPrefix2streamName.at(OP_bpsvg),&t,&q),result,energy);
+		BasePairProbabilityWriter::writeSvgFile(getFullFilename(outPrefix2streamName.at(OP_bpsvg),&t,&q),result,energy,
+				getAccessibilityRT(tAcc.val),getAccessibilityRT(qAcc.val));
 }
 
 Predictor*
@@ -2941,9 +2942,18 @@ getTargetRanges( const InteractionEnergy & energy, const size_t sequenceNumber, 
 
 ////////////////////////////////////////////////////////////////////////////
 
+Z_type
+CommandLineParsing::getAccessibilityRT(const char mode) const
+{
+	// Computed Nussinov ED uses RT=1; imported ED/Pu and ViennaRNA use the
+	// configured physical temperature, independently of the interaction model.
+	return energy.val=='B' && mode=='C'?Z_type(1):vrnaHandler.getRT();
+}
+
 void
 CommandLineParsing::
-writeAccessibility( const Accessibility& acc, const std::string & fileOrStream, const bool writeED ) const
+writeAccessibility( const Accessibility& acc, const std::string & fileOrStream, const bool writeED,
+		const char mode ) const
 {
 	if (fileOrStream.empty())
 		return;
@@ -2964,7 +2974,7 @@ writeAccessibility( const Accessibility& acc, const std::string & fileOrStream, 
 	} else if (writeED) {
 		acc.writeRNAplfold_ED_text( *out );
 	} else {
-		acc.writeRNAplfold_Pu_text( *out, vrnaHandler.getRT() );
+		acc.writeRNAplfold_Pu_text( *out, getAccessibilityRT(mode) );
 	}
 
 	// Explicit close propagates compression/file errors before releasing ownership.
