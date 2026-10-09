@@ -2234,7 +2234,7 @@ getEnergyHandler( const Accessibility& accTarget, const ReverseAccessibility& ac
 
 OutputConstraint
 CommandLineParsing::
-getOutputConstraint( const InteractionEnergy & energy )  const
+getOutputConstraint( const InteractionEnergy & energy, bool forPrediction )  const
 {
 	checkIfParsed();
 	if (!rri.empty()) {
@@ -2250,7 +2250,7 @@ getOutputConstraint( const InteractionEnergy & energy )  const
 	default : throw std::runtime_error("CommandLineParsing::getOutputConstraint() : unsupported outOverlap value "+toString(outOverlap.val));
 	}
 	return OutputConstraint(
-			  outNumber.val
+			  (forPrediction && !outPrefix2streamName.at(OP_bpsvg).empty() ? std::max(size_t(1),size_t(outNumber.val)) : outNumber.val)
 			, overlap
 			, Ekcal_2_E(outMaxE.val)
 			, Ekcal_2_E(outDeltaE.val)
@@ -2501,14 +2501,15 @@ BasePairProbabilities * CommandLineParsing::getBasePairProbabilityResult(const I
 		throw std::invalid_argument("bpProb/bpsvg requires a stack-only seed handler; bulged seeds are unsupported");
 	return new BasePairProbabilities(energy.size1(),energy.size2(),!outPrefix2streamName.at(OP_bpsvg).empty());
 }
-void CommandLineParsing::writeBasePairProbabilities(const BasePairProbabilities & result,const InteractionEnergy & energy) const {
+void CommandLineParsing::writeBasePairProbabilities(const BasePairProbabilities & result,const InteractionEnergy & energy,
+		const Interaction * mfe) const {
 	const auto & t=energy.getAccessibility1().getSequence();
 	const auto & q=energy.getAccessibility2().getAccessibilityOrigin().getSequence();
 	if (!outPrefix2streamName.at(OP_bpProb).empty())
 		BasePairProbabilityWriter::writeFile(getFullFilename(outPrefix2streamName.at(OP_bpProb),&t,&q),result,t,q,outSep);
 	if (!outPrefix2streamName.at(OP_bpsvg).empty())
 		BasePairProbabilityWriter::writeSvgFile(getFullFilename(outPrefix2streamName.at(OP_bpsvg),&t,&q),result,energy,
-				getAccessibilityRT(tAcc.val),getAccessibilityRT(qAcc.val));
+				getAccessibilityRT(tAcc.val),getAccessibilityRT(qAcc.val),mfe);
 }
 
 Predictor*

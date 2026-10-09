@@ -55,6 +55,15 @@ with tempfile.TemporaryDirectory(prefix='intarna-bpsvg-') as tmp:
     assert len(cells) == 24
     assert '+1' in [e.text for e in root.findall('.//s:text[@class="index"]', NS)]
     assert not root.findall('.//s:line[@data-index="1"]', NS)
+    assert root.find('.//s:text[@class="subtitle"]', NS) is None
+    query_axis = root.find('.//s:text[@class="axis"][@x]', NS)
+    assert query_axis.text == "query (5' to 3')"
+    assert float(query_axis.attrib['y']) > max(float(r.attrib['y']) for r in cells.values())+20
+    # Original target coordinate 1 is at the bottom; query coordinate 1 at left.
+    for i in range(1, 7):
+        for j in range(1, 5):
+            assert float(cells[i, j].attrib['y']) == float(cells[1, 1].attrib['y'])-20*(i-1)
+            assert float(cells[i, j].attrib['x']) == float(cells[1, 1].attrib['x'])+20*(j-1)
     for i, row in enumerate(rows[1:], 1):
         for j, value in enumerate(row[1:], 1):
             r = cells[i, j]
@@ -62,22 +71,57 @@ with tempfile.TemporaryDirectory(prefix='intarna-bpsvg-') as tmp:
             bounds = [0.01, 0.1, 0.25, 0.5, 0.75, 0.9]
             expected_color = sum(float(value) >= boundary for boundary in bounds)
             assert f'p{expected_color}' in r.attrib['class'].split()
-            assert 'Base-pair probability' in r.find('s:title', NS).text
+            title = r.find('s:title', NS).text
+            assert title.startswith(f'Base-pair probability (target {i}, query {j}): ')
+            formatted = f'{float(value):.2e}' if float(value) < .001 else f'{float(value):.3f}'
+            assert title.endswith(': '+formatted), title
     assert all(float(cells[3, j].attrib['data-probability']) == 0 for j in range(1, 5))
-    frame = root.findall('.//s:rect[@data-type="unpaired"]', NS)
+    frame = root.findall('.//s:rect[@data-type="intramolecular-pairing"]', NS)
     assert len(frame) == 2*(6+4)
-    assert all(float(r.attrib['data-probability']) == 1 for r in frame)
-    assert all('Unpaired probability' in r.find('s:title', NS).text for r in frame)
+    assert all(float(r.attrib['data-probability']) == 0 for r in frame)
+    assert all('Intramolecular pairing probability' in r.find('s:title', NS).text for r in frame)
     css = root.find('s:style', NS).text
     assert all(f'.p{i} {{ fill:' in css for i in range(7))
     assert len(root.findall('.//s:g[@class="probability-legend"]/s:rect', NS)) == 7
     # All admitted computed two-pair stacks, in original query orientation.
     expected = {(i+k+1, 4-j-k) for i in (0, 3, 4) for j in range(3) for k in range(2)}
     assert seeds(root) == expected, seeds(root)
+    for r in root.findall('.//s:rect[@class="seed"][@data-target]', NS):
+        bp = cells[int(r.attrib['data-target']), int(r.attrib['data-query'])]
+        assert float(r.attrib['x']) == float(bp.attrib['x'])+1
+        assert float(r.attrib['y']) == float(bp.attrib['y'])+1
+    for r in frame:
+        idx = int(r.attrib['data-index'])
+        axis, bp = ('y', cells[idx, 1]) if r.attrib['data-strand'] == 'target' else ('x', cells[1, idx])
+        assert float(r.attrib[axis]) == float(bp.attrib[axis])
     # Requesting SVG must not affect CSV or ensemble/ranked output.
     baseline = run(options=['--outNumber=1', '--outMode=C', '--outCsvCols=Zall,Eall'])
     plotted = run(options=['--outNumber=1', '--outMode=C', '--outCsvCols=Zall,Eall', f'--out=bpsvg:{svg}'])
     assert baseline.stdout == plotted.stdout
+    # The green rectangle covers the reported MFE region, including when
+    # ranked output is disabled. Query coordinates retain their original order.
+    for target, query, options in (
+        ('GGAGGG', 'CCCC', []),
+        ('AAGGGGAA', 'AACCCCAA', []),
+        ('GGAGGG', 'CCCC', ['--tIdxPos0=-4', '--qIdxPos0=-2']),
+    ):
+        reference = run(target, query, [*options, '--outNumber=1', '--outMode=C',
+                                       '--outCsvCols=start1,end1,start2,end2'])
+        row = next(csv.DictReader(reference.stdout.splitlines(), delimiter=';'))
+        for count in (0, 1):
+            mfe_plot = plot(target, query, [*options, f'--outNumber={count}'])
+            outline = mfe_plot.find('.//s:rect[@class="mfe"][@data-target-start]', NS)
+            assert outline is not None
+            bounds = tuple(int(outline.attrib[k]) for k in (
+                'data-target-start', 'data-target-end', 'data-query-start', 'data-query-end'))
+            assert bounds == tuple(int(row[k]) for k in ('start1', 'end1', 'start2', 'end2'))
+            ts, te, qs, qe = bounds
+            matrix = pairs(mfe_plot)
+            assert float(outline.attrib['x']) == float(matrix[ts, qs].attrib['x'])
+            assert float(outline.attrib['y']) == float(matrix[te, qs].attrib['y'])
+            assert float(outline.attrib['width']) == float(matrix[ts, qe].attrib['x'])-float(matrix[ts, qs].attrib['x'])+20
+            assert float(outline.attrib['height']) == float(matrix[ts, qs].attrib['y'])-float(matrix[te, qs].attrib['y'])+20
+            assert 'Green outline:' in ''.join(mfe_plot.itertext())
     # Explicit singleton/mixed seed masks exclude extension-only cells.
     opts = ['--seedTQ=1|&4|,2||&2||']
     mixed = plot('GGGG', 'CCCC', opts)
@@ -103,7 +147,7 @@ with tempfile.TemporaryDirectory(prefix='intarna-bpsvg-') as tmp:
             idx = int(g.attrib['data-index'])
             r = signed_cells[idx,-15] if strand == 'target' else signed_cells[-15,idx]
             axis = 'y' if strand == 'target' else 'x'
-            expected_pos = float(r.attrib[axis]) + (20 if idx > 1 else 0)
+            expected_pos = float(r.attrib[axis]) + (0 if idx > 1 else 20) if strand == 'target' else float(r.attrib[axis]) + (20 if idx > 1 else 0)
             assert float(g.attrib[axis+'1']) == expected_pos
             assert ('major' in g.attrib['class']) == (idx % 50 == 0)
             assert ('origin' in g.attrib['class']) == (idx == 1)
@@ -113,6 +157,10 @@ with tempfile.TemporaryDirectory(prefix='intarna-bpsvg-') as tmp:
     name = '<target & "quoted">'
     named = plot(opts=[f'--tId={name}'])
     assert name in named.find('s:title', NS).text
+    assert named.find('.//s:text[@class="subtitle"]', NS).text == name+' / query'
+    assert all(name in r.find('s:title', NS).text for r in pairs(named).values())
+    assert all(name in r.find('s:title', NS).text for r in named.findall(
+        './/s:rect[@data-type="intramolecular-pairing"][@data-strand="target"]', NS))
     assert name+" (5' to 3')" in [e.text for e in named.findall('.//s:text', NS)]
     # Accessibility uses its own per-strand scale and original query order.
     pu_t, pu_q = d/'target.pu', d/'query.pu'
@@ -124,9 +172,9 @@ with tempfile.TemporaryDirectory(prefix='intarna-bpsvg-') as tmp:
     def check_frame(root, target_pu, query_pu):
         for strand, values in (('target', target_pu), ('query', query_pu)):
             assert any(0 < v < .9 for v in values)
-            for r in root.findall(f'.//s:rect[@data-type="unpaired"][@data-strand="{strand}"]', NS):
-                assert math.isclose(float(r.attrib['data-probability']), values[int(r.attrib['data-index'])-1],
-                                    rel_tol=2e-5, abs_tol=1e-6), (strand, r.attrib, values)
+            for r in root.findall(f'.//s:rect[@data-type="intramolecular-pairing"][@data-strand="{strand}"]', NS):
+                assert math.isclose(float(r.attrib['data-probability']), 1-values[int(r.attrib['data-index'])-1],
+                                    rel_tol=2e-5, abs_tol=5e-6), (strand, r.attrib, values)
 
     for temperature in (22, 37):
         acc_options = [f'--temperature={temperature}', f'--out=tPu:{pu_t}', f'--out=qPu:{pu_q}']
@@ -160,6 +208,7 @@ with tempfile.TemporaryDirectory(prefix='intarna-bpsvg-') as tmp:
         empty = plot(t,q)
         assert all(r.attrib['data-probability'] == 'NA' for r in pairs(empty).values())
         assert not seeds(empty)
+        assert not empty.findall('.//s:rect[@class="mfe"]', NS)
         assert 'empty interaction ensemble' in ''.join(empty.itertext())
     compressed = d/'pairs.svg.gz'
     run(options=[f'--out=bpsvg:{compressed}'])

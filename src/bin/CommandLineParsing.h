@@ -282,7 +282,7 @@ public:
 	 * parameters
 	 * @param energy the interaction energy handler to be used
 	 * @param output the output handler to be used
-	 * @param pairProbabilities optional non-owning raw result sink for exact stack seeds
+	 * @param pairProbabilities optional non-owning raw result sink for supported ensemble predictors
 	 * @return the newly allocated Predictor object to be deleted by the calling
 	 * function
 	 */
@@ -296,7 +296,8 @@ public:
 	 */
 	BasePairProbabilities * getBasePairProbabilityResult(const InteractionEnergy & energy) const;
 	/** Publish a successful sequence-pair result using ordinary filename rules. */
-	void writeBasePairProbabilities(const BasePairProbabilities & result,const InteractionEnergy & energy) const;
+	void writeBasePairProbabilities(const BasePairProbabilities & result,const InteractionEnergy & energy,
+			const Interaction * mfe = nullptr) const;
 
 	/**
 	 * Provides the seed constraint according to the user settings
@@ -331,9 +332,10 @@ public:
 	/**
 	 * The constraints to be applied to the interaction output generation
 	 * @param energy the interaction energy to be used for computation
+	 * @param forPrediction retain a best site for SVG even with zero ranked output
 	 * @return the output constraints to be applied
 	 */
-	OutputConstraint getOutputConstraint( const InteractionEnergy & energy ) const;
+	OutputConstraint getOutputConstraint( const InteractionEnergy & energy, bool forPrediction = false ) const;
 
 	/**
 	 * The stream to write the interaction output to

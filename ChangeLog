@@ -14,6 +14,9 @@
 
 ## Interface and handling
 
+- revise SVG axes, sequence labels and rounded tooltips; show intramolecular
+  pairing (1-Pu) frames and the best interaction region (PR #259 review)
+
 - BUGFIX : use each strand's accessibility energy scale for SVG frames and
   unpaired-probability exports, including mixed computed/imported inputs
 
@@ -168,6 +171,16 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261009 Alexander Mitrofanov
+ * BasePairProbabilitySvg, BasePairProbabilityWriter, CommandLineParsing, IntaRNA :
+   * place target origin at bottom left and query name below the matrix; include
+     nondefault sequence names in a subtitle and names in rounded hover values
+   * show 1-Pu intramolecular pairing probabilities on the nucleotide frame
+   + outline the best reported interaction region in green, including when
+     ranked output is disabled; preserve ordinary output counts (PR #259 review)
+ * README.md, tests/testBasePairProbabilitySvg.py :
+   * document and cover coordinates, frame probabilities, tooltips and MFE bounds
 
 261009 Alexander Mitrofanov
  * BasePairProbabilityWriter, BasePairProbabilitySvg, CommandLineParsing :

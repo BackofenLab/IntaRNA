@@ -1876,7 +1876,7 @@ targeted file/stream name:
 
 - `qSpotProb:`/`tSpotProb:` [query/target's spot probability profile](#profileSpotProb) (CSV format), respectively
 - `spotProb:` [all spot probabilities](#spotProb) (CSV format)
-- `bpsvg:` [SVG base-pair probability dot plot](#bpsvg), with accessibility frames and seed outlines
+- `bpsvg:` [SVG base-pair probability dot plot](#bpsvg), with pairing-probability frames and seed/MFE outlines
 - `bpProb:` [actual base-pair probabilities](#bpProb) for exact stack-seeded ensembles (CSV matrix)
 - `qMinE:`/`tMinE:` [the query/target's minimal interaction energy profile](profileMinE) (CSV format), respectively
 - `pMinE:` [minimal interaction energy for all query-target index pairs](pairMinE) (CSV format)
@@ -2082,15 +2082,18 @@ IntaRNA -t GGAGGG -q CCCC --energy=B --acc=N --seedBP=2 \
   --model=P --mode=M --out=bpsvg:pairs.svg --out=bpProb:pairs.csv
 ```
 
-The query is the horizontal axis and the target the vertical axis, both in
-original 5' to 3' order. Sequence names label the axes; nucleotides appear on all
-four sides. Their colored backgrounds show **single-nucleotide unpaired
-probabilities**, computed from the prediction accessibility model's opening
-energies. These are distinct from the interaction-conditional probabilities in
-the matrix. Disabled accessibility gives probability one at unconstrained bases.
-Each probability rectangle has a hover title with its index (pair), type and
-full-precision value. An empty interaction ensemble uses gray `NA` cells while
-its accessibility frame remains defined.
+The query runs left to right and the target bottom to top, both in original
+5' to 3' order, starting at the bottom-left corner. Sequence names label the
+axes, with the query name below the matrix. A subtitle names both sequences
+when either name differs from the defaults `query` and `target`. Nucleotides
+appear on all four sides. Their colored backgrounds show **intramolecular
+pairing probability**, `1-Pu`, computed from the accessibility model's opening
+energies. These are distinct from the interaction-conditional pair probabilities
+in the matrix. Disabled accessibility gives zero at unconstrained bases.
+Each probability rectangle has a hover title with sequence names, indices,
+probability type and three decimal places (scientific notation with two decimal
+places below 0.001). Full-precision values remain in `data-probability` attributes.
+An empty interaction ensemble uses gray `NA` cells while its frame remains defined.
 
 A shared seven-step, white-to-dark-blue palette encodes both probability types:
 `[0,0.01)`, `[0.01,0.1)`, `[0.1,0.25)`, `[0.25,0.5)`, `[0.5,0.75)`,
@@ -2110,7 +2113,10 @@ contained in searched regions, including overlapping, singleton and mixed-length
 explicit seeds. This annotation uses the predictor's retained seed family and
 span limits; it is independent of ranked interaction reporting and can include
 zero-probability cells. Extension-only pairs have no outline. A seed legend is
-included whenever an outline is present.
+included whenever an outline is present. A green rectangle encloses the best
+reported interaction's site, with a matching legend. The best site is retained
+for SVG even with `--outNumber=0`, without adding ranked text output. If no site
+passes the reporting filters, the rectangle and its legend are omitted.
 
 Filenames support `.gz` compression and the usual `-t#q#` multi-FASTA suffixes.
 `STDOUT` and `STDERR` emit each complete SVG as one synchronized block. To obtain
