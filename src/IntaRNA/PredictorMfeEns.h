@@ -20,6 +20,9 @@ namespace IntaRNA {
  */
 class PredictorMfeEns : public PredictorMfe {
 
+public:
+
+	typedef std::unordered_map<Interaction::Boundary, Z_type, Interaction::Boundary::Hash, Interaction::Boundary::Equal> Site2Z_hash;
 
 public:
 
@@ -38,16 +41,21 @@ public:
 
 	virtual ~PredictorMfeEns();
 
-protected:
+	/**
+	 * Access to Z_partition
+	 *
+	 * @return Z_partition
+	 */
+	const Site2Z_hash &
+	getZPartition() const;
 
-	//! data container to encode a site with respective partition function
-	struct ZPartition {
-		size_t i1;
-		size_t j1;
-		size_t i2;
-		size_t j2;
-		Z_type partZ;
-	};
+	/**
+	 * Report Z information to the prediction trackers
+	 */
+	void
+	reportZ( SeedHandler *seedHandler = NULL );
+
+protected:
 
 	//! access to the interaction energy handler of the super class
 	using PredictorMfe::energy;
@@ -59,7 +67,7 @@ protected:
 	using PredictorMfe::predTracker;
 
 	//! map storing the partition of Zall for all considered interaction sites
-	std::unordered_map<Interaction::Boundary, Z_type, Interaction::Boundary::Hash, Interaction::Boundary::Equal> Z_partition;
+	Site2Z_hash Z_partition;
 
 
 	/**

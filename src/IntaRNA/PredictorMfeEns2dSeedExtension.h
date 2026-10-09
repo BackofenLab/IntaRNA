@@ -38,12 +38,14 @@ public:
 	 *         tracking is to be done; if non-NULL, the tracker gets deleted
 	 *         on this->destruction.
 	 * @param seedHandler the seed handler to be used
+	 * @param trackBasePairProbs indicates the presence of a basePairProb tracker
 	 */
 	PredictorMfeEns2dSeedExtension(
 			const InteractionEnergy & energy
 			, OutputHandler & output
 			, PredictionTracker * predTracker
-			, SeedHandler * seedHandler );
+			, SeedHandler * seedHandler
+			, bool trackBasePairProbs );
 
 
 	/**
@@ -69,9 +71,41 @@ public:
 	predict( const IndexRange & r1 = IndexRange(0,RnaSequence::lastPos)
 			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos) );
 
+	/**
+	 * Access to ZL_partition
+	 *
+	 * @return ZL_partition
+	 */
+	const Site2Z_hash &
+	getZLPartition() const;
+
+	/**
+	 * Access to ZH_partition
+	 *
+	 * @return ZH_partition
+	 */
+	const Site2Z_hash &
+	getZHPartition() const;
+
+	/**
+	 * Returns the hybridization energy of the non-overlapping part of seeds
+	 * starting at si and sj
+	 *
+	 * @param si1 the index of seed1 in the first sequence
+	 * @param si2 the index of seed1 in the second sequence
+	 * @param sj1 the index of seed2 in the first sequence
+	 * @param sj2 the index of seed2 in the second sequence
+	 * @param energy the interaction energy handler
+	 * @param seedHandler the seedHandler of the predictor
+	 * @param sipIsSeed whether or not sj is a left seed boundary (for sanity checking)
+	 */
+	static
+	E_type
+	getNonOverlappingEnergy( const size_t si1, const size_t si2, const size_t sj1, const size_t sj2
+	                       , const InteractionEnergy & energy, const SeedHandler & seedHandler
+	                       , const bool sjIsSeed = true );
 
 protected:
-
 
 	//! access to the interaction energy handler of the super class
 	using PredictorMfeEns::energy;
@@ -79,14 +113,23 @@ protected:
 	//! access to the output handler of the super class
 	using PredictorMfeEns::output;
 
-	//! partition function of all interaction hybrids that start on the left side of the seed including E_init
-	Z2dMatrix hybridZ_left;
-
 	//! the seed handler (with idx offset)
 	SeedHandlerIdxOffset seedHandler;
 
+	//! partition function of all interaction hybrids that start on the left side of the seed including E_init
+	Z2dMatrix hybridZ_left;
+
 	//! partition function of all interaction hybrids that start on the right side of the seed excluding E_init
 	Z2dMatrix hybridZ_right;
+
+	//! boolean indicating the presence of a basePairProb tracker
+	bool trackBasePairProbs;
+
+	//! map storing the partition of ZL for all considered interaction sites
+	Site2Z_hash ZL_partition;
+
+	//! map storing the partition of ZH for all considered interaction sites
+	Site2Z_hash ZH_partition;
 
 protected:
 
@@ -123,19 +166,6 @@ protected:
 	virtual
 	void
 	traceBack( Interaction & interaction );
-
-	/**
-	 * Returns the hybridization energy of the non overlapping part of seeds
-	 * starting at si and sj
-	 *
-	 * @param si1 the index of seed1 in the first sequence
-	 * @param si2 the index of seed1 in the second sequence
-	 * @param sj1 the index of seed2 in the first sequence
-	 * @param sj2 the index of seed2 in the second sequence
-	 */
-	virtual
-	E_type
-	getNonOverlappingEnergy( const size_t si1, const size_t si2, const size_t sj1, const size_t sj2 );
 
 	// debug function
 	void

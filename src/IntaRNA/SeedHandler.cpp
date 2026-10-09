@@ -29,6 +29,28 @@ isFeasibleSeedBasePair( const size_t i1, const size_t i2, const bool atEndOfSeed
 
 bool
 SeedHandler::
+isSeedBasePair( const size_t i1, const size_t i2
+						, const size_t k1, const size_t k2, const bool includeBoundaries ) const
+{
+	if (!isSeedBound(i1, i2)) {
+		return false;
+	}
+
+	// trace seed at (i1,i2)
+	Interaction interaction = Interaction(energy.getAccessibility1().getSequence(), energy.getAccessibility2().getAccessibilityOrigin().getSequence());
+	traceBackSeed( interaction, i1, i2 );
+	if (includeBoundaries) {
+    interaction.basePairs.push_back( energy.getBasePair(i1, i2) );
+	  interaction.basePairs.push_back( energy.getBasePair(i1+getSeedLength1(i1,i2)-1, i2+getSeedLength2(i1,i2)-1) );
+	}
+	
+	return (std::find(interaction.basePairs.begin(), interaction.basePairs.end(), energy.getBasePair(k1, k2)) != interaction.basePairs.end());
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+bool
+SeedHandler::
 updateToNextSeed( size_t & i1_out, size_t & i2_out
 		, const size_t i1min, const size_t i1max
 		, const size_t i2min, const size_t i2max
@@ -70,6 +92,40 @@ updateToNextSeed( size_t & i1_out, size_t & i2_out
 		return true;
 	}
 	// no valid next seed found
+	return false;
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+bool
+SeedHandler::
+updateToNextSeedWithK( size_t & i1_out, size_t & i2_out
+		, const size_t k1, const size_t k2, const bool includeBoundaries
+		) const
+{
+	// if no left-shift left
+	if ((i1_out == 0 && i2_out == 0)
+			|| (!includeBoundaries && (k1 == 0 || k2 == 0)))
+	{
+		return false;
+	}
+
+	const size_t seedBP = getConstraint().getBasePairs();
+	const size_t maxDistI1 = (seedBP - 1) + getConstraint().getMaxUnpaired1();
+	const size_t maxDistI2 = (seedBP - 1) + getConstraint().getMaxUnpaired2();
+
+	size_t min_i1 = k1 - std::min(k1, maxDistI1);
+	size_t min_i2 = k2 - std::min(k2, maxDistI2);
+
+	// check all seeds within the range
+	while (updateToNextSeed(i1_out,i2_out,min_i1, (includeBoundaries?k1:k1-1), min_i2, (includeBoundaries?k2:k2-1))) {
+		// check if we found a seed including k in the range
+		if (isSeedBasePair(i1_out, i2_out, k1, k2, includeBoundaries)) {
+			return true;
+		}
+	}
+	
+	// no valid seed including k found
 	return false;
 }
 

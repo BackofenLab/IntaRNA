@@ -96,7 +96,7 @@ protected:
 	InteractionList mfeInteractions;
 
 	//! hash to map index pairs to BestInteractionE entries
-	typedef boost::unordered_map< Interaction::BasePair, BestInteractionE > HashIdx2E;
+	typedef boost::unordered_map< Interaction::BasePair, BestInteractionE, Interaction::BasePair::Hash, Interaction::BasePair::Equal > HashIdx2E;
 
 	//! if non-overlapping output is required, this data structure is filled
 	//! to find non-overlapping interactions

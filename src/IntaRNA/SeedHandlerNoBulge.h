@@ -26,7 +26,7 @@ protected:
 	typedef std::vector<E_type> StackingEnergyList;
 
 	//! container type for sparse seed information
-	typedef boost::unordered_map< Interaction::BasePair, E_type > SeedHash;
+	typedef boost::unordered_map< Interaction::BasePair, E_type, Interaction::BasePair::Hash, Interaction::BasePair::Equal > SeedHash;
 
 	//! container to store seeds' hybridization energies
 	SeedHash seedForLeftEnd;
@@ -148,6 +148,38 @@ public:
 			, const size_t i2min = 0, const size_t i2max = RnaSequence::lastPos
 			) const;
 
+	/**
+	 * updateToNextSeed for seeds including base pair k
+	 *
+	 * @param i1 seq1 seed index to be changed; set to > k1 to find first valid i1
+	 * @param i2 seq2 seed index to be changed; set to > k2 to find first valid i2
+	 * @param k1 first position within seq1 (inclusive)
+	 * @param k2 last position within seq1 (inclusive)
+	 * @param includeBoundaries whether boundaries count as seed base pair
+	 * @return true if the input variables have been changed; false otherwise
+	 */
+	virtual
+	bool
+	updateToNextSeedWithK( size_t & i1, size_t & i2
+			, const size_t k1, const size_t k2, const bool includeBoundaries = true
+			) const;
+
+
+	/**
+	 * Checks whether or not a given index pair is a valid seed base of a given seed
+	 *
+	 * @param i1 the left most interacting base of seq1 of a seed
+	 * @param i2 the left most interacting base of seq2 of a seed
+	 * @param k1 the interacting base of seq1
+	 * @param k2 the interacting base of seq2
+	 * @param includeBoundaries whether boundaries count as seed base pair
+	 * @return true if (k1,k2) is a valid base pair of seed(i1,i2); false otherwise
+	 */
+	virtual
+	bool
+	isSeedBasePair( const size_t i1, const size_t i2
+						, const size_t k1, const size_t k2, const bool includeBoundaries = true ) const;
+
 
 protected:
 
@@ -243,6 +275,30 @@ isSeedBound( const size_t i1, const size_t i2 ) const
 {
 	// search for seed entry in hash
 	return seedForLeftEnd.find( SeedHash::key_type(i1,i2) ) != seedForLeftEnd.end();
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+SeedHandlerNoBulge::
+isSeedBasePair( const size_t i1, const size_t i2
+						, const size_t k1, const size_t k2, const bool includeBoundaries ) const
+{
+	if (!isSeedBound(i1, i2)) {
+		return false;
+	}
+
+	if (includeBoundaries) {
+    return k1 >= i1 && k2 >= i2
+			&& (k1 - i1) == (k2 - i2)
+			&& (k1-i1)<getConstraint().getBasePairs();
+	}
+
+	// exclude boundaries
+	return k1 > i1 && k2 > i2
+			&& (k1 - i1) == (k2 - i2)
+			&& (k1-i1)<getConstraint().getBasePairs()-1;
 }
 
 //////////////////////////////////////////////////////////////////////////

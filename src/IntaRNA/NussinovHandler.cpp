@@ -24,7 +24,7 @@ NussinovHandler::getBasePairs(
       getBasePairs(k + 1, to - 1, traceback, pairs);
     }
 
-    pairs.push_back(std::pair<size_t, size_t>(k, to));
+    pairs.push_back(Interaction::BasePair(k, to));
   }
 }
 

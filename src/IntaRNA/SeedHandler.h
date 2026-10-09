@@ -152,6 +152,22 @@ public:
 			) const;
 
 	/**
+	 * updateToNextSeed for seeds including base pair k
+	 *
+	 * @param i1 seq1 seed index to be changed; set to > k1 to find first valid i1
+	 * @param i2 seq2 seed index to be changed; set to > k2 to find first valid i2
+	 * @param k1 first position within seq1 (inclusive)
+	 * @param k2 last position within seq1 (inclusive)
+	 * @param includeBoundaries whether boundaries count as seed base pair
+	 * @return true if the input variables have been changed; false otherwise
+	 */
+	virtual
+	bool
+	updateToNextSeedWithK( size_t & i1, size_t & i2
+			, const size_t k1, const size_t k2, const bool includeBoundaries = true
+			) const;
+
+	/**
 	 * Adds all seeds to a given interaction that are completely covered by its
 	 * base pairs.
 	 *
@@ -193,6 +209,21 @@ public:
 	isFeasibleSeedBasePair( const size_t i1
 						, const size_t i2
 						, const bool atEndOfSeed = false ) const;
+
+	/**
+	 * Checks whether or not a given index pair is a valid seed base of a given seed
+	 *
+	 * @param i1 the left most interacting base of seq1 of a seed
+	 * @param i2 the left most interacting base of seq2 of a seed
+	 * @param k1 the interacting base of seq1
+	 * @param k2 the interacting base of seq2
+	 * @param includeBoundaries whether boundaries count as seed base pair
+	 * @return true if (k1,k2) is a valid base pair of seed(i1,i2); false otherwise
+	 */
+	virtual
+	bool
+	isSeedBasePair( const size_t i1, const size_t i2
+						, const size_t k1, const size_t k2, const bool includeBoundaries = true ) const;
 
 protected:
 

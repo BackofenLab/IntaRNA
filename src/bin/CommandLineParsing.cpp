@@ -62,6 +62,7 @@ extern "C" {
 #include "IntaRNA/PredictionTrackerSpotProb.h"
 #include "IntaRNA/PredictionTrackerSpotProbAll.h"
 #include "IntaRNA/PredictionTrackerProfileSpotProb.h"
+#include "IntaRNA/PredictionTrackerBasePairProb.h"
 
 #include "IntaRNA/SeedHandlerMfe.h"
 #include "IntaRNA/SeedHandlerNoBulge.h"
@@ -925,6 +926,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 					"\n 'tPu:' (target) unpaired probabilities values (RNAplfold format)."
 					"\n 'pMinE:' (target+query) for each index pair the minimal energy of any interaction covering the pair (CSV format)"
 					"\n 'spotProb:' (target+query) tracks for a given set of interaction spots their probability to be covered by an interaction. If no spots are provided, probabilities for all index combinations are computed. Spots are encoded by comma-separated 'idxT&idxQ' pairs (target-query). For each spot a probability is provided in concert with the probability that none of the spots (encoded by '0&0') is covered (CSV format). The spot encoding is followed colon-separated by the output stream/file name, eg. '--out=\"spotProb:3&76,59&2:STDERR\"'. NOTE: value has to be quoted due to '&' symbol!"
+					"\n 'basePairProb:' (target+query) tracks inter-molecular base pair probabilities and produces a dotplot in SVG format (requires model=P and mode=M)."
 					"\nFor each, provide a file name or STDOUT/STDERR to write to the respective output stream."
 					).c_str())
 		("outSep"
@@ -1500,6 +1502,11 @@ parse(int argc, char** argv)
 							throw error("--out argument shows multiple times '"+toString(c1->second)+"' as target file/stream.");
 						}
 					}
+					// check if base pair probability output possible
+					if (c1->first == OutPrefixCode::OP_basePairProb) {
+						if (model.val != 'P') { throw error("--out=basePairProb requires --model=P"); }
+						if (mode.val != 'M') { throw error("--out=basePairProb requires --mode=M"); }
+					}
 				}
 			}
 
@@ -1573,7 +1580,7 @@ parse(int argc, char** argv)
 								+") exceeds the maximally allowed number of helix base pairs ("+toString(helixMaxBP.val)+")");
 					}
 				}
-				
+
 				// check for minimal sequence length
 				for(size_t i=0; i<query.size(); i++) {
 					if (query.at(i).size() < helixMinBP.val) {
@@ -2391,6 +2398,15 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 						, "0", outSep ) );
 	}
 
+	// check if specific basepairProbs are to be tracked
+	if (!outPrefix2streamName.at(OutPrefixCode::OP_basePairProb).empty()) {
+		// track only specific spots
+		predTracker->addPredictionTracker(
+				new PredictionTrackerBasePairProb( energy
+								, outPrefix2streamName.at(OutPrefixCode::OP_basePairProb) )
+							);
+	}
+
 	// check if any tracker registered
 	if (predTracker->empty()) {
 		// cleanup to avoid overhead
@@ -2463,7 +2479,7 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output ) const
 		case 'P' : {
 			switch ( mode.val ) {
 			case 'H' :  return new PredictorMfeEns2dHeuristicSeedExtension( energy, output, predTracker, getSeedHandler( energy ) );
-			case 'M' :  return new PredictorMfeEns2dSeedExtension( energy, output, predTracker, getSeedHandler( energy ) );
+			case 'M' :  return new PredictorMfeEns2dSeedExtension( energy, output, predTracker, getSeedHandler( energy ), !outPrefix2streamName.at(OutPrefixCode::OP_basePairProb).empty() );
 			case 'S' :  return new PredictorMfeEnsSeedOnly( energy, output, predTracker, getSeedHandler(energy) );
 			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not available for model "+toString(model.val));
 			}
@@ -2776,6 +2792,3 @@ getPersonality( int argc, char ** argv )
 
 
 ////////////////////////////////////////////////////////////////////////////
-
-
-

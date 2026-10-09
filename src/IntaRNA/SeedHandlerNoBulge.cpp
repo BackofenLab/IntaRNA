@@ -183,6 +183,48 @@ updateToNextSeed( size_t & i1_out, size_t & i2_out
 	return false;
 }
 
+//////////////////////////////////////////////////////////////////////////
+
+bool
+SeedHandlerNoBulge::
+updateToNextSeedWithK( size_t & i1_out, size_t & i2_out
+		, const size_t k1, const size_t k2, const bool includeBoundaries
+		) const
+{
+	// if no left-shift left
+	if ((i1_out == 0 && i2_out == 0)
+			|| (!includeBoundaries && (k1 == 0 || k2 == 0)))
+	{
+		return false;
+	}
+
+	if ((i1_out > k1 || i2_out > k2)  // right of k
+			|| (k1-i1_out)!=(k2-i2_out) )  // different distances
+	{
+		i1_out = k1;
+		i2_out = k2;
+		if( includeBoundaries && isSeedBound(i1_out,i2_out) ) {
+			return true;
+		}
+	}
+
+	const size_t seedBP = getConstraint().getBasePairs();
+	const size_t maxDistI = std::min( seedBP - 1, std::min(k1,k2));
+
+	// check all seeds within the range
+	while( i1_out > 0 && i2_out > 0 && (k1-i1_out)<maxDistI) {
+		i1_out--;
+		i2_out--;
+		// check if we found a seed including k in the range
+		if (isSeedBasePair(i1_out, i2_out, k1, k2, includeBoundaries)) {
+			return true;
+		}
+	}
+
+	// no valid seed including k found
+	return false;
+}
+
 ////////////////////////////////////////////////////////////////////////////
 
 } // namespace

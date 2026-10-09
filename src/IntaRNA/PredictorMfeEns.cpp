@@ -36,6 +36,25 @@ initZ()
 
 ////////////////////////////////////////////////////////////////////////////
 
+const PredictorMfeEns::Site2Z_hash &
+PredictorMfeEns::
+getZPartition() const {
+	return Z_partition;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void
+PredictorMfeEns::
+reportZ( SeedHandler* seedHandler )
+{
+	if (predTracker != NULL) {
+		predTracker->updateZ(this, seedHandler);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
 void
 PredictorMfeEns::
 updateZ( const size_t i1, const size_t j1
