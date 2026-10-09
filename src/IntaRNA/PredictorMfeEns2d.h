@@ -3,6 +3,7 @@
 #define INTARNA_PREDICTORMFEENS2D_H_
 
 #include "IntaRNA/PredictorMfeEns.h"
+#include "IntaRNA/BasePairProbabilities.h"
 #include "IntaRNA/Interaction.h"
 
 #include "IntaRNA/Matrix.h"
@@ -34,10 +35,13 @@ public:
 	 * @param predTracker the prediction tracker to be used or NULL if no
 	 *         tracking is to be done; if non-NULL, the tracker gets deleted
 	 *         on this->destruction.
+	 * @param pairProbabilities optional non-owning sink; requires needZall and
+	 *         must remain pending until all disjoint regions have succeeded
 	 */
 	PredictorMfeEns2d( const InteractionEnergy & energy
 					, OutputHandler & output
-					, PredictionTracker * predTracker );
+					, PredictionTracker * predTracker
+					, BasePairProbabilities * pairProbabilities = nullptr );
 
 	virtual ~PredictorMfeEns2d();
 
@@ -58,6 +62,9 @@ public:
 
 protected:
 
+	//! optional sequence-pair owner, never deleted or finalized by this predictor
+	BasePairProbabilities * pairProbabilities;
+
 	//! access to the interaction energy handler of the super class
 	using PredictorMfeEns::energy;
 
@@ -69,6 +76,21 @@ protected:
 	Z2dMatrix hybridZ;
 
 protected:
+
+	/** Compute one region, allowing predict() to fail the sink on any exception. */
+	void predictRegion(const IndexRange & r1,const IndexRange & r2);
+
+	/** Reverse the current fixed-right hybrid recurrence. Adjoint seeds obey the
+	 * same site filters and numerical-zero tests as updateZ(). Implicit noLP
+	 * stacking partners are counted in addition to the explicit DP-state pairs.
+	 * @param j1 right boundary in local target coordinates
+	 * @param j2 right boundary in local reversed-query coordinates
+	 * @param outside scratch adjoints, same dimensions as hybridZ
+	 * @param masses accumulated numerators in original regional orientation
+	 * @param denominator accumulated boundary contributions, checked against Zall
+	 */
+	void accumulatePairMasses(size_t j1,size_t j2,Z2dMatrix & outside,
+			Z2dMatrix & masses,Z_type & denominator) const;
 
 	/**
 	 * Computes all entries of the hybridE matrix for interactions ending in

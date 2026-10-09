@@ -122,6 +122,11 @@ with tempfile.TemporaryDirectory(prefix='intarna-bpsvg-') as tmp:
             assert float(outline.attrib['width']) == float(matrix[ts, qe].attrib['x'])-float(matrix[ts, qs].attrib['x'])+20
             assert float(outline.attrib['height']) == float(matrix[ts, qs].attrib['y'])-float(matrix[te, qs].attrib['y'])+20
             assert 'Green outline:' in ''.join(mfe_plot.itertext())
+    unseeded = plot(opts=['--noSeed', f'--out=bpProb:{table}'])
+    assert not seeds(unseeded)
+    rows = list(csv.reader(table.open(), delimiter=';'))
+    assert all(float(pairs(unseeded)[i,j].attrib['data-probability']) == float(rows[i][j])
+               for i in range(1,7) for j in range(1,5))
     # Explicit singleton/mixed seed masks exclude extension-only cells.
     opts = ['--seedTQ=1|&4|,2||&2||']
     mixed = plot('GGGG', 'CCCC', opts)
@@ -214,7 +219,7 @@ with tempfile.TemporaryDirectory(prefix='intarna-bpsvg-') as tmp:
     run(options=[f'--out=bpsvg:{compressed}'])
     assert len(pairs(load(compressed))) == 24
     # Validation/numerical failures must not publish a partial document.
-    for opts in (['--mode=H'], ['--noSeed'], ['--seedMaxUP=1'], ['--model=X', '--mode=K'],
+    for opts in (['--mode=H'], ['--seedMaxUP=1'], ['--model=X', '--mode=K'],
                  ['--windowWidth=3'], ['--seedTQ=1|&4|','--energyAdd=900']):
         failure = d/'failure.svg'
         run(options=[f'--out=bpsvg:{failure}', *opts], success=False)

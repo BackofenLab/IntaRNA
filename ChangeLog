@@ -14,6 +14,9 @@
 
 ## Interface and handling
 
+- enable base-pair CSV/SVG probabilities for exact unseeded model P/mode M
+  predictions (PR #259, step 10)
+
 - revise SVG axes, sequence labels and rounded tooltips; show intramolecular
   pairing (1-Pu) frames and the best interaction region (PR #259 review)
 
@@ -171,6 +174,15 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261009 Alexander Mitrofanov
+ * PredictorMfeEns2d, CommandLineParsing :
+   + compute actual-pair masses by reversing the existing unseeded recurrence;
+     preserve site filters, noLP and numerical cutoffs, and merge disjoint regions
+   * enable CSV/SVG with --noSeed; fix default-ended region offset truncation
+ * tests/PredictorUnseededProbability_test.cpp, tests/Makefile.am, README.md :
+   + compare against independent chain enumeration, filters, regions and failures;
+     document the public optional sink (PR #259 step 10)
 
 261009 Alexander Mitrofanov
  * BasePairProbabilitySvg, BasePairProbabilityWriter, CommandLineParsing, IntaRNA :

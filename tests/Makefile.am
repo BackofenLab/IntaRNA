@@ -30,6 +30,7 @@ runApiTests_SOURCES =	\
 					SeededNativeBenchmark_test.cpp \
 					StackSeedDomain_test.cpp \
 					BasePairProbabilities_test.cpp \
+					PredictorUnseededProbability_test.cpp \
 					testEasyLoggingSetup.icc \
 					AccessibilityConstraint_test.cpp \
 					AccessibilityFromStream_test.cpp \

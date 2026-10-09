@@ -30,7 +30,7 @@ def matrix(path):
     assert rows[0][0] == 'bpProb', rows
     return rows[0][1:], [r[0] for r in rows[1:]], [[None if v=='NA' else float(v) for v in r[1:]] for r in rows[1:]]
 
-def oracle(t, q, regions=None, no_lp=False, seeds=None):
+def oracle(t, q, regions=None, no_lp=False, seeds=None, unseeded=False):
     # Both internal coordinates increase; only printing reverses query labels.
     n, m = len(t), len(q)
     qr = q[::-1]
@@ -44,7 +44,7 @@ def oracle(t, q, regions=None, no_lp=False, seeds=None):
         admitted = any(stack(a,b) for a,b in zip(path,path[1:])) if seeds is None else any(
             any(path[k:k+len(s)]==s for k in range(len(path))) for s in seeds)
         lp_ok = all((k and stack(path[k-1],p)) or (k+1<len(path) and stack(p,path[k+1])) for k,p in enumerate(path))
-        if admitted and (not no_lp or lp_ok):
+        if (unseeded or admitted) and (not no_lp or lp_ok):
             weight = math.exp(len(path))
             z += weight
             for i,j in path: mass[i][m-1-j] += weight
@@ -80,6 +80,15 @@ with tempfile.TemporaryDirectory(prefix='intarna-bpp-') as tmp:
     regions=[(a,a+2,b,b+1) for a in (0,3) for b in (0,2)]
     regional=predict(extra=extra)[1];same(regional,oracle('GGAGGG','CCCC',regions)[1])
     same(predict(extra=extra+['--outPerRegion'])[1],regional)
+    # Exact unseeded output uses the same original coordinates and region union.
+    for flags, ranges in (([], None), (extra, regions)):
+        for no_lp in (False, True):
+            opts=['--noSeed', f'--outNoLP={str(no_lp).lower()}', *flags]
+            predicted, probabilities=predict(extra=opts)
+            same(probabilities, oracle('GGAGGG','CCCC',ranges,no_lp=no_lp,unseeded=True)[1])
+            assert predicted.stdout==run(options=opts).stdout
+    _,single_unseeded=predict('G','C',['--noSeed'])
+    assert single_unseeded==[[1.0]]
     # Explicit singleton and mixed patterns; coordinates written in original order.
     seedopt=['--seedTQ=1|&4|,2||&2||']
     _,single=predict('GGGG','CCCC',seedopt)
@@ -108,7 +117,7 @@ with tempfile.TemporaryDirectory(prefix='intarna-bpp-') as tmp:
     assert any(float(v)>0 for v in covered[3][1:]);assert all(v==0 for v in with_spot[2])
     compressed=d/'pairs.csv.gz';run(options=[f'--out=bpProb:{compressed}']);same(matrix(compressed)[2],values)
     # Unsupported requests fail explicitly and never create a probability file.
-    for opts in (['--mode=H'],['--mode=S'],['--model=X','--mode=K'],['--noSeed'],['--windowWidth=3','--windowOverlap=2'],['--seedMaxUP=1'],['--seedTQ=1|.|&2||']):
+    for opts in (['--mode=H'],['--mode=S'],['--model=X','--mode=K'],['--windowWidth=3','--windowOverlap=2'],['--seedMaxUP=1'],['--seedTQ=1|.|&2||']):
         fail=d/'unsupported.csv';run(options=[f'--out=bpProb:{fail}',*opts],success=False);assert not fail.exists()
     fail=d/'range.csv';run('GGGG','CCCC',[f'--out=bpProb:{fail}',*seedopt,'--energyAdd=900'],success=False);assert not fail.exists()
     run(options=['--out=bpProb:/dev/full'],success=False)

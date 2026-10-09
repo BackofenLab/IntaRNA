@@ -2016,8 +2016,8 @@ or `STDERR` instead of a file name.
 ## Actual base-pair probabilities
 
 `--out=bpProb:FILE` writes the probability that each target/query nucleotide pair
-actually pairs, conditional on an allowed seeded interaction. It requires
-`--model=P --mode=M` and a stack-only seed handler. For example:
+actually pairs, conditional on an allowed interaction. It requires
+`--model=P --mode=M` with `--noSeed` or a stack-only seed handler. For example:
 
 ```sh
 IntaRNA -t GGAGGG -q CCCC --energy=B --acc=N --seedBP=2 \
@@ -2031,7 +2031,7 @@ Computed seeds preserve their handler-specific admission thresholds. Explicit
 stacked seeds may have different lengths, including singletons; competing
 explicit patterns at the same start still retain only the selected minimum-energy
 pattern. Other predictors retain their existing behavior. Heuristic, kinetic,
-evaluation, seed-only, unseeded and bulged-seed `bpProb` requests are rejected.
+evaluation, seed-only and bulged-seed `bpProb` requests are rejected.
 
 Rows follow the original target and columns the original query, both 5' to 3'.
 The header starts with `bpProb`; labels contain each nucleotide and its display
@@ -2054,14 +2054,19 @@ bulge can have positive site coverage and zero actual-pair probability. There
 is no added unbound-state weight. Individual pair events can coexist, so
 `1 - sum(pair probabilities)` is not a probability of no interaction.
 
-The backend checks nonnegative arithmetic and reports numerical range failures
+The unseeded exact predictor is enabled by `--noSeed` with the same CSV/SVG
+outputs. Its outside pass follows the existing fixed-right-boundary recurrence,
+including its numerical zero cutoffs, without changing ordinary prediction.
+
+The seeded backend checks nonnegative arithmetic and reports numerical range failures
 as errors, including underflow, overflow and NaN. Positive subnormals are rejected;
 there is currently no scaling fallback. Failed or cancelled regional work never
 produces a successful-looking probability matrix. Ordinary floating-point
 rounding remains; "exact" describes the enumerated ensemble, not real arithmetic.
 
 For library use, keep a `BasePairProbabilities` owner alive across predictions,
-pass its optional non-owning pointer to `PredictorMfeEns2dSeedExtension`, and call
+pass its optional non-owning pointer to `PredictorMfeEns2dSeedExtension` (stack
+seeds) or `PredictorMfeEns2d` (unseeded), and call
 `finalize()` only after all requested disjoint regions succeed. A writer is called
 explicitly after finalization; its destructor publishes nothing. The output
 constraint must enable `needZall`. The [standalone API example](doc/seeded-probabilities-example.cpp)
@@ -2074,7 +2079,7 @@ show the public API and measured limits.
 
 `--out=bpsvg:FILE` renders the same actual-pair probabilities as `bpProb` in a
 standalone SVG. Both outputs can be requested together. The same exact
-`--model=P --mode=M` stack-seed restrictions, regional ensemble, normalization
+`--model=P --mode=M` unseeded/stack-seed restrictions, regional ensemble, normalization
 and success-only publication rules apply.
 
 ```sh
