@@ -50,6 +50,9 @@
 
 ## Technical changes and Optimizations
 
+- depict ensemble predictor recurrences and the exact base-pair inside/outside
+  computation in internal SVG documentation (PR #258, step 9)
+
 - validate exact pair probabilities on independent mathematical/native oracles,
   release/debug suites and installed consumers; document measured runtime and
   storage, and supply the required logging link dependency (issue #257, step 7)
@@ -159,6 +162,16 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261009 Alexander Mitrofanov
+ * doc/recursions/IntaRNA.PredictorMfeEns*.svg,
+   doc/recursions/IntaRNA.SeededPartitionFunction.*.svg :
+   + add eight standalone internal SVG depictions for unseeded exact/heuristic,
+     seed-only, exact stack-seeded, legacy and heuristic seed-extension paths
+   + show noLP transitions, seed admission and energy ownership, the production
+     suffix inside/outside recurrences, actual-pair marking and regional merging
+   + include implementation anchors and retain editable vector text; validate
+     XML, glyph coverage and rendered layouts (PR #258 step 9, PR #259)
 
 261009 Alexander Mitrofanov
  * BasePairProbabilityWriter, BasePairProbabilitySvg, CommandLineParsing :

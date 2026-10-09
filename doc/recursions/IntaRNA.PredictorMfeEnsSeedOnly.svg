@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="990" viewBox="0 0 1440 990" role="img" aria-labelledby="title desc">
+<title id="title">Seed-only ensemble · retained seed enumeration</title>
+<desc id="desc">PredictorMfeEnsSeedOnly  |  --model=P --mode=S. Internal recurrence documentation for step 9 of PR 258. Equations describe the current implementation; RNA 2 uses reversed energy coordinates.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#60798e"/></marker>
+<pattern id="seed-hatch" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#fff0dc"/><path d="M-2 2 L2 -2 M0 8 L8 0 M6 10 L10 6" stroke="#e0b27a" stroke-width="1"/></pattern></defs>
+<rect width="1440" height="100%" fill="white"/>
+<text x="48" y="48" font-family="DejaVu Sans, sans-serif" font-size="14" fill="#275f8c" text-anchor="start" font-weight="bold">INTARNA  /  RECURRENCE NOTES</text>
+<text x="48" y="91" font-family="DejaVu Sans, sans-serif" font-size="31" fill="#203244" text-anchor="start" font-weight="bold">Seed-only ensemble · retained seed enumeration</text>
+<text x="48" y="125" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">PredictorMfeEnsSeedOnly  |  --model=P --mode=S</text>
+<path d="M48 148 L1392 148" fill="none" stroke="#c4d0da" stroke-width="1.2"/>
+<rect x="48" y="181" width="1344" height="160" rx="8" fill="#f3f7fa" stroke="#d0dbe3"/>
+<text x="70" y="215" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#275f8c" text-anchor="start" font-weight="bold">1  Fill the seed handler for the active region</text>
+<text x="72" y="246" font-family="DejaVu Sans, sans-serif" font-size="19" fill="#203244" text-anchor="start">Retain the handler-selected seed at each admitted start a; its end is e.</text>
+<text x="72" y="275" font-family="DejaVu Sans, sans-serif" font-size="19" fill="#203244" text-anchor="start">Both endpoints must lie in the region. The handler supplies seed pairs and hybrid energy E_seed(a).</text>
+<text x="72" y="304" font-family="DejaVu Sans, sans-serif" font-size="19" fill="#203244" text-anchor="start">A filled handler with no admitted seeds reports an empty result.</text>
+<path d="M720 353 L720 402" fill="none" stroke="#c4d0da" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="48" y="420" width="1344" height="240" rx="8" fill="#fff7ed" stroke="#d0dbe3"/>
+<text x="70" y="454" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#bd6518" text-anchor="start" font-weight="bold">2  One complete contribution per retained seed</text>
+<rect x="89" y="524" width="391" height="60" fill="url(#seed-hatch)"/>
+<path d="M89 524 L480 524" fill="none" stroke="#203244" stroke-width="2"/>
+<path d="M89 584 L480 584" fill="none" stroke="#203244" stroke-width="2"/>
+<path d="M89 524 L89 584" fill="none" stroke="#bd6518" stroke-width="2.4"/>
+<text x="89" y="512" font-family="DejaVu Serif, sans-serif" font-size="17" fill="#203244" text-anchor="middle">a</text>
+<path d="M186.75 524 L186.75 584" fill="none" stroke="#bd6518" stroke-width="2.4"/>
+<path d="M284.5 524 L284.5 584" fill="none" stroke="#bd6518" stroke-width="2.4"/>
+<path d="M382.25 524 L382.25 584" fill="none" stroke="#bd6518" stroke-width="2.4"/>
+<path d="M480 524 L480 584" fill="none" stroke="#bd6518" stroke-width="2.4"/>
+<text x="480" y="512" font-family="DejaVu Serif, sans-serif" font-size="17" fill="#203244" text-anchor="middle">e</text>
+<text x="540" y="522" font-family="DejaVu Serif, sans-serif" font-size="26" fill="#203244" text-anchor="start">H_seed = E_seed(a) + E_init</text>
+<text x="540" y="566" font-family="DejaVu Serif, sans-serif" font-size="24" fill="#203244" text-anchor="start">E_full = energy.getE(a₁,e₁,a₂,e₂,H_seed)</text>
+<text x="540" y="610" font-family="DejaVu Serif, sans-serif" font-size="23" fill="#203244" text-anchor="start">Zall += BW(E_full)   when needZall is enabled</text>
+<rect x="48" y="702" width="1344" height="154" rx="8" fill="#f3f7fa" stroke="#d0dbe3"/>
+<text x="70" y="736" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#275f8c" text-anchor="start" font-weight="bold">3  Report and trace the retained seed</text>
+<text x="72" y="765" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">updateOptima(..., isHybridE=true, incrementZall=true) applies the complete-site filters and ranking.</text>
+<text x="72" y="794" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">traceBackSeed() supplies its interior pairs; initiation is charged exactly once.</text>
+<text x="72" y="823" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">There is no extension recurrence, no sum over alternative seed structures at the same start, and no bpProb output.</text>
+<path d="M48 895 L1392 895" fill="none" stroke="#c4d0da" stroke-width="1.2"/>
+<text x="48" y="919" font-family="DejaVu Sans, sans-serif" font-size="14" fill="#275f8c" text-anchor="start" font-weight="bold">Implementation anchors (src/IntaRNA/) · BW(E)=exp(−E/RT) after native energy-unit conversion</text>
+<text x="48" y="942" font-family="DejaVu Sans, sans-serif" font-size="13" fill="#203244" text-anchor="start">PredictorMfeEnsSeedOnly.cpp: predict(), traceBack()</text>
+<text x="48" y="963" font-family="DejaVu Sans, sans-serif" font-size="13" fill="#203244" text-anchor="start">PredictorMfe.cpp: updateOptima(); Predictor.h: updateZall() (inherited update path)</text>
+</svg>
