@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1140" viewBox="0 0 1440 1140" role="img" aria-labelledby="title desc">
+<title id="title">Unseeded ensemble · heuristic continuation</title>
+<desc id="desc">PredictorMfeEns2dHeuristic  |  --model=P --mode=H --noSeed. Internal recurrence documentation for step 9 of PR 258. Equations describe the current implementation; RNA 2 uses reversed energy coordinates.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#60798e"/></marker>
+<pattern id="seed-hatch" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#fff0dc"/><path d="M-2 2 L2 -2 M0 8 L8 0 M6 10 L10 6" stroke="#e0b27a" stroke-width="1"/></pattern></defs>
+<rect width="1440" height="100%" fill="white"/>
+<text x="48" y="48" font-family="DejaVu Sans, sans-serif" font-size="14" fill="#275f8c" text-anchor="start" font-weight="bold">INTARNA  /  RECURRENCE NOTES</text>
+<text x="48" y="91" font-family="DejaVu Sans, sans-serif" font-size="31" fill="#203244" text-anchor="start" font-weight="bold">Unseeded ensemble · heuristic continuation</text>
+<text x="48" y="125" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">PredictorMfeEns2dHeuristic  |  --model=P --mode=H --noSeed</text>
+<path d="M48 148 L1392 148" fill="none" stroke="#c4d0da" stroke-width="1.2"/>
+<text x="48" y="185" font-family="DejaVu Sans, sans-serif" font-size="19" fill="#203244" text-anchor="start">C(i)=(vᵢ,jᵢ) retains one hybrid weight and right boundary for each left pair i.</text>
+<text x="48" y="214" font-family="DejaVu Sans, sans-serif" font-size="19" fill="#203244" text-anchor="start">Use d=BW(E_init), t(i,k)=BW(E_interLeft(i,k)); all pair coordinates increase internally.</text>
+<text x="48" y="241" font-family="DejaVu Sans, sans-serif" font-size="17" fill="#203244" text-anchor="start">B(i,j)=BW(energy.getE(i₁,j₁,i₂,j₂,0)) is the complete-boundary Boltzmann factor.</text>
+<rect x="48" y="254" width="1344" height="247" rx="8" fill="#f3f7fa" stroke="#d0dbe3"/>
+<text x="70" y="288" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#275f8c" text-anchor="start" font-weight="bold">Enumerate candidates at i, visiting i in decreasing order</text>
+<rect x="232.0" y="349" width="225.0" height="60" fill="#dcebf5"/>
+<text x="344.5" y="386" font-family="DejaVu Serif, sans-serif" font-size="24" fill="#275f8c" text-anchor="middle">vₖ</text>
+<path d="M82 349 L457 349" fill="none" stroke="#203244" stroke-width="2"/>
+<path d="M82 409 L457 409" fill="none" stroke="#203244" stroke-width="2"/>
+<path d="M82 349 L82 409" fill="none" stroke="#203244" stroke-width="2.4"/>
+<text x="82" y="337" font-family="DejaVu Serif, sans-serif" font-size="17" fill="#203244" text-anchor="middle">i</text>
+<path d="M232.0 349 L232.0 409" fill="none" stroke="#203244" stroke-width="2.4"/>
+<text x="232.0" y="337" font-family="DejaVu Serif, sans-serif" font-size="17" fill="#203244" text-anchor="middle">k</text>
+<path d="M457 349 L457 409" fill="none" stroke="#203244" stroke-width="2.4"/>
+<text x="457" y="337" font-family="DejaVu Serif, sans-serif" font-size="17" fill="#203244" text-anchor="middle">jₖ</text>
+<text x="505" y="319" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#203244" text-anchor="start">Lonely pairs allowed:</text>
+<text x="505" y="357" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#203244" text-anchor="start">  initial candidate (d, i), only if !noGUend or i is not GU</text>
+<text x="505" y="395" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#203244" text-anchor="start">  continuation (t(i,k) · vₖ, jₖ) for each reachable k ≻ i</text>
+<text x="505" y="433" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#203244" text-anchor="start">  within loop limits and the complete span limits.</text>
+<path d="M712 510 L712 561" fill="none" stroke="#c4d0da" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="48" y="581" width="645" height="178" rx="8" fill="#edf6f2" stroke="#d0dbe3"/>
+<text x="70" y="615" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#23796a" text-anchor="start" font-weight="bold">Accumulate every considered candidate</text>
+<text x="71" y="659" font-family="DejaVu Serif, sans-serif" font-size="26" fill="#203244" text-anchor="start">updateZ(i,j,v,true)</text>
+<text x="71" y="697" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">For admitted complete sites: add B(i,j)v to Zall</text>
+<text x="71" y="726" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">and v to the boundary map; otherwise discard the update.</text>
+<rect x="720" y="581" width="672" height="178" rx="8" fill="#f3f7fa" stroke="#d0dbe3"/>
+<text x="742" y="615" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#275f8c" text-anchor="start" font-weight="bold">Retain only the best continuation at i</text>
+<text x="743" y="659" font-family="DejaVu Serif, sans-serif" font-size="25" fill="#203244" text-anchor="start">C(i) ← argmin E_full(i,j,v)</text>
+<text x="743" y="697" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Compare complete energy for each candidate.</text>
+<text x="743" y="726" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Strict improvement replaces vᵢ and jᵢ.</text>
+<rect x="48" y="795" width="1344" height="188" rx="8" fill="#fff7ed" stroke="#d0dbe3"/>
+<text x="70" y="829" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#bd6518" text-anchor="start" font-weight="bold">noLP candidate set</text>
+<text x="72" y="859" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Let i⁺=i+(1,1) be complementary and s=t(i,i⁺).</text>
+<text x="72" y="888" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Initialize (s·d, i⁺) only if !noGUend or i⁺ is not GU; direct continuation is (s·vᵢ⁺, jᵢ⁺).</text>
+<text x="72" y="917" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Other candidates are (s·t(i⁺,k)·vₖ, jₖ), with k ≻ i⁺ and k ≠ i⁺+(1,1).</text>
+<text x="72" y="946" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">The adjacent continuation is excluded from the loop sum because it was handled directly.</text>
+<text x="48" y="1020" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">The boundary map sums contributions, but the DP cell keeps one right continuation: this is a restricted ensemble.</text>
+<path d="M48 1045 L1392 1045" fill="none" stroke="#c4d0da" stroke-width="1.2"/>
+<text x="48" y="1069" font-family="DejaVu Sans, sans-serif" font-size="14" fill="#275f8c" text-anchor="start" font-weight="bold">Implementation anchors (src/IntaRNA/) · BW(E)=exp(−E/RT) after native energy-unit conversion</text>
+<text x="48" y="1092" font-family="DejaVu Sans, sans-serif" font-size="13" fill="#203244" text-anchor="start">PredictorMfeEns2dHeuristic.cpp: fillHybridZ()</text>
+<text x="48" y="1113" font-family="DejaVu Sans, sans-serif" font-size="13" fill="#203244" text-anchor="start">PredictorMfeEns.cpp: updateZ(), updateOptimaUsingZ()</text>
+</svg>

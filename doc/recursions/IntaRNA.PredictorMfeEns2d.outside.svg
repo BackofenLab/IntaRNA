@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1730" viewBox="0 0 1440 1730" role="img" aria-labelledby="title desc">
+<title id="title">Unseeded pair probabilities · fixed-right outside pass</title>
+<desc id="desc">PredictorMfeEns2d  |  --model=P --mode=M --noSeed  |  reverse the existing hybrid recurrence. Internal recurrence documentation for step 9 of PR 258. Equations describe the current implementation; RNA 2 uses reversed energy coordinates.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#60798e"/></marker>
+<pattern id="seed-hatch" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#fff0dc"/><path d="M-2 2 L2 -2 M0 8 L8 0 M6 10 L10 6" stroke="#e0b27a" stroke-width="1"/></pattern></defs>
+<rect width="1440" height="100%" fill="white"/>
+<text x="48" y="48" font-family="DejaVu Sans, sans-serif" font-size="14" fill="#275f8c" text-anchor="start" font-weight="bold">INTARNA  /  RECURRENCE NOTES</text>
+<text x="48" y="91" font-family="DejaVu Sans, sans-serif" font-size="31" fill="#203244" text-anchor="start" font-weight="bold">Unseeded pair probabilities · fixed-right outside pass</text>
+<text x="48" y="125" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">PredictorMfeEns2d  |  --model=P --mode=M --noSeed  |  reverse the existing hybrid recurrence</text>
+<path d="M48 148 L1392 148" fill="none" stroke="#c4d0da" stroke-width="1.2"/>
+<text x="48" y="185" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">A pair i=(i₁,i₂) uses local energy coordinates; RNA 2 is reversed. i ≺ k increases both coordinates.</text>
+<text x="48" y="214" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Fix right pair j. Hⱼ(i) is the forward hybrid weight; Aⱼ(i)=∂Z/∂Hⱼ(i) is its outside adjoint.</text>
+<text x="48" y="243" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">M(i) sums complete-interaction weights containing actual pair i, over every right boundary j.</text>
+<text x="48" y="285" font-family="DejaVu Serif, sans-serif" font-size="23" fill="#203244" text-anchor="start">d=BW(E_init);   t(i,k)=BW(E_interLeft(i,k));   i⁺=i+(1,1);   s=t(i,i⁺)</text>
+<rect x="48" y="322" width="1344" height="170" rx="8" fill="#f3f7fa" stroke="#d0dbe3"/>
+<text x="70" y="356" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#275f8c" text-anchor="start" font-weight="bold">1  Initialize the same completed-boundary objective</text>
+<text x="73" y="389" font-family="DejaVu Serif, sans-serif" font-size="27" fill="#203244" text-anchor="start">Aⱼ(i) ← B(i,j);       Z += B(i,j)Hⱼ(i)</text>
+<text x="73" y="431" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">B(i,j)=BW(energy.getE(i₁,j₁,i₂,j₂,0)) only when !Z_equal(Hⱼ(i),0) and isValidOutputSite() pass.</text>
+<text x="73" y="460" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Otherwise B=0. Complete ED / GU-end filters and native terminal terms match updateZ().</text>
+<rect x="48" y="520" width="1344" height="180" rx="8" fill="#edf6f2" stroke="#d0dbe3"/>
+<text x="70" y="554" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#23796a" text-anchor="start" font-weight="bold">2  Reverse i in increasing order; credit its explicit pair</text>
+<text x="73" y="588" font-family="DejaVu Serif, sans-serif" font-size="29" fill="#203244" text-anchor="start">M(i) += Aⱼ(i)Hⱼ(i)</text>
+<text x="73" y="631" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Every represented suffix contains its left pair i exactly once. Process only nonzero Aⱼ(i) and Hⱼ(i).</text>
+<text x="73" y="660" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Then propagate Aⱼ(i) through each forward term below; later suffix states receive all enclosing mass.</text>
+<rect x="48" y="728" width="645" height="257" rx="8" fill="#f3f7fa" stroke="#d0dbe3"/>
+<text x="70" y="762" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#275f8c" text-anchor="start" font-weight="bold">3a  Lonely pairs allowed</text>
+<text x="73" y="795" font-family="DejaVu Serif, sans-serif" font-size="25" fill="#203244" text-anchor="start">Hⱼ(j)=d</text>
+<text x="73" y="840" font-family="DejaVu Serif, sans-serif" font-size="25" fill="#203244" text-anchor="start">Aⱼ(k) += Aⱼ(i)t(i,k)</text>
+<text x="73" y="883" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Direct terminal: k=j; its pair is counted at j.</text>
+<text x="73" y="912" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Intermediate k: i ≺ k ≺ j, allowed loop,</text>
+<text x="73" y="941" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">and !Z_equal(Hⱼ(k),0) as in the forward sum.</text>
+<rect x="720" y="728" width="672" height="257" rx="8" fill="#fff7ed" stroke="#d0dbe3"/>
+<text x="742" y="762" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#bd6518" text-anchor="start" font-weight="bold">3b  noLP: direct stacking</text>
+<text x="743" y="795" font-family="DejaVu Serif, sans-serif" font-size="25" fill="#203244" text-anchor="start">Aⱼ(i⁺) += Aⱼ(i)s      if i⁺ ≠ j</text>
+<text x="743" y="840" font-family="DejaVu Serif, sans-serif" font-size="25" fill="#203244" text-anchor="start">M(j) += Aⱼ(i)s d      if i⁺ = j</text>
+<text x="743" y="883" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">A noLP terminal has Hⱼ(j)=0.</text>
+<text x="743" y="912" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Its second pair j is implicit in the two-pair</text>
+<text x="743" y="941" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">initialization and is credited separately.</text>
+<rect x="48" y="1014" width="1344" height="297" rx="8" fill="#fff7ed" stroke="#d0dbe3"/>
+<text x="70" y="1048" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#bd6518" text-anchor="start" font-weight="bold">3c  noLP: stack, then a nonstack loop</text>
+<rect x="345.98" y="1115" width="181.02" height="60" fill="#dcebf5"/>
+<text x="436.49" y="1152" font-family="DejaVu Serif, sans-serif" font-size="24" fill="#275f8c" text-anchor="middle">Hⱼ(k)</text>
+<path d="M96 1115 L527 1115" fill="none" stroke="#203244" stroke-width="2"/>
+<path d="M96 1175 L527 1175" fill="none" stroke="#203244" stroke-width="2"/>
+<path d="M96 1115 L96 1175" fill="none" stroke="#203244" stroke-width="2.4"/>
+<text x="96" y="1103" font-family="DejaVu Serif, sans-serif" font-size="17" fill="#203244" text-anchor="middle">i</text>
+<path d="M156.34 1115 L156.34 1175" fill="none" stroke="#203244" stroke-width="2.4"/>
+<text x="156.34" y="1103" font-family="DejaVu Serif, sans-serif" font-size="17" fill="#203244" text-anchor="middle">i⁺</text>
+<path d="M345.98 1115 L345.98 1175" fill="none" stroke="#203244" stroke-width="2.4"/>
+<text x="345.98" y="1103" font-family="DejaVu Serif, sans-serif" font-size="17" fill="#203244" text-anchor="middle">k</text>
+<path d="M527 1115 L527 1175" fill="none" stroke="#203244" stroke-width="2.4"/>
+<text x="527" y="1103" font-family="DejaVu Serif, sans-serif" font-size="17" fill="#203244" text-anchor="middle">j</text>
+<text x="584" y="1096" font-family="DejaVu Serif, sans-serif" font-size="25" fill="#203244" text-anchor="start">a = Aⱼ(i)s t(i⁺,k)</text>
+<text x="584" y="1139" font-family="DejaVu Serif, sans-serif" font-size="25" fill="#203244" text-anchor="start">Aⱼ(k) += a</text>
+<text x="584" y="1182" font-family="DejaVu Serif, sans-serif" font-size="25" fill="#203244" text-anchor="start">M(i⁺) += a Hⱼ(k)</text>
+<text x="73" y="1249" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Require complementary i⁺; i⁺ ≺ k ≺ j; k ≠ i⁺+(1,1); the same loop limits and epsilon gate on Hⱼ(k).</text>
+<text x="73" y="1278" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Here i⁺ is an actual pair skipped by the DP-state jump. Unpaired loop positions receive no mass.</text>
+<rect x="48" y="1340" width="1344" height="210" rx="8" fill="#edf6f2" stroke="#d0dbe3"/>
+<text x="70" y="1374" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#23796a" text-anchor="start" font-weight="bold">4  Commit successful regions and normalize only once</text>
+<text x="73" y="1409" font-family="DejaVu Serif, sans-serif" font-size="27" fill="#203244" text-anchor="start">P(i,j) = ∑ M_region(i,j) / ∑ Z_region</text>
+<text x="73" y="1451" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Check the accumulated objective equals the unchanged Zall; map pairs with energy.getBasePair().</text>
+<text x="73" y="1480" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Original target/query orientation is stored in the sink. Z=0 → NA; failed arithmetic → no result.</text>
+<text x="73" y="1509" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Conditional on an allowed interaction; no unbound-state weight. No outside buffers when output is disabled.</text>
+<text x="48" y="1590" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Exact for the existing forward recurrence, including its numerical-zero gates; no alternative ensemble is substituted.</text>
+<path d="M48 1635 L1392 1635" fill="none" stroke="#c4d0da" stroke-width="1.2"/>
+<text x="48" y="1659" font-family="DejaVu Sans, sans-serif" font-size="14" fill="#275f8c" text-anchor="start" font-weight="bold">Implementation anchors (src/IntaRNA/) · BW(E)=exp(−E/RT) after native energy-unit conversion</text>
+<text x="48" y="1682" font-family="DejaVu Sans, sans-serif" font-size="13" fill="#203244" text-anchor="start">PredictorMfeEns2d.cpp: fillHybridZ(), accumulatePairMasses(), predictRegion()</text>
+<text x="48" y="1703" font-family="DejaVu Sans, sans-serif" font-size="13" fill="#203244" text-anchor="start">PredictorMfeEns.cpp: addPartitionContribution(); BasePairProbabilities: addRegion(), finalize()</text>
+</svg>

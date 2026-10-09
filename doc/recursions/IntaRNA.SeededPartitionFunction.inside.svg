@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1475" viewBox="0 0 1440 1475" role="img" aria-labelledby="title desc">
+<title id="title">Exact seeded inside recurrence · suffix automaton</title>
+<desc id="desc">SeededPartitionFunction::compute()  |  fixed left boundary p; visit q in increasing pair order. Internal recurrence documentation for step 9 of PR 258. Equations describe the current implementation; RNA 2 uses reversed energy coordinates.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#60798e"/></marker>
+<pattern id="seed-hatch" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#fff0dc"/><path d="M-2 2 L2 -2 M0 8 L8 0 M6 10 L10 6" stroke="#e0b27a" stroke-width="1"/></pattern></defs>
+<rect width="1440" height="100%" fill="white"/>
+<text x="48" y="48" font-family="DejaVu Sans, sans-serif" font-size="14" fill="#275f8c" text-anchor="start" font-weight="bold">INTARNA  /  RECURRENCE NOTES</text>
+<text x="48" y="91" font-family="DejaVu Sans, sans-serif" font-size="31" fill="#203244" text-anchor="start" font-weight="bold">Exact seeded inside recurrence · suffix automaton</text>
+<text x="48" y="125" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">SeededPartitionFunction::compute()  |  fixed left boundary p; visit q in increasing pair order</text>
+<path d="M48 148 L1392 148" fill="none" stroke="#c4d0da" stroke-width="1.2"/>
+<text x="48" y="185" font-family="DejaVu Sans, sans-serif" font-size="19" fill="#203244" text-anchor="start">C=max(2, longest admitted seed length). ℓ is the current consecutive stack-suffix length, capped at C.</text>
+<text x="48" y="214" font-family="DejaVu Sans, sans-serif" font-size="19" fill="#203244" text-anchor="start">e(q)=shortest admitted seed ending at q, or 0. A run accepts a seed iff 0 &lt; e(q) ≤ ℓ.</text>
+<rect x="48" y="250" width="436" height="147" rx="8" fill="#f3f7fa" stroke="#d0dbe3"/>
+<text x="70" y="284" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#275f8c" text-anchor="start" font-weight="bold">Uℓ: still seed-free</text>
+<text x="68" y="316" font-family="DejaVu Sans, sans-serif" font-size="16" fill="#203244" text-anchor="start">ℓ=1…C; no seed has occurred.</text>
+<text x="68" y="344" font-family="DejaVu Sans, sans-serif" font-size="16" fill="#203244" text-anchor="start">Stack increments ℓ; a loop resets it.</text>
+<rect x="502" y="250" width="436" height="147" rx="8" fill="#fff7ed" stroke="#d0dbe3"/>
+<text x="524" y="284" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#bd6518" text-anchor="start" font-weight="bold">S₁: seeded, singleton suffix</text>
+<text x="522" y="316" font-family="DejaVu Sans, sans-serif" font-size="16" fill="#203244" text-anchor="start">A seed has occurred; current run is length 1.</text>
+<text x="522" y="344" font-family="DejaVu Sans, sans-serif" font-size="16" fill="#203244" text-anchor="start">Under noLP, must stack before leaving.</text>
+<rect x="956" y="250" width="436" height="147" rx="8" fill="#fff7ed" stroke="#d0dbe3"/>
+<text x="978" y="284" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#bd6518" text-anchor="start" font-weight="bold">S₂: seeded, usable suffix</text>
+<text x="976" y="316" font-family="DejaVu Sans, sans-serif" font-size="16" fill="#203244" text-anchor="start">Under noLP: current run has length ≥2.</text>
+<text x="976" y="344" font-family="DejaVu Sans, sans-serif" font-size="16" fill="#203244" text-anchor="start">Otherwise: all seeded suffixes use S₂.</text>
+<path d="M266 397 L266 422" fill="none" stroke="#275f8c" stroke-width="1.6"/>
+<path d="M266 422 L1174 422" fill="none" stroke="#275f8c" stroke-width="1.6"/>
+<path d="M1174 422 L1174 397" fill="none" stroke="#275f8c" stroke-width="1.6" marker-end="url(#arrow)"/>
+<text x="720" y="417" font-family="DejaVu Sans, sans-serif" font-size="16" fill="#275f8c" text-anchor="middle">first seed accepted on a stack</text>
+<text x="720" y="377" font-family="DejaVu Sans, sans-serif" font-size="16" fill="#bd6518" text-anchor="middle">stack → S₂</text>
+<g transform="translate(0 55)">
+<rect x="48" y="437" width="1344" height="221" rx="8" fill="#f3f7fa" stroke="#d0dbe3"/>
+<text x="70" y="471" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#275f8c" text-anchor="start" font-weight="bold">1  Initialize and extend every state</text>
+<text x="73" y="505" font-family="DejaVu Serif, sans-serif" font-size="23" fill="#203244" text-anchor="start">H(p,c₀)=d(p);   other H=0.    c₀ = accept(p,1) ? (noLP ? S₁ : S₂) : U₁</text>
+<text x="73" y="553" font-family="DejaVu Serif, sans-serif" font-size="25" fill="#203244" text-anchor="start">Stack r=q−(1,1):     H(q,D(c,stack)) += t(r,q) · H(r,c)</text>
+<text x="73" y="599" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">For Uℓ: let ℓ′=min(C,ℓ+1); D=Uℓ′ unless the ending seed is accepted, then D=S₂.</text>
+<text x="73" y="628" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">For S₁ or S₂: D=S₂. Once seeded, a later seed never creates a second copy of the path.</text>
+<rect x="48" y="697" width="1344" height="260" rx="8" fill="#edf6f2" stroke="#d0dbe3"/>
+<text x="70" y="731" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#23796a" text-anchor="start" font-weight="bold">2  Add nonstack arrivals, then aggregate eligible departures</text>
+<text x="73" y="764" font-family="DejaVu Serif, sans-serif" font-size="24" fill="#203244" text-anchor="start">For each nonstack r→q and b∈{0,1}:  H(q,D(b,loop)) += t(r,q) · T_b(r)</text>
+<text x="73" y="809" font-family="DejaVu Serif, sans-serif" font-size="25" fill="#203244" text-anchor="start">T₀(q)=∑ H(q,U<tspan font-family="DejaVu Sans, sans-serif">ℓ</tspan>)   over <tspan font-family="DejaVu Sans, sans-serif">ℓ</tspan>≥(noLP ? 2 : 1)</text>
+<text x="73" y="854" font-family="DejaVu Serif, sans-serif" font-size="25" fill="#203244" text-anchor="start">T₁(q)=H(q,S₂) + (noLP ? 0 : H(q,S₁))</text>
+<text x="73" y="891" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">T_b(r) is already computed. Nonstack: strict increase within loop limits, excluding r=q−(1,1).</text>
+<text x="73" y="920" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Reset the suffix to 1; remain seeded if b=1, or accept a singleton seed at q if b=0.</text>
+<rect x="48" y="995" width="1344" height="174" rx="8" fill="#fff7ed" stroke="#d0dbe3"/>
+<text x="70" y="1029" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#bd6518" text-anchor="start" font-weight="bold">3  Complete seeded paths at every q</text>
+<text x="73" y="1064" font-family="DejaVu Serif, sans-serif" font-size="29" fill="#203244" text-anchor="start">Z += B(p,q) · T₁(q)</text>
+<text x="532" y="1049" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Seed-free states never terminate an interaction.</text>
+<text x="532" y="1078" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">With noLP, singleton runs cannot terminate or cross a nonstack edge.</text>
+<text x="532" y="1107" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Such states remain available for a later stack.</text>
+<text x="48" y="1214" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Loop destinations: seeded → S₁ under noLP, otherwise S₂; unseeded → U₁ unless a singleton seed accepts.</text>
+<text x="48" y="1243" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">The Boolean seeded state counts each ordered pair chain once, including paths with several seed witnesses.</text>
+<text x="48" y="1272" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Termination-only GU / ED filters belong to B; they do not discard prefixes that can still extend.</text>
+<text x="48" y="1305" font-family="DejaVu Sans, sans-serif" font-size="17" fill="#203244" text-anchor="start">d, t and B are the initiation, transition and complete-boundary factors supplied by Weights.</text>
+</g>
+<path d="M48 1380 L1392 1380" fill="none" stroke="#c4d0da" stroke-width="1.2"/>
+<text x="48" y="1404" font-family="DejaVu Sans, sans-serif" font-size="14" fill="#275f8c" text-anchor="start" font-weight="bold">Implementation anchors (src/IntaRNA/) · BW(E)=exp(−E/RT) after native energy-unit conversion</text>
+<text x="48" y="1427" font-family="DejaVu Sans, sans-serif" font-size="13" fill="#203244" text-anchor="start">SeededPartitionFunction.cpp: accepts, dest, nonstack, h, total; StackSeedDomain::seedEndingLength()</text>
+<text x="48" y="1448" font-family="DejaVu Sans, sans-serif" font-size="13" fill="#203244" text-anchor="start">Code states: Uℓ ↔ c=ℓ−1; S₁ ↔ c=cap; S₂ ↔ c=cap+1. Checked nonnegative arithmetic throughout.</text>
+</svg>

@@ -6,6 +6,7 @@
 #include "IntaRNA/BasePairProbabilities.h"
 #include "IntaRNA/Matrix.h"
 #include "IntaRNA/SeedHandlerIdxOffset.h"
+#include <memory>
 
 namespace IntaRNA {
 
@@ -84,6 +85,27 @@ protected:
 	virtual Z_type exactBoundaryWeight(size_t i1,size_t j1,size_t i2,size_t j2) const;
 	/** Run the selected disjoint stack-seed partition backend. */
 	void predictStackSeeds(const IndexRange & r1,const IndexRange & r2);
+
+	//! Optional signed reverse trace for the legacy anchored extension recurrences.
+	struct ExtensionProbabilityTrace;
+	std::unique_ptr<ExtensionProbabilityTrace> extensionProbabilityTrace;
+	/** Begin a regional trace; no allocation if no probability sink was requested. */
+	void initExtensionProbabilities(size_t n,size_t m);
+	/** Store the current anchor seed's actual pairs, including its endpoints. */
+	void beginExtensionProbabilitySeed(size_t i1,size_t i2);
+	/** Add one accepted left/seed/right objective to the optional reverse trace.
+	 * All coordinates are local, with seed boundaries in increasing DP order.
+	 * @param left whether the left matrix is a factor (otherwise use initiation)
+	 * @param right whether the right matrix is a factor
+	 */
+	void addExtensionProbabilityRoot(size_t i1,size_t j1,size_t i2,size_t j2,
+			Z_type partZ,bool left,bool right);
+	/** Reverse both extension traces and accumulate actual pair numerators. */
+	void finishExtensionProbabilitySeed();
+	/** Validate and atomically commit this region in original sequence order. */
+	void commitExtensionProbabilities();
+	/** Actual seed pairs strictly before the given local target coordinate. */
+	std::vector<Interaction::BasePair> extensionSeedPrefix(size_t i1,size_t i2,size_t before) const;
 
 	//! optional sequence-pair owner, never deleted or finalized by the predictor
 	BasePairProbabilities * pairProbabilities;

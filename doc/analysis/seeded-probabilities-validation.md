@@ -157,3 +157,229 @@ OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 /usr/bin/time -v src/bin/IntaRNA \
 Both runs report Eall=-6.52 kcal/mol with the native presentation convention.
 These measurements quantify added output work; they are not a speedup claim over
 the legacy seeded ensemble, whose multi-anchor partition is a different result.
+
+
+## Steps 8–9: independent output and documentation audit (2026-10-09)
+
+Separate agents reviewed code correctness, recurrence depictions, and performance
+before the audit fixes were pushed to PR #259. The audit found and corrected:
+
+- SVG accessibility frames used the interaction model's RT for imported Pu/ED.
+  The writer now requires separate target/query accessibility RT values. CLI
+  conversion selects RT=1 for computed base-pair accessibility and the configured
+  physical temperature for ViennaRNA/imported accessibility. The same selection
+  fixes the pre-existing `tPu`/`qPu` conversion of computed base-pair ED.
+- SVG and CSV stream buffers were copied when returned; moving the completed
+  strings removes that duplicate allocation without changing document bytes.
+- The heuristic depiction omitted its initial right-end GU gate, and the inside
+  depiction placed aggregation before incoming nonstack contributions. These
+  were corrected, along with complete-site filtering and outside-index notation.
+
+The added CLI regressions fail on the pre-audit binary and pass after the fix.
+They cover Pu/ED imports, mixed computed/imported strands, 22/37°C, original
+query orientation, independent input-Pu round trips (allowing ED quantization),
+and computed-base-pair ED conversion at RT=1. API tests reject nonpositive or
+nonfinite accessibility scales without writing output. GCC 14.4 release and
+debug `make tests -j2` each pass all seven suites, with 91,394 API assertions in
+86 cases. Installed public headers and an installed SVG consumer compile; the
+consumer produces the expected matrix and seed annotations. Corrected SVG
+recurrence documents parse, render, and were visually inspected. Apple Clang
+was not available locally.
+
+### Performance method and existing-mode comparison
+
+Compared base `48efc541e23571ce1bab88e2754e1db7445cbc89` with steps 8–9 at
+`fa2f84d6cdbb1e120a98eab9d2dfe3f8154ebad5`, then compared that saved binary with
+the audit fixes. All builds use identical GCC 14.4 C++23 `-O3
+-fno-strict-aliasing -fopenmp`, ViennaRNA 2.7.2, Boost 1.85 and Kokkos mdspan
+settings on Linux x86-64 / Ryzen 5 7530U. Processes are pinned to CPU 0 with
+`--threads=1`, `OMP_NUM_THREADS=1`, `OPENBLAS_NUM_THREADS=1`, and
+`OMP_DYNAMIC=FALSE`. Builds and tests are stopped during measurements.
+
+There is one warmup per configuration, then seven fresh-process runs in shuffled,
+interleaved order for the base comparison. Time is wall time around the GNU time
+subprocess; RSS is GNU time `%M`, including executable/libraries, prediction and
+serialization. Output goes to the same local filesystem. Initial median seconds:
+
+| Input | Base ensemble only | Steps 8–9 ensemble only | Base CSV | Steps 8–9 CSV | Steps 8–9 SVG | Steps 8–9 both |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| OxyS/fhlA | 0.0975 | 0.0978 | 0.1710 | 0.1703 | 0.1910 | 0.1947 |
+| dense40 | 0.3876 | 0.3913 | 0.8958 | 0.9026 | 0.9090 | 0.9060 |
+| sparse400 | 0.1191 | 0.1202 | 0.1616 | 0.1633 | 0.7326 | 0.8260 |
+| sparse1000 | 1.5816 | 1.5801 | 1.8284 | 1.8372 | 4.0202 | 4.2578 |
+
+Existing-mode medians differ by −0.4% to +1.1%, within observed timing variation.
+Ensemble outputs and CSVs are byte-identical across base/candidate and modes;
+all SVG pair values equal their CSV values. Sparse SVG timings have wider
+variation than the compute-heavy cases; these are local workload measurements,
+not a general throughput guarantee. Full SVG size scales with all target/query
+pairs: the sparse1000 document is 220,685,460 bytes despite having few seed cells.
+
+Reproduce each process with the following command from the corresponding build;
+add either/both output options for the CSV/SVG configurations:
+
+```sh
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 OMP_DYNAMIC=FALSE \
+  /usr/bin/time -f '%e %U %S %M' taskset -c 0 src/bin/IntaRNA \
+  --target=doc/handson/fhlA.fasta --query=doc/handson/OxyS.fasta \
+  --model=P --mode=M --seedBP=4 --intLenMax=30 \
+  --qIntLoopMax=3 --tIntLoopMax=3 --threads=1 \
+  --outNoLP=false --outNoGUend=false --outNumber=0 --outMode=E \
+  --default-log-file=/dev/null --out=ensemble.txt
+# Optional: --out=bpProb:pairs.csv --out=bpsvg:plot.svg
+```
+
+For dense40, replace the inputs with `G`×40 and `C`×40 and add `--tAcc=N
+--qAcc=N`. For sparse length n (400 or 1000), use target `A`×(n/2) + `G`×8 +
+`A`×(n/2−8), query with `C`×8 instead of `G`×8, and the same disabled-accessibility
+options. All other flags remain identical.
+
+
+### Audit-fix comparison
+
+Five interleaved fresh-process runs per configuration compare the retained
+`fa2f84d` binary with the rebuilt audit fix. All complete SVG, CSV and ensemble
+outputs match byte-for-byte on these native-energy inputs. Time is median
+[min, max] seconds; RSS is the maximum over the five runs, in KiB.
+
+| Input/output | Before time | Fixed time | Before RSS | Fixed RSS |
+| --- | ---: | ---: | ---: | ---: |
+| OxyS SVG | 0.1938 [0.1932, 0.1968] | 0.1934 [0.1918, 0.1938] | 22,132 | 20,720 |
+| OxyS both | 0.1965 [0.1945, 0.1976] | 0.1959 [0.1955, 0.1967] | 22,004 | 20,596 |
+| sparse400 SVG | 0.5020 [0.5003, 0.7993] | 0.7491 [0.4806, 0.9672] | 87,876 | 84,548 |
+| sparse400 both | 0.5553 [0.5441, 0.8527] | 0.7544 [0.5118, 0.8899] | 87,872 | 84,420 |
+| sparse1000 SVG | 4.0260 [3.9535, 5.8240] | 3.8527 [3.8373, 5.5779] | 470,084 | 301,128 |
+| sparse1000 both | 4.2407 [4.2148, 6.2242] | 4.0592 [4.0216, 4.1580] | 469,960 | 301,260 |
+
+Transferring the document buffer reduces 1000×1000 SVG peak RSS by **35.9%**.
+There is no general elapsed-time speedup claim: filesystem writes varied widely,
+and the sparse400 median increased even though its median process CPU time fell
+from 0.44 to 0.42 seconds (SVG) and 0.48 to 0.46 seconds (both). Dense40 controls
+remain comparable: ensemble-only 0.3848→0.3902 seconds (+1.4%) and CSV
+0.8982→0.8869 seconds (−1.3%), with unchanged output bytes. The output is still
+buffered as a full document, so very large matrices remain memory intensive.
+
+One comparison process received an unexplained SIGTERM after the shorter cases;
+partial long-case warmups were discarded and the long case completed in a new
+process. The table includes only complete five-run groups.
+
+To separate serializer cost from file-write stalls, a final sparse400 control
+sent SVG to `/dev/null` and ensemble output to STDOUT redirected to `/dev/null`.
+Seven interleaved runs gave wall medians 0.412419→0.390979 seconds (ranges
+0.411222–0.413401 and 0.388902–0.392267), CPU medians 0.40→0.38 seconds, and peak
+RSS 87,744→84,544 KiB. The slowdown did not reproduce without filesystem writes;
+the fixed serializer was 5.2% faster in this specific control. Use the same
+sparse400 command with `--out=STDOUT --out=bpsvg:/dev/null > /dev/null` to repeat.
+
+## PR #259 review: SVG revisions and steps 10–11 (2026-10-09)
+
+Martin's review adds unseeded and heuristic probability outputs to the original
+SVG/documentation scope. Exact unseeded mode M now reverses each fixed-right-end
+inside table. Unseeded mode H reverses its retained continuation chains; seeded
+mode H traces its signed left/right extension arithmetic, including the existing
+seed-overlap corrections and selected right extensions. Heuristic output is
+explicitly approximate (`bpProbApproximate` and an approximate SVG title). Its
+candidate ensemble can retain path multiplicities and is not the exact seeded
+unique-chain ensemble. Existing numerical-zero cutoffs remain in the legacy
+unseeded/heuristic objectives.
+
+The SVG now starts both strands at the bottom-left origin, places the query name
+below the matrix, uses sequence names and rounded values in tooltips, displays
+intramolecular pairing as `1-Pu`, and outlines the best reported interaction region
+in green. Machine-readable probability attributes keep full precision. The MFE
+outline is available with `--outNumber=0`; ordinary ranked output stays suppressed.
+An outline is omitted if no interaction passes the reporting filters.
+
+Independent agents implemented and reviewed the recurrences, checked actual-pair
+ownership, and evaluated performance before push. The new API tests compare exact
+and unseeded heuristic results with independently enumerated tiny-chain ensembles.
+Seeded heuristic tests change one pair's Boltzmann fugacity and compare the change
+in the scalar partition function with that pair's numerator. They freeze the
+baseline selected right extension and concrete computed seed family, so the test
+checks marginals of the implemented conditional ensemble rather than a different
+family selected after perturbation. Cases include overlapping/disjoint and bulged
+seeds, LP/noLP, regions, seed annotations, successful empty results, singleton seed
+rejection, and failure publication. Separate symbolic checks of 500 randomized
+small legacy seeded extension polynomials found no negative or over-total pair
+masses in the sampled cases.
+
+The review found and fixed active-region offset/dimension errors, finite-boundary
+Boltzmann underflow masquerading as an empty result, and a nonfinite seeded-H
+denominator bypassing a relative-tolerance comparison. These fixes have regression
+coverage. CSV/SVG CLI tests cover approximation metadata, numeric parity, seed
+masks, MFE geometry, signed coordinates and unchanged ordinary output.
+
+The final GCC 14.4 release and debug runs each pass all seven `make tests -j2`
+suites and 100,947 API assertions in 97 cases. All 74 installed public headers
+compile independently. Installed pkg-config consumers for exact/heuristic,
+seeded/unseeded predictors compile, link and produce CSV/SVG with the expected
+approximation metadata. `make dist` contains the new predictor tests
+and implementation. All revised text is UTF-8/LF and `git diff --check` passes.
+Both new recurrence SVGs parse, render and passed independent equation review;
+representative output SVGs were rendered and visually inspected. Apple Clang was
+not available locally.
+
+### Controlled revision performance
+
+A separate agent compared the retained `202651e` executable with the final
+implementation at `ae0eb78`, using the same GCC 14.4 release configuration,
+ViennaRNA 2.7.2, Boost 1.85 and Kokkos mdspan on the machine described above.
+Each configuration has one correctness/warmup run and seven deterministically
+shuffled, interleaved fresh-process measurements, pinned to CPU 0 and one thread.
+No build or test ran during timing. Both ensemble and probability outputs went to
+`/dev/null` for timing; separate file-output checks compared complete ensemble
+bytes and every CSV/SVG probability cell.
+
+Wall seconds (median [minimum, maximum], including process startup):
+
+| Input / predictor | Before, output off | Revised, output off | Revised CSV | Revised SVG |
+| --- | ---: | ---: | ---: | ---: |
+| OxyS-fhlA / noSeed-M | 0.4116 [0.4077, 0.4262] | 0.4165 [0.4105, 0.4220] | 0.7309 [0.7236, 0.7500] | 0.8490 [0.8415, 0.8668] |
+| OxyS-fhlA / noSeed-H | 0.0644 [0.0641, 0.0661] | 0.0646 [0.0637, 0.0668] | 0.0728 [0.0720, 0.0767] | 0.0971 [0.0962, 0.1041] |
+| OxyS-fhlA / seeded-H | 0.0517 [0.0510, 0.0532] | 0.0517 [0.0513, 0.0557] | 0.0566 [0.0562, 0.0569] | 0.0772 [0.0771, 0.0784] |
+| dense40 / noSeed-M | 0.3409 [0.3396, 0.3412] | 0.3489 [0.3455, 0.3559] | 0.6691 [0.6619, 0.6936] | 0.7231 [0.7143, 0.7377] |
+| dense40 / noSeed-H | 0.0195 [0.0194, 0.0207] | 0.0195 [0.0191, 0.0197] | 0.0227 [0.0223, 0.0234] | 0.0264 [0.0261, 0.0271] |
+| dense40 / seeded-H | 1.8790 [1.8324, 1.8980] | 1.8767 [1.8584, 1.8861] | 2.7876 [2.7391, 2.8202] | 2.8354 [2.7850, 2.8720] |
+| dense32-noLP / noSeed-M | 0.1001 [0.0991, 0.1021] | 0.1014 [0.1000, 0.1042] | 0.1873 [0.1861, 0.1903] | 0.2041 [0.2023, 0.2078] |
+| dense32-noLP / noSeed-H | 0.0159 [0.0158, 0.0169] | 0.0157 [0.0155, 0.0159] | 0.0174 [0.0172, 0.0186] | 0.0198 [0.0195, 0.0204] |
+| dense32-noLP / seeded-H | 0.5690 [0.5631, 0.5791] | 0.5692 [0.5652, 0.5783] | 0.8398 [0.8290, 0.9217] | 0.8561 [0.8473, 0.8731] |
+
+Maximum observed process RSS (KiB):
+
+| Input / predictor | Before, output off | Revised, output off | Revised CSV | Revised SVG |
+| --- | ---: | ---: | ---: | ---: |
+| OxyS-fhlA / noSeed-M | 17,180 | 17,308 | 17,312 | 20,844 |
+| OxyS-fhlA / noSeed-H | 18,208 | 18,204 | 18,844 | 22,328 |
+| OxyS-fhlA / seeded-H | 17,184 | 17,180 | 17,184 | 20,848 |
+| dense40 / noSeed-M | 16,388 | 16,392 | 16,256 | 16,292 |
+| dense40 / noSeed-H | 16,736 | 16,608 | 16,720 | 16,724 |
+| dense40 / seeded-H | 34,740 | 34,744 | 35,564 | 35,696 |
+| dense32-noLP / noSeed-M | 16,376 | 16,380 | 16,256 | 16,152 |
+| dense32-noLP / noSeed-H | 16,564 | 16,564 | 16,608 | 16,604 |
+| dense32-noLP / seeded-H | 21,508 | 21,504 | 22,324 | 22,592 |
+
+Existing output-off medians vary from −1.2% to +2.4% against the pre-revision
+binary across these nine cases. All ensemble outputs are byte-identical across
+both binaries and all output configurations; every SVG pair value matches CSV.
+Probability collection has a measured additional cost: CSV is 1.09–1.92 times
+revised output-off wall time here, and SVG is 1.26–2.07 times. These are local
+workload measurements, not a universal overhead bound or speedup claim.
+
+Reproduce one process from each corresponding build (change mode to H for the
+unseeded heuristic; remove `--noSeed` for seeded H):
+
+```sh
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 OMP_DYNAMIC=FALSE \
+  /usr/bin/time -f '%e %U %S %M' taskset -c 0 src/bin/IntaRNA \
+  --target=doc/handson/fhlA.fasta --query=doc/handson/OxyS.fasta \
+  --model=P --mode=M --noSeed --seedBP=4 --intLenMax=30 \
+  --qIntLoopMax=3 --tIntLoopMax=3 --threads=1 \
+  --outNoLP=false --outNoGUend=false --outNumber=0 --outMode=E \
+  --default-log-file=/dev/null --out=STDOUT > /dev/null
+# Add --out=bpProb:/dev/null or --out=bpsvg:/dev/null.
+```
+
+For dense40, replace target/query with G×40/C×40 and add `--tAcc=N --qAcc=N`.
+For dense32-noLP, use G×32/C×32 with disabled accessibility and
+`--outNoLP=true`. Keep all remaining flags identical. Repeat seven times with
+interleaved configurations; capture process RSS with GNU time `%M`.

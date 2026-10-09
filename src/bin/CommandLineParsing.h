@@ -282,21 +282,22 @@ public:
 	 * parameters
 	 * @param energy the interaction energy handler to be used
 	 * @param output the output handler to be used
-	 * @param pairProbabilities optional non-owning raw result sink for exact stack seeds
+	 * @param pairProbabilities optional non-owning raw result sink for supported ensemble predictors
 	 * @return the newly allocated Predictor object to be deleted by the calling
 	 * function
 	 */
 	Predictor* getPredictor( const InteractionEnergy & energy
 			, OutputHandler & output, BasePairProbabilities * pairProbabilities = nullptr ) const;
 
-	/** @return whether actual base-pair matrix output was requested */
+	/** @return whether actual base-pair CSV or SVG output was requested */
 	bool hasBasePairProbabilityOutput() const;
 	/** Allocate a pair result after validating the actual seed capability.
 	 * @return owned result or nullptr when pair output is not requested
 	 */
 	BasePairProbabilities * getBasePairProbabilityResult(const InteractionEnergy & energy) const;
 	/** Publish a successful sequence-pair result using ordinary filename rules. */
-	void writeBasePairProbabilities(const BasePairProbabilities & result,const InteractionEnergy & energy) const;
+	void writeBasePairProbabilities(const BasePairProbabilities & result,const InteractionEnergy & energy,
+			const Interaction * mfe = nullptr) const;
 
 	/**
 	 * Provides the seed constraint according to the user settings
@@ -331,9 +332,10 @@ public:
 	/**
 	 * The constraints to be applied to the interaction output generation
 	 * @param energy the interaction energy to be used for computation
+	 * @param forPrediction retain a best site for SVG even with zero ranked output
 	 * @return the output constraints to be applied
 	 */
-	OutputConstraint getOutputConstraint( const InteractionEnergy & energy ) const;
+	OutputConstraint getOutputConstraint( const InteractionEnergy & energy, bool forPrediction = false ) const;
 
 	/**
 	 * The stream to write the interaction output to
@@ -416,6 +418,7 @@ protected:
 		OP_spotProb,
 		OP_spotProbAll,
 		OP_bpProb,
+		OP_bpsvg,
 		OP_UNKNOWN
 	};
 
@@ -442,6 +445,7 @@ protected:
 		if (prefLC == "tacc")	{ return OutPrefixCode::OP_tAcc; } else
 		if (prefLC == "qpu")	{ return OutPrefixCode::OP_qPu; } else
 		if (prefLC == "tpu")	{ return OutPrefixCode::OP_tPu; } else
+		if (prefLC == "bpsvg")	{ return OutPrefixCode::OP_bpsvg; } else
 		if (prefLC == "bpprob")	{ return OutPrefixCode::OP_bpProb; } else
 		if (prefLC == "spotprob")	{ return OutPrefixCode::OP_spotProb; } else
 		// not known
@@ -1184,9 +1188,16 @@ protected:
 	 * Writes the accessibility to file or stream if requested by the user
 	 * @param acc the accessibility data assigned
 	 * @param fileOrStream the name of file/stream to write to
-	 * @param (true) writes ED values, (false) writes Pu values
+	 * @param writeED (true) writes ED values, (false) writes Pu values
+	 * @param mode accessibility source mode of the strand (C/N/P/E)
 	 */
-	void writeAccessibility( const Accessibility& acc, const std::string & fileOrStream, const bool writeED ) const;
+	void writeAccessibility( const Accessibility& acc, const std::string & fileOrStream, const bool writeED,
+			const char mode ) const;
+	/** Energy scale for converting a strand's accessibility ED to Pu.
+	 * @param mode accessibility source mode of the strand (C/N/P/E)
+	 * @return RT used by that accessibility source, independent of interaction RT
+	 */
+	Z_type getAccessibilityRT(const char mode) const;
 
 	/**
 	 * Adds a generic file prefix for input/output files for the given query
@@ -1628,14 +1639,14 @@ writeQueryAccessibility( const Accessibility & acc ) const
 		writeAccessibility( acc
 				// get file name prefixed with sequence number if needed
 				, getFullFilename(outPrefix2streamName.at(OutPrefixCode::OP_qAcc), NULL, &(acc.getSequence()))
-				, true );
+				, true, qAcc.val );
 	}
 	if (!outPrefix2streamName.at(OutPrefixCode::OP_qPu).empty()) {
 		VLOG(2) <<"writing unpaired probabilities for query '"<<acc.getSequence().getId()<<"' to "<<outPrefix2streamName.at(OutPrefixCode::OP_qPu);
 		writeAccessibility( acc
 				// get file name prefixed with sequence number if needed
 				, getFullFilename(outPrefix2streamName.at(OutPrefixCode::OP_qPu), NULL, &(acc.getSequence()))
-				, false );
+				, false, qAcc.val );
 	}
 }
 
@@ -1652,14 +1663,14 @@ writeTargetAccessibility( const Accessibility & acc ) const
 		writeAccessibility( acc
 				// get file name prefixed with sequence number if needed
 				, getFullFilename(outPrefix2streamName.at(OutPrefixCode::OP_tAcc), &(acc.getSequence()), NULL)
-				, true );
+				, true, tAcc.val );
 	}
 	if (!outPrefix2streamName.at(OutPrefixCode::OP_tPu).empty()) {
 		VLOG(2) <<"writing unpaired probabilities for target '"<<acc.getSequence().getId()<<"' to "<<outPrefix2streamName.at(OutPrefixCode::OP_tPu);
 		writeAccessibility( acc
 				// get file name prefixed with sequence number if needed
 				, getFullFilename(outPrefix2streamName.at(OutPrefixCode::OP_tPu), &(acc.getSequence()), NULL)
-				, false );
+				, false, tAcc.val );
 	}
 }
 

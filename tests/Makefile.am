@@ -30,6 +30,9 @@ runApiTests_SOURCES =	\
 					SeededNativeBenchmark_test.cpp \
 					StackSeedDomain_test.cpp \
 					BasePairProbabilities_test.cpp \
+					PredictorUnseededProbability_test.cpp \
+					PredictorHeuristicProbability_test.cpp \
+					PredictorHeuristicSeededProbability_test.cpp \
 					testEasyLoggingSetup.icc \
 					AccessibilityConstraint_test.cpp \
 					AccessibilityFromStream_test.cpp \
@@ -85,4 +88,4 @@ runApiTests_CXXFLAGS =	-I$(top_builddir)/src \
 
 
 
-EXTRA_DIST = tools/export-seeded-theory.py testBasePairProbabilities.py
+EXTRA_DIST = tools/export-seeded-theory.py testBasePairProbabilities.py testBasePairProbabilitySvg.py

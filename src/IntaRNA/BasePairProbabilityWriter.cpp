@@ -3,6 +3,7 @@
 #include <sstream>
 #include <iostream>
 #include <memory>
+#include <utility>
 #include <boost/iostreams/filtering_stream.hpp>
 
 namespace IntaRNA {
@@ -17,7 +18,8 @@ std::string BasePairProbabilityWriter::block(const BasePairProbabilities & resul
 	// Validate every normalized value before opening a file or writing a header.
 	const auto p=empty?Matrix<Z_type>():result.probabilities();
 	std::ostringstream data;
-	data<<std::setprecision(std::numeric_limits<Z_type>::max_digits10)<<"bpProb";
+	data<<std::setprecision(std::numeric_limits<Z_type>::max_digits10)
+		<<(result.isApproximate()?"bpProbApproximate":"bpProb");
 	for(size_t j=0;j<query.size();++j) data<<sep<<query.asString().at(j)<<'_'<<query.getInOutIndex(j);
 	data<<'\n';
 	for(size_t i=0;i<target.size();++i) {
@@ -25,7 +27,7 @@ std::string BasePairProbabilityWriter::block(const BasePairProbabilities & resul
 		for(size_t j=0;j<query.size();++j) { data<<sep;if(empty) data<<"NA";else data<<p(i,j); }
 		data<<'\n';
 	}
-	return data.str();
+	return std::move(data).str();
 }
 void BasePairProbabilityWriter::emit(std::ostream & out,const std::string & data) {
 	// Exceptions must leave the OpenMP structured block on the same thread.
@@ -36,7 +38,7 @@ void BasePairProbabilityWriter::emit(std::ostream & out,const std::string & data
 	{
 		try {
 			out<<data;out.flush();
-			if(!out) throw std::runtime_error("bpProb output write failed");
+			if(!out) throw std::runtime_error("base-pair probability output write failed");
 		} catch (...) { failure=std::current_exception(); }
 	}
 	if(failure) std::rethrow_exception(failure);
@@ -47,9 +49,11 @@ void BasePairProbabilityWriter::write(std::ostream & out,const BasePairProbabili
 }
 void BasePairProbabilityWriter::writeFile(const std::string & name,const BasePairProbabilities & result,
 		const RnaSequence & t,const RnaSequence & q,const std::string & sep) {
-	const auto data=block(result,t,q,sep);
+	emitFile(name,block(result,t,q,sep));
+}
+void BasePairProbabilityWriter::emitFile(const std::string & name,const std::string & data) {
 	std::ostream * out=newOutputStream(name);
-	if(!out) throw std::runtime_error("could not open bpProb output '"+name+"'");
+	if(!out) throw std::runtime_error("could not open base-pair probability output '"+name+"'");
 	// Standard streams are borrowed; file streams are owned here. Explicit reset
 	// closes gzip before success is returned, exposing compression/close failures.
 	std::unique_ptr<std::ostream> file(out==&std::cout || out==&std::cerr?nullptr:out);

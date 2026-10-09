@@ -957,7 +957,8 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 					"\n 'tAcc:' (target) ED accessibility values ('tPu'-like format OR '.agz' file ending for IntaRNA's binary format)."
 					"\n 'tPu:' (target) unpaired probability values (RNAplfold format OR '.agz' file ending for IntaRNA's binary format)."
 					"\n 'pMinE:' (target+query) for each index pair the minimal energy of any interaction covering the pair (CSV format)"
-					"\n 'bpProb:' (target+query) actual-pair conditional probabilities for exact --model=P --mode=M stack-seed ensembles (CSV matrix, original strand order; NA for an empty ensemble)"
+					"\n 'bpsvg:' (target+query) SVG actual-pair probability plot with accessibility frame and seed annotations; same requirements as bpProb"
+					"\n 'bpProb:' (target+query) actual-pair conditional probabilities for --model=P --mode=M/H (M: --noSeed or stack-only seeds; H: approximate retained ensemble) (CSV matrix, original strand order; NA for an empty ensemble)"
 					"\n 'spotProb:' (target+query) tracks for a given set of interaction spots their probability to be covered by an interaction. If no spots are provided, probabilities for all index combinations are computed. Spots are encoded by comma-separated 'idxT&idxQ' pairs (target-query). For each spot a probability is provided in concert with the probability that none of the spots (encoded by '0&0') is covered (CSV format). The spot encoding is followed colon-separated by the output stream/file name, eg. '--out=\"spotProb:3&76,59&2:STDERR\"'. NOTE: value has to be quoted due to '&' symbol!"
 					"\nFor each, provide a file name or STDOUT/STDERR to write to the respective output stream."
 					).c_str())
@@ -1245,8 +1246,8 @@ parse(int argc, char** argv)
 			outSep = unescaped_string<std::string::const_iterator>::getUnescaped( outSep );
 
 			if (hasBasePairProbabilityOutput()) {
-				if (model.val!='P' || mode.val!='M' || noSeedRequired || !rri.empty() || windowWidth.val!=0)
-					throw error("bpProb requires --model=P --mode=M with stack-only seeds and no windows");
+				if (model.val!='P' || (mode.val!='M' && mode.val!='H') || !rri.empty() || windowWidth.val!=0)
+					throw error("bpProb/bpsvg requires --model=P --mode=M/H with no windows (M: --noSeed or stack-only seeds)");
 				outNeedsZall=true;
 			}
 			// K needs a seed even before the usual --noSeed model normalization.
@@ -1582,7 +1583,7 @@ parse(int argc, char** argv)
 					for (auto c2=c1; noDuplicate && (++c2)!=outPrefix2streamName.end();) {
 						if ( ! c2->second.empty() && boost::iequals( c1->second, c2->second ) ) {
 							// Pair matrices emit synchronized complete blocks on shared standard streams.
-							if ((c1->first==OP_bpProb || c2->first==OP_bpProb)
+							if ((c1->first==OP_bpProb || c2->first==OP_bpProb || c1->first==OP_bpsvg || c2->first==OP_bpsvg)
 									&& (boost::iequals(c1->second,"STDOUT") || boost::iequals(c1->second,"STDERR"))) continue;
 							noDuplicate = false;
 							throw error("--out argument shows multiple times '"+toString(c1->second)+"' as target file/stream.");
@@ -2233,7 +2234,7 @@ getEnergyHandler( const Accessibility& accTarget, const ReverseAccessibility& ac
 
 OutputConstraint
 CommandLineParsing::
-getOutputConstraint( const InteractionEnergy & energy )  const
+getOutputConstraint( const InteractionEnergy & energy, bool forPrediction )  const
 {
 	checkIfParsed();
 	if (!rri.empty()) {
@@ -2249,7 +2250,7 @@ getOutputConstraint( const InteractionEnergy & energy )  const
 	default : throw std::runtime_error("CommandLineParsing::getOutputConstraint() : unsupported outOverlap value "+toString(outOverlap.val));
 	}
 	return OutputConstraint(
-			  outNumber.val
+			  (forPrediction && !outPrefix2streamName.at(OP_bpsvg).empty() ? std::max(size_t(1),size_t(outNumber.val)) : outNumber.val)
 			, overlap
 			, Ekcal_2_E(outMaxE.val)
 			, Ekcal_2_E(outDeltaE.val)
@@ -2490,19 +2491,27 @@ getTemperature() const {
 ////////////////////////////////////////////////////////////////////////////
 
 bool CommandLineParsing::hasBasePairProbabilityOutput() const {
-	return !outPrefix2streamName.at(OutPrefixCode::OP_bpProb).empty();
+	return !outPrefix2streamName.at(OutPrefixCode::OP_bpProb).empty()
+		|| !outPrefix2streamName.at(OutPrefixCode::OP_bpsvg).empty();
 }
 BasePairProbabilities * CommandLineParsing::getBasePairProbabilityResult(const InteractionEnergy & energy) const {
 	if (!hasBasePairProbabilityOutput()) return nullptr;
-	std::unique_ptr<SeedHandler> handler(getSeedHandler(energy));
-	if (!handler->guaranteesStackOnlySeeds())
-		throw std::invalid_argument("bpProb requires a stack-only seed handler; bulged seeds are unsupported");
-	return new BasePairProbabilities(energy.size1(),energy.size2());
+	if (!noSeedRequired) {
+		std::unique_ptr<SeedHandler> handler(getSeedHandler(energy));
+		if (mode.val=='M' && !handler->guaranteesStackOnlySeeds())
+			throw std::invalid_argument("bpProb/bpsvg requires a stack-only seed handler; bulged seeds are unsupported");
+	}
+	return new BasePairProbabilities(energy.size1(),energy.size2(),!noSeedRequired && !outPrefix2streamName.at(OP_bpsvg).empty());
 }
-void CommandLineParsing::writeBasePairProbabilities(const BasePairProbabilities & result,const InteractionEnergy & energy) const {
+void CommandLineParsing::writeBasePairProbabilities(const BasePairProbabilities & result,const InteractionEnergy & energy,
+		const Interaction * mfe) const {
 	const auto & t=energy.getAccessibility1().getSequence();
 	const auto & q=energy.getAccessibility2().getAccessibilityOrigin().getSequence();
-	BasePairProbabilityWriter::writeFile(getFullFilename(outPrefix2streamName.at(OutPrefixCode::OP_bpProb),&t,&q),result,t,q,outSep);
+	if (!outPrefix2streamName.at(OP_bpProb).empty())
+		BasePairProbabilityWriter::writeFile(getFullFilename(outPrefix2streamName.at(OP_bpProb),&t,&q),result,t,q,outSep);
+	if (!outPrefix2streamName.at(OP_bpsvg).empty())
+		BasePairProbabilityWriter::writeSvgFile(getFullFilename(outPrefix2streamName.at(OP_bpsvg),&t,&q),result,energy,
+				getAccessibilityRT(tAcc.val),getAccessibilityRT(qAcc.val),mfe);
 }
 
 Predictor*
@@ -2511,11 +2520,13 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output, BasePair
 {
 	std::unique_ptr<SeedHandler> pairSeeds;
 	if (pairProbabilities) {
-		if(model.val!='P' || mode.val!='M' || noSeedRequired || !rri.empty() || windowWidth.val!=0)
-			throw std::invalid_argument("bpProb requires --model=P --mode=M with stack-only seeds and no windows");
-		pairSeeds.reset(getSeedHandler(energy));
-		if(!pairSeeds->guaranteesStackOnlySeeds())
-			throw std::invalid_argument("bpProb requires a stack-only seed handler; bulged seeds are unsupported");
+		if(model.val!='P' || (mode.val!='M' && mode.val!='H') || !rri.empty() || windowWidth.val!=0)
+			throw std::invalid_argument("bpProb/bpsvg requires --model=P --mode=M/H with no windows (M: --noSeed or stack-only seeds)");
+		if (!noSeedRequired) {
+			pairSeeds.reset(getSeedHandler(energy));
+			if(mode.val=='M' && !pairSeeds->guaranteesStackOnlySeeds())
+				throw std::invalid_argument("bpProb/bpsvg requires a stack-only seed handler; bulged seeds are unsupported");
+		}
 	}
 	// set up hub for prediction tracking (if needed)
 	PredictionTrackerHub * predTracker = new PredictionTrackerHub();
@@ -2616,8 +2627,8 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output, BasePair
 		// single-site mfe ensemble interactions (contain only interior loops)
 		case 'P' : {
 			switch ( mode.val ) {
-			case 'H' :  return new PredictorMfeEns2dHeuristic( energy, output, predTracker );
-			case 'M' :  return new PredictorMfeEns2d( energy, output, predTracker );
+			case 'H' :  return new PredictorMfeEns2dHeuristic( energy, output, predTracker, pairProbabilities );
+			case 'M' :  return new PredictorMfeEns2d( energy, output, predTracker, pairProbabilities );
 			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not available for model "+toString(model.val));
 			}
 		} break;
@@ -2661,7 +2672,7 @@ getPredictor( const InteractionEnergy & energy, OutputHandler & output, BasePair
 		// single-site max-prob interactions (contain only interior loops)
 		case 'P' : {
 			switch ( mode.val ) {
-			case 'H' :  return new PredictorMfeEns2dHeuristicSeedExtension( energy, output, predTracker, getSeedHandler( energy ) );
+			case 'H' :  return new PredictorMfeEns2dHeuristicSeedExtension( energy, output, predTracker, pairSeeds ? pairSeeds.release() : getSeedHandler(energy), pairProbabilities );
 			case 'M' :  return new PredictorMfeEns2dSeedExtension( energy, output, predTracker, pairSeeds ? pairSeeds.release() : getSeedHandler( energy ), pairProbabilities );
 			case 'S' :  return new PredictorMfeEnsSeedOnly( energy, output, predTracker, getSeedHandler(energy) );
 			default :  INTARNA_NOT_IMPLEMENTED("mode "+toString(mode.val)+" not available for model "+toString(model.val));
@@ -2936,9 +2947,18 @@ getTargetRanges( const InteractionEnergy & energy, const size_t sequenceNumber, 
 
 ////////////////////////////////////////////////////////////////////////////
 
+Z_type
+CommandLineParsing::getAccessibilityRT(const char mode) const
+{
+	// Computed Nussinov ED uses RT=1; imported ED/Pu and ViennaRNA use the
+	// configured physical temperature, independently of the interaction model.
+	return energy.val=='B' && mode=='C'?Z_type(1):vrnaHandler.getRT();
+}
+
 void
 CommandLineParsing::
-writeAccessibility( const Accessibility& acc, const std::string & fileOrStream, const bool writeED ) const
+writeAccessibility( const Accessibility& acc, const std::string & fileOrStream, const bool writeED,
+		const char mode ) const
 {
 	if (fileOrStream.empty())
 		return;
@@ -2959,7 +2979,7 @@ writeAccessibility( const Accessibility& acc, const std::string & fileOrStream, 
 	} else if (writeED) {
 		acc.writeRNAplfold_ED_text( *out );
 	} else {
-		acc.writeRNAplfold_Pu_text( *out, vrnaHandler.getRT() );
+		acc.writeRNAplfold_Pu_text( *out, getAccessibilityRT(mode) );
 	}
 
 	// Explicit close propagates compression/file errors before releasing ownership.
