@@ -4,6 +4,10 @@
 ################################################################
 
 EXTRA_DIST =	\
+			ensemble-memory.md \
+			ensemble-memory-benchmark.json \
+			ensemble-memory-probability-port.patch \
+			benchmark-ensemble-memory.py \
 			conda.txt \
 			api-documentation.md \
 			build-api.sh \

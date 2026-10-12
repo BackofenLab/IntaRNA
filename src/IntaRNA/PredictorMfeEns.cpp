@@ -33,6 +33,8 @@ initZ()
 {
 	// reset storage
 	Z_partition.clear();
+	Z_frontier.clear();
+	Z_frontierNext = 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -108,12 +110,12 @@ updateZ( const size_t i1, const size_t j1
 	}
 
 	// store partial Z (without ED)
-	Interaction::Boundary key(i1,j1,i2,j2);
-	auto [keyEntry, inserted] = Z_partition.try_emplace(key, partZ_noED);
-	if (!inserted) {
-		// update entry
-		keyEntry->second += partZ_noED;
-	}
+	auto accumulate = [partZ_noED](auto & partitions,const auto & key) {
+		auto [keyEntry,inserted] = partitions.try_emplace(key,partZ_noED);
+		if (!inserted) keyEntry->second += partZ_noED;
+	};
+	if (Z_frontier.empty()) accumulate(Z_partition,Interaction::Boundary(i1,j1,i2,j2));
+	else accumulate(Z_frontier.at(j1),FrontierBoundary{i1,i2,j2});
 
 }
 
@@ -154,12 +156,35 @@ void
 PredictorMfeEns::
 updateOptimaUsingZ()
 {
+	advanceZFrontier(Z_frontier.size());
 	for (auto it = Z_partition.begin(); it != Z_partition.end(); ++it)
 	{
 		// if partition function is > 0
 		if (Z_isNotINF(it->second) && it->second > 0) {
 			PredictorMfe::updateOptima( it->first.i1, it->first.j1, it->first.i2, it->first.j2, energy.getE(it->second), true, false );
 		}
+	}
+}
+
+void PredictorMfeEns::beginZFrontier(size_t size1)
+{
+	if (predTracker == nullptr) Z_frontier.resize(size1);
+}
+
+void PredictorMfeEns::advanceZFrontier(size_t minimumSeedStart)
+{
+	const size_t end = std::min(minimumSeedStart,Z_frontier.size());
+	while (Z_frontierNext < end) {
+		auto & partitions = Z_frontier[Z_frontierNext];
+		for (const auto & [boundary,partition] : partitions) {
+			if (Z_isNotINF(partition) && partition > 0) {
+				PredictorMfe::updateOptima(boundary.i1,Z_frontierNext,boundary.i2,boundary.j2,
+						energy.getE(partition),true,false);
+			}
+		}
+		// Free both nodes and bucket storage as soon as this boundary is complete.
+		decltype(Z_frontier)::value_type{}.swap(partitions);
+		++Z_frontierNext;
 	}
 }
 

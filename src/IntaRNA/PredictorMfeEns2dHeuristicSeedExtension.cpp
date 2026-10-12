@@ -72,11 +72,11 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 	// initialize overall partition function for updates
 	initZ();
 
-	size_t si1 = RnaSequence::lastPos, si2 = RnaSequence::lastPos;
-	while( seedHandler.updateToNextSeed(si1,si2
-			, 0, range_size1+1-seedHandler.getConstraint().getBasePairs()
-			, 0, range_size2+1-seedHandler.getConstraint().getBasePairs()) )
-	{
+	beginZFrontier(range_size1);
+	for (const auto & seed : getSeedStarts(range_size1+1-seedHandler.getConstraint().getBasePairs(),
+			range_size2+1-seedHandler.getConstraint().getBasePairs())) {
+		advanceZFrontier(seed.minimumRemaining);
+		const size_t si1=seed.i1, si2=seed.i2;
 		const Z_type seedZ = energy.getBoltzmannWeight( seedHandler.getSeedE(si1, si2) );
 		const size_t sl1 = seedHandler.getSeedLength1(si1, si2);
 		const size_t sl2 = seedHandler.getSeedLength2(si1, si2);

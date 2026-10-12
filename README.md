@@ -814,9 +814,15 @@ See [IntaRNAexact personality](#IntaRNAexact) for additional information.
 
 ### Limiting memory consumption - window-based prediction
 
-The memory requirement of IntaRNA grows quadratically with lengths of the input
-sequences. Thus, for very long input RNAs, the requested memory can exceed the
-available RAM of smaller computers.
+Memory use depends on the predictor, sequence lengths and interaction span
+limits. The ensemble model (`--model=P`) aggregates contributions from several
+seeds to each interaction site and can need more memory than model X even when
+their recurrence tables have the same dimensions. Seeded ensemble prediction
+releases completed site sums during traversal to reduce peak memory; ensemble
+trackers retain the deferred site information. See the
+[memory audit and measurements](doc/ensemble-memory.md) for details. For very
+long input RNAs, the requested memory can exceed the available RAM of smaller
+computers.
 
 This can be circumvented by using a window-based prediction where the input
 sequences are decomposed in overlapping subsequences (windows) that are
