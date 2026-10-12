@@ -14,6 +14,9 @@
 
 ## Interface and handling
 
+- reduce seed-extension ensemble memory by finalizing completed site sums and
+  storing smaller boundary keys; preserve partition/ranked output (issue #260)
+
 - deterministic kinetic seed extension with --model=X --mode=K and configurable
   local scoring; complete-energy downhill steps, atomic noLP loop/stack moves
   and retained greedy traceback; equilibrium probability output is unsupported
@@ -128,6 +131,20 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261012 Alexander Mitrofanov
+ * PredictorMfeEns, PredictorMfeEns2dSeedExtension,
+   PredictorMfeEns2dHeuristicSeedExtension
+   + group partial site partitions by target right boundary with three-index keys
+   * finalize and release complete sums using the minimum remaining seed start,
+     preserving traversal, partition addition, filters and tracker callbacks
+   * reset the frontier for reused predictors and empty regions (issue #260)
+ * PredictorMfeEnsRegression_test.cpp
+   + compare streamed and buffered exact/heuristic predictions across LP/noLP,
+     stack/bulged/explicit seeds, cropped regions and repeated predictions
+ * README.md, doc/ensemble-memory*, doc/benchmark-ensemble-memory.py, doc/Makefile.am
+   + explain master/probability-branch memory differences and limits; provide
+     controlled runtime/RSS measurements, raw results and a tested forward port
 
 261007 Alexander Mitrofanov
  * doc/doxygen.cfg, doc/doxygen/* :

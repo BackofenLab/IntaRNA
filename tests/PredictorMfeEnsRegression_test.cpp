@@ -13,6 +13,8 @@
 #include "IntaRNA/ReverseAccessibility.h"
 #include "IntaRNA/RnaSequence.h"
 #include "IntaRNA/SeedHandlerNoBulge.h"
+#include "IntaRNA/SeedHandlerMfe.h"
+#include "IntaRNA/SeedHandlerExplicit.h"
 
 #include <cmath>
 #include <iterator>
@@ -26,12 +28,14 @@ public:
 	InspectableEnsemblePredictor(
 			const InteractionEnergy & energy,
 			OutputHandler & output,
-			SeedHandler * seedHandler)
-	 : PredictorType(energy, output, NULL, seedHandler)
+			SeedHandler * seedHandler, PredictionTracker * tracker=nullptr)
+	 : PredictorType(energy, output, tracker, seedHandler)
 	{}
 
 	size_t getPartitionCount() const {
-		return this->Z_partition.size();
+		size_t count=this->Z_partition.size();
+		for (const auto & bucket : this->Z_frontier) count+=bucket.size();
+		return count;
 	}
 };
 
@@ -231,7 +235,7 @@ TEST_CASE("ensemble predictor regressions", "[PredictorMfeEns]") {
 		InspectableEnsemblePredictor<PredictorMfeEns2dSeedExtension> exact(
 				energy, exactOut, new SeedHandlerNoBulge(energy, seedConstraint));
 		exact.predict();
-		REQUIRE(exact.getPartitionCount() > 0);
+		REQUIRE(exact.getPartitionCount() == 0);
 		exact.predict(IndexRange(0, 0), IndexRange(0, 0));
 		REQUIRE(exact.getPartitionCount() == 0);
 		REQUIRE(exact.getZall() == 0.0);
@@ -240,10 +244,60 @@ TEST_CASE("ensemble predictor regressions", "[PredictorMfeEns]") {
 		InspectableEnsemblePredictor<PredictorMfeEns2dHeuristicSeedExtension> heuristic(
 				energy, heuristicOut, new SeedHandlerNoBulge(energy, seedConstraint));
 		heuristic.predict();
-		REQUIRE(heuristic.getPartitionCount() > 0);
+		REQUIRE(heuristic.getPartitionCount() == 0);
 		heuristic.predict(IndexRange(0, 0), IndexRange(0, 0));
 		REQUIRE(heuristic.getPartitionCount() == 0);
 		REQUIRE(heuristic.getZall() == 0.0);
+	}
+
+	SECTION("seed frontier preserves partial sums, ranked sites and filtered regions") {
+		RnaSequence target("target", "GGAGGGGAGGGGAGGGG");
+		RnaSequence query("query", "CCCCACCCC");
+		AccessibilityDisabled targetAcc(target, 8, nullptr), queryAcc(query, 8, nullptr);
+		ReverseAccessibility reversed(queryAcc);
+		InteractionEnergyBasePair energy(targetAcc,reversed);
+		for (bool noLP : {false,true}) for (bool heuristic : {false,true}) for (int handler : {0,1,2}) {
+			const size_t bulges=handler==1?1:0;
+			SeedConstraint seeds(2,bulges,bulges,bulges,E_INF,Accessibility::ED_UPPER_BOUND,E_INF,
+					IndexRangeList(),IndexRangeList(),handler==2?"4||&2||,10||&6||":"",false,false,noLP);
+			auto createSeed=[&]() -> SeedHandler * {
+				if (handler==1) return new SeedHandlerMfe(energy,seeds);
+				if (handler==2) return new SeedHandlerExplicit(energy,seeds);
+				return new SeedHandlerNoBulge(energy,seeds);
+			};
+			OutputConstraint constraint(5,OutputConstraint::OVERLAP_BOTH,E_INF,E_INF,
+					false,noLP,false,true,false);
+			OutputHandlerInteractionList streamedOut(constraint,5), bufferedOut(constraint,5);
+			size_t callbacks=0;
+			auto check=[&](auto & streamed,auto & buffered) {
+				for (const auto & region : {IndexRange(0,16),IndexRange(3,14)}) {
+					streamed.predict(region,IndexRange(1,7));
+					buffered.predict(region,IndexRange(1,7));
+					REQUIRE(streamed.getPartitionCount()==0);
+					REQUIRE(buffered.getPartitionCount()>0);
+					REQUIRE(streamed.getZall()==buffered.getZall());
+					REQUIRE(streamedOut.getZ()==bufferedOut.getZ());
+					REQUIRE(streamedOut.reported()==bufferedOut.reported());
+					auto a=streamedOut.begin(), b=bufferedOut.begin();
+					for (; a!=streamedOut.end() && b!=bufferedOut.end(); ++a,++b) REQUIRE(**a==**b);
+					REQUIRE(a==streamedOut.end()); REQUIRE(b==bufferedOut.end());
+				}
+				REQUIRE(callbacks>0);
+			};
+			if (heuristic) {
+				InspectableEnsemblePredictor<PredictorMfeEns2dHeuristicSeedExtension> streamed(
+						energy,streamedOut,createSeed());
+				InspectableEnsemblePredictor<PredictorMfeEns2dHeuristicSeedExtension> buffered(
+						energy,bufferedOut,createSeed(),new CountingPredictionTracker(callbacks));
+				check(streamed,buffered);
+			} else {
+				InspectableEnsemblePredictor<PredictorMfeEns2dSeedExtension> streamed(
+						energy,streamedOut,createSeed());
+				InspectableEnsemblePredictor<PredictorMfeEns2dSeedExtension> buffered(
+						energy,bufferedOut,createSeed(),new CountingPredictionTracker(callbacks));
+				check(streamed,buffered);
+			}
+		}
 	}
 
 	SECTION("exact complete boundaries stream unless tracker ordering is required") {

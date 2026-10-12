@@ -23,6 +23,15 @@ namespace IntaRNA {
 class PredictorMfeEns2dSeedExtension: public PredictorMfeEns {
 
 protected:
+	//! seed coordinates in handler order and the minimum remaining target start
+	struct SeedStart { size_t i1, i2, minimumRemaining; };
+
+	/** Collect seed starts without changing traversal or partition summation order.
+	 * @param max1 largest target seed start
+	 * @param max2 largest reversed-query seed start
+	 * @return starts with a safe lower bound for all remaining target seed starts
+	 */
+	std::vector<SeedStart> getSeedStarts(size_t max1,size_t max2) const;
 
 	//! matrix type to hold the partition functions for interaction site starts
 	typedef Matrix<Z_type> Z2dMatrix;

@@ -1,0 +1,232 @@
+diff --git a/src/IntaRNA/PredictorMfeEns.cpp b/src/IntaRNA/PredictorMfeEns.cpp
+index 3ed283e..6e07713 100644
+--- a/src/IntaRNA/PredictorMfeEns.cpp
++++ b/src/IntaRNA/PredictorMfeEns.cpp
+@@ -36,0 +37,2 @@ initZ()
++	Z_frontier.clear();
++	Z_frontierNext = 0;
+@@ -123,6 +125,6 @@ updateZ( const size_t i1, const size_t j1
+-	Interaction::Boundary key(i1,j1,i2,j2);
+-	auto [keyEntry, inserted] = Z_partition.try_emplace(key, partZ_noED);
+-	if (!inserted) {
+-		// update entry
+-		keyEntry->second += partZ_noED;
+-	}
++	auto accumulate = [partZ_noED](auto & partitions,const auto & key) {
++		auto [keyEntry,inserted] = partitions.try_emplace(key,partZ_noED);
++		if (!inserted) keyEntry->second += partZ_noED;
++	};
++	if (Z_frontier.empty()) accumulate(Z_partition,Interaction::Boundary(i1,j1,i2,j2));
++	else accumulate(Z_frontier.at(j1),FrontierBoundary{i1,i2,j2});
+@@ -182,0 +185 @@ updateOptimaUsingZ()
++	advanceZFrontier(Z_frontier.size());
+@@ -191,0 +195,22 @@ updateOptimaUsingZ()
++void PredictorMfeEns::beginZFrontier(size_t size1)
++{
++	if (predTracker == nullptr) Z_frontier.resize(size1);
++}
++
++void PredictorMfeEns::advanceZFrontier(size_t minimumSeedStart)
++{
++	const size_t end = std::min(minimumSeedStart,Z_frontier.size());
++	while (Z_frontierNext < end) {
++		auto & partitions = Z_frontier[Z_frontierNext];
++		for (const auto & [boundary,partition] : partitions) {
++			if (Z_isNotINF(partition) && partition > 0) {
++				PredictorMfe::updateOptima(boundary.i1,Z_frontierNext,boundary.i2,boundary.j2,
++						energy.getE(partition),true,false);
++			}
++		}
++		// Free both nodes and bucket storage as soon as this boundary is complete.
++		decltype(Z_frontier)::value_type{}.swap(partitions);
++		++Z_frontierNext;
++	}
++}
++
+diff --git a/src/IntaRNA/PredictorMfeEns.h b/src/IntaRNA/PredictorMfeEns.h
+index c51fd65..10fb14d 100644
+--- a/src/IntaRNA/PredictorMfeEns.h
++++ b/src/IntaRNA/PredictorMfeEns.h
+@@ -11,0 +12 @@
++#include <vector>
+@@ -77,0 +79,15 @@ protected:
++	//! a bucket supplies j1, so its key needs only the other three coordinates
++	struct FrontierBoundary {
++		size_t i1, i2, j2;
++		bool operator==(const FrontierBoundary &) const = default;
++		struct Hash {
++			size_t operator()(const FrontierBoundary & boundary) const;
++		};
++	};
++
++	//! partial sums grouped by target right boundary; used only without trackers
++	std::vector<std::unordered_map<FrontierBoundary,Z_type,FrontierBoundary::Hash>> Z_frontier;
++	//! first right-boundary bucket that has not yet been finalized
++	size_t Z_frontierNext = 0;
++
++
+@@ -123,0 +140,12 @@ protected:
++	/** Enable partial-partition buckets by target right boundary. Tracker runs
++	 * keep the original map to preserve callback ordering. Call advanceZFrontier
++	 * only when no remaining seed can start below the supplied target index.
++	 * @param size1 number of target positions in the current prediction region
++	 */
++	void beginZFrontier(size_t size1);
++
++	/** Consume completed boundary sums without adding their mass to Zall again.
++	 * @param minimumSeedStart smallest target start of any remaining seed
++	 */
++	void advanceZFrontier(size_t minimumSeedStart);
++
+@@ -163,0 +192,11 @@ private:
++inline
++size_t
++PredictorMfeEns::FrontierBoundary::Hash::operator()(const FrontierBoundary & boundary) const
++{
++	size_t key=0;
++	boost::hash_combine(key,boundary.i1);
++	boost::hash_combine(key,boundary.i2);
++	boost::hash_combine(key,boundary.j2);
++	return key;
++}
++
+diff --git a/src/IntaRNA/PredictorMfeEns2dHeuristicSeedExtension.cpp b/src/IntaRNA/PredictorMfeEns2dHeuristicSeedExtension.cpp
+index 278eb74..527d493 100644
+--- a/src/IntaRNA/PredictorMfeEns2dHeuristicSeedExtension.cpp
++++ b/src/IntaRNA/PredictorMfeEns2dHeuristicSeedExtension.cpp
+@@ -88,5 +88,4 @@ predict( const IndexRange & r1, const IndexRange & r2 )
+-	size_t si1 = RnaSequence::lastPos, si2 = RnaSequence::lastPos;
+-	while( seedHandler.updateToNextSeed(si1,si2
+-			, 0, range_size1-1
+-			, 0, range_size2-1) )
+-	{
++	beginZFrontier(range_size1);
++	for (const auto & seed : getSeedStarts(range_size1-1,range_size2-1)) {
++		advanceZFrontier(seed.minimumRemaining);
++		const size_t si1=seed.i1, si2=seed.i2;
+diff --git a/src/IntaRNA/PredictorMfeEns2dSeedExtension.cpp b/src/IntaRNA/PredictorMfeEns2dSeedExtension.cpp
+index 7fd217f..6c964e4 100644
+--- a/src/IntaRNA/PredictorMfeEns2dSeedExtension.cpp
++++ b/src/IntaRNA/PredictorMfeEns2dSeedExtension.cpp
+@@ -9,0 +10,21 @@ namespace IntaRNA {
++
++std::vector<PredictorMfeEns2dSeedExtension::SeedStart>
++PredictorMfeEns2dSeedExtension::getSeedStarts(size_t max1,size_t max2) const
++{
++	std::vector<SeedStart> starts;
++	size_t i1=RnaSequence::lastPos, i2=RnaSequence::lastPos;
++	while (seedHandler.updateToNextSeed(i1,i2,
++			0,max1,0,max2)) {
++		starts.push_back({i1,i2,i1});
++	}
++	// A suffix minimum is safe for either traversal order and custom handlers.
++	size_t minimum=max1;
++	for (auto seed=starts.rbegin(); seed!=starts.rend(); ++seed) {
++		minimum=std::min(minimum,seed->i1);
++		seed->minimumRemaining=minimum;
++	}
++	return starts;
++}
++
++
++
+@@ -271,5 +292,5 @@ predict( const IndexRange & r1, const IndexRange & r2 )
+-	size_t si1 = RnaSequence::lastPos, si2 = RnaSequence::lastPos;
+-	while( seedHandler.updateToNextSeed(si1,si2
+-			, 0, range_size1+1-seedHandler.getConstraint().getBasePairs()
+-			, 0, range_size2+1-seedHandler.getConstraint().getBasePairs()) )
+-	{
++	beginZFrontier(range_size1);
++	for (const auto & seed : getSeedStarts(range_size1+1-seedHandler.getConstraint().getBasePairs(),
++			range_size2+1-seedHandler.getConstraint().getBasePairs())) {
++		advanceZFrontier(seed.minimumRemaining);
++		const size_t si1=seed.i1, si2=seed.i2;
+diff --git a/src/IntaRNA/PredictorMfeEns2dSeedExtension.h b/src/IntaRNA/PredictorMfeEns2dSeedExtension.h
+index 0b344e4..7bb46c1 100644
+--- a/src/IntaRNA/PredictorMfeEns2dSeedExtension.h
++++ b/src/IntaRNA/PredictorMfeEns2dSeedExtension.h
+@@ -27,0 +28,10 @@ protected:
++	//! seed coordinates in handler order and the minimum remaining target start
++	struct SeedStart { size_t i1, i2, minimumRemaining; };
++
++	/** Collect seed starts without changing traversal or partition summation order.
++	 * @param max1 largest target seed start
++	 * @param max2 largest reversed-query seed start
++	 * @return starts with a safe lower bound for all remaining target seed starts
++	 */
++	std::vector<SeedStart> getSeedStarts(size_t max1,size_t max2) const;
++
+diff --git a/tests/PredictorMfeEnsRegression_test.cpp b/tests/PredictorMfeEnsRegression_test.cpp
+index e4f5537..f1a20e3 100644
+--- a/tests/PredictorMfeEnsRegression_test.cpp
++++ b/tests/PredictorMfeEnsRegression_test.cpp
+@@ -15,0 +16,2 @@
++#include "IntaRNA/SeedHandlerMfe.h"
++#include "IntaRNA/SeedHandlerExplicit.h"
+@@ -29,2 +31,2 @@ public:
+-			SeedHandler * seedHandler)
+-	 : PredictorType(energy, output, NULL, seedHandler)
++			SeedHandler * seedHandler, PredictionTracker * tracker=nullptr)
++	 : PredictorType(energy, output, tracker, seedHandler)
+@@ -34 +36,3 @@ public:
+-		return this->Z_partition.size();
++		size_t count=this->Z_partition.size();
++		for (const auto & bucket : this->Z_frontier) count+=bucket.size();
++		return count;
+@@ -234 +238 @@ TEST_CASE("ensemble predictor regressions", "[PredictorMfeEns]") {
+-		// The new exact stack backend streams each completed boundary once.
++		// The exact stack backend streams each completed boundary once.
+@@ -245 +249 @@ TEST_CASE("ensemble predictor regressions", "[PredictorMfeEns]") {
+-		REQUIRE(heuristic.getPartitionCount() > 0);
++		REQUIRE(heuristic.getPartitionCount() == 0);
+@@ -250,0 +255,50 @@ TEST_CASE("ensemble predictor regressions", "[PredictorMfeEns]") {
++	SECTION("seed frontier preserves partial sums, ranked sites and filtered regions") {
++		RnaSequence target("target", "GGAGGGGAGGGGAGGGG");
++		RnaSequence query("query", "CCCCACCCC");
++		AccessibilityDisabled targetAcc(target, 8, nullptr), queryAcc(query, 8, nullptr);
++		ReverseAccessibility reversed(queryAcc);
++		InteractionEnergyBasePair energy(targetAcc,reversed);
++		for (bool noLP : {false,true}) for (bool heuristic : {false,true}) for (int handler : {0,1,2}) {
++			const size_t bulges=handler==1?1:0;
++			SeedConstraint seeds(2,bulges,bulges,bulges,E_INF,Accessibility::ED_UPPER_BOUND,E_INF,
++					IndexRangeList(),IndexRangeList(),handler==2?"4||&2||,10||&6||":"",false,false,noLP);
++			auto createSeed=[&]() -> SeedHandler * {
++				if (handler==1) return new SeedHandlerMfe(energy,seeds);
++				if (handler==2) return new SeedHandlerExplicit(energy,seeds);
++				return new SeedHandlerNoBulge(energy,seeds);
++			};
++			OutputConstraint constraint(5,OutputConstraint::OVERLAP_BOTH,E_INF,E_INF,
++					false,noLP,false,true,false);
++			OutputHandlerInteractionList streamedOut(constraint,5), bufferedOut(constraint,5);
++			size_t callbacks=0;
++			auto check=[&](auto & streamed,auto & buffered) {
++				for (const auto & region : {IndexRange(0,16),IndexRange(3,14)}) {
++					streamed.predict(region,IndexRange(1,7));
++					buffered.predict(region,IndexRange(1,7));
++					REQUIRE(streamed.getPartitionCount()==0);
++					REQUIRE(buffered.getPartitionCount()>0);
++					REQUIRE(streamed.getZall()==buffered.getZall());
++					REQUIRE(streamedOut.getZ()==bufferedOut.getZ());
++					REQUIRE(streamedOut.reported()==bufferedOut.reported());
++					auto a=streamedOut.begin(), b=bufferedOut.begin();
++					for (; a!=streamedOut.end() && b!=bufferedOut.end(); ++a,++b) REQUIRE(**a==**b);
++					REQUIRE(a==streamedOut.end()); REQUIRE(b==bufferedOut.end());
++				}
++				REQUIRE(callbacks>0);
++			};
++			if (heuristic) {
++				InspectableEnsemblePredictor<PredictorMfeEns2dHeuristicSeedExtension> streamed(
++						energy,streamedOut,createSeed());
++				InspectableEnsemblePredictor<PredictorMfeEns2dHeuristicSeedExtension> buffered(
++						energy,bufferedOut,createSeed(),new CountingPredictionTracker(callbacks));
++				check(streamed,buffered);
++			} else {
++				InspectableEnsemblePredictor<PredictorMfeEns2dSeedExtension> streamed(
++						energy,streamedOut,createSeed());
++				InspectableEnsemblePredictor<PredictorMfeEns2dSeedExtension> buffered(
++						energy,bufferedOut,createSeed(),new CountingPredictionTracker(callbacks));
++				check(streamed,buffered);
++			}
++		}
++	}
++
