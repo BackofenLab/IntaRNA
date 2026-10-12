@@ -283,10 +283,15 @@ candidate ensemble can retain path multiplicities and is not the exact seeded
 unique-chain ensemble. Existing numerical-zero cutoffs remain in the legacy
 unseeded/heuristic objectives.
 
-The SVG now starts both strands at the bottom-left origin, places the query name
+The SVG now starts both strands at the upper-left origin, places the query name
 below the matrix, uses sequence names and rounded values in tooltips, displays
 intramolecular pairing as `1-Pu`, and outlines the best reported interaction region
-in green. Machine-readable probability attributes keep full precision. The MFE
+in green. Individual cells mark a minimum-energy structure reconstructed inside
+the selected ensemble site. Shared seed/MFE cells have orange vertical edges and
+green horizontal edges. This SVG-only fixed-boundary traceback reuses the MFE
+recurrences and adds computation proportional to the selected site, without
+changing ordinary ensemble output. Machine-readable probability attributes keep
+full precision. The MFE
 outline is available with `--outNumber=0`; ordinary ranked output stays suppressed.
 An outline is omitted if no interaction passes the reporting filters.
 

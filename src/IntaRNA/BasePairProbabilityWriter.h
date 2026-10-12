@@ -41,7 +41,7 @@ public:
 	 * @param targetRT positive finite energy scale used to convert target ED to Pu
 	 * @param queryRT positive finite energy scale used to convert query ED to Pu;
 	 * accessibility scales can differ from the interaction model's RT
-	 * @param mfe optional best interaction in original coordinates for a region outline
+	 * @param mfe optional traced MFE structure in original coordinates for region/pair outlines
 	 */
 	static void writeSvg(std::ostream & out,const BasePairProbabilities & result,
 			const InteractionEnergy & energy,Z_type targetRT,Z_type queryRT,const Interaction * mfe = nullptr);
@@ -52,7 +52,7 @@ public:
 	 * @param energy original, unshifted energy/accessibility model
 	 * @param targetRT positive finite target accessibility energy scale
 	 * @param queryRT positive finite query accessibility energy scale
-	 * @param mfe optional best interaction in original coordinates for a region outline
+	 * @param mfe optional traced MFE structure in original coordinates for region/pair outlines
 	 */
 	static void writeSvgFile(const std::string & filename,const BasePairProbabilities & result,
 			const InteractionEnergy & energy,Z_type targetRT,Z_type queryRT,const Interaction * mfe = nullptr);

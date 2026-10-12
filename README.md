@@ -2097,8 +2097,8 @@ IntaRNA -t GGAGGG -q CCCC --energy=B --acc=N --seedBP=2 \
   --model=P --mode=M --out=bpsvg:pairs.svg --out=bpProb:pairs.csv
 ```
 
-The query runs left to right and the target bottom to top, both in original
-5' to 3' order, starting at the bottom-left corner. Sequence names label the
+The query runs left to right and the target top to bottom, both in original
+5' to 3' order, starting at the upper-left corner. Sequence names label the
 axes, with the query name below the matrix. A subtitle names both sequences
 when either name differs from the defaults `query` and `target`. Nucleotides
 appear on all four sides. Their colored backgrounds show **intramolecular
@@ -2127,9 +2127,14 @@ Dark orange outlines mark the union of pairs belonging to **admitted seeds**
 contained in searched regions, including overlapping, singleton and mixed-length
 explicit seeds. This annotation uses the predictor's retained seed family and
 span limits; it is independent of ranked interaction reporting and can include
-zero-probability cells. Extension-only pairs have no outline. A seed legend is
-included whenever an outline is present. A green rectangle encloses the best
-reported interaction's site, with a matching legend. The best site is retained
+zero-probability cells. A seed legend is included whenever an outline is present.
+A green rectangle encloses the best reported ensemble interaction's site, and
+green cell borders mark a minimum-energy structure reconstructed within that
+site using the seed, loop and noLP constraints. Ensemble predictors ordinarily
+report only site boundaries; the SVG requests this additional MFE traceback.
+It does not change site ranking or the probability matrix. Where an MFE pair
+also belongs to an admitted seed, its left/right edges are orange and its
+top/bottom edges are green. Both annotations have legends. The best site is retained
 for SVG even with `--outNumber=0`, without adding ranked text output. If no site
 passes the reporting filters, the rectangle and its legend are omitted.
 

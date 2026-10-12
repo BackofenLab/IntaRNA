@@ -6,6 +6,7 @@
 #include <cmath>
 #include <iomanip>
 #include <locale>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <utility>
@@ -77,9 +78,10 @@ BasePairProbabilityWriter::svgBlock(const BasePairProbabilities & result,const I
 	const double x=std::max(130.0,(std::max(820.0,nameWidth)-w)/2);
 	const double y=std::max(120.0,(9.0*t.getId().size()-h)/2+60);
 	const double width=2*x+w, height=2*y+h+185;
-	// SVG y increases downwards, while target coordinates increase upwards.
-	auto targetY=[&](size_t i) { return y+cell*(t.size()-1-i); };
+	// Both original sequence indices increase from the upper-left corner.
+	auto targetY=[&](size_t i) { return y+cell*i; };
 	const bool markMfe=mfe && !mfe->isEmpty();
+	std::set<Interaction::BasePair> mfePairs;
 	size_t tStart=t.size(),tEnd=0,qStart=q.size(),qEnd=0;
 	if (markMfe) {
 		for (const auto & bp:mfe->basePairs) {
@@ -87,6 +89,7 @@ BasePairProbabilityWriter::svgBlock(const BasePairProbabilities & result,const I
 				throw std::invalid_argument("bpsvg: MFE interaction coordinates exceed sequence dimensions");
 			tStart=std::min(tStart,bp.first); tEnd=std::max(tEnd,bp.first);
 			qStart=std::min(qStart,bp.second); qEnd=std::max(qEnd,bp.second);
+			mfePairs.insert(bp);
 		}
 	}
 	std::ostringstream out;
@@ -95,7 +98,7 @@ BasePairProbabilityWriter::svgBlock(const BasePairProbabilities & result,const I
 	out<<"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\""<<width<<"\" height=\""<<height
 		<<"\" viewBox=\"0 0 "<<width<<' '<<height<<"\" role=\"img\">\n"
 		<<"<title>"<<(result.isApproximate()?"Approximate base-pair probabilities: ":"Base-pair probabilities: ")<<xml(t.getId())<<" / "<<xml(q.getId())<<"</title>\n"
-		<<"<desc>Target rows run 5' to 3' upwards and query columns run 5' to 3' to the right. Pair probabilities are conditional on an allowed interaction. "
+		<<"<desc>Target rows run 5' to 3' downwards and query columns run 5' to 3' to the right, starting at the upper-left corner. Pair probabilities are conditional on an allowed interaction. "
 		<<"The frame shows single-nucleotide intramolecular pairing probabilities (1 - Pu) from the accessibility model. "
 		<<(result.isApproximate()?"Approximate probabilities describe the retained heuristic ensemble.":"Probabilities describe the exact predictor ensemble.")<<"</desc>\n"
 		<<R"SVG(<style>
@@ -132,7 +135,7 @@ text { font-family: sans-serif; fill: #243247; }
 		text(width/2,53,t.getId()+" / "+q.getId(),"subtitle");
 	text(x+w/2,y+h+65,q.getId()+" (5' to 3')","axis");
 	out<<"<text class=\"axis\" transform=\"translate("<<x-90<<' '<<y+h/2
-		<<") rotate(-90)\" text-anchor=\"middle\">"<<xml(t.getId())<<" (5' to 3')</text>\n";
+		<<") rotate(90)\" text-anchor=\"middle\">"<<xml(t.getId())<<" (5' to 3')</text>\n";
 	auto rect=[&](double rx,double ry,Z_type value,bool missing,const std::string & attributes,const std::string & title) {
 		out<<"<rect class=\"probability "<<(missing?"na":"p"+std::to_string(colorClass(value)))
 			<<"\" x=\""<<rx<<"\" y=\""<<ry<<"\" width=\"20\" height=\"20\" "<<attributes
@@ -182,8 +185,8 @@ text { font-family: sans-serif; fill: #243247; }
 			const double offset=cell*(i+(idx>0 && !origin?1:0));
 			if (idx%10==0 || origin) out<<"<line class=\"guide"<<(origin?" origin":idx%50==0?" major":"")
 				<<"\" data-strand=\""<<(target?"target":"query")<<"\" data-index=\""<<idx
-				<<"\" x1=\""<<(target?x-cell:x+offset)<<"\" y1=\""<<(target?y+h-offset:y-cell)
-				<<"\" x2=\""<<(target?x+w+cell:x+offset)<<"\" y2=\""<<(target?y+h-offset:y+h+cell)<<"\"/>\n";
+				<<"\" x1=\""<<(target?x-cell:x+offset)<<"\" y1=\""<<(target?y+offset:y-cell)
+				<<"\" x2=\""<<(target?x+w+cell:x+offset)<<"\" y2=\""<<(target?y+offset:y+h+cell)<<"\"/>\n";
 			const std::string label=idx==1?"+1":std::to_string(idx);
 			if(target) {
 				text(x-26,targetY(i)+cell/2+4,label,"index","end");
@@ -200,17 +203,35 @@ text { font-family: sans-serif; fill: #243247; }
 		out<<"<g class=\"seed-outlines\">\n";
 		for(size_t i=0;i<t.size();++i) for(size_t j=0;j<q.size();++j) if(result.seedPairs()(i,j)) {
 			annotated=true;
+			if (mfePairs.contains(Interaction::BasePair(i,j))) {
+				const double left=x+cell*j+1, top=targetY(i)+1;
+				// Keep seed provenance visible on the vertical edges, and MFE
+				// membership on the horizontal edges of the same cell outline.
+				out<<"<g class=\"seed mfe-pair\" data-target=\""<<t.getInOutIndex(i)
+					<<"\" data-query=\""<<q.getInOutIndex(j)<<"\">\n"
+					<<"<path class=\"seed\" d=\"M "<<left<<' '<<top<<" v 18 M "<<left+18<<' '<<top<<" v 18\"/>\n"
+					<<"<path class=\"mfe\" d=\"M "<<left<<' '<<top<<" h 18 M "<<left<<' '<<top+18<<" h 18\"/>\n</g>\n";
+				continue;
+			}
 			out<<"<rect class=\"seed\" data-target=\""<<t.getInOutIndex(i)<<"\" data-query=\""<<q.getInOutIndex(j)
 				<<"\" x=\""<<x+cell*j+1<<"\" y=\""<<targetY(i)+1<<"\" width=\"18\" height=\"18\"/>\n";
 		}
 		out<<"</g>\n";
 	}
 	if (markMfe) {
+		out<<"<g class=\"mfe-pair-outlines\">\n";
+		for (const auto & bp:mfePairs) {
+			if (result.collectsSeedPairs() && result.seedPairs()(bp.first,bp.second)) continue;
+			out<<"<rect class=\"mfe mfe-pair\" data-target=\""<<t.getInOutIndex(bp.first)
+				<<"\" data-query=\""<<q.getInOutIndex(bp.second)
+				<<"\" x=\""<<x+cell*bp.second+1<<"\" y=\""<<targetY(bp.first)+1<<"\" width=\"18\" height=\"18\"/>\n";
+		}
+		out<<"</g>\n";
 		out<<"<rect class=\"mfe\" data-target-start=\""<<t.getInOutIndex(tStart)
 			<<"\" data-target-end=\""<<t.getInOutIndex(tEnd)
 			<<"\" data-query-start=\""<<q.getInOutIndex(qStart)
 			<<"\" data-query-end=\""<<q.getInOutIndex(qEnd)
-			<<"\" x=\""<<x+cell*qStart<<"\" y=\""<<targetY(tEnd)
+			<<"\" x=\""<<x+cell*qStart<<"\" y=\""<<targetY(tStart)
 			<<"\" width=\""<<cell*(qEnd-qStart+1)<<"\" height=\""<<cell*(tEnd-tStart+1)<<"\"/>\n";
 	}
 	const double legendX=(width-7*86)/2, legendY=y+h+110;
@@ -231,7 +252,8 @@ text { font-family: sans-serif; fill: #243247; }
 	if (markMfe) {
 		const double mfeLegendY=legendY+(annotated?76:48);
 		out<<"<rect class=\"mfe\" x=\""<<legendX<<"\" y=\""<<mfeLegendY<<"\" width=\"18\" height=\"18\"/>\n";
-		text(legendX+28,mfeLegendY+13,"Green outline: minimum-free-energy interaction region","legend","start");
+		text(legendX+28,mfeLegendY+13,"Green outline: minimum-free-energy interaction region and base pairs","legend","start");
+		if (annotated) text(legendX+28,mfeLegendY+31,"Seed + MFE pair: orange left/right edges, green top/bottom edges","legend","start");
 	}
 	if(empty) text(width/2,legendY+90,"Gray / NA: empty interaction ensemble; accessibility remains defined","legend");
 	out<<"</svg>\n";

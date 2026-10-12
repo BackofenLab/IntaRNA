@@ -14,6 +14,9 @@
 
 ## Interface and handling
 
+- orient probability SVGs from the upper-left corner and highlight every MFE
+  pair, splitting seed/MFE cell borders into orange and green (PR #259 review)
+
 - enable approximate actual-pair CSV/SVG probabilities for unseeded and seeded
   heuristic ensembles, labelled explicitly as approximate (PR #259, step 11)
 
@@ -183,6 +186,16 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261012 Alexander Mitrofanov
+ * BasePairProbabilitySvg, BasePairProbabilityWriter, CommandLineParsing
+   * restore top-to-bottom target indexing, aligned frames/guides and MFE region
+   + reconstruct the MFE structure inside the best ensemble site for SVG only
+   + highlight each MFE pair; shared seed pairs use orange vertical and green
+     horizontal edges, preserving both annotations (PR #259 review)
+ * testBasePairProbabilitySvg.py, README.md, seeded-probabilities-validation.md
+   + verify complete internal MFE pairs, shared borders, signed guides and
+     output-off parity; document the fixed-boundary traceback and orientation
 
 261009 Alexander Mitrofanov
  * doc/analysis/seeded-probabilities-validation.md, doc/recursions :

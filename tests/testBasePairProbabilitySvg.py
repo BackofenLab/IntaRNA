@@ -38,7 +38,14 @@ def pairs(root):
 
 def seeds(root):
     return {(int(r.attrib['data-target']), int(r.attrib['data-query']))
-            for r in root.findall('.//s:rect[@class="seed"][@data-target]', NS)}
+            for r in root.findall('.//*[@data-target]')
+            if 'seed' in r.attrib.get('class', '').split()}
+
+
+def mfe_pairs(root):
+    return {(int(r.attrib['data-target']), int(r.attrib['data-query'])): r
+            for r in root.findall('.//*[@data-target]')
+            if 'mfe-pair' in r.attrib.get('class', '').split()}
 
 
 with tempfile.TemporaryDirectory(prefix='intarna-bpsvg-') as tmp:
@@ -59,10 +66,10 @@ with tempfile.TemporaryDirectory(prefix='intarna-bpsvg-') as tmp:
     query_axis = root.find('.//s:text[@class="axis"][@x]', NS)
     assert query_axis.text == "query (5' to 3')"
     assert float(query_axis.attrib['y']) > max(float(r.attrib['y']) for r in cells.values())+20
-    # Original target coordinate 1 is at the bottom; query coordinate 1 at left.
+    # Both lowest original indices are at the upper-left corner.
     for i in range(1, 7):
         for j in range(1, 5):
-            assert float(cells[i, j].attrib['y']) == float(cells[1, 1].attrib['y'])-20*(i-1)
+            assert float(cells[i, j].attrib['y']) == float(cells[1, 1].attrib['y'])+20*(i-1)
             assert float(cells[i, j].attrib['x']) == float(cells[1, 1].attrib['x'])+20*(j-1)
     for i, row in enumerate(rows[1:], 1):
         for j, value in enumerate(row[1:], 1):
@@ -118,10 +125,36 @@ with tempfile.TemporaryDirectory(prefix='intarna-bpsvg-') as tmp:
             ts, te, qs, qe = bounds
             matrix = pairs(mfe_plot)
             assert float(outline.attrib['x']) == float(matrix[ts, qs].attrib['x'])
-            assert float(outline.attrib['y']) == float(matrix[te, qs].attrib['y'])
+            assert float(outline.attrib['y']) == float(matrix[ts, qs].attrib['y'])
             assert float(outline.attrib['width']) == float(matrix[ts, qe].attrib['x'])-float(matrix[ts, qs].attrib['x'])+20
-            assert float(outline.attrib['height']) == float(matrix[ts, qs].attrib['y'])-float(matrix[te, qs].attrib['y'])+20
+            assert float(outline.attrib['height']) == float(matrix[te, qs].attrib['y'])-float(matrix[ts, qs].attrib['y'])+20
             assert 'Green outline:' in ''.join(mfe_plot.itertext())
+            assert len(mfe_pairs(mfe_plot)) > 2  # includes internal pairs, not just site endpoints
+    # An unambiguous four-pair stack checks every internal MFE pair against
+    # independent ordinary MFE output, including the two-color seed overlap.
+    for seed_options in ([], ['--noSeed'], ['--seedMaxUP=1'], ['--seedTQ=2||&2||']):
+        for mode in ('M', 'H'):
+            if '--seedMaxUP=1' in seed_options and mode == 'M':
+                continue  # exact bulged-seed probability output is unsupported
+            stack = plot('GGGG', 'CCCC', [*seed_options, f'--mode={mode}'])
+            reference = run('GGGG', 'CCCC', [*seed_options, '--model=X', '--mode=M',
+                                            '--outNumber=1', '--outMode=C', '--outCsvCols=bpList'])
+            row = next(csv.DictReader(reference.stdout.splitlines(), delimiter=';'))
+            expected = {tuple(map(int, bp)) for bp in re.findall(r'\((\d+),(\d+)\)', row['bpList'])}
+            assert set(mfe_pairs(stack)) == expected == {(1,4), (2,3), (3,2), (4,1)}
+            for bp, outline in mfe_pairs(stack).items():
+                cell = pairs(stack)[bp]
+                left, top = float(cell.attrib['x'])+1, float(cell.attrib['y'])+1
+                if bp in seeds(stack):
+                    assert outline.tag.endswith('g')
+                    assert outline.find('s:path[@class="seed"]', NS).attrib['d'] == f'M {left:g} {top:g} v 18 M {left+18:g} {top:g} v 18'
+                    assert outline.find('s:path[@class="mfe"]', NS).attrib['d'] == f'M {left:g} {top:g} h 18 M {left:g} {top+18:g} h 18'
+                else:
+                    assert float(outline.attrib['x']) == left
+                    assert float(outline.attrib['y']) == top
+    # A sole admitted seed fixes a shorter best site; singleton plotting remains valid.
+    singleton = plot('GGGG', 'CCCC', ['--seedTQ=4|&1|'])
+    assert (4,1) in mfe_pairs(singleton)
     unseeded = plot(opts=['--noSeed', f'--out=bpProb:{table}'])
     assert not seeds(unseeded)
     rows = list(csv.reader(table.open(), delimiter=';'))
@@ -161,7 +194,7 @@ with tempfile.TemporaryDirectory(prefix='intarna-bpsvg-') as tmp:
             idx = int(g.attrib['data-index'])
             r = signed_cells[idx,-15] if strand == 'target' else signed_cells[-15,idx]
             axis = 'y' if strand == 'target' else 'x'
-            expected_pos = float(r.attrib[axis]) + (0 if idx > 1 else 20) if strand == 'target' else float(r.attrib[axis]) + (20 if idx > 1 else 0)
+            expected_pos = float(r.attrib[axis]) + (20 if idx > 1 else 0)
             assert float(g.attrib[axis+'1']) == expected_pos
             assert ('major' in g.attrib['class']) == (idx % 50 == 0)
             assert ('origin' in g.attrib['class']) == (idx == 1)

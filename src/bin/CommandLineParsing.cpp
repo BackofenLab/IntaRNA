@@ -38,6 +38,7 @@ extern "C" {
 
 #include "IntaRNA/InteractionEnergyBasePair.h"
 #include "IntaRNA/InteractionEnergyVrna.h"
+#include "IntaRNA/OutputHandlerInteractionList.h"
 
 #include "IntaRNA/PredictorMfe2dHeuristic.h"
 #include "IntaRNA/PredictorMfe2dHelixBlockHeuristic.h"
@@ -2503,15 +2504,134 @@ BasePairProbabilities * CommandLineParsing::getBasePairProbabilityResult(const I
 	}
 	return new BasePairProbabilities(energy.size1(),energy.size2(),!noSeedRequired && !outPrefix2streamName.at(OP_bpsvg).empty());
 }
+namespace {
+
+// Ensemble output stores boundaries, not a molecular structure. Reuse the
+// existing fixed-boundary MFE recurrences solely for the SVG's pair overlay.
+class SvgMfeTrace : public PredictorMfe2d {
+public:
+	using PredictorMfe2d::PredictorMfe2d;
+	void trace(Interaction & interaction);
+};
+
+void
+SvgMfeTrace::trace(Interaction & interaction)
+{
+	interaction.sort();
+	const auto first=interaction.basePairs.front(), last=interaction.basePairs.back();
+	energy.setOffset1(first.first);
+	energy.setOffset2(energy.getAccessibility2().getReversedIndex(first.second));
+	hybridE_pq.resize(last.first-first.first+1,first.second-last.second+1);
+	traceBack(interaction);
+}
+
+class SvgSeededMfeTrace : public PredictorMfe2dSeed {
+public:
+	using PredictorMfe2dSeed::PredictorMfe2dSeed;
+	bool trace(Interaction & interaction);
+};
+
+bool
+SvgSeededMfeTrace::trace(Interaction & interaction)
+{
+	interaction.sort();
+	const auto first=interaction.basePairs.front(), last=interaction.basePairs.back();
+	const size_t offset2=energy.getAccessibility2().getReversedIndex(first.second);
+	energy.setOffset1(first.first); energy.setOffset2(offset2);
+	seedHandler.setOffset1(first.first); seedHandler.setOffset2(offset2);
+	const size_t n=last.first-first.first+1, m=first.second-last.second+1;
+	hybridE_pq.resize(n,m); hybridE_pq_seed.resize(n,m);
+	if (seedHandler.fillSeed(0,n-1,0,m-1)==0) return false;
+	fillHybridE(n-1,m-1,0,0,false);
+	if (E_isINF(hybridE_pq_seed(0,0))) return false;
+	interaction.energy=energy.getE(0,n-1,0,m-1,hybridE_pq_seed(0,0));
+	traceBack(interaction);
+	return true;
+}
+
+// Explicit seeds define their own lengths, including singletons. The legacy
+// MFE traceback's nominal length check must not reject shorter explicit seeds.
+class SvgSeedConstraint : public SeedConstraint {
+public:
+	explicit SvgSeedConstraint(const SeedConstraint & original);
+};
+
+inline
+SvgSeedConstraint::SvgSeedConstraint(const SeedConstraint & original) : SeedConstraint(original)
+{
+	if (!getExplicitSeeds().empty()) bp=2;
+}
+
+} // namespace
+
 void CommandLineParsing::writeBasePairProbabilities(const BasePairProbabilities & result,const InteractionEnergy & energy,
 		const Interaction * mfe) const {
 	const auto & t=energy.getAccessibility1().getSequence();
 	const auto & q=energy.getAccessibility2().getAccessibilityOrigin().getSequence();
 	if (!outPrefix2streamName.at(OP_bpProb).empty())
 		BasePairProbabilityWriter::writeFile(getFullFilename(outPrefix2streamName.at(OP_bpProb),&t,&q),result,t,q,outSep);
-	if (!outPrefix2streamName.at(OP_bpsvg).empty())
+	if (!outPrefix2streamName.at(OP_bpsvg).empty()) {
+		std::unique_ptr<Interaction> structure;
+		if (mfe && !mfe->isEmpty()) {
+			structure=std::make_unique<Interaction>(*mfe);
+			const auto original=getOutputConstraint(energy,true);
+			OutputConstraint constraint(1,OutputConstraint::OVERLAP_BOTH,E_INF,E_INF,
+					original.bestSeedOnly,original.noLP,original.noGUend,false,true,original.maxED);
+			OutputHandlerInteractionList unused(constraint,1);
+			if (noSeedRequired) {
+				SvgMfeTrace trace(energy,unused,nullptr);
+				trace.trace(*structure);
+			} else if (structure->basePairs.size()>1) {
+				SvgSeedConstraint seedConstraint(getSeedConstraint(energy));
+				if (seedConstraint.getExplicitSeeds().empty()) {
+					SvgSeededMfeTrace trace(energy,unused,nullptr,getSeedHandler(energy));
+					if (!trace.trace(*structure)) throw std::runtime_error("bpsvg: no MFE structure in selected seeded site");
+				} else {
+					// Trace each explicit seed separately so mixed lengths and
+					// alternatives at the same start remain available in this site.
+					std::vector<std::string> variants;
+					const auto first=structure->basePairs.front(), last=structure->basePairs.back();
+					const size_t lo2=energy.getAccessibility2().getReversedIndex(first.second);
+					const size_t hi2=energy.getAccessibility2().getReversedIndex(last.second);
+					std::istringstream encodings(seedConstraint.getExplicitSeeds());
+					for (std::string encoding; std::getline(encodings,encoding,','); ) {
+						seedConstraint.getExplicitSeeds()=encoding;
+						SeedHandlerExplicit seed(energy,seedConstraint);
+						size_t a=RnaSequence::lastPos,b=RnaSequence::lastPos;
+						if (!seed.updateToNextSeed(a,b,first.first,last.first,lo2,hi2)) continue;
+						if (seed.getSeedLength1(a,b)>1) { variants.push_back(encoding); continue; }
+						// A singleton in a multi-pair chain has a neighbor. Expand
+						// it into each feasible two-pair seed; noLP requires a stack.
+						for (int direction : {-1,1}) {
+							const size_t max1=original.noLP?1:energy.getMaxInternalLoopSize1()+1;
+							const size_t max2=original.noLP?1:energy.getMaxInternalLoopSize2()+1;
+							for (size_t d1=1; d1<=max1; ++d1) for (size_t d2=1; d2<=max2; ++d2) {
+								if ((direction<0 && (d1>a-first.first || d2>b-lo2))
+										|| (direction>0 && (d1>last.first-a || d2>hi2-b))) continue;
+								const size_t c=direction<0?a-d1:a+d1, d=direction<0?b-d2:b+d2;
+								if (!energy.areComplementary(c,d)) continue;
+								variants.push_back(std::to_string(t.getInOutIndex(std::min(a,c)))+"|"+std::string(d1-1,'.')+"|&"
+										+std::to_string(q.getInOutIndex(energy.getAccessibility2().getReversedIndex(std::max(b,d))))
+										+"|"+std::string(d2-1,'.')+"|");
+							}
+						}
+					}
+					E_type best=E_INF;
+					for (const auto & encoding : variants) {
+						seedConstraint.getExplicitSeeds()=encoding;
+						SvgSeededMfeTrace trace(energy,unused,nullptr,new SeedHandlerExplicit(energy,seedConstraint));
+						Interaction candidate(*mfe);
+						if (trace.trace(candidate) && candidate.energy<best) {
+							best=candidate.energy; *structure=candidate;
+						}
+					}
+					if (E_isINF(best)) throw std::runtime_error("bpsvg: no MFE structure in selected explicit-seed site");
+				}
+			}
+		}
 		BasePairProbabilityWriter::writeSvgFile(getFullFilename(outPrefix2streamName.at(OP_bpsvg),&t,&q),result,energy,
-				getAccessibilityRT(tAcc.val),getAccessibilityRT(qAcc.val),mfe);
+				getAccessibilityRT(tAcc.val),getAccessibilityRT(qAcc.val),structure.get());
+	}
 }
 
 Predictor*
