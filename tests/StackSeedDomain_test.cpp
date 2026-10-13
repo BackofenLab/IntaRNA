@@ -23,6 +23,7 @@ TEST_CASE("stack capability and active occurrence domain", "[StackSeedDomain]") 
 	SeedConstraint bulged(2,1,1,0,E_INF,Accessibility::ED_UPPER_BOUND,E_INF,IndexRangeList(),IndexRangeList(),"",false,false,false);
 	SeedHandlerMfe bulge(energy,bulged);
 	REQUIRE_FALSE(bulge.guaranteesStackOnlySeeds());
+	REQUIRE_THROWS_AS(StackSeedDomain(bulge,6,6,6,6),std::invalid_argument);
 	SeedConstraint explicitC(1,0,0,0,E_INF,Accessibility::ED_UPPER_BOUND,E_INF,
 		IndexRangeList(),IndexRangeList(),"1|&6|,2|||&3|||,5||&1||",false,false,false);
 	SeedHandlerIdxOffset explicitH(new SeedHandlerExplicit(energy,explicitC));
@@ -35,7 +36,7 @@ TEST_CASE("stack capability and active occurrence domain", "[StackSeedDomain]") 
 	REQUIRE(domain.maxSeedLength()==3);
 	StackSeedDomain mixed({{0,0,1},{2,2,2},{4,4,3}},6,6,4,3);
 	REQUIRE(mixed.maxSeedLength()==2);
-	std::set<std::pair<size_t,size_t>> starts;
+	std::set<Interaction::BasePair> starts;
 	size_t calls=0;
 	mixed.forEachStart([&](size_t i,size_t j){ ++calls; starts.emplace(i,j); });
 	REQUIRE(calls==starts.size());
@@ -47,6 +48,31 @@ TEST_CASE("stack capability and active occurrence domain", "[StackSeedDomain]") 
 		IndexRangeList(),IndexRangeList(),"1|.|&4|.|",false,false,false);
 	SeedHandlerExplicit eb(energy,explicitB);
 	REQUIRE_FALSE(eb.guaranteesStackOnlySeeds());
+}
+
+TEST_CASE("stack-domain lookups and traversal preserve overlapping seed geometry", "[StackSeedDomain]") {
+	// Different starts can share an ending pair; the shortest suffix must win
+	// independently of insertion order, while duplicate seeds add no new starts.
+	std::vector<StackSeedDomain::Occurrence> seeds{{3,2,1},{1,0,3},{2,1,2},{3,2,1},{0,4,2}};
+	const std::vector<Interaction::BasePair> expected{{0,0},{0,1},{0,2},{0,3},{0,4},
+		{1,0},{1,1},{1,2},{2,0},{2,1},{2,2},{3,0},{3,1},{3,2}};
+	for (bool reverse:{false,true}) {
+		if (reverse) std::reverse(seeds.begin(),seeds.end());
+		StackSeedDomain domain(seeds,6,6,4,4);
+		REQUIRE(domain.seedLength(1,0)==3);
+		REQUIRE(domain.seedLength(2,1)==2);
+		REQUIRE(domain.seedLength(3,2)==1);
+		REQUIRE(domain.seedLength(0,1)==0); // swapped coordinates are a different pair
+		REQUIRE(domain.seedEndingLength(3,2)==1);
+		REQUIRE(domain.seedEndingLength(1,5)==2);
+		REQUIRE(domain.seedEndingLength(2,3)==0);
+		REQUIRE(domain.maxSeedLength()==3);
+		std::vector<Interaction::BasePair> starts;
+		domain.forEachStart([&](size_t i,size_t j){ starts.emplace_back(i,j); });
+		REQUIRE(starts==expected);
+	}
+	// Conflicting externally supplied lengths remain an input error in release.
+	REQUIRE_THROWS_AS((StackSeedDomain({{1,1,1},{1,1,2}},4,4,4,4)),std::invalid_argument);
 }
 
 TEST_CASE("stack-domain admission preserves handler-specific threshold equality", "[StackSeedDomain]") {

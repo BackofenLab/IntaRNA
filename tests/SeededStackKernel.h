@@ -4,6 +4,7 @@
 #include "IntaRNA/SeededPartitionFunction.h"
 #include "IntaRNA/PartitionArithmetic.h"
 #include <algorithm>
+#include <array>
 #include <vector>
 
 inline IntaRNA::SeededPartitionFunction::Result seededStack(const IntaRNA::SeededPartitionFunction::Domain & d, const IntaRNA::StackSeedDomain & seeds,

@@ -5,7 +5,7 @@
 TEST_CASE("seeded chain oracle counts structures instead of seed witnesses", "[SeededPartitionFunction]") {
 	using namespace seeded_oracle;
 	Model m{3,3,3,3,false, {{{0,0},{1,1}},{{1,1},{2,2}}},
-		[](Pair p){return p[0]==p[1];}, [](Pair){return 2.L;},
+		[](Pair p){return p.first==p.second;}, [](Pair){return 2.L;},
 		[](Pair a, Pair b){return stack(a,b) ? 3.L : 0.L;},
 		[](Pair,Pair){return 5.L;}};
 	auto r=enumerate(m);
@@ -52,7 +52,7 @@ using Kernel=IntaRNA::SeededPartitionFunction;
 using IntaRNA::Z_type;
 IntaRNA::StackSeedDomain domainFor(const seeded_oracle::Model & m) {
 	std::vector<IntaRNA::StackSeedDomain::Occurrence> seeds;
-	for(const auto & s:m.seeds) seeds.push_back({s[0][0],s[0][1],s.size()});
+	for(const auto & s:m.seeds) seeds.push_back({s[0].first,s[0].second,s.size()});
 	return {seeds,m.n,m.m,m.span1,m.span2};
 }
 Kernel::Weights weightsFor(const seeded_oracle::Model & m) {
@@ -76,7 +76,7 @@ void compareKernels(const seeded_oracle::Model & m) {
 		CAPTURE(suffix);
 		auto w=weightsFor(m);
 		std::map<seeded_oracle::Boundary,Z_type> boundaries;
-		w.complete=[&](auto p,auto q,auto h,auto b){boundaries[{p[0],p[1],q[0],q[1]}]+=h*b;};
+		w.complete=[&](auto p,auto q,auto h,auto b){boundaries[{p.first,p.second,q.first,q.second}]+=h*b;};
 		auto got=suffix?Kernel::compute(d,seeds,w,true):seededStack(d,seeds,w,true);
 		REQUIRE(double(got.z)==Approx(double(oracle.z)).epsilon(2e-12));
 		for(auto [b,z]:oracle.boundaries) REQUIRE(double(boundaries[b])==Approx(double(z)).epsilon(2e-12));
@@ -102,10 +102,10 @@ TEST_CASE("heterogeneous weighted kernels match independent enumeration", "[Seed
 	for(size_t trial=0;trial<100;++trial) {
 		CAPTURE(trial);
 		Model m{6,5,2+rng()%5,2+rng()%4,bool(trial%2),{},
-			[trial](Pair p){return (p[0]+3*p[1]+trial)%7!=0;},
-			[](Pair p){return .7L+.13L*p[0];},
-			[trial](Pair p,Pair q){return (p[0]+q[1]+trial)%11==0?0.L:.1L+.17L*(q[0]-p[0])+.21L*(q[1]-p[1]);},
-			[trial](Pair p,Pair q){return (q[0]+p[1]+trial)%5==0?0.L:.2L+.07L*(q[0]+p[1]);}};
+			[trial](Pair p){return (p.first+3*p.second+trial)%7!=0;},
+			[](Pair p){return .7L+.13L*p.first;},
+			[trial](Pair p,Pair q){return (p.first+q.second+trial)%11==0?0.L:.1L+.17L*(q.first-p.first)+.21L*(q.second-p.second);},
+			[trial](Pair p,Pair q){return (q.first+p.second+trial)%5==0?0.L:.2L+.07L*(q.first+p.second);}};
 		for(size_t i=0;i<m.n;++i) for(size_t j=0;j<m.m;++j) if(rng()%3==0) {
 			size_t len=1+rng()%3;
 			Chain seed;
@@ -131,8 +131,8 @@ TEST_CASE("numerical seeded kernel comparison timing", "[.][SeededBenchmark]") {
 	for (std::string kind:{"none","sparse","overlap","dense","long-stack","mixed","asymmetric"}) {
 		const size_t n=kind=="long-stack"?90:45;
 		Model m{n,n,kind=="asymmetric"?12u:30u,kind=="asymmetric"?24u:30u,false,{},
-			[kind](Pair p){return kind=="long-stack"?p[0]==p[1]:(7*p[0]+11*p[1])%17!=0;},
-			[](Pair){return .8L;},[](Pair p,Pair q){return q[0]-p[0]<=3 && q[1]-p[1]<=3?.7L:0.L;},
+			[kind](Pair p){return kind=="long-stack"?p.first==p.second:(7*p.first+11*p.second)%17!=0;},
+			[](Pair){return .8L;},[](Pair p,Pair q){return q.first-p.first<=3 && q.second-p.second<=3?.7L:0.L;},
 			[](Pair,Pair){return .6L;}};
 		if(kind!="none") for(size_t i=0;i+4<n;++i) for(size_t j=0;j+4<n;++j) {
 			if(kind=="sparse" && (i!=n/2 || j!=n/2)) continue;

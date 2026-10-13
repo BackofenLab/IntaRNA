@@ -15,15 +15,18 @@ void BasePairProbabilities::addRegion(const IndexRange & t,const IndexRange & q,
 {
 	using A=PartitionArithmetic;
 	try {
+		// Validate the caller's lifecycle, dimensions and optional annotation mask.
 		if (state!=Status::pending) throw std::logic_error("pair probabilities: accumulator is not pending");
 		if (!t.isAscending() || !q.isAscending() || t.to>=mass.size1() || q.to>=mass.size2()
 				|| values.size1()!=t.to-t.from+1 || values.size2()!=q.to-q.from+1)
 			throw std::invalid_argument("pair probabilities: invalid region dimensions");
 		if (collectSeeds && (!seedPairs || seedPairs->size1()!=values.size1() || seedPairs->size2()!=values.size2()))
 			throw std::invalid_argument("pair probabilities: missing or invalid regional seed mask");
+		// Disjoint searched rectangles ensure each interaction contributes once.
 		for (const auto & r:regions)
 			if (t.from<=r.first.to && r.first.from<=t.to && q.from<=r.second.to && r.second.from<=q.to)
 				throw std::invalid_argument("pair probabilities: searched regions overlap");
+		// Check every proposed sum before committing any regional data.
 		const Z_type merged=A::add(z,denominator);
 		for (size_t i=0;i<values.size1();++i) for(size_t j=0;j<values.size2();++j) {
 			A::check(values(i,j));
@@ -49,6 +52,7 @@ Matrix<Z_type> BasePairProbabilities::probabilities() const {
 	const Z_type tolerance=512*std::numeric_limits<Z_type>::epsilon()
 			*Z_type(std::max(size_t(1),mass.size1()+mass.size2()));
 	std::vector<Z_type> columns(mass.size2(),0);
+	// Normalize each mass and validate that a nucleotide has at most one partner.
 	for(size_t i=0;i<mass.size1();++i) {
 		Z_type row=0;
 		for(size_t j=0;j<mass.size2();++j) {
@@ -64,6 +68,7 @@ Matrix<Z_type> BasePairProbabilities::probabilities() const {
 }
 void BasePairProbabilities::finalize() {
 	try {
+		// Successful completion includes empty searches; failed results stay failed.
 		if(state!=Status::pending) throw std::logic_error("pair probabilities: completion requires a pending result");
 		PartitionArithmetic::check(z);
 		state=z==0?Status::empty:Status::nonempty;

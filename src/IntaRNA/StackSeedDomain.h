@@ -1,10 +1,10 @@
 #ifndef INTARNA_STACKSEEDDOMAIN_H_
 #define INTARNA_STACKSEEDDOMAIN_H_
 
+#include "IntaRNA/Interaction.h"
 #include "IntaRNA/SeedHandler.h"
 #include <functional>
-#include <map>
-#include <utility>
+#include <unordered_map>
 #include <vector>
 
 namespace IntaRNA {
@@ -45,9 +45,9 @@ public:
 	void forEachStart(const std::function<void(size_t,size_t)> & visit) const;
 private:
 	//! admitted occurrences keyed by local start
-	std::map<std::pair<size_t,size_t>, size_t> lengths;
+	std::unordered_map<Interaction::BasePair, size_t, Interaction::BasePair::Hash> lengths;
 	//! shortest retained length per ending vertex for suffix acceptance
-	std::map<std::pair<size_t,size_t>, size_t> endingLengths;
+	std::unordered_map<Interaction::BasePair, size_t, Interaction::BasePair::Hash> endingLengths;
 	//! eligible inclusive rectangles [i0,i1] x [j0,j1]
 	struct Box { size_t i0, i1, j0, j1; };
 	std::vector<Box> boxes;

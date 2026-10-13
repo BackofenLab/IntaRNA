@@ -94,6 +94,17 @@ Consult those checks for build or public API changes.
   `INTARNA_..._H_` include guards, and existing class/member naming. Keep edits
   focused; do not reformat unrelated code or modernize vendored
   `src/easylogging++.*` or `tests/catch.hpp` as part of an ordinary fix.
+- Represent base-pair coordinates with `Interaction::BasePair` rather than
+  `std::pair` or `std::array`; document the coordinate orientation when it differs
+  from the original sequences. For sparse lookup tables such as seed starts, use
+  `std::unordered_map<Interaction::BasePair, Value, Interaction::BasePair::Hash>`.
+  Use ordered storage only when ordering is required; preserve deterministic
+  traversal explicitly when iterating hash-based data affects results or output.
+- Check internal invariants with `assert` or debug-only checks guarded by
+  `#ifndef NDEBUG` (or the existing `INTARNA_IN_DEBUG_MODE` convention). Keep
+  release checks for public input validation and failures possible during normal
+  execution, including numerical range errors, I/O errors and unsupported
+  extension-hook behavior. Assertions must have no required side effects.
 - Keep class bodies focused on declarations. Define very short functions
   **explicitly `inline` after the class definition in the same header**, inside
   the namespace and include guard. Put nontrivial non-template implementations
@@ -167,6 +178,10 @@ constraints, ownership and exceptions. Use `//!` for brief member documentation
 and implementation comments to explain recurrences and assumptions. Update
 comments with the code; preserve existing author attribution. Doxygen setup is
 in `doc/doxygen.cfg`; update `README.md` and CLI help for user-visible changes.
+Within nontrivial implementations, introduce each logical step with a concise
+inline comment explaining its purpose and relevant invariants, especially domain
+filtering, recurrence transitions, coordinate conversion and result publication.
+Use these comments to make the sequence of operations easy to review.
 
 Update **[ChangeLog](ChangeLog)** (exact capitalization) for every introduced
 change, including documentation, tests and build changes, in the same PR:

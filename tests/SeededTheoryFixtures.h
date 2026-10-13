@@ -29,15 +29,15 @@ inline std::vector<TheoryFixture> theoryFixtures() {
 			auto & f=fixtures.back();
 			if (tag == "Z") file >> f.expected.z;
 			else if (tag == "S") {
-				Pair p; size_t len; file >> p[0] >> p[1] >> len;
-				Chain s; for (size_t k=0;k<len;++k) s.push_back({p[0]+k,p[1]+k});
+				Pair p; size_t len; file >> p.first >> p.second >> len;
+				Chain s; for (size_t k=0;k<len;++k) s.push_back({p.first+k,p.second+k});
 				f.model.seeds.push_back(s);
 			} else if (tag == "B") {
 				Boundary b; for (auto & i:b) file >> i;
 				file >> f.terminal[b] >> f.seeded[b] >> f.free[b];
 				f.expected.boundaries[b]=f.terminal[b]*f.seeded[b];
 			} else if (tag == "P") {
-				Pair p; file >> p[0] >> p[1] >> f.valid[p] >> f.expected.mass[p];
+				Pair p; file >> p.first >> p.second >> f.valid[p] >> f.expected.mass[p];
 			}
 		}
 	}
@@ -46,7 +46,7 @@ inline std::vector<TheoryFixture> theoryFixtures() {
 		f.model.init=[](Pair){return std::exp(1.L);};
 		f.model.edge=[](Pair,Pair){return std::exp(1.L);};
 		f.model.boundary=[b=f.terminal](Pair p,Pair q){
-			auto it=b.find({p[0],p[1],q[0],q[1]});return it==b.end()?0.L:it->second;
+			auto it=b.find({p.first,p.second,q.first,q.second});return it==b.end()?0.L:it->second;
 		};
 	}
 	return fixtures;
