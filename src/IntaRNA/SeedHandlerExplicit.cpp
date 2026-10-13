@@ -17,6 +17,7 @@ SeedHandlerExplicit(
 		)
  :	SeedHandler(energy,seedConstraint)
 	, seedForLeftEnd()
+	, allSeedsStacked(true)
 {
 #if INTARNA_IN_DEBUG_MODE
 	if (seedConstraint.getExplicitSeeds().empty()) throw std::runtime_error("SeedHandlerExplicit() : explicit seed encoding is empty");
@@ -41,6 +42,8 @@ SeedHandlerExplicit(
 		if (!seedData.isValid()) {
 			LOG(WARNING) <<"explicit seed '"<<seed.substr(s,length)<<"' not valid and will be ignored";
 		} else {
+			// check if seed is stacked (i.e. no bulges or internal loops)
+			allSeedsStacked &= (seedData.dotBar1.find('.') == std::string::npos && seedData.dotBar2.find('.') == std::string::npos);
 			// generate hash key element for storing
 			Interaction::BasePair leftBP = Interaction::BasePair(seedData.start1,seedData.start2);
 			// check if left boundary already known
@@ -457,11 +460,8 @@ updateToNextSeed( size_t & i1_out, size_t & i2_out
 bool
 SeedHandlerExplicit::guaranteesStackOnlySeeds() const
 {
-	for (const auto & entry : seedForLeftEnd) {
-		if (entry.second.dotBar1.find('.') != std::string::npos
-				|| entry.second.dotBar2.find('.') != std::string::npos) return false;
-	}
-	return true;
+	// check if all seeds are stacked (i.e. no bulges or internal loops)
+	return allSeedsStacked;
 }
 
 } /* namespace IntaRNA */

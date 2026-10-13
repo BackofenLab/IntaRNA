@@ -211,6 +211,9 @@ protected:
 	//! container to store
 	boost::unordered_map< Interaction::BasePair, SeedData, Interaction::BasePair::Hash > seedForLeftEnd;
 
+	//! whether or not all seeds are stacked (i.e. no bulges or internal loops)
+	bool allSeedsStacked;
+
 };
 
 } /* namespace IntaRNA */
