@@ -4,7 +4,7 @@
 #include <stdexcept>
 
 namespace IntaRNA {
-/** Checked nonnegative arithmetic for exact seeded partitions only.
+/** Checked nonnegative arithmetic for pair-probability partitions.
  * Structural zero is exactly zero. Positive subnormals are rejected because
  * their relative precision is not guaranteed. Ordinary sum rounding remains.
  */
@@ -24,7 +24,7 @@ public:
 inline Z_type PartitionArithmetic::check(const Z_type x) {
 	if (!(x>=0 && x<=std::numeric_limits<Z_type>::max())
 			|| (x>0 && x<std::numeric_limits<Z_type>::min()))
-		throw std::range_error("exact seeded partition: numerical range exceeded");
+		throw std::range_error("partition arithmetic: numerical range exceeded");
 	return x;
 }
 inline Z_type PartitionArithmetic::add(const Z_type a,const Z_type b) {
@@ -34,19 +34,19 @@ inline Z_type PartitionArithmetic::multiply(const Z_type a,const Z_type b) {
 	check(a); check(b);
 	if (a==0 || b==0) return 0;
 	const Z_type r=check(a*b);
-	if (r==0) throw std::range_error("exact seeded partition: product underflow");
+	if (r==0) throw std::range_error("partition arithmetic: product underflow");
 	return r;
 }
 inline Z_type PartitionArithmetic::divide(const Z_type a,const Z_type b) {
 	check(a); check(b);
-	if (b==0) throw std::range_error("exact seeded partition: zero denominator");
+	if (b==0) throw std::range_error("partition arithmetic: zero denominator");
 	const Z_type r=check(a/b);
-	if (a>0 && r==0) throw std::range_error("exact seeded partition: quotient underflow");
+	if (a>0 && r==0) throw std::range_error("partition arithmetic: quotient underflow");
 	return r;
 }
 inline Z_type PartitionArithmetic::exp(const Z_type exponent) {
 	const Z_type r=check(Z_exp(exponent));
-	if (r==0) throw std::range_error("exact seeded partition: exponential underflow");
+	if (r==0) throw std::range_error("partition arithmetic: exponential underflow");
 	return r;
 }
 }

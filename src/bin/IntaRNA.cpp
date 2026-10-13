@@ -239,9 +239,9 @@ int main(int argc, char **argv){
 								// setup collecting output handler to ensure
 								// k-best output per query-target combination
 								// and not per region combination if not requested
-								OutputHandlerInteractionList bestInteractions( parameters.getOutputConstraint(*energy),
+								OutputHandlerInteractionList bestInteractions( parameters.getOutputConstraint(*energy,true),
 										(parameters.reportBestPerRegion() ? std::numeric_limits<size_t>::max() : 1 )
-											* parameters.getOutputConstraint(*energy).reportMax );
+											* parameters.getOutputConstraint(*energy,true).reportMax );
 
 								// One owner spans all disjoint searched regions for this sequence pair.
 								std::unique_ptr<BasePairProbabilities> pairProbabilities(parameters.getBasePairProbabilityResult(*energy));
@@ -356,12 +356,14 @@ int main(int argc, char **argv){
 											: (*bestInteractions.begin())->energy + bestInteractions.getOutputConstraint().deltaE;
 									// The collector is sorted by energy, so all later entries are worse.
 									for( const Interaction * inter : bestInteractions) {
+										if (output->getOutputConstraint().reportMax==0) break;
 										if (inter->energy > maxMergedE) { break; }
 										output->add(*inter);
 									}
 								}
 
-								if (pairProbabilities) parameters.writeBasePairProbabilities(*pairProbabilities,*energy);
+								if (pairProbabilities) parameters.writeBasePairProbabilities(*pairProbabilities,*energy,
+										bestInteractions.empty()?nullptr:*bestInteractions.begin());
 								} // successful sequence-pair computation
 
 #if INTARNA_MULITHREADING

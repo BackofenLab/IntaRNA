@@ -106,6 +106,7 @@ libIntaRNA_a_SOURCES = \
 					StackSeedDomain.cpp \
 					BasePairProbabilities.cpp \
 					BasePairProbabilityWriter.cpp \
+					BasePairProbabilitySvg.cpp \
 					SeededPartitionFunction.cpp \
                     $(libmylib_a_HEADERS) \
 					Accessibility.cpp \

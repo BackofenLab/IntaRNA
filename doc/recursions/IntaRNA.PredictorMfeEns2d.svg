@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1190" viewBox="0 0 1440 1190" role="img" aria-labelledby="title desc">
+<title id="title">Unseeded ensemble · fixed right boundary</title>
+<desc id="desc">PredictorMfeEns2d  |  --model=P --mode=M --noSeed. Internal recurrence documentation for step 9 of PR 258. Equations describe the current implementation; RNA 2 uses reversed energy coordinates.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#60798e"/></marker>
+<pattern id="seed-hatch" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#fff0dc"/><path d="M-2 2 L2 -2 M0 8 L8 0 M6 10 L10 6" stroke="#e0b27a" stroke-width="1"/></pattern></defs>
+<rect width="1440" height="100%" fill="white"/>
+<text x="48" y="48" font-family="DejaVu Sans, sans-serif" font-size="14" fill="#275f8c" text-anchor="start" font-weight="bold">INTARNA  /  RECURRENCE NOTES</text>
+<text x="48" y="91" font-family="DejaVu Sans, sans-serif" font-size="31" fill="#203244" text-anchor="start" font-weight="bold">Unseeded ensemble · fixed right boundary</text>
+<text x="48" y="125" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">PredictorMfeEns2d  |  --model=P --mode=M --noSeed</text>
+<path d="M48 148 L1392 148" fill="none" stroke="#c4d0da" stroke-width="1.2"/>
+<text x="48" y="184" font-family="DejaVu Sans, sans-serif" font-size="19" fill="#203244" text-anchor="start">Pair indices i=(i₁,i₂), k and j increase on both strands; RNA 2 is reversed.</text>
+<text x="48" y="213" font-family="DejaVu Sans, sans-serif" font-size="19" fill="#203244" text-anchor="start">i ≺ k means strict increase in both coordinates. d=BW(E_init), t(i,k)=BW(E_interLeft(i,k)).</text>
+<text x="48" y="253" font-family="DejaVu Serif, sans-serif" font-size="25" fill="#203244" text-anchor="start">Hⱼ(i) = hybrid partition for all admitted chains from i to a fixed j</text>
+<rect x="48" y="285" width="440" height="225" rx="8" fill="#f3f7fa" stroke="#d0dbe3"/>
+<text x="70" y="319" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#275f8c" text-anchor="start" font-weight="bold">Initiation</text>
+<rect x="500" y="285" width="440" height="225" rx="8" fill="#f3f7fa" stroke="#d0dbe3"/>
+<text x="522" y="319" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#275f8c" text-anchor="start" font-weight="bold">Direct pair-to-pair step</text>
+<rect x="952" y="285" width="440" height="225" rx="8" fill="#f3f7fa" stroke="#d0dbe3"/>
+<text x="974" y="319" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#275f8c" text-anchor="start" font-weight="bold">Recursive continuation</text>
+<path d="M106 364 L366 364" fill="none" stroke="#203244" stroke-width="2"/>
+<path d="M106 424 L366 424" fill="none" stroke="#203244" stroke-width="2"/>
+<path d="M236.0 364 L236.0 424" fill="none" stroke="#203244" stroke-width="2.4"/>
+<text x="236.0" y="352" font-family="DejaVu Serif, sans-serif" font-size="17" fill="#203244" text-anchor="middle">i = j</text>
+<text x="268" y="477" font-family="DejaVu Serif, sans-serif" font-size="28" fill="#203244" text-anchor="start">d</text>
+<path d="M553 364 L883 364" fill="none" stroke="#203244" stroke-width="2"/>
+<path d="M553 424 L883 424" fill="none" stroke="#203244" stroke-width="2"/>
+<path d="M553 364 L553 424" fill="none" stroke="#203244" stroke-width="2.4"/>
+<text x="553" y="352" font-family="DejaVu Serif, sans-serif" font-size="17" fill="#203244" text-anchor="middle">i</text>
+<path d="M883 364 L883 424" fill="none" stroke="#203244" stroke-width="2.4"/>
+<text x="883" y="352" font-family="DejaVu Serif, sans-serif" font-size="17" fill="#203244" text-anchor="middle">j</text>
+<text x="607" y="477" font-family="DejaVu Serif, sans-serif" font-size="27" fill="#203244" text-anchor="start">t(i,j) · d</text>
+<rect x="1133.0" y="364" width="198.0" height="60" fill="#dcebf5"/>
+<text x="1232.0" y="401" font-family="DejaVu Serif, sans-serif" font-size="24" fill="#275f8c" text-anchor="middle">Hⱼ(k)</text>
+<path d="M1001 364 L1331 364" fill="none" stroke="#203244" stroke-width="2"/>
+<path d="M1001 424 L1331 424" fill="none" stroke="#203244" stroke-width="2"/>
+<path d="M1001 364 L1001 424" fill="none" stroke="#203244" stroke-width="2.4"/>
+<text x="1001" y="352" font-family="DejaVu Serif, sans-serif" font-size="17" fill="#203244" text-anchor="middle">i</text>
+<path d="M1133.0 364 L1133.0 424" fill="none" stroke="#203244" stroke-width="2.4"/>
+<text x="1133.0" y="352" font-family="DejaVu Serif, sans-serif" font-size="17" fill="#203244" text-anchor="middle">k</text>
+<path d="M1331 364 L1331 424" fill="none" stroke="#203244" stroke-width="2.4"/>
+<text x="1331" y="352" font-family="DejaVu Serif, sans-serif" font-size="17" fill="#203244" text-anchor="middle">j</text>
+<text x="1001" y="477" font-family="DejaVu Serif, sans-serif" font-size="25" fill="#203244" text-anchor="start">t(i,k) · Hⱼ(k)</text>
+<text x="48" y="554" font-family="DejaVu Sans, sans-serif" font-size="23" fill="#275f8c" text-anchor="start" font-weight="bold">Lonely pairs allowed</text>
+<text x="48" y="599" font-family="DejaVu Serif, sans-serif" font-size="25" fill="#203244" text-anchor="start">Hⱼ(j)=d;   Hⱼ(i)=t(i,j)d + ∑ t(i,k)Hⱼ(k)       (i <tspan font-family="DejaVu Sans, sans-serif">≺</tspan> k <tspan font-family="DejaVu Sans, sans-serif">≺</tspan> j)</text>
+<text x="48" y="639" font-family="DejaVu Sans, sans-serif" font-size="19" fill="#203244" text-anchor="start">All other or noncomplementary states are zero. Sum only loop-size-admissible steps.</text>
+<text x="48" y="668" font-family="DejaVu Sans, sans-serif" font-size="19" fill="#203244" text-anchor="start">For every valid right pair j, fill i in decreasing order within the span limits.</text>
+<rect x="48" y="697" width="1344" height="231" rx="8" fill="#edf6f2" stroke="#d0dbe3"/>
+<text x="70" y="731" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#23796a" text-anchor="start" font-weight="bold">noLP: the left boundary must stack to i⁺ = i + (1,1)</text>
+<text x="72" y="776" font-family="DejaVu Serif, sans-serif" font-size="24" fill="#203244" text-anchor="start">Hⱼ(j)=0;   Hⱼ(i)=t(i,i⁺) · [ (d if i⁺=j, else Hⱼ(i⁺)) + ∑ t(i⁺,k)Hⱼ(k) ]</text>
+<text x="72" y="821" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">The sum requires i⁺ ≺ k ≺ j and k ≠ i⁺+(1,1): the direct stack is already in Hⱼ(i⁺).</text>
+<text x="72" y="850" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Require a complementary i⁺. Unreachable suffixes are zero; the adjacent two-pair case contributes t(i,j)d.</text>
+<text x="72" y="879" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Thus initialization is a stack, and each nonstack continuation starts another stacked suffix.</text>
+<text x="48" y="978" font-family="DejaVu Serif, sans-serif" font-size="24" fill="#203244" text-anchor="start">Zall += B(i,j) · Hⱼ(i);    E_site = energy.getE(i,j, energy.getE(Hⱼ(i)))</text>
+<text x="48" y="1017" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">B(i,j)=BW(energy.getE(i₁,j₁,i₂,j₂,0)) for admitted boundaries; otherwise B=0.</text>
+<text x="48" y="1046" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">This adds full-interval ED and terminal terms once; updateCompleteZ submits each boundary once.</text>
+<path d="M48 1095 L1392 1095" fill="none" stroke="#c4d0da" stroke-width="1.2"/>
+<text x="48" y="1119" font-family="DejaVu Sans, sans-serif" font-size="14" fill="#275f8c" text-anchor="start" font-weight="bold">Implementation anchors (src/IntaRNA/) · BW(E)=exp(−E/RT) after native energy-unit conversion</text>
+<text x="48" y="1142" font-family="DejaVu Sans, sans-serif" font-size="13" fill="#203244" text-anchor="start">PredictorMfeEns2d.cpp: predict(), fillHybridZ()</text>
+<text x="48" y="1163" font-family="DejaVu Sans, sans-serif" font-size="13" fill="#203244" text-anchor="start">PredictorMfeEns.cpp: updateCompleteZ(), addPartitionContribution()</text>
+</svg>

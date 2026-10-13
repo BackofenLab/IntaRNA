@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1610" viewBox="0 0 1440 1610" role="img" aria-labelledby="title desc">
+<title id="title">Actual base-pair probabilities · outside recurrence</title>
+<desc id="desc">Reverse differentiation of the suffix inside computation; same fixed p and same boundary weights B. Internal recurrence documentation for step 9 of PR 258. Equations describe the current implementation; RNA 2 uses reversed energy coordinates.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#60798e"/></marker>
+<pattern id="seed-hatch" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#fff0dc"/><path d="M-2 2 L2 -2 M0 8 L8 0 M6 10 L10 6" stroke="#e0b27a" stroke-width="1"/></pattern></defs>
+<rect width="1440" height="100%" fill="white"/>
+<text x="48" y="48" font-family="DejaVu Sans, sans-serif" font-size="14" fill="#275f8c" text-anchor="start" font-weight="bold">INTARNA  /  RECURRENCE NOTES</text>
+<text x="48" y="91" font-family="DejaVu Sans, sans-serif" font-size="31" fill="#203244" text-anchor="start" font-weight="bold">Actual base-pair probabilities · outside recurrence</text>
+<text x="48" y="125" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Reverse differentiation of the suffix inside computation; same fixed p and same boundary weights B</text>
+<path d="M48 148 L1392 148" fill="none" stroke="#c4d0da" stroke-width="1.2"/>
+<text x="48" y="185" font-family="DejaVu Sans, sans-serif" font-size="19" fill="#203244" text-anchor="start">H and T are forward state/aggregate weights. Their adjoints are A=∂Z/∂H and G=∂Z/∂T.</text>
+<text x="48" y="214" font-family="DejaVu Sans, sans-serif" font-size="19" fill="#203244" text-anchor="start">M(q) is the raw mass of complete chains containing actual pair q; it is not site-coverage mass.</text>
+<rect x="110" y="275" width="284.0" height="60" fill="#dcebf5"/>
+<text x="252.0" y="312" font-family="DejaVu Serif, sans-serif" font-size="24" fill="#275f8c" text-anchor="middle">H(r,c)</text>
+<path d="M110 275 L820 275" fill="none" stroke="#203244" stroke-width="2"/>
+<path d="M110 335 L820 335" fill="none" stroke="#203244" stroke-width="2"/>
+<path d="M110 275 L110 335" fill="none" stroke="#203244" stroke-width="2.4"/>
+<text x="110" y="263" font-family="DejaVu Serif, sans-serif" font-size="17" fill="#203244" text-anchor="middle">p</text>
+<path d="M394.0 275 L394.0 335" fill="none" stroke="#203244" stroke-width="2.4"/>
+<text x="394.0" y="263" font-family="DejaVu Serif, sans-serif" font-size="17" fill="#203244" text-anchor="middle">r</text>
+<path d="M571.5 275 L571.5 335" fill="none" stroke="#203244" stroke-width="2.4"/>
+<text x="571.5" y="263" font-family="DejaVu Serif, sans-serif" font-size="17" fill="#203244" text-anchor="middle">q</text>
+<path d="M820 275 L820 335" fill="none" stroke="#203244" stroke-width="2.4"/>
+<text x="820" y="263" font-family="DejaVu Serif, sans-serif" font-size="17" fill="#203244" text-anchor="middle">terminal</text>
+<path d="M571.5 275 L571.5 335" fill="none" stroke="#bd6518" stroke-width="5"/>
+<text x="920" y="288" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Reverse the incoming edge r → q.</text>
+<text x="920" y="317" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Only actual pair q receives this edge’s mass.</text>
+<g transform="translate(0 140)">
+<rect x="48" y="248" width="1344" height="139" rx="8" fill="#f3f7fa" stroke="#d0dbe3"/>
+<text x="70" y="282" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#275f8c" text-anchor="start" font-weight="bold">1  Initialize the reverse objective</text>
+<text x="73" y="313" font-family="DejaVu Serif, sans-serif" font-size="23" fill="#203244" text-anchor="start">A(q,S₂)=B(p,q);   A(q,S₁)=B(p,q) only without noLP;   other A and G = 0</text>
+<text x="73" y="354" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Initialize at reachable positive seeded totals; a zero terminal coefficient contributes nothing.</text>
+<rect x="48" y="423" width="1344" height="197" rx="8" fill="#edf6f2" stroke="#d0dbe3"/>
+<text x="70" y="457" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#23796a" text-anchor="start" font-weight="bold">2  Reverse q in decreasing order; first scatter aggregate adjoints</text>
+<text x="73" y="489" font-family="DejaVu Serif, sans-serif" font-size="24" fill="#203244" text-anchor="start">A(q,U<tspan font-family="DejaVu Sans, sans-serif">ℓ</tspan>) += G₀(q)   for the same departure-eligible <tspan font-family="DejaVu Sans, sans-serif">ℓ</tspan> as in the forward sum</text>
+<text x="73" y="534" font-family="DejaVu Serif, sans-serif" font-size="24" fill="#203244" text-anchor="start">A(q,S₂) += G₁(q);   A(q,S₁) += G₁(q) only without noLP</text>
+<text x="73" y="576" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">This scatter must precede reversing the incoming edges at q.</text>
+<rect x="48" y="659" width="645" height="274" rx="8" fill="#f3f7fa" stroke="#d0dbe3"/>
+<text x="70" y="693" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#275f8c" text-anchor="start" font-weight="bold">3a  Reverse a stack edge r→q</text>
+<text x="73" y="724" font-family="DejaVu Serif, sans-serif" font-size="24" fill="#203244" text-anchor="start">a = A(q,D(c,stack)) · t(r,q)</text>
+<text x="73" y="770" font-family="DejaVu Serif, sans-serif" font-size="27" fill="#203244" text-anchor="start">A(r,c) += a</text>
+<text x="73" y="816" font-family="DejaVu Serif, sans-serif" font-size="27" fill="#203244" text-anchor="start">M(q) += a · H(r,c)</text>
+<text x="73" y="860" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Repeat for every forward source state c.</text>
+<text x="73" y="889" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">The transition marker belongs to destination q.</text>
+<rect x="720" y="659" width="672" height="274" rx="8" fill="#f3f7fa" stroke="#d0dbe3"/>
+<text x="742" y="693" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#275f8c" text-anchor="start" font-weight="bold">3b  Reverse a nonstack edge r→q</text>
+<text x="743" y="724" font-family="DejaVu Serif, sans-serif" font-size="24" fill="#203244" text-anchor="start">a = A(q,D(b,loop)) · t(r,q)</text>
+<text x="743" y="770" font-family="DejaVu Serif, sans-serif" font-size="27" fill="#203244" text-anchor="start">G_b(r) += a</text>
+<text x="743" y="816" font-family="DejaVu Serif, sans-serif" font-size="27" fill="#203244" text-anchor="start">M(q) += a · T_b(r)</text>
+<text x="743" y="860" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Repeat for b=0 and b=1 using the same forward totals.</text>
+<text x="743" y="889" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Do not mark the unpaired nucleotides in the loop.</text>
+<rect x="48" y="970" width="1344" height="130" rx="8" fill="#fff7ed" stroke="#d0dbe3"/>
+<text x="70" y="1004" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#bd6518" text-anchor="start" font-weight="bold">4  Mark the source pair after the reverse sweep</text>
+<text x="73" y="1043" font-family="DejaVu Serif, sans-serif" font-size="28" fill="#203244" text-anchor="start">M(p) += A(p,c₀) · d(p)</text>
+<text x="650" y="1043" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Every other pair was marked when its incoming edge was reversed.</text>
+<rect x="48" y="1139" width="1344" height="179" rx="8" fill="#f3f7fa" stroke="#d0dbe3"/>
+<text x="70" y="1173" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#275f8c" text-anchor="start" font-weight="bold">5  Merge successful disjoint search regions before normalization</text>
+<text x="73" y="1212" font-family="DejaVu Serif, sans-serif" font-size="23" fill="#203244" text-anchor="start">Z_total = ∑ Z_region;    M_total(i,j) = ∑ M_region(i,j);    P(i,j)=M_total(i,j)/Z_total</text>
+<text x="73" y="1255" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Map regional pairs with energy.getBasePair() into original target/query coordinates, then finalize explicitly.</text>
+<text x="73" y="1284" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Z_total=0 → NA. Failed/cancelled computation → no matrix. No unbound-state weight is added.</text>
+<text x="48" y="1356" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Seed admission and B are fixed while differentiating. Masses sum across every eligible left boundary p.</text>
+</g>
+<path d="M48 1515 L1392 1515" fill="none" stroke="#c4d0da" stroke-width="1.2"/>
+<text x="48" y="1539" font-family="DejaVu Sans, sans-serif" font-size="14" fill="#275f8c" text-anchor="start" font-weight="bold">Implementation anchors (src/IntaRNA/) · BW(E)=exp(−E/RT) after native energy-unit conversion</text>
+<text x="48" y="1562" font-family="DejaVu Sans, sans-serif" font-size="13" fill="#203244" text-anchor="start">SeededPartitionFunction.cpp: dh (A), dt (G), mass and initial-pair contribution</text>
+<text x="48" y="1583" font-family="DejaVu Sans, sans-serif" font-size="13" fill="#203244" text-anchor="start">PredictorMfeEns2dSeedExtension::predictStackSeeds(); BasePairProbabilities::addRegion(), finalize(), probabilities()</text>
+</svg>
