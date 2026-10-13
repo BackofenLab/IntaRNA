@@ -4,11 +4,16 @@
 #include <stdexcept>
 
 namespace IntaRNA {
-void BasePairProbabilities::markApproximate() {
+
+void 
+BasePairProbabilities::
+markApproximate() {
 	if (state!=Status::pending) throw std::logic_error("pair probabilities: accumulator is not pending");
 	approximate=true;
 }
-BasePairProbabilities::BasePairProbabilities(size_t n,size_t m,bool collectSeedPairs)
+
+BasePairProbabilities::
+BasePairProbabilities(size_t n,size_t m,bool collectSeedPairs)
 	: mass(n,m,0), collectSeeds(collectSeedPairs), seeds(collectSeedPairs?n:0,collectSeedPairs?m:0,0) {}
 void BasePairProbabilities::addRegion(const IndexRange & t,const IndexRange & q,
 		Z_type denominator,const Matrix<Z_type> & values,const Matrix<unsigned char> * seedPairs)
@@ -17,15 +22,17 @@ void BasePairProbabilities::addRegion(const IndexRange & t,const IndexRange & q,
 	try {
 		// Validate the caller's lifecycle, dimensions and optional annotation mask.
 		if (state!=Status::pending) throw std::logic_error("pair probabilities: accumulator is not pending");
+#if INTARNA_IN_DEBUG_MODE
 		if (!t.isAscending() || !q.isAscending() || t.to>=mass.size1() || q.to>=mass.size2()
 				|| values.size1()!=t.to-t.from+1 || values.size2()!=q.to-q.from+1)
 			throw std::invalid_argument("pair probabilities: invalid region dimensions");
 		if (collectSeeds && (!seedPairs || seedPairs->size1()!=values.size1() || seedPairs->size2()!=values.size2()))
 			throw std::invalid_argument("pair probabilities: missing or invalid regional seed mask");
-		// Disjoint searched rectangles ensure each interaction contributes once.
-		for (const auto & r:regions)
+			// Disjoint searched rectangles ensure each interaction contributes once.
+			for (const auto & r:regions)
 			if (t.from<=r.first.to && r.first.from<=t.to && q.from<=r.second.to && r.second.from<=q.to)
-				throw std::invalid_argument("pair probabilities: searched regions overlap");
+			throw std::invalid_argument("pair probabilities: searched regions overlap");
+#endif
 		// Check every proposed sum before committing any regional data.
 		const Z_type merged=A::add(z,denominator);
 		for (size_t i=0;i<values.size1();++i) for(size_t j=0;j<values.size2();++j) {
@@ -43,7 +50,10 @@ void BasePairProbabilities::addRegion(const IndexRange & t,const IndexRange & q,
 		z=merged;
 	} catch (...) { fail(); throw; }
 }
-Matrix<Z_type> BasePairProbabilities::probabilities() const {
+
+Matrix<Z_type> 
+BasePairProbabilities::
+probabilities() const {
 	using A=PartitionArithmetic;
 	if (state!=Status::nonempty) throw std::logic_error("pair probabilities: no successful nonempty result");
 	Matrix<Z_type> p(mass.size1(),mass.size2(),0);
@@ -66,7 +76,10 @@ Matrix<Z_type> BasePairProbabilities::probabilities() const {
 	for(auto c:columns) if(c>1+tolerance) throw std::logic_error("pair probabilities: query exclusivity violated");
 	return p;
 }
-void BasePairProbabilities::finalize() {
+
+void 
+BasePairProbabilities::
+finalize() {
 	try {
 		// Successful completion includes empty searches; failed results stay failed.
 		if(state!=Status::pending) throw std::logic_error("pair probabilities: completion requires a pending result");

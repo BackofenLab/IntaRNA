@@ -543,7 +543,9 @@ template<class T>
 inline
 std::size_t UpperBandedMatrix<T>::width(std::size_t columns, std::size_t lower, std::size_t upper)
 {
+#if INTARNA_IN_DEBUG_MODE
 	if (lower != 0) throw std::invalid_argument("upper-banded matrix requires lower=0");
+#endif
 	return upper >= columns ? columns : upper + 1;
 }
 

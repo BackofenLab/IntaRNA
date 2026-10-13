@@ -5,7 +5,9 @@
 // Seed-free suffix lengths plus two absorbing seeded states (singleton/run).
 // Nonstack edges operate on aggregate totals, independently of seed length.
 namespace IntaRNA {
-SeededPartitionFunction::Result SeededPartitionFunction::compute(
+SeededPartitionFunction::Result 
+SeededPartitionFunction::
+compute(
 		const IntaRNA::SeededPartitionFunction::Domain & d,
 		const IntaRNA::StackSeedDomain & seeds,
 		const IntaRNA::SeededPartitionFunction::Weights & w, bool pairs)

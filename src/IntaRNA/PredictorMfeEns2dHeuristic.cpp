@@ -53,17 +53,14 @@ predictRegionHeuristic(const IndexRange & r1,const IndexRange & r2)
 
 #if INTARNA_IN_DEBUG_MODE
 	// check indices
-	if (!(r1.isAscending() && r2.isAscending()) )
+	if (!(r1.isAscending() && r2.isAscending()) 
+			|| r1.from>=energy.getAccessibility1().getSequence().size()
+			|| r2.from>=energy.getAccessibility2().getSequence().size())
 		throw std::runtime_error("PredictorMfeEns2dHeuristic::predict("+toString(r1)+","+toString(r2)+") is not sane");
 #endif
 
-
-	if (!r1.isAscending() || !r2.isAscending()
-			|| r1.from>=energy.getAccessibility1().getSequence().size()
-			|| r2.from>=energy.getAccessibility2().getSequence().size())
-		throw std::invalid_argument("heuristic ensemble prediction: invalid region");
 	if (pairProbabilities && pairProbabilities->status()!=BasePairProbabilities::Status::pending)
-		throw std::logic_error("heuristic pair probabilities: accumulator is not pending");
+		throw std::logic_error("PredictorMfeEns2dHeuristic::predict: heuristic pair probabilities: accumulator is not pending");
 	if (pairProbabilities) pairProbabilities->markApproximate();
 	// set index offset
 	energy.setOffset1(r1.from);

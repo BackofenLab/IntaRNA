@@ -55,14 +55,12 @@ PredictorMfeEns2d::predictRegion(const IndexRange & r1,const IndexRange & r2)
 
 #if INTARNA_IN_DEBUG_MODE
 	// check indices
-	if (!(r1.isAscending() && r2.isAscending()) )
+	if (!(r1.isAscending() && r2.isAscending()) 
+		|| r1.from>=energy.getAccessibility1().getSequence().size()
+		|| r2.from>=energy.getAccessibility2().getSequence().size()))
 		throw std::runtime_error("PredictorMfeEns2d::predict("+toString(r1)+","+toString(r2)+") is not sane");
 #endif
 
-	if (pairProbabilities && (!r1.isAscending() || !r2.isAscending()
-			|| r1.from>=energy.getAccessibility1().getSequence().size()
-			|| r2.from>=energy.getAccessibility2().getSequence().size()))
-		throw std::invalid_argument("unseeded pair probabilities: invalid region");
 	if (pairProbabilities && pairProbabilities->status()!=BasePairProbabilities::Status::pending)
 		throw std::logic_error("unseeded pair probabilities: accumulator is not pending");
 
