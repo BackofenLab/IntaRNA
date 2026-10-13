@@ -22,7 +22,7 @@ using namespace IntaRNA;
 
 namespace {
 
-using Pair=std::array<size_t,2>;
+using Pair=Interaction::BasePair;
 using Chain=std::vector<Pair>;
 
 struct ChainCandidate {
@@ -37,7 +37,7 @@ struct HeuristicReference {
 };
 
 bool adjacent(Pair p,Pair q) {
-	return p[0]+1==q[0] && p[1]+1==q[1];
+	return p.first+1==q.first && p.second+1==q.second;
 }
 
 /** Enumerate complete chains first, then filter by the documented selected
@@ -51,12 +51,12 @@ HeuristicReference enumerateHeuristic(const InteractionEnergy & energy,
 	Chain chain;
 	std::function<void(E_type)> enumerate=[&](E_type hybrid) {
 		const Pair left=chain.front(),right=chain.back();
-		if (right[0]-left[0]+1>energy.getAccessibility1().getMaxLength()
-				|| right[1]-left[1]+1>energy.getAccessibility2().getMaxLength()) return;
+		if (right.first-left.first+1>energy.getAccessibility1().getMaxLength()
+				|| right.second-left.second+1>energy.getAccessibility2().getMaxLength()) return;
 		chains[left].push_back({chain,hybrid});
-		for(size_t i=right[0]+1;i<n;++i) for(size_t j=right[1]+1;j<m;++j) {
+		for(size_t i=right.first+1;i<n;++i) for(size_t j=right.second+1;j<m;++j) {
 			if (!energy.areComplementary(i,j)) continue;
-			const E_type edge=energy.getE_interLeft(right[0],i,right[1],j);
+			const E_type edge=energy.getE_interLeft(right.first,i,right.second,j);
 			if (E_isINF(edge)) continue;
 			chain.push_back({i,j});enumerate(hybrid+edge);chain.pop_back();
 		}
@@ -72,7 +72,7 @@ HeuristicReference enumerateHeuristic(const InteractionEnergy & energy,
 		std::vector<std::pair<std::array<size_t,3>,const ChainCandidate *>> admitted;
 		for(const auto & candidate:chains[left]) {
 			const auto & c=candidate.chain;
-			if (constraint.noGUend && energy.isGU(c.back()[0],c.back()[1])) continue;
+			if (constraint.noGUend && energy.isGU(c.back().first,c.back().second)) continue;
 			size_t suffix=1;
 			std::array<size_t,3> order{0,0,0};
 			if (constraint.noLP) {
@@ -81,9 +81,9 @@ HeuristicReference enumerateHeuristic(const InteractionEnergy & energy,
 				else if (selected[c[1]]==Chain(c.begin()+1,c.end())) order={1,0,0};
 				else {
 					if (adjacent(c[1],c[2])) continue;
-					suffix=2;order={2,c[2][0],c[2][1]};
+					suffix=2;order={2,c[2].first,c[2].second};
 				}
-			} else if (c.size()>1) order={1,c[1][0],c[1][1]};
+			} else if (c.size()>1) order={1,c[1].first,c[1].second};
 			if (suffix<c.size() && selected[c[suffix]]!=Chain(c.begin()+suffix,c.end())) continue;
 			admitted.push_back({order,&candidate});
 		}
@@ -92,11 +92,11 @@ HeuristicReference enumerateHeuristic(const InteractionEnergy & energy,
 		for(const auto & entry:admitted) {
 			const auto & candidate=*entry.second;
 			const Pair right=candidate.chain.back();
-			const E_type full=energy.getE(i,right[0],j,right[1],candidate.hybrid);
+			const E_type full=energy.getE(i,right.first,j,right.second,candidate.hybrid);
 			if (full<best) {best=full;selected[left]=candidate.chain;}
 			if (constraint.noGUend && energy.isGU(i,j)) continue;
 			if (constraint.maxED<Accessibility::ED_UPPER_BOUND
-					&& (energy.getED1(i,right[0])>constraint.maxED || energy.getED2(j,right[1])>constraint.maxED)) continue;
+					&& (energy.getED1(i,right.first)>constraint.maxED || energy.getED2(j,right.second)>constraint.maxED)) continue;
 			const Z_type weight=energy.getBoltzmannWeight(full);
 			result.z+=weight;++result.candidates;
 			for(const Pair pair:candidate.chain) result.mass[pair]+=weight;
@@ -148,7 +148,7 @@ TEST_CASE("heuristic pair probabilities count the retained candidate chains", "[
 			REQUIRE(result.getZ()==Approx(reference.z).epsilon(3e-12));
 			Matrix<Z_type> expected(target.size(),query.size(),0);
 			for(const auto & entry:reference.mass) {
-				const auto bp=shifted.getBasePair(entry.first[0],entry.first[1]);
+				const auto bp=shifted.getBasePair(entry.first.first,entry.first.second);
 				expected(bp.first,bp.second)=entry.second;
 			}
 			for(size_t i=0;i<target.size();++i) for(size_t j=0;j<query.size();++j) {

@@ -1,6 +1,7 @@
 #ifndef INTARNA_TEST_SEEDEDCHAINORACLE_H_
 #define INTARNA_TEST_SEEDEDCHAINORACLE_H_
 
+#include "IntaRNA/Interaction.h"
 #include <algorithm>
 #include <array>
 #include <functional>
@@ -11,7 +12,7 @@
 // with both strands increasing. Weight callbacks return long double, so expected
 // values never pass through native integer energy conversion or the tested DP.
 namespace seeded_oracle {
-using Pair = std::array<size_t, 2>;
+using Pair = IntaRNA::Interaction::BasePair;
 using Boundary = std::array<size_t, 4>;
 using Chain = std::vector<Pair>;
 struct Model {
@@ -28,7 +29,7 @@ struct Result {
 	std::map<Pair, long double> mass;
 };
 inline bool stack(Pair a, Pair b) {
-	return a[0]+1 == b[0] && a[1]+1 == b[1];
+	return a.first+1 == b.first && a.second+1 == b.second;
 }
 inline Result enumerate(const Model & model) {
 	Result out;
@@ -46,13 +47,13 @@ inline Result enumerate(const Model & model) {
 			const auto w = hybrid * model.boundary(p, q);
 			if (seeded) {
 				out.z += w;
-				out.boundaries[{p[0], p[1], q[0], q[1]}] += w;
+				out.boundaries[{p.first, p.second, q.first, q.second}] += w;
 				out.pairCount += w * chain.size();
 				for (Pair pair : chain) out.mass[pair] += w;
 			} else out.unseeded += w;
 		}
-		for (size_t i=q[0]+1; i<model.n && i-p[0]<model.span1; ++i)
-		for (size_t j=q[1]+1; j<model.m && j-p[1]<model.span2; ++j) {
+		for (size_t i=q.first+1; i<model.n && i-p.first<model.span1; ++i)
+		for (size_t j=q.second+1; j<model.m && j-p.second<model.span2; ++j) {
 			const Pair r{i,j};
 			if (!model.valid(r)) continue;
 			const auto t = model.edge(q,r);

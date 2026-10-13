@@ -336,6 +336,7 @@ PredictorMfeEns2dSeedExtension::exactBoundaryWeight(size_t i1,size_t j1,size_t i
 void
 PredictorMfeEns2dSeedExtension::predictStackSeeds(const IndexRange & r1,const IndexRange & r2)
 {
+	// Validate public regions before translating both strands to local coordinates.
 	const size_t size1=energy.getAccessibility1().getSequence().size();
 	const size_t size2=energy.getAccessibility2().getSequence().size();
 	if (!r1.isAscending() || !r2.isAscending() || r1.from>=size1 || r2.from>=size2)
@@ -344,27 +345,31 @@ PredictorMfeEns2dSeedExtension::predictStackSeeds(const IndexRange & r1,const In
 	seedHandler.setOffset1(r1.from); seedHandler.setOffset2(r2.from);
 	const size_t n=r1.to==RnaSequence::lastPos?energy.size1():std::min(energy.size1(),r1.to-r1.from+1);
 	const size_t m=r2.to==RnaSequence::lastPos?energy.size2():std::min(energy.size2(),r2.to-r2.from+1);
+	// Compile admitted, contained seeds using the active spans for this prediction.
 	initOptima(); initZ(); Zall=0;
 	const size_t seedCount=seedHandler.fillSeed(0,n-1,0,m-1);
 	const size_t span1=std::min(n,energy.getAccessibility1().getMaxLength());
 	const size_t span2=std::min(m,energy.getAccessibility2().getMaxLength());
 	StackSeedDomain seeds=seedCount ? StackSeedDomain(seedHandler,n,m,span1,span2)
 			: StackSeedDomain(std::vector<StackSeedDomain::Occurrence>(),n,m,span1,span2);
+	// Supply native weights once per initiation, transition and complete boundary.
 	using K=SeededPartitionFunction;
 	const K::Domain domain{n,m,span1,span2,energy.getMaxInternalLoopSize1(),energy.getMaxInternalLoopSize2(),output.getOutputConstraint().noLP};
 	auto boltzmann=[&](E_type e) { return E_isINF(e)?Z_type(0):PartitionArithmetic::exp(-E_2_Z(e)/energy.getRT()); };
 	K::Weights weights{
-		[&](K::Pair p){return energy.isAccessible1(p[0]) && energy.isAccessible2(p[1]) && energy.areComplementary(p[0],p[1]);},
+		[&](K::Pair p){return energy.isAccessible1(p.first) && energy.isAccessible2(p.second) && energy.areComplementary(p.first,p.second);},
 		[&](K::Pair){return boltzmann(energy.getE_init());},
-		[&](K::Pair p,K::Pair q){return boltzmann(energy.getE_interLeft(p[0],q[0],p[1],q[1]));},
-		[&](K::Pair p,K::Pair q){return exactBoundaryWeight(p[0],q[0],p[1],q[1]);},
-		[&](K::Pair p,K::Pair q,Z_type h,Z_type b){updateExactCompleteZ(p[0],q[0],p[1],q[1],h,b);}
+		[&](K::Pair p,K::Pair q){return boltzmann(energy.getE_interLeft(p.first,q.first,p.second,q.second));},
+		[&](K::Pair p,K::Pair q){return exactBoundaryWeight(p.first,q.first,p.second,q.second);},
+		[&](K::Pair p,K::Pair q,Z_type h,Z_type b){updateExactCompleteZ(p.first,q.first,p.second,q.second,h,b);}
 	};
 	const auto result=K::compute(domain,seeds,weights,pairProbabilities!=nullptr);
+	// Custom updateZ overrides can change the objective even in release builds.
 	if (result.z!=Zall) throw std::logic_error("exact seeded updateZ override did not preserve the partition objective");
 	output.setExactPartition(true);
 	reportOptima();
 	if (pairProbabilities) {
+		// Restore original strand orientation and offsets before merging this region.
 		const auto first=energy.getBasePair(0,0), last=energy.getBasePair(n-1,m-1);
 		const IndexRange target(first.first,last.first), query(last.second,first.second);
 		Matrix<Z_type> original(n,m,0);
@@ -379,6 +384,7 @@ PredictorMfeEns2dSeedExtension::predictStackSeeds(const IndexRange & r1,const In
 				seedPairs(seedPair.first-target.from,seedPair.second-query.from)=1;
 			}
 		}
+		// Publish regional masses only after the complete computation has succeeded.
 		pairProbabilities->addRegion(target,query,result.z,original,annotate?&seedPairs:nullptr);
 	}
 }

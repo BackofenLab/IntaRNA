@@ -1,8 +1,8 @@
 #ifndef INTARNA_SEEDEDPARTITIONFUNCTION_H_
 #define INTARNA_SEEDEDPARTITIONFUNCTION_H_
+#include "IntaRNA/Interaction.h"
 #include "IntaRNA/Matrix.h"
 #include "IntaRNA/StackSeedDomain.h"
-#include <array>
 #include <functional>
 
 namespace IntaRNA {
@@ -14,7 +14,7 @@ namespace IntaRNA {
 class SeededPartitionFunction {
 public:
 	//! Local zero-based pair, second strand in reversed coordinates.
-	using Pair = std::array<size_t,2>;
+	using Pair = Interaction::BasePair;
 	/** Active rectangle, inclusive spans, loop limits and structural restriction. */
 	struct Domain { size_t n,m,span1,span2,loop1,loop2; bool noLP; };
 	/** Energy adapter. Complete boundary callbacks are made once per positive

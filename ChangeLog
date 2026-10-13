@@ -68,6 +68,10 @@
 
 ## Technical changes and Optimizations
 
+- use hashed base-pair keys for sparse stack-seed lookup, assert internal seed
+  geometry in debug builds, and document probability computation steps and
+  contributor conventions (PR #258 review)
+
 - document independent release/debug, installed-API and performance validation
   for the reviewed unseeded and heuristic probability outputs (PR #259)
 
@@ -186,6 +190,21 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261013 Alexander Mitrofanov
+ * StackSeedDomain, SeededPartitionFunction, PredictorMfeEns2dSeedExtension
+   * use Interaction::BasePair coordinates and hashed sparse seed lookup tables
+   * replace the stack-only handler's equal-length invariant with a debug assert;
+     retain runtime validation of public input and numerical/extension failures
+   + explain domain filtering, deterministic start traversal, inside/outside
+     recurrence steps and coordinate conversion (PR #258 review)
+ * BasePairProbabilities, AGENTS.md
+   + explain validation and publication steps; document base-pair/hash storage,
+     debug-only invariants and implementation-comment conventions
+ * StackSeedDomain_test, seeded and heuristic probability oracle fixtures/tests
+   + verify shortest shared seed endings, duplicate and unordered occurrences,
+     row-major traversal and release-time rejection of invalid seed inputs
+   * use the common base-pair representation while retaining independent oracles
 
 261012 Alexander Mitrofanov
  * BasePairProbabilitySvg, BasePairProbabilityWriter, CommandLineParsing
