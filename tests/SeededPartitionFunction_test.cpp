@@ -246,6 +246,36 @@ TEST_CASE("frozen right extensions retain complete paths by their first seed own
 	compareKernels(m);
 }
 
+TEST_CASE("seed extension workspaces reset across changing active rectangles", "[SeededPartitionFunction]") {
+	using namespace seeded_oracle;
+	Model m{7,8,7,8,false,{},
+		[](Pair p){return (p.first+2*p.second)%5!=1;},
+		[](Pair p){return .7L+.03L*p.second;},
+		[](Pair p,Pair q){return stack(p,q)?.8L:.2L;},
+		[](Pair p,Pair q){return (p.first+q.second)%4==0?0.L:.6L;}};
+	// Row-major starts shrink at the right edge, then regrow on the next row.
+	// Mixed lengths include singleton ownership at the smallest span limit.
+	for(size_t i=0;i<m.n;++i) for(size_t j=0;j<m.m;++j) {
+		const size_t length=1+(i+2*j)%3;
+		if(i+length>m.n || j+length>m.m) continue;
+		Chain seed;
+		for(size_t k=0;k<length;++k) seed.push_back({i+k,j+k});
+		m.seeds.push_back(seed);
+	}
+	for(const auto spans:{Pair{1,1},Pair{3,5},Pair{5,3},Pair{7,8}})
+	for(bool noLP:{false,true}) for(bool heuristic:{false,true}) {
+		CAPTURE(spans.first,spans.second,noLP,heuristic);
+		m.span1=spans.first; m.span2=spans.second; m.noLP=noLP;
+		m.selectRight={};
+		if(heuristic) m.selectRight=[](Pair,Pair q) {
+			// Adjacent groups alternate wide/narrow rectangles and share some
+			// endpoints; out-of-domain selections retain only the direct branch.
+			return q.first%2 ? Pair{q.first+1,q.second+3}:Pair{6,7};
+		};
+		compareKernels(m);
+	}
+}
+
 TEST_CASE("seeded kernels preserve tiny mass and reject invalid weight arithmetic", "[SeededPartitionFunction]") {
 	using namespace seeded_oracle;
 	Model m{2,2,2,2,false,{{{0,0},{1,1}}},[](Pair p){return p.first==p.second;},

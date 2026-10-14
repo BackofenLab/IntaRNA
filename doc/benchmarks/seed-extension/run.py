@@ -10,6 +10,7 @@ import subprocess
 parser=argparse.ArgumentParser(description='Verify and time the isolated seeded kernels; requires GNU time.')
 parser.add_argument('--build-dir',type=Path,required=True)
 parser.add_argument('--repetitions',type=int,default=3)
+parser.add_argument('--heuristic',action='store_true',help='use frozen endpoint groups (requires baseline PR #266 or later)')
 args=parser.parse_args()
 if args.repetitions<1:
     parser.error('--repetitions must be positive')
@@ -22,11 +23,13 @@ checks=[]
 def call(variant,case,pairs,dump='-'):
     topology,density,n=case
     command=[str(root/variant/'benchmark'),topology,density,str(n),str(pairs),dump]
+    if args.heuristic:
+        command.append('heuristic')
     rss=root/'last-rss.txt'
     result=subprocess.check_output(['/usr/bin/time','-f','%M','-o',str(rss),*command],text=True,env=env)
-    seconds,z,moment,boundaries,checksum,seeds=result.strip().split('\t')
+    seconds,z,moment,boundaries,checksum,seeds,allocations,allocated_bytes=result.strip().split('\t')
     return {'variant':variant,'case':f'{topology}{n}-{density}','pairs':pairs,
-            'seconds':float(seconds),'rss_kib':int(rss.read_text().strip()),'z':float(z),
+            'allocations':int(allocations),'allocated_bytes':int(allocated_bytes),'seconds':float(seconds),'rss_kib':int(rss.read_text().strip()),'z':float(z),
             'pair_moment':float(moment),'boundaries':int(boundaries),'checksum':float(checksum),'seeds':int(seeds)}
 
 def read_dump(path):
@@ -74,6 +77,9 @@ for case in cases:
                 for variant in ('base','candidate')}
         result={'case':name,'pairs':pairs,'seeds':groups['base'][0]['seeds']}
         for variant,rows in groups.items():
+            result[variant+'_allocations']=rows[0]['allocations']
+            result[variant+'_allocated_bytes']=rows[0]['allocated_bytes']
+            assert all(row['allocations']==rows[0]['allocations'] and row['allocated_bytes']==rows[0]['allocated_bytes'] for row in rows)
             result[variant+'_median_seconds']=statistics.median(row['seconds'] for row in rows)
             result[variant+'_min_seconds']=min(row['seconds'] for row in rows)
             result[variant+'_max_seconds']=max(row['seconds'] for row in rows)
@@ -81,5 +87,5 @@ for case in cases:
         result['runtime_ratio']=result['candidate_median_seconds']/result['base_median_seconds']
         result['rss_ratio']=result['candidate_median_rss_kib']/result['base_median_rss_kib']
         summary.append(result)
-(root/'results.json').write_text(json.dumps({'checks':checks,'summary':summary},indent=2)+'\n')
+(root/'results.json').write_text(json.dumps({'heuristic':args.heuristic,'checks':checks,'summary':summary},indent=2)+'\n')
 print(json.dumps(summary,indent=2),flush=True)
