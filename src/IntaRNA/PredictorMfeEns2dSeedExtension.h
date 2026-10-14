@@ -6,6 +6,8 @@
 #include "IntaRNA/BasePairProbabilities.h"
 #include "IntaRNA/Matrix.h"
 #include "IntaRNA/SeedHandlerIdxOffset.h"
+#include "IntaRNA/StackSeedDomain.h"
+#include <functional>
 #include <memory>
 
 namespace IntaRNA {
@@ -17,6 +19,9 @@ namespace IntaRNA {
  * Note, for each seed start (i1,i2) only the mfe seed is considered for the
  * overall interaction computation instead of considering all possible seeds
  * starting at (i1,i2).
+ * Stack-only seeds use a seed-avoiding left extension and an unconstrained
+ * right extension at the first completed seed, counting each interaction once.
+ * Gapped seeds retain the legacy extension implementation.
  *
  * @author Frank Gelhausen
  * @author Martin Raden
@@ -85,6 +90,19 @@ protected:
 	virtual Z_type exactBoundaryWeight(size_t i1,size_t j1,size_t i2,size_t j2) const;
 	/** Run the selected disjoint stack-seed partition backend. */
 	void predictStackSeeds(const IndexRange & r1,const IndexRange & r2);
+	/** Prepare optional heuristic right endpoints for the admitted stack seeds.
+	 * @param n first active range length
+	 * @param m second active range length
+	 * @param seeds contained seeds used by the partition recurrence
+	 */
+	virtual void prepareStackSeedExtensions(size_t n,size_t m,const StackSeedDomain & seeds);
+	/** Select one right endpoint per anchor for the heuristic retained ensemble.
+	 * An empty function requests the full exact ensemble. Nonempty selectors use
+	 * local increasing coordinates and receive the anchor's first and last pair.
+	 * @return selector shared by the forward and outside recurrences
+	 */
+	virtual std::function<Interaction::BasePair(Interaction::BasePair,Interaction::BasePair)>
+	stackSeedRightSelector() const;
 
 	//! Optional signed reverse trace for the legacy anchored extension recurrences.
 	struct ExtensionProbabilityTrace;

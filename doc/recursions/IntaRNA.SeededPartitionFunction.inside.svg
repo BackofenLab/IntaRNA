@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1475" viewBox="0 0 1440 1475" role="img" aria-labelledby="title desc">
 <title id="title">Exact seeded inside recurrence · suffix automaton</title>
-<desc id="desc">SeededPartitionFunction::compute()  |  fixed left boundary p; visit q in increasing pair order. Internal recurrence documentation for step 9 of PR 258. Equations describe the current implementation; RNA 2 uses reversed energy coordinates.</desc>
+<desc id="desc">SeededPartitionFunction::compute()  |  fixed left boundary p; visit q in increasing pair order. Internal recurrence documentation for step 9 of PR 258. Historical equations before issue 264; see ../analysis/seed-extension-partition.md for the current recurrence; RNA 2 uses reversed energy coordinates.</desc>
 <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#60798e"/></marker>
 <pattern id="seed-hatch" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#fff0dc"/><path d="M-2 2 L2 -2 M0 8 L8 0 M6 10 L10 6" stroke="#e0b27a" stroke-width="1"/></pattern></defs>
 <rect width="1440" height="100%" fill="white"/>
-<text x="48" y="48" font-family="DejaVu Sans, sans-serif" font-size="14" fill="#275f8c" text-anchor="start" font-weight="bold">INTARNA  /  RECURRENCE NOTES</text>
+<text x="48" y="48" font-family="DejaVu Sans, sans-serif" font-size="14" fill="#275f8c" text-anchor="start" font-weight="bold">INTARNA  /  HISTORICAL RECURRENCE BEFORE ISSUE #264</text>
 <text x="48" y="91" font-family="DejaVu Sans, sans-serif" font-size="31" fill="#203244" text-anchor="start" font-weight="bold">Exact seeded inside recurrence · suffix automaton</text>
 <text x="48" y="125" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">SeededPartitionFunction::compute()  |  fixed left boundary p; visit q in increasing pair order</text>
 <path d="M48 148 L1392 148" fill="none" stroke="#c4d0da" stroke-width="1.2"/>

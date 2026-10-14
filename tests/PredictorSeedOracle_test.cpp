@@ -465,8 +465,9 @@ void requireUniqueAnchorEnsemblePartition(const InteractionEnergy & energy,
 		const OutputConstraint & outputConstraint, const IndexRange & range1,
 		const IndexRange & range2, const SeedOracleResult & oracle)
 {
-	// Seed-extension Z accounting is only asserted in this proved-trivial
-	// domain.  General multi-anchor X-mode Z is not an exact-oracle contract.
+	// This helper also checks gapped seeds, whose legacy partition path is
+	// asserted only in a unique-anchor domain. Stack-only multi-anchor cases
+	// have independent exact partition and marginal checks below.
 	REQUIRE(oracle.interactions.size() == 1);
 	REQUIRE(oracle.interactions.front().seeds.size() == 1);
 	OutputHandlerInteractionList output(outputConstraint, 1);
@@ -782,6 +783,48 @@ TEST_CASE("raw native pair masses share the exact forward denominator", "[BasePa
 			REQUIRE(result.rawMasses()(i,j)==Approx(expected(i,j)).epsilon(2e-12));
 	}
 }
+TEST_CASE("native first-hit marginals respect filtered seeds wobble ends and active ranges", "[BasePairProbabilities][PredictorSeedOracle][SeededPartitionFunction]") {
+	#include "testEasyLoggingSetup.icc"
+	RnaSequence t("target","GUGGGUG"),q("query","CGCCGUC");
+	AccessibilityBasePair at(t,6,nullptr),aq(q,5,nullptr);ReverseAccessibility ar(aq);
+	InteractionEnergyBasePair energy(at,ar,2,1);
+	IndexRangeList seedRange1,seedRange2;
+	seedRange1.push_back({2,5});seedRange2.push_back({2,5});
+	for(bool noLP:{false,true}) for(bool noGUend:{false,true})
+	for(bool noSeedGU:{false,true}) for(size_t offset:{0,1}) {
+		CAPTURE(noLP,noGUend,noSeedGU,offset);
+		const SeedConstraint sc(2,0,0,0,E_INF,Accessibility::ED_UPPER_BOUND,E_INF,
+				seedRange1,seedRange2,"",noSeedGU,false,false);
+		const OutputConstraint oc(1,OutputConstraint::OVERLAP_BOTH,E_INF,E_INF,
+				false,noLP,noGUend,true,false);
+		const IndexRange r1(offset,6),r2(offset,6);
+		const auto oracle=enumerateSeededInteractions(energy,sc,oc,r1,r2);
+		REQUIRE(oracle.unionPartition>0);
+		BasePairProbabilities result(t.size(),q.size());
+		OutputHandlerInteractionList output(oc,1);
+		ExactSeedProbe p(energy,output,nullptr,new SeedHandlerMfe(energy,sc),&result);
+		p.predict(r1,r2);result.finalize();
+		REQUIRE(result.getZ()==Approx(oracle.unionPartition).epsilon(2e-12));
+		Matrix<Z_type> masses(t.size(),q.size(),0);
+		std::map<std::array<size_t,4>,Z_type> boundaries;
+		for(const auto & interaction:oracle.interactions) {
+			const Z_type weight=energy.getBoltzmannWeight(interaction.energy);
+			const auto & first=interaction.chain.front();const auto & last=interaction.chain.back();
+			boundaries[{first.i1-offset,first.i2-offset,last.i1-offset,last.i2-offset}]+=weight;
+			for(const auto & pair:interaction.chain) {
+				const auto bp=energy.getBasePair(pair.i1,pair.i2);
+				masses(bp.first,bp.second)+=weight;
+			}
+		}
+		for(size_t i=0;i<t.size();++i) for(size_t j=0;j<q.size();++j)
+			REQUIRE(result.rawMasses()(i,j)==Approx(masses(i,j)).epsilon(2e-12));
+		for(const auto & [boundary,weight]:boundaries)
+			REQUIRE(p.boundaries[boundary]==Approx(weight).epsilon(2e-12));
+		for(const auto & [boundary,weight]:p.boundaries)
+			REQUIRE(weight==Approx(boundaries[boundary]).epsilon(2e-12));
+	}
+}
+
 TEST_CASE("raw pair owner excludes region crossings and invalidates partial results", "[BasePairProbabilities][PredictorSeedOracle]") {
 	#include "testEasyLoggingSetup.icc"
 	RnaSequence t("t","GGGGGG"),q("q","CCCCCC");
@@ -804,6 +847,36 @@ TEST_CASE("raw pair owner excludes region crossings and invalidates partial resu
 
 #include "SeededChainOracle.h"
 #include "IntaRNA/SeedHandlerExplicit.h"
+TEST_CASE("exact explicit seed regions do not skip seeds when the iterator cursor collides", "[BasePairProbabilities][PredictorSeedOracle]") {
+	#include "testEasyLoggingSetup.icc"
+	using namespace seeded_oracle;
+	RnaSequence t("target","GGGGGG"),q("query","CCCCCC");
+	AccessibilityDisabled at(t,0,nullptr),aq(q,0,nullptr);ReverseAccessibility ar(aq);
+	InteractionEnergyBasePair energy(at,ar,2,2);
+	const SeedConstraint sc(5,0,0,0,E_INF,Accessibility::ED_UPPER_BOUND,E_INF,
+			IndexRangeList(),IndexRangeList(),"1||&5||,4||&2||",false,false,false);
+	const Model model{3,3,3,3,false,{{{0,0},{1,1}}},[](Pair){return true;},
+		[](Pair){return std::exp(1.L);},[](Pair,Pair){return std::exp(1.L);},
+		[](Pair,Pair){return 1.L;}};
+	const auto expected=enumerate(model);
+	const auto oc=makeOutputConstraint(false);
+	BasePairProbabilities result(6,6);
+	OutputHandlerInteractionList output(oc,1);
+	ExactSeedProbe predictor(energy,output,nullptr,new SeedHandlerExplicit(energy,sc),&result);
+	for(size_t offset:{0,3}) {
+		CAPTURE(offset);
+		predictor.predict({offset,offset+2},{offset,offset+2});
+		REQUIRE(double(predictor.getZall())==Approx(double(expected.z)).epsilon(2e-12));
+	}
+	result.finalize();
+	REQUIRE(double(result.getZ())==Approx(double(2*expected.z)).epsilon(2e-12));
+	Matrix<Z_type> masses(6,6,0);
+	for(size_t offset:{0,3}) for(const auto & [pair,weight]:expected.mass)
+		masses(offset+pair.first,5-offset-pair.second)=Z_type(weight);
+	for(size_t i=0;i<6;++i) for(size_t j=0;j<6;++j)
+		REQUIRE(result.rawMasses()(i,j)==Approx(masses(i,j)).epsilon(2e-12));
+}
+
 TEST_CASE("native singleton and mixed explicit seeds count overlapping witnesses once", "[BasePairProbabilities][PredictorSeedOracle]") {
 	#include "testEasyLoggingSetup.icc"
 	using namespace seeded_oracle;

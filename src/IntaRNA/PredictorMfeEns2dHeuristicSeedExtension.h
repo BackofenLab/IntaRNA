@@ -4,6 +4,7 @@
 
 #include "IntaRNA/PredictorMfeEns2dSeedExtension.h"
 #include "IntaRNA/SeedHandlerIdxOffset.h"
+#include <unordered_map>
 
 namespace IntaRNA {
 
@@ -14,6 +15,9 @@ namespace IntaRNA {
  * Note, for each seed start (i1,i2) only the mfe seed is considered for the
  * overall interaction computation instead of considering all possible seeds
  * starting at (i1,i2).
+ * For stack-only seeds, the first completed seed uniquely owns each chain.
+ * Retain its one-sided extensions and the left extensions ending at its
+ * preferred right endpoint. Pair probabilities describe this retained ensemble.
  *
  * @author Frank Gelhausen
  * @author Martin Raden
@@ -68,6 +72,23 @@ public:
 
 
 protected:
+
+	/** Freeze one preferred right endpoint for each admitted stack anchor.
+	 * The existing virtual right-extension hooks determine the choice; partition
+	 * contributions are deferred to the common seed-avoiding recurrence.
+	 * @param n first active range length
+	 * @param m second active range length
+	 * @param seeds contained stack occurrences in the active range
+	 */
+	void prepareStackSeedExtensions(size_t n,size_t m,const StackSeedDomain & seeds) override;
+	/** @return the frozen right-endpoint selector for the approximate ensemble */
+	std::function<Interaction::BasePair(Interaction::BasePair,Interaction::BasePair)>
+	stackSeedRightSelector() const override;
+
+	//! Only rank right extensions while preparing canonical stack-seed choices.
+	bool selectingStackSeedRight = false;
+	//! Preferred local endpoint keyed by the local first pair of each seed.
+	std::unordered_map<Interaction::BasePair,Interaction::BasePair,Interaction::BasePair::Hash> stackSeedRight;
 
 
 	//! access to the interaction energy handler of the super class

@@ -242,7 +242,9 @@ TEST_CASE("ensemble predictor regressions", "[PredictorMfeEns]") {
 		InspectableEnsemblePredictor<PredictorMfeEns2dHeuristicSeedExtension> heuristic(
 				energy, heuristicOut, new SeedHandlerNoBulge(energy, seedConstraint));
 		heuristic.predict();
-		REQUIRE(heuristic.getPartitionCount() > 0);
+		// The anchored heuristic also finalizes each retained boundary once.
+		REQUIRE(heuristic.getPartitionCount() == 0);
+		REQUIRE(heuristic.getZall() > 0);
 		heuristic.predict(IndexRange(0, 0), IndexRange(0, 0));
 		REQUIRE(heuristic.getPartitionCount() == 0);
 		REQUIRE(heuristic.getZall() == 0.0);

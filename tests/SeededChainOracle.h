@@ -22,11 +22,13 @@ struct Model {
 	std::function<bool(Pair)> valid;
 	std::function<long double(Pair)> init;
 	std::function<long double(Pair, Pair)> edge, boundary;
+	// Optional frozen heuristic endpoint for the first completed declared seed.
+	std::function<Pair(Pair, Pair)> selectRight;
 };
 struct Result {
 	long double z = 0, unseeded = 0, pairCount = 0;
 	std::map<Boundary, long double> boundaries;
-	std::map<Pair, long double> mass;
+	std::map<Pair, long double> mass, spots;
 };
 inline bool stack(Pair a, Pair b) {
 	return a.first+1 == b.first && a.second+1 == b.second;
@@ -40,17 +42,28 @@ inline Result enumerate(const Model & model) {
 		for (size_t k=0; k<chain.size(); ++k)
 			noLP &= (k>0 && stack(chain[k-1], chain[k]))
 					|| (k+1<chain.size() && stack(chain[k], chain[k+1]));
-		bool seeded = false;
-		for (const Chain & seed : model.seeds)
-			seeded |= std::search(chain.begin(), chain.end(), seed.begin(), seed.end()) != chain.end();
+		const Chain * owner = nullptr;
+		size_t firstHit = chain.size()+1;
+		for (const Chain & seed : model.seeds) {
+			const auto found=std::search(chain.begin(), chain.end(), seed.begin(), seed.end());
+			if (found==chain.end()) continue;
+			const size_t hit=size_t(found-chain.begin())+seed.size();
+			if (hit<firstHit || (hit==firstHit && seed.size()<owner->size())) {
+				owner=&seed;firstHit=hit;
+			}
+		}
 		if (!model.noLP || noLP) {
 			const auto w = hybrid * model.boundary(p, q);
-			if (seeded) {
+			const bool retained=owner && (!model.selectRight || p==owner->front()
+					|| q==owner->back() || q==model.selectRight(owner->front(),owner->back()));
+			if (retained) {
 				out.z += w;
 				out.boundaries[{p.first, p.second, q.first, q.second}] += w;
 				out.pairCount += w * chain.size();
 				for (Pair pair : chain) out.mass[pair] += w;
-			} else out.unseeded += w;
+				for (size_t i=p.first; i<=q.first; ++i)
+				for (size_t j=p.second; j<=q.second; ++j) out.spots[{i,j}] += w;
+			} else if (!owner) out.unseeded += w;
 		}
 		for (size_t i=q.first+1; i<model.n && i-p.first<model.span1; ++i)
 		for (size_t j=q.second+1; j<model.m && j-p.second<model.span2; ++j) {

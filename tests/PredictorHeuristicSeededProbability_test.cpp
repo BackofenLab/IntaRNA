@@ -1,4 +1,5 @@
 #include "catch.hpp"
+#include "SeededChainOracle.h"
 #include "IntaRNA/AccessibilityDisabled.h"
 #include "IntaRNA/InteractionEnergyBasePair.h"
 #include "IntaRNA/OutputHandlerInteractionList.h"
@@ -107,6 +108,64 @@ TEST_CASE("seeded heuristic outside agrees with independent pair fugacities", "[
 				const auto bp=energy.getBasePair(i,j);
 				REQUIRE(result.rawMasses()(bp.first,bp.second)==Approx(expected).epsilon(2e-10).margin(2e-10));
 			}
+		}
+	}
+}
+
+TEST_CASE("stack seeded heuristic and exact native marginals match independent retained paths", "[BasePairProbabilities][HeuristicSeededProbability][SeededPartitionFunction]") {
+	#include "testEasyLoggingSetup.icc"
+	using namespace seeded_oracle;
+	RnaSequence t("target","GGGGGG"),q("query","CCCCCC");
+	AccessibilityDisabled at(t,5,nullptr),aq(q,6,nullptr);ReverseAccessibility ar(aq);
+	InteractionEnergyBasePair energy(at,ar,2,1);
+	const std::vector<std::vector<Chain>> families{
+		{{{1,1},{2,2}}},
+		{{{1,1},{2,2}},{{2,2},{3,3}}},
+		{{{0,0},{1,1}},{{2,2},{3,3}}},
+		{{{0,0},{1,1}},{{4,4},{5,5}}},
+		{{{1,1},{2,2},{3,3}},{{2,2},{3,3}},{{4,4},{5,5}}}
+	};
+	for(const auto & seeds:families) for(bool noLP:{false,true}) {
+		std::string patterns;
+		for(const auto & seed:seeds) {
+			if(!patterns.empty()) patterns+=',';
+			const std::string pairs(seed.size(),'|');
+			patterns+=std::to_string(seed.front().first+1)+pairs+'&'
+					+std::to_string(q.size()-seed.back().second)+pairs;
+		}
+		CAPTURE(patterns,noLP);
+		const auto sc=explicitSeeds(patterns);
+		const auto oc=constraints(noLP);
+		BasePairProbabilities result(t.size(),q.size());
+		OutputHandlerInteractionList output(oc,0);
+		FixedChoiceSeededHeuristic predictor(energy,output,nullptr,new SeedHandlerExplicit(energy,sc),&result);
+		predictor.predict();result.finalize();
+		Model model{6,6,5,6,noLP,seeds,[](Pair){return true;},
+			[](Pair){return std::exp(1.L);},
+			[](Pair p,Pair r){return r.first-p.first<=3 && r.second-p.second<=2?std::exp(1.L):0.L;},
+			[](Pair,Pair){return 1.L;}};
+		const auto exact=enumerate(model);
+		model.selectRight=[&](Pair start,Pair){
+			const auto & choice=predictor.choices.at({start.first,start.second});
+			return Pair{choice.j1,choice.j2};
+		};
+		const auto retained=enumerate(model);
+		REQUIRE(retained.z>0);
+		REQUIRE(retained.z<=exact.z);
+		REQUIRE(result.isApproximate());
+		REQUIRE(double(result.getZ())==Approx(double(retained.z)).epsilon(2e-12));
+		for(size_t i=0;i<t.size();++i) for(size_t j=0;j<q.size();++j) {
+			const auto found=retained.mass.find({i,j});
+			REQUIRE(double(result.rawMasses()(i,q.size()-1-j))==Approx(double(found==retained.mass.end()?0:found->second)).epsilon(2e-12));
+		}
+		BasePairProbabilities exactResult(t.size(),q.size());
+		OutputHandlerInteractionList exactOutput(oc,0);
+		PredictorMfeEns2dSeedExtension exactPredictor(energy,exactOutput,nullptr,new SeedHandlerExplicit(energy,sc),&exactResult);
+		exactPredictor.predict();exactResult.finalize();
+		REQUIRE(double(exactResult.getZ())==Approx(double(exact.z)).epsilon(2e-12));
+		for(size_t i=0;i<t.size();++i) for(size_t j=0;j<q.size();++j) {
+			const auto found=exact.mass.find({i,j});
+			REQUIRE(double(exactResult.rawMasses()(i,q.size()-1-j))==Approx(double(found==exact.mass.end()?0:found->second)).epsilon(2e-12));
 		}
 	}
 }

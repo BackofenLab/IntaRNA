@@ -76,6 +76,26 @@ TEST_CASE("stack-domain lookups and traversal preserve overlapping seed geometry
 	REQUIRE_THROWS_AS((StackSeedDomain({{1,1,1},{1,1,2}},4,4,4,4)),std::invalid_argument);
 }
 
+TEST_CASE("stack-domain iteration starts before explicit seeds outside the active region", "[StackSeedDomain]") {
+	#include "testEasyLoggingSetup.icc"
+	RnaSequence t("target","GGGGGG"),q("query","CCCCCC");
+	AccessibilityDisabled at(t,0,nullptr),aq(q,0,nullptr);ReverseAccessibility ar(aq);
+	InteractionEnergyBasePair energy(at,ar);
+	const SeedConstraint sc(5,0,0,0,E_INF,Accessibility::ED_UPPER_BOUND,E_INF,
+			IndexRangeList(),IndexRangeList(),"1||&5||,4||&2||",false,false,false);
+	for(size_t offset:{0,3}) {
+		CAPTURE(offset);
+		SeedHandlerIdxOffset handler(new SeedHandlerExplicit(energy,sc));
+		handler.setOffset1(offset);handler.setOffset2(offset);
+		REQUIRE(handler.fillSeed(0,2,0,2)==1);
+		// At offset zero, the local range size (3,3) is an actual explicit
+		// seed start outside the range and cannot be used as a fresh cursor.
+		const StackSeedDomain domain(handler,3,3,3,3);
+		REQUIRE(domain.seedLength(0,0)==2);
+		REQUIRE(domain.maxSeedLength()==2);
+	}
+}
+
 TEST_CASE("stack-domain admission preserves handler-specific threshold equality", "[StackSeedDomain]") {
 	#include "testEasyLoggingSetup.icc"
 	RnaSequence t("t","GGG"),q("q","CCC");
@@ -98,7 +118,7 @@ TEST_CASE("stack-domain admission preserves handler-specific threshold equality"
 	REQUIRE(StackSeedDomain(ex,3,3,3,3).maxSeedLength()==2);
 }
 
-TEST_CASE("explicit stack capability inspects the retained minimum-energy pattern", "[StackSeedDomain]") {
+TEST_CASE("explicit stack capability remains conservative after minimum-energy selection", "[StackSeedDomain]") {
 	#include "testEasyLoggingSetup.icc"
 	RnaSequence t("t","GGGG"),q("q","CCCC");
 	AccessibilityDisabled at(t,0,nullptr),aq(q,0,nullptr);ReverseAccessibility ar(aq);
@@ -108,7 +128,18 @@ TEST_CASE("explicit stack capability inspects the retained minimum-energy patter
 	SeedHandlerExplicit handler(e,sc);
 	REQUIRE(!handler.guaranteesStackOnlySeeds());
 	REQUIRE(handler.fillSeed(0,3,0,3)==1);
-	StackSeedDomain domain(handler,4,4,4,4);
+	REQUIRE(handler.getSeedLength1(0,0)==3);
+	REQUIRE(handler.getSeedLength2(0,0)==3);
+	// A retained stack does not override the handler's conservative capability.
+#if INTARNA_IN_DEBUG_MODE
+	REQUIRE_THROWS_AS((StackSeedDomain(handler,4,4,4,4)),std::invalid_argument);
+#endif
+	SeedConstraint stackOnly(2,0,0,0,E_INF,Accessibility::ED_UPPER_BOUND,E_INF,
+			IndexRangeList(),IndexRangeList(),"1|||&2|||",false,false,false);
+	SeedHandlerExplicit stacked(e,stackOnly);
+	REQUIRE(stacked.guaranteesStackOnlySeeds());
+	REQUIRE(stacked.fillSeed(0,3,0,3)==1);
+	StackSeedDomain domain(stacked,4,4,4,4);
 	REQUIRE(domain.seedLength(0,0)==3);
 	REQUIRE(domain.maxSeedLength()==3); // constraint's minimum BP is only two
 }

@@ -36,6 +36,12 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 {
 	try {
 	if(pairProbabilities) pairProbabilities->markApproximate();
+	// Stack seeds share the nonnegative canonical-anchor recurrence with exact
+	// prediction. The frozen right choices restrict both its forward and outside.
+	if(seedHandler.guaranteesStackOnlySeeds()) {
+		PredictorMfeEns2dSeedExtension::predict(r1,r2);
+		return;
+	}
 	if(!r1.isAscending() || !r2.isAscending()
 			|| r1.from>=energy.getAccessibility1().getSequence().size()
 			|| r2.from>=energy.getAccessibility2().getAccessibilityOrigin().getSequence().size())
@@ -132,6 +138,43 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 }
 
 
+void
+PredictorMfeEns2dHeuristicSeedExtension::prepareStackSeedExtensions(
+		size_t n,size_t m,const StackSeedDomain & seeds)
+{
+	// Preserve the right-extension customization hooks while suppressing partial
+	// partition updates; only the common kernel publishes completed boundaries.
+	stackSeedRight.clear();
+	struct RestoreSelection {
+		bool & slot;
+		bool previous;
+		~RestoreSelection() { slot=previous; }
+	} restore{selectingStackSeedRight,selectingStackSeedRight};
+	selectingStackSeedRight=true;
+	for(size_t i=0;i<n;++i) for(size_t j=0;j<m;++j) {
+		const size_t length=seeds.seedLength(i,j);
+		if(!length) continue;
+		if(length==1)
+			throw std::invalid_argument("heuristic seed extension does not support singleton seeds");
+		const size_t end1=i+length-1,end2=j+length-1;
+		const size_t span1=energy.getAccessibility1().getMaxLength()-length+1;
+		const size_t span2=energy.getAccessibility2().getMaxLength()-length+1;
+		j1opt=end1; j2opt=end2; E_right_opt=E_INF;
+		hybridZ_right.resize(std::min(n-end1,span1),std::min(m-end2,span2));
+		fillHybridZ_right(end1,end2,i,j);
+		stackSeedRight.emplace(Interaction::BasePair(i,j),Interaction::BasePair(j1opt,j2opt));
+	}
+}
+
+std::function<Interaction::BasePair(Interaction::BasePair,Interaction::BasePair)>
+PredictorMfeEns2dHeuristicSeedExtension::stackSeedRightSelector() const
+{
+	return [this](Interaction::BasePair first,Interaction::BasePair) {
+		return stackSeedRight.at(first);
+	};
+}
+
+
 ////////////////////////////////////////////////////////////////////////////
 
 void
@@ -160,8 +203,10 @@ fillHybridZ_right( const size_t sj1, const size_t sj2
 				updateOptRightZ( si1,sj1+r1,si2,sj2+r2, energy.getE(seedZ * rightExtZ * initZ) );
 				// update overall partition function information for true right-extensions of the current seed
 				// seed only not covered due to min-val of r1,r2
-				updateZ(si1, sj1+r1, si2, sj2+r2, seedZ * rightExtZ * initZ, true);
-				addExtensionProbabilityRoot(si1,sj1+r1,si2,sj2+r2,seedZ*rightExtZ*initZ,false,true);
+				if(!selectingStackSeedRight) {
+					updateZ(si1, sj1+r1, si2, sj2+r2, seedZ * rightExtZ * initZ, true);
+					addExtensionProbabilityRoot(si1,sj1+r1,si2,sj2+r2,seedZ*rightExtZ*initZ,false,true);
+				}
 			}
 
 		}

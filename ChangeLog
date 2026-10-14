@@ -68,6 +68,16 @@
 
 ## Technical changes and Optimizations
 
+- compute exact and heuristic stack-seeded ensembles by first-seed ownership,
+  seed-avoiding left prefixes and unrestricted right extensions; differentiate
+  the same nonnegative retained ensemble for actual-pair probabilities (#264)
+
+- initialize seed iteration outside the complete remaining sequence so a seed
+  beyond a cropped region cannot hide an earlier valid seed
+
+- validate probability-region dimensions, seed masks and overlap in release
+  builds before accepting data or dereferencing a required annotation mask
+
 - use hashed base-pair keys for sparse stack-seed lookup, assert internal seed
   geometry in debug builds, and document probability computation steps and
   contributor conventions (PR #258 review)
@@ -190,6 +200,43 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261014 Alexander Mitrofanov
+ * SeededPartitionFunction.*
+   * Replace the combined absorbing-state recurrence by separate seed-free
+     prefixes, canonical first-hit injections and shared right extensions.
+     Apply full-boundary weights once after summing all seed owners; propagate
+     pair masses through the same nonnegative recurrence. Co-ending variable
+     seed lengths use their shortest admitted occurrence as canonical owner.
+ * PredictorMfeEns2d{,Heuristic}SeedExtension.*
+   * Route stack-seeded heuristic prediction through the common kernel with
+     frozen right choices. Retain one-sided and selected-endpoint two-sided
+     paths once; preserve legacy gapped-seed behavior and extension hooks.
+ * SeededChainOracle.h, SeededPartitionFunction_test.cpp,
+   PredictorSeedOracle_test.cpp, PredictorHeuristicSeededProbability_test.cpp,
+   PredictorMfeEnsRegression_test.cpp
+   + Check first-hit ownership, complete boundaries, raw pair masses and
+     heuristic subsets with independent tiny-chain enumeration and fugacities.
+ * StackSeedDomain.cpp, StackSeedDomain_test.cpp
+   * Start iteration at the remaining sequence end; avoid colliding with an
+     explicit seed outside a cropped active region. Cover offset and repeated
+     regional predictions. Reject conflicting externally supplied lengths in
+     release builds to keep seed-start and seed-end lookup consistent.
+   * Align the conservative-handler capability test with the documented domain
+     precondition in debug builds while checking retained seed geometry.
+ * BasePairProbabilities.cpp
+   * Restore public region/mask/overlap validation in release builds; the full
+     suite exposed a missing-mask null dereference on the target branch.
+ * README.md, doc/analysis/seed-extension-partition.md, doc/Makefile.am,
+   doc/recursions/IntaRNA.SeededPartitionFunction.{inside,outside}.svg,
+   doc/benchmarks/seed-extension/*
+   + Explain the Step 6 theory transfer, numerical/structural constraints,
+     changed heuristic semantics and validation; distribute the analysis and
+     identify the superseded suffix-recurrence diagrams as historical.
+   + Supply reproducible baseline comparisons of all boundary/pair masses,
+     timing and process RSS, including the measured exact-kernel slowdown.
+   * Implement https://github.com/BackofenLab/IntaRNA/issues/264 on its
+     requested docs/257-base-pair-probability-plan base.
 
 261013 Alexander Mitrofanov
  * StackSeedDomain, SeededPartitionFunction, PredictorMfeEns2dSeedExtension
