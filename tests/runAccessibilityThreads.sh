@@ -28,18 +28,18 @@ common=(--query="$tmp/sequences.fa" --target="$tmp/sequences.fa"
 # D converts reactivities; W reads precomputed pseudoenergies. See the audit
 # for pre-existing serial failures of Z and W combined with global Eall output.
 for method in none D W; do
-    shape=()
+    command=("$bin" "${common[@]}")
     columns=id1,start1,end1,id2,start2,end2,E,ED1,ED2
     if test "$method" != W; then
         columns+=,Eall1,Eall2
     fi
     if test "$method" != none; then
-        shape=(--qShape="$tmp/reactivities.shape" --tShape="$tmp/reactivities.shape"
-               --qShapeMethod="$method" --tShapeMethod="$method")
+        command+=(--qShape="$tmp/reactivities.shape" --tShape="$tmp/reactivities.shape"
+                  --qShapeMethod="$method" --tShapeMethod="$method")
     fi
     for threads in 1 2; do
         mkdir "$tmp/$method-$threads"
-        "$bin" "${common[@]}" "${shape[@]}" --threads="$threads" --outCsvCols="$columns" \
+        "${command[@]}" --threads="$threads" --outCsvCols="$columns" \
             --out="qAcc:$tmp/$method-$threads/query.txt" \
             --out="tAcc:$tmp/$method-$threads/target.txt" \
             > "$tmp/$method-$threads/predictions.unsorted" || {

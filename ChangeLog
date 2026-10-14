@@ -45,6 +45,8 @@
 - fix ViennaRNA parameter-cache races and enable parallel prepared window
   accessibility; retain serialization for global MFE/PF and non-OpenMP
   ViennaRNA builds, with a source audit and concurrency regressions (issue #265)
+- keep the concurrency regression compatible with Apple Clang's standard
+  library using explicitly joined std::thread workers (PR #267)
 
 - add an API overview, IntaRNA Doxygen styling, and automated documentation
   builds and GitHub Pages publishing alongside the user guide (issue #22)
@@ -132,6 +134,14 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261014 Alexander Mitrofanov
+ * tests/AccessibilityVrna_test.cpp :
+   * replace std::jthread, unavailable in the macOS CI standard library, with
+     std::thread and exception-safe joins before inspecting worker results
+   * fixes the Apple Clang regression build in PR #267
+ * tests/runAccessibilityThreads.sh :
+   * avoid empty-array expansion with nounset for older macOS Bash versions
 
 261014 Alexander Mitrofanov
  * IntaRNA/VrnaHandler, IntaRNA/AccessibilityVrna,

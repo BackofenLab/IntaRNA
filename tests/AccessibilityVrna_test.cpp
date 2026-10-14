@@ -170,15 +170,27 @@ TEST_CASE("Concurrent ViennaRNA accessibility and energy setup", "[Accessibility
 	};
 
 	SECTION("native threads also protect builds without IntaRNA OpenMP") {
-		std::vector<std::jthread> workers;
-		for (size_t worker = 0; worker < workerCount; ++worker) {
-			workers.emplace_back([&, worker] {
-				for (size_t job = worker; job < actual.size(); job += workerCount) {
-					runJob(job);
-				}
-			});
+		// Apple Clang's supported standard library does not provide jthread.
+		// Join every launched worker even if creating a later thread fails.
+		std::vector<std::thread> workers;
+		workers.reserve(workerCount);
+		try {
+			for (size_t worker = 0; worker < workerCount; ++worker) {
+				workers.emplace_back([&, worker] {
+					for (size_t job = worker; job < actual.size(); job += workerCount) {
+						runJob(job);
+					}
+				});
+			}
+		} catch (...) {
+			for (auto & worker : workers) {
+				worker.join();
+			}
+			throw;
 		}
-		// jthread joins before the common assertions below.
+		for (auto & worker : workers) {
+			worker.join();
+		}
 	}
 
 #if INTARNA_MULITHREADING
