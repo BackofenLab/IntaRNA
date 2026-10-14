@@ -1,0 +1,25 @@
+{
+  "executables": {
+    "dense": {
+      "path": "benchmark-dense",
+      "sha256": "364158a2f5647961fba6102b7f3a99df6503e080efb2865f720674b838370ebd"
+    },
+    "hash": {
+      "path": "benchmark-hash",
+      "sha256": "de0d8b906be164f2b61fa65462cb3d8503dd4ce27049756270674addd25ca219"
+    }
+  },
+  "suite": "full",
+  "repeats": 7,
+  "workloads": 116,
+  "warmups_per_variant_and_workload": 1,
+  "platform": "Linux-6.8.0-146-generic-x86_64-with-glibc2.39",
+  "python": "3.12.7",
+  "cpu_affinity": [
+    0
+  ],
+  "OMP_NUM_THREADS": "1",
+  "correctness": "exact ordered callbacks, partition, all pair masses",
+  "runtime": "steady_clock around compute only; callback counter, no dump I/O",
+  "memory": "GNU time %M peak RSS including setup/result; small launcher avoids Python fork RSS floor"
+}

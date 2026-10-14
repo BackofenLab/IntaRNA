@@ -1,0 +1,35 @@
+{
+  "base_commit": "e3479d693ae335780537c8bf3311aaa1b5ac6f76",
+  "base_branch": "docs/257-base-pair-probability-plan",
+  "date": "2026-10-14",
+  "cpu": "AMD Ryzen 5 7530U",
+  "cpu_affinity": [
+    0
+  ],
+  "os": "Linux x86-64 6.8.0-146-generic",
+  "compiler": "GCC 14.4.0",
+  "ViennaRNA": "2.7.2",
+  "Boost": "1.85",
+  "mdspan": "Kokkos",
+  "Z_type": "double",
+  "kernel_binaries": {
+    "dense": {
+      "kernel_sha256": "ddf8984f06c3a7824dcb10626d8b554dada8fbad177c5cfe11b0ae61c3ff3f98",
+      "benchmark_sha256": "6a7cf2831361fc424b66ad8be0d4001a0db24aae1062118f39911e82415db25c",
+      "binary_sha256": "364158a2f5647961fba6102b7f3a99df6503e080efb2865f720674b838370ebd"
+    },
+    "hash": {
+      "kernel_sha256": "d529d8f13d5b615417e57e4b53835db1a7d64a08de1ede3180fa62c4d4f60431",
+      "benchmark_sha256": "6a7cf2831361fc424b66ad8be0d4001a0db24aae1062118f39911e82415db25c",
+      "binary_sha256": "de0d8b906be164f2b61fa65462cb3d8503dd4ce27049756270674addd25ca219"
+    }
+  },
+  "native_binaries": {
+    "dense": {
+      "binary_sha256": "e1c4fcf81e1b8a06c70d98a675ca04f649869b76a8484db0d82cc910ed37b47e"
+    },
+    "hash": {
+      "binary_sha256": "0755ee5f51da358ac854538044fb2b62739319c94b7a960440481dcbe5cb963e"
+    }
+  }
+}
