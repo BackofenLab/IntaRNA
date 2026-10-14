@@ -334,6 +334,16 @@ PredictorMfeEns2dSeedExtension::exactBoundaryWeight(size_t i1,size_t j1,size_t i
 }
 
 void
+PredictorMfeEns2dSeedExtension::prepareStackSeedExtensions(size_t,size_t,const StackSeedDomain &)
+{}
+
+std::function<Interaction::BasePair(Interaction::BasePair,Interaction::BasePair)>
+PredictorMfeEns2dSeedExtension::stackSeedRightSelector() const
+{
+	return {};
+}
+
+void
 PredictorMfeEns2dSeedExtension::predictStackSeeds(const IndexRange & r1,const IndexRange & r2)
 {
 	// Validate public regions before translating both strands to local coordinates.
@@ -352,6 +362,8 @@ PredictorMfeEns2dSeedExtension::predictStackSeeds(const IndexRange & r1,const In
 	const size_t span2=std::min(m,energy.getAccessibility2().getMaxLength());
 	StackSeedDomain seeds=seedCount ? StackSeedDomain(seedHandler,n,m,span1,span2)
 			: StackSeedDomain(std::vector<StackSeedDomain::Occurrence>(),n,m,span1,span2);
+	// Freeze heuristic choices before computing the shared forward/outside objective.
+	prepareStackSeedExtensions(n,m,seeds);
 	// Supply native weights once per initiation, transition and complete boundary.
 	using K=SeededPartitionFunction;
 	const K::Domain domain{n,m,span1,span2,energy.getMaxInternalLoopSize1(),energy.getMaxInternalLoopSize2(),output.getOutputConstraint().noLP};
@@ -361,10 +373,12 @@ PredictorMfeEns2dSeedExtension::predictStackSeeds(const IndexRange & r1,const In
 		[&](K::Pair){return boltzmann(energy.getE_init());},
 		[&](K::Pair p,K::Pair q){return boltzmann(energy.getE_interLeft(p.first,q.first,p.second,q.second));},
 		[&](K::Pair p,K::Pair q){return exactBoundaryWeight(p.first,q.first,p.second,q.second);},
-		[&](K::Pair p,K::Pair q,Z_type h,Z_type b){updateExactCompleteZ(p.first,q.first,p.second,q.second,h,b);}
+		[&](K::Pair p,K::Pair q,Z_type h,Z_type b){updateExactCompleteZ(p.first,q.first,p.second,q.second,h,b);},
+		stackSeedRightSelector()
 	};
 	const auto result=K::compute(domain,seeds,weights,pairProbabilities!=nullptr);
 	// Custom updateZ overrides can change the objective even in release builds.
+	PartitionArithmetic::check(Zall);
 	if (result.z!=Zall) throw std::logic_error("exact seeded updateZ override did not preserve the partition objective");
 	output.setExactPartition(true);
 	reportOptima();

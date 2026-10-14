@@ -14,8 +14,9 @@ StackSeedDomain(const SeedHandler & handler, size_t n, size_t m, size_t w1, size
 #endif
 	if (n==0 || m==0) return;
 
-	// Use the range end as an invalid initial cursor, avoiding lastPos+offset wrap.
-	size_t i=n, j=m;
+	// A cropped range end can coincide with an explicit seed outside the range.
+	// The remaining sequence end is always invalid, also after offset translation.
+	size_t i=handler.getInteractionEnergy().size1(), j=handler.getInteractionEnergy().size2();
 	while (handler.updateToNextSeed(i,j,0,n-1,0,m-1)) {
 		// Stack-only admission guarantees equal strand lengths internally.
 		const size_t len=handler.getSeedLength1(i,j);
@@ -43,9 +44,7 @@ add(Occurrence s, size_t n, size_t m, size_t w1, size_t w2) {
 
 	// A start must identify one retained length, including for explicit input.
 	auto [p,inserted]=lengths.emplace(Interaction::BasePair(s.i,s.j),s.length);
-#if INTARNA_IN_DEBUG_MODE
 	if (!inserted && p->second!=s.length) throw std::invalid_argument("multiple retained seed lengths at one start");
-#endif
 
 	// The shortest seed ending here suffices to accept a stacked path suffix.
 	auto [end, fresh]=endingLengths.emplace(Interaction::BasePair(s.i+s.length-1,s.j+s.length-1),s.length);
