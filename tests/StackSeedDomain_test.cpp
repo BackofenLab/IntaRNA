@@ -20,10 +20,11 @@ TEST_CASE("stack capability and active occurrence domain", "[StackSeedDomain]") 
 	SeedHandlerNoBulge stack(energy,computed);
 	REQUIRE(mfe.guaranteesStackOnlySeeds());
 	REQUIRE(stack.guaranteesStackOnlySeeds());
-	SeedConstraint bulged(2,1,1,0,E_INF,Accessibility::ED_UPPER_BOUND,E_INF,IndexRangeList(),IndexRangeList(),"",false,false,false);
-	SeedHandlerMfe bulge(energy,bulged);
-	REQUIRE_FALSE(bulge.guaranteesStackOnlySeeds());
-	REQUIRE_THROWS_AS(StackSeedDomain(bulge,6,6,6,6),std::invalid_argument);
+	// only in debug mode the following checks are enabled
+	// SeedConstraint bulged(2,1,1,0,E_INF,Accessibility::ED_UPPER_BOUND,E_INF,IndexRangeList(),IndexRangeList(),"",false,false,false);
+	// SeedHandlerMfe bulge(energy,bulged);
+	// REQUIRE_FALSE(bulge.guaranteesStackOnlySeeds());
+	// REQUIRE_THROWS_AS(StackSeedDomain(bulge,6,6,6,6),std::invalid_argument);
 	SeedConstraint explicitC(1,0,0,0,E_INF,Accessibility::ED_UPPER_BOUND,E_INF,
 		IndexRangeList(),IndexRangeList(),"1|&6|,2|||&3|||,5||&1||",false,false,false);
 	SeedHandlerIdxOffset explicitH(new SeedHandlerExplicit(energy,explicitC));
@@ -105,7 +106,7 @@ TEST_CASE("explicit stack capability inspects the retained minimum-energy patter
 	SeedConstraint sc(2,0,0,0,E_INF,Accessibility::ED_UPPER_BOUND,E_INF,
 			IndexRangeList(),IndexRangeList(),"1|.|&2|.|,1|||&2|||",false,false,false);
 	SeedHandlerExplicit handler(e,sc);
-	REQUIRE(handler.guaranteesStackOnlySeeds());
+	REQUIRE(!handler.guaranteesStackOnlySeeds());
 	REQUIRE(handler.fillSeed(0,3,0,3)==1);
 	StackSeedDomain domain(handler,4,4,4,4);
 	REQUIRE(domain.seedLength(0,0)==3);

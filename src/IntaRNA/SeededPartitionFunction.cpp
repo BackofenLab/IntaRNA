@@ -54,12 +54,16 @@ compute(
 		// Forward pass: extend prefixes and finalize every admitted right boundary.
 		for(size_t i=0;i<n;++i) for(size_t j=0;j<m;++j) {
 			if(!valid(i,j)) continue;
+			// linear index for current (i,j) in the flattened n*m domain
 			const size_t q=i*m+j;
 			// Stacking transitions preserve the suffix length needed for seed admission.
 			if(i && j && valid(i-1,j-1)) {
 				const Z_type t=A::check(w.transition({p1+i-1,p2+j-1},{p1+i,p2+j}));
 				for(size_t c=0;c<states;++c) {
-					auto & v=h(q,dest(i,j,c,true));v=A::add(v,A::multiply(h(q-m-1,c),t));
+					// get reference for target cell
+					auto & v=h(q,dest(i,j,c,true));
+					// update target cell with source cell (i-1,j-1) multiplied by transition weight
+					v=A::add(v,A::multiply(h(q-m-1,c),t));
 				}
 			}
 			// Loop transitions need only the unseeded/seeded predecessor totals.

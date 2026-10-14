@@ -117,7 +117,7 @@ parseRNAplfold_text( std::istream & inStream, const Z_type RT, const bool parseP
 #if INTARNA_MULITHREADING
 		#pragma omp critical(intarna_omp_logOutput)
 #endif
-		{ LOG(INFO) <<"initializing ED data for sequence '"<<getSequence().getId()<<" : available maximal window length "
+		{ LOG(INFO) <<"initializing ED data for sequence '"<<getSequence().getId()<<"' : available maximal window length "
 				<<maxAvailLength<<" is smaller than maximal interaction length "<<getMaxLength()
 				<<" : reducing maximal interaction length to "<<maxAvailLength;}
 		// reducing maximal interaction length

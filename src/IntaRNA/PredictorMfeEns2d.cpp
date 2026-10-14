@@ -57,7 +57,7 @@ PredictorMfeEns2d::predictRegion(const IndexRange & r1,const IndexRange & r2)
 	// check indices
 	if (!(r1.isAscending() && r2.isAscending()) 
 		|| r1.from>=energy.getAccessibility1().getSequence().size()
-		|| r2.from>=energy.getAccessibility2().getSequence().size()))
+		|| r2.from>=energy.getAccessibility2().getSequence().size())
 		throw std::runtime_error("PredictorMfeEns2d::predict("+toString(r1)+","+toString(r2)+") is not sane");
 #endif
 
