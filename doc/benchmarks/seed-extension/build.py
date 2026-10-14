@@ -14,7 +14,7 @@ def main():
     parser.add_argument("--output", type=Path, required=True,
                         help="directory for source snapshots and executables")
     parser.add_argument("--cxx", default="g++", help="C++23 compiler executable")
-    parser.add_argument("--baseline", default="cb1c9d419f96c7d2a10bae864d922dcb0234f4d4")
+    parser.add_argument("--baseline", default="392357c00f0314659cd4c665446f3f6185f4814a")
     parser.add_argument("--include", type=Path, action="append", default=[],
                         help="extra dependency include directory; repeat as needed")
     parser.add_argument("--runtime-library-dir", type=Path, action="append", default=[],

@@ -68,6 +68,9 @@
 
 ## Technical changes and Optimizations
 
+- reuse maximal seed-extension workspaces for exact/heuristic partitions,
+  endpoint selection and pair-probability differentiation (PR #266 review)
+
 - compute exact and heuristic stack-seeded ensembles by first-seed ownership,
   seed-avoiding left prefixes and unrestricted right extensions; differentiate
   the same nonnegative retained ensemble for actual-pair probabilities (#264)
@@ -200,6 +203,25 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261015 Alexander Mitrofanov
+ * SeededPartitionFunction.cpp
+   * Allocate prefix, first-hit, right-extension and outside matrices once per
+     computation at the inclusive span bounds. Use active upper index bounds
+     and reset active cells before accumulation, including shrink/regrowth.
+   * Reuse flat anchor/group storage and an endpoint index instead of creating
+     per-group vectors and hash nodes; omit outside buffers in partition mode.
+ * PredictorMfeEns2dHeuristicSeedExtension.cpp
+   * Reuse the maximal right-extension buffer while freezing native heuristic
+     endpoints, including explicit seeds of different lengths.
+ * SeededPartitionFunction_test.cpp, PredictorHeuristicSeededProbability_test.cpp
+   + Compare changing workspace shapes with independent chain enumeration and
+     compare mixed-seed endpoint selection with isolated single-seed predictions.
+ * doc/analysis/seed-extension-partition.md, doc/benchmarks/seed-extension/*,
+   doc/Makefile.am
+   + Document workspace bounds and reproduce exact/heuristic allocation counts,
+     requested bytes, runtime, RSS and numerical comparisons against PR #266.
+   * Address https://github.com/BackofenLab/IntaRNA/pull/266#issuecomment-6176325864.
 
 261014 Alexander Mitrofanov
  * SeededPartitionFunction.*

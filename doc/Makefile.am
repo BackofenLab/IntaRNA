@@ -32,4 +32,9 @@ EXTRA_DIST += benchmarks/seed-extension/README.md \
 			benchmarks/seed-extension/driver.cpp \
 			benchmarks/seed-extension/recorded-results.json \
 			benchmarks/seed-extension/recorded-samples.tsv \
-			benchmarks/seed-extension/recorded-source-hashes.json
+			benchmarks/seed-extension/recorded-source-hashes.json \
+			benchmarks/seed-extension/reuse-exact-results.json \
+			benchmarks/seed-extension/reuse-heuristic-results.json \
+			benchmarks/seed-extension/reuse-exact-samples.tsv \
+			benchmarks/seed-extension/reuse-heuristic-samples.tsv \
+			benchmarks/seed-extension/reuse-source-hashes.json

@@ -242,7 +242,50 @@ memory improvements require measurements against the previous implementation
 with identical inputs, options, build configuration, and thread count; the
 factorization alone is not a performance claim.
 
-## Measured exact-kernel tradeoff
+## Reusable extension workspaces
+
+The allocation revision requested in [PR #266](https://github.com/BackofenLab/IntaRNA/pull/266#issuecomment-6176325864)
+keeps the recurrence and its arithmetic order unchanged. One invocation allocates
+its prefix, first-hit, right-extension and (when requested) outside matrices at
+`min(span1,n)` by `min(span2,m)`, with the prefix run-length dimension retained.
+The inclusive maximum extension offset is `span-1`; storing offset zero requires
+`span` cells. This bound covers singleton and mixed-length explicit seeds without
+assuming the configured nominal seed length. These shared contractions include
+the source and accepting pairs, so reducing the cell count to `span-1` would omit
+valid boundaries.
+
+Each left boundary or endpoint group uses its own upper index bounds within the
+same fixed-size buffers. Accumulation buffers are cleared over their active
+rectangle; validity and seed-ending tables are fully overwritten there. This also
+resets cells when a rectangle shrinks at a sequence end and grows at the next
+row. Right contractions and their adjoints share one reusable buffer each across
+all endpoint groups. Partition-only calls omit the boundary/outside buffers.
+
+Groups retain their first-encounter order. A reusable flat anchor list and dense
+local endpoint index replace per-group vectors and hash nodes. The native
+heuristic selector also preallocates its right-extension table once and overwrites
+each active rectangle, preserving the extension hooks and their logical bounds.
+Workspaces are local to the invocation (or predictor for native selection), with
+no global shared mutable storage. Gapped-seed fallback behavior is unchanged.
+
+Preallocation retains the worst-case span capacity for the duration of the call;
+it does not reduce the asymptotic live-memory bound and can retain more memory
+than a particular small active rectangle requires. The goal is to remove repeated
+allocation/destruction. The [benchmark](../benchmarks/seed-extension/README.md)
+records allocation calls and cumulative requested bytes separately from process
+RSS and runtime.
+
+The reuse revision passes `make tests -j2` in GCC 14.4 release and debug builds:
+all seven test drivers pass, with 108 API cases and 188,838 / 188,839 assertions.
+The added regressions compare changing active rectangles with independent path
+enumeration and mixed-length native selector choices with isolated seeds.
+Exact/heuristic benchmark dumps match `392357c` byte-for-byte across 599,242
+entries; 12 native CLI predictions and pair-probability matrices also match.
+
+## Original factorization measurements
+
+These measurements describe revision `392357c`, before the workspace reuse
+revision above; the benchmark README records the newer allocation comparison.
 
 The [reproducible kernel benchmark](../benchmarks/seed-extension/README.md)
 compares the exact backend with revision
@@ -271,7 +314,7 @@ could run on the workstation. These measurements characterize the cost of this
 factorization on the stated fixtures and do not establish a general runtime
 or memory bound.
 
-## Validation of the delivered implementation
+## Original factorization validation
 
 GCC 14.4 release and `--enable-debug` builds both pass `make tests -j2`: all
 seven API/CLI suites pass in each build. The API suite reports 106 cases with

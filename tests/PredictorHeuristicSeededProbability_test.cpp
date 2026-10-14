@@ -170,6 +170,39 @@ TEST_CASE("stack seeded heuristic and exact native marginals match independent r
 	}
 }
 
+TEST_CASE("heuristic right selection reuses buffers across mixed seed lengths", "[HeuristicSeededProbability]") {
+	#include "testEasyLoggingSetup.icc"
+	RnaSequence t("t","GGGGGG"),q("q","CCCCCC");
+	AccessibilityDisabled at(t,5,nullptr),aq(q,6,nullptr); ReverseAccessibility ar(aq);
+	InteractionEnergyBasePair energy(at,ar,2,1);
+	// Vary both the seed length and the row/column of its endpoint so the
+	// active right rectangle repeatedly shrinks and regrows in one prediction.
+	const std::vector<std::string> patterns{"1|||&4|||","1||&4||","2||&5||","3|||&2|||","5||&4||"};
+	std::string combined;
+	for(const auto & pattern:patterns) { if(!combined.empty()) combined+=','; combined+=pattern; }
+	for(bool noLP:{false,true}) {
+		CAPTURE(noLP);
+		const auto oc=constraints(noLP);
+		const auto sc=explicitSeeds(combined);
+		OutputHandlerInteractionList output(oc,0);
+		FixedChoiceSeededHeuristic together(energy,output,nullptr,new SeedHandlerExplicit(energy,sc));
+		together.predict();
+		REQUIRE(together.choices.size()==patterns.size());
+		for(const auto & pattern:patterns) {
+			CAPTURE(pattern);
+			const auto single=explicitSeeds(pattern);
+			OutputHandlerInteractionList singleOutput(oc,0);
+			FixedChoiceSeededHeuristic alone(energy,singleOutput,nullptr,new SeedHandlerExplicit(energy,single));
+			alone.predict();
+			REQUIRE(alone.choices.size()==1);
+			const auto & [start,expected]=*alone.choices.begin();
+			const auto & got=together.choices.at(start);
+			REQUIRE(got.j1==expected.j1); REQUIRE(got.j2==expected.j2);
+			REQUIRE(got.e==expected.e);
+		}
+	}
+}
+
 TEST_CASE("seeded heuristic probabilities handle original coordinates regions and empty domains", "[BasePairProbabilities][HeuristicSeededProbability]") {
 	#include "testEasyLoggingSetup.icc"
 	RnaSequence t("t","GGGGGG"),q("q","CCCCCC");
