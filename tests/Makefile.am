@@ -15,7 +15,7 @@ TEST_EXTENSIONS = $(EXEEXT) .sh
 SH_LOG_COMPILER = $(SHELL)
 
 # the script needed for tests
-dist_check_SCRIPTS = runIntaRNA.sh runAccessibilityBinary.sh runIntaRNAeval.sh runKineticSeedExtension.sh runOutputOverlap.sh
+dist_check_SCRIPTS = runIntaRNA.sh runAccessibilityBinary.sh runIntaRNAeval.sh runKineticSeedExtension.sh runOutputOverlap.sh runBasePairProbabilities.sh
 
 # the program to build
 check_PROGRAMS = runApiTests 
@@ -23,6 +23,16 @@ check_PROGRAMS = runApiTests
 # test sources
 runApiTests_SOURCES =	\
 					catch.hpp \
+					SeededChainOracle.h \
+					SeededTheoryFixtures.h \
+					SeededStackKernel.h \
+					SeededPartitionFunction_test.cpp \
+					SeededNativeBenchmark_test.cpp \
+					StackSeedDomain_test.cpp \
+					BasePairProbabilities_test.cpp \
+					PredictorUnseededProbability_test.cpp \
+					PredictorHeuristicProbability_test.cpp \
+					PredictorHeuristicSeededProbability_test.cpp \
 					testEasyLoggingSetup.icc \
 					AccessibilityConstraint_test.cpp \
 					AccessibilityFromStream_test.cpp \
@@ -73,6 +83,9 @@ LIBS= 	-L$(top_builddir)/src/IntaRNA -lIntaRNA \
 # add source include for compilation
 runApiTests_CXXFLAGS =	-I$(top_builddir)/src \
 						@AM_CXXFLAGS@ @CXXFLAGS@ \
-						-DELPP_NO_LOG_TO_FILE
+						-DELPP_NO_LOG_TO_FILE \
+						-DINTARNA_TEST_DATA_DIR=\"$(abs_srcdir)/data\"
 
 
+
+EXTRA_DIST = tools/export-seeded-theory.py testBasePairProbabilities.py testBasePairProbabilitySvg.py

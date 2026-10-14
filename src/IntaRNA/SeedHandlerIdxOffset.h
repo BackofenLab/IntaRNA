@@ -24,6 +24,13 @@ class SeedHandlerIdxOffset : public SeedHandler
 
 public:
 
+	/** Whether every exposed seed is a consecutive diagonal pair chain.
+	 * This geometric guarantee does not imply existence or a common length.
+	 * @return false for unknown handlers; offsets preserve this capability
+	 */
+	virtual bool guaranteesStackOnlySeeds() const override;
+
+
 	/**
 	 * Construction
 	 * @param seedHandler the seed handler to be wrapped
@@ -515,6 +522,12 @@ isFeasibleSeedBasePair( const size_t i1
 }
 
 //////////////////////////////////////////////////////////////////////////
+
+inline bool
+SeedHandlerIdxOffset::guaranteesStackOnlySeeds() const
+{
+	return seedHandlerOriginal->guaranteesStackOnlySeeds();
+}
 
 } // namespace
 

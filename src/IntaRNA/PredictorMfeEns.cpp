@@ -1,5 +1,6 @@
 
 #include "IntaRNA/PredictorMfeEns.h"
+#include "IntaRNA/PartitionArithmetic.h"
 
 #include <iostream>
 #include <algorithm>
@@ -45,6 +46,17 @@ addPartitionContribution( const size_t i1, const size_t j1
 		, const bool isHybridZ
 		, Z_type & partZ_noED )
 {
+	if (exactContribution) {
+		// The coefficient was admitted and computed once by the forward adapter.
+		// Reconstructing it here could disagree with the reverse objective.
+		if (!isHybridZ || partZ != exactContribution->first)
+			throw std::logic_error("exact seeded updateZ override changed a boundary weight; override exactBoundaryWeight instead");
+		partZ_noED=PartitionArithmetic::check(partZ);
+		const Z_type weighted=PartitionArithmetic::multiply(partZ,exactContribution->second);
+		if (weighted==0) return false;
+		Zall=PartitionArithmetic::add(Zall,weighted);
+		return true;
+	}
 	// check if something to be done
 	if (Z_equal(partZ,0) || Z_isINF(Zall))
 		return false;
@@ -149,6 +161,20 @@ updateCompleteZ( const size_t i1, const size_t j1
 }
 
 ////////////////////////////////////////////////////////////////////////////
+
+void
+PredictorMfeEns::updateExactCompleteZ(size_t i1,size_t j1,size_t i2,size_t j2,
+		Z_type hybrid,Z_type coefficient)
+{
+	const std::pair<Z_type,Z_type> contribution(hybrid,coefficient);
+	struct Restore {
+		const std::pair<Z_type,Z_type> * & slot;
+		const std::pair<Z_type,Z_type> * previous;
+		~Restore() { slot=previous; }
+	} restore{exactContribution,exactContribution};
+	exactContribution=&contribution;
+	updateCompleteZ(i1,j1,i2,j2,hybrid,true);
+}
 
 void
 PredictorMfeEns::

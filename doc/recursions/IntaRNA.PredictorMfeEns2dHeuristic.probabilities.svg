@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1800" viewBox="0 0 1440 1800" role="img" aria-labelledby="title desc">
+<title id="title">Unseeded heuristic probabilities · candidate flow</title>
+<desc id="desc">PredictorMfeEns2dHeuristic  |  --model=P --mode=H --noSeed  |  approximate retained ensemble. Internal recurrence documentation for step 9 of PR 258. Equations describe the current implementation; RNA 2 uses reversed energy coordinates.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#60798e"/></marker>
+<pattern id="seed-hatch" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#fff0dc"/><path d="M-2 2 L2 -2 M0 8 L8 0 M6 10 L10 6" stroke="#e0b27a" stroke-width="1"/></pattern></defs>
+<rect width="1440" height="100%" fill="white"/>
+<text x="48" y="48" font-family="DejaVu Sans, sans-serif" font-size="14" fill="#275f8c" text-anchor="start" font-weight="bold">INTARNA  /  RECURRENCE NOTES</text>
+<text x="48" y="91" font-family="DejaVu Sans, sans-serif" font-size="31" fill="#203244" text-anchor="start" font-weight="bold">Unseeded heuristic probabilities · candidate flow</text>
+<text x="48" y="125" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">PredictorMfeEns2dHeuristic  |  --model=P --mode=H --noSeed  |  approximate retained ensemble</text>
+<path d="M48 148 L1392 148" fill="none" stroke="#c4d0da" stroke-width="1.2"/>
+<text x="48" y="185" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Each retained cell C(i) represents one selected pair chain, with hybrid weight vᵢ and right boundary jᵢ.</text>
+<text x="48" y="214" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Pair coordinates increase on both strands internally; RNA 2 is reversed. Set i⁺=i+(1,1).</text>
+<text x="48" y="243" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">d=BW(E_init), t(i,k)=BW(E_interLeft(i,k)), and B(i,j)=BW(energy.getE(i₁,j₁,i₂,j₂,0)).</text>
+<rect x="48" y="294" width="1344" height="172" rx="8" fill="#fff7ed" stroke="#d0dbe3"/>
+<text x="70" y="328" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#bd6518" text-anchor="start" font-weight="bold">Approximate means the continuation ensemble is pruned</text>
+<text x="73" y="357" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Visit i in decreasing order. Generate candidates from already selected child chains C(k).</text>
+<text x="73" y="386" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Every admitted candidate contributes to Z; only the candidate with the lowest complete site energy</text>
+<text x="73" y="415" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">is retained as C(i) for later extensions. Strict improvement wins; native energy rounding and ties are preserved.</text>
+<rect x="48" y="494" width="1344" height="358" rx="8" fill="#f3f7fa" stroke="#d0dbe3"/>
+<text x="70" y="528" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#275f8c" text-anchor="start" font-weight="bold">1  Record which new pairs each candidate owns</text>
+<text x="74" y="559" font-family="DejaVu Sans, sans-serif" font-size="19" fill="#275f8c" text-anchor="start" font-weight="bold">Candidate</text>
+<text x="570" y="559" font-family="DejaVu Sans, sans-serif" font-size="19" fill="#275f8c" text-anchor="start" font-weight="bold">Hybrid weight v</text>
+<text x="929" y="559" font-family="DejaVu Sans, sans-serif" font-size="19" fill="#275f8c" text-anchor="start" font-weight="bold">Owned pairs S</text>
+<text x="1190" y="559" font-family="DejaVu Sans, sans-serif" font-size="19" fill="#275f8c" text-anchor="start" font-weight="bold">Child k</text>
+<text x="74" y="608" font-family="DejaVu Sans, sans-serif" font-size="19" fill="#203244" text-anchor="start">LP: initial pair</text>
+<text x="570" y="608" font-family="DejaVu Serif, sans-serif" font-size="22" fill="#203244" text-anchor="start">d</text>
+<text x="929" y="608" font-family="DejaVu Serif, sans-serif" font-size="22" fill="#203244" text-anchor="start">{i}</text>
+<text x="1190" y="608" font-family="DejaVu Serif, sans-serif" font-size="22" fill="#203244" text-anchor="start">none</text>
+<text x="74" y="652" font-family="DejaVu Sans, sans-serif" font-size="19" fill="#203244" text-anchor="start">LP: loop / stack to k</text>
+<text x="570" y="652" font-family="DejaVu Serif, sans-serif" font-size="22" fill="#203244" text-anchor="start">t(i,k)vₖ</text>
+<text x="929" y="652" font-family="DejaVu Serif, sans-serif" font-size="22" fill="#203244" text-anchor="start">{i}</text>
+<text x="1190" y="652" font-family="DejaVu Serif, sans-serif" font-size="22" fill="#203244" text-anchor="start">k</text>
+<text x="74" y="696" font-family="DejaVu Sans, sans-serif" font-size="19" fill="#203244" text-anchor="start">noLP: initial stack</text>
+<text x="570" y="696" font-family="DejaVu Serif, sans-serif" font-size="22" fill="#203244" text-anchor="start">s d,  s=t(i,i⁺)</text>
+<text x="929" y="696" font-family="DejaVu Serif, sans-serif" font-size="22" fill="#203244" text-anchor="start">{i, i⁺}</text>
+<text x="1190" y="696" font-family="DejaVu Serif, sans-serif" font-size="22" fill="#203244" text-anchor="start">none</text>
+<text x="74" y="740" font-family="DejaVu Sans, sans-serif" font-size="19" fill="#203244" text-anchor="start">noLP: direct stacking</text>
+<text x="570" y="740" font-family="DejaVu Serif, sans-serif" font-size="22" fill="#203244" text-anchor="start">s vᵢ⁺</text>
+<text x="929" y="740" font-family="DejaVu Serif, sans-serif" font-size="22" fill="#203244" text-anchor="start">{i}</text>
+<text x="1190" y="740" font-family="DejaVu Serif, sans-serif" font-size="22" fill="#203244" text-anchor="start">i⁺</text>
+<text x="74" y="784" font-family="DejaVu Sans, sans-serif" font-size="19" fill="#203244" text-anchor="start">noLP: nonstack loop to k</text>
+<text x="570" y="784" font-family="DejaVu Serif, sans-serif" font-size="22" fill="#203244" text-anchor="start">s t(i⁺,k)vₖ</text>
+<text x="929" y="784" font-family="DejaVu Serif, sans-serif" font-size="22" fill="#203244" text-anchor="start">{i, i⁺}</text>
+<text x="1190" y="784" font-family="DejaVu Serif, sans-serif" font-size="22" fill="#203244" text-anchor="start">k</text>
+<text x="73" y="830" font-family="DejaVu Sans, sans-serif" font-size="17" fill="#203244" text-anchor="start">Native pair, loop/span and right-end GU constraints apply; noLP loops exclude the adjacent child k=i⁺+(1,1).</text>
+<rect x="48" y="882" width="1344" height="207" rx="8" fill="#edf6f2" stroke="#d0dbe3"/>
+<text x="70" y="916" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#23796a" text-anchor="start" font-weight="bold">2  Initialize mass and flow from every admitted candidate</text>
+<text x="73" y="950" font-family="DejaVu Serif, sans-serif" font-size="23" fill="#203244" text-anchor="start">w = B(i,j)v;     Z += w;     M(p) += w  for p ∈ S;     F(k) += w  if a child exists</text>
+<text x="73" y="995" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">M starts at zero; F is accumulated incoming weight for a retained child chain. This includes unselected candidates.</text>
+<text x="73" y="1024" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Use exactly updateZ() admission: !Z_equal(v,0), complete-site GU / ED filters, and finite arithmetic.</text>
+<text x="73" y="1053" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">The current candidate owns S; every remaining pair belongs to its selected child continuation.</text>
+<rect x="48" y="1119" width="1344" height="249" rx="8" fill="#f3f7fa" stroke="#d0dbe3"/>
+<text x="70" y="1153" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#275f8c" text-anchor="start" font-weight="bold">3  Propagate incoming mass through selected chains</text>
+<rect x="271.64" y="1221" width="191.36" height="60" fill="#dcebf5"/>
+<text x="367.32" y="1258" font-family="DejaVu Serif, sans-serif" font-size="24" fill="#275f8c" text-anchor="middle">C(k)</text>
+<path d="M95 1221 L463 1221" fill="none" stroke="#203244" stroke-width="2"/>
+<path d="M95 1281 L463 1281" fill="none" stroke="#203244" stroke-width="2"/>
+<path d="M95 1221 L95 1281" fill="none" stroke="#203244" stroke-width="2.4"/>
+<text x="95" y="1209" font-family="DejaVu Serif, sans-serif" font-size="17" fill="#203244" text-anchor="middle">i</text>
+<path d="M271.64 1221 L271.64 1281" fill="none" stroke="#203244" stroke-width="2.4"/>
+<text x="271.64" y="1209" font-family="DejaVu Serif, sans-serif" font-size="17" fill="#203244" text-anchor="middle">k</text>
+<path d="M463 1221 L463 1281" fill="none" stroke="#203244" stroke-width="2.4"/>
+<text x="463" y="1209" font-family="DejaVu Serif, sans-serif" font-size="17" fill="#203244" text-anchor="middle">jₖ</text>
+<text x="521" y="1195" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#203244" text-anchor="start">Sweep i in increasing order. Let Sᵢ and kᵢ describe C(i).</text>
+<text x="521" y="1231" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#203244" text-anchor="start">M(p) += F(i) for every p ∈ Sᵢ;</text>
+<text x="521" y="1267" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#203244" text-anchor="start">F(kᵢ) += F(i) when C(i) has a child.</text>
+<text x="521" y="1303" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#203244" text-anchor="start">Every edge increases both indices, so all parents arrive first.</text>
+<text x="73" y="1333" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">No division by vᵢ is needed: a retained cell represents one chain, so its full incoming weight follows every pair.</text>
+<rect x="48" y="1397" width="1344" height="223" rx="8" fill="#edf6f2" stroke="#d0dbe3"/>
+<text x="70" y="1431" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#23796a" text-anchor="start" font-weight="bold">4  Publish marginals of the retained candidate ensemble</text>
+<text x="73" y="1465" font-family="DejaVu Serif, sans-serif" font-size="27" fill="#203244" text-anchor="start">P(i,j) = ∑ M_region(i,j) / ∑ Z_region</text>
+<text x="73" y="1510" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Map energy coordinates back to original strand order, merge disjoint regions, then validate and normalize.</text>
+<text x="73" y="1539" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">The denominator must equal the unchanged heuristic Zall. Mark the result approximate, including empty results.</text>
+<text x="73" y="1568" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Missing continuation chains are not recovered. These marginals differ from the exact --mode=M ensemble.</text>
+<text x="48" y="1660" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Only actual paired nucleotides receive mass; positions merely enclosed by a retained interaction remain unmarked.</text>
+<path d="M48 1705 L1392 1705" fill="none" stroke="#c4d0da" stroke-width="1.2"/>
+<text x="48" y="1729" font-family="DejaVu Sans, sans-serif" font-size="14" fill="#275f8c" text-anchor="start" font-weight="bold">Implementation anchors (src/IntaRNA/) · BW(E)=exp(−E/RT) after native energy-unit conversion</text>
+<text x="48" y="1752" font-family="DejaVu Sans, sans-serif" font-size="13" fill="#203244" text-anchor="start">PredictorMfeEns2dHeuristic.cpp: fillHybridZ(), recordProbabilityCandidate(), commitProbabilityRegion()</text>
+<text x="48" y="1773" font-family="DejaVu Sans, sans-serif" font-size="13" fill="#203244" text-anchor="start">BasePairProbabilities: markApproximate(), addRegion(), finalize(); PredictorMfeEns.cpp: updateZ()</text>
+</svg>

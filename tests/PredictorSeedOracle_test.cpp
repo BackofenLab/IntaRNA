@@ -17,6 +17,7 @@
 #include "IntaRNA/SeedHandlerMfe.h"
 
 #include <algorithm>
+#include <array>
 #include <map>
 #include <memory>
 #include <stdexcept>
@@ -208,6 +209,8 @@ bool passesOutputConstraint(const InteractionEnergy & energy,
 	}
 	const SeedOraclePair & left = chain.front();
 	const SeedOraclePair & right = chain.back();
+	if (right.i1-left.i1+1>energy.getAccessibility1().getMaxLength()
+			|| right.i2-left.i2+1>energy.getAccessibility2().getMaxLength()) return false;
 	if (constraint.noGUend
 			&& (energy.isGU(left.i1, left.i2)
 					|| energy.isGU(right.i1, right.i2)))
@@ -663,5 +666,160 @@ TEST_CASE("tiny exhaustive seed oracle for exact predictor families",
 				}));
 		REQUIRE(seedOnly.getZall()
 				== Approx(seedOnlyExpected.partition).epsilon(1e-12));
+	}
+}
+
+#include "IntaRNA/AccessibilityBasePair.h"
+#include "IntaRNA/AccessibilityVrna.h"
+#include "IntaRNA/InteractionEnergyVrna.h"
+#include "IntaRNA/SeedHandlerNoBulge.h"
+#include "IntaRNA/OutputHandlerHub.h"
+
+namespace {
+class ExactSeedProbe : public PredictorMfeEns2dSeedExtension {
+public:
+	using PredictorMfeEns2dSeedExtension::PredictorMfeEns2dSeedExtension;
+	std::map<std::array<size_t,4>,Z_type> boundaries;
+	bool throwUpdate=false;
+	size_t calls=0;
+	bool restored() const { return exactContribution==nullptr && !updateZisComplete; }
+	size_t retained() const { return Z_partition.size(); }
+protected:
+	void updateZ(size_t i,size_t j,size_t k,size_t l,Z_type z,bool hybrid) override {
+		++calls;
+		if (throwUpdate) throw std::runtime_error("injected update failure");
+		if (exactContribution) boundaries[{i,k,j,l}]=z*exactContribution->second;
+		PredictorMfeEns2dSeedExtension::updateZ(i,j,k,l,z,hybrid);
+	}
+};
+void checkNativeStackPartition(const InteractionEnergy & energy,bool noLP,bool noGU) {
+	const SeedConstraint sc=makeSeedConstraint(2,0,0,0,false);
+	OutputConstraint oc(3,OutputConstraint::OVERLAP_BOTH,E_INF,E_INF,false,noLP,noGU,true,false);
+	IndexRange r1(0,energy.size1()-1), r2(0,energy.size2()-1);
+	auto oracle=enumerateSeededInteractions(energy,sc,oc,r1,r2);
+	OutputHandlerInteractionList output(oc,3);
+	ExactSeedProbe p(energy,output,nullptr,new SeedHandlerMfe(energy,sc));
+	p.predict();
+	REQUIRE(p.getZall()==Approx(oracle.unionPartition).epsilon(2e-12));
+	REQUIRE(output.getZ()==p.getZall());
+	REQUIRE(output.usesExactPartition());
+	REQUIRE(p.retained()==0);
+	std::map<std::array<size_t,4>,Z_type> expected;
+	for(const auto & i:oracle.interactions) expected[{i.chain.front().i1,i.chain.front().i2,i.chain.back().i1,i.chain.back().i2}]+=energy.getBoltzmannWeight(i.energy);
+	for(const auto & [b,z]:p.boundaries) REQUIRE(z==Approx(expected[b]).epsilon(2e-12));
+	for(const auto & [b,z]:expected) REQUIRE(p.boundaries[b]==Approx(z).epsilon(2e-12));
+}
+}
+
+TEST_CASE("native exact stacked partitions agree beyond the unique-anchor domain", "[PredictorSeedOracle][SeededPartitionFunction]") {
+	#include "testEasyLoggingSetup.icc"
+	RnaSequence t("t","GUGGCGC"),q("q","GCGCCAC");
+	AccessibilityBasePair at(t,6,nullptr), aq(q,5,nullptr);
+	ReverseAccessibility ar(aq);
+	InteractionEnergyBasePair simple(at,ar,2,1);
+	VrnaHandler vrna;
+	AccessibilityVrna nativeTarget(t,6,nullptr,vrna),nativeQuery(q,5,nullptr,vrna);
+	ReverseAccessibility nativeReverse(nativeQuery);
+	InteractionEnergyVrna nearest(nativeTarget,nativeReverse,vrna,2,1);
+	for(bool noLP:{false,true}) for(bool noGU:{false,true}) {
+		checkNativeStackPartition(simple,noLP,noGU);
+		checkNativeStackPartition(nearest,noLP,noGU);
+	}
+}
+TEST_CASE("exact seeded updates retain tiny weights and restore scopes on exceptions", "[PredictorSeedOracle][SeededPartitionFunction]") {
+	#include "testEasyLoggingSetup.icc"
+	RnaSequence t("t","GGGG"),q("q","CCCC");
+	AccessibilityDisabled at(t,0,nullptr),aq(q,0,nullptr);ReverseAccessibility ar(aq);
+	InteractionEnergyBasePair energy(at,ar,2,2,false,1,-100,3,10000);
+	const auto sc=makeSeedConstraint(2,0,0,0,false);
+	const auto oc=makeOutputConstraint(false);
+	OutputHandlerInteractionList output(oc,1);
+	ExactSeedProbe p(energy,output,nullptr,new SeedHandlerMfe(energy,sc));
+	p.throwUpdate=true;REQUIRE_THROWS(p.predict());REQUIRE(p.restored());
+	p.throwUpdate=false;p.predict();REQUIRE(p.restored());
+	REQUIRE(p.calls>0);
+	REQUIRE(p.getZall()>0);
+	REQUIRE(p.getZall()<1e-19);
+	REQUIRE(output.hasNonzeroZ());
+	auto oracle=enumerateSeededInteractions(energy,sc,oc,IndexRange(0,3),IndexRange(0,3));
+	REQUIRE(double(p.getZall()/oracle.unionPartition)==Approx(1).epsilon(2e-12));
+	OutputHandlerHub hub(oc,false);hub.addOutputHandler(&output);hub.setExactPartition(true);
+	REQUIRE(output.usesExactPartition());
+	p.predict(IndexRange(1,3),IndexRange(1,3));
+	auto sub=enumerateSeededInteractions(energy,sc,oc,IndexRange(1,3),IndexRange(1,3));
+	REQUIRE(double(p.getZall()/sub.unionPartition)==Approx(1).epsilon(2e-12));
+}
+
+namespace {
+class PairTestTracker : public PredictionTracker {
+public:
+	void updateOptimumCalled(size_t,size_t,size_t,size_t,E_type) override {}
+};
+}
+TEST_CASE("raw native pair masses share the exact forward denominator", "[BasePairProbabilities][PredictorSeedOracle]") {
+	#include "testEasyLoggingSetup.icc"
+	RnaSequence t("target","GGAGGG"),q("query","CCUCCC");
+	AccessibilityBasePair at(t,5,nullptr),aq(q,4,nullptr);ReverseAccessibility ar(aq);
+	InteractionEnergyBasePair energy(at,ar,2,1);
+	const auto sc=makeSeedConstraint(2,0,0,0,false);
+	for(bool noLP:{false,true}) for(bool tracker:{false,true}) {
+		auto oc=makeOutputConstraint(noLP);
+		BasePairProbabilities result(t.size(),q.size());
+		OutputHandlerInteractionList output(oc,1);
+		ExactSeedProbe p(energy,output,tracker?new PairTestTracker():nullptr,new SeedHandlerMfe(energy,sc),&result);
+		const IndexRange r1(1,5),r2(1,4);
+		p.predict(r1,r2);result.finalize();
+		auto oracle=enumerateSeededInteractions(energy,sc,oc,r1,r2);
+		REQUIRE(result.getZ()==p.getZall());
+		REQUIRE(result.getZ()==Approx(oracle.unionPartition).epsilon(2e-12));
+		REQUIRE((p.retained()>0)==tracker);
+		Matrix<Z_type> expected(t.size(),q.size(),0);
+		for(const auto & chain:oracle.interactions) for(const auto & pair:chain.chain) {
+			const auto bp=energy.getBasePair(pair.i1,pair.i2);
+			expected(bp.first,bp.second)+=energy.getBoltzmannWeight(chain.energy);
+		}
+		for(size_t i=0;i<t.size();++i) for(size_t j=0;j<q.size();++j)
+			REQUIRE(result.rawMasses()(i,j)==Approx(expected(i,j)).epsilon(2e-12));
+	}
+}
+TEST_CASE("raw pair owner excludes region crossings and invalidates partial results", "[BasePairProbabilities][PredictorSeedOracle]") {
+	#include "testEasyLoggingSetup.icc"
+	RnaSequence t("t","GGGGGG"),q("q","CCCCCC");
+	AccessibilityDisabled at(t,0,nullptr),aq(q,0,nullptr);ReverseAccessibility ar(aq);
+	InteractionEnergyBasePair energy(at,ar,2,2);
+	const auto sc=makeSeedConstraint(2,0,0,0,false);const auto oc=makeOutputConstraint(false);
+	BasePairProbabilities owner(6,6);OutputHandlerInteractionList output(oc,1);
+	ExactSeedProbe p(energy,output,nullptr,new SeedHandlerMfe(energy,sc),&owner);
+	p.predict({0,2},{0,2});const Z_type first=p.getZall();
+	p.predict({3,5},{3,5});REQUIRE(p.getZall()==first);
+	owner.finalize();REQUIRE(owner.getZ()==2*first);
+	REQUIRE(owner.probabilities()(0,0)==0);
+	BasePairProbabilities failed(6,6);OutputHandlerInteractionList output2(oc,1);
+	ExactSeedProbe p2(energy,output2,nullptr,new SeedHandlerMfe(energy,sc),&failed);
+	p2.predict({0,2},{0,2});p2.throwUpdate=true;
+	REQUIRE_THROWS(p2.predict({3,5},{3,5}));
+	REQUIRE(failed.status()==BasePairProbabilities::Status::failed);
+	REQUIRE_THROWS(failed.finalize());REQUIRE(p2.restored());
+}
+
+#include "SeededChainOracle.h"
+#include "IntaRNA/SeedHandlerExplicit.h"
+TEST_CASE("native singleton and mixed explicit seeds count overlapping witnesses once", "[BasePairProbabilities][PredictorSeedOracle]") {
+	#include "testEasyLoggingSetup.icc"
+	using namespace seeded_oracle;
+	RnaSequence t("t","GGGG"),q("q","CCCC");
+	AccessibilityDisabled at(t,0,nullptr),aq(q,0,nullptr);ReverseAccessibility ar(aq);
+	InteractionEnergyBasePair energy(at,ar,2,2);
+	SeedConstraint sc(1,0,0,0,-10000,0,-10000,IndexRangeList(),IndexRangeList(),"1|&4|,2||&2||",true,true,true);
+	for(bool noLP:{false,true}) {
+		BasePairProbabilities result(4,4);auto oc=makeOutputConstraint(noLP);OutputHandlerInteractionList output(oc,1);
+		ExactSeedProbe p(energy,output,nullptr,new SeedHandlerExplicit(energy,sc),&result);
+		p.predict();result.finalize();
+		Model model{4,4,4,4,noLP,{{{0,0}},{{1,1},{2,2}}},[](Pair){return true;},
+			[](Pair){return std::exp(1.L);},[](Pair,Pair){return std::exp(1.L);},[](Pair,Pair){return 1.L;}};
+		auto ref=enumerate(model);
+		REQUIRE(double(result.getZ())==Approx(double(ref.z)).epsilon(2e-12));
+		for(size_t i=0;i<4;++i) for(size_t j=0;j<4;++j)
+			REQUIRE(double(result.rawMasses()(i,3-j))==Approx(double(ref.mass[{i,j}])).epsilon(2e-12));
 	}
 }

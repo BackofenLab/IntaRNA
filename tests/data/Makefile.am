@@ -1,2 +1,2 @@
 
-EXTRA_DIST = *.parameter *.testresult
+EXTRA_DIST = seeded-theory.dat *.parameter *.testresult

@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1410" viewBox="0 0 1440 1410" role="img" aria-labelledby="title desc">
+<title id="title">Legacy seeded extensions · anchor factorization</title>
+<desc id="desc">Bulged-seed fallback in mode M; also the extension kernels used by the seeded mode H predictor. Internal recurrence documentation for step 9 of PR 258. Equations describe the current implementation; RNA 2 uses reversed energy coordinates.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#60798e"/></marker>
+<pattern id="seed-hatch" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#fff0dc"/><path d="M-2 2 L2 -2 M0 8 L8 0 M6 10 L10 6" stroke="#e0b27a" stroke-width="1"/></pattern></defs>
+<rect width="1440" height="100%" fill="white"/>
+<text x="48" y="48" font-family="DejaVu Sans, sans-serif" font-size="14" fill="#275f8c" text-anchor="start" font-weight="bold">INTARNA  /  RECURRENCE NOTES</text>
+<text x="48" y="91" font-family="DejaVu Sans, sans-serif" font-size="31" fill="#203244" text-anchor="start" font-weight="bold">Legacy seeded extensions · anchor factorization</text>
+<text x="48" y="125" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Bulged-seed fallback in mode M; also the extension kernels used by the seeded mode H predictor</text>
+<path d="M48 148 L1392 148" fill="none" stroke="#c4d0da" stroke-width="1.2"/>
+<text x="48" y="185" font-family="DejaVu Sans, sans-serif" font-size="19" fill="#203244" text-anchor="start">For one retained anchor seed a…b, use S=BW(E_seed(a)), d=BW(E_init), t(i,k)=BW(E_interLeft(i,k)).</text>
+<text x="48" y="214" font-family="DejaVu Sans, sans-serif" font-size="19" fill="#203244" text-anchor="start">Lₐ(i) extends left to a (includes initiation); R_b(j) extends right from b (excludes initiation).</text>
+<rect x="120" y="278" width="389.40000000000003" height="60" fill="#dcebf5"/>
+<text x="314.70000000000005" y="315" font-family="DejaVu Serif, sans-serif" font-size="24" fill="#275f8c" text-anchor="middle">Lₐ(i)</text>
+<rect x="509.40000000000003" y="278" width="389.40000000000003" height="60" fill="url(#seed-hatch)"/>
+<path d="M120 278 L1300 278" fill="none" stroke="#203244" stroke-width="2"/>
+<path d="M120 338 L1300 338" fill="none" stroke="#203244" stroke-width="2"/>
+<path d="M120 278 L120 338" fill="none" stroke="#203244" stroke-width="2.4"/>
+<text x="120" y="266" font-family="DejaVu Serif, sans-serif" font-size="17" fill="#203244" text-anchor="middle">i</text>
+<path d="M509.40000000000003 278 L509.40000000000003 338" fill="none" stroke="#bd6518" stroke-width="2.4"/>
+<text x="509.40000000000003" y="266" font-family="DejaVu Serif, sans-serif" font-size="17" fill="#203244" text-anchor="middle">a</text>
+<path d="M592.0 278 L592.0 338" fill="none" stroke="#bd6518" stroke-width="2.4"/>
+<path d="M710.0 278 L710.0 338" fill="none" stroke="#bd6518" stroke-width="2.4"/>
+<path d="M816.1999999999999 278 L816.1999999999999 338" fill="none" stroke="#bd6518" stroke-width="2.4"/>
+<path d="M898.8000000000001 278 L898.8000000000001 338" fill="none" stroke="#bd6518" stroke-width="2.4"/>
+<text x="898.8000000000001" y="266" font-family="DejaVu Serif, sans-serif" font-size="17" fill="#203244" text-anchor="middle">b</text>
+<path d="M1300 278 L1300 338" fill="none" stroke="#203244" stroke-width="2.4"/>
+<text x="1300" y="266" font-family="DejaVu Serif, sans-serif" font-size="17" fill="#203244" text-anchor="middle">j</text>
+<rect x="899" y="278" width="401" height="60" fill="#dcebf5"/>
+<rect x="899" y="278" width="401" height="60" fill="#dcebf5"/>
+<text x="1099.5" y="315" font-family="DejaVu Serif, sans-serif" font-size="24" fill="#275f8c" text-anchor="middle">R_b(j)</text>
+<path d="M899 278 L1300 278" fill="none" stroke="#203244" stroke-width="2"/>
+<path d="M899 338 L1300 338" fill="none" stroke="#203244" stroke-width="2"/>
+<path d="M899 278 L899 338" fill="none" stroke="#203244" stroke-width="2.4"/>
+<path d="M1300 278 L1300 338" fill="none" stroke="#203244" stroke-width="2.4"/>
+<text x="530" y="379" font-family="DejaVu Serif, sans-serif" font-size="25" fill="#203244" text-anchor="start">hybrid contribution = Lₐ(i) · S · R_b(j)</text>
+<rect x="48" y="421" width="1344" height="178" rx="8" fill="#f3f7fa" stroke="#d0dbe3"/>
+<text x="70" y="455" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#275f8c" text-anchor="start" font-weight="bold">Lonely pairs allowed</text>
+<text x="73" y="488" font-family="DejaVu Serif, sans-serif" font-size="25" fill="#203244" text-anchor="start">Lₐ(a)=d;   Lₐ(i)=∑ t(i,k)Lₐ(k) − Cₐ(i)     (i <tspan font-family="DejaVu Sans, sans-serif">≺</tspan> k <tspan font-family="DejaVu Sans, sans-serif">≼</tspan> a)</text>
+<text x="73" y="538" font-family="DejaVu Serif, sans-serif" font-size="25" fill="#203244" text-anchor="start">R_b(b)=1;   R_b(j)=∑ R_b(k)t(k,j)              (b <tspan font-family="DejaVu Sans, sans-serif">≼</tspan> k <tspan font-family="DejaVu Sans, sans-serif">≺</tspan> j)</text>
+<text x="73" y="577" font-family="DejaVu Sans, sans-serif" font-size="17" fill="#203244" text-anchor="start">Only nonzero, complementary states and loop-size-admissible terms participate. Sums use componentwise bounds.</text>
+<rect x="48" y="638" width="1344" height="245" rx="8" fill="#edf6f2" stroke="#d0dbe3"/>
+<text x="70" y="672" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#23796a" text-anchor="start" font-weight="bold">noLP: outward boundary stacks are explicit</text>
+<text x="73" y="707" font-family="DejaVu Serif, sans-serif" font-size="24" fill="#203244" text-anchor="start">Lₐ(i)=t(i,i⁺) · [Lₐ(i⁺) + ∑ t(i⁺,k)Lₐ(k)] − Cₐ(i)    (i⁺ <tspan font-family="DejaVu Sans, sans-serif">≺</tspan> k <tspan font-family="DejaVu Sans, sans-serif">≼</tspan> a)</text>
+<text x="73" y="762" font-family="DejaVu Serif, sans-serif" font-size="24" fill="#203244" text-anchor="start">R_b(j)=t(j⁻,j) · [1{j⁻=b}R_b(b) + ∑ R_b(k)t(k,j⁻)]    (b <tspan font-family="DejaVu Sans, sans-serif">≼</tspan> k <tspan font-family="DejaVu Sans, sans-serif">≺</tspan> j⁻)</text>
+<text x="73" y="808" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">i⁺=i+(1,1), j⁻=j−(1,1); require the extra stacked pair. Anchor bases still have Lₐ(a)=d and R_b(b)=1.</text>
+<text x="73" y="837" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">These are the legacy loop bounds. The exact stack-seed path instead uses the suffix-state recurrence.</text>
+<rect x="48" y="923" width="1344" height="212" rx="8" fill="#fff7ed" stroke="#d0dbe3"/>
+<text x="70" y="957" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#bd6518" text-anchor="start" font-weight="bold">Left-seed correction Cₐ(i)</text>
+<text x="73" y="988" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">At a competing seed start i: process it if its end is left of a, or it loop-overlaps the anchor.</text>
+<text x="73" y="1018" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">If a leftmost loop-overlapping seed h is found, subtract BW(getNonOverlappingEnergy(i,h)) · Lₐ(h).</text>
+<text x="73" y="1048" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Otherwise subtract its seed weight times the continuation at its end; noLP adds explicit loop continuations.</text>
+<text x="73" y="1078" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Apply the implementation’s overlap/loop guards, then clamp a negative corrected L value to zero.</text>
+<text x="48" y="1185" font-family="DejaVu Serif, sans-serif" font-size="23" fill="#203244" text-anchor="start">updateZ(i,j, Lₐ(i) · S · R_b(j), true)    for each nonzero span-admissible combination</text>
+<text x="48" y="1231" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Complete-site filters and B(i,j) are applied by updateZ. The anchor’s hybrid seed energy is charged once.</text>
+<text x="48" y="1260" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">This legacy subtraction-based path has no actual-pair outside pass; do not substitute it for the exact seeded union.</text>
+<path d="M48 1315 L1392 1315" fill="none" stroke="#c4d0da" stroke-width="1.2"/>
+<text x="48" y="1339" font-family="DejaVu Sans, sans-serif" font-size="14" fill="#275f8c" text-anchor="start" font-weight="bold">Implementation anchors (src/IntaRNA/) · BW(E)=exp(−E/RT) after native energy-unit conversion</text>
+<text x="48" y="1362" font-family="DejaVu Sans, sans-serif" font-size="13" fill="#203244" text-anchor="start">PredictorMfeEns2dSeedExtension.cpp: predict() legacy branch, fillHybridZ_left(), fillHybridZ_right()</text>
+<text x="48" y="1383" font-family="DejaVu Sans, sans-serif" font-size="13" fill="#203244" text-anchor="start">PredictorMfeEns2dSeedExtension.cpp: getNonOverlappingEnergy(); PredictorMfeEns.cpp: updateZ()</text>
+</svg>

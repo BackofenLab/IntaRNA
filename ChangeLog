@@ -14,6 +14,32 @@
 
 ## Interface and handling
 
+- orient probability SVGs from the upper-left corner and highlight every MFE
+  pair, splitting seed/MFE cell borders into orange and green (PR #259 review)
+
+- enable approximate actual-pair CSV/SVG probabilities for unseeded and seeded
+  heuristic ensembles, labelled explicitly as approximate (PR #259, step 11)
+
+- reject nonfinite partition totals and finite-energy boundary underflow before
+  publishing exact unseeded or heuristic pair probabilities (PR #259 review)
+
+- enable base-pair CSV/SVG probabilities for exact unseeded model P/mode M
+  predictions (PR #259, step 10)
+
+- revise SVG axes, sequence labels and rounded tooltips; show intramolecular
+  pairing (1-Pu) frames and the best interaction region (PR #259 review)
+
+- BUGFIX : use each strand's accessibility energy scale for SVG frames and
+  unpaired-probability exports, including mixed computed/imported inputs
+
+- --out=bpsvg:FILE renders actual-pair probabilities with nucleotide/accessibility
+  frames, a shared CSS palette, signed-coordinate guides, hover values and admitted
+  seed outlines (PR #258, step 8)
+
+- --out=bpProb:FILE writes actual-pair conditional probabilities for exact
+  model P/mode M stack-seed ensembles, with disjoint-region merging, original
+  coordinates and success-only publication (issue #257, implementation step 6)
+
 - deterministic kinetic seed extension with --model=X --mode=K and configurable
   local scoring; complete-energy downhill steps, atomic noLP loop/stack moves
   and retained greedy traceback; equilibrium probability output is unsupported
@@ -41,6 +67,42 @@
 - reject Zall/Eall-dependent output in window mode
 
 ## Technical changes and Optimizations
+
+- use hashed base-pair keys for sparse stack-seed lookup, assert internal seed
+  geometry in debug builds, and document probability computation steps and
+  contributor conventions (PR #258 review)
+
+- document independent release/debug, installed-API and performance validation
+  for the reviewed unseeded and heuristic probability outputs (PR #259)
+
+- transfer completed probability-output buffers without copying; independently
+  audit performance, accessibility conversion and recurrence depictions (PR #259)
+
+- depict ensemble predictor recurrences and the exact base-pair inside/outside
+  computation in internal SVG documentation (PR #258, step 9)
+
+- validate exact pair probabilities on independent mathematical/native oracles,
+  release/debug suites and installed consumers; document measured runtime and
+  storage, and supply the required logging link dependency (issue #257, step 7)
+
+- collect raw actual-pair masses and disjoint regional denominators with explicit
+  successful-empty/nonempty/failed lifecycle (issue #257, step 5)
+
+- count each exact stack-seeded interaction once; preserve tiny positive totals
+  through complete updates and output forwarding (issue #257, step 4)
+
+- select the checked suffix inside/outside kernel after independent correctness
+  and maximal-stack timing comparisons (issue #257, implementation step 3)
+
+- expose geometric stack-seed capability and compile contained occurrences plus
+  deduplicated eligible-start boxes (issue #257, implementation step 2)
+
+- establish independent weighted-chain fixtures for seeded pair probabilities
+  (issue #257, implementation step 1)
+
+- document the implementation plan for exact seeded base-pair probabilities,
+  including algorithm comparison, numerical/output contracts and validation;
+  no prediction or probability implementation changes (issue #257)
 
 - add an API overview, IntaRNA Doxygen styling, and automated documentation
   builds and GitHub Pages publishing alongside the user guide (issue #22)
@@ -128,6 +190,179 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261013 Alexander Mitrofanov
+ * StackSeedDomain, SeededPartitionFunction, PredictorMfeEns2dSeedExtension
+   * use Interaction::BasePair coordinates and hashed sparse seed lookup tables
+   * replace the stack-only handler's equal-length invariant with a debug assert;
+     retain runtime validation of public input and numerical/extension failures
+   + explain domain filtering, deterministic start traversal, inside/outside
+     recurrence steps and coordinate conversion (PR #258 review)
+ * BasePairProbabilities, AGENTS.md
+   + explain validation and publication steps; document base-pair/hash storage,
+     debug-only invariants and implementation-comment conventions
+ * StackSeedDomain_test, seeded and heuristic probability oracle fixtures/tests
+   + verify shortest shared seed endings, duplicate and unordered occurrences,
+     row-major traversal and release-time rejection of invalid seed inputs
+   * use the common base-pair representation while retaining independent oracles
+
+261012 Alexander Mitrofanov
+ * BasePairProbabilitySvg, BasePairProbabilityWriter, CommandLineParsing
+   * restore top-to-bottom target indexing, aligned frames/guides and MFE region
+   + reconstruct the MFE structure inside the best ensemble site for SVG only
+   + highlight each MFE pair; shared seed pairs use orange vertical and green
+     horizontal edges, preserving both annotations (PR #259 review)
+ * testBasePairProbabilitySvg.py, README.md, seeded-probabilities-validation.md
+   + verify complete internal MFE pairs, shared borders, signed guides and
+     output-off parity; document the fixed-boundary traceback and orientation
+
+261009 Alexander Mitrofanov
+ * doc/analysis/seeded-probabilities-validation.md, doc/recursions :
+   * record final review validation and controlled runtime/memory measurements;
+     update the seeded-heuristic depiction for approximate pair output (PR #259)
+
+261009 Alexander Mitrofanov
+ * PredictorMfeEns2dHeuristic, PredictorMfeEns2dHeuristicSeedExtension,
+   PredictorMfeEns2dSeedExtension, BasePairProbabilities, probability writers :
+   + reverse retained candidate chains and signed seed-extension recurrences to
+     obtain marginals of the existing heuristic ensemble; preserve denominator
+     and seed-overlap corrections, validate all masses before publication
+   + expose approximation metadata in CSV/SVG and retain seed provenance
+   * bound cropped noLP continuations by the active region and correct default
+     region offsets; reject unsupported singleton heuristic seeds explicitly
+ * CommandLineParsing, tests, README.md, doc/recursions :
+   + enable model P/mode H probability output; add independent tiny-chain and
+     signed-extension checks plus CLI parity/metadata coverage (PR #259 step 11)
+ * PredictorMfeEns2d, probability validation tests and report :
+   * reject finite-energy boundary underflow and nonfinite heuristic denominators
+     before publication; record independent review, full suites and performance
+
+261009 Alexander Mitrofanov
+ * PredictorMfeEns2d, CommandLineParsing :
+   + compute actual-pair masses by reversing the existing unseeded recurrence;
+     preserve site filters, noLP and numerical cutoffs, and merge disjoint regions
+   * enable CSV/SVG with --noSeed; fix default-ended region offset truncation
+ * tests/PredictorUnseededProbability_test.cpp, tests/Makefile.am, README.md :
+   + compare against independent chain enumeration, filters, regions and failures;
+     document the public optional sink (PR #259 step 10)
+
+261009 Alexander Mitrofanov
+ * BasePairProbabilitySvg, BasePairProbabilityWriter, CommandLineParsing, IntaRNA :
+   * place target origin at bottom left and query name below the matrix; include
+     nondefault sequence names in a subtitle and names in rounded hover values
+   * show 1-Pu intramolecular pairing probabilities on the nucleotide frame
+   + outline the best reported interaction region in green, including when
+     ranked output is disabled; preserve ordinary output counts (PR #259 review)
+ * README.md, tests/testBasePairProbabilitySvg.py :
+   * document and cover coordinates, frame probabilities, tooltips and MFE bounds
+
+261009 Alexander Mitrofanov
+ * BasePairProbabilityWriter, BasePairProbabilitySvg, CommandLineParsing :
+   * pass and validate separate target/query accessibility RT values for SVG
+     frames; imported probabilities no longer inherit the interaction model RT
+   * share the source-specific conversion with tPu/qPu, correcting their earlier
+     physical-temperature conversion of computed base-pair accessibility (RT=1)
+   * move completed SVG/CSV stream buffers instead of copying large documents
+ * tests, README.md, doc/analysis/seeded-probabilities-validation.md :
+   + cover imported Pu/ED, mixed sources, nondefault temperatures and invalid RT;
+     compare against input probabilities and independent ED conversion
+   + document independent review, controlled runtime/RSS comparisons and final
+     release/debug, installation and public-header checks (PR #259)
+ * doc/recursions/IntaRNA.PredictorMfeEns2dHeuristic.svg,
+   doc/recursions/IntaRNA.PredictorMfeEnsSeedOnly.svg,
+   doc/recursions/IntaRNA.SeededPartitionFunction.*.svg :
+   * show the heuristic initial right-end GU gate and complete-site filters;
+     place nonstack arrivals before inside aggregation and clarify outside notation
+
+261009 Alexander Mitrofanov
+ * doc/recursions/IntaRNA.PredictorMfeEns*.svg,
+   doc/recursions/IntaRNA.SeededPartitionFunction.*.svg :
+   + add eight standalone internal SVG depictions for unseeded exact/heuristic,
+     seed-only, exact stack-seeded, legacy and heuristic seed-extension paths
+   + show noLP transitions, seed admission and energy ownership, the production
+     suffix inside/outside recurrences, actual-pair marking and regional merging
+   + include implementation anchors and retain editable vector text; validate
+     XML, glyph coverage and rendered layouts (PR #258 step 9, PR #259)
+
+261009 Alexander Mitrofanov
+ * BasePairProbabilityWriter, BasePairProbabilitySvg, CommandLineParsing :
+   + add success-only SVG dot plots on files, gzip and synchronized standard
+     streams; share CSV normalization and use original sequence coordinates
+   + show sequence labels, 1-nt accessibility, seven CSS probability classes,
+     legends, signed 10/50-nt guides, missing-zero boundary and hover values
+ * BasePairProbabilities, PredictorMfeEns2dSeedExtension :
+   + optionally retain admitted seed-cell masks with completed regional masses;
+     annotate seed cells without changing probability or ranked-output semantics
+ * tests, README.md, src/IntaRNA/Makefile.am, tests/Makefile.am :
+   + document the SVG contract and register the writer and regression coverage
+     for coordinates, seed admission, accessibility, empty/failed results and I/O
+   + investigate the referenced dev-frank profile tracker files: their current
+     versions contain profile output but no SVG implementation (PR #258 step 8)
+
+261008 Alexander Mitrofanov
+ * tests, README.md, doc/analysis, doc/seeded-probabilities-example.cpp :
+   + finish probability regression and native performance gates, document the
+     selected algorithm, supported ensemble, public API and numerical limits
+ * CommandLineParsing, IntaRNA.cpp, OutputHandlerHub, SeededPartitionFunction :
+   + retain copied output policy, check dense-grid dimension products, serialize
+     seed-constraint initialization and emit empty matrices for too-short pairs
+   + preserve dynamic OpenMP exceptions and report fatal failures as errors even
+     with redirected warning logs; reject unsupported empty searches (PR #258)
+ * IntaRNA.pc.in, .github/workflows/build.yml, Makefile.am :
+   + link the logging dependency required by installed predictor consumers;
+     compile/run a real probability consumer in CI and distribute new artifacts
+   + GCC 14 release/debug: seven suites pass, 91,361 API assertions; all 74
+     installed headers, installed consumer and source distribution checks pass
+
+261008 Alexander Mitrofanov
+ * BasePairProbabilityWriter, CommandLineParsing, IntaRNA.cpp, CLI/API tests :
+   + add bpProb matrix output, capability/mode validation, multi-FASTA naming,
+     gzip and synchronized standard-stream blocks; preserve spot coverage
+   + guard OpenMP cancellation before publication, propagate write errors, keep
+     tiny totals, support ranked count zero and mixed explicit seeds in debug
+     validation (PR #258, step 6)
+
+261008 Alexander Mitrofanov
+ * BasePairProbabilities, PredictorMfeEns2dSeedExtension, API tests, Makefile.am :
+   + add optional non-owning pair sink, original-coordinate raw regional commits
+     and explicit success-only finalization; reject overlap and range failures
+   + verify tracker parity, offsets, region crossings and injected failure after
+     a successful region; pair-only computation retains no boundary map (PR #258, step 5)
+
+261008 Alexander Mitrofanov
+ * PredictorMfeEns*, OutputHandler*, IntaRNA.cpp, predictor oracle tests :
+   + use the suffix kernel on the exact stack-only path, preserving virtual
+     update hooks and the legacy heuristic/bulged paths; share the boundary
+     objective with the outside pass and restore update scopes after exceptions
+   + retain exact-zero status through collectors, hubs and ensemble diagnostics;
+     test native Nussinov/nearest-neighbor boundary sums (PR #258, step 4)
+
+261008 Alexander Mitrofanov
+ * SeededPartitionFunction, PartitionArithmetic, StackSeedDomain, tests, doc/analysis :
+   + add checked nonnegative kernels and raw pair differentiation; compare both
+     against exhaustive and high-precision gold values and record time/storage
+     tradeoffs before selecting the suffix backend (PR #258, step 3)
+
+261008 Alexander Mitrofanov
+ * SeedHandler*, StackSeedDomain, tests/StackSeedDomain_test.cpp, Makefile.am :
+   + preserve each handler's admission rules, normalized allowances and retained
+     explicit patterns; filter complete endpoints and span limits (PR #258, step 2)
+
+261008 Alexander Mitrofanov
+ * tests/SeededChainOracle.h, tests/SeededPartitionFunction_test.cpp, tests/Makefile.am :
+   + independently enumerate weighted chains, raw boundaries and pair masses;
+     verify overlapping witnesses and singleton/noLP semantics (PR #258, step 1)
+   + preserve all ten high-precision theory fixtures with an explicit coordinate
+     conversion and reproducible exporter; do not quantize their accessibility
+
+261008 Alexander Mitrofanov
+ * doc/analysis/base-pair-probabilities-plan.md :
+   + specify the stack-seed partition and outside recurrences, sparse domain,
+     suffix-automaton comparison, numerical policy, output integration and
+     independent validation for https://github.com/BackofenLab/IntaRNA/issues/257
+   + distinguish planned implementation from current supported behavior
+ * README.md, doc/Makefile.am :
+   + link the plan and include it in source distributions
 
 261007 Alexander Mitrofanov
  * doc/doxygen.cfg, doc/doxygen/* :

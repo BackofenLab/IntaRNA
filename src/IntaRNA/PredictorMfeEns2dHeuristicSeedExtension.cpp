@@ -9,14 +9,16 @@ PredictorMfeEns2dHeuristicSeedExtension(
 		const InteractionEnergy & energy
 		, OutputHandler & output
 		, PredictionTracker * predTracker
-		, SeedHandler * seedHandlerInstance )
+		, SeedHandler * seedHandlerInstance
+		, BasePairProbabilities * pairProbabilities )
  :
-	PredictorMfeEns2dSeedExtension(energy,output,predTracker,seedHandlerInstance)
+	PredictorMfeEns2dSeedExtension(energy,output,predTracker,seedHandlerInstance,pairProbabilities)
 , E_right_opt(E_INF)
 , j1opt(0)
 , j2opt(0)
 {
-	assert( seedHandler.getConstraint().getBasePairs() > 1 );
+	if(seedHandler.getConstraint().getBasePairs()<2 && seedHandler.getConstraint().getExplicitSeeds().empty())
+		throw std::invalid_argument("heuristic seed extension requires at least two seed pairs");
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -32,6 +34,12 @@ void
 PredictorMfeEns2dHeuristicSeedExtension::
 predict( const IndexRange & r1, const IndexRange & r2 )
 {
+	try {
+	if(pairProbabilities) pairProbabilities->markApproximate();
+	if(!r1.isAscending() || !r2.isAscending()
+			|| r1.from>=energy.getAccessibility1().getSequence().size()
+			|| r2.from>=energy.getAccessibility2().getAccessibilityOrigin().getSequence().size())
+		throw std::invalid_argument("heuristic seeded prediction: invalid region");
 #if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_omp_logOutput)
 #endif
@@ -52,16 +60,21 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 	seedHandler.setOffset2(r2.from);
 
 	const size_t range_size1 = std::min( energy.size1()
-			, (r1.to==RnaSequence::lastPos?energy.size1()-1:r1.to)-r1.from+1 );
+			, r1.to==RnaSequence::lastPos?energy.size1():r1.to-r1.from+1 );
 	const size_t range_size2 = std::min( energy.size2()
-			, (r2.to==RnaSequence::lastPos?energy.size2()-1:r2.to)-r2.from+1 );
+			, r2.to==RnaSequence::lastPos?energy.size2():r2.to-r2.from+1 );
+
+	initExtensionProbabilities(range_size1,range_size2);
 
 	// compute seed interactions for whole range
 	// and check if any seed possible
-	if (seedHandler.fillSeed( 0, range_size1-1, 0, range_size2-1 ) == 0) {
+	if ((seedHandler.getConstraint().getExplicitSeeds().empty()
+			&& (range_size1<seedHandler.getConstraint().getBasePairs() || range_size2<seedHandler.getConstraint().getBasePairs()))
+			|| seedHandler.fillSeed( 0, range_size1-1, 0, range_size2-1 ) == 0) {
 		// trigger empty interaction reporting
 		initOptima();
 		initZ();
+		commitExtensionProbabilities();
 		reportOptima();
 		// stop computation
 		return;
@@ -74,16 +87,18 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 
 	size_t si1 = RnaSequence::lastPos, si2 = RnaSequence::lastPos;
 	while( seedHandler.updateToNextSeed(si1,si2
-			, 0, range_size1+1-seedHandler.getConstraint().getBasePairs()
-			, 0, range_size2+1-seedHandler.getConstraint().getBasePairs()) )
+			, 0, range_size1-1
+			, 0, range_size2-1) )
 	{
 		const Z_type seedZ = energy.getBoltzmannWeight( seedHandler.getSeedE(si1, si2) );
 		const size_t sl1 = seedHandler.getSeedLength1(si1, si2);
 		const size_t sl2 = seedHandler.getSeedLength2(si1, si2);
+		if(sl1==1 && sl2==1) throw std::invalid_argument("heuristic seed extension does not support singleton seeds");
 		const size_t sj1 = si1+sl1-1;
 		const size_t sj2 = si2+sl2-1;
 		// check if seed fits into interaction range
-		if (sj1 > range_size1 || sj2 > range_size2)
+		if (sj1 >= range_size1 || sj2 >= range_size2
+				|| sl1>energy.getAccessibility1().getMaxLength() || sl2>energy.getAccessibility2().getMaxLength())
 			continue;
 		const size_t maxMatrixLen1 = energy.getAccessibility1().getMaxLength()-sl1+1;
 		const size_t maxMatrixLen2 = energy.getAccessibility2().getMaxLength()-sl2+1;
@@ -92,6 +107,8 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 		j1opt = sj1;
 		j2opt = sj2;
 		E_right_opt = E_INF;
+
+		beginExtensionProbabilitySeed(si1,si2);
 
 		// ER
 		hybridZ_right.resize( std::min(range_size1-sj1, maxMatrixLen1), std::min(range_size2-sj2, maxMatrixLen2) );
@@ -104,10 +121,13 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 			fillHybridZ_left(si1, si2);
 		}
 
+		finishExtensionProbabilitySeed();
 	} // si1 / si2
 
 	// report mfe interaction
+	commitExtensionProbabilities();
 	reportOptima();
+	} catch (...) { if(pairProbabilities) pairProbabilities->fail(); throw; }
 
 }
 
@@ -141,6 +161,7 @@ fillHybridZ_right( const size_t sj1, const size_t sj2
 				// update overall partition function information for true right-extensions of the current seed
 				// seed only not covered due to min-val of r1,r2
 				updateZ(si1, sj1+r1, si2, sj2+r2, seedZ * rightExtZ * initZ, true);
+				addExtensionProbabilityRoot(si1,sj1+r1,si2,sj2+r2,seedZ*rightExtZ*initZ,false,true);
 			}
 
 		}
@@ -175,6 +196,7 @@ fillHybridZ_left( const size_t si1, const size_t si2 )
 
 				// Z( left + seed ); covers seed only
 				updateZ(si1-l1, sj1, si2-l2, sj2, curZ * seedZ, true);
+				addExtensionProbabilityRoot(si1-l1,sj1,si2-l2,sj2,curZ*seedZ,true,false);
 
 				// Z( left + seed + rightOpt ) and rightOpt true seed extension
 				if (	l1 > 0 // true left seed extension
@@ -186,6 +208,7 @@ fillHybridZ_left( const size_t si1, const size_t si2 )
 					)
 				{
 					updateZ(si1-l1, j1opt, si2-l2, j2opt, curZ * seedZ * rightOptZ, true);
+					addExtensionProbabilityRoot(si1-l1,j1opt,si2-l2,j2opt,curZ*seedZ*rightOptZ,true,true);
 				}
 			}
 		} // i2

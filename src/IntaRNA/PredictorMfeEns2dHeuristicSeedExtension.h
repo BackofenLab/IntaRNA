@@ -32,13 +32,15 @@ public:
 	 * @param predTracker the prediction tracker to be used or NULL if no
 	 *         tracking is to be done; if non-NULL, the tracker gets deleted
 	 *         on this->destruction.
+	 * @param pairProbabilities optional non-owning sink for this approximate ensemble
 	 * @param seedHandler the seed handler to be used
 	 */
 	PredictorMfeEns2dHeuristicSeedExtension(
 			const InteractionEnergy & energy
 			, OutputHandler & output
 			, PredictionTracker * predTracker
-			, SeedHandler * seedHandler );
+			, SeedHandler * seedHandler
+			, BasePairProbabilities * pairProbabilities = nullptr );
 
 
 	/**

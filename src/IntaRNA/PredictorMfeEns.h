@@ -61,6 +61,16 @@ protected:
 	//! map storing the partition of Zall for all considered interaction sites
 	std::unordered_map<Interaction::Boundary, Z_type, Interaction::Boundary::Hash> Z_partition;
 
+	/** Checked exact-path update with the forward/outside boundary coefficient.
+	 * Preserves virtual updateZ dispatch. Observing/delegating overrides work;
+	 * reweighting must override the objective coefficient instead of partFunct.
+	 */
+	void updateExactCompleteZ(size_t i1, size_t j1, size_t i2, size_t j2,
+			Z_type hybrid, Z_type coefficient);
+
+	//! scoped coefficient and hybrid expected by the checked complete update
+	const std::pair<Z_type,Z_type> * exactContribution = nullptr;
+
 	//! whether updateZ() currently receives one complete boundary partition
 	bool updateZisComplete;
 
