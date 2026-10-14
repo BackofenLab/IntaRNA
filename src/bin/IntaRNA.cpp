@@ -192,7 +192,7 @@ int main(int argc, char **argv){
 #endif
 					{ VLOG(1) <<"computing accessibility for target '"<<parameters.getTargetSequences().at(targetNumber).getId()<<"'..."; }
 
-					// VRNA not completely threadsafe ...
+					// AccessibilityVrna synchronizes shared setup before parallel window folding.
 					std::unique_ptr<Accessibility> targetAcc(parameters.getTargetAccessibility(targetNumber));
 					INTARNA_CHECK_NOT_NULL(targetAcc.get(),"target initialization failed");
 

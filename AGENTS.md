@@ -150,8 +150,13 @@ Example::isComplete() const
   comparison helpers from [general.h](src/IntaRNA/general.h). Internal energies
   use hundredths of kcal/mol; do not mix them with kcal/mol or Boltzmann values.
 - Preserve ownership and lifetimes when introducing RAII or non-owning views.
-  Retain synchronization around shared state and ViennaRNA calls; existing
-  accessibility calculations require serialization for thread safety.
+  Retain synchronization around shared ViennaRNA state: parameter/compound
+  setup, constraints and preparation use `VrnaHandler::getSetupMutex()`.
+  Prepared window accessibility computations can run concurrently with an
+  OpenMP-enabled ViennaRNA build; global MFE/PF calls remain serialized.
+  Complete parameter loading before workers start, preserve the ViennaRNA
+  logger lock, and consult `doc/analysis/vienna-accessibility-thread-safety.md`
+  before changing these boundaries.
 - For recurrence or predictor changes, extend the relevant regression tests
   and short-sequence oracles (`PredictorTinyOracle_test.cpp` and
   `PredictorSeedOracle_test.cpp`). For optimizations, compare correctness first,

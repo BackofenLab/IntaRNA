@@ -28,6 +28,7 @@
 
 // RNAplfold-like ED filling
 extern "C" {
+	#include <ViennaRNA/vrna_config.h>
 	#include <ViennaRNA/fold_vars.h>
 	#include <ViennaRNA/fold.h>
 	#include <ViennaRNA/params.h>
@@ -222,7 +223,9 @@ fillByRNAplfold( const VrnaHandler &vrnaHandler
 	// RnaSequence owns stable, null-terminated storage for the complete call.
 	const std::string & sequence = getSequence().asString();
 
-	// setup folding data
+	// Parameter creation uses shared ViennaRNA caches, even in OpenMP builds.
+	// Complete preparation under the same lock as the global MFE/PF callers.
+	std::unique_lock<std::mutex> setupLock(VrnaHandler::getSetupMutex());
 	VrnaFoldCompoundPtr foldCompoundOwner(
 			vrna_fold_compound( sequence.c_str(), &curModel, VRNA_OPTION_PF | VRNA_OPTION_WINDOW ) );
 	vrna_fold_compound_t * const fold_compound = foldCompoundOwner.get();
@@ -233,21 +236,27 @@ fillByRNAplfold( const VrnaHandler &vrnaHandler
     // add accessibility constraints
     addConstraints( *fold_compound, *this );
 
+	// vrna_probs_window() prepares again internally. With unchanged model
+	// details, that second preparation only accesses this compound's own data.
+	if (!vrna_fold_compound_prepare(fold_compound, VRNA_OPTION_PF | VRNA_OPTION_WINDOW)) {
+		throw std::runtime_error("AccessibilityVrna::fillByRNAplfold() : vrna_fold_compound_prepare() failed");
+	}
+
+#ifdef VRNA_WITH_OPENMP
+	// The expensive window recurrence and callback use per-compound storage.
+	// Retain full serialization for ViennaRNA builds without OpenMP support.
+	setupLock.unlock();
+#endif
+
     // provide access to this object to be filled by the callback
     // and the normalized temperature for the Boltzmann weight computation
     std::pair< AccessibilityVrna*, FLT_OR_DBL > storageRT(this, (FLT_OR_DBL)vrnaHandler.getRT());
 
-	// VRNA is not fully thread-safe, so we need to lock the call to vrna_probs_window() to avoid race conditions
-#if INTARNA_MULITHREADING
-	#pragma omp critical(intarna_omp_vrna_probs_window)
-# endif
-	{
-		// call folding and unpaired prob calculation
-		int retVal = vrna_probs_window( fold_compound, plFoldW, VRNA_PROBS_WINDOW_UP, &callbackForStorage, (void*)(&storageRT));
-		// check if computations went fine
-		if (retVal == 0) {
-			throw std::runtime_error("AccessibilityVrna::fillByRNAplfold() : vrna_probs_window() returned 0 status ...");
-		}
+	// call folding and unpaired prob calculation
+	int retVal = vrna_probs_window( fold_compound, plFoldW, VRNA_PROBS_WINDOW_UP, &callbackForStorage, (void*)(&storageRT));
+	// check if computations went fine
+	if (retVal == 0) {
+		throw std::runtime_error("AccessibilityVrna::fillByRNAplfold() : vrna_probs_window() returned 0 status ...");
 	}
 
 }

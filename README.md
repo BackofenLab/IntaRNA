@@ -457,6 +457,14 @@ The maximal number of threads to be used can be specified using the `--threads` 
 If `--threads=k != 1`, than *k* predictions are processed in parallel. A value of
 `0` requests the maximally available number of threads for this machine.
 
+ViennaRNA accessibility calculations for independent sequences run concurrently
+when ViennaRNA was built with OpenMP support. IntaRNA serializes parameter and
+constraint setup to protect ViennaRNA's shared caches; builds without ViennaRNA
+OpenMP support retain serial accessibility calculation. Global intramolecular
+MFE/partition-function calls remain serialized. See the
+[thread-safety audit](doc/analysis/vienna-accessibility-thread-safety.md) for the
+call sequence, source evidence, standalone reproducer and validation.
+
 When using parallelization, you should have the following in mind:
 
 - The memory consumption will be multiplied by the number of threads,

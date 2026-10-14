@@ -42,6 +42,10 @@
 
 ## Technical changes and Optimizations
 
+- fix ViennaRNA parameter-cache races and enable parallel prepared window
+  accessibility; retain serialization for global MFE/PF and non-OpenMP
+  ViennaRNA builds, with a source audit and concurrency regressions (issue #265)
+
 - add an API overview, IntaRNA Doxygen styling, and automated documentation
   builds and GitHub Pages publishing alongside the user guide (issue #22)
   
@@ -128,6 +132,25 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261014 Alexander Mitrofanov
+ * IntaRNA/VrnaHandler, IntaRNA/AccessibilityVrna,
+   IntaRNA/InteractionEnergyVrna, bin/IntaRNA :
+   * serialize shared parameter/compound setup, constraints and preparation
+     through one exception-safe mutex, including native-thread library callers
+   * run prepared window probability recurrences concurrently with OpenMP
+     ViennaRNA; retain the conservative fallback for other builds
+   * protect global MFE/PF compatibility state, remove worker-side global model
+     resets, and install a separate logger lock for ViennaRNA >= 2.7
+ * tests/AccessibilityVrna_test.cpp, tests/runAccessibilityThreads.sh,
+   tests/Makefile.am :
+   + compare serial/native-thread/OpenMP ED, ES and ensemble energies with
+     varied models; compare CLI accessibilities/predictions with SHAPE D/W
+ * doc/analysis/vienna-accessibility-thread-safety.md,
+   doc/analysis/vrna-window-threads.cpp, doc/Makefile.am, README.md, AGENTS.md :
+   + trace IntaRNA and ViennaRNA shared/owned state, provide an independent
+     race reproducer and document supported concurrency boundaries
+   * resolves https://github.com/BackofenLab/IntaRNA/issues/265
 
 261007 Alexander Mitrofanov
  * doc/doxygen.cfg, doc/doxygen/* :
