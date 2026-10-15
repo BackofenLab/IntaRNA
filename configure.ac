@@ -5,8 +5,8 @@ AC_INIT([IntaRNA], [3.4.1], [], [intaRNA], [http://www.bioinf.uni-freiburg.de] )
 
 # minimal required version of the boost library 
 BOOST_REQUIRED_VERSION=1.50.0
-# minimal required version of the Vienna RNA library
-VRNA_REQUIRED_VERSION=2.4.14
+# minimal Vienna RNA version providing the logger locking API
+VRNA_REQUIRED_VERSION=2.7.0
 # minimal required version of python interpreter (to install intarnapvalue)
 PYTHON_REQUIRED_VERSION=3.6
 
@@ -443,19 +443,41 @@ AS_IF([test x"$HAVE_PKG_CONFIG" = x"yes"], [
 ])
 
 AS_IF([test "$RNANOTFOUND" = "0"], [
-	AC_MSG_CHECKING([for compilation with Vienna RNA package headers])
+	AC_MSG_CHECKING([for ViennaRNA >= $VRNA_REQUIRED_VERSION with logger locking and prepared window folding])
 	OLD_CPPFLAGS=$CPPFLAGS
-	OLD_CXXFLAGS=$CXXFLAGS
 	OLD_LDFLAGS=$LDFLAGS
-	AC_LANG_PUSH([C])
+	intarna_saved_vrna_LIBS=$LIBS
+	AC_LANG_PUSH([C++])
 	CPPFLAGS="$CPPFLAGS $AM_CXXFLAGS"
 	LDFLAGS="$LDFLAGS $AM_LDFLAGS"
 	AS_IF([test "x$HAVE_PKG_CONFIG" = "xyes"], [
 		CPPFLAGS="$CPPFLAGS $VRNA_CFLAGS"
-		LDFLAGS="$LDFLAGS $VRNA_LIBS"
+		LIBS="$VRNA_LIBS $LIBS"
+	], [
+		LIBS="-lRNA $LIBS"
 	])
-	AC_COMPILE_IFELSE(
-	     [AC_LANG_PROGRAM([[#include <ViennaRNA/model.h>]],[[vrna_md_t tmp; vrna_md_copy(&tmp,&tmp);]])],
+	# Check headers even without pkg-config, and link the APIs used for concurrency.
+	AC_LINK_IFELSE(
+	     [AC_LANG_PROGRAM([[
+extern "C" {
+#include <ViennaRNA/vrna_config.h>
+#if VRNA_VERSION_MAJOR < 2 || (VRNA_VERSION_MAJOR == 2 && VRNA_VERSION_MINOR < 7)
+#error ViennaRNA 2.7.0 or newer is required
+#endif
+#include <ViennaRNA/model.h>
+#include <ViennaRNA/fold_compound.h>
+#include <ViennaRNA/partfunc/local.h>
+#include <ViennaRNA/utils/log.h>
+}
+]], [[
+vrna_md_t model;
+vrna_md_set_default(&model);
+vrna_log_lock_set(NULL, NULL);
+vrna_fold_compound_t *fc = vrna_fold_compound("GCGC", &model, VRNA_OPTION_PF | VRNA_OPTION_WINDOW);
+vrna_fold_compound_prepare(fc, VRNA_OPTION_PF | VRNA_OPTION_WINDOW);
+vrna_probs_window(fc, 4, VRNA_PROBS_WINDOW_UP, NULL, NULL);
+vrna_fold_compound_free(fc);
+]])],
 	     [ 
 			AC_MSG_RESULT([yes])
 			RNANOTFOUND=0;
@@ -467,9 +489,10 @@ AS_IF([test "$RNANOTFOUND" = "0"], [
 	       RNANOTFOUND=1;
 	     ]
 	)
-	AC_LANG_POP([C])
+	AC_LANG_POP([C++])
 	CPPFLAGS=$OLD_CPPFLAGS
 	LDFLAGS=$OLD_LDFLAGS
+	LIBS=$intarna_saved_vrna_LIBS
 ])
 
 # error output if ViennaRNA not found

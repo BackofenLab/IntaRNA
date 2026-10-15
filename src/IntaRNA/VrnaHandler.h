@@ -39,8 +39,8 @@ public:
 	/**
 	 * Construction with global VRNA folding parameter setup
 	 * Complete parameter loading before starting concurrent folding computations.
-	 * For ViennaRNA 2.7 and newer, the first handler also installs a mutex for
-	 * logging without changing output callbacks. Retain this logging lock for
+	 * The first handler also installs a mutex for logging without changing
+	 * output callbacks. Retain this logging lock for
 	 * all subsequent concurrent folding; logger resets remove it.
 	 *
 	 * @param vrnaParamFile name of a VRNA parameter file to be used for

@@ -12,7 +12,7 @@ dependencies:
   - pkgconfig
   - zlib
   - boost-cpp
-  - viennarna>=2.4.14
+  - viennarna>=2.7.0
   - cxx-compiler
   - make
   - binutils

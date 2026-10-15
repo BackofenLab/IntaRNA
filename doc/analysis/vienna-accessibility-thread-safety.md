@@ -8,14 +8,25 @@ uses compound-owned state and can run concurrently after synchronized setup.
 
 ## Reviewed upstream sources
 
-The review covers the minimum supported ViennaRNA release, **2.4.14**, and the
-**2.7.2** release used for the runtime experiments. Source links below are
-pinned to immutable commits:
+IntaRNA requires **ViennaRNA 2.7.0 or later**. The review covers that release's
+required logging API and the **2.7.2** implementation used for the runtime
+experiments. The earlier **2.4.14** review remains as historical evidence;
+that release is no longer supported. Source links below are pinned to immutable
+commits:
 
 | Release | Commit | Scope |
 | --- | --- | --- |
-| 2.4.14 | [`0b8ca4c6604e7a8bea366af62d82f8f40cea49bf`](https://github.com/ViennaRNA/ViennaRNA/tree/0b8ca4c6604e7a8bea366af62d82f8f40cea49bf) | Minimum supported API and implementation |
+| 2.4.14 | [`0b8ca4c6604e7a8bea366af62d82f8f40cea49bf`](https://github.com/ViennaRNA/ViennaRNA/tree/0b8ca4c6604e7a8bea366af62d82f8f40cea49bf) | Historical implementation comparison; unsupported |
+| 2.7.0 | [`219394580aec203a9d6f0d5450021e22642d5a83`](https://github.com/ViennaRNA/ViennaRNA/tree/219394580aec203a9d6f0d5450021e22642d5a83) | Minimum supported release and public logger locking API |
 | 2.7.2 | [`1ffec79f5e258896160f7362ced8263450f371dc`](https://github.com/ViennaRNA/ViennaRNA/tree/1ffec79f5e258896160f7362ced8263450f371dc) | Installed runtime and current parameter cache implementation |
+
+ViennaRNA 2.7.0 introduced the flexible logger, as recorded in its
+[release notes](https://github.com/ViennaRNA/ViennaRNA/releases/tag/v2.7.0).
+Its public [`vrna_log_lock_set()` interface](https://github.com/ViennaRNA/ViennaRNA/blob/219394580aec203a9d6f0d5450021e22642d5a83/src/ViennaRNA/utils/log.h#L379-L398)
+lets IntaRNA protect diagnostics even when RNAlib has no built-in pthread
+locking. This interface determines the minimum supported version. Configure
+checks the header version and links the required logger and prepared-window
+APIs. Using `--disable-pkg-config` follows the same requirement.
 
 This is a review of the paths IntaRNA calls, not a blanket claim that RNAlib,
 its deprecated interfaces, or every future release is thread-safe. In
@@ -70,7 +81,7 @@ and [matrix preparation](https://github.com/ViennaRNA/ViennaRNA/blob/1ffec79f5e2
 | State or operation | Evidence | Consequence |
 | --- | --- | --- |
 | Parameter caches `p_pre`, `pf_pre`, and their initialization flags | [2.7.2 `params.c`](https://github.com/ViennaRNA/ViennaRNA/blob/1ffec79f5e258896160f7362ced8263450f371dc/src/ViennaRNA/params/params.c#L88-L217) enables `SPEEDUP_PARAMS`; both constructors rewrite cached model members and copy whole cached structures. Only `id` and `pf_id` are declared OpenMP thread-private. | Guard every IntaRNA entry to parameter construction with one shared mutex. Separate locks for accessibility and energy construction would not protect the same caches. |
-| Parameter identifiers in older RNAlib | [2.4.14 declarations](https://github.com/ViennaRNA/ViennaRNA/blob/0b8ca4c6604e7a8bea366af62d82f8f40cea49bf/src/ViennaRNA/params/params.c#L88-L98), [identifier increment](https://github.com/ViennaRNA/ViennaRNA/blob/0b8ca4c6604e7a8bea366af62d82f8f40cea49bf/src/ViennaRNA/params/params.c#L552) | 2.4.14 lacks the newer caches, but its identifier is shared in builds without OpenMP. The same setup lock remains useful. |
+| Parameter identifiers in historical RNAlib | [2.4.14 declarations](https://github.com/ViennaRNA/ViennaRNA/blob/0b8ca4c6604e7a8bea366af62d82f8f40cea49bf/src/ViennaRNA/params/params.c#L88-L98), [identifier increment](https://github.com/ViennaRNA/ViennaRNA/blob/0b8ca4c6604e7a8bea366af62d82f8f40cea49bf/src/ViennaRNA/params/params.c#L552) | The unsupported 2.4.14 release lacks the newer caches, but its identifier is shared in builds without OpenMP. This explains why removing the setup lock was not safe under the former version requirement. |
 | Global model defaults and legacy model variables | [2.7.2 `vrna_md_defaults_reset`](https://github.com/ViennaRNA/ViennaRNA/blob/1ffec79f5e258896160f7362ced8263450f371dc/src/ViennaRNA/model.c#L346-L432), [2.4.14 implementation](https://github.com/ViennaRNA/ViennaRNA/blob/0b8ca4c6604e7a8bea366af62d82f8f40cea49bf/src/ViennaRNA/model.c#L311-L384) | Passing a model to `vrna_md_defaults_reset()` changes process-wide defaults; it does not merely reset that local object. Remove the worker-side call when every fold already receives its explicit model. Guard parameter-file loading/default reads during handler setup. |
 | `vrna_md_copy` | [2.7.2 implementation](https://github.com/ViennaRNA/ViennaRNA/blob/1ffec79f5e258896160f7362ced8263450f371dc/src/ViennaRNA/model.c#L196-L232) copies the supplied structure and its arrays. | Copying a stable handler model into worker-local storage needs no global lock. |
 | Sliding-window DP, auxiliary arrays, and constraint updates | [2.7.2 window implementation](https://github.com/ViennaRNA/ViennaRNA/blob/1ffec79f5e258896160f7362ced8263450f371dc/src/ViennaRNA/partfunc/pf_window.c#L681-L958), [2.4.14 implementation](https://github.com/ViennaRNA/ViennaRNA/blob/0b8ca4c6604e7a8bea366af62d82f8f40cea49bf/src/ViennaRNA/LPfold.c#L669-L941) obtain arrays and models from the compound or allocate local helpers. | Independent prepared compounds can compute concurrently. Keep callback storage distinct and alive until each call returns. |
@@ -92,32 +103,34 @@ IntaRNA itself is built without OpenMP.
 The parallel boundary is **create, constrain, and prepare while
 locked; compute the window recurrence with exclusive ownership of the
 compound**. Keep global MFE/PF calls synchronized. RNAlib builds without
-OpenMP use a conservative full-call fallback. Do not concurrently mutate
-the handler model, reload global parameter tables through external RNAlib
-calls, modify the same compound, or replace callback state while a call is
-running. IntaRNA's mutex cannot coordinate direct RNAlib calls made by other
-libraries in an embedding application.
+OpenMP use conservative full-call serialization. This is a property of the
+RNAlib build configuration and is retained independently of the minimum
+version. Do not concurrently mutate the handler model, reload global parameter
+tables through external RNAlib calls, modify the same compound, or replace
+callback state while a call is running. IntaRNA's mutex cannot coordinate
+direct RNAlib calls made by other libraries in an embedding application.
 
 This guarantee concerns the ViennaRNA boundary. Native-thread library users
 must separately provide thread-safe IntaRNA/easylogging++ diagnostics, or leave
 verbose/performance logging disabled. The CLI's OpenMP logging synchronization
 is not a general native-thread logging contract.
 
-For ViennaRNA 2.7 and later, handler initialization installs a process-lifetime
-mutex callback once through `vrna_log_lock_set()`. This replaces the logger's
-locking hook while preserving its output streams, levels, and message
-callbacks. The logger mutex is distinct from the setup mutex because guarded
-ViennaRNA operations can emit messages themselves. This protects diagnostics
-even if RNAlib was built without pthread support. Embedding applications must
-not reset or replace that hook while IntaRNA folds are running; callbacks must
-not reenter folding. Earlier reviewed logging uses stdio directly rather than
-the newer lazily initialized callback array. See the
+For every supported ViennaRNA version, handler initialization installs a
+process-lifetime mutex callback once through `vrna_log_lock_set()`. This
+replaces the logger's locking hook while preserving its output streams, levels,
+and message callbacks. The logger mutex is distinct from the setup mutex
+because guarded ViennaRNA operations can emit messages themselves. This
+protects diagnostics even if RNAlib was built without pthread support.
+Embedding applications must not reset or replace that hook while IntaRNA folds
+are running; callbacks must not reenter folding. There is no version-dependent
+path that omits the logger lock. See the
 [public locking callback](https://github.com/ViennaRNA/ViennaRNA/blob/1ffec79f5e258896160f7362ced8263450f371dc/src/ViennaRNA/utils/log.h#L61-L70)
 and [hook setter](https://github.com/ViennaRNA/ViennaRNA/blob/1ffec79f5e258896160f7362ced8263450f371dc/src/ViennaRNA/utils/log.c#L284-L290).
 
-The 2.4.14 source review establishes API availability and identifies its
-state, but does not substitute for testing that release. Runtime comparisons
-on 2.7.2 do not prove every intermediate release or build configuration safe.
+The original runtime comparisons below used 2.7.2. The dependency-floor
+revision also tested 2.7.0, as recorded below. Neither these finite tests nor
+the historical 2.4.14 review establish runtime behavior for every supported
+release or build configuration.
 Repeat the audit when changing the supported RNAlib range, adding model
 mutations after preparation, changing SHAPE integration, or adding callbacks.
 
@@ -159,7 +172,8 @@ them as separate diagnostic processes, never as ordinary CI pass conditions:
 Observed results used ViennaRNA 2.7.2's static library with OpenMP enabled,
 GCC 14.4.0 (conda-forge build 14.4.0-7), and Linux x86-64 with CPU affinity
 0-11. Runs requested eight workers; other build activity could share these
-CPUs. No ViennaRNA 2.4.14 runtime was installed for the experiment.
+CPUs. These recorded experiments did not test ViennaRNA 2.7.0 or 2.4.14
+runtimes.
 
 | Mode/profile | Completed repetitions | Exact probability comparisons | Result |
 | --- | ---: | ---: | --- |
@@ -180,10 +194,11 @@ not a race-detector proof or a performance measurement.
 
 ## Integrated regressions and existing SHAPE limitations
 
-GCC 14 release and `--enable-debug` builds each passed `make tests -j4`:
-all seven test programs/scripts passed, including 75,901 API assertions in
-69 test cases. The source base was `c5f1d51` on `master` (the repository has no
-`main` branch). `git diff --check` and shell syntax validation also passed.
+For the original synchronization change, GCC 14 release and `--enable-debug`
+builds each passed `make tests -j4`: all seven test programs/scripts passed,
+including 75,901 API assertions in 69 test cases. The source base was `c5f1d51`
+on `master` (the repository has no `main` branch). `git diff --check` and shell
+syntax validation also passed.
 
 `tests/AccessibilityVrna_test.cpp` compares all retained ED values (including
 the extra band used for dangling ends), ES matrices, initiation energies and
@@ -226,6 +241,39 @@ with an isolated header override removing `VRNA_WITH_OPENMP`. This verifies
 both the parallel and serialized branches. It is **not** a runtime test of a
 non-OpenMP RNAlib: the linked library remained the installed OpenMP-enabled
 2.7.2, and unchanged IntaRNA objects came from the release archive.
+
+## Dependency-floor revision validation (2026-10-15)
+
+The revision requested in [PR #267](https://github.com/BackofenLab/IntaRNA/pull/267#issuecomment-6192018595)
+was validated on Linux with GCC 14.4.0:
+
+| ViennaRNA | IntaRNA build | Command | Result |
+| --- | --- | --- | --- |
+| 2.7.0 | Release | `make tests -j4` | All seven suites passed |
+| 2.7.2 | Release | `make tests -j2` | All seven suites passed |
+| 2.7.2 | Debug | `make tests -j2` | All seven suites passed |
+
+Each run passed 75,901 API assertions in 69 cases, including the native-thread
+and OpenMP accessibility comparisons. The 2.7.0 standalone diagnostic,
+`vrna-window-threads setup-locked 4 3`, compared 1,011,504 probabilities over
+24 mixed-model cases and three repetitions, with no parameter, probability,
+or callback metadata mismatches.
+
+ViennaRNA 2.7.0 was built from its official release tarball as a static library
+with OpenMP and pthread support. Its library-only, SVM-disabled build needed
+`make 'libRNA_utils_la_CPPFLAGS=$(AM_CPPFLAGS)'` to restore an upstream omitted
+include path; no upstream source was changed. Include and library search paths
+placed this installation ahead of the existing 2.7.2 dependency prefix. The
+IntaRNA executable's version output and compiler dependency files confirmed
+that the minimum-version headers were selected.
+
+Six isolated configure probes also passed: a valid installation with
+`--disable-pkg-config` and explicit static-library dependencies was accepted;
+old pkg-config metadata, headers reporting 2.6.4 with and without pkg-config,
+a missing logger declaration, and an unavailable logger link symbol were
+rejected. These negative checks used controlled fixtures, not an installed
+2.6.4 runtime. Installation, an external consumer exercising accessibility,
+all 69 standalone public-header checks, and `git diff --check` passed.
 
 ## End-to-end measurement
 

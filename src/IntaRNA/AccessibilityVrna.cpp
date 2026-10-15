@@ -244,7 +244,8 @@ fillByRNAplfold( const VrnaHandler &vrnaHandler
 
 #ifdef VRNA_WITH_OPENMP
 	// The expensive window recurrence and callback use per-compound storage.
-	// Retain full serialization for ViennaRNA builds without OpenMP support.
+	// OpenMP is a ViennaRNA build option, independent of its version; keep
+	// full serialization when the linked library was built without it.
 	setupLock.unlock();
 #endif
 

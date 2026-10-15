@@ -194,7 +194,10 @@ dependencies:
     - libboost_system
     - libboost_iostreams
     - libboost_serialization
-- [Vienna RNA package](http://www.tbi.univie.ac.at/RNA/) version >= 2.4.14
+- [Vienna RNA package](http://www.tbi.univie.ac.at/RNA/) version >= 2.7.0,
+  providing the logger locking API required for concurrent accessibility
+  calculations. Configure checks the version and required APIs, including
+  when `--disable-pkg-config` is used.
 - `pkg-config` for detailed version checks of dependencies
 - if [cloning from github](#instgithub): GNU autotools (automake, autoconf, ..)
 
@@ -460,8 +463,10 @@ If `--threads=k != 1`, than *k* predictions are processed in parallel. A value o
 ViennaRNA accessibility calculations for independent sequences run concurrently
 when ViennaRNA was built with OpenMP support. IntaRNA serializes parameter and
 constraint setup to protect ViennaRNA's shared caches; builds without ViennaRNA
-OpenMP support retain serial accessibility calculation. Global intramolecular
-MFE/partition-function calls remain serialized. See the
+OpenMP support retain serial accessibility calculation. IntaRNA installs a
+separate ViennaRNA logger lock during handler initialization for every
+supported version. Global intramolecular MFE/partition-function calls remain
+serialized. See the
 [thread-safety audit](doc/analysis/vienna-accessibility-thread-safety.md) for the
 call sequence, source evidence, standalone reproducer and validation.
 
