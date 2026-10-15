@@ -16,14 +16,11 @@ extern "C" {
 	#include <ViennaRNA/energy_const.h>
 	#include <ViennaRNA/read_epars.h>
 	#include <ViennaRNA/params/io.h>
-#if VRNA_VERSION_MAJOR > 2 || (VRNA_VERSION_MAJOR == 2 && VRNA_VERSION_MINOR >= 7)
 	#include <ViennaRNA/utils/log.h>
-#endif
 }
 
 namespace {
 
-#if VRNA_VERSION_MAJOR > 2 || (VRNA_VERSION_MAJOR == 2 && VRNA_VERSION_MINOR >= 7)
 void
 lockVrnaLogging( const int lock, void * ) noexcept
 {
@@ -36,7 +33,6 @@ lockVrnaLogging( const int lock, void * ) noexcept
 		loggingMutex.unlock();
 	}
 }
-#endif
 
 }
 
@@ -55,11 +51,9 @@ VrnaHandler( Z_type temperature
 {
 	std::lock_guard<std::mutex> setupLock(getSetupMutex());
 
-#if VRNA_VERSION_MAJOR > 2 || (VRNA_VERSION_MAJOR == 2 && VRNA_VERSION_MINOR >= 7)
 	// Install only the locking callback; preserve log outputs and user callbacks.
 	static std::once_flag loggingInitialized;
 	std::call_once(loggingInitialized, [] { vrna_log_lock_set(lockVrnaLogging, nullptr); });
-#endif
 
 	// load parameters
 	if ( !vrnaParamFile.empty() ) {

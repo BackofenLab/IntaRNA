@@ -42,6 +42,9 @@
 
 ## Technical changes and Optimizations
 
+- require ViennaRNA >= 2.7.0 and its logger/prepared-window APIs at configure
+  time; install the logger lock for every supported version (PR #267)
+
 - fix ViennaRNA parameter-cache races and enable parallel prepared window
   accessibility; retain serialization for global MFE/PF and non-OpenMP
   ViennaRNA builds, with a source audit and concurrency regressions (issue #265)
@@ -134,6 +137,21 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261015 Alexander Mitrofanov
+ * configure.ac, conda-build-env.yml :
+   * require ViennaRNA >= 2.7.0, the first release with vrna_log_lock_set()
+   * check header version and link the logger/prepared-window APIs during
+     configure, including builds using --disable-pkg-config
+ * IntaRNA/VrnaHandler, IntaRNA/AccessibilityVrna :
+   * install the logger lock unconditionally for supported ViennaRNA releases
+     and remove obsolete version guards; retain full-call serialization for
+     RNAlib builds without OpenMP
+ * README.md, AGENTS.md, doc/analysis/vienna-accessibility-thread-safety.md :
+   * align the dependency and synchronization contract; distinguish historical
+     2.4.14 source evidence from the supported range and recorded runtime tests
+   + record minimum-version, release/debug and dependency-probe validation
+   * addresses review of https://github.com/BackofenLab/IntaRNA/pull/267
 
 261014 Alexander Mitrofanov
  * tests/AccessibilityVrna_test.cpp :
