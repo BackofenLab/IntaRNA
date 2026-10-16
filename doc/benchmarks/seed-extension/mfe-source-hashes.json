@@ -1,0 +1,136 @@
+{
+  "baseline_revision": "21b9d8fc33aadd3c44d788c4da10a91cf6694ce1",
+  "source_verification": {
+    "base": {
+      "checked_files": 190,
+      "mismatches": []
+    },
+    "release": {
+      "checked_files": 190,
+      "mismatches": []
+    },
+    "debug": {
+      "checked_files": 190,
+      "mismatches": []
+    }
+  },
+  "modified_source_sha256": {
+    "src/IntaRNA/PredictorMfe2dHeuristicSeedExtension.cpp": "40dd8809ab97b3f0aed2ed691d269bdb3a6e8138a90dcf3bc6b300afa68e3d3e",
+    "src/IntaRNA/PredictorMfe2dSeedExtension.cpp": "1b05d1368f4c1d1c7cc6e47c222f6acd7747eacf25882933fbfffeafcebe4dd3",
+    "src/IntaRNA/PredictorMfe2dSeedExtension.h": "08621ecb0b1a0516f6ec96b2b7132c34a9335a83480bdf6995828c03ac76194a",
+    "tests/PredictorSeedOracle_test.cpp": "b7275381b803246be41e3bbb277e612dc3ee568bf89034e74494c928e3a74c14"
+  },
+  "build_flags": {
+    "base": {
+      "Makefile": [
+        "AM_CXXFLAGS = -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include  -O3 -fno-strict-aliasing -Wno-uninitialized -Wno-deprecated -fopenmp -DELPP_FEATURE_PERFORMANCE_TRACKING -DELPP_NO_DEFAULT_LOG_FILE -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include/ViennaRNA -pthread ",
+        "CPPFLAGS = -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include -I/include",
+        "CXX = /home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain-gcc14/bin/x86_64-conda-linux-gnu-g++ -std=c++23",
+        "CXXFLAGS = ",
+        "DEFS = -DHAVE_CONFIG_H",
+        "LDFLAGS = -L/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib -Wl,-rpath,/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib -L/lib"
+      ],
+      "src/IntaRNA/Makefile": [
+        "AM_CXXFLAGS = -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include  -O3 -fno-strict-aliasing -Wno-uninitialized -Wno-deprecated -fopenmp -DELPP_FEATURE_PERFORMANCE_TRACKING -DELPP_NO_DEFAULT_LOG_FILE -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include/ViennaRNA -pthread ",
+        "CPPFLAGS = -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include -I/include",
+        "CXX = /home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain-gcc14/bin/x86_64-conda-linux-gnu-g++ -std=c++23",
+        "CXXFLAGS = ",
+        "DEFS = -DHAVE_CONFIG_H",
+        "LDFLAGS = -L/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib -Wl,-rpath,/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib -L/lib",
+        "libIntaRNA_a_CXXFLAGS = $(AM_CXXFLAGS)  -isystem /home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include -isystem /home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include/ViennaRNA"
+      ],
+      "src/bin/Makefile": [
+        "AM_CXXFLAGS = -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include  -O3 -fno-strict-aliasing -Wno-uninitialized -Wno-deprecated -fopenmp -DELPP_FEATURE_PERFORMANCE_TRACKING -DELPP_NO_DEFAULT_LOG_FILE -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include/ViennaRNA -pthread ",
+        "CPPFLAGS = -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include -I/include",
+        "CXX = /home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain-gcc14/bin/x86_64-conda-linux-gnu-g++ -std=c++23",
+        "CXXFLAGS = ",
+        "DEFS = -DHAVE_CONFIG_H",
+        "LDFLAGS = -L/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib -Wl,-rpath,/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib -L/lib",
+        "IntaRNA_CXXFLAGS = $(AM_CXXFLAGS)  -isystem /home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include -isystem /home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include/ViennaRNA"
+      ]
+    },
+    "release": {
+      "Makefile": [
+        "AM_CXXFLAGS = -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include  -O3 -fno-strict-aliasing -Wno-uninitialized -Wno-deprecated -fopenmp -DELPP_FEATURE_PERFORMANCE_TRACKING -DELPP_NO_DEFAULT_LOG_FILE -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include/ViennaRNA -pthread ",
+        "CPPFLAGS = -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include -I/include",
+        "CXX = /home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain-gcc14/bin/x86_64-conda-linux-gnu-g++ -std=c++23",
+        "CXXFLAGS = ",
+        "DEFS = -DHAVE_CONFIG_H",
+        "LDFLAGS = -L/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib -Wl,-rpath,/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib -L/lib"
+      ],
+      "src/IntaRNA/Makefile": [
+        "AM_CXXFLAGS = -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include  -O3 -fno-strict-aliasing -Wno-uninitialized -Wno-deprecated -fopenmp -DELPP_FEATURE_PERFORMANCE_TRACKING -DELPP_NO_DEFAULT_LOG_FILE -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include/ViennaRNA -pthread ",
+        "CPPFLAGS = -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include -I/include",
+        "CXX = /home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain-gcc14/bin/x86_64-conda-linux-gnu-g++ -std=c++23",
+        "CXXFLAGS = ",
+        "DEFS = -DHAVE_CONFIG_H",
+        "LDFLAGS = -L/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib -Wl,-rpath,/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib -L/lib",
+        "libIntaRNA_a_CXXFLAGS = $(AM_CXXFLAGS)  -isystem /home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include -isystem /home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include/ViennaRNA"
+      ],
+      "src/bin/Makefile": [
+        "AM_CXXFLAGS = -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include  -O3 -fno-strict-aliasing -Wno-uninitialized -Wno-deprecated -fopenmp -DELPP_FEATURE_PERFORMANCE_TRACKING -DELPP_NO_DEFAULT_LOG_FILE -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include/ViennaRNA -pthread ",
+        "CPPFLAGS = -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include -I/include",
+        "CXX = /home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain-gcc14/bin/x86_64-conda-linux-gnu-g++ -std=c++23",
+        "CXXFLAGS = ",
+        "DEFS = -DHAVE_CONFIG_H",
+        "LDFLAGS = -L/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib -Wl,-rpath,/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib -L/lib",
+        "IntaRNA_CXXFLAGS = $(AM_CXXFLAGS)  -isystem /home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include -isystem /home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include/ViennaRNA"
+      ]
+    },
+    "debug": {
+      "Makefile": [
+        "AM_CXXFLAGS = -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include  -g -O0 -Wno-uninitialized -Wno-deprecated -DELPP_DEBUG_ERRORS -fopenmp -DELPP_FEATURE_PERFORMANCE_TRACKING -DELPP_NO_DEFAULT_LOG_FILE -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include/ViennaRNA -pthread ",
+        "CPPFLAGS = -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include -I/include",
+        "CXX = /home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain-gcc14/bin/x86_64-conda-linux-gnu-g++ -std=c++23",
+        "CXXFLAGS = ",
+        "DEFS = -DHAVE_CONFIG_H",
+        "LDFLAGS = -L/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib -Wl,-rpath,/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib -L/lib"
+      ],
+      "src/IntaRNA/Makefile": [
+        "AM_CXXFLAGS = -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include  -g -O0 -Wno-uninitialized -Wno-deprecated -DELPP_DEBUG_ERRORS -fopenmp -DELPP_FEATURE_PERFORMANCE_TRACKING -DELPP_NO_DEFAULT_LOG_FILE -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include/ViennaRNA -pthread ",
+        "CPPFLAGS = -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include -I/include",
+        "CXX = /home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain-gcc14/bin/x86_64-conda-linux-gnu-g++ -std=c++23",
+        "CXXFLAGS = ",
+        "DEFS = -DHAVE_CONFIG_H",
+        "LDFLAGS = -L/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib -Wl,-rpath,/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib -L/lib",
+        "libIntaRNA_a_CXXFLAGS = $(AM_CXXFLAGS)  -isystem /home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include -isystem /home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include/ViennaRNA"
+      ],
+      "src/bin/Makefile": [
+        "AM_CXXFLAGS = -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include  -g -O0 -Wno-uninitialized -Wno-deprecated -DELPP_DEBUG_ERRORS -fopenmp -DELPP_FEATURE_PERFORMANCE_TRACKING -DELPP_NO_DEFAULT_LOG_FILE -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include/ViennaRNA -pthread ",
+        "CPPFLAGS = -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include -I/include",
+        "CXX = /home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain-gcc14/bin/x86_64-conda-linux-gnu-g++ -std=c++23",
+        "CXXFLAGS = ",
+        "DEFS = -DHAVE_CONFIG_H",
+        "LDFLAGS = -L/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib -Wl,-rpath,/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib -L/lib",
+        "IntaRNA_CXXFLAGS = $(AM_CXXFLAGS)  -isystem /home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include -isystem /home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include/ViennaRNA"
+      ]
+    }
+  },
+  "binaries": {
+    "base": {
+      "sha256": "4dac44fd068710e11a11c3e001ab5ae3a22948f41311461b6f5ef4637c8da55b"
+    },
+    "release": {
+      "sha256": "4db07def83829b495ddd5690dbdeeb133aca67398a1a2a0b398c9cef8b48df16"
+    },
+    "debug": {
+      "sha256": "f69a3a3c6bb8a8a850b5bdfee5597c19f99f14f9812781b97f31a3670e85c854"
+    }
+  },
+  "compiler": "x86_64-conda-linux-gnu-g++ (conda-forge gcc 14.4.0-7) 14.4.0",
+  "candidate_source_commit": "d734e88d9131c6ac7bb6eb87de8a7a5d79282377",
+  "configuration_header_sha256": {
+    "base": {
+      "src/config.h": "94a62d9fffc397911039ed947d07b9bfc44412ba9b449bff57e66577974efdf4",
+      "src/IntaRNA/intarna_config.h": "4cbc306a33335dd49061ed4e3d70f7f70e776f5aa8a6e0e73ea6715cfa4163c2"
+    },
+    "release": {
+      "src/config.h": "94a62d9fffc397911039ed947d07b9bfc44412ba9b449bff57e66577974efdf4",
+      "src/IntaRNA/intarna_config.h": "4cbc306a33335dd49061ed4e3d70f7f70e776f5aa8a6e0e73ea6715cfa4163c2"
+    },
+    "debug": {
+      "src/config.h": "e31a3eee0944882cf8f60f545ade876a528345c4237af730424242cc0b51682a",
+      "src/IntaRNA/intarna_config.h": "4cbc306a33335dd49061ed4e3d70f7f70e776f5aa8a6e0e73ea6715cfa4163c2"
+    }
+  }
+}

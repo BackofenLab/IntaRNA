@@ -10,6 +10,7 @@ EXTRA_DIST =	\
 			analysis/seeded-probabilities-validation.md \
 			analysis/seed-extension-partition.md \
 			analysis/heuristic-anchored-runtime.md \
+			analysis/mfe-seed-extension-reuse.md \
 			seeded-probabilities-example.cpp \
 			api-documentation.md \
 			build-api.sh \
@@ -54,3 +55,9 @@ EXTRA_DIST += benchmarks/seed-extension/README.md \
 			benchmarks/seed-extension/anchored-heuristic-results.json \
 			benchmarks/seed-extension/anchored-heuristic-samples.tsv \
 			benchmarks/seed-extension/anchored-source-hashes.json
+
+EXTRA_DIST += benchmarks/seed-extension/mfe-native.py \
+             benchmarks/seed-extension/mfe-native-results.json \
+             benchmarks/seed-extension/mfe-native-samples.tsv \
+             benchmarks/seed-extension/mfe-native-manifest.json \
+             benchmarks/seed-extension/mfe-source-hashes.json
