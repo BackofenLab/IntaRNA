@@ -2,6 +2,7 @@
 #define VIENNAHANDLER_H_
 
 #include "IntaRNA/general.h"
+#include <mutex>
 #include <string>
 
 extern "C" {
@@ -37,6 +38,10 @@ public:
 
 	/**
 	 * Construction with global VRNA folding parameter setup
+	 * Complete parameter loading before starting concurrent folding computations.
+	 * The first handler also installs a mutex for logging without changing
+	 * output callbacks. Retain this logging lock for
+	 * all subsequent concurrent folding; logger resets remove it.
 	 *
 	 * @param vrnaParamFile name of a VRNA parameter file to be used for
 	 *        parameter setup
@@ -58,8 +63,8 @@ public:
 	/**
 	 * Generates a new VRNA parameter model according to the global and local settings
 	 *
-	 * NOTE: you have to call vrna_md_defaults_reset() to broadcast
-	 * the model details before using non-VRNA-API-3 functions.
+	 * Pass the returned model explicitly to ViennaRNA APIs; do not broadcast it
+	 * through global model defaults while other threads are folding.
 	 *
 	 * @param max_bp_span Maximal distance between base pair partners within one RNA
 	 * 				or -1 if no constraint needed
@@ -99,6 +104,18 @@ public:
 	static
 	double
 	getPfScaleDefault();
+
+	/**
+	 * Provides the process-wide lock for ViennaRNA's shared initialization state.
+	 * Hold this lock while creating parameters and fold compounds, adding
+	 * constraints, and preparing folding. Global MFE/PF calls also require it.
+	 * Prepared window computations may run concurrently with OpenMP-enabled
+	 * ViennaRNA, provided energy parameters are not reloaded during folding.
+	 * @return the mutex shared by all IntaRNA ViennaRNA callers
+	 */
+	static
+	std::mutex &
+	getSetupMutex();
 
 
 

@@ -42,6 +42,15 @@
 
 ## Technical changes and Optimizations
 
+- require ViennaRNA >= 2.7.0 and its logger/prepared-window APIs at configure
+  time; install the logger lock for every supported version (PR #267)
+
+- fix ViennaRNA parameter-cache races and enable parallel prepared window
+  accessibility; retain serialization for global MFE/PF and non-OpenMP
+  ViennaRNA builds, with a source audit and concurrency regressions (issue #265)
+- keep the concurrency regression compatible with Apple Clang's standard
+  library using explicitly joined std::thread workers (PR #267)
+
 - add an API overview, IntaRNA Doxygen styling, and automated documentation
   builds and GitHub Pages publishing alongside the user guide (issue #22)
   
@@ -128,6 +137,48 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261015 Alexander Mitrofanov
+ * configure.ac, conda-build-env.yml :
+   * require ViennaRNA >= 2.7.0, the first release with vrna_log_lock_set()
+   * check header version and link the logger/prepared-window APIs during
+     configure, including builds using --disable-pkg-config
+ * IntaRNA/VrnaHandler, IntaRNA/AccessibilityVrna :
+   * install the logger lock unconditionally for supported ViennaRNA releases
+     and remove obsolete version guards; retain full-call serialization for
+     RNAlib builds without OpenMP
+ * README.md, AGENTS.md, doc/analysis/vienna-accessibility-thread-safety.md :
+   * align the dependency and synchronization contract; distinguish historical
+     2.4.14 source evidence from the supported range and recorded runtime tests
+   + record minimum-version, release/debug and dependency-probe validation
+   * addresses review of https://github.com/BackofenLab/IntaRNA/pull/267
+
+261014 Alexander Mitrofanov
+ * tests/AccessibilityVrna_test.cpp :
+   * replace std::jthread, unavailable in the macOS CI standard library, with
+     std::thread and exception-safe joins before inspecting worker results
+   * fixes the Apple Clang regression build in PR #267
+ * tests/runAccessibilityThreads.sh :
+   * avoid empty-array expansion with nounset for older macOS Bash versions
+
+261014 Alexander Mitrofanov
+ * IntaRNA/VrnaHandler, IntaRNA/AccessibilityVrna,
+   IntaRNA/InteractionEnergyVrna, bin/IntaRNA :
+   * serialize shared parameter/compound setup, constraints and preparation
+     through one exception-safe mutex, including native-thread library callers
+   * run prepared window probability recurrences concurrently with OpenMP
+     ViennaRNA; retain the conservative fallback for other builds
+   * protect global MFE/PF compatibility state, remove worker-side global model
+     resets, and install a separate logger lock for ViennaRNA >= 2.7
+ * tests/AccessibilityVrna_test.cpp, tests/runAccessibilityThreads.sh,
+   tests/Makefile.am :
+   + compare serial/native-thread/OpenMP ED, ES and ensemble energies with
+     varied models; compare CLI accessibilities/predictions with SHAPE D/W
+ * doc/analysis/vienna-accessibility-thread-safety.md,
+   doc/analysis/vrna-window-threads.cpp, doc/Makefile.am, README.md, AGENTS.md :
+   + trace IntaRNA and ViennaRNA shared/owned state, provide an independent
+     race reproducer and document supported concurrency boundaries
+   * resolves https://github.com/BackofenLab/IntaRNA/issues/265
 
 261007 Alexander Mitrofanov
  * doc/doxygen.cfg, doc/doxygen/* :
