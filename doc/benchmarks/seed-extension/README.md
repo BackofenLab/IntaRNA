@@ -1,9 +1,12 @@
 # Seed-extension kernel comparison
 
-This Linux benchmark compares the seeded kernel at revision
-`985ba44bdc16e92162e954b7baffa3f3923d4776` with the current source checkout.
-It runs the exact ensemble by default; `--heuristic` uses frozen right-endpoint
-groups to exercise their forward and outside workspace reuse.
+This Linux benchmark compares a selected seeded-kernel revision with the current
+source checkout. The current shared-anchor comparison uses baseline
+`3866c62d10846fab1adc38b937d0c9b96cc06e51`.
+It runs the exact ensemble by default; `--heuristic` applies frozen endpoint
+choices to the same anchored forward and outside implementation. True left
+extensions retain the no-right endpoint and the selected right endpoint;
+interactions beginning at the anchor retain every right endpoint.
 It first checks every reported boundary hybrid weight and boundary coefficient,
 the total partition, and every raw pair numerator. It then times partition-only
 and pair-output calculations in separate processes, alternating baseline and
@@ -15,22 +18,18 @@ alignment. These counters measure allocation traffic, not peak live memory.
 
 Configure the source tree first so `src/IntaRNA/intarna_config.h` is available.
 Requirements are a C++23 GCC toolchain, the project's headers and Boost headers,
-Python 3, and GNU `/usr/bin/time`. Run from the repository root:
-
-```sh
-python3 doc/benchmarks/seed-extension/build.py \
-  --source "$PWD" --output /tmp/intarna-seed-extension-benchmark --cxx g++-14
-python3 doc/benchmarks/seed-extension/run.py \
-  --build-dir /tmp/intarna-seed-extension-benchmark --repetitions 3
-```
+Python 3, and GNU `/usr/bin/time`. Run the commands below from the repository
+root.
 
 For dependencies outside the compiler's search paths, add
 `--include /path/to/dependencies/include` to the build command. An optional
 `--runtime-library-dir /path/to/compiler/lib` embeds a runtime library search
 path. Both options can be repeated. `--baseline` selects another Git revision
-when a different comparison is intended; the current driver requires the
-first-acceptance kernel API introduced in #266. To measure heuristic groups, use
-`--heuristic` on the runner. Use separate `--output-dir` directories for exact and
+when a different comparison is intended; its historical default remains
+`985ba44bdc16e92162e954b7baffa3f3923d4776`, so specify the intended baseline
+explicitly. The current driver requires the first-acceptance kernel API
+introduced in #266. To measure the heuristic ensemble, use `--heuristic` on
+the runner. Use separate `--output-dir` directories for exact and
 heuristic results, since the runner replaces its output files. The same built
 executables can be used for both ensembles. `--verify-only` compares all dumps
 without collecting timed samples, which permits checking correctness before a
@@ -43,6 +42,77 @@ and SHA-256 source digests in `manifest.json`, including the harness and shared
 numerical/configuration headers. The runner writes full verification
 dumps, `samples.tsv`, and `results.json` in the build directory. Timed runs do not
 write the full boundary dumps.
+
+## Shared anchored heuristic comparison (#270)
+
+Build both kernels against baseline `3866c62d10846fab1adc38b937d0c9b96cc06e51`.
+Verify the exact and heuristic full dumps before collecting timings:
+
+```sh
+python3 doc/benchmarks/seed-extension/build.py \
+  --source "$PWD" --output /tmp/intarna-anchored-benchmark --cxx g++-14 \
+  --baseline 3866c62d10846fab1adc38b937d0c9b96cc06e51
+python3 doc/benchmarks/seed-extension/run.py \
+  --build-dir /tmp/intarna-anchored-benchmark \
+  --output-dir /tmp/intarna-anchored-exact-check --verify-only
+python3 doc/benchmarks/seed-extension/run.py \
+  --build-dir /tmp/intarna-anchored-benchmark \
+  --output-dir /tmp/intarna-anchored-heuristic-check --verify-only --heuristic
+```
+
+After both checks pass, reserve a quiet period without concurrent builds or
+tests. Collect five alternating baseline/candidate samples for each fixture,
+including partition-only and pair-output calculations:
+
+```sh
+python3 doc/benchmarks/seed-extension/run.py \
+  --build-dir /tmp/intarna-anchored-benchmark \
+  --output-dir /tmp/intarna-anchored-exact --repetitions 5
+python3 doc/benchmarks/seed-extension/run.py \
+  --build-dir /tmp/intarna-anchored-benchmark \
+  --output-dir /tmp/intarna-anchored-heuristic --repetitions 5 --heuristic
+```
+
+The native CLI harness complements those synthetic fixtures with the OxyS/fhlA
+reproduction from #270. Build complete baseline and candidate executables with
+the same compiler, dependencies and release options. The default four cases
+combine `--model=P` with modes M/H and seeded/unseeded prediction, using one
+thread and five alternating samples per executable:
+
+```sh
+python3 doc/benchmarks/seed-extension/anchored-native.py \
+  --binary /path/to/baseline/src/bin/IntaRNA \
+  --candidate /path/to/candidate/src/bin/IntaRNA \
+  --output-dir /tmp/intarna-anchored-native --repetitions 5
+```
+
+Use a separate invocation for seeded H/M pair output, without timing the
+unrelated unseeded pair cases:
+
+```sh
+python3 doc/benchmarks/seed-extension/anchored-native.py \
+  --binary /path/to/baseline/src/bin/IntaRNA \
+  --candidate /path/to/candidate/src/bin/IntaRNA \
+  --output-dir /tmp/intarna-anchored-native-pairs --repetitions 5 \
+  --cases H-seeded M-seeded --pair-output
+```
+
+Native result directories must be new or empty. The harness requires identical
+stdout for each case across both binaries and all repetitions. With
+`--pair-output`, it also compares every finite CSV probability at relative
+tolerance `2e-12`, with no absolute tolerance; matrix labels and `NA` cells must
+match exactly. This permits harmless changes in floating-point summation order
+without ignoring differences in small probabilities.
+
+`manifest.json` records executable hashes, versions, environment, and one command
+per case/variant. `samples.tsv` records individual timings, maximum process RSS,
+output hashes and comparison errors; `results.json` contains the summary and
+verification status. Raw stdout, stderr, GNU time output and requested pair CSVs
+are retained for every sample. Native timings cover fresh complete CLI processes,
+including thermodynamic/accessibility computation and output; they have no
+warmup exclusions. They measure a different scope from the isolated kernel
+runner. Record the resulting measurements and their interpretation in
+[the anchored heuristic runtime analysis](../../analysis/heuristic-anchored-runtime.md).
 
 ## Workloads and measurement limits
 
