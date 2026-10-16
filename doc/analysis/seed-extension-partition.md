@@ -10,7 +10,11 @@ especially the
 [seed-extension chapter](https://github.com/BackofenLab/IntaRNA-probabilities/blob/e904b65101294f782b0938590335f3e23631a1aa/theory/seed-extension.md)
 and its `SE-LEFT-REC`, `SE-FIRST-HIT`, and `SE-PAIR-FIRST-HIT` equations.
 The historical subtraction formulas discussed in that chapter are not the
-recurrences used here.
+recurrences used here. The exact backend now evaluates anchor-local left/right
+extensions as requested in the [PR #268 review](https://github.com/BackofenLab/IntaRNA/pull/268#issuecomment-6212869312).
+The heuristic backend retains first-completed-seed ownership and its frozen
+endpoint selector. Both compute their respective ensembles with nonnegative
+weights and differentiate the same computation for actual-pair probabilities.
 
 ## Ensemble and weight ownership
 
@@ -36,7 +40,127 @@ restrictions such as `noLP` are part of the recurrence; endpoint restrictions
 such as `noGUend` and complete-span accessibility are applied to the full
 boundary. Neither ranked-result limits nor display cutoffs select the ensemble.
 
-## Unique first acceptance
+## Exact left-most seed-anchored evaluation
+
+The exact backend visits seed anchors and computes left and right extension
+tables around each anchor. Its seed family is first reduced to an equivalent
+irredundant family: remove an occurrence if it contains another admitted stack
+occurrence. Every chain containing the removed seed also contains the retained
+inner seed, so the union of interactions, every boundary partition, and every
+pair numerator remain unchanged. This reduction is private to exact evaluation;
+the admitted seed family used for annotations and heuristic choices is unchanged.
+
+This matters for variable-length explicit seeds. An outer seed may start before
+an inner singleton but finish later. In the irredundant family, such nesting is
+absent. Seeds on a common chain are either disjoint or overlap on a strict stack;
+their starts and ends therefore have the same order. Every seeded chain has a
+unique left-most retained seed. That seed owns the chain, even if later seeds
+overlap it or follow it after a loop.
+
+For an anchor from `s` to `t`, the left table enumerates paths preceding the
+anchor while rejecting earlier retained seeds. Its stack-run state detects
+seeds completed by prepending a pair, including earlier seeds that overlap the
+anchor. The right table extends from `t` without any seed restriction. Both
+respect the active loop limits and pair validity. Their contraction includes
+one initiation factor at the complete left boundary, one factor for each
+transition, and one complete boundary factor at the outer endpoints. Seed
+admission energies are not multiplied into the interaction a second time.
+
+Writing `S[a]` for the product of internal anchor transitions, `L[a,p,h]` for
+the left extension, and `R[a,r,k]` for the right extension gives
+
+```text
+H[p,r] = initiation(p) * sum_a S[a] * sum_(h,k compatible) L[a,p,h] * R[a,r,k]
+Z      = sum_(p,r) H[p,r] * boundary(p,r).
+```
+
+The support flags `h,k` matter only for singleton anchors under `noLP`:
+compatibility requires `h || k`. Longer seeds already support all anchor pairs.
+The right table also records whether its current outer pair is supported;
+the left table obtains that information from its initial stack-run length.
+Only complete-boundary contractions enforce initiation and total span. Table
+rectangles are additionally cropped to the sources present in the current batch.
+
+The left and right offsets include zero, representing no extension. An anchor
+of length `k` leaves at most `span-k` extension positions on each strand, shared
+between its left and right sides. Each side's table must therefore contain
+`span-k+1` cells before cropping at the sequence ends. Full-boundary contraction
+checks the sum of the left and right offsets, rather than allowing each side
+to consume the whole span independently. Shared buffers are allocated once and
+reset only over each anchor's active rectangle.
+
+The `noLP` states retain whether a terminal pair already has a stacked neighbor.
+Only a supported outer end may terminate, and only supported pairs may precede
+a nonstack edge. A singleton anchor is supported when its left or right
+extension supplies a stack; support from both sides is one interaction. An
+isolated singleton and a singleton connected only through nonstack edges are
+excluded. The outside pass uses the same compatible states.
+
+### Bounded boundary aggregation and outside differentiation
+
+Different anchors can contribute to the same complete boundary. Reporting each
+anchor contribution separately would change the complete hybrid coefficient
+seen by native ensemble-energy reporting and extension hooks. Instead, the
+exact backend accumulates batches of at most 256 left boundaries, then publishes
+each positive complete hybrid sum once in row-major boundary order. The same
+hybrid coefficient and full-boundary factor determine the total partition and
+outside derivatives, even when the boundary factor is zero.
+
+The anchor-local forward tables and their adjoints are shared across anchors.
+For pair output, the backend revisits the anchors of a batch, contracts the
+saved boundary coefficients into left/right adjoints, and reverses the same
+extension recurrences. Extension pairs are marked by forward weight times
+outside derivative; every pair in the anchor receives its complete anchor-class
+mass exactly once. No pair is counted merely because it lies inside an outer
+boundary rectangle. Partition-only mode omits the outside storage and pass.
+
+Batching avoids storing all source/endpoint combinations across the sequences.
+The batch is additionally limited to a 2 MiB target for its hybrid table, with
+at least one left boundary even when a single span rectangle exceeds that
+budget. Pair output saves one equally sized table of boundary coefficients.
+The bound is independent of whether pair output is requested, preserving the
+forward computation in both modes. Larger batches reuse anchor factors across
+more sources but retain more boundary coefficients.
+
+With `W1=min(span1,n)`, `W2=min(span2,m)`, maximum irredundant seed length
+`L`, and bounded batch size `B<=256`, workspace storage is
+`O(W1*W2*(max(2,L)+B) + n*m + S)` for `S` anchors. The `n*m` term includes
+a byte-valued validity cache and, for pair output, the returned mass matrix.
+Partition-only mode does not allocate adjoints or saved boundary factors.
+Its cost is repeated anchor-table work between batches. This is an explicit
+memory/runtime tradeoff, not a claim of a general speedup. The
+[benchmark records](../benchmarks/seed-extension/README.md) compare all complete
+boundary coefficients, partitions and pair numerators against `985ba44`, and
+report allocation calls, requested bytes, runtime and process RSS separately.
+
+Five-sample kernel measurements show the tradeoff: with three seeds, revised
+runtime is `0.059–0.197` times the previous runtime; with many seeds it is
+`3.055–5.494` times the previous runtime. Exact median process RSS increases
+from `3,840–4,224 KiB` to `4,480–6,144 KiB` on these small fixtures. The anchor
+index and boundary batches also increase allocation traffic. These results
+characterize the requested factorization, not a universal optimization; consult
+the benchmark records for per-case timings, allocation counts and source hashes.
+
+### Exact rewrite validation
+
+GCC 14.4.0 release and `--enable-debug` builds both pass `make tests -j2`:
+all seven API/CLI drivers pass, with 112 API cases and 399,390 / 399,391
+assertions. Independent complete-chain enumeration checks nested and overlapping
+mixed-length seeds, singleton support from either side, cropped/native reversed
+coordinates, asymmetric spans and loop limits, full hybrid coefficients with
+zero boundary factors, and more than 256 eligible source boundaries. Native
+checks also verify the reported optimal boundary and rounded ensemble energy.
+
+The two changed public headers compile independently after installation, and
+the installed pkg-config probability example compiles, links and runs.
+The final kernel snapshots agree across 599,242 boundary/partition/pair entries:
+exact maximum relative difference is `5.96e-15`; heuristic dumps are identical.
+All 12 native CLI predictions match the base byte-for-byte. The six heuristic
+pair-probability files are identical; the six exact files agree to maximum
+relative difference `1.53e-15`. Floating-point order changes are expected from
+the different nonnegative factorization; the scientific ensemble is unchanged.
+
+## First acceptance in the heuristic backend
 
 Scan a chain from its left boundary. Its canonical anchor is the first admitted
 seed to finish. Before that completion, the prefix contains no admitted seed;
@@ -88,7 +212,7 @@ first-hit contraction is
 Hseed[p,r] = sum_q F[p,q] * B[q,r].
 ```
 
-The implementation shares the work of all anchors through an inhomogeneous
+The heuristic backend shares the work of compatible anchors through an inhomogeneous
 right-extension recurrence:
 
 ```text
@@ -134,8 +258,9 @@ continuation in that case would admit lonely pairs.
 
 ## A defined heuristic subset
 
-The stack-seed heuristic uses the same canonical first-hit ownership as the
-exact computation. For canonical anchor `S`, let `start(S)` and `end(S)` be its
+The stack-seed heuristic retains the original canonical first-hit ownership.
+Unlike exact evaluation, it does not remove redundant containing occurrences:
+that could change which anchor selects a right endpoint. For canonical anchor `S`, let `start(S)` and `end(S)` be its
 outer pairs, and let `selectedRight(S)` be the deterministic endpoint selected
 by the heuristic's right-extension policy. Select the endpoint before the
 partition and outside calculations; marking a pair must not change it.
@@ -194,8 +319,9 @@ The raw numerator for pair `k` is the sum of complete interaction weights whose
 chains actually contain `k`. It is not the sum of weights of boundary rectangles
 covering `k`; the latter is a spot probability.
 
-Initialize outside derivatives from the same complete boundary coefficients
-used by forward accumulation. Reverse the right-extension passes, transfer
+For the heuristic first-acceptance recurrence, initialize outside derivatives
+from the same complete boundary coefficients used by forward accumulation.
+Reverse the right-extension passes, transfer
 their derivatives into the corresponding first-hit injections, and then
 reverse the accepting edges and seed-free prefix recurrence. A transition
 owns its destination pair; the initialization owns the first pair. Accumulating
@@ -233,8 +359,8 @@ limits, and `noLP` states on both sides of acceptance. Heuristic checks must use
 the same frozen selector, verify each retained chain once, and compare its
 partition with the exact ensemble.
 
-The seed-free table still retains run-length state for each active left
-boundary. Sharing right extensions avoids repeating identical continuation
+The heuristic seed-free table still retains run-length state for each active
+left boundary. Sharing right extensions avoids repeating identical continuation
 work for every anchor, but does not imply a lower asymptotic bound for the
 whole calculation. Heuristic cost also depends on the number of distinct
 selected endpoints. Pair output adds outside storage and work. Performance or
@@ -242,10 +368,12 @@ memory improvements require measurements against the previous implementation
 with identical inputs, options, build configuration, and thread count; the
 factorization alone is not a performance claim.
 
-## Reusable extension workspaces
+## First-acceptance workspace reuse (PR #266 review)
 
 The allocation revision requested in [PR #266](https://github.com/BackofenLab/IntaRNA/pull/266#issuecomment-6176325864)
-keeps the recurrence and its arithmetic order unchanged. One invocation allocates
+kept the then-shared exact/heuristic recurrence and its arithmetic order unchanged.
+The heuristic still uses these buffers; exact evaluation now uses the anchor-local
+batched algorithm above. One first-acceptance invocation allocates
 its prefix, first-hit, right-extension and (when requested) outside matrices at
 `min(span1,n)` by `min(span2,m)`, with the prefix run-length dimension retained.
 The inclusive maximum extension offset is `span-1`; storing offset zero requires

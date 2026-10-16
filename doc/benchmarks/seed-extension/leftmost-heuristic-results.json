@@ -1,0 +1,202 @@
+{
+  "heuristic": true,
+  "threads": 1,
+  "relative_tolerance": 1e-12,
+  "repetitions": 5,
+  "checks": [
+    {
+      "case": "dense40-many",
+      "compared_entries": 220710,
+      "max_relative_error": 0.0,
+      "max_relative_error_by_kind": {
+        "b": 0.0,
+        "p": 0.0,
+        "z": 0.0
+      }
+    },
+    {
+      "case": "dense40-few",
+      "compared_entries": 3435,
+      "max_relative_error": 0.0,
+      "max_relative_error_by_kind": {
+        "b": 0.0,
+        "p": 0.0,
+        "z": 0.0
+      }
+    },
+    {
+      "case": "band60-many",
+      "compared_entries": 42270,
+      "max_relative_error": 0.0,
+      "max_relative_error_by_kind": {
+        "b": 0.0,
+        "p": 0.0,
+        "z": 0.0
+      }
+    },
+    {
+      "case": "band60-few",
+      "compared_entries": 4591,
+      "max_relative_error": 0.0,
+      "max_relative_error_by_kind": {
+        "b": 0.0,
+        "p": 0.0,
+        "z": 0.0
+      }
+    }
+  ],
+  "summary": [
+    {
+      "case": "dense40-many",
+      "pairs": 0,
+      "seeds": 1369,
+      "base_allocations": 1399,
+      "base_allocated_bytes": 222760,
+      "base_median_seconds": 0.389085589,
+      "base_min_seconds": 0.386887045,
+      "base_max_seconds": 0.402965835,
+      "base_median_rss_kib": 4224,
+      "candidate_allocations": 1399,
+      "candidate_allocated_bytes": 222760,
+      "candidate_median_seconds": 0.407022865,
+      "candidate_min_seconds": 0.406690141,
+      "candidate_max_seconds": 0.426235313,
+      "candidate_median_rss_kib": 4352,
+      "runtime_ratio": 1.0461011060473895,
+      "rss_ratio": 1.0303030303030303
+    },
+    {
+      "case": "dense40-many",
+      "pairs": 1,
+      "seeds": 1369,
+      "base_allocations": 1405,
+      "base_allocated_bytes": 281640,
+      "base_median_seconds": 2.546715906,
+      "base_min_seconds": 2.530385913,
+      "base_max_seconds": 2.638791819,
+      "base_median_rss_kib": 4224,
+      "candidate_allocations": 1405,
+      "candidate_allocated_bytes": 281640,
+      "candidate_median_seconds": 2.726610936,
+      "candidate_min_seconds": 2.64812584,
+      "candidate_max_seconds": 2.729402014,
+      "candidate_median_rss_kib": 4224,
+      "runtime_ratio": 1.070638043912229,
+      "rss_ratio": 1.0
+    },
+    {
+      "case": "dense40-few",
+      "pairs": 0,
+      "seeds": 3,
+      "base_allocations": 18,
+      "base_allocated_bytes": 88720,
+      "base_median_seconds": 0.04883356,
+      "base_min_seconds": 0.048262158,
+      "base_max_seconds": 0.050365283,
+      "base_median_rss_kib": 3840,
+      "candidate_allocations": 18,
+      "candidate_allocated_bytes": 88720,
+      "candidate_median_seconds": 0.059829666,
+      "candidate_min_seconds": 0.058165464,
+      "candidate_max_seconds": 0.063792269,
+      "candidate_median_rss_kib": 3968,
+      "runtime_ratio": 1.2251751869001564,
+      "rss_ratio": 1.0333333333333334
+    },
+    {
+      "case": "dense40-few",
+      "pairs": 1,
+      "seeds": 3,
+      "base_allocations": 24,
+      "base_allocated_bytes": 147600,
+      "base_median_seconds": 0.128197658,
+      "base_min_seconds": 0.125294192,
+      "base_max_seconds": 0.132416331,
+      "base_median_rss_kib": 3840,
+      "candidate_allocations": 24,
+      "candidate_allocated_bytes": 147600,
+      "candidate_median_seconds": 0.135749123,
+      "candidate_min_seconds": 0.132237165,
+      "candidate_max_seconds": 0.139192692,
+      "candidate_median_rss_kib": 3968,
+      "runtime_ratio": 1.0589048592447765,
+      "rss_ratio": 1.0333333333333334
+    },
+    {
+      "case": "band60-many",
+      "pairs": 0,
+      "seeds": 387,
+      "base_allocations": 413,
+      "base_allocated_bytes": 123320,
+      "base_median_seconds": 0.053934558,
+      "base_min_seconds": 0.052355847,
+      "base_max_seconds": 0.054881975,
+      "base_median_rss_kib": 3968,
+      "candidate_allocations": 413,
+      "candidate_allocated_bytes": 123320,
+      "candidate_median_seconds": 0.056821804,
+      "candidate_min_seconds": 0.056022395,
+      "candidate_max_seconds": 0.058596483,
+      "candidate_median_rss_kib": 3968,
+      "runtime_ratio": 1.0535323938317989,
+      "rss_ratio": 1.0
+    },
+    {
+      "case": "band60-many",
+      "pairs": 1,
+      "seeds": 387,
+      "base_allocations": 419,
+      "base_allocated_bytes": 198200,
+      "base_median_seconds": 0.273814731,
+      "base_min_seconds": 0.269566864,
+      "base_max_seconds": 0.278868291,
+      "base_median_rss_kib": 3968,
+      "candidate_allocations": 419,
+      "candidate_allocated_bytes": 198200,
+      "candidate_median_seconds": 0.290707218,
+      "candidate_min_seconds": 0.279244837,
+      "candidate_max_seconds": 0.294199598,
+      "candidate_median_rss_kib": 4096,
+      "runtime_ratio": 1.061693127094758,
+      "rss_ratio": 1.032258064516129
+    },
+    {
+      "case": "band60-few",
+      "pairs": 0,
+      "seeds": 3,
+      "base_allocations": 17,
+      "base_allocated_bytes": 88656,
+      "base_median_seconds": 0.009820441,
+      "base_min_seconds": 0.009427804,
+      "base_max_seconds": 0.010125613,
+      "base_median_rss_kib": 3840,
+      "candidate_allocations": 17,
+      "candidate_allocated_bytes": 88656,
+      "candidate_median_seconds": 0.011554484,
+      "candidate_min_seconds": 0.01135541,
+      "candidate_max_seconds": 0.011706068,
+      "candidate_median_rss_kib": 3968,
+      "runtime_ratio": 1.1765748605383406,
+      "rss_ratio": 1.0333333333333334
+    },
+    {
+      "case": "band60-few",
+      "pairs": 1,
+      "seeds": 3,
+      "base_allocations": 23,
+      "base_allocated_bytes": 163536,
+      "base_median_seconds": 0.022700059,
+      "base_min_seconds": 0.022384748,
+      "base_max_seconds": 0.023016294,
+      "base_median_rss_kib": 3840,
+      "candidate_allocations": 23,
+      "candidate_allocated_bytes": 163536,
+      "candidate_median_seconds": 0.024626334,
+      "candidate_min_seconds": 0.023964181,
+      "candidate_max_seconds": 0.024715982,
+      "candidate_median_rss_kib": 3968,
+      "runtime_ratio": 1.0848577089601397,
+      "rss_ratio": 1.0333333333333334
+    }
+  ]
+}

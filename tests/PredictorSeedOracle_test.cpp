@@ -896,3 +896,93 @@ TEST_CASE("native singleton and mixed explicit seeds count overlapping witnesses
 			REQUIRE(double(result.rawMasses()(i,3-j))==Approx(double(ref.mass[{i,j}])).epsilon(2e-12));
 	}
 }
+
+TEST_CASE("native exact nested explicit seeds preserve cropped boundary ensembles", "[BasePairProbabilities][PredictorSeedOracle][SeededPartitionFunction]") {
+	#include "testEasyLoggingSetup.icc"
+	using namespace seeded_oracle;
+	RnaSequence target("target","GGCGGCGG"),query("query","CCGCCGCCC");
+	AccessibilityBasePair targetAcc(target,6,nullptr),queryAcc(query,5,nullptr);
+	ReverseAccessibility reverseQuery(queryAcc);
+	InteractionEnergyBasePair energy(targetAcc,reverseQuery,1,2,false,1,-100,3,37);
+	const SeedConstraint sc(1,0,0,0,E_INF,Accessibility::ED_UPPER_BOUND,E_INF,
+			IndexRangeList(),IndexRangeList(),
+			"2|||||&3|||||,3|&6|,4||&4||,6||&2||,1||&8||",false,false,false);
+	// These are independent declared occurrences in increasing energy coordinates.
+	// The five-pair seed starts before, but completes after, the inner singleton.
+	const std::vector<Chain> declared{
+		{{1,2},{2,3},{3,4},{4,5},{5,6}},{{2,3}},
+		{{3,4},{4,5}},{{5,6},{6,7}},{{0,0},{1,1}}};
+	for(bool cropped:{false,true}) for(bool noLP:{false,true}) {
+		CAPTURE(cropped,noLP);
+		const IndexRange r1=cropped?IndexRange(1,6):IndexRange(0,7);
+		const IndexRange r2=cropped?IndexRange(2,7):IndexRange(0,8);
+		const size_t n=r1.to-r1.from+1,m=r2.to-r2.from+1;
+		auto absolute=[&](Pair p){return Pair{p.first+r1.from,p.second+r2.from};};
+		auto weight=[&](E_type e){return E_isINF(e)?0.L:static_cast<long double>(energy.getBoltzmannWeight(e));};
+		Model model{n,m,6,5,noLP,{},
+			[&](Pair p){p=absolute(p);return energy.areComplementary(p.first,p.second);},
+			[&](Pair){return weight(energy.getE_init());},
+			[&](Pair p,Pair q){
+				if(q.first-p.first-1>1 || q.second-p.second-1>2) return 0.L;
+				p=absolute(p);q=absolute(q);
+				return weight(energy.getE_interLeft(p.first,q.first,p.second,q.second));
+			},
+			[&](Pair p,Pair q){
+				p=absolute(p);q=absolute(q);
+				return weight(energy.getE(p.first,q.first,p.second,q.second,E_type(0)));
+			}};
+		for(const auto & seed:declared) {
+			if(seed.front().first<r1.from || seed.front().second<r2.from
+					|| seed.back().first>r1.to || seed.back().second>r2.to) continue;
+			Chain local;
+			for(const auto p:seed) local.push_back({p.first-r1.from,p.second-r2.from});
+			model.seeds.push_back(local);
+		}
+		const auto expected=enumerate(model);
+		REQUIRE(expected.z>0);
+		const auto oc=makeOutputConstraint(noLP);
+		BasePairProbabilities result(target.size(),query.size());
+		OutputHandlerInteractionList output(oc,1);
+		ExactSeedProbe predictor(energy,output,nullptr,new SeedHandlerExplicit(energy,sc),&result);
+		predictor.predict(r1,r2);result.finalize();
+		REQUIRE(double(result.getZ())==Approx(double(expected.z)).epsilon(2e-12));
+		REQUIRE(result.getZ()==predictor.getZall());
+		REQUIRE(output.getZ()==predictor.getZall());
+		for(const auto & [boundary,z]:expected.boundaries)
+			REQUIRE(double(predictor.boundaries[boundary])==Approx(double(z)).epsilon(2e-12));
+		for(const auto & [boundary,z]:predictor.boundaries) {
+			const auto found=expected.boundaries.find(boundary);
+			REQUIRE(found!=expected.boundaries.end());
+			REQUIRE(double(z)==Approx(double(found->second)).epsilon(2e-12));
+		}
+		Matrix<Z_type> masses(target.size(),query.size(),0);
+		for(const auto & [pair,z]:expected.mass) {
+			const Pair p=absolute(pair);
+			masses(p.first,query.size()-1-p.second)=Z_type(z);
+		}
+		for(size_t i=0;i<target.size();++i) for(size_t j=0;j<query.size();++j)
+			REQUIRE(result.rawMasses()(i,j)==Approx(masses(i,j)).epsilon(2e-12));
+
+		// Ensemble output encodes the optimal boundary, whose energy is the
+		// sum of the rounded hybrid free energy and its native boundary energy.
+		E_type best=E_INF;
+		std::map<Boundary,E_type> energies;
+		for(const auto & [boundary,z]:expected.boundaries) {
+			if(z==0) continue;
+			const Pair p=absolute({boundary[0],boundary[1]});
+			const Pair q=absolute({boundary[2],boundary[3]});
+			const E_type boundaryE=energy.getE(p.first,q.first,p.second,q.second,E_type(0));
+			const E_type ensemble=energy.getE(Z_type(z/weight(boundaryE)))+boundaryE;
+			energies[boundary]=ensemble;best=std::min(best,ensemble);
+		}
+		REQUIRE_FALSE(output.empty());
+		const Interaction & reported=**output.begin();
+		REQUIRE(reported.isValid());
+		REQUIRE(reported.energy==best);
+		const auto & first=reported.basePairs.front();
+		const auto & last=reported.basePairs.back();
+		const Boundary reportedBoundary{first.first-r1.from,query.size()-1-first.second-r2.from,
+				last.first-r1.from,query.size()-1-last.second-r2.from};
+		REQUIRE(energies.at(reportedBoundary)==best);
+	}
+}

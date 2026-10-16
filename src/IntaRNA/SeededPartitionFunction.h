@@ -6,12 +6,15 @@
 #include <functional>
 
 namespace IntaRNA {
-/** Nonnegative first-seed extension inside/outside computation. A path belongs
- * to its first completed admitted seed; seed-free left prefixes are joined to
- * unrestricted right extensions. Co-ending seeds use the shortest as owner.
- * Native energy ownership is supplied by the
- * adapter: initiation once, one transition per successive pair, one boundary
- * factor. All callbacks must be deterministic; zero denotes forbidden weight.
+/** Nonnegative seeded extension inside/outside computation. Exact paths belong
+ * to their left-most seed in a union-equivalent family that excludes containing
+ * occurrences. Shared seed-local tables join seed-avoiding left extensions to
+ * unrestricted right extensions. Complete boundaries are accumulated in bounded
+ * batches; anchors crossing batches are recomputed. A heuristic selector retains
+ * its first-completed-seed ownership, choosing the shortest co-ending seed.
+ * Native energy ownership is supplied by the adapter: initiation once, one
+ * transition per successive pair, one boundary factor. All callbacks must be
+ * deterministic; zero denotes forbidden weight.
  */
 class SeededPartitionFunction {
 public:

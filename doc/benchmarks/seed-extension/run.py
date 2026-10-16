@@ -3,18 +3,23 @@ from pathlib import Path
 import argparse
 import csv
 import json
+import math
 import os
 import statistics
 import subprocess
 
 parser=argparse.ArgumentParser(description='Verify and time the isolated seeded kernels; requires GNU time.')
 parser.add_argument('--build-dir',type=Path,required=True)
+parser.add_argument('--output-dir',type=Path,help='results directory; defaults to the build directory')
 parser.add_argument('--repetitions',type=int,default=3)
 parser.add_argument('--heuristic',action='store_true',help='use frozen endpoint groups (requires baseline PR #266 or later)')
+parser.add_argument('--verify-only',action='store_true',help='compare full dumps without collecting timed samples')
 args=parser.parse_args()
 if args.repetitions<1:
     parser.error('--repetitions must be positive')
 root=args.build_dir.resolve()
+output=args.output_dir.resolve() if args.output_dir else root
+output.mkdir(parents=True,exist_ok=True)
 env=dict(os.environ,OMP_NUM_THREADS='1')
 cases=[('dense','many',40),('dense','few',40),('band','many',60),('band','few',60)]
 samples=[]
@@ -25,7 +30,7 @@ def call(variant,case,pairs,dump='-'):
     command=[str(root/variant/'benchmark'),topology,density,str(n),str(pairs),dump]
     if args.heuristic:
         command.append('heuristic')
-    rss=root/'last-rss.txt'
+    rss=output/'last-rss.txt'
     result=subprocess.check_output(['/usr/bin/time','-f','%M','-o',str(rss),*command],text=True,env=env)
     seconds,z,moment,boundaries,checksum,seeds,allocations,allocated_bytes=result.strip().split('\t')
     return {'variant':variant,'case':f'{topology}{n}-{density}','pairs':pairs,
@@ -37,25 +42,35 @@ def read_dump(path):
     for line in path.read_text().splitlines():
         fields=line.split()
         if fields[0]=='b':
-            values[tuple(fields[:5])]=tuple(map(float,fields[5:]))
+            key,value=tuple(fields[:5]),tuple(map(float,fields[5:]))
         else:
-            values[tuple(fields[:-1])]=(float(fields[-1]),)
+            key,value=tuple(fields[:-1]),(float(fields[-1]),)
+        assert key not in values,(path,'duplicate dump entry',key)
+        assert all(math.isfinite(number) for number in value),(path,key,value)
+        values[key]=value
     return values
 
 for case in cases:
     name=f'{case[0]}{case[2]}-{case[1]}'
-    paths={variant:root/f'{name}-{variant}.txt' for variant in ('base','candidate')}
+    paths={variant:output/f'{name}-{variant}.txt' for variant in ('base','candidate')}
     for variant,path in paths.items():
         call(variant,case,1,str(path))
     before,after=(read_dump(paths[variant]) for variant in ('base','candidate'))
     assert before.keys()==after.keys(),name
     maximum=0.0
+    by_kind={kind:0.0 for kind in ('b','p','z')}
     for key,values in before.items():
+        assert len(values)==len(after[key]),(name,key)
         for a,b in zip(values,after[key]):
             relative=abs(a-b)/max(abs(a),abs(b)) if a or b else 0.0
             maximum=max(maximum,relative)
+            by_kind[key[0]]=max(by_kind[key[0]],relative)
             assert relative<1e-12,(name,key,a,b,relative)
-    checks.append({'case':name,'compared_entries':len(before),'max_relative_error':maximum})
+    checks.append({'case':name,'compared_entries':len(before),'max_relative_error':maximum,
+                   'max_relative_error_by_kind':by_kind})
+    print(name,checks[-1],flush=True)
+    if args.verify_only:
+        continue
     for pairs in (0,1):
         for repetition in range(args.repetitions):
             # Alternate order to reduce a consistent order bias.
@@ -64,9 +79,14 @@ for case in cases:
                 sample=call(variant,case,pairs)
                 sample['repetition']=repetition
                 samples.append(sample)
-    print(name,checks[-1],flush=True)
 
-with (root/'samples.tsv').open('w') as stream:
+metadata={'heuristic':args.heuristic,'threads':1,'relative_tolerance':1e-12,
+          'repetitions':0 if args.verify_only else args.repetitions,'checks':checks}
+if args.verify_only:
+    (output/'verification.json').write_text(json.dumps(metadata,indent=2)+'\n')
+    raise SystemExit(0)
+
+with (output/'samples.tsv').open('w') as stream:
     writer=csv.DictWriter(stream,fieldnames=list(samples[0]),delimiter='\t',lineterminator='\n')
     writer.writeheader();writer.writerows(samples)
 summary=[]
@@ -87,5 +107,5 @@ for case in cases:
         result['runtime_ratio']=result['candidate_median_seconds']/result['base_median_seconds']
         result['rss_ratio']=result['candidate_median_rss_kib']/result['base_median_rss_kib']
         summary.append(result)
-(root/'results.json').write_text(json.dumps({'heuristic':args.heuristic,'checks':checks,'summary':summary},indent=2)+'\n')
+(output/'results.json').write_text(json.dumps({**metadata,'summary':summary},indent=2)+'\n')
 print(json.dumps(summary,indent=2),flush=True)
