@@ -68,6 +68,9 @@
 
 ## Technical changes and Optimizations
 
+- compare dense and hashed seed-partition state storage with reproducible
+  correctness, runtime and memory measurements (issue #262)
+
 - use hashed base-pair keys for sparse stack-seed lookup, assert internal seed
   geometry in debug builds, and document probability computation steps and
   contributor conventions (PR #258 review)
@@ -190,6 +193,16 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261014 Alexander Mitrofanov
+ * doc/analysis/seeded-partition-storage.md, doc/seed-partition-storage :
+   + investigate base-pair hash storage for the suffix inside/outside states;
+     provide the experimental patch, allocation probe, benchmark drivers and
+     measured results with correctness checks and baseline test limitations
+   * retain the production matrix after comparing sparse-domain benefits with
+     typical-density and native-workload runtime costs (issue #262)
+ * doc/Makefile.am :
+   + distribute the report, reproducible experiment artifacts and RNA fixtures
 
 261013 Alexander Mitrofanov
  * StackSeedDomain, SeededPartitionFunction, PredictorMfeEns2dSeedExtension
