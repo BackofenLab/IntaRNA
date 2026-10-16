@@ -1,5 +1,11 @@
 # Seed-extension kernel comparison
 
+For the native OxyS/fhlA slowdown reported in the PR #270 review, see the
+[investigation and reproduction instructions](../../analysis/heuristic-seed-runtime.md)
+and `native-cli.py`. That experiment includes native energy/accessibility and
+prediction output; the synthetic kernel experiment below isolates recurrence
+costs.
+
 This Linux benchmark compares the seeded kernel at revision
 `985ba44bdc16e92162e954b7baffa3f3923d4776` with the current source checkout.
 It runs the exact ensemble by default; `--heuristic` uses frozen right-endpoint

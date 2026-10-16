@@ -397,13 +397,16 @@ compute(const Domain & d, const StackSeedDomain & seeds, const Weights & w, bool
 	// Flat linked anchor lists and a dense endpoint index avoid allocating a
 	// vector and hash nodes for every heuristic group at every left boundary.
 	// Zero denotes an empty list or an endpoint without a restricted group.
-	struct Group { Pair end; bool all; size_t first=0; };
+	struct Group { Pair end; bool all; size_t first=0; Pair begin{0,0}; };
 	struct Anchor { Pair pair; size_t next; };
 	std::vector<Group> groups;
 	std::vector<Anchor> anchors;
 	groups.reserve(w.selectRight?cells+1:1); anchors.reserve(cells);
 	auto addAnchor=[&](Group & group,Pair q) {
+		if(!group.first) group.begin=q;
 		anchors.push_back({q,group.first}); group.first=anchors.size();
+		group.begin.first=std::min(group.begin.first,q.first);
+		group.begin.second=std::min(group.begin.second,q.second);
 	};
 	auto forAnchors=[&](const Group & group,const auto & visit) {
 		for(size_t a=group.first;a;a=anchors[a-1].next) visit(anchors[a-1].pair);
@@ -415,10 +418,20 @@ compute(const Domain & d, const StackSeedDomain & seeds, const Weights & w, bool
 		reset(hybrid,n,m);
 		if(w.selectRight) reset(byEnd,n,m);
 		if(pairs) { reset(boundary,n,m); reset(dHit,n,m); }
+		size_t prefixN=0,prefixM=0;
 		for(size_t i=0;i<n;++i) for(size_t j=0;j<m;++j) {
 			valid(i,j)=w.valid({p1+i,p2+j});
 			ending(i,j)=seeds.seedEndingLength(p1+i,p2+j);
+			// A first completed seed must start at or after this source on both
+			// strands. No seed-free prefix can pass the latest eligible ending
+			// on either strand and still contribute to an accepting state.
+			const size_t length=ending(i,j);
+			if(length && length<=i+1 && length<=j+1) {
+				prefixN=std::max(prefixN,i+1);
+				prefixM=std::max(prefixM,j+1);
+			}
 		}
+		if(!prefixN || !prefixM) return;
 		auto accepts=[&](size_t i,size_t j,size_t len) { return ending(i,j) && ending(i,j)<=len; };
 		auto nonstack=[&](size_t i,size_t j,const auto & visit) {
 			for(size_t u=1;u<=i && u-1<=d.loop1;++u) for(size_t v=1;v<=j && v-1<=d.loop2;++v)
@@ -436,7 +449,7 @@ compute(const Domain & d, const StackSeedDomain & seeds, const Weights & w, bool
 		// N: nonaccepting prefixes. F: first-hit injections, including singleton
 		// source hits. Initiation is owned by the source exactly once.
 		extendLeft(0,0,1,A::check(w.initiation(p)));
-		for(size_t i=0;i<n;++i) for(size_t j=0;j<m;++j) {
+		for(size_t i=0;i<prefixN;++i) for(size_t j=0;j<prefixM;++j) {
 			if(!valid(i,j)) continue;
 			if(i && j && valid(i-1,j-1)) {
 				const Z_type t=transition(i,j,i-1,j-1);
@@ -476,18 +489,31 @@ compute(const Domain & d, const StackSeedDomain & seeds, const Weights & w, bool
 			}
 			addAnchor(groups[groupIndex],{i,j});
 		}
+		// A group has no paths above or left of all its injected anchors. Keep
+		// both recurrences inside that rectangle, including predecessor lookups,
+		// so reused storage outside it cannot leak into a later group.
+		auto resetGroup=[&](Matrix<Ends> & matrix,const Group & group) {
+			for(size_t i=group.begin.first;i<=group.end.first;++i)
+				std::fill_n(&matrix(i,group.begin.second),group.end.second-group.begin.second+1,Ends{});
+		};
+		auto nonstackRight=[&](const Group & group,size_t i,size_t j,const auto & visit) {
+			for(size_t u=1;u<=i-group.begin.first && u-1<=d.loop1;++u)
+			for(size_t v=1;v<=j-group.begin.second && v-1<=d.loop2;++v)
+				if((u!=1 || v!=1) && valid(i-u,j-v)) visit(i-u,j-v);
+		};
 		auto fillRight=[&](const Group & group) {
-			reset(right,group.end.first+1,group.end.second+1);
+			resetGroup(right,group);
 			forAnchors(group,[&](Pair q) { right(q.first,q.second)=hit(q.first,q.second); });
 			// B is seed-unconstrained: no seed lookup or subtraction occurs here.
-			for(size_t i=0;i<=group.end.first;++i) for(size_t j=0;j<=group.end.second;++j) {
+			for(size_t i=group.begin.first;i<=group.end.first;++i)
+			for(size_t j=group.begin.second;j<=group.end.second;++j) {
 				if(!valid(i,j)) continue;
-				if(i && j && valid(i-1,j-1)) {
+				if(i>group.begin.first && j>group.begin.second && valid(i-1,j-1)) {
 					const auto & prev=right(i-1,j-1);
 					if(prev[0]>0 || prev[1]>0)
 						right(i,j)[1]=A::add(right(i,j)[1],A::multiply(A::add(prev[0],prev[1]),transition(i,j,i-1,j-1)));
 				}
-				nonstack(i,j,[&](size_t u,size_t v) {
+				nonstackRight(group,i,j,[&](size_t u,size_t v) {
 					if(right(u,v)[1]>0) {
 						auto & value=right(i,j)[d.noLP?0:1];
 						value=A::add(value,A::multiply(right(u,v)[1],transition(i,j,u,v)));
@@ -499,7 +525,7 @@ compute(const Domain & d, const StackSeedDomain & seeds, const Weights & w, bool
 			if(!group.first) continue;
 			fillRight(group);
 			if(group.all) {
-				for(size_t i=0;i<n;++i) for(size_t j=0;j<m;++j)
+				for(size_t i=group.begin.first;i<n;++i) for(size_t j=group.begin.second;j<m;++j)
 					hybrid(i,j)=A::add(hybrid(i,j),right(i,j)[1]);
 			} else {
 				auto & value=hybrid(group.end.first,group.end.second);
@@ -522,21 +548,29 @@ compute(const Domain & d, const StackSeedDomain & seeds, const Weights & w, bool
 		for(size_t g=0;g<groups.size();++g) {
 			const auto & group=groups[g]; if(!group.first) continue;
 			if(groups.size()!=1) fillRight(group);
-			reset(adjoint,group.end.first+1,group.end.second+1);
-			for(size_t ii=group.end.first+1;ii>0;--ii) for(size_t jj=group.end.second+1;jj>0;--jj) {
+			resetGroup(adjoint,group);
+			for(size_t ii=group.end.first+1;ii>group.begin.first;--ii)
+			for(size_t jj=group.end.second+1;jj>group.begin.second;--jj) {
 				const size_t i=ii-1,j=jj-1; if(!valid(i,j)) continue;
+				if(right(i,j)[0]==0 && right(i,j)[1]==0) continue;
 				auto & a=adjoint(i,j);
 				if(group.all || (i==group.end.first && j==group.end.second)) a[1]=A::add(a[1],boundary(i,j));
+				// Nonnegative forward zeros have no contributing ancestors. Only
+				// differentiate states reached by an injection in this group.
+				for(size_t c=0;c<2;++c) if(right(i,j)[c]==0) a[c]=0;
 				// A vertex is owned by its most recent pair: T*dT counts every
 				// right-side pair, including the accepting pair, exactly once.
 				auto & mass=out.mass(p1+i,p2+j);
 				for(size_t c=0;c<2;++c) mass=A::add(mass,A::multiply(right(i,j)[c],a[c]));
-				if(i && j && valid(i-1,j-1)) {
+				if(a[1]>0 && i>group.begin.first && j>group.begin.second && valid(i-1,j-1)
+						&& (right(i-1,j-1)[0]>0 || right(i-1,j-1)[1]>0)) {
 					const Z_type value=A::multiply(a[1],transition(i,j,i-1,j-1));
-					for(size_t c=0;c<2;++c) adjoint(i-1,j-1)[c]=A::add(adjoint(i-1,j-1)[c],value);
+					for(size_t c=0;c<2;++c) if(right(i-1,j-1)[c]>0)
+						adjoint(i-1,j-1)[c]=A::add(adjoint(i-1,j-1)[c],value);
 				}
-				nonstack(i,j,[&](size_t u,size_t v) {
-					adjoint(u,v)[1]=A::add(adjoint(u,v)[1],A::multiply(a[d.noLP?0:1],transition(i,j,u,v)));
+				if(a[d.noLP?0:1]>0) nonstackRight(group,i,j,[&](size_t u,size_t v) {
+					if(right(u,v)[1]>0)
+						adjoint(u,v)[1]=A::add(adjoint(u,v)[1],A::multiply(a[d.noLP?0:1],transition(i,j,u,v)));
 				});
 			}
 			forAnchors(group,[&](Pair q) {
@@ -559,7 +593,7 @@ compute(const Domain & d, const StackSeedDomain & seeds, const Weights & w, bool
 		auto destinationAdjoint=[&](size_t i,size_t j,size_t len) {
 			return accepts(i,j,len)?dHit(i,j)[d.noLP && len==1?0:1]:dLeft(i*m+j,len-1);
 		};
-		for(size_t ii=n;ii>0;--ii) for(size_t jj=m;jj>0;--jj) {
+		for(size_t ii=prefixN;ii>0;--ii) for(size_t jj=prefixM;jj>0;--jj) {
 			const size_t i=ii-1,j=jj-1,q=i*m+j; if(!valid(i,j)) continue;
 			for(size_t c=d.noLP?1:0;c<cap;++c) dLeft(q,c)=A::add(dLeft(q,c),dTotal(i,j));
 			auto & mass=out.mass(p1+i,p2+j);

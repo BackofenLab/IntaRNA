@@ -1,0 +1,225 @@
+{
+  "baseline_commit": "3866c62d10846fab1adc38b937d0c9b96cc06e51",
+  "compiler": "x86_64-conda-linux-gnu-g++ (conda-forge gcc 14.4.0-7) 14.4.0",
+  "configuration": {
+    "release": "CC=/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain-gcc14/bin/x86_64-conda-linux-gnu-gcc CXX=/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain-gcc14/bin/x86_64-conda-linux-gnu-g++ CPPFLAGS=-I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include 'LDFLAGS=-L/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib -Wl,-rpath,/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib' --with-vrna=/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain --with-boost=/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain --with-boost-libdir=/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib --prefix=/home/alex/CodexProjects/IntaRNA/issue-268-validation/install-release",
+    "debug": "CC=/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain-gcc14/bin/x86_64-conda-linux-gnu-gcc CXX=/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain-gcc14/bin/x86_64-conda-linux-gnu-g++ CPPFLAGS=-I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include 'LDFLAGS=-L/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib -Wl,-rpath,/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib' --with-vrna=/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain --with-boost=/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain --with-boost-libdir=/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib --prefix=/home/alex/CodexProjects/IntaRNA/issue-268-validation/install-debug --enable-debug"
+  },
+  "release_flags": "-std=c++23 -O3 -fno-strict-aliasing -Wno-uninitialized -Wno-deprecated -fopenmp",
+  "candidate_source_sha256": {
+    "src/IntaRNA/SeededPartitionFunction.cpp": "6523a111e75f547f966dc160ff0c4d13f8d158b32c378bf14c3d828d602fd5df",
+    "src/IntaRNA/SeededPartitionFunction.h": "8216d82858cca5cf960056d7e11a2ada1118a98e1cf513623839d75fab40381d",
+    "src/IntaRNA/StackSeedDomain.cpp": "a41906b5442e5b8ade69dc482919619c28761b908447faab984a84a807d338ee",
+    "src/IntaRNA/StackSeedDomain.h": "73275a75976d98800db58bfb019f912b7245a9c26072fe17f7ee16dbdaad93c7",
+    "src/IntaRNA/PartitionArithmetic.h": "5fe71abe6568906057c0a264c2802d3bfd7a902471b21cc838b78f18b04a0bd7",
+    "src/IntaRNA/Matrix.h": "8ecc55e46643ccde16ed89aa63a415a6da7aa3d3c59fe94dd6b4d46d5f5275af",
+    "src/IntaRNA/general.h": "0fff34ca1a1e676debe88326af0a5a0eddeff20e05604abda11096527b12df98",
+    "src/IntaRNA/intarna_config.h": "4cbc306a33335dd49061ed4e3d70f7f70e776f5aa8a6e0e73ea6715cfa4163c2",
+    "tests/SeededPartitionFunction_test.cpp": "ce60fb002b91a576260dd6ceb620a2e491a1c4ecd1aacf31f1b7523acd969995"
+  },
+  "harness_sha256": {
+    "native-cli.py": "785a10d3f6d6333a8fa204b9f8e31124be21ad1965705eb556f759a1231b36f4",
+    "native-profile.py": "533f7789f79f41efd8b398114c720a2666e9e048f47703188c5695458304d340",
+    "build.py": "6a086dd9fa12f3fef28789d2401bd77a691321314cbecd495d9e4869e7b79308",
+    "run.py": "22298ce92cb6940ad23164cac868aa638343d58f251a66ef5e5cc66dae1dee4e",
+    "driver.cpp": "98b0133e334b5174146ed440b0ed0f30faf2f83d32f217a386c3d43196f65b93"
+  },
+  "binaries": {
+    "base": "de42e09bdabe46a2865a6978bc86241689c9416c41f011ed70fdafc1d9845c9c",
+    "candidate": "0341a1f91e4f9871f16b796000bf3def71c0d7d8a4909fffafc7d7f7290d0405"
+  },
+  "kernel_build": {
+    "baseline": "3866c62d10846fab1adc38b937d0c9b96cc06e51",
+    "compiler": "x86_64-conda-linux-gnu-g++ (conda-forge gcc 14.4.0-7) 14.4.0",
+    "commands": [
+      [
+        "/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain-gcc14/bin/x86_64-conda-linux-gnu-g++",
+        "-std=c++23",
+        "-O3",
+        "-DNDEBUG",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-I/home/alex/CodexProjects/IntaRNA/issue-270-validation/kernel-final/base",
+        "-I/home/alex/CodexProjects/IntaRNA/pr-worktrees/issue-270/src",
+        "-I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include",
+        "/home/alex/CodexProjects/IntaRNA/issue-270-validation/kernel-final/driver.cpp",
+        "/home/alex/CodexProjects/IntaRNA/issue-270-validation/kernel-final/base/IntaRNA/SeededPartitionFunction.cpp",
+        "/home/alex/CodexProjects/IntaRNA/issue-270-validation/kernel-final/base/IntaRNA/StackSeedDomain.cpp",
+        "-Wl,--gc-sections",
+        "-Wl,-rpath,/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib",
+        "-o",
+        "/home/alex/CodexProjects/IntaRNA/issue-270-validation/kernel-final/base/benchmark"
+      ],
+      [
+        "/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain-gcc14/bin/x86_64-conda-linux-gnu-g++",
+        "-std=c++23",
+        "-O3",
+        "-DNDEBUG",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-I/home/alex/CodexProjects/IntaRNA/issue-270-validation/kernel-final/candidate",
+        "-I/home/alex/CodexProjects/IntaRNA/pr-worktrees/issue-270/src",
+        "-I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include",
+        "/home/alex/CodexProjects/IntaRNA/issue-270-validation/kernel-final/driver.cpp",
+        "/home/alex/CodexProjects/IntaRNA/issue-270-validation/kernel-final/candidate/IntaRNA/SeededPartitionFunction.cpp",
+        "/home/alex/CodexProjects/IntaRNA/issue-270-validation/kernel-final/candidate/IntaRNA/StackSeedDomain.cpp",
+        "-Wl,--gc-sections",
+        "-Wl,-rpath,/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib",
+        "-o",
+        "/home/alex/CodexProjects/IntaRNA/issue-270-validation/kernel-final/candidate/benchmark"
+      ]
+    ],
+    "sha256": {
+      "driver.cpp": "98b0133e334b5174146ed440b0ed0f30faf2f83d32f217a386c3d43196f65b93",
+      "build.py": "6a086dd9fa12f3fef28789d2401bd77a691321314cbecd495d9e4869e7b79308",
+      "run.py": "22298ce92cb6940ad23164cac868aa638343d58f251a66ef5e5cc66dae1dee4e",
+      "base/IntaRNA/SeededPartitionFunction.cpp": "3783c8380e5108146cd903cbbb3fa3d0523749baf713395a15a4f436b3dfdd03",
+      "base/IntaRNA/SeededPartitionFunction.h": "8216d82858cca5cf960056d7e11a2ada1118a98e1cf513623839d75fab40381d",
+      "base/IntaRNA/StackSeedDomain.cpp": "a41906b5442e5b8ade69dc482919619c28761b908447faab984a84a807d338ee",
+      "base/IntaRNA/StackSeedDomain.h": "73275a75976d98800db58bfb019f912b7245a9c26072fe17f7ee16dbdaad93c7",
+      "candidate/IntaRNA/SeededPartitionFunction.cpp": "6523a111e75f547f966dc160ff0c4d13f8d158b32c378bf14c3d828d602fd5df",
+      "candidate/IntaRNA/SeededPartitionFunction.h": "8216d82858cca5cf960056d7e11a2ada1118a98e1cf513623839d75fab40381d",
+      "candidate/IntaRNA/StackSeedDomain.cpp": "a41906b5442e5b8ade69dc482919619c28761b908447faab984a84a807d338ee",
+      "candidate/IntaRNA/StackSeedDomain.h": "73275a75976d98800db58bfb019f912b7245a9c26072fe17f7ee16dbdaad93c7"
+    },
+    "shared_header_sha256": {
+      "PartitionArithmetic.h": "5fe71abe6568906057c0a264c2802d3bfd7a902471b21cc838b78f18b04a0bd7",
+      "Matrix.h": "8ecc55e46643ccde16ed89aa63a415a6da7aa3d3c59fe94dd6b4d46d5f5275af",
+      "Interaction.h": "c0ce17a0f5b204bcb366529872346a2316993b749da9c4c9927773726296ebaa",
+      "general.h": "0fff34ca1a1e676debe88326af0a5a0eddeff20e05604abda11096527b12df98",
+      "intarna_config.h": "4cbc306a33335dd49061ed4e3d70f7f70e776f5aa8a6e0e73ea6715cfa4163c2"
+    }
+  },
+  "kernel_verification": {
+    "heuristic": {
+      "heuristic": true,
+      "threads": 1,
+      "relative_tolerance": 1e-12,
+      "repetitions": 0,
+      "checks": [
+        {
+          "case": "dense40-many",
+          "compared_entries": 220710,
+          "max_relative_error": 0.0,
+          "max_relative_error_by_kind": {
+            "b": 0.0,
+            "p": 0.0,
+            "z": 0.0
+          }
+        },
+        {
+          "case": "dense40-few",
+          "compared_entries": 3435,
+          "max_relative_error": 0.0,
+          "max_relative_error_by_kind": {
+            "b": 0.0,
+            "p": 0.0,
+            "z": 0.0
+          }
+        },
+        {
+          "case": "band60-many",
+          "compared_entries": 42270,
+          "max_relative_error": 0.0,
+          "max_relative_error_by_kind": {
+            "b": 0.0,
+            "p": 0.0,
+            "z": 0.0
+          }
+        },
+        {
+          "case": "band60-few",
+          "compared_entries": 4591,
+          "max_relative_error": 0.0,
+          "max_relative_error_by_kind": {
+            "b": 0.0,
+            "p": 0.0,
+            "z": 0.0
+          }
+        }
+      ]
+    },
+    "exact": {
+      "heuristic": false,
+      "threads": 1,
+      "relative_tolerance": 1e-12,
+      "repetitions": 0,
+      "checks": [
+        {
+          "case": "dense40-many",
+          "compared_entries": 220710,
+          "max_relative_error": 0.0,
+          "max_relative_error_by_kind": {
+            "b": 0.0,
+            "p": 0.0,
+            "z": 0.0
+          }
+        },
+        {
+          "case": "dense40-few",
+          "compared_entries": 42460,
+          "max_relative_error": 0.0,
+          "max_relative_error_by_kind": {
+            "b": 0.0,
+            "p": 0.0,
+            "z": 0.0
+          }
+        },
+        {
+          "case": "band60-many",
+          "compared_entries": 42270,
+          "max_relative_error": 0.0,
+          "max_relative_error_by_kind": {
+            "b": 0.0,
+            "p": 0.0,
+            "z": 0.0
+          }
+        },
+        {
+          "case": "band60-few",
+          "compared_entries": 22796,
+          "max_relative_error": 0.0,
+          "max_relative_error_by_kind": {
+            "b": 0.0,
+            "p": 0.0,
+            "z": 0.0
+          }
+        }
+      ]
+    }
+  },
+  "native_verification": {
+    "byte_identical_cases": [
+      "cropped-H-false-base.csv",
+      "cropped-H-true-base.csv",
+      "cropped-M-false-base.csv",
+      "cropped-M-true-base.csv",
+      "dense-H-false-base.csv",
+      "dense-H-true-base.csv",
+      "dense-M-false-base.csv",
+      "dense-M-true-base.csv",
+      "mixed-H-false-base.csv",
+      "mixed-H-true-base.csv",
+      "mixed-M-false-base.csv",
+      "mixed-M-true-base.csv"
+    ]
+  },
+  "validation": {
+    "release": {
+      "command": "make tests -j2",
+      "drivers_passed": 7,
+      "api_cases": 114,
+      "assertions": 425806
+    },
+    "debug": {
+      "command": "make tests -j2",
+      "drivers_passed": 7,
+      "api_cases": 114,
+      "assertions": 425807
+    }
+  },
+  "limits": "GCC 14 Linux with ViennaRNA 2.7.2 and Boost 1.85.0; Apple Clang/macOS not tested locally.",
+  "release_config_defines": {
+    "NDEBUG": 1
+  }
+}
