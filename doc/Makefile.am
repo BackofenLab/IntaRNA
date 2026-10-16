@@ -9,6 +9,7 @@ EXTRA_DIST =	\
 			analysis/seeded-kernel-comparison.md \
 			analysis/seeded-probabilities-validation.md \
 			analysis/seed-extension-partition.md \
+			analysis/heuristic-seed-runtime.md \
 			seeded-probabilities-example.cpp \
 			api-documentation.md \
 			build-api.sh \
@@ -27,6 +28,11 @@ EXTRA_DIST =	\
 			latex-deps/xtab.sty
 
 EXTRA_DIST += benchmarks/seed-extension/README.md \
+			benchmarks/seed-extension/native-cli.py \
+			benchmarks/seed-extension/native-profile.py \
+			benchmarks/seed-extension/native-profile-results.json \
+			benchmarks/seed-extension/native-cli-results.json \
+			benchmarks/seed-extension/native-source-hashes.json \
 			benchmarks/seed-extension/build.py \
 			benchmarks/seed-extension/run.py \
 			benchmarks/seed-extension/driver.cpp \

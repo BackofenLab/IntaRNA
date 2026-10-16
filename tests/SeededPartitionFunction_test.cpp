@@ -350,6 +350,75 @@ TEST_CASE("seed extension workspaces reset across changing active rectangles", "
 	}
 }
 
+TEST_CASE("heuristic right groups preserve paths across distinct anchor rectangles", "[SeededPartitionFunction]") {
+	using namespace seeded_oracle;
+	// Distinct selected endpoints mix crossing lower bounds and shared groups.
+	// Advancing the source shrinks and regrows these reused rectangles; forbidden
+	// vertices and edges also leave unreachable states inside each rectangle.
+	Model m{8,9,8,9,false,{
+		{{2,3},{3,4}},{{3,2},{4,3}},{{3,3},{4,4}},
+		{{3,5},{4,6}},{{4,2}}},
+		[](Pair p){return (p.first+2*p.second)%11!=4;},
+		[](Pair p){return .7L+.03L*p.first+.02L*p.second;},
+		[](Pair p,Pair q){return (p.first+2*q.second)%13==0?0.L:stack(p,q)?.8L:.2L;},
+		[](Pair p,Pair q){return (p.first+q.second)%4==0?0.L:.5L+.01L*q.first;},
+		[](Pair start,Pair){
+			if(start==Pair{3,2}) return Pair{7,6};
+			if(start==Pair{3,5}) return Pair{6,8};
+			if(start==Pair{4,2}) return Pair{6,5};
+			return Pair{6,7};
+		}};
+	for(bool noLP:{false,true}) {
+		m.noLP=noLP;
+		const auto oracle=enumerate(m);
+		// Each retained endpoint has an independently reachable two-sided path,
+		// including both crossing groups reached from the same source (0,0).
+		for(const Boundary boundary:{Boundary{0,0,6,7},Boundary{0,0,7,6},
+				Boundary{2,2,6,7},Boundary{2,4,6,8},Boundary{2,0,6,5}}) {
+			REQUIRE(oracle.boundaries.count(boundary)==1);
+			REQUIRE(oracle.boundaries.at(boundary)>0);
+		}
+	}
+	for(const auto spans:{Pair{8,9},Pair{6,7},Pair{4,6}})
+	for(bool noLP:{false,true}) for(const auto loops:{Pair{0,0},Pair{1,2},Pair{3,1}}) {
+		CAPTURE(spans.first,spans.second,noLP,loops.first,loops.second);
+		m.span1=spans.first;m.span2=spans.second;m.noLP=noLP;
+		// Compare both partition-only and outside modes with independent chains,
+		// including every complete boundary and each actual-pair numerator.
+		compareKernels(m,loops.first,loops.second);
+	}
+}
+
+TEST_CASE("heuristic prefixes stop at contained seeds while right extensions keep their full span", "[SeededPartitionFunction]") {
+	using namespace seeded_oracle;
+	// The long occurrence cannot accept a path starting after (0,0). Those
+	// sources can first complete only the earlier short seeds, yet their chosen
+	// right endpoints still lie beyond every eligible completion on both strands.
+	Model m{8,9,8,9,false,{
+		{{0,0},{1,1},{2,2},{3,3},{4,4},{5,5},{6,6}},
+		{{2,3},{3,4}},{{4,2},{5,3}}},
+		[](Pair p){return p.first<=p.second+2 && p.second<=p.first+2;},
+		[](Pair p){return .7L+.03L*p.first+.02L*p.second;},
+		[](Pair p,Pair q){return stack(p,q)?.8L:.2L;},
+		[](Pair p,Pair q){return .4L+.02L*p.first+.01L*q.second;},
+		[](Pair start,Pair){return start==Pair{4,2}?Pair{7,5}:Pair{7,8};}};
+	for(bool noLP:{false,true}) {
+		m.noLP=noLP;
+		const auto oracle=enumerate(m);
+		// These positive two-sided paths require right extension outside the
+		// prefix rectangle and originate after the long seed's excluded start.
+		REQUIRE(oracle.boundaries.at({1,2,7,8})>0);
+		REQUIRE(oracle.boundaries.at({3,1,7,5})>0);
+		for(const auto spans:{Pair{8,9},Pair{5,7},Pair{7,5}})
+		for(const auto loops:{Pair{0,0},Pair{1,2}}) {
+			CAPTURE(noLP,spans.first,spans.second,loops.first,loops.second);
+			m.span1=spans.first;m.span2=spans.second;
+			compareKernels(m,loops.first,loops.second);
+		}
+		m.span1=8;m.span2=9;
+	}
+}
+
 TEST_CASE("exact seed batches preserve short-span ensembles across hundreds of sources", "[SeededPartitionFunction]") {
 	using namespace seeded_oracle;
 	// Short spans keep exhaustive enumeration small while hundreds of eligible

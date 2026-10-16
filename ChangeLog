@@ -68,6 +68,9 @@
 
 ## Technical changes and Optimizations
 
+- crop heuristic seed-free prefixes to eligible seed endings and right groups
+  to anchor rectangles; reproduce and analyse OxyS/fhlA timings (PR #270 review)
+
 - compute exact stack-seeded ensembles with left-most seed-anchored left/right
   extensions and shared bounded workspaces (PR #268 review)
 
@@ -206,6 +209,26 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261016 Alexander Mitrofanov
+ * SeededPartitionFunction.cpp
+   * Stop heuristic seed-free prefix and outside scans at the last eligible
+     seed endings while retaining full spans for right extensions.
+   * Bound heuristic right-group forward/outside scans and predecessor reads
+     by their injection coordinates. Skip zero forward states in the outside
+     pass while preserving first-seed ownership, endpoint selection, complete
+     boundary publication and actual-pair masses.
+ * SeededPartitionFunction_test.cpp
+   + Compare crossed and reused group rectangles, sparse transitions, noLP,
+     asymmetric span/loop limits and boundary coefficients against independent
+     chain enumeration in partition-only and pair-output modes.
+ * doc/analysis/heuristic-seed-runtime.md, seed-extension-partition.md,
+   doc/benchmarks/seed-extension/*, doc/Makefile.am
+   + Reproduce the four native OxyS/fhlA ensemble modes with ViennaRNA 2.7.2;
+     explain why per-source endpoint groups can make the smaller heuristic
+     ensemble slower than the exact anchor implementation. Record baseline
+     and candidate measurements, output checks and profiling instructions.
+   * Address https://github.com/BackofenLab/IntaRNA/pull/270#issuecomment-6215321389.
 
 261016 Alexander Mitrofanov
  * StackSeedDomain.*

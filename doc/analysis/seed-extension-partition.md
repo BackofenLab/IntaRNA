@@ -162,6 +162,11 @@ the different nonnegative factorization; the scientific ensemble is unchanged.
 
 ## First acceptance in the heuristic backend
 
+The heuristic and exact implementations use different traversal strategies.
+See the [OxyS/fhlA runtime investigation](heuristic-seed-runtime.md) for the
+cost of repeated heuristic endpoint groups and the lower-corner bounds that
+exclude empty right-extension prefixes without changing this ensemble.
+
 Scan a chain from its left boundary. Its canonical anchor is the first admitted
 seed to finish. Before that completion, the prefix contains no admitted seed;
 after it, the remaining chain has no further seed requirement. This event is

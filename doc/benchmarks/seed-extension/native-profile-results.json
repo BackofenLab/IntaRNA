@@ -1,0 +1,105 @@
+{
+  "baseline_commit": "3866c62d10846fab1adc38b937d0c9b96cc06e51",
+  "mode_H_extended_probe": {
+    "stage_seconds": {
+      "prepare_s": 0.0113185,
+      "compute_s": 14.3318,
+      "report_s": 6.653e-06
+    },
+    "kernel_counters_and_seconds": {
+      "sources": 2568,
+      "left_cells": 12463452,
+      "bounded_prefix_cells": 6195379,
+      "fillRight_calls": 4653,
+      "unrestricted_groups": 3,
+      "right_rectangle_cells": 12360097,
+      "minima_cropped_cells": 40242,
+      "firsthit_anchors": 4653,
+      "prefix_s": 13.0132,
+      "fillRight_s": 1.28646
+    },
+    "wall_seconds": 14.399073882001176,
+    "stdout_exact_match": true,
+    "admitted_seed_start1_start2_length": [
+      [
+        38,
+        5,
+        7
+      ],
+      [
+        86,
+        79,
+        7
+      ],
+      [
+        87,
+        80,
+        7
+      ]
+    ],
+    "seed_coordinates": "zero-based, local, increasing on both strands; sequence 2 reversed relative to input"
+  },
+  "ratios": {
+    "prefix_time_share_of_compute": 0.9079948087469822,
+    "fillRight_time_share_of_compute": 0.08976262576926834,
+    "bounded_prefix_retained_cells": 0.4970837132441317,
+    "bounded_right_retained_cells": 0.0032557996915396374
+  },
+  "counter_definitions": {
+    "sources": "StackSeedDomain::forEachStart entries passing w.valid(p)",
+    "left_cells": "sum n*m over valid eligible sources; baseline source-relative forward scan rectangles",
+    "bounded_prefix_cells": "sum maxContainedSeedEndRowPlus1 * maxContainedSeedEndColumnPlus1; seed ending length must fit both source-relative coordinates",
+    "fillRight_calls": "nonempty endpoint groups, one forward fill each with pair probabilities disabled",
+    "right_rectangle_cells": "sum (end1+1)*(end2+1) over fillRight calls; includes invalid cells considered before validity skip",
+    "minima_cropped_cells": "sum (end1-minAnchor1+1)*(end2-minAnchor2+1), using independent minimum first-hit coordinates per group",
+    "firsthit_anchors": "number of linked nonzero first-hit injections in groups, excluding standalone no-right contributions"
+  },
+  "timer_caveats": [
+    "Single baseline attribution samples, not before/after performance measurements.",
+    "std::chrono::steady_clock durations are wall time.",
+    "prepare excludes separately printed seed occurrence scan; compute includes weight callback setup, core kernel, and completion callbacks.",
+    "prefix includes table clearing, validity and seed-ending setup, and forward recurrence.",
+    "fillRight includes right-table clearing, anchor injection, recurrence, and the extra aggregate counting traversal.",
+    "report includes partition check and exact output flag immediately before reportOptima.",
+    "No per-cell or transition counters in recurrence loops; aggregate rectangle counts do not count evaluated transitions or imply proportional speedup.",
+    "perf unavailable with perf_event_paranoid=4.",
+    "GNU time reports 109 percent CPU despite --threads=1; use wall stage proportions, not a claim of measured one-core CPU time."
+  ],
+  "reproduction": [
+    "See doc/analysis/heuristic-seed-runtime.md: use native-profile.py on an unmodified 3866c62 checkout and a disposable configured baseline copy; run the resulting binary with the embedded OxyS/fhlA command."
+  ],
+  "metadata": {
+    "baseline_commit": "3866c62d10846fab1adc38b937d0c9b96cc06e51",
+    "differences_between_baseline_and_profile": [
+      {
+        "file": "src/IntaRNA/PredictorMfeEns2dSeedExtension.cpp",
+        "reason": "content"
+      },
+      {
+        "file": "src/IntaRNA/SeededPartitionFunction.cpp",
+        "reason": "content"
+      }
+    ],
+    "source_files": 441,
+    "toolchain": "GCC 14.4.0, ViennaRNA 2.7.2, C++23, -O3, -fopenmp",
+    "cpu": "AMD Ryzen 5 7530U with Radeon Graphics",
+    "perf_event_paranoid": "4"
+  },
+  "compiler": "x86_64-conda-linux-gnu-g++ (conda-forge gcc 14.4.0-7) 14.4.0\nCopyright (C) 2024 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+  "configuration": "CC=/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain-gcc14/bin/x86_64-conda-linux-gnu-gcc CXX=/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain-gcc14/bin/x86_64-conda-linux-gnu-g++ CPPFLAGS=-I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include 'LDFLAGS=-L/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib -Wl,-rpath,/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib' --with-vrna=/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain --with-boost=/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain --with-boost-libdir=/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib --prefix=/home/alex/CodexProjects/IntaRNA/issue-268-validation/install-release\n",
+  "source_sha256": {
+    "src/IntaRNA/PredictorMfeEns2dSeedExtension.cpp": {
+      "base_sha256": "25e16dad99250527e0b9382b1b6c37620ce2cfd6e76fadcf1733f695df8b14cb",
+      "instrumented_sha256": "1599a9ee4415e4416ffa355725ec16cf09679f4b2944e9dba7e390c652f7443f"
+    },
+    "src/IntaRNA/SeededPartitionFunction.cpp": {
+      "base_sha256": "3783c8380e5108146cd903cbbb3fa3d0523749baf713395a15a4f436b3dfdd03",
+      "instrumented_sha256": "c9120ff740297d845544722a2093dd640b0697901b45ff14f20c8efbb5e59194"
+    }
+  },
+  "instrumentation_script_sha256": "533f7789f79f41efd8b398114c720a2666e9e048f47703188c5695458304d340",
+  "binary_sha256": "c2e86d1d5a7229e65d79231abab7682952cd4f2e07a9b0ef4df4503ee0a48572",
+  "stdout_sha256": "f97d82bf597d1e9d08527e236bb36c368d775f43a9289a1e746aefd4b825010c",
+  "raw_stderr": "#profile_seeds [38,5,7] [86,79,7] [87,80,7] admitted_count=3\n#profile_kernel sources=2568 left_cells=12463452 bounded_prefix_cells=6195379 fillRight_calls=4653 unrestricted_groups=3 right_rectangle_cells=12360097 minima_cropped_cells=40242 firsthit_anchors=4653 prefix_s=13.0132 fillRight_s=1.28646\n#profile_predictor prepare_s=0.0113185 compute_s=14.3318 report_s=6.653e-06\n",
+  "raw_gnu_time": "\tCommand being timed: \"/home/alex/CodexProjects/IntaRNA/issue-270-validation/profile/src/bin/IntaRNA --qId=OxyS --query=GAAACGGAGCGGCACCUCUUUUAACCCUUGAAGUCACUGCCCGUUUCGAGAGUUUCUCAACUCGAAUAACUAAAGCCAACGUGAACUUUUGCGGAUCUCCAGGAUCCGC --tId=fhlA --target=AGUUAGUCAAUGACCUUUUGCACCGCUUUGCGGUGCUUUCCUGGAACAACAAAAUGUCAUAUACACCGAUGAGUGAUCUCGGACAACAAGGGUUGUUCGACAUCACUCGGACA --model=P --mode=H --threads=1\"\n\tUser time (seconds): 15.81\n\tSystem time (seconds): 0.01\n\tPercent of CPU this job got: 109%\n\tElapsed (wall clock) time (h:mm:ss or m:ss): 0:14.39\n\tAverage shared text size (kbytes): 0\n\tAverage unshared data size (kbytes): 0\n\tAverage stack size (kbytes): 0\n\tAverage total size (kbytes): 0\n\tMaximum resident set size (kbytes): 19000\n\tAverage resident set size (kbytes): 0\n\tMajor (requiring I/O) page faults: 0\n\tMinor (reclaiming a frame) page faults: 1973\n\tVoluntary context switches: 14\n\tInvoluntary context switches: 594\n\tSwaps: 0\n\tFile system inputs: 0\n\tFile system outputs: 24\n\tSocket messages sent: 0\n\tSocket messages received: 0\n\tSignals delivered: 0\n\tPage size (bytes): 4096\n\tExit status: 0\n"
+}
