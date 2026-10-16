@@ -37,4 +37,9 @@ EXTRA_DIST += benchmarks/seed-extension/README.md \
 			benchmarks/seed-extension/reuse-heuristic-results.json \
 			benchmarks/seed-extension/reuse-exact-samples.tsv \
 			benchmarks/seed-extension/reuse-heuristic-samples.tsv \
-			benchmarks/seed-extension/reuse-source-hashes.json
+			benchmarks/seed-extension/reuse-source-hashes.json \
+			benchmarks/seed-extension/leftmost-exact-results.json \
+			benchmarks/seed-extension/leftmost-heuristic-results.json \
+			benchmarks/seed-extension/leftmost-exact-samples.tsv \
+			benchmarks/seed-extension/leftmost-heuristic-samples.tsv \
+			benchmarks/seed-extension/leftmost-source-hashes.json

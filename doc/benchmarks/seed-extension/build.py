@@ -14,7 +14,7 @@ def main():
     parser.add_argument("--output", type=Path, required=True,
                         help="directory for source snapshots and executables")
     parser.add_argument("--cxx", default="g++", help="C++23 compiler executable")
-    parser.add_argument("--baseline", default="392357c00f0314659cd4c665446f3f6185f4814a")
+    parser.add_argument("--baseline", default="985ba44bdc16e92162e954b7baffa3f3923d4776")
     parser.add_argument("--include", type=Path, action="append", default=[],
                         help="extra dependency include directory; repeat as needed")
     parser.add_argument("--runtime-library-dir", type=Path, action="append", default=[],
@@ -24,6 +24,8 @@ def main():
     output.mkdir(parents=True, exist_ok=True)
     driver = Path(__file__).with_name("driver.cpp").resolve()
     (output / "driver.cpp").write_bytes(driver.read_bytes())
+    for name in ("build.py", "run.py"):
+        (output / name).write_bytes(Path(__file__).with_name(name).read_bytes())
     names = ("SeededPartitionFunction.cpp", "SeededPartitionFunction.h",
              "StackSeedDomain.cpp", "StackSeedDomain.h")
     for variant in ("base", "candidate"):
@@ -46,7 +48,7 @@ def main():
                    "-o", str(output / variant / "benchmark")]
         subprocess.run(command, check=True)
         commands.append(command)
-    files = [output / "driver.cpp",
+    files = [output / "driver.cpp", output / "build.py", output / "run.py",
              *(output / variant / "IntaRNA" / name
                for variant in ("base", "candidate") for name in names)]
     manifest = {
@@ -56,6 +58,10 @@ def main():
         "commands": commands,
         "sha256": {str(p.relative_to(output)): hashlib.sha256(p.read_bytes()).hexdigest()
                    for p in files},
+        "shared_header_sha256": {
+            name: hashlib.sha256((source / "src" / "IntaRNA" / name).read_bytes()).hexdigest()
+            for name in ("PartitionArithmetic.h", "Matrix.h", "Interaction.h",
+                         "general.h", "intarna_config.h")},
     }
     (output / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
 
