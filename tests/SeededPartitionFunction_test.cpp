@@ -350,7 +350,57 @@ TEST_CASE("seed extension workspaces reset across changing active rectangles", "
 	}
 }
 
-TEST_CASE("exact seed batches preserve short-span ensembles across hundreds of sources", "[SeededPartitionFunction]") {
+TEST_CASE("heuristic anchors preserve the first owner of the complete declared seed family", "[SeededPartitionFunction]") {
+	using namespace seeded_oracle;
+	// The long outer seed completes after the inner seed. Another containing
+	// seed co-ends with that inner seed, whose shorter length wins ownership.
+	// The final singleton likewise owns paths containing its two-pair superset.
+	Model m{8,8,8,8,false,{
+		{{0,0},{1,1},{2,2},{3,3},{4,4},{5,5}},
+		{{1,1},{2,2},{3,3}},{{2,2},{3,3}},{{4,4},{5,5}},{{5,5}}},
+		[](Pair p){return p.first==p.second;},[](Pair){return 2.L;},
+		[](Pair p,Pair q){return stack(p,q)?3.L:0.L;},
+		[](Pair,Pair){return 5.L;},
+		[](Pair start,Pair){return start==Pair{2,2}?Pair{5,5}:Pair{7,7};}};
+	for(bool noLP:{false,true}) {
+		CAPTURE(noLP);
+		m.noLP=noLP;
+		const auto oracle=enumerate(m);
+		// The original family, not the kernel's reduced anchor family, defines
+		// these expectations. Neither outer nor later seeds may rescue this path.
+		REQUIRE(oracle.boundaries.count({0,0,7,7})==0);
+		REQUIRE(oracle.boundaries.at({2,2,7,7})>0); // no-left keeps all right ends
+		REQUIRE(oracle.boundaries.at({0,0,3,3})>0); // no-right keeps all left ends
+		REQUIRE(oracle.boundaries.at({0,0,5,5})>0); // both sides use the chosen end
+		REQUIRE(oracle.boundaries.at({4,4,5,5})>0); // singleton supported on the left
+		REQUIRE(oracle.boundaries.at({5,5,6,6})>0); // singleton supported on the right
+		REQUIRE(oracle.boundaries.at({4,4,7,7})>0); // singleton supported on both sides
+		REQUIRE((oracle.boundaries.count({5,5,5,5})!=0)==!noLP);
+		compareKernels(m,0,0);
+	}
+}
+
+TEST_CASE("heuristic anchor choices retain one-sided paths outside the selected domain", "[SeededPartitionFunction]") {
+	using namespace seeded_oracle;
+	Model m{7,7,7,7,false,{{{2,2},{3,3}}},
+		[](Pair p){return p.first==p.second;},[](Pair){return 2.L;},
+		[](Pair p,Pair q){return stack(p,q)?3.L:0.L;},[](Pair,Pair){return 5.L;}};
+	// Cover the no-extension fallback, backward/mixed-direction selections,
+	// an out-of-domain endpoint, and an endpoint outside some source spans.
+	for(const Pair selected:{Pair{3,3},Pair{0,0},Pair{2,6},Pair{20,20},Pair{5,5}})
+	for(size_t span:{size_t(4),size_t(7)}) for(bool noLP:{false,true}) {
+		CAPTURE(selected.first,selected.second,span,noLP);
+		m.span1=span;m.span2=span;m.noLP=noLP;
+		m.selectRight=[selected](Pair,Pair){return selected;};
+		const auto oracle=enumerate(m);
+		REQUIRE(oracle.boundaries.at({0,0,3,3})>0);
+		REQUIRE(oracle.boundaries.at({2,2,5,5})>0);
+		REQUIRE(oracle.boundaries.count({1,1,4,4})==0);
+		compareKernels(m,0,0);
+	}
+}
+
+TEST_CASE("seed anchor batches preserve short-span ensembles across hundreds of sources", "[SeededPartitionFunction]") {
 	using namespace seeded_oracle;
 	// Short spans keep exhaustive enumeration small while hundreds of eligible
 	// sources force repeated batch publication, including a partial final batch.
@@ -365,13 +415,30 @@ TEST_CASE("exact seed batches preserve short-span ensembles across hundreds of s
 		for(size_t k=0;k<length;++k) seed.push_back({i+k,j+k});
 		m.seeds.push_back(seed);
 	}
-	for(const auto spans:{Pair{3,4},Pair{4,3}}) for(bool noLP:{false,true}) {
-		CAPTURE(spans.first,spans.second,noLP);
+	for(const auto spans:{Pair{3,4},Pair{4,3}}) for(bool noLP:{false,true}) for(bool heuristic:{false,true}) {
+		CAPTURE(spans.first,spans.second,noLP,heuristic);
 		m.span1=spans.first;m.span2=spans.second;m.noLP=noLP;
+		m.selectRight={};
+		if(heuristic) m.selectRight=[](Pair,Pair end) {
+			return Pair{end.first+1,end.second+2};
+		};
 		size_t eligible=0;
 		domainFor(m).forEachStart([&](size_t i,size_t j){eligible+=m.valid({i,j});});
 		REQUIRE(eligible>256);
 		compareKernels(m,1,2);
+		if(heuristic) {
+			const auto seeds=domainFor(m);
+			auto weights=weightsFor(m);
+			std::map<Pair,size_t> selections;
+			weights.selectRight=[&](Pair first,Pair last) {
+				++selections[first];return m.selectRight(first,last);
+			};
+			const Kernel::Domain d{m.n,m.m,m.span1,m.span2,1,2,m.noLP};
+			Kernel::compute(d,seeds,weights,true);
+			// Batch and outside recomputation must reuse the frozen choices.
+			REQUIRE(selections.size()==seeds.minimalOccurrences().size());
+			for(const auto & [first,count]:selections) REQUIRE(count==1);
+		}
 	}
 }
 

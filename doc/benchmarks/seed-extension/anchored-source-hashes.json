@@ -1,0 +1,1074 @@
+{
+  "baseline": "3866c62d10846fab1adc38b937d0c9b96cc06e51",
+  "date": "2026-10-16",
+  "candidate_source_sha256": {
+    "src/IntaRNA/PredictorMfeEns2dHeuristicSeedExtension.cpp": "557ad53c17965c988cd31875c7f9e273a6a8b230284c3c973bdf0bba7566e312",
+    "src/IntaRNA/PredictorMfeEns2dHeuristicSeedExtension.h": "58732493c173bd636e30e37c7dbd266493b1490ee16bed68ebb66c0f5050994f",
+    "src/IntaRNA/SeededPartitionFunction.cpp": "02bcc821539c6ebf8313fd20e4f3b50f29c93757555da0a1ff86ac3110ae09b9",
+    "src/IntaRNA/SeededPartitionFunction.h": "77164af4564a8c7bbd60fa3b33e2aa3f9bb777685d018c6c1b77b1326274a12c",
+    "src/IntaRNA/StackSeedDomain.h": "a0afdf1388b4334edfbb0313153ce0ae2ca4a747f4c24a3b451346f407c6b3f2",
+    "tests/PredictorSeedOracle_test.cpp": "59e564aa1b6c6f50e4e5e646b626ebdccbbe8556849dadd3ad768986e85cb901",
+    "tests/SeededPartitionFunction_test.cpp": "ee018018602c145d825c806ff044a360d0dc7ee94b71689e9247263b83e0def7"
+  },
+  "native_build_flags": {
+    "base": {
+      "AM_CXXFLAGS": "-I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include  -O3 -fno-strict-aliasing -Wno-uninitialized -Wno-deprecated -fopenmp -DELPP_FEATURE_PERFORMANCE_TRACKING -DELPP_NO_DEFAULT_LOG_FILE -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include/ViennaRNA -pthread",
+      "CPPFLAGS": "-I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include -I/include",
+      "CXX": "/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain-gcc14/bin/x86_64-conda-linux-gnu-g++ -std=c++23",
+      "CXXFLAGS": "",
+      "LDFLAGS": "-L/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib -Wl,-rpath,/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib -L/lib",
+      "configure": "CC=/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain-gcc14/bin/x86_64-conda-linux-gnu-gcc CXX=/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain-gcc14/bin/x86_64-conda-linux-gnu-g++ CPPFLAGS=-I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include 'LDFLAGS=-L/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib -Wl,-rpath,/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib' --with-vrna=/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain --with-boost=/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain --with-boost-libdir=/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib --prefix=/home/alex/CodexProjects/IntaRNA/issue-268-validation/install-release"
+    },
+    "candidate": {
+      "AM_CXXFLAGS": "-I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include  -O3 -fno-strict-aliasing -Wno-uninitialized -Wno-deprecated -fopenmp -DELPP_FEATURE_PERFORMANCE_TRACKING -DELPP_NO_DEFAULT_LOG_FILE -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include -I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include/ViennaRNA -pthread",
+      "CPPFLAGS": "-I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include -I/include",
+      "CXX": "/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain-gcc14/bin/x86_64-conda-linux-gnu-g++ -std=c++23",
+      "CXXFLAGS": "",
+      "LDFLAGS": "-L/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib -Wl,-rpath,/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib -L/lib",
+      "configure": "CC=/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain-gcc14/bin/x86_64-conda-linux-gnu-gcc CXX=/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain-gcc14/bin/x86_64-conda-linux-gnu-g++ CPPFLAGS=-I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include 'LDFLAGS=-L/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib -Wl,-rpath,/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib' --with-vrna=/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain --with-boost=/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain --with-boost-libdir=/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib --prefix=/home/alex/CodexProjects/IntaRNA/issue-268-validation/install-release"
+    }
+  },
+  "source_verification": {
+    "baseline": {
+      "checked_files": 283,
+      "mismatches": []
+    },
+    "release": {
+      "checked_files": 283,
+      "mismatches": []
+    },
+    "debug": {
+      "checked_files": 283,
+      "mismatches": []
+    }
+  },
+  "kernel_build": {
+    "baseline": "3866c62d10846fab1adc38b937d0c9b96cc06e51",
+    "compiler": "x86_64-conda-linux-gnu-g++ (conda-forge gcc 14.4.0-7) 14.4.0",
+    "commands": [
+      [
+        "/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain-gcc14/bin/x86_64-conda-linux-gnu-g++",
+        "-std=c++23",
+        "-O3",
+        "-DNDEBUG",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-I/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/kernel/base",
+        "-I/home/alex/CodexProjects/IntaRNA/pr-worktrees/issue-270-anchored/src",
+        "-I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include",
+        "/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/kernel/driver.cpp",
+        "/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/kernel/base/IntaRNA/SeededPartitionFunction.cpp",
+        "/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/kernel/base/IntaRNA/StackSeedDomain.cpp",
+        "-Wl,--gc-sections",
+        "-Wl,-rpath,/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib",
+        "-o",
+        "/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/kernel/base/benchmark"
+      ],
+      [
+        "/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain-gcc14/bin/x86_64-conda-linux-gnu-g++",
+        "-std=c++23",
+        "-O3",
+        "-DNDEBUG",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-I/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/kernel/candidate",
+        "-I/home/alex/CodexProjects/IntaRNA/pr-worktrees/issue-270-anchored/src",
+        "-I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include",
+        "/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/kernel/driver.cpp",
+        "/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/kernel/candidate/IntaRNA/SeededPartitionFunction.cpp",
+        "/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/kernel/candidate/IntaRNA/StackSeedDomain.cpp",
+        "-Wl,--gc-sections",
+        "-Wl,-rpath,/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib",
+        "-o",
+        "/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/kernel/candidate/benchmark"
+      ]
+    ],
+    "sha256": {
+      "driver.cpp": "98b0133e334b5174146ed440b0ed0f30faf2f83d32f217a386c3d43196f65b93",
+      "build.py": "6a086dd9fa12f3fef28789d2401bd77a691321314cbecd495d9e4869e7b79308",
+      "run.py": "22298ce92cb6940ad23164cac868aa638343d58f251a66ef5e5cc66dae1dee4e",
+      "base/IntaRNA/SeededPartitionFunction.cpp": "3783c8380e5108146cd903cbbb3fa3d0523749baf713395a15a4f436b3dfdd03",
+      "base/IntaRNA/SeededPartitionFunction.h": "8216d82858cca5cf960056d7e11a2ada1118a98e1cf513623839d75fab40381d",
+      "base/IntaRNA/StackSeedDomain.cpp": "a41906b5442e5b8ade69dc482919619c28761b908447faab984a84a807d338ee",
+      "base/IntaRNA/StackSeedDomain.h": "73275a75976d98800db58bfb019f912b7245a9c26072fe17f7ee16dbdaad93c7",
+      "candidate/IntaRNA/SeededPartitionFunction.cpp": "02bcc821539c6ebf8313fd20e4f3b50f29c93757555da0a1ff86ac3110ae09b9",
+      "candidate/IntaRNA/SeededPartitionFunction.h": "77164af4564a8c7bbd60fa3b33e2aa3f9bb777685d018c6c1b77b1326274a12c",
+      "candidate/IntaRNA/StackSeedDomain.cpp": "a41906b5442e5b8ade69dc482919619c28761b908447faab984a84a807d338ee",
+      "candidate/IntaRNA/StackSeedDomain.h": "a0afdf1388b4334edfbb0313153ce0ae2ca4a747f4c24a3b451346f407c6b3f2"
+    },
+    "shared_header_sha256": {
+      "PartitionArithmetic.h": "5fe71abe6568906057c0a264c2802d3bfd7a902471b21cc838b78f18b04a0bd7",
+      "Matrix.h": "8ecc55e46643ccde16ed89aa63a415a6da7aa3d3c59fe94dd6b4d46d5f5275af",
+      "Interaction.h": "c0ce17a0f5b204bcb366529872346a2316993b749da9c4c9927773726296ebaa",
+      "general.h": "0fff34ca1a1e676debe88326af0a5a0eddeff20e05604abda11096527b12df98",
+      "intarna_config.h": "4cbc306a33335dd49061ed4e3d70f7f70e776f5aa8a6e0e73ea6715cfa4163c2"
+    }
+  },
+  "kernel_binary_sha256": {
+    "base": "2f8d146f5d9036268a1d59a2c0602f04eb1b3105ad05b8d5be89119806694cb2",
+    "candidate": "c94e6089671208b6aabdab81b11bb173ddbd54a571406d6413aa76205be56c20"
+  },
+  "kernel_dump_sha256": {
+    "kernel-exact-verify/band60-few-base.txt": "f6a8651d3f85153ba1340ca9e7dfbe943fcfaab3c4e6fa3bead711c6735ebe7f",
+    "kernel-exact-verify/band60-few-candidate.txt": "f6a8651d3f85153ba1340ca9e7dfbe943fcfaab3c4e6fa3bead711c6735ebe7f",
+    "kernel-exact-verify/band60-many-base.txt": "fcdd7b7db7db7d20ae1059580bbdb532303580a21d6118a286054f22e760d94e",
+    "kernel-exact-verify/band60-many-candidate.txt": "fcdd7b7db7db7d20ae1059580bbdb532303580a21d6118a286054f22e760d94e",
+    "kernel-exact-verify/dense40-few-base.txt": "9a5cba3f768f540ff2b2078b82ebd15efcbcb98b18582d3344e379467c548f7e",
+    "kernel-exact-verify/dense40-few-candidate.txt": "9a5cba3f768f540ff2b2078b82ebd15efcbcb98b18582d3344e379467c548f7e",
+    "kernel-exact-verify/dense40-many-base.txt": "3f07dc4f1b9556a0438a9f8521ae32dbcbe981c5421ca4570c79b6bf04103b87",
+    "kernel-exact-verify/dense40-many-candidate.txt": "3f07dc4f1b9556a0438a9f8521ae32dbcbe981c5421ca4570c79b6bf04103b87",
+    "kernel-heuristic-verify/band60-few-base.txt": "b70097c40696705eda01ed157fd8b3863a7d4e4b4b8d1dcd76042a135bf6bff7",
+    "kernel-heuristic-verify/band60-few-candidate.txt": "fa508860983c46d00fbb98484a2b60ca113849af6479eb054d6a0350126ec4cc",
+    "kernel-heuristic-verify/band60-many-base.txt": "fbecd2caeba9e2e0d9191dde17cd6d2598b65793c431b8bee8357159d4f817b6",
+    "kernel-heuristic-verify/band60-many-candidate.txt": "360a706a1934d0a876a43c47b178cf23c83a26ac3af13a32dffc6b2fa1e5d2f8",
+    "kernel-heuristic-verify/dense40-few-base.txt": "02c503ef9f86cbde99e40a977963e62e8baf60fe47dc8dad81f7f51264da878f",
+    "kernel-heuristic-verify/dense40-few-candidate.txt": "6443bc50ae27f5fbca878899f02e19e82f6f68d0351c68f14557c287e980af62",
+    "kernel-heuristic-verify/dense40-many-base.txt": "7f9071f1962facde0a9e5691ffa8ff50c7bd14399f009c5997faf9a7313f183e",
+    "kernel-heuristic-verify/dense40-many-candidate.txt": "39eebf52edcf702afc91b2e307ef2d15248a3a420ba19e3c81b2ec9183ee2ac5"
+  },
+  "native_manifests": {
+    "ordinary": {
+      "schema_version": 1,
+      "started_at": "2026-10-16T19:54:41.787838+00:00",
+      "invocation": [
+        "/home/alex/miniconda3/bin/python3",
+        "doc/benchmarks/seed-extension/anchored-native.py",
+        "--binary",
+        "/home/alex/CodexProjects/IntaRNA/issue-268-validation/release/src/bin/IntaRNA",
+        "--candidate",
+        "/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/release/src/bin/IntaRNA",
+        "--output-dir",
+        "/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/native-runtime",
+        "--repetitions",
+        "5"
+      ],
+      "harness_sha256": "cb34d155d393ee36b73a8b3c4c4a2c64b988835a0a5f62902a6110cd89dd0b4b",
+      "gnu_time": "time (GNU Time) UNKNOWN",
+      "workload": {
+        "target": "AGUUAGUCAAUGACCUUUUGCACCGCUUUGCGGUGCUUUCCUGGAACAACAAAAUGUCAUAUACACCGAUGAGUGAUCUCGGACAACAAGGGUUGUUCGACAUCACUCGGACA",
+        "query": "GAAACGGAGCGGCACCUCUUUUAACCCUUGAAGUCACUGCCCGUUUCGAGAGUUUCUCAACUCGAAUAACUAAAGCCAACGUGAACUUUUGCGGAUCUCCAGGAUCCGC",
+        "target_id": "fhlA",
+        "query_id": "OxyS",
+        "model": "P",
+        "seed_bp": 7,
+        "threads": 1,
+        "cases": [
+          "M-seeded",
+          "M-unseeded",
+          "H-seeded",
+          "H-unseeded"
+        ],
+        "pair_output": false,
+        "repetitions": 5,
+        "warmups": 0
+      },
+      "environment": {
+        "platform": "Linux-6.8.0-147-generic-x86_64-with-glibc2.39",
+        "cpu_model": "AMD Ryzen 5 7530U with Radeon Graphics",
+        "cpu_affinity": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "variables": {
+          "OMP_NUM_THREADS": "1",
+          "LC_ALL": "C",
+          "LANG": "C"
+        },
+        "timing_scope": "fresh complete process including accessibility and output",
+        "workstation_activity_and_cpu_frequency": "uncontrolled"
+      },
+      "verification": {
+        "stdout": "byte-identical to first baseline sample of the same case",
+        "pair_csv": "exact labels/NA cells; every finite value compared",
+        "relative_tolerance": 2e-12,
+        "absolute_tolerance": 0
+      },
+      "raw_file_prefix": "{variant}-{case}-{repetition}",
+      "timing_format": "%e\\t%U\\t%S\\t%M",
+      "binaries": {
+        "base": {
+          "path": "/home/alex/CodexProjects/IntaRNA/issue-268-validation/release/src/bin/IntaRNA",
+          "sha256": "de42e09bdabe46a2865a6978bc86241689c9416c41f011ed70fdafc1d9845c9c",
+          "version": "IntaRNA 3.4.1\n using Vienna RNA package 2.7.2 and boost 1.85.0"
+        },
+        "candidate": {
+          "path": "/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/release/src/bin/IntaRNA",
+          "sha256": "4dac44fd068710e11a11c3e001ab5ae3a22948f41311461b6f5ef4637c8da55b",
+          "version": "IntaRNA 3.4.1\n using Vienna RNA package 2.7.2 and boost 1.85.0"
+        }
+      },
+      "commands": {
+        "base": {
+          "M-seeded": [
+            "/home/alex/CodexProjects/IntaRNA/issue-268-validation/release/src/bin/IntaRNA",
+            "--query=GAAACGGAGCGGCACCUCUUUUAACCCUUGAAGUCACUGCCCGUUUCGAGAGUUUCUCAACUCGAAUAACUAAAGCCAACGUGAACUUUUGCGGAUCUCCAGGAUCCGC",
+            "--target=AGUUAGUCAAUGACCUUUUGCACCGCUUUGCGGUGCUUUCCUGGAACAACAAAAUGUCAUAUACACCGAUGAGUGAUCUCGGACAACAAGGGUUGUUCGACAUCACUCGGACA",
+            "--qId=OxyS",
+            "--tId=fhlA",
+            "--model=P",
+            "--mode=M",
+            "--threads=1",
+            "--seedBP=7",
+            "--noSeed=false"
+          ],
+          "M-unseeded": [
+            "/home/alex/CodexProjects/IntaRNA/issue-268-validation/release/src/bin/IntaRNA",
+            "--query=GAAACGGAGCGGCACCUCUUUUAACCCUUGAAGUCACUGCCCGUUUCGAGAGUUUCUCAACUCGAAUAACUAAAGCCAACGUGAACUUUUGCGGAUCUCCAGGAUCCGC",
+            "--target=AGUUAGUCAAUGACCUUUUGCACCGCUUUGCGGUGCUUUCCUGGAACAACAAAAUGUCAUAUACACCGAUGAGUGAUCUCGGACAACAAGGGUUGUUCGACAUCACUCGGACA",
+            "--qId=OxyS",
+            "--tId=fhlA",
+            "--model=P",
+            "--mode=M",
+            "--threads=1",
+            "--seedBP=7",
+            "--noSeed=true"
+          ],
+          "H-seeded": [
+            "/home/alex/CodexProjects/IntaRNA/issue-268-validation/release/src/bin/IntaRNA",
+            "--query=GAAACGGAGCGGCACCUCUUUUAACCCUUGAAGUCACUGCCCGUUUCGAGAGUUUCUCAACUCGAAUAACUAAAGCCAACGUGAACUUUUGCGGAUCUCCAGGAUCCGC",
+            "--target=AGUUAGUCAAUGACCUUUUGCACCGCUUUGCGGUGCUUUCCUGGAACAACAAAAUGUCAUAUACACCGAUGAGUGAUCUCGGACAACAAGGGUUGUUCGACAUCACUCGGACA",
+            "--qId=OxyS",
+            "--tId=fhlA",
+            "--model=P",
+            "--mode=H",
+            "--threads=1",
+            "--seedBP=7",
+            "--noSeed=false"
+          ],
+          "H-unseeded": [
+            "/home/alex/CodexProjects/IntaRNA/issue-268-validation/release/src/bin/IntaRNA",
+            "--query=GAAACGGAGCGGCACCUCUUUUAACCCUUGAAGUCACUGCCCGUUUCGAGAGUUUCUCAACUCGAAUAACUAAAGCCAACGUGAACUUUUGCGGAUCUCCAGGAUCCGC",
+            "--target=AGUUAGUCAAUGACCUUUUGCACCGCUUUGCGGUGCUUUCCUGGAACAACAAAAUGUCAUAUACACCGAUGAGUGAUCUCGGACAACAAGGGUUGUUCGACAUCACUCGGACA",
+            "--qId=OxyS",
+            "--tId=fhlA",
+            "--model=P",
+            "--mode=H",
+            "--threads=1",
+            "--seedBP=7",
+            "--noSeed=true"
+          ]
+        },
+        "candidate": {
+          "M-seeded": [
+            "/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/release/src/bin/IntaRNA",
+            "--query=GAAACGGAGCGGCACCUCUUUUAACCCUUGAAGUCACUGCCCGUUUCGAGAGUUUCUCAACUCGAAUAACUAAAGCCAACGUGAACUUUUGCGGAUCUCCAGGAUCCGC",
+            "--target=AGUUAGUCAAUGACCUUUUGCACCGCUUUGCGGUGCUUUCCUGGAACAACAAAAUGUCAUAUACACCGAUGAGUGAUCUCGGACAACAAGGGUUGUUCGACAUCACUCGGACA",
+            "--qId=OxyS",
+            "--tId=fhlA",
+            "--model=P",
+            "--mode=M",
+            "--threads=1",
+            "--seedBP=7",
+            "--noSeed=false"
+          ],
+          "M-unseeded": [
+            "/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/release/src/bin/IntaRNA",
+            "--query=GAAACGGAGCGGCACCUCUUUUAACCCUUGAAGUCACUGCCCGUUUCGAGAGUUUCUCAACUCGAAUAACUAAAGCCAACGUGAACUUUUGCGGAUCUCCAGGAUCCGC",
+            "--target=AGUUAGUCAAUGACCUUUUGCACCGCUUUGCGGUGCUUUCCUGGAACAACAAAAUGUCAUAUACACCGAUGAGUGAUCUCGGACAACAAGGGUUGUUCGACAUCACUCGGACA",
+            "--qId=OxyS",
+            "--tId=fhlA",
+            "--model=P",
+            "--mode=M",
+            "--threads=1",
+            "--seedBP=7",
+            "--noSeed=true"
+          ],
+          "H-seeded": [
+            "/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/release/src/bin/IntaRNA",
+            "--query=GAAACGGAGCGGCACCUCUUUUAACCCUUGAAGUCACUGCCCGUUUCGAGAGUUUCUCAACUCGAAUAACUAAAGCCAACGUGAACUUUUGCGGAUCUCCAGGAUCCGC",
+            "--target=AGUUAGUCAAUGACCUUUUGCACCGCUUUGCGGUGCUUUCCUGGAACAACAAAAUGUCAUAUACACCGAUGAGUGAUCUCGGACAACAAGGGUUGUUCGACAUCACUCGGACA",
+            "--qId=OxyS",
+            "--tId=fhlA",
+            "--model=P",
+            "--mode=H",
+            "--threads=1",
+            "--seedBP=7",
+            "--noSeed=false"
+          ],
+          "H-unseeded": [
+            "/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/release/src/bin/IntaRNA",
+            "--query=GAAACGGAGCGGCACCUCUUUUAACCCUUGAAGUCACUGCCCGUUUCGAGAGUUUCUCAACUCGAAUAACUAAAGCCAACGUGAACUUUUGCGGAUCUCCAGGAUCCGC",
+            "--target=AGUUAGUCAAUGACCUUUUGCACCGCUUUGCGGUGCUUUCCUGGAACAACAAAAUGUCAUAUACACCGAUGAGUGAUCUCGGACAACAAGGGUUGUUCGACAUCACUCGGACA",
+            "--qId=OxyS",
+            "--tId=fhlA",
+            "--model=P",
+            "--mode=H",
+            "--threads=1",
+            "--seedBP=7",
+            "--noSeed=true"
+          ]
+        }
+      }
+    },
+    "pair_output": {
+      "schema_version": 1,
+      "started_at": "2026-10-16T19:58:34.537235+00:00",
+      "invocation": [
+        "/home/alex/miniconda3/bin/python3",
+        "doc/benchmarks/seed-extension/anchored-native.py",
+        "--binary",
+        "/home/alex/CodexProjects/IntaRNA/issue-268-validation/release/src/bin/IntaRNA",
+        "--candidate",
+        "/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/release/src/bin/IntaRNA",
+        "--output-dir",
+        "/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/native-pairs",
+        "--repetitions",
+        "5",
+        "--cases",
+        "H-seeded",
+        "M-seeded",
+        "--pair-output"
+      ],
+      "harness_sha256": "cb34d155d393ee36b73a8b3c4c4a2c64b988835a0a5f62902a6110cd89dd0b4b",
+      "gnu_time": "time (GNU Time) UNKNOWN",
+      "workload": {
+        "target": "AGUUAGUCAAUGACCUUUUGCACCGCUUUGCGGUGCUUUCCUGGAACAACAAAAUGUCAUAUACACCGAUGAGUGAUCUCGGACAACAAGGGUUGUUCGACAUCACUCGGACA",
+        "query": "GAAACGGAGCGGCACCUCUUUUAACCCUUGAAGUCACUGCCCGUUUCGAGAGUUUCUCAACUCGAAUAACUAAAGCCAACGUGAACUUUUGCGGAUCUCCAGGAUCCGC",
+        "target_id": "fhlA",
+        "query_id": "OxyS",
+        "model": "P",
+        "seed_bp": 7,
+        "threads": 1,
+        "cases": [
+          "H-seeded",
+          "M-seeded"
+        ],
+        "pair_output": true,
+        "repetitions": 5,
+        "warmups": 0
+      },
+      "environment": {
+        "platform": "Linux-6.8.0-147-generic-x86_64-with-glibc2.39",
+        "cpu_model": "AMD Ryzen 5 7530U with Radeon Graphics",
+        "cpu_affinity": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "variables": {
+          "OMP_NUM_THREADS": "1",
+          "LC_ALL": "C",
+          "LANG": "C"
+        },
+        "timing_scope": "fresh complete process including accessibility and output",
+        "workstation_activity_and_cpu_frequency": "uncontrolled"
+      },
+      "verification": {
+        "stdout": "byte-identical to first baseline sample of the same case",
+        "pair_csv": "exact labels/NA cells; every finite value compared",
+        "relative_tolerance": 2e-12,
+        "absolute_tolerance": 0
+      },
+      "raw_file_prefix": "{variant}-{case}-{repetition}",
+      "timing_format": "%e\\t%U\\t%S\\t%M",
+      "binaries": {
+        "base": {
+          "path": "/home/alex/CodexProjects/IntaRNA/issue-268-validation/release/src/bin/IntaRNA",
+          "sha256": "de42e09bdabe46a2865a6978bc86241689c9416c41f011ed70fdafc1d9845c9c",
+          "version": "IntaRNA 3.4.1\n using Vienna RNA package 2.7.2 and boost 1.85.0"
+        },
+        "candidate": {
+          "path": "/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/release/src/bin/IntaRNA",
+          "sha256": "4dac44fd068710e11a11c3e001ab5ae3a22948f41311461b6f5ef4637c8da55b",
+          "version": "IntaRNA 3.4.1\n using Vienna RNA package 2.7.2 and boost 1.85.0"
+        }
+      },
+      "commands": {
+        "base": {
+          "H-seeded": [
+            "/home/alex/CodexProjects/IntaRNA/issue-268-validation/release/src/bin/IntaRNA",
+            "--query=GAAACGGAGCGGCACCUCUUUUAACCCUUGAAGUCACUGCCCGUUUCGAGAGUUUCUCAACUCGAAUAACUAAAGCCAACGUGAACUUUUGCGGAUCUCCAGGAUCCGC",
+            "--target=AGUUAGUCAAUGACCUUUUGCACCGCUUUGCGGUGCUUUCCUGGAACAACAAAAUGUCAUAUACACCGAUGAGUGAUCUCGGACAACAAGGGUUGUUCGACAUCACUCGGACA",
+            "--qId=OxyS",
+            "--tId=fhlA",
+            "--model=P",
+            "--mode=H",
+            "--threads=1",
+            "--seedBP=7",
+            "--noSeed=false",
+            "--out=bpProb:/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/native-pairs/base-H-seeded.bpProb.csv"
+          ],
+          "M-seeded": [
+            "/home/alex/CodexProjects/IntaRNA/issue-268-validation/release/src/bin/IntaRNA",
+            "--query=GAAACGGAGCGGCACCUCUUUUAACCCUUGAAGUCACUGCCCGUUUCGAGAGUUUCUCAACUCGAAUAACUAAAGCCAACGUGAACUUUUGCGGAUCUCCAGGAUCCGC",
+            "--target=AGUUAGUCAAUGACCUUUUGCACCGCUUUGCGGUGCUUUCCUGGAACAACAAAAUGUCAUAUACACCGAUGAGUGAUCUCGGACAACAAGGGUUGUUCGACAUCACUCGGACA",
+            "--qId=OxyS",
+            "--tId=fhlA",
+            "--model=P",
+            "--mode=M",
+            "--threads=1",
+            "--seedBP=7",
+            "--noSeed=false",
+            "--out=bpProb:/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/native-pairs/base-M-seeded.bpProb.csv"
+          ]
+        },
+        "candidate": {
+          "H-seeded": [
+            "/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/release/src/bin/IntaRNA",
+            "--query=GAAACGGAGCGGCACCUCUUUUAACCCUUGAAGUCACUGCCCGUUUCGAGAGUUUCUCAACUCGAAUAACUAAAGCCAACGUGAACUUUUGCGGAUCUCCAGGAUCCGC",
+            "--target=AGUUAGUCAAUGACCUUUUGCACCGCUUUGCGGUGCUUUCCUGGAACAACAAAAUGUCAUAUACACCGAUGAGUGAUCUCGGACAACAAGGGUUGUUCGACAUCACUCGGACA",
+            "--qId=OxyS",
+            "--tId=fhlA",
+            "--model=P",
+            "--mode=H",
+            "--threads=1",
+            "--seedBP=7",
+            "--noSeed=false",
+            "--out=bpProb:/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/native-pairs/candidate-H-seeded.bpProb.csv"
+          ],
+          "M-seeded": [
+            "/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/release/src/bin/IntaRNA",
+            "--query=GAAACGGAGCGGCACCUCUUUUAACCCUUGAAGUCACUGCCCGUUUCGAGAGUUUCUCAACUCGAAUAACUAAAGCCAACGUGAACUUUUGCGGAUCUCCAGGAUCCGC",
+            "--target=AGUUAGUCAAUGACCUUUUGCACCGCUUUGCGGUGCUUUCCUGGAACAACAAAAUGUCAUAUACACCGAUGAGUGAUCUCGGACAACAAGGGUUGUUCGACAUCACUCGGACA",
+            "--qId=OxyS",
+            "--tId=fhlA",
+            "--model=P",
+            "--mode=M",
+            "--threads=1",
+            "--seedBP=7",
+            "--noSeed=false",
+            "--out=bpProb:/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/native-pairs/candidate-M-seeded.bpProb.csv"
+          ]
+        }
+      }
+    }
+  },
+  "native_verification": {
+    "commands": [
+      [
+        "/home/alex/CodexProjects/IntaRNA/issue-268-validation/release/src/bin/IntaRNA",
+        "--target=GGGGGGGGGGGGGGGGGG",
+        "--query=CCCCCCCCCCCCCCCCC",
+        "--model=P",
+        "--mode=M",
+        "--seedBP=2",
+        "--threads=1",
+        "--acc=N",
+        "--outNoLP=false",
+        "--outNoGUend=false",
+        "--intLenMax=8",
+        "--outMode=C",
+        "--outCsvCols=id1,id2,start1,end1,start2,end2,E,Zall,Eall",
+        "--out=bpProb:/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/native-comparison/dense-M-false-base.csv",
+        "--default-log-file=/dev/null"
+      ],
+      [
+        "/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/release/src/bin/IntaRNA",
+        "--target=GGGGGGGGGGGGGGGGGG",
+        "--query=CCCCCCCCCCCCCCCCC",
+        "--model=P",
+        "--mode=M",
+        "--seedBP=2",
+        "--threads=1",
+        "--acc=N",
+        "--outNoLP=false",
+        "--outNoGUend=false",
+        "--intLenMax=8",
+        "--outMode=C",
+        "--outCsvCols=id1,id2,start1,end1,start2,end2,E,Zall,Eall",
+        "--out=bpProb:/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/native-comparison/dense-M-false-candidate.csv",
+        "--default-log-file=/dev/null"
+      ],
+      [
+        "/home/alex/CodexProjects/IntaRNA/issue-268-validation/release/src/bin/IntaRNA",
+        "--target=GGGGGGGGGGGGGGGGGG",
+        "--query=CCCCCCCCCCCCCCCCC",
+        "--model=P",
+        "--mode=M",
+        "--seedBP=2",
+        "--threads=1",
+        "--acc=N",
+        "--outNoLP=true",
+        "--outNoGUend=false",
+        "--intLenMax=8",
+        "--outMode=C",
+        "--outCsvCols=id1,id2,start1,end1,start2,end2,E,Zall,Eall",
+        "--out=bpProb:/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/native-comparison/dense-M-true-base.csv",
+        "--default-log-file=/dev/null"
+      ],
+      [
+        "/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/release/src/bin/IntaRNA",
+        "--target=GGGGGGGGGGGGGGGGGG",
+        "--query=CCCCCCCCCCCCCCCCC",
+        "--model=P",
+        "--mode=M",
+        "--seedBP=2",
+        "--threads=1",
+        "--acc=N",
+        "--outNoLP=true",
+        "--outNoGUend=false",
+        "--intLenMax=8",
+        "--outMode=C",
+        "--outCsvCols=id1,id2,start1,end1,start2,end2,E,Zall,Eall",
+        "--out=bpProb:/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/native-comparison/dense-M-true-candidate.csv",
+        "--default-log-file=/dev/null"
+      ],
+      [
+        "/home/alex/CodexProjects/IntaRNA/issue-268-validation/release/src/bin/IntaRNA",
+        "--target=GGGGGGGGGGGGGGGGGG",
+        "--query=CCCCCCCCCCCCCCCCC",
+        "--model=P",
+        "--mode=H",
+        "--seedBP=2",
+        "--threads=1",
+        "--acc=N",
+        "--outNoLP=false",
+        "--outNoGUend=false",
+        "--intLenMax=8",
+        "--outMode=C",
+        "--outCsvCols=id1,id2,start1,end1,start2,end2,E,Zall,Eall",
+        "--out=bpProb:/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/native-comparison/dense-H-false-base.csv",
+        "--default-log-file=/dev/null"
+      ],
+      [
+        "/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/release/src/bin/IntaRNA",
+        "--target=GGGGGGGGGGGGGGGGGG",
+        "--query=CCCCCCCCCCCCCCCCC",
+        "--model=P",
+        "--mode=H",
+        "--seedBP=2",
+        "--threads=1",
+        "--acc=N",
+        "--outNoLP=false",
+        "--outNoGUend=false",
+        "--intLenMax=8",
+        "--outMode=C",
+        "--outCsvCols=id1,id2,start1,end1,start2,end2,E,Zall,Eall",
+        "--out=bpProb:/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/native-comparison/dense-H-false-candidate.csv",
+        "--default-log-file=/dev/null"
+      ],
+      [
+        "/home/alex/CodexProjects/IntaRNA/issue-268-validation/release/src/bin/IntaRNA",
+        "--target=GGGGGGGGGGGGGGGGGG",
+        "--query=CCCCCCCCCCCCCCCCC",
+        "--model=P",
+        "--mode=H",
+        "--seedBP=2",
+        "--threads=1",
+        "--acc=N",
+        "--outNoLP=true",
+        "--outNoGUend=false",
+        "--intLenMax=8",
+        "--outMode=C",
+        "--outCsvCols=id1,id2,start1,end1,start2,end2,E,Zall,Eall",
+        "--out=bpProb:/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/native-comparison/dense-H-true-base.csv",
+        "--default-log-file=/dev/null"
+      ],
+      [
+        "/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/release/src/bin/IntaRNA",
+        "--target=GGGGGGGGGGGGGGGGGG",
+        "--query=CCCCCCCCCCCCCCCCC",
+        "--model=P",
+        "--mode=H",
+        "--seedBP=2",
+        "--threads=1",
+        "--acc=N",
+        "--outNoLP=true",
+        "--outNoGUend=false",
+        "--intLenMax=8",
+        "--outMode=C",
+        "--outCsvCols=id1,id2,start1,end1,start2,end2,E,Zall,Eall",
+        "--out=bpProb:/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/native-comparison/dense-H-true-candidate.csv",
+        "--default-log-file=/dev/null"
+      ],
+      [
+        "/home/alex/CodexProjects/IntaRNA/issue-268-validation/release/src/bin/IntaRNA",
+        "--target=GGGGGG",
+        "--query=CCCCCC",
+        "--model=P",
+        "--mode=M",
+        "--seedBP=2",
+        "--threads=1",
+        "--acc=N",
+        "--outNoLP=false",
+        "--outNoGUend=false",
+        "--intLenMax=8",
+        "--outMode=C",
+        "--outCsvCols=id1,id2,start1,end1,start2,end2,E,Zall,Eall",
+        "--out=bpProb:/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/native-comparison/mixed-M-false-base.csv",
+        "--default-log-file=/dev/null",
+        "--seedTQ=1|||&4|||,1||&4||,2||&5||,3|||&2|||,5||&4||"
+      ],
+      [
+        "/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/release/src/bin/IntaRNA",
+        "--target=GGGGGG",
+        "--query=CCCCCC",
+        "--model=P",
+        "--mode=M",
+        "--seedBP=2",
+        "--threads=1",
+        "--acc=N",
+        "--outNoLP=false",
+        "--outNoGUend=false",
+        "--intLenMax=8",
+        "--outMode=C",
+        "--outCsvCols=id1,id2,start1,end1,start2,end2,E,Zall,Eall",
+        "--out=bpProb:/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/native-comparison/mixed-M-false-candidate.csv",
+        "--default-log-file=/dev/null",
+        "--seedTQ=1|||&4|||,1||&4||,2||&5||,3|||&2|||,5||&4||"
+      ],
+      [
+        "/home/alex/CodexProjects/IntaRNA/issue-268-validation/release/src/bin/IntaRNA",
+        "--target=GGGGGG",
+        "--query=CCCCCC",
+        "--model=P",
+        "--mode=M",
+        "--seedBP=2",
+        "--threads=1",
+        "--acc=N",
+        "--outNoLP=true",
+        "--outNoGUend=false",
+        "--intLenMax=8",
+        "--outMode=C",
+        "--outCsvCols=id1,id2,start1,end1,start2,end2,E,Zall,Eall",
+        "--out=bpProb:/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/native-comparison/mixed-M-true-base.csv",
+        "--default-log-file=/dev/null",
+        "--seedTQ=1|||&4|||,1||&4||,2||&5||,3|||&2|||,5||&4||"
+      ],
+      [
+        "/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/release/src/bin/IntaRNA",
+        "--target=GGGGGG",
+        "--query=CCCCCC",
+        "--model=P",
+        "--mode=M",
+        "--seedBP=2",
+        "--threads=1",
+        "--acc=N",
+        "--outNoLP=true",
+        "--outNoGUend=false",
+        "--intLenMax=8",
+        "--outMode=C",
+        "--outCsvCols=id1,id2,start1,end1,start2,end2,E,Zall,Eall",
+        "--out=bpProb:/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/native-comparison/mixed-M-true-candidate.csv",
+        "--default-log-file=/dev/null",
+        "--seedTQ=1|||&4|||,1||&4||,2||&5||,3|||&2|||,5||&4||"
+      ],
+      [
+        "/home/alex/CodexProjects/IntaRNA/issue-268-validation/release/src/bin/IntaRNA",
+        "--target=GGGGGG",
+        "--query=CCCCCC",
+        "--model=P",
+        "--mode=H",
+        "--seedBP=2",
+        "--threads=1",
+        "--acc=N",
+        "--outNoLP=false",
+        "--outNoGUend=false",
+        "--intLenMax=8",
+        "--outMode=C",
+        "--outCsvCols=id1,id2,start1,end1,start2,end2,E,Zall,Eall",
+        "--out=bpProb:/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/native-comparison/mixed-H-false-base.csv",
+        "--default-log-file=/dev/null",
+        "--seedTQ=1|||&4|||,1||&4||,2||&5||,3|||&2|||,5||&4||"
+      ],
+      [
+        "/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/release/src/bin/IntaRNA",
+        "--target=GGGGGG",
+        "--query=CCCCCC",
+        "--model=P",
+        "--mode=H",
+        "--seedBP=2",
+        "--threads=1",
+        "--acc=N",
+        "--outNoLP=false",
+        "--outNoGUend=false",
+        "--intLenMax=8",
+        "--outMode=C",
+        "--outCsvCols=id1,id2,start1,end1,start2,end2,E,Zall,Eall",
+        "--out=bpProb:/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/native-comparison/mixed-H-false-candidate.csv",
+        "--default-log-file=/dev/null",
+        "--seedTQ=1|||&4|||,1||&4||,2||&5||,3|||&2|||,5||&4||"
+      ],
+      [
+        "/home/alex/CodexProjects/IntaRNA/issue-268-validation/release/src/bin/IntaRNA",
+        "--target=GGGGGG",
+        "--query=CCCCCC",
+        "--model=P",
+        "--mode=H",
+        "--seedBP=2",
+        "--threads=1",
+        "--acc=N",
+        "--outNoLP=true",
+        "--outNoGUend=false",
+        "--intLenMax=8",
+        "--outMode=C",
+        "--outCsvCols=id1,id2,start1,end1,start2,end2,E,Zall,Eall",
+        "--out=bpProb:/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/native-comparison/mixed-H-true-base.csv",
+        "--default-log-file=/dev/null",
+        "--seedTQ=1|||&4|||,1||&4||,2||&5||,3|||&2|||,5||&4||"
+      ],
+      [
+        "/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/release/src/bin/IntaRNA",
+        "--target=GGGGGG",
+        "--query=CCCCCC",
+        "--model=P",
+        "--mode=H",
+        "--seedBP=2",
+        "--threads=1",
+        "--acc=N",
+        "--outNoLP=true",
+        "--outNoGUend=false",
+        "--intLenMax=8",
+        "--outMode=C",
+        "--outCsvCols=id1,id2,start1,end1,start2,end2,E,Zall,Eall",
+        "--out=bpProb:/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/native-comparison/mixed-H-true-candidate.csv",
+        "--default-log-file=/dev/null",
+        "--seedTQ=1|||&4|||,1||&4||,2||&5||,3|||&2|||,5||&4||"
+      ],
+      [
+        "/home/alex/CodexProjects/IntaRNA/issue-268-validation/release/src/bin/IntaRNA",
+        "--target=GGGAGGGG",
+        "--query=CCCCUCCC",
+        "--model=P",
+        "--mode=M",
+        "--seedBP=2",
+        "--threads=1",
+        "--acc=N",
+        "--outNoLP=false",
+        "--outNoGUend=false",
+        "--intLenMax=8",
+        "--outMode=C",
+        "--outCsvCols=id1,id2,start1,end1,start2,end2,E,Zall,Eall",
+        "--out=bpProb:/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/native-comparison/cropped-M-false-base.csv",
+        "--default-log-file=/dev/null",
+        "--tRegion=2-7",
+        "--qRegion=2-7"
+      ],
+      [
+        "/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/release/src/bin/IntaRNA",
+        "--target=GGGAGGGG",
+        "--query=CCCCUCCC",
+        "--model=P",
+        "--mode=M",
+        "--seedBP=2",
+        "--threads=1",
+        "--acc=N",
+        "--outNoLP=false",
+        "--outNoGUend=false",
+        "--intLenMax=8",
+        "--outMode=C",
+        "--outCsvCols=id1,id2,start1,end1,start2,end2,E,Zall,Eall",
+        "--out=bpProb:/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/native-comparison/cropped-M-false-candidate.csv",
+        "--default-log-file=/dev/null",
+        "--tRegion=2-7",
+        "--qRegion=2-7"
+      ],
+      [
+        "/home/alex/CodexProjects/IntaRNA/issue-268-validation/release/src/bin/IntaRNA",
+        "--target=GGGAGGGG",
+        "--query=CCCCUCCC",
+        "--model=P",
+        "--mode=M",
+        "--seedBP=2",
+        "--threads=1",
+        "--acc=N",
+        "--outNoLP=true",
+        "--outNoGUend=false",
+        "--intLenMax=8",
+        "--outMode=C",
+        "--outCsvCols=id1,id2,start1,end1,start2,end2,E,Zall,Eall",
+        "--out=bpProb:/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/native-comparison/cropped-M-true-base.csv",
+        "--default-log-file=/dev/null",
+        "--tRegion=2-7",
+        "--qRegion=2-7"
+      ],
+      [
+        "/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/release/src/bin/IntaRNA",
+        "--target=GGGAGGGG",
+        "--query=CCCCUCCC",
+        "--model=P",
+        "--mode=M",
+        "--seedBP=2",
+        "--threads=1",
+        "--acc=N",
+        "--outNoLP=true",
+        "--outNoGUend=false",
+        "--intLenMax=8",
+        "--outMode=C",
+        "--outCsvCols=id1,id2,start1,end1,start2,end2,E,Zall,Eall",
+        "--out=bpProb:/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/native-comparison/cropped-M-true-candidate.csv",
+        "--default-log-file=/dev/null",
+        "--tRegion=2-7",
+        "--qRegion=2-7"
+      ],
+      [
+        "/home/alex/CodexProjects/IntaRNA/issue-268-validation/release/src/bin/IntaRNA",
+        "--target=GGGAGGGG",
+        "--query=CCCCUCCC",
+        "--model=P",
+        "--mode=H",
+        "--seedBP=2",
+        "--threads=1",
+        "--acc=N",
+        "--outNoLP=false",
+        "--outNoGUend=false",
+        "--intLenMax=8",
+        "--outMode=C",
+        "--outCsvCols=id1,id2,start1,end1,start2,end2,E,Zall,Eall",
+        "--out=bpProb:/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/native-comparison/cropped-H-false-base.csv",
+        "--default-log-file=/dev/null",
+        "--tRegion=2-7",
+        "--qRegion=2-7"
+      ],
+      [
+        "/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/release/src/bin/IntaRNA",
+        "--target=GGGAGGGG",
+        "--query=CCCCUCCC",
+        "--model=P",
+        "--mode=H",
+        "--seedBP=2",
+        "--threads=1",
+        "--acc=N",
+        "--outNoLP=false",
+        "--outNoGUend=false",
+        "--intLenMax=8",
+        "--outMode=C",
+        "--outCsvCols=id1,id2,start1,end1,start2,end2,E,Zall,Eall",
+        "--out=bpProb:/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/native-comparison/cropped-H-false-candidate.csv",
+        "--default-log-file=/dev/null",
+        "--tRegion=2-7",
+        "--qRegion=2-7"
+      ],
+      [
+        "/home/alex/CodexProjects/IntaRNA/issue-268-validation/release/src/bin/IntaRNA",
+        "--target=GGGAGGGG",
+        "--query=CCCCUCCC",
+        "--model=P",
+        "--mode=H",
+        "--seedBP=2",
+        "--threads=1",
+        "--acc=N",
+        "--outNoLP=true",
+        "--outNoGUend=false",
+        "--intLenMax=8",
+        "--outMode=C",
+        "--outCsvCols=id1,id2,start1,end1,start2,end2,E,Zall,Eall",
+        "--out=bpProb:/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/native-comparison/cropped-H-true-base.csv",
+        "--default-log-file=/dev/null",
+        "--tRegion=2-7",
+        "--qRegion=2-7"
+      ],
+      [
+        "/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/release/src/bin/IntaRNA",
+        "--target=GGGAGGGG",
+        "--query=CCCCUCCC",
+        "--model=P",
+        "--mode=H",
+        "--seedBP=2",
+        "--threads=1",
+        "--acc=N",
+        "--outNoLP=true",
+        "--outNoGUend=false",
+        "--intLenMax=8",
+        "--outMode=C",
+        "--outCsvCols=id1,id2,start1,end1,start2,end2,E,Zall,Eall",
+        "--out=bpProb:/home/alex/CodexProjects/IntaRNA/issue-270-anchored-validation/native-comparison/cropped-H-true-candidate.csv",
+        "--default-log-file=/dev/null",
+        "--tRegion=2-7",
+        "--qRegion=2-7"
+      ]
+    ],
+    "checks": [
+      {
+        "case": "cropped-H-false",
+        "probabilities": 64,
+        "max_relative_error": 5.016701488012286e-16,
+        "byte_identical": false
+      },
+      {
+        "case": "cropped-H-true",
+        "probabilities": 64,
+        "max_relative_error": 3.6509232762887005e-16,
+        "byte_identical": false
+      },
+      {
+        "case": "cropped-M-false",
+        "probabilities": 64,
+        "max_relative_error": 0.0,
+        "byte_identical": true
+      },
+      {
+        "case": "cropped-M-true",
+        "probabilities": 64,
+        "max_relative_error": 0.0,
+        "byte_identical": true
+      },
+      {
+        "case": "dense-H-false",
+        "probabilities": 306,
+        "max_relative_error": 2.3073317770873946e-15,
+        "byte_identical": false
+      },
+      {
+        "case": "dense-H-true",
+        "probabilities": 306,
+        "max_relative_error": 5.496759884311985e-16,
+        "byte_identical": false
+      },
+      {
+        "case": "dense-M-false",
+        "probabilities": 306,
+        "max_relative_error": 0.0,
+        "byte_identical": true
+      },
+      {
+        "case": "dense-M-true",
+        "probabilities": 306,
+        "max_relative_error": 0.0,
+        "byte_identical": true
+      },
+      {
+        "case": "mixed-H-false",
+        "probabilities": 36,
+        "max_relative_error": 6.684860863120327e-16,
+        "byte_identical": false
+      },
+      {
+        "case": "mixed-H-true",
+        "probabilities": 36,
+        "max_relative_error": 2.532544440625586e-16,
+        "byte_identical": false
+      },
+      {
+        "case": "mixed-M-false",
+        "probabilities": 36,
+        "max_relative_error": 0.0,
+        "byte_identical": true
+      },
+      {
+        "case": "mixed-M-true",
+        "probabilities": 36,
+        "max_relative_error": 0.0,
+        "byte_identical": true
+      }
+    ]
+  },
+  "validation": {
+    "release": "make tests -j2: 7/7 drivers; 115 API cases; 457827 assertions",
+    "debug": "make tests -j2: 7/7 drivers; 115 API cases; 457828 assertions",
+    "kernel_exact": {
+      "heuristic": false,
+      "threads": 1,
+      "relative_tolerance": 1e-12,
+      "repetitions": 0,
+      "checks": [
+        {
+          "case": "dense40-many",
+          "compared_entries": 220710,
+          "max_relative_error": 0.0,
+          "max_relative_error_by_kind": {
+            "b": 0.0,
+            "p": 0.0,
+            "z": 0.0
+          }
+        },
+        {
+          "case": "dense40-few",
+          "compared_entries": 42460,
+          "max_relative_error": 0.0,
+          "max_relative_error_by_kind": {
+            "b": 0.0,
+            "p": 0.0,
+            "z": 0.0
+          }
+        },
+        {
+          "case": "band60-many",
+          "compared_entries": 42270,
+          "max_relative_error": 0.0,
+          "max_relative_error_by_kind": {
+            "b": 0.0,
+            "p": 0.0,
+            "z": 0.0
+          }
+        },
+        {
+          "case": "band60-few",
+          "compared_entries": 22796,
+          "max_relative_error": 0.0,
+          "max_relative_error_by_kind": {
+            "b": 0.0,
+            "p": 0.0,
+            "z": 0.0
+          }
+        }
+      ]
+    },
+    "kernel_heuristic": {
+      "heuristic": true,
+      "threads": 1,
+      "relative_tolerance": 1e-12,
+      "repetitions": 0,
+      "checks": [
+        {
+          "case": "dense40-many",
+          "compared_entries": 220710,
+          "max_relative_error": 6.622292098580306e-15,
+          "max_relative_error_by_kind": {
+            "b": 8.855415220299877e-16,
+            "p": 6.622292098580306e-15,
+            "z": 1.4956070422152216e-16
+          }
+        },
+        {
+          "case": "dense40-few",
+          "compared_entries": 3435,
+          "max_relative_error": 3.1583238696495025e-15,
+          "max_relative_error_by_kind": {
+            "b": 8.208110010426082e-16,
+            "p": 3.1583238696495025e-15,
+            "z": 2.2691994745553064e-16
+          }
+        },
+        {
+          "case": "band60-many",
+          "compared_entries": 42270,
+          "max_relative_error": 4.389723301013629e-15,
+          "max_relative_error_by_kind": {
+            "b": 8.055521556013479e-16,
+            "p": 4.389723301013629e-15,
+            "z": 2.5614223541768804e-16
+          }
+        },
+        {
+          "case": "band60-few",
+          "compared_entries": 4591,
+          "max_relative_error": 1.8377333584902226e-15,
+          "max_relative_error_by_kind": {
+            "b": 8.527781049852308e-16,
+            "p": 1.8377333584902226e-15,
+            "z": 1.40574141827393e-16
+          }
+        }
+      ]
+    },
+    "installation": "make install; three changed public headers compiled independently; installed pkg-config probability example passed"
+  },
+  "measurement_conditions": {
+    "repetitions": 5,
+    "threads": 1,
+    "ordering": "alternating baseline/candidate fresh processes",
+    "concurrent_project_build_test_install": false,
+    "other_workstation_activity_cpu_affinity_frequency": "uncontrolled",
+    "platform_validation": "Linux GCC14.4; macOS/Apple Clang not run"
+  }
+}
