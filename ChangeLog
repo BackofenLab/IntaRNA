@@ -68,6 +68,9 @@
 
 ## Technical changes and Optimizations
 
+- reuse MFE seed-extension scratch matrices and bounded physical loop energies
+  across seeds in exact and heuristic prediction; document benchmarks (#274)
+
 - share exact left-most seed-anchor extensions with heuristic prediction,
   combining each true left extension with one retained right endpoint (#270)
 
@@ -209,6 +212,20 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261016 Alexander Mitrofanov
+ * PredictorMfe2dSeedExtension, PredictorMfe2dHeuristicSeedExtension
+   * reuse nonpreserving extension workspace capacity across seeds and traceback
+   + cache seed-independent pair feasibility and loop energies within a bounded
+     16 MiB budget per prediction; invalidate caches before changing offsets
+   * bound predecessor scans without changing transition/update order (#274)
+ * tests/PredictorSeedOracle_test.cpp
+   + exercise repeated exact/heuristic predictions and cache correctness
+ * doc/analysis/mfe-seed-extension-reuse.md, doc/benchmarks/seed-extension/
+   + compare ensemble/MFE reuse strategies and record reproducible native
+     runtime, memory and byte-exact output comparisons against 21b9d8f
+ * doc/Makefile.am
+   + distribute the analysis and benchmark evidence
 
 261016 Alexander Mitrofanov
  * SeededPartitionFunction.*, StackSeedDomain.h

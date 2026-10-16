@@ -46,6 +46,9 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 		throw std::runtime_error("PredictorMfe2dHeuristicSeedExtension::predict("+toString(r1)+","+toString(r2)+") is not sane");
 #endif
 
+	// Cached physical coordinates belong only to this prediction.
+	resetExtensionCache();
+
 	// setup index offset
 	energy.setOffset1(r1.from);
 	energy.setOffset2(r2.from);
@@ -69,6 +72,9 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 		return;
 	}
 
+	// Reuse scratch capacity and physical loop energies across seed anchors.
+	prepareExtensionWorkspace(range_size1, range_size2);
+
 	size_t si1 = RnaSequence::lastPos, si2 = RnaSequence::lastPos;
 	while( seedHandler.updateToNextSeed(si1,si2
 			, 0, range_size1+1-seedHandler.getConstraint().getBasePairs()
@@ -91,13 +97,13 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 		E_right_opt = E_INF;
 
 		// ER : update for seed + ER
-		hybridE_right.resize( std::min(range_size1-sj1, maxMatrixLen1), std::min(range_size2-sj2, maxMatrixLen2) );
+		hybridE_right.resize( std::min(range_size1-sj1, maxMatrixLen1), std::min(range_size2-sj2, maxMatrixLen2), false );
 		fillHybridE_right(sj1, sj2, si1, si2);
 
 		// ensure there is a valid right-extension
 		if (!output.getOutputConstraint().noGUend || (!E_isINF(E_right_opt) || !energy.isGU(sj1,sj2))) {
 			// EL
-			hybridE_left.resize( std::min(si1+1, maxMatrixLen1), std::min(si2+1, maxMatrixLen2) );
+			hybridE_left.resize( std::min(si1+1, maxMatrixLen1), std::min(si2+1, maxMatrixLen2), false );
 			fillHybridE_left(si1, si2);
 		}
 
@@ -128,6 +134,8 @@ fillHybridE_right( const size_t sj1, const size_t sj2
 	// ensure a stacking to the right of the left boundary (i1,i2)
 	const size_t noLpShift = outConstraint.noLP ? 1 : 0;
 	E_type iStackE = E_type(0);
+	const size_t maxLoop1 = energy.getMaxInternalLoopSize1();
+	const size_t maxLoop2 = energy.getMaxInternalLoopSize2();
 
 	// current minimal value
 	E_type curMinE = E_INF;
@@ -146,18 +154,18 @@ fillHybridE_right( const size_t sj1, const size_t sj2
 			// check if complementary
 			if (sj1<j1
 				&& sj2<j2
-				&& energy.areComplementary(j1,j2) )
+				&& extensionPairIsValid(j1,j2) )
 			{
 
 				// left-stacking of j if no-LP
 				if (outConstraint.noLP) {
 					// skip if no stacking possible
-					if (!energy.areComplementary(j1-noLpShift,j2-noLpShift))
+					if (!extensionPairIsValid(j1-noLpShift,j2-noLpShift))
 					{
 						continue;
 					}
 					// get stacking energy to avoid recomputation in recursion below
-					iStackE = energy.getE_interLeft(j1-noLpShift,j1,j2-noLpShift,j2);
+					iStackE = extensionLoopE(j1-noLpShift,j1,j2-noLpShift,j2);
 					// check just stacked seed extension
 					if (j1-noLpShift==sj1 && j2-noLpShift==sj2) {
 						curMinE = std::min( curMinE, iStackE + hybridE_right(0,0) );
@@ -165,17 +173,16 @@ fillHybridE_right( const size_t sj1, const size_t sj2
 				}
 
 				// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
-				for (k1=j1-noLpShift; k1-- > sj1; ) {
-					// ensure maximal loop length
-					if (j1-noLpShift-k1 > energy.getMaxInternalLoopSize1()+1) break;
-					for (k2=j2-noLpShift; k2-- > sj2; ) {
-						// ensure maximal loop length
-						if (j2-noLpShift-k2 > energy.getMaxInternalLoopSize2()+1) break;
+				// Bound predecessor scans once per cell while retaining their order.
+				const size_t k1min = j1-noLpShift-std::min(j1-noLpShift-sj1,maxLoop1+1);
+				const size_t k2min = j2-noLpShift-std::min(j2-noLpShift-sj2,maxLoop2+1);
+				for (k1=j1-noLpShift; k1-- > k1min; ) {
+					for (k2=j2-noLpShift; k2-- > k2min; ) {
 						// check if (k1,k2) are valid left boundary
 						if ( E_isNotINF( hybridE_right(k1-sj1,k2-sj2) ) ) {
 							curMinE = std::min( curMinE,
 									(hybridE_right(k1-sj1,k2-sj2) // left part
-									+ energy.getE_interLeft(k1,j1-noLpShift,k2,j2-noLpShift) // loop
+									+ extensionLoopE(k1,j1-noLpShift,k2,j2-noLpShift) // loop
 									+ iStackE) // right stack if no-LP
 									);
 						}
@@ -206,7 +213,7 @@ fillHybridE_left( const size_t si1, const size_t si2 )
 
 #if INTARNA_IN_DEBUG_MODE
 	// check indices
-	if (!energy.areComplementary(si1,si2) )
+	if (!extensionPairIsValid(si1,si2) )
 		throw std::runtime_error("PredictorMfe2dSeedExtension::fillHybridE_left("+toString(si1)+","+toString(si2)+",..) are not complementary");
 #endif
 
@@ -224,6 +231,8 @@ fillHybridE_left( const size_t si1, const size_t si2 )
 	// ensure a stacking to the right of the left boundary (i1,i2)
 	const size_t noLpShift = outConstraint.noLP ? 1 : 0;
 	E_type iStackE = E_type(0);
+	const size_t maxLoop1 = energy.getMaxInternalLoopSize1();
+	const size_t maxLoop2 = energy.getMaxInternalLoopSize2();
 
 	// iterate over all window starts
 	for (size_t l1=0; l1 < hybridE_left.size1(); l1++) {
@@ -240,33 +249,32 @@ fillHybridE_left( const size_t si1, const size_t si2 )
 			// check if complementary
 			if (i1<si1
 				&& i2<si2
-				&& energy.areComplementary(i1,i2) )
+				&& extensionPairIsValid(i1,i2) )
 			{
 				// left-stacking of j if no-LP
 				if (outConstraint.noLP) {
 					// skip if no stacking possible
-					if (!energy.areComplementary(i1+noLpShift,i2+noLpShift))
+					if (!extensionPairIsValid(i1+noLpShift,i2+noLpShift))
 					{
 						continue;
 					}
 					// get stacking energy to avoid recomputation in recursion below
-					iStackE = energy.getE_interLeft(i1,i1+noLpShift,i2,i2+noLpShift);
+					iStackE = extensionLoopE(i1,i1+noLpShift,i2,i2+noLpShift);
 					// check just stacked
 					curMinE = std::min( curMinE, iStackE + hybridE_left(l1-noLpShift,l2-noLpShift));
 				}
 
 				// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
-				for (k1=i1+noLpShift; k1++ < si1; ) {
-					// ensure maximal loop length
-					if (k1-i1-noLpShift > energy.getMaxInternalLoopSize1()+1) break;
-				for (k2=i2+noLpShift; k2++ < si2; ) {
-					// ensure maximal loop length
-					if (k2-i2-noLpShift > energy.getMaxInternalLoopSize2()+1) break;
+				// Bound predecessor scans once per cell while retaining their order.
+				const size_t k1max = i1+noLpShift+std::min(si1-i1-noLpShift,maxLoop1+1);
+				const size_t k2max = i2+noLpShift+std::min(si2-i2-noLpShift,maxLoop2+1);
+				for (k1=i1+noLpShift; k1++ < k1max; ) {
+				for (k2=i2+noLpShift; k2++ < k2max; ) {
 					// check if (k1,k2) are valid left boundary
 					if ( E_isNotINF( hybridE_left(si1-k1,si2-k2) ) ) {
 						curMinE = std::min( curMinE,
 								(iStackE // i stacking if no-LP
-										+ energy.getE_interLeft(i1+noLpShift,k1,i2+noLpShift,k2) // loop
+										+ extensionLoopE(i1+noLpShift,k1,i2+noLpShift,k2) // loop
 										+ hybridE_left(si1-k1,si2-k2) ) // right part up to seed
 								);
 					}

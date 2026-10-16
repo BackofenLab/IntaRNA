@@ -1,0 +1,608 @@
+{
+  "complete": true,
+  "output_checks_passed": true,
+  "samples": 168,
+  "ended_at": "2026-10-16T21:34:12.126486+00:00",
+  "summary": [
+    {
+      "case": "oxys-M",
+      "base": {
+        "samples": 7,
+        "elapsed_seconds": {
+          "median": 0.22817429999849992,
+          "min": 0.22598438699787948,
+          "max": 0.252588850002212
+        },
+        "user_seconds": {
+          "median": 0.22,
+          "min": 0.21,
+          "max": 0.24
+        },
+        "system_seconds": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "max_rss_kib": {
+          "median": 16992,
+          "min": 16788,
+          "max": 17120
+        }
+      },
+      "candidate": {
+        "samples": 7,
+        "elapsed_seconds": {
+          "median": 0.21060160100023495,
+          "min": 0.20387787200161256,
+          "max": 0.2150785600024392
+        },
+        "user_seconds": {
+          "median": 0.2,
+          "min": 0.19,
+          "max": 0.2
+        },
+        "system_seconds": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.01
+        },
+        "max_rss_kib": {
+          "median": 20244,
+          "min": 20060,
+          "max": 20576
+        }
+      },
+      "candidate_over_base_wall_time": 0.9229856342349665
+    },
+    {
+      "case": "oxys-H",
+      "base": {
+        "samples": 7,
+        "elapsed_seconds": {
+          "median": 0.0783231879977393,
+          "min": 0.0770573260015226,
+          "max": 0.08071975899656536
+        },
+        "user_seconds": {
+          "median": 0.07,
+          "min": 0.06,
+          "max": 0.07
+        },
+        "system_seconds": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "max_rss_kib": {
+          "median": 16944,
+          "min": 16776,
+          "max": 17116
+        }
+      },
+      "candidate": {
+        "samples": 7,
+        "elapsed_seconds": {
+          "median": 0.06341629400412785,
+          "min": 0.06252601600135677,
+          "max": 0.06667442999605555
+        },
+        "user_seconds": {
+          "median": 0.05,
+          "min": 0.05,
+          "max": 0.05
+        },
+        "system_seconds": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "max_rss_kib": {
+          "median": 20572,
+          "min": 20116,
+          "max": 20832
+        }
+      },
+      "candidate_over_base_wall_time": 0.8096745756308883
+    },
+    {
+      "case": "oxys-noacc-M",
+      "base": {
+        "samples": 7,
+        "elapsed_seconds": {
+          "median": 0.6930307310030912,
+          "min": 0.6711645039977157,
+          "max": 0.7156457750024856
+        },
+        "user_seconds": {
+          "median": 0.68,
+          "min": 0.66,
+          "max": 0.7
+        },
+        "system_seconds": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "max_rss_kib": {
+          "median": 14416,
+          "min": 14032,
+          "max": 14544
+        }
+      },
+      "candidate": {
+        "samples": 7,
+        "elapsed_seconds": {
+          "median": 0.6169371109936037,
+          "min": 0.5964780709982733,
+          "max": 0.7198363159986911
+        },
+        "user_seconds": {
+          "median": 0.6,
+          "min": 0.59,
+          "max": 0.71
+        },
+        "system_seconds": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "max_rss_kib": {
+          "median": 18176,
+          "min": 17920,
+          "max": 18304
+        }
+      },
+      "candidate_over_base_wall_time": 0.8902016655172711
+    },
+    {
+      "case": "oxys-noacc-H",
+      "base": {
+        "samples": 7,
+        "elapsed_seconds": {
+          "median": 0.15969202099950053,
+          "min": 0.15305990299384575,
+          "max": 0.1611605329962913
+        },
+        "user_seconds": {
+          "median": 0.15,
+          "min": 0.14,
+          "max": 0.15
+        },
+        "system_seconds": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "max_rss_kib": {
+          "median": 14652,
+          "min": 14040,
+          "max": 14792
+        }
+      },
+      "candidate": {
+        "samples": 7,
+        "elapsed_seconds": {
+          "median": 0.08354390999738825,
+          "min": 0.08077238599798875,
+          "max": 0.08493679000093834
+        },
+        "user_seconds": {
+          "median": 0.07,
+          "min": 0.07,
+          "max": 0.07
+        },
+        "system_seconds": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "max_rss_kib": {
+          "median": 18176,
+          "min": 18048,
+          "max": 18304
+        }
+      },
+      "candidate_over_base_wall_time": 0.5231564449776083
+    },
+    {
+      "case": "dense-M",
+      "base": {
+        "samples": 7,
+        "elapsed_seconds": {
+          "median": 3.6327195359990583,
+          "min": 3.541711801997735,
+          "max": 3.727804116002517
+        },
+        "user_seconds": {
+          "median": 3.61,
+          "min": 3.53,
+          "max": 3.72
+        },
+        "system_seconds": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "max_rss_kib": {
+          "median": 14520,
+          "min": 14396,
+          "max": 14848
+        }
+      },
+      "candidate": {
+        "samples": 7,
+        "elapsed_seconds": {
+          "median": 2.7053802220034413,
+          "min": 2.598231374002353,
+          "max": 2.7622646969975904
+        },
+        "user_seconds": {
+          "median": 2.69,
+          "min": 2.59,
+          "max": 2.75
+        },
+        "system_seconds": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "max_rss_kib": {
+          "median": 16256,
+          "min": 16000,
+          "max": 16384
+        }
+      },
+      "candidate_over_base_wall_time": 0.7447258714013045
+    },
+    {
+      "case": "dense-H",
+      "base": {
+        "samples": 7,
+        "elapsed_seconds": {
+          "median": 1.1800887389981654,
+          "min": 1.1654914179962361,
+          "max": 1.2308894189991406
+        },
+        "user_seconds": {
+          "median": 1.17,
+          "min": 1.16,
+          "max": 1.22
+        },
+        "system_seconds": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "max_rss_kib": {
+          "median": 14644,
+          "min": 14260,
+          "max": 14848
+        }
+      },
+      "candidate": {
+        "samples": 7,
+        "elapsed_seconds": {
+          "median": 0.343396803997166,
+          "min": 0.32344084000214934,
+          "max": 0.3658891910017701
+        },
+        "user_seconds": {
+          "median": 0.33,
+          "min": 0.31,
+          "max": 0.35
+        },
+        "system_seconds": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "max_rss_kib": {
+          "median": 16384,
+          "min": 16128,
+          "max": 16384
+        }
+      },
+      "candidate_over_base_wall_time": 0.290992357310936
+    },
+    {
+      "case": "dense-nolp-M",
+      "base": {
+        "samples": 7,
+        "elapsed_seconds": {
+          "median": 2.4051032779971138,
+          "min": 2.335149795995676,
+          "max": 2.4875883429995156
+        },
+        "user_seconds": {
+          "median": 2.39,
+          "min": 2.32,
+          "max": 2.48
+        },
+        "system_seconds": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "max_rss_kib": {
+          "median": 14524,
+          "min": 14288,
+          "max": 14720
+        }
+      },
+      "candidate": {
+        "samples": 7,
+        "elapsed_seconds": {
+          "median": 1.7558094339983654,
+          "min": 1.6993050569944899,
+          "max": 1.7743743329992867
+        },
+        "user_seconds": {
+          "median": 1.74,
+          "min": 1.69,
+          "max": 1.76
+        },
+        "system_seconds": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "max_rss_kib": {
+          "median": 16384,
+          "min": 16000,
+          "max": 16384
+        }
+      },
+      "candidate_over_base_wall_time": 0.7300349428073386
+    },
+    {
+      "case": "dense-nolp-H",
+      "base": {
+        "samples": 7,
+        "elapsed_seconds": {
+          "median": 0.9321481669976492,
+          "min": 0.8969694949992117,
+          "max": 0.9356616340010078
+        },
+        "user_seconds": {
+          "median": 0.92,
+          "min": 0.89,
+          "max": 0.93
+        },
+        "system_seconds": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "max_rss_kib": {
+          "median": 14656,
+          "min": 14520,
+          "max": 14848
+        }
+      },
+      "candidate": {
+        "samples": 7,
+        "elapsed_seconds": {
+          "median": 0.2790719119948335,
+          "min": 0.2682166619997588,
+          "max": 0.28544693699950585
+        },
+        "user_seconds": {
+          "median": 0.27,
+          "min": 0.25,
+          "max": 0.28
+        },
+        "system_seconds": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "max_rss_kib": {
+          "median": 16256,
+          "min": 15872,
+          "max": 16384
+        }
+      },
+      "candidate_over_base_wall_time": 0.299385786375244
+    },
+    {
+      "case": "bulged-M",
+      "base": {
+        "samples": 7,
+        "elapsed_seconds": {
+          "median": 20.436534836997453,
+          "min": 20.100940208001703,
+          "max": 21.027037519997975
+        },
+        "user_seconds": {
+          "median": 20.42,
+          "min": 20.08,
+          "max": 21.0
+        },
+        "system_seconds": {
+          "median": 0.01,
+          "min": 0.0,
+          "max": 0.01
+        },
+        "max_rss_kib": {
+          "median": 15872,
+          "min": 15744,
+          "max": 16128
+        }
+      },
+      "candidate": {
+        "samples": 7,
+        "elapsed_seconds": {
+          "median": 18.745807493003667,
+          "min": 18.53029503900325,
+          "max": 19.909435503002896
+        },
+        "user_seconds": {
+          "median": 18.72,
+          "min": 18.5,
+          "max": 19.89
+        },
+        "system_seconds": {
+          "median": 0.01,
+          "min": 0.0,
+          "max": 0.02
+        },
+        "max_rss_kib": {
+          "median": 20096,
+          "min": 19840,
+          "max": 20352
+        }
+      },
+      "candidate_over_base_wall_time": 0.9172693728423587
+    },
+    {
+      "case": "bulged-H",
+      "base": {
+        "samples": 7,
+        "elapsed_seconds": {
+          "median": 3.137401313993905,
+          "min": 2.9955135850032093,
+          "max": 3.246840963998693
+        },
+        "user_seconds": {
+          "median": 3.12,
+          "min": 2.98,
+          "max": 3.23
+        },
+        "system_seconds": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "max_rss_kib": {
+          "median": 16000,
+          "min": 15872,
+          "max": 16128
+        }
+      },
+      "candidate": {
+        "samples": 7,
+        "elapsed_seconds": {
+          "median": 1.2525030039978446,
+          "min": 1.2405925029961509,
+          "max": 1.3304343269992387
+        },
+        "user_seconds": {
+          "median": 1.24,
+          "min": 1.22,
+          "max": 1.31
+        },
+        "system_seconds": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "max_rss_kib": {
+          "median": 20224,
+          "min": 20096,
+          "max": 20480
+        }
+      },
+      "candidate_over_base_wall_time": 0.3992167015457168
+    },
+    {
+      "case": "no-seeds-M",
+      "base": {
+        "samples": 7,
+        "elapsed_seconds": {
+          "median": 0.008868766999512445,
+          "min": 0.008531804996891879,
+          "max": 0.00978454299911391
+        },
+        "user_seconds": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "system_seconds": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "max_rss_kib": {
+          "median": 14276,
+          "min": 14128,
+          "max": 14592
+        }
+      },
+      "candidate": {
+        "samples": 7,
+        "elapsed_seconds": {
+          "median": 0.00886398799775634,
+          "min": 0.008400880004046485,
+          "max": 0.009290887996030506
+        },
+        "user_seconds": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "system_seconds": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "max_rss_kib": {
+          "median": 14464,
+          "min": 14284,
+          "max": 14592
+        }
+      },
+      "candidate_over_base_wall_time": 0.9994611424839137
+    },
+    {
+      "case": "no-seeds-H",
+      "base": {
+        "samples": 7,
+        "elapsed_seconds": {
+          "median": 0.008815576999040786,
+          "min": 0.008339455001987517,
+          "max": 0.009695836000901181
+        },
+        "user_seconds": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "system_seconds": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "max_rss_kib": {
+          "median": 14432,
+          "min": 14176,
+          "max": 14720
+        }
+      },
+      "candidate": {
+        "samples": 7,
+        "elapsed_seconds": {
+          "median": 0.008991034999780823,
+          "min": 0.008685433997015934,
+          "max": 0.009464904003834818
+        },
+        "user_seconds": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "system_seconds": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "max_rss_kib": {
+          "median": 14464,
+          "min": 14324,
+          "max": 14592
+        }
+      },
+      "candidate_over_base_wall_time": 1.0199031782898758
+    }
+  ]
+}
