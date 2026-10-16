@@ -4,8 +4,6 @@
 ################################################################
 
 EXTRA_DIST =	\
-			analysis/vienna-accessibility-thread-safety.md \
-			analysis/vrna-window-threads.cpp \
 			conda.txt \
 			api-documentation.md \
 			build-api.sh \
