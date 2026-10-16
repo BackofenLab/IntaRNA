@@ -42,6 +42,9 @@
 
 ## Technical changes and Optimizations
 
+- evaluate Easylogging++ versus ViennaRNA logging, styling, compatibility and
+  migration tradeoffs without changing runtime behavior (issue #273)
+
 - require ViennaRNA >= 2.7.0 and its logger/prepared-window APIs at configure
   time; install the logger lock for every supported version (PR #267)
 
@@ -137,6 +140,18 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261016 Alexander Mitrofanov
+ * doc/analysis/logging-evaluation.md :
+   + audit current logging sites, verbosity, timing, styling, file routing and
+     public API use against ViennaRNA 2.7.0 and 2.7.2
+   + record source evidence and isolated probe results; evaluate replacement
+     benefits, missing features and callback/threading constraints
+   * recommend retaining current logging pending a dedicated adapter design;
+     no logging implementation or dependency change
+   * addresses https://github.com/BackofenLab/IntaRNA/issues/273
+ * doc/Makefile.am :
+   + include the evaluation in source distributions
 
 261015 Alexander Mitrofanov
  * configure.ac, conda-build-env.yml :
