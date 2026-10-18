@@ -68,6 +68,9 @@
 
 ## Technical changes and Optimizations
 
+- align probability API invalid-input tests with debug-only precondition checks
+  and avoid an unchecked null seed-mask call in release test runs (PR #258)
+
 - use hashed base-pair keys for sparse stack-seed lookup, assert internal seed
   geometry in debug builds, and document probability computation steps and
   contributor conventions (PR #258 review)
@@ -190,6 +193,13 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261018 Alexander Mitrofanov
+ * BasePairProbabilities_test.cpp, StackSeedDomain_test.cpp,
+   PredictorUnseededProbability_test.cpp, PredictorHeuristicProbability_test.cpp
+   * exercise debug-only region/mask/handler/length preconditions only in debug builds
+   + restore the unsupported-handler test under the matching debug guard
+   * keep ordinary lifecycle, arithmetic and output checks in both configurations
 
 261013 Alexander Mitrofanov
  * StackSeedDomain, SeededPartitionFunction, PredictorMfeEns2dSeedExtension

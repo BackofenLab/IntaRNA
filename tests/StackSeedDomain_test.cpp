@@ -20,11 +20,13 @@ TEST_CASE("stack capability and active occurrence domain", "[StackSeedDomain]") 
 	SeedHandlerNoBulge stack(energy,computed);
 	REQUIRE(mfe.guaranteesStackOnlySeeds());
 	REQUIRE(stack.guaranteesStackOnlySeeds());
-	// only in debug mode the following checks are enabled
-	// SeedConstraint bulged(2,1,1,0,E_INF,Accessibility::ED_UPPER_BOUND,E_INF,IndexRangeList(),IndexRangeList(),"",false,false,false);
-	// SeedHandlerMfe bulge(energy,bulged);
-	// REQUIRE_FALSE(bulge.guaranteesStackOnlySeeds());
-	// REQUIRE_THROWS_AS(StackSeedDomain(bulge,6,6,6,6),std::invalid_argument);
+#if INTARNA_IN_DEBUG_MODE
+	// Unsupported handlers are rejected only by the debug precondition check.
+	SeedConstraint bulged(2,1,1,0,E_INF,Accessibility::ED_UPPER_BOUND,E_INF,IndexRangeList(),IndexRangeList(),"",false,false,false);
+	SeedHandlerMfe bulge(energy,bulged);
+	REQUIRE_FALSE(bulge.guaranteesStackOnlySeeds());
+	REQUIRE_THROWS_AS(StackSeedDomain(bulge,6,6,6,6),std::invalid_argument);
+#endif
 	SeedConstraint explicitC(1,0,0,0,E_INF,Accessibility::ED_UPPER_BOUND,E_INF,
 		IndexRangeList(),IndexRangeList(),"1|&6|,2|||&3|||,5||&1||",false,false,false);
 	SeedHandlerIdxOffset explicitH(new SeedHandlerExplicit(energy,explicitC));
@@ -72,8 +74,10 @@ TEST_CASE("stack-domain lookups and traversal preserve overlapping seed geometry
 		domain.forEachStart([&](size_t i,size_t j){ starts.emplace_back(i,j); });
 		REQUIRE(starts==expected);
 	}
-	// Conflicting externally supplied lengths remain an input error in release.
+#if INTARNA_IN_DEBUG_MODE
+	// Conflicting lengths violate a debug-checked caller precondition.
 	REQUIRE_THROWS_AS((StackSeedDomain({{1,1,1},{1,1,2}},4,4,4,4)),std::invalid_argument);
+#endif
 }
 
 TEST_CASE("stack-domain admission preserves handler-specific threshold equality", "[StackSeedDomain]") {
@@ -98,7 +102,7 @@ TEST_CASE("stack-domain admission preserves handler-specific threshold equality"
 	REQUIRE(StackSeedDomain(ex,3,3,3,3).maxSeedLength()==2);
 }
 
-TEST_CASE("explicit stack capability inspects the retained minimum-energy pattern", "[StackSeedDomain]") {
+TEST_CASE("explicit stack capability remains conservative for mixed encodings", "[StackSeedDomain]") {
 	#include "testEasyLoggingSetup.icc"
 	RnaSequence t("t","GGGG"),q("q","CCCC");
 	AccessibilityDisabled at(t,0,nullptr),aq(q,0,nullptr);ReverseAccessibility ar(aq);
@@ -106,9 +110,13 @@ TEST_CASE("explicit stack capability inspects the retained minimum-energy patter
 	SeedConstraint sc(2,0,0,0,E_INF,Accessibility::ED_UPPER_BOUND,E_INF,
 			IndexRangeList(),IndexRangeList(),"1|.|&2|.|,1|||&2|||",false,false,false);
 	SeedHandlerExplicit handler(e,sc);
-	REQUIRE(!handler.guaranteesStackOnlySeeds());
+	// The retained minimum-energy pattern is a stack, but mixed input encodings
+	// conservatively disable the stack-only handler contract before dispatch.
+	REQUIRE_FALSE(handler.guaranteesStackOnlySeeds());
 	REQUIRE(handler.fillSeed(0,3,0,3)==1);
-	StackSeedDomain domain(handler,4,4,4,4);
-	REQUIRE(domain.seedLength(0,0)==3);
-	REQUIRE(domain.maxSeedLength()==3); // constraint's minimum BP is only two
+	REQUIRE(handler.getSeedLength1(0,0)==3);
+	REQUIRE(handler.getSeedLength2(0,0)==3);
+#if INTARNA_IN_DEBUG_MODE
+	REQUIRE_THROWS_AS(StackSeedDomain(handler,4,4,4,4),std::invalid_argument);
+#endif
 }

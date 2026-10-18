@@ -205,10 +205,13 @@ TEST_CASE("unseeded probability collection follows legacy numerical gates and fa
 	ChangedObjectivePredictor changed(energy,output,nullptr,&unsupported);
 	REQUIRE_THROWS(changed.predict());
 	REQUIRE(unsupported.status()==BasePairProbabilities::Status::failed);
+#if INTARNA_IN_DEBUG_MODE
+	// Invalid prediction regions are a debug-checked caller precondition.
 	BasePairProbabilities invalid(5,5);
 	PredictorMfeEns2d predictor(energy,output,nullptr,&invalid);
 	REQUIRE_THROWS(predictor.predict({5,6},{0,4}));
 	REQUIRE(invalid.status()==BasePairProbabilities::Status::failed);
+#endif
 	BasePairProbabilities overflow(5,5);
 	InteractionEnergyBasePair extreme(targetAcc,reverse,2,2,false,1,Ekcal_2_E(-1000));
 	PredictorMfeEns2d huge(extreme,output,nullptr,&overflow);
