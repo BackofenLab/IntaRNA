@@ -1,0 +1,413 @@
+diff --git a/.github/workflows/build.yml b/.github/workflows/build.yml
+index 5c786aa..ee4a005 100644
+--- a/.github/workflows/build.yml
++++ b/.github/workflows/build.yml
+@@ -18,13 +18,20 @@ jobs:
+       fail-fast: false
+       matrix:
+         include:
++          - name: GCC 11 release
++            os: ubuntu-22.04
++            compiler: gcc
++            gcc_version: 11
++            configure_debug: --disable-debug
+           - name: GCC 14 release
+             os: ubuntu-24.04
+             compiler: gcc
++            gcc_version: 14
+             configure_debug: --disable-debug
+           - name: GCC 14 debug
+             os: ubuntu-24.04
+             compiler: gcc
++            gcc_version: 14
+             configure_debug: --enable-debug
+           - name: Apple Clang release
+             os: macos-15
+@@ -42,22 +49,22 @@ jobs:
+           environment-file: conda-build-env.yml
+           activate-environment: intarna-build-env
+ 
+-      - name: Install and select GCC 14
++      - name: Install and select GCC ${{ matrix.gcc_version }}
+         if: matrix.compiler == 'gcc'
+         run: |
+           sudo apt-get update
+-          sudo apt-get install --yes gcc-14 g++-14
+-          echo "CC=gcc-14" >> "$GITHUB_ENV"
+-          echo "CXX=g++-14" >> "$GITHUB_ENV"
++          sudo apt-get install --yes gcc-${{ matrix.gcc_version }} g++-${{ matrix.gcc_version }}
++          echo "CC=gcc-${{ matrix.gcc_version }}" >> "$GITHUB_ENV"
++          echo "CXX=g++-${{ matrix.gcc_version }}" >> "$GITHUB_ENV"
+           echo "LDFLAGS=-L${CONDA_PREFIX}/lib -Wl,-rpath,${CONDA_PREFIX}/lib" >> "$GITHUB_ENV"
+ 
+-      - name: Verify GCC 14
++      - name: Verify GCC ${{ matrix.gcc_version }}
+         if: matrix.compiler == 'gcc'
+         run: |
+           "$CC" --version
+           "$CXX" --version
+-          test "$("$CC" -dumpfullversion | cut -d. -f1)" = 14
+-          test "$("$CXX" -dumpfullversion | cut -d. -f1)" = 14
++          test "$("$CC" -dumpfullversion | cut -d. -f1)" = ${{ matrix.gcc_version }}
++          test "$("$CXX" -dumpfullversion | cut -d. -f1)" = ${{ matrix.gcc_version }}
+ 
+       - name: Set up Apple Clang with OpenMP
+         if: matrix.compiler == 'apple-clang'
+@@ -83,6 +90,8 @@ jobs:
+ 
+       - name: Bootstrap and configure
+         run: |
++          export CXXFLAGS="${CXXFLAGS:-} -pedantic-errors"
++          echo "CXXFLAGS=$CXXFLAGS" >> "$GITHUB_ENV"
+           bash autotools-init.sh
+           ./configure \
+             --prefix="$RUNNER_TEMP/intarna-install" \
+@@ -91,7 +100,7 @@ jobs:
+             --with-boost-libdir="$CONDA_PREFIX/lib" \
+             --with-zlib="$CONDA_PREFIX" \
+             ${{ matrix.configure_debug }}
+-          grep -Eq '^CXX = .* -std=c\+\+23([[:space:]]|$)' Makefile
++          grep -Eq '^CXX = .* -std=c\+\+17([[:space:]]|$)' Makefile
+           grep -q '^#define INTARNA_MULITHREADING 1' src/config.h
+ 
+       - name: Build, install, and run full test suite
+@@ -106,7 +115,7 @@ jobs:
+           header_probe="$RUNNER_TEMP/intarna-header-probe.cpp"
+           for header in "$RUNNER_TEMP/intarna-install/include/IntaRNA/"*.h; do
+             printf '#include <IntaRNA/%s>\nint main() { return 0; }\n' "$(basename "$header")" > "$header_probe"
+-            "$CXX" -std=c++23 ${CPPFLAGS:-} ${CXXFLAGS:-} \
++            "$CXX" -std=c++17 ${CPPFLAGS:-} ${CXXFLAGS:-} \
+               -I"$RUNNER_TEMP/intarna-install/include" \
+               -I"$CONDA_PREFIX/include" \
+               -fsyntax-only "$header_probe"
+@@ -117,7 +126,7 @@ jobs:
+           consumer="$RUNNER_TEMP/intarna-consumer.cpp"
+           printf '#include <IntaRNA/RnaSequence.h>\nint main() { IntaRNA::RnaSequence rna("test", "ACGU"); return rna.size() == 4 ? 0 : 1; }\n' > "$consumer"
+           export PKG_CONFIG_PATH="$RUNNER_TEMP/intarna-install/lib/pkgconfig"
+-          "$CXX" -std=c++23 ${CPPFLAGS:-} ${CXXFLAGS:-} "$consumer" \
++          "$CXX" -std=c++17 ${CPPFLAGS:-} ${CXXFLAGS:-} "$consumer" \
+             ${LDFLAGS:-} $(pkg-config --cflags --libs IntaRNA) \
+             -o "$RUNNER_TEMP/intarna-consumer"
+           "$RUNNER_TEMP/intarna-consumer"
+diff --git a/ChangeLog b/ChangeLog
+index 5a79cce..efcec0c 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -14,7 +14,7 @@
+ 
+ - remove redundant accessibility checks from predictor, helix and seed handling
+ 
+-- C++23 required; build and installation checks with GCC 14 and Apple Clang
++- C++17 required; build and installation checks with GCC 11, GCC 14 and Apple Clang
+ - reduce temporary allocations and fix cleanup on error paths
+ - avoid repeated partition-map lookups in exact ensemble prediction
+ - add exhaustive interaction and seed oracles for short-sequence tests
+@@ -38,6 +38,19 @@
+ ################################################################################  
+ ################################################################################
+ 
++260921
++ * configure.ac / .github/workflows/build.yml / README.md :
++   * lower the required C++ standard to C++17 (issue #244)
++   * check unordered_map::try_emplace and compile consumers in C++17 mode
++   + GCC 11 CI build alongside GCC 14 and Apple Clang
++ * IntaRNA/RnaSequence : use find() for alphabet and ambiguity checks
++ * IntaRNA/AccessibilityVrna / InteractionEnergyVrna :
++   * fill sized C++ strings instead of requiring resize_and_overwrite()
++ * IntaRNA/OutputHandlerCsv / OutputHandlerEnsemble / OutputHandlerText :
++   * use str() for output insertion instead of requiring stream views
++ * tests/RnaSequence_test.cpp : normalization and boundary ambiguity regression
++ + doc/refactor/5-c++17.md : standard audit and compatibility tradeoffs
++
+ 260919 Alexander Mitrofanov
+  * IntaRNA/PredictorMfe2d* :
+  * IntaRNA/PredictorMfeEns2d* :
+diff --git a/README.md b/README.md
+index 9830271..050edfc 100644
+--- a/README.md
++++ b/README.md
+@@ -180,7 +180,7 @@ you with an encapsulated IntaRNA installation.
+ If you are going to compile IntaRNA from source, ensure you meet the following
+ dependencies:
+ 
+-- compiler supporting C++23 and OpenMP (GCC 14 or Apple Clang)
++- compiler and standard library supporting C++17, with OpenMP for multithreading
+ - [boost C++ library](http://www.boost.org/) version >= 1.50.0
+   (ensure the following libraries are installed for development (not just runtime libraries!); or install all e.g. in Ubuntu via package `libboost-all-dev`)
+     - libboost_regex
+@@ -2186,8 +2186,8 @@ processed using doxygen to generate html/pdf versions.
+ When IntaRNA is build while `pkg-config` is present, according pkg-config
+ information is generated and installed too.
+ 
+-IntaRNA's public headers require C++23. External consumers must therefore
+-select `-std=c++23` (or a newer standard) in their own build; the installed
++IntaRNA's supported compilation baseline is C++17. External consumers must therefore
++select `-std=c++17` (or a newer standard) in their own build; the installed
+ pkg-config metadata supplies IntaRNA and dependency flags but deliberately
+ does not override the consuming project's language mode.
+ 
+diff --git a/configure.ac b/configure.ac
+index c675415..4f371a5 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -54,37 +54,25 @@ AM_INIT_AUTOMAKE([1.11])
+ # use the C++ compiler for the following checks
+ AC_LANG([C++])
+ 
+-# ensure we are using the C++23 standard
+-AX_CXX_COMPILE_STDCXX([23], [noext], [mandatory])
++# Structured bindings and unordered_map::try_emplace require C++17.
++AX_CXX_COMPILE_STDCXX([17], [noext], [mandatory])
+ 
+-# Check the C++23 library surface used by IntaRNA.  A compiler accepting
+-# -std=c++23 is not sufficient when paired with an older standard library.
+-AC_MSG_CHECKING([for required C++23 standard library features])
++# Check the library as well: accepting -std=c++17 does not guarantee that
++# the compiler is paired with a library providing unordered_map::try_emplace.
++AC_MSG_CHECKING([for required C++17 standard library features])
+ intarna_saved_CXXFLAGS=$CXXFLAGS
+ CXXFLAGS="$CXXFLAGS -pedantic-errors"
+ AC_COMPILE_IFELSE(
+ 	[AC_LANG_PROGRAM(
+-		[[#include <cstddef>
+-#include <sstream>
+-#include <string>
+-#include <string_view>]],
+-		[[std::string text{"IntaRNA"};
+-const bool has_rna = text.contains("RNA") && text.contains('R');
+-text.resize_and_overwrite(8, [](char * data, std::size_t size) noexcept {
+-	for (std::size_t i = 0; i < size; ++i)
+-		data[i] = 'x';
+-	return size;
+-});
+-std::stringstream stream;
+-stream << text;
+-const std::string_view stream_view = stream.view();
+-std::stringstream sink;
+-sink << stream.view();
+-(void)has_rna;
+-(void)stream_view;]])],
++		[[#include <unordered_map>]],
++		[[std::unordered_map<int, double> partitions;
++auto [entry, inserted] = partitions.try_emplace(1, 2.0);
++if (!inserted) {
++	entry->second += 2.0;
++}]])],
+ 	[AC_MSG_RESULT([yes])],
+ 	[AC_MSG_RESULT([no])
+-	 AC_MSG_ERROR([A C++23 standard library providing std::string::contains, std::string::resize_and_overwrite, and std::stringstream::view is required. Upgrade libstdc++/libc++ or select a newer C++23 toolchain.])])
++	 AC_MSG_ERROR([A C++17 standard library providing std::unordered_map::try_emplace is required. Upgrade libstdc++/libc++ or select a newer C++17 toolchain.])])
+ CXXFLAGS=$intarna_saved_CXXFLAGS
+ 
+ # check if python is available
+diff --git a/doc/refactor/2-c++23.md b/doc/refactor/2-c++23.md
+index a865385..5ce46b4 100644
+--- a/doc/refactor/2-c++23.md
++++ b/doc/refactor/2-c++23.md
+@@ -1,5 +1,9 @@
+ # Phase 2: C++23 migration and performance roadmap
+ 
++The C++23 baseline below records the phase-2 migration. The later
++[issue #244 audit](5-c++17.md) lowers the current requirement to C++17;
++use the README and `configure.ac` for the current build contract.
++
+ This document implements the scope of phase 2 in
+ [discussion #232](https://github.com/BackofenLab/IntaRNA/discussions/232).
+ C++23 is a compilation baseline here, not a reason to rewrite working
+diff --git a/src/IntaRNA/AccessibilityVrna.cpp b/src/IntaRNA/AccessibilityVrna.cpp
+index 5ec9d6c..d2493a8 100644
+--- a/src/IntaRNA/AccessibilityVrna.cpp
++++ b/src/IntaRNA/AccessibilityVrna.cpp
+@@ -55,15 +55,10 @@ getVrnaConstraint( const IntaRNA::Accessibility & acc )
+ {
+ 	const std::size_t sequenceLength = acc.getSequence().size();
+ 	const IntaRNA::AccessibilityConstraint & constraintSpec = acc.getAccConstraint();
+-	std::string constraint;
+-	constraint.resize_and_overwrite(
+-			sequenceLength,
+-			[&constraintSpec, sequenceLength]( char * const data, const std::size_t ) noexcept {
+-				for (std::size_t i = 0; i < sequenceLength; ++i) {
+-					data[i] = constraintSpec.getVrnaDotBracket(i);
+-				}
+-				return sequenceLength;
+-			});
++	std::string constraint(sequenceLength, '.');
++	for (std::size_t i = 0; i < sequenceLength; ++i) {
++		constraint[i] = constraintSpec.getVrnaDotBracket(i);
++	}
+ 	return constraint;
+ }
+ 
+@@ -169,8 +164,6 @@ addConstraints( vrna_fold_compound_t & fold_compound, const Accessibility & acc
+ 	if ( ! acc.getAccConstraint().isEmpty() ) {
+ 
+ 		// Build the exact pseudo dot-bracket byte sequence in owned C++ storage.
+-		// resize_and_overwrite avoids value-initializing a buffer that is replaced
+-		// byte-for-byte before ViennaRNA consumes it.
+ 		const std::string structure = getVrnaConstraint(acc);
+ 
+ 		// Adding hard constraints from pseudo dot-bracket
+@@ -512,4 +505,3 @@ fillByRNAplfold( const VrnaHandler &vrnaHandler
+ /////////////////////////////////////////////////////////////////////////////
+ 
+ } // namespace
+-
+diff --git a/src/IntaRNA/InteractionEnergyVrna.cpp b/src/IntaRNA/InteractionEnergyVrna.cpp
+index 553226e..23c7386 100644
+--- a/src/IntaRNA/InteractionEnergyVrna.cpp
++++ b/src/IntaRNA/InteractionEnergyVrna.cpp
+@@ -44,15 +44,10 @@ getVrnaConstraint( const IntaRNA::Accessibility & acc )
+ {
+ 	const std::size_t sequenceLength = acc.getSequence().size();
+ 	const IntaRNA::AccessibilityConstraint & constraintSpec = acc.getAccConstraint();
+-	std::string constraint;
+-	constraint.resize_and_overwrite(
+-			sequenceLength,
+-			[&constraintSpec, sequenceLength]( char * const data, const std::size_t ) noexcept {
+-				for (std::size_t i = 0; i < sequenceLength; ++i) {
+-					data[i] = constraintSpec.getVrnaDotBracket(i);
+-				}
+-				return sequenceLength;
+-			});
++	std::string constraint(sequenceLength, '.');
++	for (std::size_t i = 0; i < sequenceLength; ++i) {
++		constraint[i] = constraintSpec.getVrnaDotBracket(i);
++	}
+ 	return constraint;
+ }
+ 
+diff --git a/src/IntaRNA/OutputHandlerCsv.cpp b/src/IntaRNA/OutputHandlerCsv.cpp
+index 79a7d24..e5f8547 100644
+--- a/src/IntaRNA/OutputHandlerCsv.cpp
++++ b/src/IntaRNA/OutputHandlerCsv.cpp
+@@ -470,7 +470,7 @@ add( const Interaction & i )
+ 		#pragma omp critical(intarna_omp_outputStreamUpdate)
+ 	#endif
+ 		{
+-			out << outTmp.view();
++			out << outTmp.str();
+ 		} // omp critical(intarna_omp_outputStreamUpdate)
+ 	}
+ 
+diff --git a/src/IntaRNA/OutputHandlerEnsemble.cpp b/src/IntaRNA/OutputHandlerEnsemble.cpp
+index ef5a158..d1977dc 100644
+--- a/src/IntaRNA/OutputHandlerEnsemble.cpp
++++ b/src/IntaRNA/OutputHandlerEnsemble.cpp
+@@ -52,7 +52,7 @@ OutputHandlerEnsemble::
+ 	#pragma omp critical(intarna_omp_outputStreamUpdate)
+ #endif
+ 	{
+-		out <<outTmp.view();
++		out <<outTmp.str();
+ 	} // omp critical(intarna_omp_outputStreamUpdate)
+ 
+ 	out.flush();
+diff --git a/src/IntaRNA/OutputHandlerText.cpp b/src/IntaRNA/OutputHandlerText.cpp
+index d66ca12..e8f58e6 100644
+--- a/src/IntaRNA/OutputHandlerText.cpp
++++ b/src/IntaRNA/OutputHandlerText.cpp
+@@ -53,7 +53,7 @@ OutputHandlerText::
+ 		#pragma omp critical(intarna_omp_outputStreamUpdate)
+ #endif
+ 		{
+-			out <<outTmp.view();
++			out <<outTmp.str();
+ 		} // omp critical(intarna_omp_outputStreamUpdate)
+ 	}
+ 
+@@ -310,17 +310,17 @@ add( const Interaction & i )
+ 			// get ID of s1
+ 			<<i.s1->getId() <<'\n'
+ 			// get position in s1
+-			<<pos1.view() <<'\n'
+-			<<pos1tag.view() <<'\n'
++			<<pos1.str() <<'\n'
++			<<pos1tag.str() <<'\n'
+ 			// print collected interaction stuff
+-			<<s1Unbound.view() <<'\n'
+-			<<s1Bound.view() <<'\n'
+-			<<pairing.view() <<'\n'
+-			<<s2Bound.view() <<'\n'
+-			<<s2Unbound.view() <<'\n'
++			<<s1Unbound.str() <<'\n'
++			<<s1Bound.str() <<'\n'
++			<<pairing.str() <<'\n'
++			<<s2Bound.str() <<'\n'
++			<<s2Unbound.str() <<'\n'
+ 			// get position in reversed index order for s2
+-			<<pos2tag.view() <<'\n'
+-			<<pos2.view() <<'\n'
++			<<pos2tag.str() <<'\n'
++			<<pos2.str() <<'\n'
+ 			// get ID of s2
+ 			<<i.s2->getId() <<'\n'
+ 			;
+@@ -429,7 +429,7 @@ add( const Interaction & i )
+ 		#pragma omp critical(intarna_omp_outputStreamUpdate)
+ 	#endif
+ 		{
+-			out <<outTmp.view();
++			out <<outTmp.str();
+ 		} // omp critical(intarna_omp_outputStreamUpdate)
+ 	}
+ 
+diff --git a/src/IntaRNA/RnaSequence.h b/src/IntaRNA/RnaSequence.h
+index cdbe64d..ea1a680 100644
+--- a/src/IntaRNA/RnaSequence.h
++++ b/src/IntaRNA/RnaSequence.h
+@@ -316,7 +316,7 @@ RnaSequence::RnaSequence(
+ 	id(id)
+ 	, seqString(getUpperCase(seqString))
+ 	, seqCode(getCodeForString(this->seqString))
+-	, ambiguous(this->seqString.contains('N'))
++	, ambiguous(this->seqString.find('N') != std::string::npos)
+ 	, idxPos0(idxPos0)
+ 	, seqNumber(seqNumber)
+ {
+@@ -500,7 +500,7 @@ getUpperCase( const std::string & seqString )
+ 			seqRet[i] = 'U';
+ 		}
+ 		// overwrite non-ACGU characters with N = ambiguous (no distinction needed)
+-		if (!SequenceAlphabet.contains(seqRet[i])) {
++		if (SequenceAlphabet.find(seqRet[i]) == std::string::npos) {
+ 			seqRet[i] = 'N';
+ 		}
+ 	}
+@@ -570,7 +570,7 @@ getCodeForChar( const char nucleotide )
+ {
+ #if INTARNA_IN_DEBUG_MODE
+ 	// check if nucleotide character is NOT supported
+-	if (!SequenceAlphabet.contains(nucleotide))
++	if (SequenceAlphabet.find(nucleotide) == std::string::npos)
+ 		throw std::runtime_error("RnaSequence::getCodeForChar() : unsupported nucleotide character '"+toString(nucleotide)+"' in sequence");
+ #endif
+ 
+diff --git a/tests/RnaSequence_test.cpp b/tests/RnaSequence_test.cpp
+index eaa67c2..d11842b 100644
+--- a/tests/RnaSequence_test.cpp
++++ b/tests/RnaSequence_test.cpp
+@@ -18,6 +18,24 @@ TEST_CASE( "RnaSequence", "[RNAsequence]" ) {
+ 		REQUIRE( exceptionRaised );
+ 	}
+ 
++	SECTION( "alphabet normalization and ambiguity at sequence boundaries" ) {
++		RnaSequence canonical("canonical", "acgt");
++		REQUIRE( canonical.asString() == "ACGU" );
++		REQUIRE_FALSE( canonical.isAmbiguous() );
++
++		RnaSequence ambiguous("ambiguous", "nacgtRyn");
++		REQUIRE( ambiguous.asString() == "NACGUNNN" );
++		REQUIRE( ambiguous.isAmbiguous() );
++		REQUIRE( ambiguous.isAmbiguous(0) );
++		REQUIRE_FALSE( ambiguous.isAmbiguous(1) );
++		REQUIRE( ambiguous.isAmbiguous(ambiguous.size()-1) );
++		REQUIRE( ambiguous.asCodes().front() == RnaSequence::getCodeForChar('N') );
++		REQUIRE( ambiguous.asCodes().at(1) == RnaSequence::getCodeForChar('A') );
++#if INTARNA_IN_DEBUG_MODE
++		REQUIRE_THROWS_AS( RnaSequence::getCodeForChar('?'), std::runtime_error );
++#endif
++	}
++
+ 	SECTION( "getter", "[RNAsequence]" ) {
+ 
+ 		std::string id= "test", seq="AAAUUUGGGCCC";

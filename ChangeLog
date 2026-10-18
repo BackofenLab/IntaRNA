@@ -42,6 +42,9 @@
 
 ## Technical changes and Optimizations
 
+- preserve the historical C++23 requirement audit, compiler probes and the
+  set-aside compatibility experiment from issue #244
+
 - require ViennaRNA >= 2.7.0 and its logger/prepared-window APIs at configure
   time; install the logger lock for every supported version (PR #267)
 
@@ -137,6 +140,13 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261018 Alexander Mitrofanov
+ * doc/refactor/5-cxx23-justification.md, doc/refactor/cxx23-audit/,
+   doc/Makefile.am
+   + recover the untracked historical assessment and standalone compiler probes
+   + archive the abandoned C++17 patch without changing the supported baseline
+   * distinguish the pinned September assessment from later source changes
 
 261015 Alexander Mitrofanov
  * configure.ac, conda-build-env.yml :

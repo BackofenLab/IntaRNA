@@ -4,6 +4,12 @@
 ################################################################
 
 EXTRA_DIST =	\
+			refactor/5-cxx23-justification.md \
+			refactor/cxx23-audit/README.md \
+			refactor/cxx23-audit/cxx23-library-probe.cpp \
+			refactor/cxx23-audit/cxx17-library-probe.cpp \
+			refactor/cxx23-audit/set-aside-cxx17.patch \
+			refactor/cxx23-audit/set-aside-cxx17-notes.md \
 			conda.txt \
 			api-documentation.md \
 			build-api.sh \
