@@ -71,6 +71,9 @@
 - align probability API invalid-input tests with debug-only precondition checks
   and avoid an unchecked null seed-mask call in release test runs (PR #258)
 
+- finalize completed legacy seed-extension partitions on the probability
+  branch and release their boundary storage (issue #260, forward port of PR #261)
+
 - use hashed base-pair keys for sparse stack-seed lookup, assert internal seed
   geometry in debug builds, and document probability computation steps and
   contributor conventions (PR #258 review)
@@ -200,6 +203,13 @@ energies, restricted partition sums, and trackers.
    * exercise debug-only region/mask/handler/length preconditions only in debug builds
    + restore the unsupported-handler test under the matching debug guard
    * keep ordinary lifecycle, arithmetic and output checks in both configurations
+ * PredictorMfeEns, PredictorMfeEns2dSeedExtension,
+   PredictorMfeEns2dHeuristicSeedExtension, PredictorMfeEnsRegression_test.cpp
+   + recover the validation-only right-boundary frontier and buffered comparisons
+   * preserve seed order, probability tracing, exact kernels and tracker callbacks
+   * include the containers and hash helper directly in the public header
+ * doc/probability-memory-frontier.md, doc/Makefile.am
+   + document the recovered port, original provenance and coverage
 
 261013 Alexander Mitrofanov
  * StackSeedDomain, SeededPartitionFunction, PredictorMfeEns2dSeedExtension
