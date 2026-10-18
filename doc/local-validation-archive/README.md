@@ -16,6 +16,11 @@ a matrix prototype, hash/dense partition experiments, an uncached kinetic
 control, and profiling instrumentation. They are archived rather than
 substituted for current production files.
 
+The source distribution carries these files in `sources.zip`, whose members
+use the original workspace-relative paths. This keeps long historical names
+intact despite the existing distribution tar format's 99-character limit.
+The individual files remain directly reviewable in Git.
+
 `manifest.json` lists every stored file with its original path, byte count,
 SHA-256 and Git blob hash. Copies already reachable from published repository
 refs are omitted. The C++23 audit is proposed separately, as is the six-file
