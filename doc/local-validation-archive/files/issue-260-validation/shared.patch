@@ -1,0 +1,124 @@
+diff --git a/src/IntaRNA/PredictorMfeEns.cpp b/src/IntaRNA/PredictorMfeEns.cpp
+index 08b2e2d..d006a1a 100644
+--- a/src/IntaRNA/PredictorMfeEns.cpp
++++ b/src/IntaRNA/PredictorMfeEns.cpp
+@@ -33,6 +33,8 @@ initZ()
+ {
+ 	// reset storage
+ 	Z_partition.clear();
++	Z_frontier.clear();
++	Z_frontierNext = 0;
+ }
+ 
+ ////////////////////////////////////////////////////////////////////////////
+@@ -109,7 +111,8 @@ updateZ( const size_t i1, const size_t j1
+ 
+ 	// store partial Z (without ED)
+ 	Interaction::Boundary key(i1,j1,i2,j2);
+-	auto [keyEntry, inserted] = Z_partition.try_emplace(key, partZ_noED);
++	auto & partitions = Z_frontier.empty() ? Z_partition : Z_frontier.at(j1);
++	auto [keyEntry, inserted] = partitions.try_emplace(key, partZ_noED);
+ 	if (!inserted) {
+ 		// update entry
+ 		keyEntry->second += partZ_noED;
+@@ -154,6 +157,7 @@ void
+ PredictorMfeEns::
+ updateOptimaUsingZ()
+ {
++	advanceZFrontier(Z_frontier.size());
+ 	for (auto it = Z_partition.begin(); it != Z_partition.end(); ++it)
+ 	{
+ 		// if partition function is > 0
+@@ -163,6 +167,28 @@ updateOptimaUsingZ()
+ 	}
+ }
+ 
++void PredictorMfeEns::beginZFrontier(size_t size1)
++{
++	if (predTracker == nullptr) Z_frontier.resize(size1);
++}
++
++void PredictorMfeEns::advanceZFrontier(size_t minimumSeedStart)
++{
++	const size_t end = std::min(minimumSeedStart,Z_frontier.size());
++	while (Z_frontierNext < end) {
++		auto & partitions = Z_frontier[Z_frontierNext];
++		for (const auto & [boundary,partition] : partitions) {
++			if (Z_isNotINF(partition) && partition > 0) {
++				PredictorMfe::updateOptima(boundary.i1,boundary.j1,boundary.i2,boundary.j2,
++						energy.getE(partition),true,false);
++			}
++		}
++		// Free both nodes and bucket storage as soon as this boundary is complete.
++		decltype(Z_partition){}.swap(partitions);
++		++Z_frontierNext;
++	}
++}
++
+ ////////////////////////////////////////////////////////////////////////////
+ 
+ void
+diff --git a/src/IntaRNA/PredictorMfeEns.h b/src/IntaRNA/PredictorMfeEns.h
+index 2037d52..c1f83b1 100644
+--- a/src/IntaRNA/PredictorMfeEns.h
++++ b/src/IntaRNA/PredictorMfeEns.h
+@@ -9,6 +9,7 @@
+ 
+ #include <list>
+ #include <utility>
++#include <vector>
+ 
+ namespace IntaRNA {
+ 
+@@ -65,6 +66,12 @@ protected:
+ 	bool updateZisComplete;
+ 
+ 
++	//! partial sums grouped by target right boundary; used only without trackers
++	std::vector<decltype(Z_partition)> Z_frontier;
++	//! first right-boundary bucket that has not yet been finalized
++	size_t Z_frontierNext = 0;
++
++
+ 	/**
+ 	 * Initializes the hybridization partition functions.
+ 	 * Will be called by predict().
+@@ -111,6 +118,18 @@ protected:
+ 				, const Z_type partFunct
+ 				, const bool isHybridZ );
+ 
++	/** Enable partial-partition buckets by target right boundary. Tracker runs
++	 * keep the original map to preserve callback ordering. Call advanceZFrontier
++	 * only when no remaining seed can start below the supplied target index.
++	 * @param size1 number of target positions in the current prediction region
++	 */
++	void beginZFrontier(size_t size1);
++
++	/** Consume completed boundary sums without adding their mass to Zall again.
++	 * @param minimumSeedStart smallest target start of any remaining seed
++	 */
++	void advanceZFrontier(size_t minimumSeedStart);
++
+ 	/**
+ 	 * Calls for the stored Z_partition information updateOptima() before
+ 	 * calling reportOptima() from its super class.
+diff --git a/src/IntaRNA/PredictorMfeEns2dSeedExtension.h b/src/IntaRNA/PredictorMfeEns2dSeedExtension.h
+index 92107da..8d91a62 100644
+--- a/src/IntaRNA/PredictorMfeEns2dSeedExtension.h
++++ b/src/IntaRNA/PredictorMfeEns2dSeedExtension.h
+@@ -23,6 +23,15 @@ namespace IntaRNA {
+ class PredictorMfeEns2dSeedExtension: public PredictorMfeEns {
+ 
+ protected:
++	//! seed coordinates in handler order and the minimum remaining target start
++	struct SeedStart { size_t i1, i2, minimumRemaining; };
++
++	/** Collect seed starts without changing traversal or partition summation order.
++	 * @param size1 target region length
++	 * @param size2 reversed-query region length
++	 * @return starts with a safe lower bound for all remaining target seed starts
++	 */
++	std::vector<SeedStart> getSeedStarts(size_t size1,size_t size2) const;
+ 
+ 	//! matrix type to hold the partition functions for interaction site starts
+ 	typedef Matrix<Z_type> Z2dMatrix;

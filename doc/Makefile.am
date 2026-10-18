@@ -4,6 +4,9 @@
 ################################################################
 
 EXTRA_DIST =	\
+			local-validation-archive/README.md \
+			local-validation-archive/manifest.json \
+			local-validation-archive/sources.zip \
 			conda.txt \
 			api-documentation.md \
 			build-api.sh \
