@@ -4,6 +4,7 @@
 ################################################################
 
 EXTRA_DIST =	\
+			probability-memory-frontier.md \
 			conda.txt \
 			analysis/base-pair-probabilities-plan.md \
 			analysis/seeded-kernel-comparison.md \

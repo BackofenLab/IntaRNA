@@ -8,7 +8,10 @@
 #include "IntaRNA/IndexRangeList.h"
 
 #include <list>
+#include <unordered_map>
 #include <utility>
+#include <vector>
+#include <boost/functional/hash.hpp>
 
 namespace IntaRNA {
 
@@ -75,6 +78,21 @@ protected:
 	bool updateZisComplete;
 
 
+	//! a bucket supplies j1, so its key needs only the other three coordinates
+	struct FrontierBoundary {
+		size_t i1, i2, j2;
+		bool operator==(const FrontierBoundary &) const = default;
+		struct Hash {
+			size_t operator()(const FrontierBoundary & boundary) const;
+		};
+	};
+
+	//! partial sums grouped by target right boundary; used only without trackers
+	std::vector<std::unordered_map<FrontierBoundary,Z_type,FrontierBoundary::Hash>> Z_frontier;
+	//! first right-boundary bucket that has not yet been finalized
+	size_t Z_frontierNext = 0;
+
+
 	/**
 	 * Initializes the hybridization partition functions.
 	 * Will be called by predict().
@@ -121,6 +139,18 @@ protected:
 				, const Z_type partFunct
 				, const bool isHybridZ );
 
+	/** Enable partial-partition buckets by target right boundary. Tracker runs
+	 * keep the original map to preserve callback ordering. Call advanceZFrontier
+	 * only when no remaining seed can start below the supplied target index.
+	 * @param size1 number of target positions in the current prediction region
+	 */
+	void beginZFrontier(size_t size1);
+
+	/** Consume completed boundary sums without adding their mass to Zall again.
+	 * @param minimumSeedStart smallest target start of any remaining seed
+	 */
+	void advanceZFrontier(size_t minimumSeedStart);
+
 	/**
 	 * Calls for the stored Z_partition information updateOptima() before
 	 * calling reportOptima() from its super class.
@@ -160,6 +190,17 @@ private:
 	updateOptimaUsingZ();
 
 };
+
+inline
+size_t
+PredictorMfeEns::FrontierBoundary::Hash::operator()(const FrontierBoundary & boundary) const
+{
+	size_t key=0;
+	boost::hash_combine(key,boundary.i1);
+	boost::hash_combine(key,boundary.i2);
+	boost::hash_combine(key,boundary.j2);
+	return key;
+}
 
 } // namespace
 
