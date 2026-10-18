@@ -14,10 +14,13 @@ TEST_CASE("raw pair regions commit once and finalize only on success", "[BasePai
 	REQUIRE(p(0,2)==.5);REQUIRE(p(3,3)==.5);REQUIRE(p(0,4)==0);
 	BasePairProbabilities empty(1,1);empty.finalize();
 	REQUIRE(empty.status()==BasePairProbabilities::Status::empty);
+#if INTARNA_IN_DEBUG_MODE
+	// Overlap is a caller precondition; the library checks it only in debug builds.
 	BasePairProbabilities overlap(4,5);overlap.addRegion({0,1},{1,2},2,m);
 	REQUIRE_THROWS(overlap.addRegion({1,2},{2,3},2,m));
 	REQUIRE(overlap.status()==BasePairProbabilities::Status::failed);
 	REQUIRE(overlap.getZ()==2);REQUIRE_THROWS(overlap.finalize());
+#endif
 	BasePairProbabilities cancelled(4,5);cancelled.addRegion({0,1},{1,2},2,m);cancelled.fail();
 	REQUIRE_THROWS(cancelled.finalize());REQUIRE_THROWS(cancelled.probabilities());
 }
@@ -82,10 +85,14 @@ TEST_CASE("seed annotations commit with regional masses and SVG requires success
 	r.fail();std::ostringstream failed;
 	REQUIRE_THROWS(BasePairProbabilityWriter::writeSvg(failed,r,energy,1,1));
 	REQUIRE(failed.str().empty());
+#if INTARNA_IN_DEBUG_MODE
+	// A collecting sink requires a regional mask. Do not dereference a missing
+	// mask in release builds, where this precondition is intentionally unchecked.
 	BasePairProbabilities missing(4,5,true);
 	REQUIRE_THROWS(missing.addRegion({0,1},{1,2},2,mass));
 	REQUIRE(missing.status()==BasePairProbabilities::Status::failed);
 	REQUIRE(missing.getZ()==0);REQUIRE(missing.seedPairs()(0,2)==0);
+#endif
 	BasePairProbabilities plain(4,5);
 	REQUIRE_FALSE(plain.collectsSeedPairs());REQUIRE(plain.seedPairs().size1()==0);
 	plain.finalize();std::ostringstream empty;
