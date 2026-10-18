@@ -1,0 +1,1340 @@
+{
+  "scope": "Historical local validation artifacts; inactive in the build and CI.",
+  "files": [
+    {
+      "original_path": "issue-259-revision-validation/header-probe.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-259-revision-validation/header-probe.cpp",
+      "bytes": 59,
+      "sha256": "76f2239b274293c80d974530baf744d99521e969a286afc1c41d6c95cedf8e5d",
+      "git_blob_sha1": "7e0238c29287273e6a86af79f638e93b062efbe9"
+    },
+    {
+      "original_path": "issue-259-revision-validation/PredictorMfeEns2d-consumer.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-259-revision-validation/PredictorMfeEns2d-consumer.cpp",
+      "bytes": 1408,
+      "sha256": "a1c96726a96896d591d2623690a983dd3024a6bda8f2cdf1e8211d07dea1fcb2",
+      "git_blob_sha1": "de61a0539aa10075d9a9ddec378bac2aed91ea13"
+    },
+    {
+      "original_path": "issue-259-revision-validation/PredictorMfeEns2dHeuristicSeedExtension-consumer.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-259-revision-validation/PredictorMfeEns2dHeuristicSeedExtension-consumer.cpp",
+      "bytes": 1490,
+      "sha256": "93b44bfe9f4f3a70e60c973df98a3184c268e1812f5005828b6019004462e5ff",
+      "git_blob_sha1": "ecc322ede2c297aba6eaeb4884b29f2dca0cee73"
+    },
+    {
+      "original_path": "issue-259-revision-validation/validate-installed.py",
+      "archived_path": "doc/local-validation-archive/files/issue-259-revision-validation/validate-installed.py",
+      "bytes": 2310,
+      "sha256": "fbea014b8f9e0307eef078425dd9a91e4fbe6f3eb0efdfdb51d358264b6c3cc3",
+      "git_blob_sha1": "2acf044974369e4819a36a597f287e5a1ee72e8b"
+    },
+    {
+      "original_path": "issue-259-revision-validation/PredictorMfeEns2dHeuristic-consumer.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-259-revision-validation/PredictorMfeEns2dHeuristic-consumer.cpp",
+      "bytes": 1425,
+      "sha256": "96377cf38f9915d414d47d17352bcf220f9e43919c31cb6f4ec6354cca5c2f72",
+      "git_blob_sha1": "300009200644b19a02e87b632e337ca8482a2046"
+    },
+    {
+      "original_path": "issue-259-revision-validation/benchmark_revision.py",
+      "archived_path": "doc/local-validation-archive/files/issue-259-revision-validation/benchmark_revision.py",
+      "bytes": 6865,
+      "sha256": "726264d93ee33993e9ccef3d448135095306f5d81cd3739e593816da6fc43504",
+      "git_blob_sha1": "426ab8d4de9fe627f057669439986e3c7c134d65"
+    },
+    {
+      "original_path": "issue-259-revision-validation/check_legacy_seed_polynomials.py",
+      "archived_path": "doc/local-validation-archive/files/issue-259-revision-validation/check_legacy_seed_polynomials.py",
+      "bytes": 3737,
+      "sha256": "f14acf905126f1c2fbc6de3c1f29b947d058d526d9b6302a07712937d411ec4f",
+      "git_blob_sha1": "61044ba4ce50f8cf590ea7df1885170c08f660f7"
+    },
+    {
+      "original_path": "issue-259-revision-validation/PredictorMfeEns2dSeedExtension-consumer.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-259-revision-validation/PredictorMfeEns2dSeedExtension-consumer.cpp",
+      "bytes": 1473,
+      "sha256": "472995bc857cc234475c6fcb5253d7256b347aabb0b3a0808fa357af78928361",
+      "git_blob_sha1": "5837ef1e5d23ed67103509684b4a5bb1a2e41665"
+    },
+    {
+      "original_path": "issue-262-validation/logs/hash-debug-prerequisite.patch",
+      "archived_path": "doc/local-validation-archive/files/issue-262-validation/logs/hash-debug-prerequisite.patch",
+      "bytes": 596,
+      "sha256": "bc9fdd38fc7b227026e0c2e2ebe6f6ab2b30f3751a72a7220427b3c43366a1a3",
+      "git_blob_sha1": "aac355978ed18e912277260c51cb3aebae0f4fed"
+    },
+    {
+      "original_path": "issue-262-validation/hash-prototype/transform.py",
+      "archived_path": "doc/local-validation-archive/files/issue-262-validation/hash-prototype/transform.py",
+      "bytes": 3636,
+      "sha256": "f74a2f83835266403e8a9b9efb40a42a9c844bffbeaff26e4a38fc6e388f5ce5",
+      "git_blob_sha1": "cb1254568035a961214ed4706022f987639c47a1"
+    },
+    {
+      "original_path": "issue-262-validation/hash-prototype/SeededPartitionFunction.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-262-validation/hash-prototype/SeededPartitionFunction.cpp",
+      "bytes": 6499,
+      "sha256": "d529d8f13d5b615417e57e4b53835db1a7d64a08de1ede3180fa62c4d4f60431",
+      "git_blob_sha1": "6680389815f124453875597dacef910c6b5bcdfb"
+    },
+    {
+      "original_path": "issue-262-validation/hash-prototype/allocation-probe.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-262-validation/hash-prototype/allocation-probe.cpp",
+      "bytes": 2891,
+      "sha256": "f190e4009779dd817617888a3ad208dfa5d13e76429ebaeab67507e9520a66cc",
+      "git_blob_sha1": "da23e5e5f5babc22bfe254949b3b557db687bfe1"
+    },
+    {
+      "original_path": "issue-244-validation/issue-comment.md",
+      "archived_path": "doc/local-validation-archive/files/issue-244-validation/issue-comment.md",
+      "bytes": 1080,
+      "sha256": "1f65280046eb19c805b8806696316eb211dbb6d4494c5a4a4b14c3f5876de315",
+      "git_blob_sha1": "8141b9db6ae4ead1ce74548c638dd55d5276d0d2"
+    },
+    {
+      "original_path": "issue-244-validation/council-consensus.md",
+      "archived_path": "doc/local-validation-archive/files/issue-244-validation/council-consensus.md",
+      "bytes": 941,
+      "sha256": "161e1b262e9acf521a81933d360382f1d72283913300f8b350400d115a048968",
+      "git_blob_sha1": "eb494413958500e9a9950e1cad706d7217b602fe"
+    },
+    {
+      "original_path": "issue-244-validation/source-gcc11-debug/README.md",
+      "archived_path": "doc/local-validation-archive/files/issue-244-validation/source-gcc11-debug/README.md",
+      "bytes": 101395,
+      "sha256": "f3e95de8a90921a1703467be6d4a9eaff4b1771c1ac97a8ceb57b5027a7e592a",
+      "git_blob_sha1": "050edfc84758d3470573028cc4d0ce4c2fb8c727"
+    },
+    {
+      "original_path": "issue-244-validation/source-gcc11-debug/src/IntaRNA/RnaSequence.h",
+      "archived_path": "doc/local-validation-archive/files/issue-244-validation/source-gcc11-debug/src/IntaRNA/RnaSequence.h",
+      "bytes": 15738,
+      "sha256": "e475285cbc18fb8507372e0ecf515cfda0a1b60877e32f5182bb3c14a34da1ed",
+      "git_blob_sha1": "ea1a680b34b088e4f32935e5571a8e9d8848e993"
+    },
+    {
+      "original_path": "issue-244-validation/source-gcc11-debug/src/IntaRNA/AccessibilityVrna.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-244-validation/source-gcc11-debug/src/IntaRNA/AccessibilityVrna.cpp",
+      "bytes": 16400,
+      "sha256": "3684ac112e7088e85416707473e1441a0b4e48f0f28f8262843f8a9343c44e48",
+      "git_blob_sha1": "d2493a8ff58feda8813a756d13dbd886bee217bb"
+    },
+    {
+      "original_path": "issue-244-validation/source-gcc11-debug/src/IntaRNA/InteractionEnergyVrna.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-244-validation/source-gcc11-debug/src/IntaRNA/InteractionEnergyVrna.cpp",
+      "bytes": 7766,
+      "sha256": "94226bc45e16b8fd02fd924d793230aa8f53fabe68db0ea26e7ccc911db249c9",
+      "git_blob_sha1": "23c7386862012ac5fb74ae0ace27988b342010da"
+    },
+    {
+      "original_path": "issue-244-validation/source-gcc11-debug/doc/refactor/2-c++23.md",
+      "archived_path": "doc/local-validation-archive/files/issue-244-validation/source-gcc11-debug/doc/refactor/2-c++23.md",
+      "bytes": 33964,
+      "sha256": "e31e9e9822d2e5f7bc17070b0ee404f37861f8e6f6c9cd9fd07ebd743e45ea64",
+      "git_blob_sha1": "5ce46b43062278ba1a4b117dc89a3e18fab3e1ec"
+    },
+    {
+      "original_path": "issue-244-validation/source-gcc11-debug/tests/RnaSequence_test.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-244-validation/source-gcc11-debug/tests/RnaSequence_test.cpp",
+      "bytes": 4150,
+      "sha256": "ce20a52fc4e7ff23b937842a4b404429bd61610936355d020338ed69c061c34c",
+      "git_blob_sha1": "d11842b172868afdb8194d30de1271de376a85f1"
+    },
+    {
+      "original_path": "profiling/README.md",
+      "archived_path": "doc/local-validation-archive/files/profiling/README.md",
+      "bytes": 4649,
+      "sha256": "053510f755e971474291a193e23d842d04458e0c9ad79fa6e182453d897577cd",
+      "git_blob_sha1": "9b3a7578f8506aa4ef882201e9add54048ca3542"
+    },
+    {
+      "original_path": "profiling/REPORT.md",
+      "archived_path": "doc/local-validation-archive/files/profiling/REPORT.md",
+      "bytes": 25220,
+      "sha256": "37e49062f9261ff276ea84cb92e8854d5385380b2a0e93d68451f6355ae0f357",
+      "git_blob_sha1": "bc031086e3c3f6d07dfe012d781aebf053cc84df"
+    },
+    {
+      "original_path": "profiling/scripts/cache_match.py",
+      "archived_path": "doc/local-validation-archive/files/profiling/scripts/cache_match.py",
+      "bytes": 931,
+      "sha256": "6b69d659d40148eb12573e1ad7f1ffb71470c18362152d10e5bf39c61d322e2a",
+      "git_blob_sha1": "6ea94622aca1d1581dd785899971834bdac2f00d"
+    },
+    {
+      "original_path": "profiling/scripts/build.sh",
+      "archived_path": "doc/local-validation-archive/files/profiling/scripts/build.sh",
+      "bytes": 1274,
+      "sha256": "1f7b6c3c85b2418e4f4f78dccba4b0c8834b810fbf18b290f9056fa431d52314",
+      "git_blob_sha1": "82a51cc5c3712af97d0fcf5abe42d0977540baa6"
+    },
+    {
+      "original_path": "profiling/scripts/benchmark.py",
+      "archived_path": "doc/local-validation-archive/files/profiling/scripts/benchmark.py",
+      "bytes": 11426,
+      "sha256": "ff89fc15f75e0a3b8181dfdc96c623d73534e069cfb19b65ba5af3d461af221d",
+      "git_blob_sha1": "93fcbe9d7d0ebfc4b7bb9c1879903b529268ed78"
+    },
+    {
+      "original_path": "profiling/scripts/stream_cleanup_probe.sh",
+      "archived_path": "doc/local-validation-archive/files/profiling/scripts/stream_cleanup_probe.sh",
+      "bytes": 723,
+      "sha256": "849a43f438f15436008bae004ca9a38c062c2c98a3ca2cad0cb9a7ba6284d7e8",
+      "git_blob_sha1": "1d37d3ce3ac1f7a04021c827d9ef4d84ebf83615"
+    },
+    {
+      "original_path": "profiling/scripts/plots.py",
+      "archived_path": "doc/local-validation-archive/files/profiling/scripts/plots.py",
+      "bytes": 4239,
+      "sha256": "fbfaed395cb123d5c5bc83b057d0712206dc8968f3b8d8c56ac4649ab56b922a",
+      "git_blob_sha1": "de3c7cf97bbe2ff428730b0884be8d995c3b6dda"
+    },
+    {
+      "original_path": "profiling/scripts/profile.py",
+      "archived_path": "doc/local-validation-archive/files/profiling/scripts/profile.py",
+      "bytes": 4279,
+      "sha256": "13ae4b92c2ef3e8d3ed4c74158ee486beddd222901bf390b96dc0771b572f3bd",
+      "git_blob_sha1": "fc03c02791fdc6fa4fc5313b16eab554a254372b"
+    },
+    {
+      "original_path": "profiling/scripts/report.py",
+      "archived_path": "doc/local-validation-archive/files/profiling/scripts/report.py",
+      "bytes": 19285,
+      "sha256": "dd0b1545deacf7db3db10688240ec108bf99cadc7d2ae225afed4113ea8e0ad6",
+      "git_blob_sha1": "ed17957a8c82a1e14fa6e62bb93ff355a9d8976c"
+    },
+    {
+      "original_path": "profiling/scripts/brief_martin.py",
+      "archived_path": "doc/local-validation-archive/files/profiling/scripts/brief_martin.py",
+      "bytes": 13649,
+      "sha256": "6148f49c6a61743bbb976897d04fdf1c091c663267913b04e4688ffd5f37631c",
+      "git_blob_sha1": "f93e28872ce5b5d6779d30d3ac93f291d9e9df57"
+    },
+    {
+      "original_path": "profiling/scripts/package.py",
+      "archived_path": "doc/local-validation-archive/files/profiling/scripts/package.py",
+      "bytes": 1685,
+      "sha256": "97a98290e5360531f7af5b5a668d63c4d989a9296233846199093aa1708814b5",
+      "git_blob_sha1": "c68e6e642f73e19530afb334fea9e2fc6d69ba44"
+    },
+    {
+      "original_path": "profiling/scripts/profile_audit.py",
+      "archived_path": "doc/local-validation-archive/files/profiling/scripts/profile_audit.py",
+      "bytes": 1363,
+      "sha256": "9e34dba192b914dd9ef693d605b1118ae3919946fa63bd3f3bbc42021a5525bd",
+      "git_blob_sha1": "f1f27448625cdca197e42768c7f2c45b0effbd78"
+    },
+    {
+      "original_path": "profiling/scripts/supplement.py",
+      "archived_path": "doc/local-validation-archive/files/profiling/scripts/supplement.py",
+      "bytes": 2305,
+      "sha256": "0d889927878de305d3855c96bc2a51fcc33813b9fdb777f7e6bfcc2148e1a39a",
+      "git_blob_sha1": "917c1394e7223330e892baf501fecca4da30aa7a"
+    },
+    {
+      "original_path": "profiling/scripts/structural_checks.py",
+      "archived_path": "doc/local-validation-archive/files/profiling/scripts/structural_checks.py",
+      "bytes": 1677,
+      "sha256": "2d64c49d9b483744786bb740a8a141b368a0dbf6d4057da40694fd3c36521c99",
+      "git_blob_sha1": "6e9069a0d43ccf1f2b6e8a7161179d267886bafb"
+    },
+    {
+      "original_path": "profiling/scripts/audit.py",
+      "archived_path": "doc/local-validation-archive/files/profiling/scripts/audit.py",
+      "bytes": 24858,
+      "sha256": "1ec9ca9bd4f96efaa313a87c4c5085dc1eab14e5cf6263237fc99584e7a543d4",
+      "git_blob_sha1": "5df6119fcbaffe67b5b3580021fe310d4f0ffea6"
+    },
+    {
+      "original_path": "profiling/scripts/stream_cleanup_probe.cpp",
+      "archived_path": "doc/local-validation-archive/files/profiling/scripts/stream_cleanup_probe.cpp",
+      "bytes": 919,
+      "sha256": "397946ea954a5b681c804339a566bfeb99f7dab26352c13c6665a308287daab3",
+      "git_blob_sha1": "db5637dc2c579262a831d41d58e2686e4c6ce01e"
+    },
+    {
+      "original_path": "profiling/scripts/phase_summary.py",
+      "archived_path": "doc/local-validation-archive/files/profiling/scripts/phase_summary.py",
+      "bytes": 1397,
+      "sha256": "fc2cb29c50ed583535bc91afa81ca793693291d60e7af5165cdfc46201109575",
+      "git_blob_sha1": "c568dd75bd288b45bb00103687b3ac5600e7b51d"
+    },
+    {
+      "original_path": "issue-245-validation/build.sh",
+      "archived_path": "doc/local-validation-archive/files/issue-245-validation/build.sh",
+      "bytes": 999,
+      "sha256": "763efb10ef2ddbb9d263e059138394d20c7ca690b55f6e777c1e9d48ae0833e8",
+      "git_blob_sha1": "76ac21b364ce362f90f5ff1591409ee9d901be01"
+    },
+    {
+      "original_path": "issue-245-validation/header.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-245-validation/header.cpp",
+      "bytes": 70,
+      "sha256": "db0f095822977591f2757f5b8f6cfd7c826589122a083101ff8e745fce928d3c",
+      "git_blob_sha1": "e1a55c222946d501eb3d47c3fc7b365c41ba481a"
+    },
+    {
+      "original_path": "issue-245-validation/run-benchmark.sh",
+      "archived_path": "doc/local-validation-archive/files/issue-245-validation/run-benchmark.sh",
+      "bytes": 649,
+      "sha256": "edcfb36e4ac1df882a2b2fb436ea8ea6d8527c756c44c9935f7b1c3db43e5183",
+      "git_blob_sha1": "7cdca8248d5a42c3f05b1e805582ef29c3dfe504"
+    },
+    {
+      "original_path": "issue-245-validation/check-headers.sh",
+      "archived_path": "doc/local-validation-archive/files/issue-245-validation/check-headers.sh",
+      "bytes": 524,
+      "sha256": "e1fb960abe43e51998da3970c8bfc067623af0ed9654622ca0883f4736f5d638",
+      "git_blob_sha1": "12efce57a50f2f02a45e57042e6ec066f0fcb820"
+    },
+    {
+      "original_path": "issue-245-validation/benchmark.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-245-validation/benchmark.cpp",
+      "bytes": 2602,
+      "sha256": "cb146b799b1984b1924d82da6d677ebaed6cc3f9aa59dccc2469b9d26e8729b6",
+      "git_blob_sha1": "a6bc245adb17a296bfd938d8f486c28676954574"
+    },
+    {
+      "original_path": "issue-245-validation/debug/doc/benchmarks/accessibility.md",
+      "archived_path": "doc/local-validation-archive/files/issue-245-validation/debug/doc/benchmarks/accessibility.md",
+      "bytes": 1591,
+      "sha256": "12e77dc1af0f7ea64b43be07822848ce9ea53d625a923c9e0c2279a369ca9448",
+      "git_blob_sha1": "da24fbf4ae2cecdf9d7ec81e446de222407f1716"
+    },
+    {
+      "original_path": "issue-246-validation/record-gcc14-benchmark.py",
+      "archived_path": "doc/local-validation-archive/files/issue-246-validation/record-gcc14-benchmark.py",
+      "bytes": 3155,
+      "sha256": "3ca6c6d8d481435cc53639bbe1491f98204f7e05fe9dfc67918e58f2255a3d46",
+      "git_blob_sha1": "ee094e644377bc8e14241f9f2d02d9837dc9d6da"
+    },
+    {
+      "original_path": "issue-246-validation/build.sh",
+      "archived_path": "doc/local-validation-archive/files/issue-246-validation/build.sh",
+      "bytes": 917,
+      "sha256": "ee5dec5d22aec981c16ddab613fab07d6533982fcc79842178f166d19e0d2ab1",
+      "git_blob_sha1": "61fb6c1cf16d54471e750a812d90123d4aff1b54"
+    },
+    {
+      "original_path": "issue-246-validation/kokkos-installed-consumer.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-246-validation/kokkos-installed-consumer.cpp",
+      "bytes": 543,
+      "sha256": "5efaa5c0c30f7ed8ea763d2af718fce3adc98ede58dca85b5bb2a918ae4bef13",
+      "git_blob_sha1": "d9ac7989e414f7325239f7546dc1461feef22973"
+    },
+    {
+      "original_path": "issue-246-validation/check-mdspan-configure.py",
+      "archived_path": "doc/local-validation-archive/files/issue-246-validation/check-mdspan-configure.py",
+      "bytes": 2213,
+      "sha256": "3f46899ca62e7cdc9de0fb34a6063b3e616bd98d1486a9cac60bb7d9ef6e35fb",
+      "git_blob_sha1": "a6a994883cdefabda0f08088f82de6198b0a307a"
+    },
+    {
+      "original_path": "issue-246-validation/align-matrix-style.py",
+      "archived_path": "doc/local-validation-archive/files/issue-246-validation/align-matrix-style.py",
+      "bytes": 7702,
+      "sha256": "09225501d082d9903bfa303f69ce8058b563aa5a9453f07572100d5bf4653cad",
+      "git_blob_sha1": "fb76e159193fa688b0e9da62b99f602879b1a6ca"
+    },
+    {
+      "original_path": "issue-246-validation/matrix-random-audit.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-246-validation/matrix-random-audit.cpp",
+      "bytes": 3884,
+      "sha256": "46158e4cb0aacc0b7990553cc7625ff4692bcf1fb3e0c98db347cc0a7bd3b024",
+      "git_blob_sha1": "112c3d93c16d42da948071837a6dbc6e7ca1082d"
+    },
+    {
+      "original_path": "issue-246-validation/summarize.py",
+      "archived_path": "doc/local-validation-archive/files/issue-246-validation/summarize.py",
+      "bytes": 3274,
+      "sha256": "a1b07b62540c882f5f8567c95af67146393a14aaed507ecfde770e93d21b4bf9",
+      "git_blob_sha1": "e770a2b7d24ae49a162e9f948620ed036207a6de"
+    },
+    {
+      "original_path": "issue-246-validation/installed-header-probe.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-246-validation/installed-header-probe.cpp",
+      "bytes": 61,
+      "sha256": "f1f68a746f2f97d3625ee6203a615f640dd6d0cd27909f64a05af3fef159e07d",
+      "git_blob_sha1": "2b45fa6d675bdd7443cd8705b5406a1df2147649"
+    },
+    {
+      "original_path": "issue-246-validation/build-gcc14-clean.sh",
+      "archived_path": "doc/local-validation-archive/files/issue-246-validation/build-gcc14-clean.sh",
+      "bytes": 1028,
+      "sha256": "9899bad4182675e71995da7b158270cdc6dcf5775de82c50d2e8f73039c63aa8",
+      "git_blob_sha1": "37c52b91fd08c424aecd6a1bc29b65ac35a69ae6"
+    },
+    {
+      "original_path": "issue-246-validation/consumer.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-246-validation/consumer.cpp",
+      "bytes": 397,
+      "sha256": "045ae708892283fa3acf79b91d8df9059ab67fa50222b468216d2b98d1160288",
+      "git_blob_sha1": "e77a762700666d3a57591d99fccd168da35085d0"
+    },
+    {
+      "original_path": "issue-246-validation/kokkos-distribution-probe.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-246-validation/kokkos-distribution-probe.cpp",
+      "bytes": 346,
+      "sha256": "b67c433b592ace3e1797384309093d6946ddba3bdab412e3e1bb407ab14b838a",
+      "git_blob_sha1": "a1f94c970d79b626555e4371d32d0c40f8b98f63"
+    },
+    {
+      "original_path": "issue-246-validation/build-gcc14.sh",
+      "archived_path": "doc/local-validation-archive/files/issue-246-validation/build-gcc14.sh",
+      "bytes": 974,
+      "sha256": "c797600bdf320b4b195b1112a27c2be12796817046ec3218e8dc8679f04450ae",
+      "git_blob_sha1": "a427906ba3d2617a7847f9dd9e9dc3eab98deeff"
+    },
+    {
+      "original_path": "issue-246-validation/kokkos-distribution/intaRNA-3.4.1/doc/mdspan-storage.md",
+      "archived_path": "doc/local-validation-archive/files/issue-246-validation/kokkos-distribution/intaRNA-3.4.1/doc/mdspan-storage.md",
+      "bytes": 15159,
+      "sha256": "c4a1e5343ca3d99f774bec54f5ea2539bc4b7eae9699626a92971ec1b94ef681",
+      "git_blob_sha1": "21829303c0a274c2a9da97d5bfa492e7bbfb1ead"
+    },
+    {
+      "original_path": "issue-246-validation/debug/src/IntaRNA/Matrix.h",
+      "archived_path": "doc/local-validation-archive/files/issue-246-validation/debug/src/IntaRNA/Matrix.h",
+      "bytes": 8148,
+      "sha256": "063566a98b84c9f705bd034e31ee808170497dffebe7a325f477dd83428dea54",
+      "git_blob_sha1": "1ee1854adbd6b1f343acd1237f86d1b540c541c2"
+    },
+    {
+      "original_path": "issue-246-validation/debug/tests/benchmark/compare-matrix-storage.py",
+      "archived_path": "doc/local-validation-archive/files/issue-246-validation/debug/tests/benchmark/compare-matrix-storage.py",
+      "bytes": 6098,
+      "sha256": "816d56d72c8032702cfc5cdff20a40e5dc9f63b5bf766c3752c491ac7e701d1e",
+      "git_blob_sha1": "e4dd9e83d49373e2dea60b566a0d261bb0af72ca"
+    },
+    {
+      "original_path": "kinetic-validation/header-probe.cpp",
+      "archived_path": "doc/local-validation-archive/files/kinetic-validation/header-probe.cpp",
+      "bytes": 76,
+      "sha256": "fcbc6c199cb09c30ed7c109fbf17cc43b1db56f834ffbef89c39a04b6e0898e8",
+      "git_blob_sha1": "66d40f790c1c48f1e46629fa0cf3227dd56037cb"
+    },
+    {
+      "original_path": "kinetic-validation/verify-installed-review.py",
+      "archived_path": "doc/local-validation-archive/files/kinetic-validation/verify-installed-review.py",
+      "bytes": 1522,
+      "sha256": "8e9775db37cdeab89eaa469af2c4a4b83fb9ccb897177715fbbc95a19bbb1fa6",
+      "git_blob_sha1": "42fba5345807d2b720847cc678c4312451ad7fd6"
+    },
+    {
+      "original_path": "kinetic-validation/verify-installed-kix.py",
+      "archived_path": "doc/local-validation-archive/files/kinetic-validation/verify-installed-kix.py",
+      "bytes": 2078,
+      "sha256": "4a26218968bd6d7404c0a9bfc24a20176c6436fc8ea6c9b41a538c48f765e9b1",
+      "git_blob_sha1": "cfcb21c67b74a98f3b8d5b4e6fed34a3772e5d54"
+    },
+    {
+      "original_path": "kinetic-validation/build-uncached.py",
+      "archived_path": "doc/local-validation-archive/files/kinetic-validation/build-uncached.py",
+      "bytes": 1755,
+      "sha256": "8263163b09474287696a8a89ada7743679bebc83cd2ae57cc398b2811f25554a",
+      "git_blob_sha1": "0d982f41df4fae7e421549270d5e9970b3e9201c"
+    },
+    {
+      "original_path": "kinetic-validation/consumer.cpp",
+      "archived_path": "doc/local-validation-archive/files/kinetic-validation/consumer.cpp",
+      "bytes": 965,
+      "sha256": "316354315760b4fb478ad106acc36550824c6121f472bbbb24a68a51614cf0e0",
+      "git_blob_sha1": "2a554b72ad1b6dad91e5f08a61566110717f9ef3"
+    },
+    {
+      "original_path": "kinetic-validation/header-probe-review.cpp",
+      "archived_path": "doc/local-validation-archive/files/kinetic-validation/header-probe-review.cpp",
+      "bytes": 68,
+      "sha256": "0cc195056aa894fc6fb3b7b231c2c5a6b3451ccec2840fcd94cd69703099867e",
+      "git_blob_sha1": "e4bb252979fe29831734fe585aef3e36f00f70cb"
+    },
+    {
+      "original_path": "kinetic-validation/consumer-review.cpp",
+      "archived_path": "doc/local-validation-archive/files/kinetic-validation/consumer-review.cpp",
+      "bytes": 977,
+      "sha256": "806b3e196c51de1a4343f95243760b87f28e8daac0af4f90ac532905faf3f5df",
+      "git_blob_sha1": "fe65413dfa6a2324583a81f837e703de4e4882f3"
+    },
+    {
+      "original_path": "kinetic-validation/header-probe-kix.cpp",
+      "archived_path": "doc/local-validation-archive/files/kinetic-validation/header-probe-kix.cpp",
+      "bytes": 68,
+      "sha256": "0cc195056aa894fc6fb3b7b231c2c5a6b3451ccec2840fcd94cd69703099867e",
+      "git_blob_sha1": "e4bb252979fe29831734fe585aef3e36f00f70cb"
+    },
+    {
+      "original_path": "kinetic-validation/uncached-comparison/PredictorSeedExtensionKinetic.cpp",
+      "archived_path": "doc/local-validation-archive/files/kinetic-validation/uncached-comparison/PredictorSeedExtensionKinetic.cpp",
+      "bytes": 14548,
+      "sha256": "ee42112e3130e93a360c792272a56354d53339752fafcb89a52b8eff7781249d",
+      "git_blob_sha1": "8d4233df87e79a015a7fbd2e8c197e6e3a257b24"
+    },
+    {
+      "original_path": "issue-274-validation/header-probe.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-274-validation/header-probe.cpp",
+      "bytes": 121,
+      "sha256": "49ad3e039c027b886b17e8e106d5d349f1558ed259b43cc5cc9ff39055b104a7",
+      "git_blob_sha1": "2023293bb06f0821eb5b31e94053bf2613a10653"
+    },
+    {
+      "original_path": "issue-274-validation/record-source.py",
+      "archived_path": "doc/local-validation-archive/files/issue-274-validation/record-source.py",
+      "bytes": 1856,
+      "sha256": "becf25ee761d3cfab4713f263e70047d6a50f48b79186e55e4926073901646ee",
+      "git_blob_sha1": "3768ef5eb28c2ff9bf662e4836ac58e2f356aa88"
+    },
+    {
+      "original_path": "issue-264-validation/native-heuristic-timing.py",
+      "archived_path": "doc/local-validation-archive/files/issue-264-validation/native-heuristic-timing.py",
+      "bytes": 2203,
+      "sha256": "bf60ef26ce02fe88818dd251a8123fb38f71fe4fc7873644b5e988b58da7810b",
+      "git_blob_sha1": "174d921ddc985d42dff1aa3f1e429125a98c08dc"
+    },
+    {
+      "original_path": "issue-264-validation/debug/doc/analysis/seed-extension-partition.md",
+      "archived_path": "doc/local-validation-archive/files/issue-264-validation/debug/doc/analysis/seed-extension-partition.md",
+      "bytes": 13257,
+      "sha256": "62b360f65b41e1cbb09318f8427ce651639174108003bd0e7b994576c9b847c0",
+      "git_blob_sha1": "706e279d21e44e4b54f076b2f519c5c5d70faf57"
+    },
+    {
+      "original_path": "issue-264-validation/core-benchmark/run.py",
+      "archived_path": "doc/local-validation-archive/files/issue-264-validation/core-benchmark/run.py",
+      "bytes": 3653,
+      "sha256": "f971d362f6e90b98e87d69d204f870bfe1a69041308580c0309826c5634b9378",
+      "git_blob_sha1": "107ae964dfab9ac07ee17c1ad7a0a182a0cb10bb"
+    },
+    {
+      "original_path": "issue-264-validation/core-benchmark/build.py",
+      "archived_path": "doc/local-validation-archive/files/issue-264-validation/core-benchmark/build.py",
+      "bytes": 1454,
+      "sha256": "c3c8c514e3247eeeb5c7b551ecdd32ea0b8f248fa202e04373b2b735516d7850",
+      "git_blob_sha1": "073692f8d43a69c4ccb32ea3551375bafc22232c"
+    },
+    {
+      "original_path": "issue-265-validation/benchmark/serial_followup.py",
+      "archived_path": "doc/local-validation-archive/files/issue-265-validation/benchmark/serial_followup.py",
+      "bytes": 2396,
+      "sha256": "0f80e5396b5b44c6b092e611a38511f65bbf5389ae4ba224e6547d87fc8f05d9",
+      "git_blob_sha1": "ac9b610a009cb174b4b5048afaa81abbc169094c"
+    },
+    {
+      "original_path": "issue-265-validation/benchmark/benchmark.py",
+      "archived_path": "doc/local-validation-archive/files/issue-265-validation/benchmark/benchmark.py",
+      "bytes": 4946,
+      "sha256": "b51b9113dd24b3afb9857025e38f738e646a858bc2207b8dc3f1040cddea0248",
+      "git_blob_sha1": "59ce68b8007219ba84461efca79722a728ff5852"
+    },
+    {
+      "original_path": "issue-265-validation/probe/vrna_window_threads.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-265-validation/probe/vrna_window_threads.cpp",
+      "bytes": 5793,
+      "sha256": "79986e92d91007418a72f87ad37124f59d5bdf4a665297697a73cdbb2d124d35",
+      "git_blob_sha1": "0052a8df18109b030d7034741a1676c41836cbc1"
+    },
+    {
+      "original_path": "issue-265-validation/debug/src/IntaRNA/AccessibilityVrna.h",
+      "archived_path": "doc/local-validation-archive/files/issue-265-validation/debug/src/IntaRNA/AccessibilityVrna.h",
+      "bytes": 6228,
+      "sha256": "e5247e1642a474b117e1b07af29e920fa498d26cbd26210762e80cac15f73b76",
+      "git_blob_sha1": "1972843d914081b776223b6801aa4c3198d852cb"
+    },
+    {
+      "original_path": "issue-265-validation/debug/doc/analysis/vienna-accessibility-thread-safety.md",
+      "archived_path": "doc/local-validation-archive/files/issue-265-validation/debug/doc/analysis/vienna-accessibility-thread-safety.md",
+      "bytes": 14588,
+      "sha256": "fab3b9438e7a35106ef56a9e32d6189f057c6352436d85b043b2039315989436",
+      "git_blob_sha1": "49d8ca65393d4b94b6764836b1093da5e1f6dab6"
+    },
+    {
+      "original_path": "issue-265-validation/fallback/run.py",
+      "archived_path": "doc/local-validation-archive/files/issue-265-validation/fallback/run.py",
+      "bytes": 1608,
+      "sha256": "194c23460b764381698e61a779d14b7c44bb6e852d179098b76a9acf587c05cc",
+      "git_blob_sha1": "0a3ff603304c4edff79d44dfb3954eb061e5c6f1"
+    },
+    {
+      "original_path": "issue-265-validation/fallback/probe.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-265-validation/fallback/probe.cpp",
+      "bytes": 3158,
+      "sha256": "5caeaabae060a6a8565dca5980244c36e8dc5f0864f7805f5201ffa210856e42",
+      "git_blob_sha1": "4a101ff39adef2efb2394f83f097f4e6154e2823"
+    },
+    {
+      "original_path": "issue-265-validation/fallback/override/ViennaRNA/vrna_config.h",
+      "archived_path": "doc/local-validation-archive/files/issue-265-validation/fallback/override/ViennaRNA/vrna_config.h",
+      "bytes": 131,
+      "sha256": "b4985947d1d22cfb3a1a6d61c6770150d66ebdf853761995559d7ca08be5dd60",
+      "git_blob_sha1": "37f9f67718b9331a8ffb0daf82325078cc6c4572"
+    },
+    {
+      "original_path": "issue-268-validation/sync-candidate.py",
+      "archived_path": "doc/local-validation-archive/files/issue-268-validation/sync-candidate.py",
+      "bytes": 679,
+      "sha256": "f9ce47d0aa6207ee60bd34b2d7ba067241e8e30da8ff514d28865fbca7077b66",
+      "git_blob_sha1": "77c7a30c5f84f4b8b91bf6caf12338f24069e844"
+    },
+    {
+      "original_path": "issue-268-validation/installed-SeededPartitionFunction.h.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-268-validation/installed-SeededPartitionFunction.h.cpp",
+      "bytes": 70,
+      "sha256": "f02aa93aaaca9764b81b28057d597691f700b2a116e762cc3bd2ee7bfc3ed373",
+      "git_blob_sha1": "fa6f256cc12c5b34185c78ab95b902e8029ac098"
+    },
+    {
+      "original_path": "issue-268-validation/compare-native-results.py",
+      "archived_path": "doc/local-validation-archive/files/issue-268-validation/compare-native-results.py",
+      "bytes": 1505,
+      "sha256": "be140deee3127b08447a52752b560cc8ee3ce6808a5f99bd8f6dd75baab71cc8",
+      "git_blob_sha1": "50389d06b747a3251f9bd3b2fc56287f2444ecdd"
+    },
+    {
+      "original_path": "issue-268-validation/check-installed.py",
+      "archived_path": "doc/local-validation-archive/files/issue-268-validation/check-installed.py",
+      "bytes": 1646,
+      "sha256": "7c5281d72538396e8ca11fa715d54303c356346aa4bf89baa94625332c5f5c1a",
+      "git_blob_sha1": "097e7830720801fd23d7ba25be0fc693544d9863"
+    },
+    {
+      "original_path": "issue-268-validation/native-compare.py",
+      "archived_path": "doc/local-validation-archive/files/issue-268-validation/native-compare.py",
+      "bytes": 1714,
+      "sha256": "fa9427e3f8afec91cf2a4523b6f49f4234563ea0f0a45c401a9d514755f3150f",
+      "git_blob_sha1": "743df7f05e12ded23d4ca1a50e48b2686a5d1b3e"
+    },
+    {
+      "original_path": "issue-268-validation/installed-StackSeedDomain.h.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-268-validation/installed-StackSeedDomain.h.cpp",
+      "bytes": 62,
+      "sha256": "13d5fdf05bb2cfe017967f8d0ee1cc14b520e9d6d5dda3a45877e5c0f8228b93",
+      "git_blob_sha1": "cf3c73c97538378c02ec28c61ab3e54e641f8c3b"
+    },
+    {
+      "original_path": "issue-268-validation/leftmost-benchmark/candidate-batch256/IntaRNA/SeededPartitionFunction.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-268-validation/leftmost-benchmark/candidate-batch256/IntaRNA/SeededPartitionFunction.cpp",
+      "bytes": 26196,
+      "sha256": "6237b44f408e59a094b4399dcd90bcc6daf276fb71b1c22fa6b0edc360df9bcb",
+      "git_blob_sha1": "5bb328bfcd683f7a3e8d845b2a12bd27efc83fed"
+    },
+    {
+      "original_path": "issue-268-validation/leftmost-benchmark/candidate-batch128/IntaRNA/SeededPartitionFunction.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-268-validation/leftmost-benchmark/candidate-batch128/IntaRNA/SeededPartitionFunction.cpp",
+      "bytes": 26196,
+      "sha256": "651099079f519284e932e932319c1c605368d0d6f97f22b0b10b85d12f838fed",
+      "git_blob_sha1": "e37e851c8fc625d4039039b7e06184341a818ced"
+    },
+    {
+      "original_path": "issue-257-validation/header-probe.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-257-validation/header-probe.cpp",
+      "bytes": 61,
+      "sha256": "f1f68a746f2f97d3625ee6203a615f640dd6d0cd27909f64a05af3fef159e07d",
+      "git_blob_sha1": "2b45fa6d675bdd7443cd8705b5406a1df2147649"
+    },
+    {
+      "original_path": "issue-257-validation/build.sh",
+      "archived_path": "doc/local-validation-archive/files/issue-257-validation/build.sh",
+      "bytes": 778,
+      "sha256": "9d84b71a90b08fcace9f59f5801df54d0901f3401d693db778116e87d0958c82",
+      "git_blob_sha1": "c65da40312a03a07963e15033084c3b1baae10a4"
+    },
+    {
+      "original_path": "issue-257-validation/oracle-check.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-257-validation/oracle-check.cpp",
+      "bytes": 363,
+      "sha256": "802aa2bde769005921feffbb692dcf7fb2b886461493c9bc0877a7897d257576",
+      "git_blob_sha1": "e2189ae81c23bdd0212b240f8a3b2a3ab5b8d813"
+    },
+    {
+      "original_path": "issue-257-validation/debug/doc/analysis/seeded-probabilities-validation.md",
+      "archived_path": "doc/local-validation-archive/files/issue-257-validation/debug/doc/analysis/seeded-probabilities-validation.md",
+      "bytes": 4323,
+      "sha256": "4b8b5113cc8e1f32d65f0a0978c6ee73e99d70e45328fb8955a8409a87b9ae1f",
+      "git_blob_sha1": "cf5f4ef097b7876846f4cefa641df521b4000a5b"
+    },
+    {
+      "original_path": "issue-267-validation/header-probe.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-267-validation/header-probe.cpp",
+      "bytes": 61,
+      "sha256": "f1f68a746f2f97d3625ee6203a615f640dd6d0cd27909f64a05af3fef159e07d",
+      "git_blob_sha1": "2b45fa6d675bdd7443cd8705b5406a1df2147649"
+    },
+    {
+      "original_path": "issue-267-validation/check-installed.sh",
+      "archived_path": "doc/local-validation-archive/files/issue-267-validation/check-installed.sh",
+      "bytes": 1736,
+      "sha256": "414c34966907304dfcb4ea3cb59c17a843c1a0ab29dea4fc34ed70082ce44349",
+      "git_blob_sha1": "c8c8a78c60e5ccfb2ce62c2d6f19c0b3f059f247"
+    },
+    {
+      "original_path": "issue-267-validation/run-configure-probes.py",
+      "archived_path": "doc/local-validation-archive/files/issue-267-validation/run-configure-probes.py",
+      "bytes": 4441,
+      "sha256": "dabd53afeac31c98ee41774d4a2df2a900fb54d1a17474456fbed9a5fb8d58e9",
+      "git_blob_sha1": "7a97e25b15d1c0259bfd78f2db036d77eea92969"
+    },
+    {
+      "original_path": "issue-267-validation/run-minimum.sh",
+      "archived_path": "doc/local-validation-archive/files/issue-267-validation/run-minimum.sh",
+      "bytes": 2150,
+      "sha256": "e66b08258aa9aeea2286d5b1455fe3256b83f538d29633e1cda3a93bbaee51b7",
+      "git_blob_sha1": "c52d51f520b138a2182a659b65243bda6806d906"
+    },
+    {
+      "original_path": "issue-267-validation/build-vrna-2.7.0.sh",
+      "archived_path": "doc/local-validation-archive/files/issue-267-validation/build-vrna-2.7.0.sh",
+      "bytes": 1489,
+      "sha256": "8ba277dfcb8f7d9b22b092296a5f8629fb9ac2b01f4cf28c6aa40e00f0464801",
+      "git_blob_sha1": "5b99df7c91024ac309679c758287f139eb3d802a"
+    },
+    {
+      "original_path": "issue-267-validation/installed-consumer.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-267-validation/installed-consumer.cpp",
+      "bytes": 382,
+      "sha256": "552c0e6e59466efbe3c58626876306e32f6cd06ce7ef0d3d209d644042a3a8c5",
+      "git_blob_sha1": "dbf5ddd721567eb113444d22ed902471372559e1"
+    },
+    {
+      "original_path": "issue-267-validation/run-debug.sh",
+      "archived_path": "doc/local-validation-archive/files/issue-267-validation/run-debug.sh",
+      "bytes": 908,
+      "sha256": "d7dcb65b9746aef77ee983d139e06f6bb59e2f64cb204575c3ac5579734947d2",
+      "git_blob_sha1": "cd00f7444da6e9d24a8994c492d311cceb8a2f12"
+    },
+    {
+      "original_path": "issue-267-validation/probe-source/doc/analysis/vienna-accessibility-thread-safety.md",
+      "archived_path": "doc/local-validation-archive/files/issue-267-validation/probe-source/doc/analysis/vienna-accessibility-thread-safety.md",
+      "bytes": 21861,
+      "sha256": "657ea649f1b6fc2e6defdb7b816d4651e677cfb77da7f84716d835dcbf1ec7ec",
+      "git_blob_sha1": "ad12a3dd00e117c5a8594e8d81168b284ed2e9c3"
+    },
+    {
+      "original_path": "issue-267-validation/configure-fixtures/missing-logger-symbol/include/ViennaRNA/utils/log.h",
+      "archived_path": "doc/local-validation-archive/files/issue-267-validation/configure-fixtures/missing-logger-symbol/include/ViennaRNA/utils/log.h",
+      "bytes": 172,
+      "sha256": "b3e09508eee4a00b5b54415fa48c03c52faf48b1bd983cea6f2f541920a18e47",
+      "git_blob_sha1": "ca0897baaa8ae1717e35c33e4a28c96e0a897330"
+    },
+    {
+      "original_path": "issue-267-validation/configure-fixtures/missing-logger-declaration/include/ViennaRNA/utils/log.h",
+      "archived_path": "doc/local-validation-archive/files/issue-267-validation/configure-fixtures/missing-logger-declaration/include/ViennaRNA/utils/log.h",
+      "bytes": 66,
+      "sha256": "8877a9e91a28449887fabf830a3435ee19f884da20ef64c829453dca15369835",
+      "git_blob_sha1": "365330125f4436b49471b90e4babcc31c94c7a7e"
+    },
+    {
+      "original_path": "issue-267-validation/configure-fixtures/old-headers/include/ViennaRNA/vrna_config.h",
+      "archived_path": "doc/local-validation-archive/files/issue-267-validation/configure-fixtures/old-headers/include/ViennaRNA/vrna_config.h",
+      "bytes": 1814,
+      "sha256": "2550dc33fc30a6304513e3a0e91f17905b3c348c59028f6f397c983acf02b3e1",
+      "git_blob_sha1": "ee61111f1fdb6a18b5ac4118dc3acb5f28b59e8c"
+    },
+    {
+      "original_path": "issue-267-validation/minimum/doc/analysis/vienna-accessibility-thread-safety.md",
+      "archived_path": "doc/local-validation-archive/files/issue-267-validation/minimum/doc/analysis/vienna-accessibility-thread-safety.md",
+      "bytes": 21861,
+      "sha256": "657ea649f1b6fc2e6defdb7b816d4651e677cfb77da7f84716d835dcbf1ec7ec",
+      "git_blob_sha1": "ad12a3dd00e117c5a8594e8d81168b284ed2e9c3"
+    },
+    {
+      "original_path": "issue-267-validation/debug/doc/analysis/vienna-accessibility-thread-safety.md",
+      "archived_path": "doc/local-validation-archive/files/issue-267-validation/debug/doc/analysis/vienna-accessibility-thread-safety.md",
+      "bytes": 21918,
+      "sha256": "7c858a51f085fbf080bd65b5a893e1d89b2793512bd349f351725714c69fb767",
+      "git_blob_sha1": "3fdb218cd1800fa58c77754b85c796290dbd9902"
+    },
+    {
+      "original_path": "issue-260-validation/installed-header.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-260-validation/installed-header.cpp",
+      "bytes": 881,
+      "sha256": "af5590919fd50bcaa7ee4ca82526a0ac854aa3fbaea038a164d99417d1242dc1",
+      "git_blob_sha1": "2237521d74bace8757b64901e6141988b2ef4660"
+    },
+    {
+      "original_path": "issue-260-validation/shared.patch",
+      "archived_path": "doc/local-validation-archive/files/issue-260-validation/shared.patch",
+      "bytes": 4287,
+      "sha256": "732a7ad70b8e987764568bf660aa3f8105a7d7ea493322209cc375c44814c76d",
+      "git_blob_sha1": "d8e84319d56c920776867f188e8eac5717c97539"
+    },
+    {
+      "original_path": "issue-260-validation/debug-master/src/IntaRNA/PredictorMfeEns.h",
+      "archived_path": "doc/local-validation-archive/files/issue-260-validation/debug-master/src/IntaRNA/PredictorMfeEns.h",
+      "bytes": 5736,
+      "sha256": "1c7980ad8890bafe1e6c2d3f198374061451d9c548be5ceee7c1ce80f0ff8ffb",
+      "git_blob_sha1": "4f4a8ddfd521817a6ea5f36aad88fd59ad58a249"
+    },
+    {
+      "original_path": "profiling-default-20260921/scripts/build.sh",
+      "archived_path": "doc/local-validation-archive/files/profiling-default-20260921/scripts/build.sh",
+      "bytes": 1274,
+      "sha256": "43b58b9bcbdf73cd12141923ece64a4e5d088d30aae15bece2d843b66120b148",
+      "git_blob_sha1": "f409d785a4fa900ac3872a86b5f1c2a73aa4cb79"
+    },
+    {
+      "original_path": "profiling-default-20260921/scripts/benchmark.py",
+      "archived_path": "doc/local-validation-archive/files/profiling-default-20260921/scripts/benchmark.py",
+      "bytes": 10689,
+      "sha256": "7751a440a57f22b9d13b2a93cdac622132dc08d02c0a1ee7aee2bdaf541ac23f",
+      "git_blob_sha1": "f09517e9783910dfc7a30ba5ba7419e757642fc9"
+    },
+    {
+      "original_path": "profiling-default-20260921/scripts/ed_conversion_probe.sh",
+      "archived_path": "doc/local-validation-archive/files/profiling-default-20260921/scripts/ed_conversion_probe.sh",
+      "bytes": 567,
+      "sha256": "0f0438c0b3cefc615d0616818f40e5dc88877a8a2a361da571b1de5118c21df6",
+      "git_blob_sha1": "9389e7c591d08e6e84adc7005845c9616f54fcf9"
+    },
+    {
+      "original_path": "profiling-default-20260921/scripts/plots.py",
+      "archived_path": "doc/local-validation-archive/files/profiling-default-20260921/scripts/plots.py",
+      "bytes": 3603,
+      "sha256": "7635a00a17a5a8da89ea80e8c1b95085b3fa80e638c028357a5cdefdfee9baaa",
+      "git_blob_sha1": "d24ba3230f9000e9ea993093897dfe303d36d818"
+    },
+    {
+      "original_path": "profiling-default-20260921/scripts/profile.py",
+      "archived_path": "doc/local-validation-archive/files/profiling-default-20260921/scripts/profile.py",
+      "bytes": 4247,
+      "sha256": "a081cf9ca9a72a5b96799fa715eb596e993ba1992e857b051a572d0d64201e4c",
+      "git_blob_sha1": "bd329eaadabe2564c71ab45346710995b7910fec"
+    },
+    {
+      "original_path": "profiling-default-20260921/scripts/report.py",
+      "archived_path": "doc/local-validation-archive/files/profiling-default-20260921/scripts/report.py",
+      "bytes": 21449,
+      "sha256": "a1a84911ede751a890f96ef25302f0a60bf5dc98f410616fb9327b2b52e4d9cf",
+      "git_blob_sha1": "74cc28b48fe84ff0450023279ce72f03b43de8a4"
+    },
+    {
+      "original_path": "profiling-default-20260921/scripts/ed_numeric.py",
+      "archived_path": "doc/local-validation-archive/files/profiling-default-20260921/scripts/ed_numeric.py",
+      "bytes": 1259,
+      "sha256": "eb55347f0123f3853ad8af48f096ee3acc73fea67cbaef4d3c7c9904f17419b1",
+      "git_blob_sha1": "b7e3ffb132b48778128fbca54f03996195866002"
+    },
+    {
+      "original_path": "profiling-default-20260921/scripts/parallel_check.py",
+      "archived_path": "doc/local-validation-archive/files/profiling-default-20260921/scripts/parallel_check.py",
+      "bytes": 2369,
+      "sha256": "e0077fdcca9a4550a118a60ad1cd622e351102eea29c09b6a03909dc5ee36728",
+      "git_blob_sha1": "f87587b935f32a00afa40c3c60ba96583fc1df0b"
+    },
+    {
+      "original_path": "profiling-default-20260921/scripts/package.py",
+      "archived_path": "doc/local-validation-archive/files/profiling-default-20260921/scripts/package.py",
+      "bytes": 1759,
+      "sha256": "92293ce61f7c3c95cdcb15c76dc0ea393c86121ce6ed35f64c8cb2e7feca4870",
+      "git_blob_sha1": "8ca338e0aec5e0234e01d81dee70e50b38913cfc"
+    },
+    {
+      "original_path": "profiling-default-20260921/scripts/diagnostics.py",
+      "archived_path": "doc/local-validation-archive/files/profiling-default-20260921/scripts/diagnostics.py",
+      "bytes": 4288,
+      "sha256": "391061daa680aac234c3e76d59a5e3f895e5b9454464b313b78540be0d5c28f0",
+      "git_blob_sha1": "14c747d2ec8d9d1f69d27d580890bb0d07c9f63e"
+    },
+    {
+      "original_path": "profiling-default-20260921/scripts/ed_conversion_probe.cpp",
+      "archived_path": "doc/local-validation-archive/files/profiling-default-20260921/scripts/ed_conversion_probe.cpp",
+      "bytes": 480,
+      "sha256": "46cdc4961e033b306a60aca30685012486b9d2bd5670ec2af5e447da67d15c82",
+      "git_blob_sha1": "cc932a4c6553db4df0b10e0829802451c3dd220c"
+    },
+    {
+      "original_path": "profiling-default-20260921/scripts/summarize_profiles.py",
+      "archived_path": "doc/local-validation-archive/files/profiling-default-20260921/scripts/summarize_profiles.py",
+      "bytes": 2098,
+      "sha256": "252f27c6822ac1e1a32544cce4f8141c6a76f7cd87ad3232a4b646b99ae59f6e",
+      "git_blob_sha1": "db11ddf1f2410863421b6e914e30a6207cfbfccc"
+    },
+    {
+      "original_path": "profiling-default-20260921/scripts/audit.py",
+      "archived_path": "doc/local-validation-archive/files/profiling-default-20260921/scripts/audit.py",
+      "bytes": 11323,
+      "sha256": "217d26d65c776f131dd55b580ccaad9e002a6207b094f6b423f188dda98c9389",
+      "git_blob_sha1": "d753c2cd75a6fdc186c8d56b9828cb9a4cd2293a"
+    },
+    {
+      "original_path": "profiling-default-20260921/scripts/phase_summary.py",
+      "archived_path": "doc/local-validation-archive/files/profiling-default-20260921/scripts/phase_summary.py",
+      "bytes": 1397,
+      "sha256": "fc2cb29c50ed583535bc91afa81ca793693291d60e7af5165cdfc46201109575",
+      "git_blob_sha1": "c568dd75bd288b45bb00103687b3ac5600e7b51d"
+    },
+    {
+      "original_path": "issue-212-validation/explore-ensemble.py",
+      "archived_path": "doc/local-validation-archive/files/issue-212-validation/explore-ensemble.py",
+      "bytes": 1235,
+      "sha256": "271c04b55c7d565c2589ea20c2bb017a5fa355dddccb0d4f0a19416576096276",
+      "git_blob_sha1": "c4ed25d247009b8bbff99f1454a2fb7bb3d10a46"
+    },
+    {
+      "original_path": "issue-212-validation/build.sh",
+      "archived_path": "doc/local-validation-archive/files/issue-212-validation/build.sh",
+      "bytes": 945,
+      "sha256": "3c7a0ef549d2ccaefbceb7c7fa97bdb8f7c2104ab934ed660fb67a8be58c50de",
+      "git_blob_sha1": "202984acf697a98ae24185b332547bf02f0e1422"
+    },
+    {
+      "original_path": "issue-212-validation/review-debug-build.sh",
+      "archived_path": "doc/local-validation-archive/files/issue-212-validation/review-debug-build.sh",
+      "bytes": 1116,
+      "sha256": "c0446410361fa04b893022d6b3fd851ca21ec3a2b275c10a5bb6234790984b84",
+      "git_blob_sha1": "163dc110c2e8b2418ee73c0fd2182869ba7de948"
+    },
+    {
+      "original_path": "issue-212-validation/sentinel.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-212-validation/sentinel.cpp",
+      "bytes": 769,
+      "sha256": "27abe8d687489a426d3dd16ac8e84842013061469c5239c84429ed0bd58745f6",
+      "git_blob_sha1": "5c17984b1057e93b6b22fe02878edbbfce89b37b"
+    },
+    {
+      "original_path": "issue-212-validation/check-small.py",
+      "archived_path": "doc/local-validation-archive/files/issue-212-validation/check-small.py",
+      "bytes": 642,
+      "sha256": "b73f3f33c93c23e5806210273e3ceed95ba3753e3743bb7e44a57aff4c640741",
+      "git_blob_sha1": "86df3830188b3cc821112e49d1c7ab14495123ca"
+    },
+    {
+      "original_path": "issue-212-validation/explore-filters.py",
+      "archived_path": "doc/local-validation-archive/files/issue-212-validation/explore-filters.py",
+      "bytes": 1136,
+      "sha256": "6786a72b18c488203d70a947ece7d9435ae3c1cfffb9d0d35c9dba81b3a26427",
+      "git_blob_sha1": "f52eed93f26fc8b8d98c54b21cfb3c3caeb52fa5"
+    },
+    {
+      "original_path": "issue-212-validation/explore.py",
+      "archived_path": "doc/local-validation-archive/files/issue-212-validation/explore.py",
+      "bytes": 1549,
+      "sha256": "1b52321ae7b972d1703ab741cb3321708d98679ecb44151664716e75be89b594",
+      "git_blob_sha1": "a5f4b0aa2925f6455f4a1a208d790426ea854a33"
+    },
+    {
+      "original_path": "issue-212-validation/explore-decomposition.py",
+      "archived_path": "doc/local-validation-archive/files/issue-212-validation/explore-decomposition.py",
+      "bytes": 750,
+      "sha256": "79c91b4556d8a404bfb6b3688c7ee771cb0ad11383626f9bd024e7c831c68cba",
+      "git_blob_sha1": "79051b1a4f0c668d5d9dd19dca63f40098949d44"
+    },
+    {
+      "original_path": "issue-212-validation/review-debug/tests/PredictorMfeHeuristicCellState_test.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-212-validation/review-debug/tests/PredictorMfeHeuristicCellState_test.cpp",
+      "bytes": 12544,
+      "sha256": "36b6d9d323aeffdcddb9e6b5dbff6cfcbf1492de80edf0c4ee6fd4486c046750",
+      "git_blob_sha1": "fe0235aad93232af9b78efb4704f80abc840892d"
+    },
+    {
+      "original_path": "issue-212-validation/distribution-doc/analysis/out-overlap.md",
+      "archived_path": "doc/local-validation-archive/files/issue-212-validation/distribution-doc/analysis/out-overlap.md",
+      "bytes": 20413,
+      "sha256": "dd2e1b6c01f9f3a0c36a71f9cdb08d74b0c9cb5cb0873e6f9b5624bd5f722099",
+      "git_blob_sha1": "1887c21eb106f689f95f4f63d203614e25707ced"
+    },
+    {
+      "original_path": "issue-270-validation/sync-candidate.py",
+      "archived_path": "doc/local-validation-archive/files/issue-270-validation/sync-candidate.py",
+      "bytes": 654,
+      "sha256": "a71fd2cccc6c27e3cfe993e8ccce3efe244bb904980e65f1a593fe4580313f40",
+      "git_blob_sha1": "33031fa5bfb0fee591391c23b45f8352204b1170"
+    },
+    {
+      "original_path": "issue-270-validation/compare-native.py",
+      "archived_path": "doc/local-validation-archive/files/issue-270-validation/compare-native.py",
+      "bytes": 1515,
+      "sha256": "8517361ec8fb3494673db8d85c7226f4066e1cf60f15f18dc5b102c283348190",
+      "git_blob_sha1": "2de79dbf613138fc47a4168b58112e91c6222549"
+    },
+    {
+      "original_path": "issue-270-validation/kernel/candidate/IntaRNA/SeededPartitionFunction.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-270-validation/kernel/candidate/IntaRNA/SeededPartitionFunction.cpp",
+      "bytes": 27994,
+      "sha256": "41d3370da91be6f0a172807b7c413975c2d7a0ff57ea597031cba95e776990db",
+      "git_blob_sha1": "0a0eeb6acd93cb8db5d94f61729f9ea3476f652d"
+    },
+    {
+      "original_path": "issue-270-validation/profile/src/IntaRNA/SeededPartitionFunction.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-270-validation/profile/src/IntaRNA/SeededPartitionFunction.cpp",
+      "bytes": 28462,
+      "sha256": "c9120ff740297d845544722a2093dd640b0697901b45ff14f20c8efbb5e59194",
+      "git_blob_sha1": "60be84eeb5bfe24caf09a735ab44879677c04490"
+    },
+    {
+      "original_path": "issue-270-validation/profile/src/IntaRNA/PredictorMfeEns2dSeedExtension.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-270-validation/profile/src/IntaRNA/PredictorMfeEns2dSeedExtension.cpp",
+      "bytes": 30326,
+      "sha256": "1599a9ee4415e4416ffa355725ec16cf09679f4b2944e9dba7e390c652f7443f",
+      "git_blob_sha1": "beb963778400009038601d8bcd0ee78e8985b1eb"
+    },
+    {
+      "original_path": "issue-270-validation/profile-analysis/run-profile.py",
+      "archived_path": "doc/local-validation-archive/files/issue-270-validation/profile-analysis/run-profile.py",
+      "bytes": 1903,
+      "sha256": "fc64c9b0ee33f4606422181b2e04f03b14d267fba58242cd7e01c2f31e6bda9b",
+      "git_blob_sha1": "6c3dc70b76e1924b1e782c25cec075fb83b927db"
+    },
+    {
+      "original_path": "issue-270-validation/profile-analysis/instrumentation.patch",
+      "archived_path": "doc/local-validation-archive/files/issue-270-validation/profile-analysis/instrumentation.patch",
+      "bytes": 6203,
+      "sha256": "f7f2a4c13d606a03c63bf6bb259834b88fa92e7bea4e0c30ab712d4a471a1525",
+      "git_blob_sha1": "cd5df5d905630d9c9b5db5fe24602f904fac7aad"
+    },
+    {
+      "original_path": "issue-270-validation/profile-analysis/first-probe/run-profile.py",
+      "archived_path": "doc/local-validation-archive/files/issue-270-validation/profile-analysis/first-probe/run-profile.py",
+      "bytes": 1837,
+      "sha256": "f7c2bc62d7663b8d371209b744d565a778d06c9afd19fda1aa8833bf13726618",
+      "git_blob_sha1": "e31364d52671f1bff647208ad5232461612dbafc"
+    },
+    {
+      "original_path": "issue-270-validation/profile-analysis/first-probe/instrument.py",
+      "archived_path": "doc/local-validation-archive/files/issue-270-validation/profile-analysis/first-probe/instrument.py",
+      "bytes": 5204,
+      "sha256": "1acced9ec28106055dfc576039b22a8d152e28388c7ea0e7c5788393778efdd2",
+      "git_blob_sha1": "7bbd9522e979a7bd5cb5d9811398a6b94537cfc9"
+    },
+    {
+      "original_path": "issue-270-validation/profile-analysis/first-probe/instrumentation.patch",
+      "archived_path": "doc/local-validation-archive/files/issue-270-validation/profile-analysis/first-probe/instrumentation.patch",
+      "bytes": 5030,
+      "sha256": "550c762d0689d10a30fcb9c021ab95a851b1d421d3d0760919ff672a53f06103",
+      "git_blob_sha1": "7b4412f38341ac531d4a6022ee4b5d20cd34bd44"
+    },
+    {
+      "original_path": "issue-258-review-validation/header-probe.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-258-review-validation/header-probe.cpp",
+      "bytes": 59,
+      "sha256": "909c144f54b7408095c16e2e6babb530a17bc27eeea1fc0fef34c5b7806cfde5",
+      "git_blob_sha1": "28acc3452eca7c2ba804bd192b72035f00211680"
+    },
+    {
+      "original_path": "issue-258-review-validation/check-invariant.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-258-review-validation/check-invariant.cpp",
+      "bytes": 1336,
+      "sha256": "b5593ebabaf6b480194a91e11604b1572694a05590bed06b9b329e45880f5e0c",
+      "git_blob_sha1": "8aafd0ed5aa701e26a4e4aead076d411eea531f3"
+    },
+    {
+      "original_path": "issue-258-review-validation/validate-installed.py",
+      "archived_path": "doc/local-validation-archive/files/issue-258-review-validation/validate-installed.py",
+      "bytes": 2572,
+      "sha256": "a0d91fcac3fb194d6079faab24b29ea335a2e73e4fd1d926961c4b6bae74b8c6",
+      "git_blob_sha1": "9fb9a24ce8358e6000821ece71688148d83c62c2"
+    },
+    {
+      "original_path": "issue-258-validation/header-probe.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-258-validation/header-probe.cpp",
+      "bytes": 61,
+      "sha256": "d6eab99d044f1893a6dd4920d51053d564e9594da148fa039094a19948c62b62",
+      "git_blob_sha1": "d87241cba8e749a62d848e05ef946a93c97c03c7"
+    },
+    {
+      "original_path": "issue-258-validation/build.sh",
+      "archived_path": "doc/local-validation-archive/files/issue-258-validation/build.sh",
+      "bytes": 778,
+      "sha256": "fb755b3c8ea2621ea279678dd3cd632166818bcd457b9f14190df05ce1f47ec5",
+      "git_blob_sha1": "984b5cd724e6b1b174b816a15e8223db3af2fafd"
+    },
+    {
+      "original_path": "issue-258-validation/BasePairProbabilityWriter-header.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-258-validation/BasePairProbabilityWriter-header.cpp",
+      "bytes": 61,
+      "sha256": "d6eab99d044f1893a6dd4920d51053d564e9594da148fa039094a19948c62b62",
+      "git_blob_sha1": "d87241cba8e749a62d848e05ef946a93c97c03c7"
+    },
+    {
+      "original_path": "issue-258-validation/installed-svg-example.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-258-validation/installed-svg-example.cpp",
+      "bytes": 1349,
+      "sha256": "d1728ba369ebba751ff4c8ea6a21be227588421ed4a5c58ab94e94623e93dfea",
+      "git_blob_sha1": "5c143f5c4c9d90aea3f93fb70cbcdba8e435eb66"
+    },
+    {
+      "original_path": "issue-258-validation/BasePairProbabilities-header.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-258-validation/BasePairProbabilities-header.cpp",
+      "bytes": 57,
+      "sha256": "c08a17d79dd1789cea975223193f9f1899696d957348db9936847d1369120fab",
+      "git_blob_sha1": "b3ecedee0b42d308766eb277610b1d4616fc3c56"
+    },
+    {
+      "original_path": "issue-258-validation/audit-performance/run.py",
+      "archived_path": "doc/local-validation-archive/files/issue-258-validation/audit-performance/run.py",
+      "bytes": 5397,
+      "sha256": "0dea17815948f9258f6048cbc5e38983d0e7a4baafa0dc334f54ee18fa9c4843",
+      "git_blob_sha1": "01bb042c470873928edc540b74091dc6fd4a0f45"
+    },
+    {
+      "original_path": "issue-258-validation/audit-performance/control-fixed.py",
+      "archived_path": "doc/local-validation-archive/files/issue-258-validation/audit-performance/control-fixed.py",
+      "bytes": 2079,
+      "sha256": "9e9b90b0587388c460772da4fffb844d1803e11acc8e949848d3310a8a2ed75d",
+      "git_blob_sha1": "4a759fc76c4c88f60f51faf598d4e76d58e36a67"
+    },
+    {
+      "original_path": "issue-258-validation/audit-performance/serializer-control.py",
+      "archived_path": "doc/local-validation-archive/files/issue-258-validation/audit-performance/serializer-control.py",
+      "bytes": 1918,
+      "sha256": "502cec33c9e431aad0392d13c5d61cf9376c2cccd76817ed10f65547612b028d",
+      "git_blob_sha1": "fa3d89aa37231fa021788ad66c076fe4fe57b50a"
+    },
+    {
+      "original_path": "issue-258-validation/audit-performance/compare-fixed.py",
+      "archived_path": "doc/local-validation-archive/files/issue-258-validation/audit-performance/compare-fixed.py",
+      "bytes": 3519,
+      "sha256": "4e38f8fbc0f8743bcc4fddd8ba672666bb44e183571c500cdb8cff20fc46eff3",
+      "git_blob_sha1": "cadf06221d1d83d87b718fec254f4f0b73c16eae"
+    },
+    {
+      "original_path": "issue-258-validation/audit-performance/compare-fixed-long.py",
+      "archived_path": "doc/local-validation-archive/files/issue-258-validation/audit-performance/compare-fixed-long.py",
+      "bytes": 3500,
+      "sha256": "786c87340bf2e4f73350de2274c947eef13046abd26fdac6e6ed5c68c862969b",
+      "git_blob_sha1": "3f0b91eb3ff545e6c90f921319d727eb467cb433"
+    },
+    {
+      "original_path": "issue-258-validation/audit-performance/summarize-fixed.py",
+      "archived_path": "doc/local-validation-archive/files/issue-258-validation/audit-performance/summarize-fixed.py",
+      "bytes": 3838,
+      "sha256": "1ce0170cccfb383417b2f460bd11ab74f8695130f2ba80e50c67b59c410388ee",
+      "git_blob_sha1": "786024dcbdc1042dd787acc603688a609d2bbcb6"
+    },
+    {
+      "original_path": "issue-258-validation/review-diagrams/build_probability_recursions.py",
+      "archived_path": "doc/local-validation-archive/files/issue-258-validation/review-diagrams/build_probability_recursions.py",
+      "bytes": 8092,
+      "sha256": "29e5bb8f7ccb550f7c250e4f2b79ec54b86d854bd4d361913ed7e04c865e5f85",
+      "git_blob_sha1": "5a4d0dffe84a4010563032bc868275df7b77d240"
+    },
+    {
+      "original_path": "issue-258-validation/step9/build_recursions.py",
+      "archived_path": "doc/local-validation-archive/files/issue-258-validation/step9/build_recursions.py",
+      "bytes": 25434,
+      "sha256": "a2c90388c528bc2b4a23a69ac693f576d51948e4a4deb4cefe1fbed503a922e7",
+      "git_blob_sha1": "8b312dfc3b6d759001b740e0d306aceb9127e220"
+    },
+    {
+      "original_path": "issue-270-anchored-validation/header-probe.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-270-anchored-validation/header-probe.cpp",
+      "bytes": 86,
+      "sha256": "d25809e8518b026422695fd22cc56b462c697e428f2397e9a523d351204976ff",
+      "git_blob_sha1": "e9ddbedb0f8c34ad3884e429b714e1c1dcefa43e"
+    },
+    {
+      "original_path": "issue-270-anchored-validation/check-install.py",
+      "archived_path": "doc/local-validation-archive/files/issue-270-anchored-validation/check-install.py",
+      "bytes": 1419,
+      "sha256": "76eec50b15002d4a5ee9fc10ec8aceea53ee89736ca2b813e88a7eba9abe6256",
+      "git_blob_sha1": "24cd8b32bb477cd91d411d122ccfed3facdacc6a"
+    },
+    {
+      "original_path": "issue-270-anchored-validation/compare-native.py",
+      "archived_path": "doc/local-validation-archive/files/issue-270-anchored-validation/compare-native.py",
+      "bytes": 2548,
+      "sha256": "b707fd1d9cc7d8cc28e8a295e2cbe5ee33a25a008dfea7c16a013f661d648fd9",
+      "git_blob_sha1": "1340202fbce884774d0371849500050194e4b224"
+    },
+    {
+      "original_path": "issue-270-anchored-validation/record-evidence.py",
+      "archived_path": "doc/local-validation-archive/files/issue-270-anchored-validation/record-evidence.py",
+      "bytes": 2843,
+      "sha256": "4fd39ba3c1459e5369bbd74b34db43f17092521ed26f506bead1e6ca570f45fa",
+      "git_blob_sha1": "fba0e8ec8d397fad4ba9a1a68812467b828ba1f5"
+    },
+    {
+      "original_path": "issue-184-validation/build.sh",
+      "archived_path": "doc/local-validation-archive/files/issue-184-validation/build.sh",
+      "bytes": 1016,
+      "sha256": "446048d1dc57c1c3b9b84e12cc386d62ee5f9d9aa1b8ab4c74d875c18c365f27",
+      "git_blob_sha1": "ad19d90279a0de6d69cae9c62eeef444a80e3cd2"
+    },
+    {
+      "original_path": "issue-184-validation/header.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-184-validation/header.cpp",
+      "bytes": 61,
+      "sha256": "f1f68a746f2f97d3625ee6203a615f640dd6d0cd27909f64a05af3fef159e07d",
+      "git_blob_sha1": "2b45fa6d675bdd7443cd8705b5406a1df2147649"
+    },
+    {
+      "original_path": "issue-184-validation/consumer.cpp",
+      "archived_path": "doc/local-validation-archive/files/issue-184-validation/consumer.cpp",
+      "bytes": 724,
+      "sha256": "7f6b7c04d84ed3a8e7696143399ee0ab2234c98e7c32734d818ab5c8b4afb56b",
+      "git_blob_sha1": "5defb6138c72ac80ba79abe83c1d0a559bd6595b"
+    },
+    {
+      "original_path": "issue-184-validation/check-install.sh",
+      "archived_path": "doc/local-validation-archive/files/issue-184-validation/check-install.sh",
+      "bytes": 1932,
+      "sha256": "166a09446967baa931612a212868a763975769421c494dfaed73d1d73462b0eb",
+      "git_blob_sha1": "4213f8fda1820eb557b42e0880ad32ec67e35260"
+    }
+  ],
+  "other_coverage": [
+    {
+      "path": "MIGRATION-AND-CHANGELOG.md",
+      "reason": "delivery/operational record retained in the external recovery archive"
+    },
+    {
+      "path": "issue-259-revision-validation/oct12-pr-body.md",
+      "reason": "delivery/operational record retained in the external recovery archive"
+    },
+    {
+      "path": "issue-259-revision-validation/revised-pr-body.md",
+      "reason": "delivery/operational record retained in the external recovery archive"
+    },
+    {
+      "path": "issue-273-validation/pr-body.md",
+      "reason": "delivery/operational record retained in the external recovery archive"
+    },
+    {
+      "path": "issue-262-validation/pr-body.md",
+      "reason": "delivery/operational record retained in the external recovery archive"
+    },
+    {
+      "path": "issue-244-validation/current-cxx23-library-probe.cpp",
+      "reason": "content already reachable from a published Git ref"
+    },
+    {
+      "path": "issue-244-validation/set-aside-cxx17.patch",
+      "reason": "content already reachable from a published Git ref"
+    },
+    {
+      "path": "issue-244-validation/set-aside-cxx17-notes.md",
+      "reason": "content already reachable from a published Git ref"
+    },
+    {
+      "path": "issue-244-validation/compiler-probe.cpp",
+      "reason": "content already reachable from a published Git ref"
+    },
+    {
+      "path": "profiling/martin/email-to-Martin.md",
+      "reason": "delivery/operational record retained in the external recovery archive"
+    },
+    {
+      "path": "profiling/martin/pull-request-body.md",
+      "reason": "delivery/operational record retained in the external recovery archive"
+    },
+    {
+      "path": "issue-266-validation/pr-body.md",
+      "reason": "delivery/operational record retained in the external recovery archive"
+    },
+    {
+      "path": "issue-245-validation/pr-body.md",
+      "reason": "delivery/operational record retained in the external recovery archive"
+    },
+    {
+      "path": "issue-246-validation/pr-body.md",
+      "reason": "delivery/operational record retained in the external recovery archive"
+    },
+    {
+      "path": "issue-246-validation/pr-body-current.md",
+      "reason": "delivery/operational record retained in the external recovery archive"
+    },
+    {
+      "path": "kinetic-validation/pr-body.md",
+      "reason": "delivery/operational record retained in the external recovery archive"
+    },
+    {
+      "path": "kinetic-validation/pr-body-kix.md",
+      "reason": "delivery/operational record retained in the external recovery archive"
+    },
+    {
+      "path": "kinetic-validation/pr-body-review.md",
+      "reason": "delivery/operational record retained in the external recovery archive"
+    },
+    {
+      "path": "issue-274-validation/pr-body.md",
+      "reason": "delivery/operational record retained in the external recovery archive"
+    },
+    {
+      "path": "issue-264-validation/pr-body.md",
+      "reason": "delivery/operational record retained in the external recovery archive"
+    },
+    {
+      "path": "issue-265-validation/pr-body.md",
+      "reason": "delivery/operational record retained in the external recovery archive"
+    },
+    {
+      "path": "issue-268-validation/pr-body.md",
+      "reason": "delivery/operational record retained in the external recovery archive"
+    },
+    {
+      "path": "issue-257-validation/pr-body-implementation.md",
+      "reason": "delivery/operational record retained in the external recovery archive"
+    },
+    {
+      "path": "issue-267-validation/pr-body.md",
+      "reason": "delivery/operational record retained in the external recovery archive"
+    },
+    {
+      "path": "issue-260-validation/pr-body.md",
+      "reason": "delivery/operational record retained in the external recovery archive"
+    },
+    {
+      "path": "issue-260-validation/feat-fixed/src/IntaRNA/PredictorMfeEns2dHeuristicSeedExtension.cpp",
+      "reason": "promoted in the separate probability-memory port PR"
+    },
+    {
+      "path": "issue-260-validation/feat-fixed/src/IntaRNA/PredictorMfeEns.h",
+      "reason": "promoted in the separate probability-memory port PR"
+    },
+    {
+      "path": "issue-260-validation/feat-fixed/src/IntaRNA/PredictorMfeEns.cpp",
+      "reason": "promoted in the separate probability-memory port PR"
+    },
+    {
+      "path": "issue-260-validation/feat-fixed/src/IntaRNA/PredictorMfeEns2dSeedExtension.cpp",
+      "reason": "promoted in the separate probability-memory port PR"
+    },
+    {
+      "path": "issue-260-validation/feat-fixed/src/IntaRNA/PredictorMfeEns2dSeedExtension.h",
+      "reason": "promoted in the separate probability-memory port PR"
+    },
+    {
+      "path": "issue-260-validation/feat-fixed/tests/PredictorMfeEnsRegression_test.cpp",
+      "reason": "promoted in the separate probability-memory port PR"
+    },
+    {
+      "path": "profiling-default-20260921/delivery/pr-body.md",
+      "reason": "delivery/operational record retained in the external recovery archive"
+    },
+    {
+      "path": "profiling-default-20260921/delivery/review-response.md",
+      "reason": "delivery/operational record retained in the external recovery archive"
+    },
+    {
+      "path": "issue-212-validation/pr-body.md",
+      "reason": "delivery/operational record retained in the external recovery archive"
+    },
+    {
+      "path": "issue-212-validation/pr-body-review.md",
+      "reason": "delivery/operational record retained in the external recovery archive"
+    },
+    {
+      "path": "issue-270-validation/pr-body.md",
+      "reason": "delivery/operational record retained in the external recovery archive"
+    },
+    {
+      "path": "issue-258-validation/pr-body.md",
+      "reason": "delivery/operational record retained in the external recovery archive"
+    },
+    {
+      "path": "issue-258-validation/audit-pr-body.md",
+      "reason": "delivery/operational record retained in the external recovery archive"
+    },
+    {
+      "path": "issue-258-validation/step9/pr-body.md",
+      "reason": "delivery/operational record retained in the external recovery archive"
+    },
+    {
+      "path": "issue-270-anchored-validation/pr-body.md",
+      "reason": "delivery/operational record retained in the external recovery archive"
+    },
+    {
+      "path": "issue-184-validation/pr-body.md",
+      "reason": "delivery/operational record retained in the external recovery archive"
+    }
+  ]
+}

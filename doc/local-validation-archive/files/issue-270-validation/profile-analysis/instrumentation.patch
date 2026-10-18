@@ -1,0 +1,121 @@
+--- a/src/IntaRNA/PredictorMfeEns2dSeedExtension.cpp
++++ b/src/IntaRNA/PredictorMfeEns2dSeedExtension.cpp
+@@ -1,3 +1,5 @@
++#include <chrono>
++#include <iostream>
+ 
+ #include "IntaRNA/PredictorMfeEns2dSeedExtension.h"
+ #include "IntaRNA/SeededPartitionFunction.h"
+@@ -363,7 +365,16 @@
+ 	StackSeedDomain seeds=seedCount ? StackSeedDomain(seedHandler,n,m,span1,span2)
+ 			: StackSeedDomain(std::vector<StackSeedDomain::Occurrence>(),n,m,span1,span2);
+ 	// Freeze heuristic choices before computing the shared forward/outside objective.
++	std::cerr << "#profile_seeds";
++	size_t profileSeedCount=0;
++	for(size_t i=0;i<n;++i) for(size_t j=0;j<m;++j) {
++		const size_t length=seeds.seedLength(i,j);
++		if(length) { ++profileSeedCount; std::cerr << " [" << i << "," << j << "," << length << "]"; }
++	}
++	std::cerr << " admitted_count=" << profileSeedCount << '\n';
++	const auto profileBegin=std::chrono::steady_clock::now();
+ 	prepareStackSeedExtensions(n,m,seeds);
++	const auto profilePrepared=std::chrono::steady_clock::now();
+ 	// Supply native weights once per initiation, transition and complete boundary.
+ 	using K=SeededPartitionFunction;
+ 	const K::Domain domain{n,m,span1,span2,energy.getMaxInternalLoopSize1(),energy.getMaxInternalLoopSize2(),output.getOutputConstraint().noLP};
+@@ -377,11 +388,16 @@
+ 		stackSeedRightSelector()
+ 	};
+ 	const auto result=K::compute(domain,seeds,weights,pairProbabilities!=nullptr);
++	const auto profileComputed=std::chrono::steady_clock::now();
+ 	// Custom updateZ overrides can change the objective even in release builds.
+ 	PartitionArithmetic::check(Zall);
+ 	if (result.z!=Zall) throw std::logic_error("exact seeded updateZ override did not preserve the partition objective");
+ 	output.setExactPartition(true);
+ 	reportOptima();
++	const auto profileReported=std::chrono::steady_clock::now();
++	std::cerr << "#profile_predictor prepare_s=" << std::chrono::duration<double>(profilePrepared-profileBegin).count()
++		<< " compute_s=" << std::chrono::duration<double>(profileComputed-profilePrepared).count()
++		<< " report_s=" << std::chrono::duration<double>(profileReported-profileComputed).count() << '\n';
+ 	if (pairProbabilities) {
+ 		// Restore original strand orientation and offsets before merging this region.
+ 		const auto first=energy.getBasePair(0,0), last=energy.getBasePair(n-1,m-1);
+--- a/src/IntaRNA/SeededPartitionFunction.cpp
++++ b/src/IntaRNA/SeededPartitionFunction.cpp
+@@ -1,3 +1,6 @@
++#include <chrono>
++#include <iostream>
++#include <cstdint>
+ #include "IntaRNA/SeededPartitionFunction.h"
+ #include "IntaRNA/PartitionArithmetic.h"
+ #include <algorithm>
+@@ -408,17 +411,27 @@
+ 	auto forAnchors=[&](const Group & group,const auto & visit) {
+ 		for(size_t a=group.first;a;a=anchors[a-1].next) visit(anchors[a-1].pair);
+ 	};
++	uint64_t profileSources=0,profileLeftCells=0,profileBoundedLeftCells=0,profileGroups=0,profileAllGroups=0,profileRightCells=0,profileCroppedCells=0,profileAnchors=0;
++	double profileLeftSeconds=0,profileRightSeconds=0;
+ 	seeds.forEachStart([&](size_t p1,size_t p2) {
+ 		const Pair p{p1,p2}; if (!w.valid(p)) return;
+ 		const size_t n=std::min(d.span1,d.n-p1),m=std::min(d.span2,d.m-p2);
++		++profileSources; profileLeftCells+=n*m;
++		const auto profileLeftBegin=std::chrono::steady_clock::now();
+ 		reset(left,n*m,cap); reset(leftTotal,n,m); reset(hit,n,m);
+ 		reset(hybrid,n,m);
+ 		if(w.selectRight) reset(byEnd,n,m);
+ 		if(pairs) { reset(boundary,n,m); reset(dHit,n,m); }
++		size_t profilePrefixN=0,profilePrefixM=0;
+ 		for(size_t i=0;i<n;++i) for(size_t j=0;j<m;++j) {
+ 			valid(i,j)=w.valid({p1+i,p2+j});
+ 			ending(i,j)=seeds.seedEndingLength(p1+i,p2+j);
+-		}
++			const size_t profileLength=ending(i,j);
++			if(profileLength && profileLength<=i+1 && profileLength<=j+1) {
++				profilePrefixN=std::max(profilePrefixN,i+1); profilePrefixM=std::max(profilePrefixM,j+1);
++			}
++		}
++		profileBoundedLeftCells+=profilePrefixN*profilePrefixM;
+ 		auto accepts=[&](size_t i,size_t j,size_t len) { return ending(i,j) && ending(i,j)<=len; };
+ 		auto nonstack=[&](size_t i,size_t j,const auto & visit) {
+ 			for(size_t u=1;u<=i && u-1<=d.loop1;++u) for(size_t v=1;v<=j && v-1<=d.loop2;++v)
+@@ -452,6 +465,7 @@
+ 			for(size_t c=d.noLP?1:0;c<cap;++c) leftTotal(i,j)=A::add(leftTotal(i,j),left(i*m+j,c));
+ 		}
+ 
++		profileLeftSeconds+=std::chrono::duration<double>(std::chrono::steady_clock::now()-profileLeftBegin).count();
+ 		// Retained right extensions share first-hit injections by linearity:
+ 		// T[p,r] = sum_q F[p,q] B[q,r]. Injections share work only when they
+ 		// have the same retained endpoint (or retain all endpoints).
+@@ -477,6 +491,12 @@
+ 			addAnchor(groups[groupIndex],{i,j});
+ 		}
+ 		auto fillRight=[&](const Group & group) {
++			const auto profileRightBegin=std::chrono::steady_clock::now();
++			++profileGroups; if(group.all) ++profileAllGroups;
++			size_t profileMin1=group.end.first,profileMin2=group.end.second;
++			forAnchors(group,[&](Pair q) { ++profileAnchors; profileMin1=std::min(profileMin1,q.first); profileMin2=std::min(profileMin2,q.second); });
++			profileRightCells+=(group.end.first+1)*(group.end.second+1);
++			profileCroppedCells+=(group.end.first-profileMin1+1)*(group.end.second-profileMin2+1);
+ 			reset(right,group.end.first+1,group.end.second+1);
+ 			forAnchors(group,[&](Pair q) { right(q.first,q.second)=hit(q.first,q.second); });
+ 			// B is seed-unconstrained: no seed lookup or subtraction occurs here.
+@@ -494,6 +514,7 @@
+ 					}
+ 				});
+ 			}
++			profileRightSeconds+=std::chrono::duration<double>(std::chrono::steady_clock::now()-profileRightBegin).count();
+ 		};
+ 		for(const auto & group:groups) {
+ 			if(!group.first) continue;
+@@ -576,6 +597,11 @@
+ 			});
+ 		}
+ 	});
++	std::cerr << "#profile_kernel sources=" << profileSources << " left_cells=" << profileLeftCells
++		<< " bounded_prefix_cells=" << profileBoundedLeftCells << " fillRight_calls=" << profileGroups << " unrestricted_groups=" << profileAllGroups
++		<< " right_rectangle_cells=" << profileRightCells << " minima_cropped_cells=" << profileCroppedCells
++		<< " firsthit_anchors=" << profileAnchors << " prefix_s=" << profileLeftSeconds
++		<< " fillRight_s=" << profileRightSeconds << '\n';
+ 	return out;
+ }
+ }

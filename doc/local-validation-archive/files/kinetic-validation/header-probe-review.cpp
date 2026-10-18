@@ -1,0 +1,2 @@
+#include <IntaRNA/InteractionEnergyVrna.h>
+int main() { return 0; }

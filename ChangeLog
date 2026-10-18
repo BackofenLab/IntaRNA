@@ -42,6 +42,9 @@
 
 ## Technical changes and Optimizations
 
+- preserve historical local validation helpers, probes and experimental source
+  snapshots as an inactive, checksummed documentation archive
+
 - require ViennaRNA >= 2.7.0 and its logger/prepared-window APIs at configure
   time; install the logger lock for every supported version (PR #267)
 
@@ -137,6 +140,12 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261018 Alexander Mitrofanov
+ * doc/local-validation-archive/, doc/Makefile.am
+   + recover local validation/reproduction scripts and experimental source copies
+   + record original paths and byte hashes without activating archived code
+   * document why validation artifacts remained outside earlier production commits
 
 261015 Alexander Mitrofanov
  * configure.ac, conda-build-env.yml :
