@@ -1169,6 +1169,48 @@
       "bytes": 1932,
       "sha256": "166a09446967baa931612a212868a763975769421c494dfaed73d1d73462b0eb",
       "git_blob_sha1": "4213f8fda1820eb557b42e0880ad32ec67e35260"
+    },
+    {
+      "original_path": "issue-244-validation/source-gcc11-debug/configure.ac",
+      "archived_path": "doc/local-validation-archive/files/issue-244-validation/source-gcc11-debug/configure.ac",
+      "bytes": 17223,
+      "sha256": "0745bbf666828fddb48f0f57c2efd46439047c04cc42c935a0ff7c19183691cf",
+      "git_blob_sha1": "4f371a56b2435102bab6556969da75e4112cb609"
+    },
+    {
+      "original_path": "issue-244-validation/source-gcc11-debug/.github/workflows/build.yml",
+      "archived_path": "doc/local-validation-archive/files/issue-244-validation/source-gcc11-debug/.github/workflows/build.yml",
+      "bytes": 5062,
+      "sha256": "f6f9fce0c17dbe86261a4fec42a708f0b436b6e82af0c75747cc74118e0d46e7",
+      "git_blob_sha1": "ee4a00592f7292a222f4695e58f82e0195367fa5"
+    },
+    {
+      "original_path": "issue-246-validation/audit-distribution/intaRNA-3.4.1/doc/Makefile.am",
+      "archived_path": "doc/local-validation-archive/files/issue-246-validation/audit-distribution/intaRNA-3.4.1/doc/Makefile.am",
+      "bytes": 520,
+      "sha256": "9d70e4612646ea0d394da900aec36cc9809545fd9efc8cfaf0921343939eada2",
+      "git_blob_sha1": "0e139915c21528e8adcaa216e52cce5a222c45cb"
+    },
+    {
+      "original_path": "issue-246-validation/mdspan-probe-source/configure.ac",
+      "archived_path": "doc/local-validation-archive/files/issue-246-validation/mdspan-probe-source/configure.ac",
+      "bytes": 19972,
+      "sha256": "9f0f054b36ceaacdad91d9158d33f9a7ae9b2441a4f7bb98f8d5d4afd1460977",
+      "git_blob_sha1": "ba431ed45ddc311af9e070c54ac3661ff24d1a6a"
+    },
+    {
+      "original_path": "issue-264-validation/debug/doc/Makefile.am",
+      "archived_path": "doc/local-validation-archive/files/issue-264-validation/debug/doc/Makefile.am",
+      "bytes": 796,
+      "sha256": "49312594272e284b5a5a6d2451ee35d3ad0e04f5c59be4d7a0c6ec69695c04f9",
+      "git_blob_sha1": "101c22b521305cc76200a0f7c5e3b040d1bd1a00"
+    },
+    {
+      "original_path": "issue-212-validation/distribution-doc/Makefile.am",
+      "archived_path": "doc/local-validation-archive/files/issue-212-validation/distribution-doc/Makefile.am",
+      "bytes": 485,
+      "sha256": "1b976a9e9ae60af6109439ce4d9ea1eb5c7ee24670df462964fb757a0f7ab5af",
+      "git_blob_sha1": "acfa3bd779bf41ac7e925d8e81e8831fa7e032d9"
     }
   ],
   "other_coverage": [

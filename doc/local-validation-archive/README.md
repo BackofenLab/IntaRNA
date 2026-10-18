@@ -9,7 +9,7 @@ wired into the application build, its tests, or CI.
 
 The `files/` tree preserves the original workspace-relative layout. It includes
 standalone public-header/installed-library consumers, benchmark drivers,
-configure/dependency probes, native-output comparisons, plotting/report
+configure/dependency probes, archived configure and CI fixtures, native-output comparisons, plotting/report
 helpers, instrumentation patches and alternative source implementations used
 in local measurements. Source snapshots include the abandoned C++17 work,
 a matrix prototype, hash/dense partition experiments, an uncached kinetic
@@ -65,17 +65,17 @@ Historical reports retain their original measurement dates and limitations.
 | Directory | Preserved files |
 | --- | ---: |
 | `issue-184-validation` | 4 |
-| `issue-212-validation` | 10 |
-| `issue-244-validation` | 8 |
+| `issue-212-validation` | 11 |
+| `issue-244-validation` | 10 |
 | `issue-245-validation` | 6 |
-| `issue-246-validation` | 15 |
+| `issue-246-validation` | 17 |
 | `issue-257-validation` | 4 |
 | `issue-258-review-validation` | 3 |
 | `issue-258-validation` | 13 |
 | `issue-259-revision-validation` | 8 |
 | `issue-260-validation` | 3 |
 | `issue-262-validation` | 4 |
-| `issue-264-validation` | 4 |
+| `issue-264-validation` | 5 |
 | `issue-265-validation` | 8 |
 | `issue-267-validation` | 13 |
 | `issue-268-validation` | 8 |
