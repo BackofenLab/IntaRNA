@@ -195,8 +195,9 @@ energies, restricted partition sums, and trackers.
 ################################################################################
 
 261018 Alexander Mitrofanov
- * BasePairProbabilities_test.cpp, StackSeedDomain_test.cpp
-   * exercise debug-only region/mask/handler/length checks only in debug builds
+ * BasePairProbabilities_test.cpp, StackSeedDomain_test.cpp,
+   PredictorUnseededProbability_test.cpp, PredictorHeuristicProbability_test.cpp
+   * exercise debug-only region/mask/handler/length preconditions only in debug builds
    + restore the unsupported-handler test under the matching debug guard
    * keep ordinary lifecycle, arithmetic and output checks in both configurations
 

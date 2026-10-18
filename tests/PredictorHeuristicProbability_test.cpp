@@ -202,10 +202,13 @@ TEST_CASE("heuristic pair owner merges disjoint regions and rejects failed resul
 	REQUIRE_THROWS(failing.predict({3,5},{3,5}));
 	REQUIRE(failed.status()==BasePairProbabilities::Status::failed);
 	REQUIRE_THROWS(failed.finalize());
+#if INTARNA_IN_DEBUG_MODE
+	// Invalid prediction regions are a debug-checked caller precondition.
 	BasePairProbabilities invalid(6,6);OutputHandlerInteractionList invalidOutput(constraint,1);
 	FailingHeuristic badRange(energy,invalidOutput,nullptr,&invalid);
 	REQUIRE_THROWS(badRange.predict({8,9},{0,2}));
 	REQUIRE(invalid.status()==BasePairProbabilities::Status::failed);
+#endif
 }
 
 TEST_CASE("heuristic probability collection preserves numerical-zero admission", "[BasePairProbabilities][PredictorHeuristicProbability]") {
