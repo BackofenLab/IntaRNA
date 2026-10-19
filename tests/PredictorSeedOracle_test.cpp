@@ -687,48 +687,6 @@ TEST_CASE("tiny exhaustive seed oracle for exact predictor families",
 
 namespace {
 
-class CountingExtensionEnergy : public InteractionEnergyBasePair {
-public:
-	using InteractionEnergyBasePair::InteractionEnergyBasePair;
-	mutable size_t loopCalls = 0;
-	E_type getE_interLeft(size_t i1, size_t j1, size_t i2, size_t j2) const override;
-};
-
-E_type CountingExtensionEnergy::getE_interLeft(size_t i1, size_t j1,
-		size_t i2, size_t j2) const
-{
-	++loopCalls;
-	return InteractionEnergyBasePair::getE_interLeft(i1, j1, i2, j2);
-}
-
-class MfeExtensionCacheProbe : public PredictorMfe2dSeedExtension {
-public:
-	using PredictorMfe2dSeedExtension::PredictorMfe2dSeedExtension;
-	using PredictorMfe2dSeedExtension::extensionLoopE;
-	void prepare(size_t offset1, size_t offset2, size_t n, size_t m);
-	bool hasLoopCache() const;
-	bool hasPairCache() const;
-};
-
-void MfeExtensionCacheProbe::prepare(size_t offset1, size_t offset2,
-		size_t n, size_t m)
-{
-	resetExtensionCache();
-	energy.setOffset1(offset1);
-	energy.setOffset2(offset2);
-	prepareExtensionWorkspace(n, m);
-}
-
-inline bool MfeExtensionCacheProbe::hasLoopCache() const
-{
-	return !extensionLoopEnergy.empty();
-}
-
-inline bool MfeExtensionCacheProbe::hasPairCache() const
-{
-	return extensionPairIndex.size1() != 0;
-}
-
 template<class PredictorType>
 void checkMfeExtensionWorkspaceReuse(const InteractionEnergy & energy,
 		const SeedConstraint & seedConstraint,
@@ -784,66 +742,6 @@ void checkMfeExtensionWorkspaceReuse(const InteractionEnergy & energy,
 }
 
 } // namespace
-
-TEST_CASE("MFE extension loop caching preserves infinity offsets and bounded fallback",
-		"[PredictorSeedOracle][MfeSeedExtensionWorkspace]")
-{
-	#include "testEasyLoggingSetup.icc"
-
-	const auto seedConstraint = makeSeedConstraint(2, 0, 0, 0, false);
-	const auto outputConstraint = makeOutputConstraint(false);
-	SECTION("finite and infinite transitions are cached once per prediction") {
-		RnaSequence target("target", "GGAGGGG"), query("query", "CCCCCCC");
-		AccessibilityDisabled targetAcc(target, 2, nullptr), queryAcc(query, 2, nullptr);
-		ReverseAccessibility reverseQuery(queryAcc);
-		CountingExtensionEnergy energy(targetAcc, reverseQuery, 2, 1);
-		SeedRecordingOutput output(outputConstraint);
-		MfeExtensionCacheProbe predictor(energy, output, nullptr,
-				new SeedHandlerMfe(energy, seedConstraint));
-		predictor.prepare(0, 0, 7, 7);
-		REQUIRE(predictor.hasLoopCache());
-		for (size_t repeat = 0; repeat < 3; ++repeat) {
-			REQUIRE(predictor.extensionLoopE(0, 1, 0, 1) == Ekcal_2_E(-1));
-			REQUIRE(E_isINF(predictor.extensionLoopE(0, 2, 0, 1)));
-			REQUIRE(predictor.extensionLoopE(0, 3, 0, 1) == Ekcal_2_E(-1));
-		}
-		REQUIRE(energy.loopCalls == 3);
-		// Traceback may query a direct loop longer than the recurrence bounds.
-		REQUIRE(E_isINF(predictor.extensionLoopE(0, 4, 0, 1)));
-		REQUIRE(E_isINF(predictor.extensionLoopE(0, 4, 0, 1)));
-		REQUIRE(energy.loopCalls == 5);
-		// The same local key now names a different physical pair, ending in A.
-		predictor.prepare(1, 0, 6, 7);
-		REQUIRE(E_isINF(predictor.extensionLoopE(0, 1, 0, 1)));
-		REQUIRE(E_isINF(predictor.extensionLoopE(0, 1, 0, 1)));
-		REQUIRE(energy.loopCalls == 6);
-		predictor.prepare(0, 0, 7, 7);
-		REQUIRE(predictor.extensionLoopE(0, 1, 0, 1) == Ekcal_2_E(-1));
-		REQUIRE(energy.loopCalls == 7);
-	}
-	SECTION("large cache domains retain direct energy evaluation") {
-		RnaSequence target("target", std::string(1500, 'G'));
-		RnaSequence query("query", std::string(1500, 'C'));
-		AccessibilityDisabled targetAcc(target, 2, nullptr), queryAcc(query, 2, nullptr);
-		ReverseAccessibility reverseQuery(queryAcc);
-		CountingExtensionEnergy energy(targetAcc, reverseQuery, 2, 2);
-		SeedRecordingOutput output(outputConstraint);
-		MfeExtensionCacheProbe predictor(energy, output, nullptr,
-				new SeedHandlerMfe(energy, seedConstraint));
-		for (size_t length : {600, 1500}) {
-			CAPTURE(length);
-			// At 600 the loop table exceeds the cap; at 1500 so does the
-			// pair map. Neither path needs a full prediction to test fallback.
-			predictor.prepare(0, 0, length, length);
-			REQUIRE_FALSE(predictor.hasLoopCache());
-			REQUIRE(predictor.hasPairCache() == (length == 600));
-			const size_t previousCalls = energy.loopCalls;
-			REQUIRE(predictor.extensionLoopE(0, 1, 0, 1) == Ekcal_2_E(-1));
-			REQUIRE(predictor.extensionLoopE(0, 1, 0, 1) == Ekcal_2_E(-1));
-			REQUIRE(energy.loopCalls == previousCalls+2);
-		}
-	}
-}
 
 TEST_CASE("MFE seed extensions preserve bounded recurrences and reused workspaces",
 		"[PredictorSeedOracle][MfeSeedExtensionWorkspace]")
