@@ -1,0 +1,146 @@
+{
+  "checks": [
+    {
+      "case": "dense40-many",
+      "compared_entries": 220710,
+      "max_relative_error": 1.2941965339173264e-14
+    },
+    {
+      "case": "dense40-few",
+      "compared_entries": 42460,
+      "max_relative_error": 5.968160614217157e-15
+    },
+    {
+      "case": "band60-many",
+      "compared_entries": 42270,
+      "max_relative_error": 6.100720486628122e-15
+    },
+    {
+      "case": "band60-few",
+      "compared_entries": 22796,
+      "max_relative_error": 2.775000401059499e-15
+    }
+  ],
+  "summary": [
+    {
+      "case": "dense40-many",
+      "pairs": 0,
+      "seeds": 1369,
+      "base_median_seconds": 0.06175637,
+      "base_min_seconds": 0.06126364,
+      "base_max_seconds": 0.063366699,
+      "base_median_rss_kib": 4096,
+      "candidate_median_seconds": 0.095127128,
+      "candidate_min_seconds": 0.094731769,
+      "candidate_max_seconds": 0.099869127,
+      "candidate_median_rss_kib": 4096,
+      "runtime_ratio": 1.5403613910597402,
+      "rss_ratio": 1.0
+    },
+    {
+      "case": "dense40-many",
+      "pairs": 1,
+      "seeds": 1369,
+      "base_median_seconds": 0.191144289,
+      "base_min_seconds": 0.183395191,
+      "base_max_seconds": 0.191305179,
+      "base_median_rss_kib": 4096,
+      "candidate_median_seconds": 0.250898378,
+      "candidate_min_seconds": 0.250559986,
+      "candidate_max_seconds": 0.251456822,
+      "candidate_median_rss_kib": 4096,
+      "runtime_ratio": 1.3126124736062608,
+      "rss_ratio": 1.0
+    },
+    {
+      "case": "dense40-few",
+      "pairs": 0,
+      "seeds": 3,
+      "base_median_seconds": 0.044611529,
+      "base_min_seconds": 0.04316184,
+      "base_max_seconds": 0.044624403,
+      "base_median_rss_kib": 3968,
+      "candidate_median_seconds": 0.060550037,
+      "candidate_min_seconds": 0.057688871,
+      "candidate_max_seconds": 0.061267086,
+      "candidate_median_rss_kib": 3840,
+      "runtime_ratio": 1.357273295878292,
+      "rss_ratio": 0.967741935483871
+    },
+    {
+      "case": "dense40-few",
+      "pairs": 1,
+      "seeds": 3,
+      "base_median_seconds": 0.134945392,
+      "base_min_seconds": 0.129268585,
+      "base_max_seconds": 0.135689572,
+      "base_median_rss_kib": 3840,
+      "candidate_median_seconds": 0.157953038,
+      "candidate_min_seconds": 0.152037986,
+      "candidate_max_seconds": 0.162989066,
+      "candidate_median_rss_kib": 3840,
+      "runtime_ratio": 1.1704959736602194,
+      "rss_ratio": 1.0
+    },
+    {
+      "case": "band60-many",
+      "pairs": 0,
+      "seeds": 387,
+      "base_median_seconds": 0.009600597,
+      "base_min_seconds": 0.009466016,
+      "base_max_seconds": 0.009990766,
+      "base_median_rss_kib": 3968,
+      "candidate_median_seconds": 0.016925983,
+      "candidate_min_seconds": 0.016139283,
+      "candidate_max_seconds": 0.01704735,
+      "candidate_median_rss_kib": 3968,
+      "runtime_ratio": 1.763013591758929,
+      "rss_ratio": 1.0
+    },
+    {
+      "case": "band60-many",
+      "pairs": 1,
+      "seeds": 387,
+      "base_median_seconds": 0.023987456,
+      "base_min_seconds": 0.02335275,
+      "base_max_seconds": 0.024077885,
+      "base_median_rss_kib": 3968,
+      "candidate_median_seconds": 0.033507373,
+      "candidate_min_seconds": 0.032377372,
+      "candidate_max_seconds": 0.034150094,
+      "candidate_median_rss_kib": 3968,
+      "runtime_ratio": 1.3968706393875199,
+      "rss_ratio": 1.0
+    },
+    {
+      "case": "band60-few",
+      "pairs": 0,
+      "seeds": 3,
+      "base_median_seconds": 0.008107247,
+      "base_min_seconds": 0.007734701,
+      "base_max_seconds": 0.008136201,
+      "base_median_rss_kib": 3840,
+      "candidate_median_seconds": 0.013041866,
+      "candidate_min_seconds": 0.012656487,
+      "candidate_max_seconds": 0.013239196,
+      "candidate_median_rss_kib": 3840,
+      "runtime_ratio": 1.6086676525335912,
+      "rss_ratio": 1.0
+    },
+    {
+      "case": "band60-few",
+      "pairs": 1,
+      "seeds": 3,
+      "base_median_seconds": 0.020523234,
+      "base_min_seconds": 0.020279959,
+      "base_max_seconds": 0.020630795,
+      "base_median_rss_kib": 3840,
+      "candidate_median_seconds": 0.027670808,
+      "candidate_min_seconds": 0.027550493,
+      "candidate_max_seconds": 0.027868688,
+      "candidate_median_rss_kib": 3840,
+      "runtime_ratio": 1.348267431926177,
+      "rss_ratio": 1.0
+    }
+  ]
+}

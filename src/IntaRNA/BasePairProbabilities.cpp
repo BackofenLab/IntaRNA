@@ -22,17 +22,15 @@ void BasePairProbabilities::addRegion(const IndexRange & t,const IndexRange & q,
 	try {
 		// Validate the caller's lifecycle, dimensions and optional annotation mask.
 		if (state!=Status::pending) throw std::logic_error("pair probabilities: accumulator is not pending");
-#if INTARNA_IN_DEBUG_MODE
 		if (!t.isAscending() || !q.isAscending() || t.to>=mass.size1() || q.to>=mass.size2()
 				|| values.size1()!=t.to-t.from+1 || values.size2()!=q.to-q.from+1)
 			throw std::invalid_argument("pair probabilities: invalid region dimensions");
 		if (collectSeeds && (!seedPairs || seedPairs->size1()!=values.size1() || seedPairs->size2()!=values.size2()))
 			throw std::invalid_argument("pair probabilities: missing or invalid regional seed mask");
-			// Disjoint searched rectangles ensure each interaction contributes once.
-			for (const auto & r:regions)
+		// Disjoint searched rectangles ensure each interaction contributes once.
+		for (const auto & r:regions)
 			if (t.from<=r.first.to && r.first.from<=t.to && q.from<=r.second.to && r.second.from<=q.to)
-			throw std::invalid_argument("pair probabilities: searched regions overlap");
-#endif
+				throw std::invalid_argument("pair probabilities: searched regions overlap");
 		// Check every proposed sum before committing any regional data.
 		const Z_type merged=A::add(z,denominator);
 		for (size_t i=0;i<values.size1();++i) for(size_t j=0;j<values.size2();++j) {

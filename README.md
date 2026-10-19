@@ -2031,13 +2031,20 @@ is also used without `bpProb`, so requesting the matrix does not change `Zall`.
 Computed seeds preserve their handler-specific admission thresholds. Explicit
 stacked seeds may have different lengths, including singletons; competing
 explicit patterns at the same start still retain only the selected minimum-energy
-pattern. With `--mode=H`, probabilities describe the predictor's retained
-candidate ensemble, not all possible interactions. Unseeded H retains one
-continuation per left pair; seeded H retains its seed-extension candidates and
-selected right extension, including the existing seed-overlap corrections.
-Seeded H supports computed or explicit seeds with at least two pairs, including
-bulged seeds. These heuristic ensembles can retain path multiplicities and
-must not be interpreted as the exact unique-chain ensemble of mode M.
+pattern. Exact and heuristic stack-seeded predictions share left-most seed-anchor
+left/right tables. Removing containing seed occurrences leaves the same canonical
+owner as the first completed admitted seed, choosing the shortest co-ending seed.
+This canonical seed owns the complete chain even if later seeds occur.
+With `--mode=H`, probabilities describe the predictor's retained candidate
+ensemble. Unseeded H retains one continuation per left pair. Stack-seeded H
+retains each canonical seed's one-sided extensions and two-sided extensions
+ending at its selected right endpoint, counting each retained chain once.
+Its partition is therefore at most the exact stack-seeded partition with the
+same constraints; values can differ from the former signed-overlap heuristic.
+Seeded H supports computed or explicit seeds with at least two pairs. Bulged
+seeds retain the legacy extension/correction algorithm, which can retain path
+multiplicities. The [seed-extension recurrence](doc/analysis/seed-extension-partition.md)
+defines ownership, endpoint selection, and the shared inside/outside calculation.
 Kinetic, evaluation, seed-only and exact bulged-seed probability requests remain
 unsupported.
 
@@ -2537,9 +2544,11 @@ Autotools, and publishing instructions.
 
 The [seeded base-pair probability implementation plan](doc/analysis/base-pair-probabilities-plan.md)
 records the reviewed algorithms, numerical contracts, integration, and validation
-for issue #257. The implementation selects the suffix backend after the
-[measured kernel comparison](doc/analysis/seeded-kernel-comparison.md);
-[actual base-pair output](#bpProb) is available for exact stack-seeded ensembles.
+for issue #257, including the historical
+[measured kernel comparison](doc/analysis/seeded-kernel-comparison.md).
+The current [seed-extension backend](doc/analysis/seed-extension-partition.md)
+implements first-seed ownership for exact and heuristic stack-seeded ensembles,
+including [actual base-pair output](#bpProb).
 
 When IntaRNA is build while `pkg-config` is present, according pkg-config
 information is generated and installed too.

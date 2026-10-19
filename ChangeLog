@@ -68,6 +68,25 @@
 
 ## Technical changes and Optimizations
 
+- share exact left-most seed-anchor extensions with heuristic prediction,
+  combining each true left extension with one retained right endpoint (#270)
+
+- compute exact stack-seeded ensembles with left-most seed-anchored left/right
+  extensions and shared bounded workspaces (PR #268 review)
+
+- reuse maximal seed-extension workspaces for exact/heuristic partitions,
+  endpoint selection and pair-probability differentiation (PR #266 review)
+
+- compute exact and heuristic stack-seeded ensembles by first-seed ownership,
+  seed-avoiding left prefixes and unrestricted right extensions; differentiate
+  the same nonnegative retained ensemble for actual-pair probabilities (#264)
+
+- initialize seed iteration outside the complete remaining sequence so a seed
+  beyond a cropped region cannot hide an earlier valid seed
+
+- validate probability-region dimensions, seed masks and overlap in release
+  builds before accepting data or dereferencing a required annotation mask
+
 - use hashed base-pair keys for sparse stack-seed lookup, assert internal seed
   geometry in debug builds, and document probability computation steps and
   contributor conventions (PR #258 review)
@@ -190,6 +209,112 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261016 Alexander Mitrofanov
+ * SeededPartitionFunction.*, StackSeedDomain.h
+   * Share the exact left-most seed-anchor recurrence with heuristic mode.
+     Remove the separate source-relative heuristic kernel; join true left
+     extensions with the seed ending and one frozen selected right endpoint.
+     Keep every right ending when there is no left extension. Crop right tables
+     in batches without that no-left source and differentiate the same joins.
+   * Document why pruning containing seeds preserves first-completed ownership,
+     including shortest co-ending ties; retain singleton noLP support.
+ * PredictorMfeEns2dHeuristicSeedExtension.*
+   * Clarify shared factorization while preserving native right-selection hooks,
+     energy ranking, complete-boundary publication and gapped-seed fallback.
+ * SeededPartitionFunction_test.cpp, PredictorSeedOracle_test.cpp
+   + Check nested ownership against the full declared family, one-sided paths,
+     invalid/cropped selectors, singleton noLP support, batch recomputation and
+     native virtual hooks against independent chain enumeration.
+ * README.md, doc/analysis/seed-extension-partition.md,
+   doc/analysis/heuristic-anchored-runtime.md, doc/benchmarks/seed-extension/*,
+   doc/Makefile.am
+   + Document the common recurrence and record reproducible kernel/native
+     correctness, runtime, allocation and RSS comparisons. Add a native CLI
+     runner with alternating samples and numerical pair-output verification.
+   * Address https://github.com/BackofenLab/IntaRNA/pull/270#issuecomment-6216756696
+     directly on perf/268-exact-seed-anchored-extension.
+
+261016 Alexander Mitrofanov
+ * StackSeedDomain.*
+   + Enumerate a deterministic irredundant exact anchor family while retaining
+     the original admitted occurrences for annotations and heuristic choices.
+ * SeededPartitionFunction.*
+   * Evaluate exact stack-seeded ensembles by left-most ownership in an
+     equivalent seed family with redundant containing occurrences removed.
+     Reuse anchor-local left/right and outside workspaces; combine complete
+     boundary partitions in bounded batches before publication.
+   * Differentiate the same nonnegative ensemble for actual-pair masses,
+     including singleton support from either side under noLP. Preserve the
+     heuristic's first-completed-seed ownership and gapped-seed fallback.
+ * SeededPartitionFunction_test.cpp, PredictorSeedOracle_test.cpp
+   + Compare nested mixed-length seeds, cropped/asymmetric spans and loop
+     limits, noLP support and native boundary optima with independent chain
+     enumeration. Check full hybrid callback coefficients, including zero
+     boundary factors, and identical partition-only/pair publication.
+ * doc/analysis/seed-extension-partition.md, doc/benchmarks/seed-extension/*,
+   doc/Makefile.am
+   + Explain exact seed ownership, extension bounds, outside differentiation
+     and bounded boundary aggregation; record reproducible correctness,
+     runtime, allocation and RSS comparisons against PR #268. Add correctness-
+     only benchmark runs and record harness/shared-header source hashes.
+   * Address https://github.com/BackofenLab/IntaRNA/pull/268#issuecomment-6212869312.
+
+261015 Alexander Mitrofanov
+ * SeededPartitionFunction.cpp
+   * Allocate prefix, first-hit, right-extension and outside matrices once per
+     computation at the inclusive span bounds. Use active upper index bounds
+     and reset active cells before accumulation, including shrink/regrowth.
+   * Reuse flat anchor/group storage and an endpoint index instead of creating
+     per-group vectors and hash nodes; omit outside buffers in partition mode.
+ * PredictorMfeEns2dHeuristicSeedExtension.cpp
+   * Reuse the maximal right-extension buffer while freezing native heuristic
+     endpoints, including explicit seeds of different lengths.
+ * SeededPartitionFunction_test.cpp, PredictorHeuristicSeededProbability_test.cpp
+   + Compare changing workspace shapes with independent chain enumeration and
+     compare mixed-seed endpoint selection with isolated single-seed predictions.
+ * doc/analysis/seed-extension-partition.md, doc/benchmarks/seed-extension/*,
+   doc/Makefile.am
+   + Document workspace bounds and reproduce exact/heuristic allocation counts,
+     requested bytes, runtime, RSS and numerical comparisons against PR #266.
+   * Address https://github.com/BackofenLab/IntaRNA/pull/266#issuecomment-6176325864.
+
+261014 Alexander Mitrofanov
+ * SeededPartitionFunction.*
+   * Replace the combined absorbing-state recurrence by separate seed-free
+     prefixes, canonical first-hit injections and shared right extensions.
+     Apply full-boundary weights once after summing all seed owners; propagate
+     pair masses through the same nonnegative recurrence. Co-ending variable
+     seed lengths use their shortest admitted occurrence as canonical owner.
+ * PredictorMfeEns2d{,Heuristic}SeedExtension.*
+   * Route stack-seeded heuristic prediction through the common kernel with
+     frozen right choices. Retain one-sided and selected-endpoint two-sided
+     paths once; preserve legacy gapped-seed behavior and extension hooks.
+ * SeededChainOracle.h, SeededPartitionFunction_test.cpp,
+   PredictorSeedOracle_test.cpp, PredictorHeuristicSeededProbability_test.cpp,
+   PredictorMfeEnsRegression_test.cpp
+   + Check first-hit ownership, complete boundaries, raw pair masses and
+     heuristic subsets with independent tiny-chain enumeration and fugacities.
+ * StackSeedDomain.cpp, StackSeedDomain_test.cpp
+   * Start iteration at the remaining sequence end; avoid colliding with an
+     explicit seed outside a cropped active region. Cover offset and repeated
+     regional predictions. Reject conflicting externally supplied lengths in
+     release builds to keep seed-start and seed-end lookup consistent.
+   * Align the conservative-handler capability test with the documented domain
+     precondition in debug builds while checking retained seed geometry.
+ * BasePairProbabilities.cpp
+   * Restore public region/mask/overlap validation in release builds; the full
+     suite exposed a missing-mask null dereference on the target branch.
+ * README.md, doc/analysis/seed-extension-partition.md, doc/Makefile.am,
+   doc/recursions/IntaRNA.SeededPartitionFunction.{inside,outside}.svg,
+   doc/benchmarks/seed-extension/*
+   + Explain the Step 6 theory transfer, numerical/structural constraints,
+     changed heuristic semantics and validation; distribute the analysis and
+     identify the superseded suffix-recurrence diagrams as historical.
+   + Supply reproducible baseline comparisons of all boundary/pair masses,
+     timing and process RSS, including the measured exact-kernel slowdown.
+   * Implement https://github.com/BackofenLab/IntaRNA/issues/264 on its
+     requested docs/257-base-pair-probability-plan base.
 
 261013 Alexander Mitrofanov
  * StackSeedDomain, SeededPartitionFunction, PredictorMfeEns2dSeedExtension

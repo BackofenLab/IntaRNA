@@ -38,6 +38,15 @@ public:
 	size_t seedEndingLength(size_t i, size_t j) const;
 	/** @return maximum retained occurrence length, zero for an empty family */
 	size_t maxSeedLength() const;
+	/** Return the union-equivalent family without containing occurrences.
+	 * A seed containing another admitted seed on its diagonal is redundant for
+	 * exact union counting and cannot be the heuristic's first-completed owner:
+	 * its inner seed completes earlier or wins the shortest co-ending tie.
+	 * The original family remains available for annotations and native endpoint
+	 * selection. Results are ordered by their starting pair.
+	 * @return admitted occurrences containing no other admitted occurrence
+	 */
+	std::vector<Occurrence> minimalOccurrences() const;
 	/** Enumerate each eligible left boundary once, in row-major order.
 	 * The caller intersects these boxes with accessible complementary vertices.
 	 * @param visit callback receiving local first/second coordinates
