@@ -78,4 +78,25 @@ forEachStart(const std::function<void(size_t,size_t)> & visit) const {
 		}
 	}
 }
+
+std::vector<StackSeedDomain::Occurrence>
+StackSeedDomain::minimalOccurrences() const
+{
+	// Every path containing an outer occurrence also contains its embedded seed.
+	// Removing only these supersets preserves both the union and every pair mass.
+	std::vector<Occurrence> result;
+	result.reserve(lengths.size());
+	for (const auto & [start,length]:lengths) {
+		bool redundant=false;
+		for (size_t k=1;k<length && !redundant;++k) {
+			const size_t inner=seedLength(start.first+k,start.second+k);
+			redundant=inner && inner<=length-k;
+		}
+		if (!redundant) result.push_back({start.first,start.second,length});
+	}
+	std::sort(result.begin(),result.end(),[](const Occurrence & a,const Occurrence & b) {
+		return a.i<b.i || (a.i==b.i && a.j<b.j);
+	});
+	return result;
+}
 }

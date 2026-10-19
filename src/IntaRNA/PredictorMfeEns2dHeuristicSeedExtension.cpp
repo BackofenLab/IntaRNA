@@ -36,8 +36,8 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 {
 	try {
 	if(pairProbabilities) pairProbabilities->markApproximate();
-	// Stack seeds share the nonnegative canonical-anchor recurrence with exact
-	// prediction. The frozen right choices restrict both its forward and outside.
+	// Stack seeds share exact prediction's left-most anchor tables. Frozen right
+	// choices restrict the same left/right contractions and their outside pass.
 	if(seedHandler.guaranteesStackOnlySeeds()) {
 		PredictorMfeEns2dSeedExtension::predict(r1,r2);
 		return;
@@ -151,6 +151,11 @@ PredictorMfeEns2dHeuristicSeedExtension::prepareStackSeedExtensions(
 		~RestoreSelection() { slot=previous; }
 	} restore{selectingStackSeedRight,selectingStackSeedRight};
 	selectingStackSeedRight=true;
+	// Keep capacity for the largest inclusive extension, also when explicit
+	// seeds vary in length. fillHybridZ_right overwrites every active cell.
+	if(seeds.maxSeedLength()) hybridZ_right.resize(
+		std::min(n,energy.getAccessibility1().getMaxLength()),
+		std::min(m,energy.getAccessibility2().getMaxLength()),false);
 	for(size_t i=0;i<n;++i) for(size_t j=0;j<m;++j) {
 		const size_t length=seeds.seedLength(i,j);
 		if(!length) continue;
@@ -160,7 +165,7 @@ PredictorMfeEns2dHeuristicSeedExtension::prepareStackSeedExtensions(
 		const size_t span1=energy.getAccessibility1().getMaxLength()-length+1;
 		const size_t span2=energy.getAccessibility2().getMaxLength()-length+1;
 		j1opt=end1; j2opt=end2; E_right_opt=E_INF;
-		hybridZ_right.resize(std::min(n-end1,span1),std::min(m-end2,span2));
+		hybridZ_right.resize(std::min(n-end1,span1),std::min(m-end2,span2),false);
 		fillHybridZ_right(end1,end2,i,j);
 		stackSeedRight.emplace(Interaction::BasePair(i,j),Interaction::BasePair(j1opt,j2opt));
 	}
