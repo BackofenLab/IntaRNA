@@ -2031,10 +2031,9 @@ is also used without `bpProb`, so requesting the matrix does not change `Zall`.
 Computed seeds preserve their handler-specific admission thresholds. Explicit
 stacked seeds may have different lengths, including singletons; competing
 explicit patterns at the same start still retain only the selected minimum-energy
-pattern. Exact and heuristic stack-seeded predictions share left-most seed-anchor
-left/right tables. Removing containing seed occurrences leaves the same canonical
-owner as the first completed admitted seed, choosing the shortest co-ending seed.
-This canonical seed owns the complete chain even if later seeds occur.
+pattern. Stack-seeded predictions use a seed-avoiding left extension up to the
+first completed admitted seed and an unrestricted right extension. This
+canonical seed owns the complete chain even if later seeds occur.
 With `--mode=H`, probabilities describe the predictor's retained candidate
 ensemble. Unseeded H retains one continuation per left pair. Stack-seeded H
 retains each canonical seed's one-sided extensions and two-sided extensions

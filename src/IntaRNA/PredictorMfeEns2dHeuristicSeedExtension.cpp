@@ -36,8 +36,8 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 {
 	try {
 	if(pairProbabilities) pairProbabilities->markApproximate();
-	// Stack seeds share exact prediction's left-most anchor tables. Frozen right
-	// choices restrict the same left/right contractions and their outside pass.
+	// Stack seeds share the nonnegative canonical-anchor recurrence with exact
+	// prediction. The frozen right choices restrict both its forward and outside.
 	if(seedHandler.guaranteesStackOnlySeeds()) {
 		PredictorMfeEns2dSeedExtension::predict(r1,r2);
 		return;

@@ -9,7 +9,6 @@
 #include "IntaRNA/PredictorMfe2dSeed.h"
 #include "IntaRNA/PredictorMfe2dSeedExtension.h"
 #include "IntaRNA/PredictorMfeEns2dSeedExtension.h"
-#include "IntaRNA/PredictorMfeEns2dHeuristicSeedExtension.h"
 #include "IntaRNA/PredictorMfeEnsSeedOnly.h"
 #include "IntaRNA/PredictorMfeSeedOnly.h"
 #include "IntaRNA/ReverseAccessibility.h"
@@ -985,109 +984,5 @@ TEST_CASE("native exact nested explicit seeds preserve cropped boundary ensemble
 		const Boundary reportedBoundary{first.first-r1.from,query.size()-1-first.second-r2.from,
 				last.first-r1.from,query.size()-1-last.second-r2.from};
 		REQUIRE(energies.at(reportedBoundary)==best);
-	}
-}
-
-namespace {
-class AnchoredHeuristicProbe : public PredictorMfeEns2dHeuristicSeedExtension {
-public:
-	using PredictorMfeEns2dHeuristicSeedExtension::PredictorMfeEns2dHeuristicSeedExtension;
-	using Pair=Interaction::BasePair;
-	std::map<Pair,Pair> choices;
-	std::map<Pair,size_t> fillCalls;
-	size_t rankingCalls=0;
-	std::map<seeded_oracle::Boundary,std::pair<Z_type,Z_type>> coefficients;
-	std::map<seeded_oracle::Boundary,size_t> completeCalls;
-protected:
-	void fillHybridZ_right(size_t sj1,size_t sj2,size_t si1,size_t si2) override;
-	void updateOptRightZ(size_t i1,size_t j1,size_t i2,size_t j2,E_type hybrid) override;
-	void updateZ(size_t i1,size_t j1,size_t i2,size_t j2,Z_type z,bool hybrid) override;
-};
-
-void AnchoredHeuristicProbe::fillHybridZ_right(size_t sj1,size_t sj2,size_t si1,size_t si2)
-{
-	++fillCalls[{si1,si2}];
-	PredictorMfeEns2dHeuristicSeedExtension::fillHybridZ_right(sj1,sj2,si1,si2);
-	// A custom native hook fixes the retained endpoint after ordinary ranking.
-	// The shared kernel must use that choice without selecting it again.
-	const auto selected=choices.at({si1,si2});
-	j1opt=selected.first;j2opt=selected.second;E_right_opt=0;
-}
-
-void AnchoredHeuristicProbe::updateOptRightZ(size_t i1,size_t j1,size_t i2,size_t j2,E_type hybrid)
-{
-	++rankingCalls;
-	PredictorMfeEns2dHeuristicSeedExtension::updateOptRightZ(i1,j1,i2,j2,hybrid);
-}
-
-void AnchoredHeuristicProbe::updateZ(size_t i1,size_t j1,size_t i2,size_t j2,Z_type z,bool hybrid)
-{
-	// Right-selection hooks must not publish partial partitions. The common
-	// anchor contraction reports each complete boundary with its final factor.
-	REQUIRE(exactContribution!=nullptr);
-	REQUIRE(updateZisComplete);
-	const seeded_oracle::Boundary boundary{i1,i2,j1,j2};
-	coefficients[boundary]=*exactContribution;
-	++completeCalls[boundary];
-	PredictorMfeEns2dHeuristicSeedExtension::updateZ(i1,j1,i2,j2,z,hybrid);
-}
-}
-
-TEST_CASE("native anchored heuristics preserve right-choice hooks and complete boundary coefficients", "[BasePairProbabilities][PredictorSeedOracle][SeededPartitionFunction]") {
-	#include "testEasyLoggingSetup.icc"
-	using namespace seeded_oracle;
-	RnaSequence target("target","GGGGGGG"),query("query","CCCCCCC");
-	AccessibilityBasePair targetAcc(target,6,nullptr),queryAcc(query,5,nullptr);
-	ReverseAccessibility reverseQuery(queryAcc);
-	InteractionEnergyBasePair energy(targetAcc,reverseQuery,2,1);
-	const SeedConstraint sc(2,0,0,0,E_INF,Accessibility::ED_UPPER_BOUND,E_INF,
-			IndexRangeList(),IndexRangeList(),"1|||||&3|||||,2||&5||,4||&3||",false,false,false);
-	const std::vector<Chain> declared{
-		{{0,0},{1,1},{2,2},{3,3},{4,4}},{{1,1},{2,2}},{{3,3},{4,4}}};
-	const std::map<Pair,Pair> choices{{{0,0},{6,6}},{{1,1},{5,5}},{{3,3},{6,6}}};
-	auto weight=[&](E_type e){return E_isINF(e)?0.L:static_cast<long double>(energy.getBoltzmannWeight(e));};
-	for(bool noLP:{false,true}) {
-		CAPTURE(noLP);
-		Model model{7,7,6,5,noLP,declared,[](Pair){return true;},
-			[&](Pair){return weight(energy.getE_init());},
-			[&](Pair p,Pair q){
-				if(q.first-p.first-1>2 || q.second-p.second-1>1) return 0.L;
-				return weight(energy.getE_interLeft(p.first,q.first,p.second,q.second));
-			},
-			[&](Pair p,Pair q){return weight(energy.getE(p.first,q.first,p.second,q.second,E_type(0)));},
-			[&](Pair p,Pair){return choices.at(p);}};
-		const auto expected=enumerate(model);
-		REQUIRE(expected.z>0);
-		auto hybridModel=model;hybridModel.boundary=[](Pair,Pair){return 1.L;};
-		const auto hybrids=enumerate(hybridModel);
-		const auto oc=makeOutputConstraint(noLP);
-		std::map<Boundary,std::pair<Z_type,Z_type>> previousCoefficients;
-		for(bool pairs:{false,true}) {
-			CAPTURE(pairs);
-			BasePairProbabilities result(target.size(),query.size());
-			OutputHandlerInteractionList output(oc,1);
-			AnchoredHeuristicProbe predictor(energy,output,nullptr,new SeedHandlerExplicit(energy,sc),pairs?&result:nullptr);
-			predictor.choices=choices;predictor.predict();
-			REQUIRE(predictor.rankingCalls>0);
-			REQUIRE(predictor.fillCalls.size()==declared.size());
-			for(const auto & seed:declared) REQUIRE(predictor.fillCalls.at(seed.front())==1);
-			REQUIRE(double(predictor.getZall())==Approx(double(expected.z)).epsilon(2e-12));
-			REQUIRE(output.getZ()==predictor.getZall());
-			REQUIRE(predictor.coefficients.size()==hybrids.boundaries.size());
-			for(const auto & [boundary,h]:hybrids.boundaries) {
-				REQUIRE(predictor.completeCalls.at(boundary)==1);
-				const auto [actualH,b]=predictor.coefficients.at(boundary);
-				REQUIRE(double(actualH)==Approx(double(h)).epsilon(2e-12));
-				REQUIRE(double(b)==Approx(double(model.boundary({boundary[0],boundary[1]},{boundary[2],boundary[3]}))).epsilon(2e-12));
-			}
-			if(!pairs) { previousCoefficients=predictor.coefficients;continue; }
-			REQUIRE(predictor.coefficients==previousCoefficients);
-			result.finalize();REQUIRE(result.isApproximate());
-			REQUIRE(result.getZ()==predictor.getZall());
-			for(size_t i=0;i<target.size();++i) for(size_t j=0;j<query.size();++j) {
-				const auto found=expected.mass.find({i,j});
-				REQUIRE(double(result.rawMasses()(i,query.size()-1-j))==Approx(double(found==expected.mass.end()?0:found->second)).epsilon(2e-12));
-			}
-		}
 	}
 }

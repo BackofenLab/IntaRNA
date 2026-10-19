@@ -40,10 +40,8 @@ public:
 	size_t maxSeedLength() const;
 	/** Return the union-equivalent family without containing occurrences.
 	 * A seed containing another admitted seed on its diagonal is redundant for
-	 * exact union counting and cannot be the heuristic's first-completed owner:
-	 * its inner seed completes earlier or wins the shortest co-ending tie.
-	 * The original family remains available for annotations and native endpoint
-	 * selection. Results are ordered by their starting pair.
+	 * exact union counting. The original family remains available for annotations
+	 * and heuristic ownership. Results are ordered by their starting pair.
 	 * @return admitted occurrences containing no other admitted occurrence
 	 */
 	std::vector<Occurrence> minimalOccurrences() const;

@@ -10,14 +10,11 @@ especially the
 [seed-extension chapter](https://github.com/BackofenLab/IntaRNA-probabilities/blob/e904b65101294f782b0938590335f3e23631a1aa/theory/seed-extension.md)
 and its `SE-LEFT-REC`, `SE-FIRST-HIT`, and `SE-PAIR-FIRST-HIT` equations.
 The historical subtraction formulas discussed in that chapter are not the
-recurrences used here. Exact and heuristic backends share anchor-local
-left/right extensions, as
-requested in the [PR #268 review](https://github.com/BackofenLab/IntaRNA/pull/268#issuecomment-6212869312)
-and the [PR #270 follow-up](https://github.com/BackofenLab/IntaRNA/pull/270#issuecomment-6216756696).
-Heuristic prediction joins only one selected true right endpoint to each left
-extension, while retaining the existing one-sided branches. Both compute their
-respective ensembles with nonnegative weights and differentiate the same
-computation for actual-pair probabilities.
+recurrences used here. The exact backend now evaluates anchor-local left/right
+extensions as requested in the [PR #268 review](https://github.com/BackofenLab/IntaRNA/pull/268#issuecomment-6212869312).
+The heuristic backend retains first-completed-seed ownership and its frozen
+endpoint selector. Both compute their respective ensembles with nonnegative
+weights and differentiate the same computation for actual-pair probabilities.
 
 ## Ensemble and weight ownership
 
@@ -43,18 +40,15 @@ restrictions such as `noLP` are part of the recurrence; endpoint restrictions
 such as `noGUend` and complete-span accessibility are applied to the full
 boundary. Neither ranked-result limits nor display cutoffs select the ensemble.
 
-## Shared left-most seed-anchored evaluation
+## Exact left-most seed-anchored evaluation
 
-Both modes visit seed anchors and compute left and right extension
-tables around each anchor. The seed family is first reduced to an equivalent
+The exact backend visits seed anchors and computes left and right extension
+tables around each anchor. Its seed family is first reduced to an equivalent
 irredundant family: remove an occurrence if it contains another admitted stack
 occurrence. Every chain containing the removed seed also contains the retained
 inner seed, so the union of interactions, every boundary partition, and every
-pair numerator remain unchanged. The original admitted family used for
-annotations and native endpoint selection remains unchanged. A containing seed cannot be the first completed
-heuristic owner: its inner seed finishes earlier, or finishes together and is
-shorter. Consequently this reduction also preserves the heuristic owner and its
-selected endpoint.
+pair numerator remain unchanged. This reduction is private to exact evaluation;
+the admitted seed family used for annotations and heuristic choices is unchanged.
 
 This matters for variable-length explicit seeds. An outer seed may start before
 an inner singleton but finish later. In the irredundant family, such nesting is
@@ -76,13 +70,9 @@ Writing `S[a]` for the product of internal anchor transitions, `L[a,p,h]` for
 the left extension, and `R[a,r,k]` for the right extension gives
 
 ```text
-H[p,r] = initiation(p) * sum_a retain(a,p,r) * S[a] * sum_(h,k compatible) L[a,p,h] * R[a,r,k]
+H[p,r] = initiation(p) * sum_a S[a] * sum_(h,k compatible) L[a,p,h] * R[a,r,k]
 Z      = sum_(p,r) H[p,r] * boundary(p,r).
 ```
-
-For exact mode, `retain(a,p,r)` is always one. For heuristic mode it is one
-precisely when `p == s`, `r == t`, or `r == selectedRight(a)`, and zero otherwise.
-The selected endpoint is frozen before evaluation, as described below.
 
 The support flags `h,k` matter only for singleton anchors under `noLP`:
 compatibility requires `h || k`. Longer seeds already support all anchor pairs.
@@ -111,7 +101,7 @@ excluded. The outside pass uses the same compatible states.
 Different anchors can contribute to the same complete boundary. Reporting each
 anchor contribution separately would change the complete hybrid coefficient
 seen by native ensemble-energy reporting and extension hooks. Instead, the
-shared backend accumulates batches of at most 256 left boundaries, then publishes
+exact backend accumulates batches of at most 256 left boundaries, then publishes
 each positive complete hybrid sum once in row-major boundary order. The same
 hybrid coefficient and full-boundary factor determine the total partition and
 outside derivatives, even when the boundary factor is zero.
@@ -151,7 +141,7 @@ index and boundary batches also increase allocation traffic. These results
 characterize the requested factorization, not a universal optimization; consult
 the benchmark records for per-case timings, allocation counts and source hashes.
 
-### Historical validation of the exact rewrite (#270)
+### Exact rewrite validation
 
 GCC 14.4.0 release and `--enable-debug` builds both pass `make tests -j2`:
 all seven API/CLI drivers pass, with 112 API cases and 399,390 / 399,391
@@ -170,7 +160,7 @@ pair-probability files are identical; the six exact files agree to maximum
 relative difference `1.53e-15`. Floating-point order changes are expected from
 the different nonnegative factorization; the scientific ensemble is unchanged.
 
-## Equivalent first-acceptance characterization
+## First acceptance in the heuristic backend
 
 Scan a chain from its left boundary. Its canonical anchor is the first admitted
 seed to finish. Before that completion, the prefix contains no admitted seed;
@@ -195,12 +185,7 @@ The empty declared seed family produces an empty seeded ensemble. A singleton
 explicit seed can first accept at the initial pair or at a later appended pair;
 these alternatives are disjoint.
 
-## Historical first-acceptance implementation
-
-Before the shared-anchor rewrite, the heuristic evaluated this equivalent
-factorization separately for every left boundary. The following equations
-explain the former implementation and the independent first-hit oracle; the
-production kernel now evaluates the shared anchor tables described above.
+## Seed-free left prefixes, first hits, and right extensions
 
 Fix the exact left boundary `p`. Let `N[p,h,a]` be the hybrid weight of prefixes
 ending at pair `h` in nonaccepting state `a`. The initial prefix has the sole
@@ -227,7 +212,7 @@ first-hit contraction is
 Hseed[p,r] = sum_q F[p,q] * B[q,r].
 ```
 
-The former heuristic backend shared compatible anchors through an inhomogeneous
+The heuristic backend shares the work of compatible anchors through an inhomogeneous
 right-extension recurrence:
 
 ```text
@@ -273,10 +258,9 @@ continuation in that case would admit lonely pairs.
 
 ## A defined heuristic subset
 
-The stack-seed heuristic retains the original canonical first-hit ownership
-through the equivalent left-most minimal anchor described above. Removing
-containing occurrences does not change the owner or its endpoint choice.
-For canonical anchor `S`, let `start(S)` and `end(S)` be its
+The stack-seed heuristic retains the original canonical first-hit ownership.
+Unlike exact evaluation, it does not remove redundant containing occurrences:
+that could change which anchor selects a right endpoint. For canonical anchor `S`, let `start(S)` and `end(S)` be its
 outer pairs, and let `selectedRight(S)` be the deterministic endpoint selected
 by the heuristic's right-extension policy. Select the endpoint before the
 partition and outside calculations; marking a pair must not change it.
@@ -309,28 +293,19 @@ All legal right paths to an admitted endpoint are retained, rather than only
 one representative path. The canonical owner is fixed independently of whether
 a later seed would offer a different selected endpoint.
 
-The shared anchor kernel freezes `selectedRight(S)` once per minimal owner,
-before any batch or outside pass. For `p != start(S)`, it directly contracts
-`L[S,p]` with the right table at `end(S)` and, if distinct and legal, at the
-selected endpoint. It does not scan the other right endpoints for each left
-source. A selected endpoint must strictly extend both strands and satisfy the
-complete source-to-end span constraints; a choice outside the active domain
-or span retains only the no-right branch. For `p == start(S)`, the existing
-one-sided case still contracts every legal right endpoint once.
+For fixed `p`, anchors with `p == start(S)` can share an unrestricted right pass.
+For the remaining anchors, add the zero-right-extension contribution directly
+at `end(S)`, and group the other first-hit injections by their selected right
+endpoint. Each group shares one right recurrence and contributes only at that
+group's terminal endpoint. If the selected endpoint equals the anchor end,
+the direct contribution already covers it. Anchors admitted by the unrestricted
+case must not also contribute through the restricted cases.
 
-A batch containing the anchor's no-left source needs the full right table.
-Other batches crop it to the rectangle ending at the selected endpoint, or
-just the anchor cell if that endpoint cannot contribute. Internal right paths
-remain unrestricted by seeds; choosing an endpoint retains all legal paths
-ending there. Forward contraction and outside initialization use exactly the
-same roots and published complete-boundary factors. Left/right and outside
-tables, deterministic boundary batches, and memory limits are shared with exact
-mode. The former per-source prefix and endpoint-group kernel has been removed.
-
-The native adapter still calls its existing virtual right-extension hooks to
-freeze optimal endpoints, preserving scoring, tie order, boundary restrictions
-and custom overrides. That preparation suppresses partition publication; all
-completed hybrid partitions and actual-pair masses come from the shared kernel.
+Grouping is valid because the right recurrence is linear and independent of
+seed history. Keeping separate selected-endpoint groups preserves the selector
+for each canonical anchor; merging all groups into one unconstrained pass would
+incorrectly admit other endpoints. Sum the retained contributions for each
+complete boundary before reporting it or initializing its outside coefficient.
 
 With unchanged nonnegative weights, this defines a subset of the exact seeded
 ensemble, hence `0 <= Zheuristic <= Zexact`. The heuristic probabilities are
@@ -344,18 +319,24 @@ The raw numerator for pair `k` is the sum of complete interaction weights whose
 chains actually contain `k`. It is not the sum of weights of boundary rectangles
 covering `k`; the latter is a spot probability.
 
-Both modes initialize derivatives from the same complete-boundary coefficients
-used by forward accumulation and reverse the shared anchor extension tables.
-The heuristic applies its frozen endpoint restriction at contraction roots;
-its outside pass never selects a different endpoint or normalizes an anchor
-separately. Each forced seed pair receives its anchor-class mass once, and
-extension pairs receive forward weight times outside derivative, excluding the
-initial frontier pair already counted with the seed. The singleton support
-flags preserve `noLP` support from either side.
+For the heuristic first-acceptance recurrence, initialize outside derivatives
+from the same complete boundary coefficients used by forward accumulation.
+Reverse the right-extension passes, transfer
+their derivatives into the corresponding first-hit injections, and then
+reverse the accepting edges and seed-free prefix recurrence. A transition
+owns its destination pair; the initialization owns the first pair. Accumulating
+each state's forward weight times its outside derivative, `N * dN + T * dT`,
+counts that pair exactly once in every retained complete chain, including
+anchor pairs. First-hit states are not marked separately because their final
+pair already belongs to the right-extension state. A directly retained
+zero-right-extension branch accounts for its accepting pair in the same way.
 
-Merge raw region pair numerators and denominators before final normalization.
-An empty ensemble has undefined conditional probabilities; a numerical failure
-is an error, not an empty ensemble.
+For heuristic calculations, reverse the same grouped passes and frozen
+endpoint selector. The outside calculation must not independently recompute a
+different ensemble or normalize each anchor separately. Merge raw region pair
+numerators and denominators before final normalization. An empty ensemble has
+undefined conditional probabilities; a numerical failure is an error, not an
+empty ensemble.
 
 ## Scope, checks, and resource considerations
 
@@ -378,21 +359,21 @@ limits, and `noLP` states on both sides of acceptance. Heuristic checks must use
 the same frozen selector, verify each retained chain once, and compare its
 partition with the exact ensemble.
 
-Both modes use the same bounded anchor-local workspaces. Heuristic true-left
-contractions visit at most two right roots instead of all right endpoints, and
-batches without a no-left source can shorten the right recurrence. Left-table
-computation and complete-boundary publication still cost time, so this alone
-does not guarantee an improvement for every seed density. Pair output adds the
-matching outside storage and work. The [shared-anchor benchmark report](heuristic-anchored-runtime.md)
-records numerical comparisons, runtime, allocation traffic and process RSS
-against the previous implementation under identical inputs and toolchains.
+The heuristic seed-free table still retains run-length state for each active
+left boundary. Sharing right extensions avoids repeating identical continuation
+work for every anchor, but does not imply a lower asymptotic bound for the
+whole calculation. Heuristic cost also depends on the number of distinct
+selected endpoints. Pair output adds outside storage and work. Performance or
+memory improvements require measurements against the previous implementation
+with identical inputs, options, build configuration, and thread count; the
+factorization alone is not a performance claim.
 
-## Historical first-acceptance workspace reuse (PR #266 review)
+## First-acceptance workspace reuse (PR #266 review)
 
 The allocation revision requested in [PR #266](https://github.com/BackofenLab/IntaRNA/pull/266#issuecomment-6176325864)
 kept the then-shared exact/heuristic recurrence and its arithmetic order unchanged.
-Both modes now use the anchor-local batched algorithm above. In the historical
-implementation, one first-acceptance invocation allocated
+The heuristic still uses these buffers; exact evaluation now uses the anchor-local
+batched algorithm above. One first-acceptance invocation allocates
 its prefix, first-hit, right-extension and (when requested) outside matrices at
 `min(span1,n)` by `min(span2,m)`, with the prefix run-length dimension retained.
 The inclusive maximum extension offset is `span-1`; storing offset zero requires

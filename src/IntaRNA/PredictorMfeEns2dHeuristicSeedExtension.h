@@ -15,9 +15,7 @@ namespace IntaRNA {
  * Note, for each seed start (i1,i2) only the mfe seed is considered for the
  * overall interaction computation instead of considering all possible seeds
  * starting at (i1,i2).
- * Stack-only seeds share the exact predictor's left-most anchor tables. The
- * first completed seed uniquely owns each chain, equivalently the left-most
- * seed after removing containing occurrences.
+ * For stack-only seeds, the first completed seed uniquely owns each chain.
  * Retain its one-sided extensions and the left extensions ending at its
  * preferred right endpoint. Pair probabilities describe this retained ensemble.
  *
@@ -77,7 +75,7 @@ protected:
 
 	/** Freeze one preferred right endpoint for each admitted stack anchor.
 	 * The existing virtual right-extension hooks determine the choice; partition
-	 * contributions are deferred to the shared left-most-anchor recurrence.
+	 * contributions are deferred to the common seed-avoiding recurrence.
 	 * @param n first active range length
 	 * @param m second active range length
 	 * @param seeds contained stack occurrences in the active range

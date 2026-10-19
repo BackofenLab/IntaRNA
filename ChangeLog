@@ -68,9 +68,6 @@
 
 ## Technical changes and Optimizations
 
-- share exact left-most seed-anchor extensions with heuristic prediction,
-  combining each true left extension with one retained right endpoint (#270)
-
 - compute exact stack-seeded ensembles with left-most seed-anchored left/right
   extensions and shared bounded workspaces (PR #268 review)
 
@@ -209,31 +206,6 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
-
-261016 Alexander Mitrofanov
- * SeededPartitionFunction.*, StackSeedDomain.h
-   * Share the exact left-most seed-anchor recurrence with heuristic mode.
-     Remove the separate source-relative heuristic kernel; join true left
-     extensions with the seed ending and one frozen selected right endpoint.
-     Keep every right ending when there is no left extension. Crop right tables
-     in batches without that no-left source and differentiate the same joins.
-   * Document why pruning containing seeds preserves first-completed ownership,
-     including shortest co-ending ties; retain singleton noLP support.
- * PredictorMfeEns2dHeuristicSeedExtension.*
-   * Clarify shared factorization while preserving native right-selection hooks,
-     energy ranking, complete-boundary publication and gapped-seed fallback.
- * SeededPartitionFunction_test.cpp, PredictorSeedOracle_test.cpp
-   + Check nested ownership against the full declared family, one-sided paths,
-     invalid/cropped selectors, singleton noLP support, batch recomputation and
-     native virtual hooks against independent chain enumeration.
- * README.md, doc/analysis/seed-extension-partition.md,
-   doc/analysis/heuristic-anchored-runtime.md, doc/benchmarks/seed-extension/*,
-   doc/Makefile.am
-   + Document the common recurrence and record reproducible kernel/native
-     correctness, runtime, allocation and RSS comparisons. Add a native CLI
-     runner with alternating samples and numerical pair-output verification.
-   * Address https://github.com/BackofenLab/IntaRNA/pull/270#issuecomment-6216756696
-     directly on perf/268-exact-seed-anchored-extension.
 
 261016 Alexander Mitrofanov
  * StackSeedDomain.*
