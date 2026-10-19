@@ -22,6 +22,10 @@ namespace IntaRNA {
  * Computes accessibility energy values for _all_ _regions_ using the free
  * energies of structure ensembles based on partition function computations
  * via the Vienna RNA package.
+ * ViennaRNA operations on independent objects are synchronized once global
+ * energy parameter loading is complete. Window folding runs in parallel when
+ * ViennaRNA was built with OpenMP support; otherwise it is serialized. Native
+ * thread callers must also configure thread-safe IntaRNA diagnostic logging.
  *
  * @author Martin Mann 2014
  */
@@ -74,6 +78,8 @@ public:
 	/**
 	 * Adds constraints to the VRNA fold compound that correspond to the present
 	 * AccessibilityConstraints
+	 * The caller must hold VrnaHandler::getSetupMutex() during concurrent use of
+	 * ViennaRNA, including preparation of SHAPE soft constraints.
 	 * @param fold_compound INOUT the object to extend
 	 * @param acc the accessibility handler to get constraint information from
 	 */

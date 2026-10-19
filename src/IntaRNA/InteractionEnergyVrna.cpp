@@ -39,6 +39,13 @@ struct VrnaParamDeleter {
 typedef std::unique_ptr<vrna_fold_compound_t, VrnaFoldCompoundDeleter> VrnaFoldCompoundPtr;
 typedef std::unique_ptr<vrna_param_t, VrnaParamDeleter> VrnaParamPtr;
 
+vrna_param_t *
+getVrnaParams( vrna_md_t & model )
+{
+	std::lock_guard<std::mutex> setupLock(IntaRNA::VrnaHandler::getSetupMutex());
+	return vrna_params(&model);
+}
+
 std::string
 getVrnaConstraint( const IntaRNA::Accessibility & acc )
 {
@@ -79,7 +86,7 @@ InteractionEnergyVrna::InteractionEnergyVrna(
 	InteractionEnergy(accS1, accS2, maxInternalLoopSize1, maxInternalLoopSize2, energyAdd, energyWithDangles, internalLoopGU)
 // get final VRNA folding parameters
 	, foldModel( vrnaHandler.getModel() )
-	, foldParams( vrna_params( &foldModel ) )
+	, foldParams( getVrnaParams( foldModel ) )
 	, RT(vrnaHandler.getRT())
 	, bpCG( BP_pair[RnaSequence::getCodeForChar('C')][RnaSequence::getCodeForChar('G')] )
 	, bpGC( BP_pair[RnaSequence::getCodeForChar('G')][RnaSequence::getCodeForChar('C')] )
@@ -92,15 +99,8 @@ InteractionEnergyVrna::InteractionEnergyVrna(
 	// class destructor would otherwise not run on an exception.
 	VrnaParamPtr foldParamsOwner(foldParams);
 
-	vrna_md_defaults_reset( &foldModel );
-
 	// init ES values if needed
 	if (initES) {
-//	23.11.2017 : should not be relevant anymore
-//#if INTARNA_MULITHREADING
-//		#pragma omp critical(intarna_omp_callingVRNA)
-//#endif
-//		{
 		// Compute into local owners and publish both matrices atomically only
 		// after both ViennaRNA calls have completed successfully.
 		std::unique_ptr<EsMatrix> esValues1Owner = std::make_unique<EsMatrix>();
@@ -110,7 +110,6 @@ InteractionEnergyVrna::InteractionEnergyVrna(
 		computeES( accS2, *esValues2Owner );
 		esValues1 = esValues1Owner.release();
 		esValues2 = esValues2Owner.release();
-//		} // omp critical(intarna_omp_callingVRNA)
 	}
 
 	// The fully constructed object resumes ownership through its unchanged raw
@@ -139,6 +138,9 @@ void
 InteractionEnergyVrna::
 computeES( const Accessibility & acc, InteractionEnergyVrna::EsMatrix & esToFill )
 {
+	// Global MFE/PF routines also write ViennaRNA compatibility state and
+	// initialize shared dispatchers, so protect their full compound lifecycle.
+	std::lock_guard<std::mutex> setupLock(VrnaHandler::getSetupMutex());
 
 	// prepare container
 	esToFill.resize( acc.getSequence().size(), acc.getSequence().size() );
@@ -216,6 +218,8 @@ E_type
 InteractionEnergyVrna::
 computeIntraEall( const Accessibility & acc ) const
 {
+	// Unlike prepared window folding, global PF still writes shared state.
+	std::lock_guard<std::mutex> setupLock(VrnaHandler::getSetupMutex());
 
 	vrna_md_t curModel = foldModel;
 	// avoid computation of base pair probabilities

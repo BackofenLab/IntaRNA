@@ -31,7 +31,7 @@ Apple Clang release on macOS.
 C++23 support is required in both the compiler and its standard library.
 `configure` checks `std::string::contains`, `std::string::resize_and_overwrite`
 and `std::stringstream::view`. Do not lower the language standard to work around
-an old toolchain. Dependencies include Boost, ViennaRNA (>= 2.4.14), zlib,
+an old toolchain. Dependencies include Boost, ViennaRNA (>= 2.7.0), zlib,
 pkg-config and Autotools; OpenMP is used by the default multithreaded build.
 [conda-build-env.yml](conda-build-env.yml) supplies library/build dependencies,
 but does not select the C++ compiler. Use the platform setup in CI when needed.
@@ -161,8 +161,15 @@ Example::isComplete() const
   comparison helpers from [general.h](src/IntaRNA/general.h). Internal energies
   use hundredths of kcal/mol; do not mix them with kcal/mol or Boltzmann values.
 - Preserve ownership and lifetimes when introducing RAII or non-owning views.
-  Retain synchronization around shared state and ViennaRNA calls; existing
-  accessibility calculations require serialization for thread safety.
+  Retain synchronization around shared ViennaRNA state: parameter/compound
+  setup, constraints and preparation use `VrnaHandler::getSetupMutex()`.
+  Prepared window accessibility computations can run concurrently with an
+  OpenMP-enabled ViennaRNA build; global MFE/PF calls remain serialized.
+  Complete parameter loading before workers start and preserve the mandatory
+  ViennaRNA logger lock. Retain full-call serialization for RNAlib builds
+  without OpenMP; this is a build-configuration boundary, not support for old
+  ViennaRNA releases. Consult `doc/analysis/vienna-accessibility-thread-safety.md`
+  before changing these boundaries.
 - For recurrence or predictor changes, extend the relevant regression tests
   and short-sequence oracles (`PredictorTinyOracle_test.cpp` and
   `PredictorSeedOracle_test.cpp`). For optimizations, compare correctness first,
