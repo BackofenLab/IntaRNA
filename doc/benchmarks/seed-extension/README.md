@@ -1,9 +1,12 @@
 # Seed-extension kernel comparison
 
-This Linux benchmark compares the seeded kernel at PR #266 revision
-`392357c00f0314659cd4c665446f3f6185f4814a` with the current source checkout.
-It runs the exact ensemble by default; `--heuristic` uses frozen right-endpoint
-groups to exercise their forward and outside workspace reuse.
+This Linux benchmark compares a selected seeded-kernel revision with the current
+source checkout. The current shared-anchor comparison uses baseline
+`3866c62d10846fab1adc38b937d0c9b96cc06e51`.
+It runs the exact ensemble by default; `--heuristic` applies frozen endpoint
+choices to the same anchored forward and outside implementation. True left
+extensions retain the no-right endpoint and the selected right endpoint;
+interactions beginning at the anchor retain every right endpoint.
 It first checks every reported boundary hybrid weight and boundary coefficient,
 the total partition, and every raw pair numerator. It then times partition-only
 and pair-output calculations in separate processes, alternating baseline and
@@ -15,30 +18,101 @@ alignment. These counters measure allocation traffic, not peak live memory.
 
 Configure the source tree first so `src/IntaRNA/intarna_config.h` is available.
 Requirements are a C++23 GCC toolchain, the project's headers and Boost headers,
-Python 3, and GNU `/usr/bin/time`. Run from the repository root:
-
-```sh
-python3 doc/benchmarks/seed-extension/build.py \
-  --source "$PWD" --output /tmp/intarna-seed-extension-benchmark --cxx g++-14
-python3 doc/benchmarks/seed-extension/run.py \
-  --build-dir /tmp/intarna-seed-extension-benchmark --repetitions 3
-```
+Python 3, and GNU `/usr/bin/time`. Run the commands below from the repository
+root.
 
 For dependencies outside the compiler's search paths, add
 `--include /path/to/dependencies/include` to the build command. An optional
 `--runtime-library-dir /path/to/compiler/lib` embeds a runtime library search
 path. Both options can be repeated. `--baseline` selects another Git revision
-when a different comparison is intended; the current driver requires the
-first-acceptance kernel API introduced in #266. To measure heuristic groups, use
-`--heuristic` on the runner. Keep separate build directories for exact and
-heuristic results, since the runner replaces its output files.
+when a different comparison is intended; its historical default remains
+`985ba44bdc16e92162e954b7baffa3f3923d4776`, so specify the intended baseline
+explicitly. The current driver requires the first-acceptance kernel API
+introduced in #266. To measure the heuristic ensemble, use `--heuristic` on
+the runner. Use separate `--output-dir` directories for exact and
+heuristic results, since the runner replaces its output files. The same built
+executables can be used for both ensembles. `--verify-only` compares all dumps
+without collecting timed samples, which permits checking correctness before a
+quiet period reserved for timing.
 
 The build script snapshots both versions of `SeededPartitionFunction` and
 `StackSeedDomain`, including their headers; other project headers and configured
 types are shared. It records the compiler, exact commands, baseline commit,
-and SHA-256 source digests in `manifest.json`. The runner writes full verification
+and SHA-256 source digests in `manifest.json`, including the harness and shared
+numerical/configuration headers. The runner writes full verification
 dumps, `samples.tsv`, and `results.json` in the build directory. Timed runs do not
 write the full boundary dumps.
+
+## Shared anchored heuristic comparison (#270)
+
+Build both kernels against baseline `3866c62d10846fab1adc38b937d0c9b96cc06e51`.
+Verify the exact and heuristic full dumps before collecting timings:
+
+```sh
+python3 doc/benchmarks/seed-extension/build.py \
+  --source "$PWD" --output /tmp/intarna-anchored-benchmark --cxx g++-14 \
+  --baseline 3866c62d10846fab1adc38b937d0c9b96cc06e51
+python3 doc/benchmarks/seed-extension/run.py \
+  --build-dir /tmp/intarna-anchored-benchmark \
+  --output-dir /tmp/intarna-anchored-exact-check --verify-only
+python3 doc/benchmarks/seed-extension/run.py \
+  --build-dir /tmp/intarna-anchored-benchmark \
+  --output-dir /tmp/intarna-anchored-heuristic-check --verify-only --heuristic
+```
+
+After both checks pass, reserve a quiet period without concurrent builds or
+tests. Collect five alternating baseline/candidate samples for each fixture,
+including partition-only and pair-output calculations:
+
+```sh
+python3 doc/benchmarks/seed-extension/run.py \
+  --build-dir /tmp/intarna-anchored-benchmark \
+  --output-dir /tmp/intarna-anchored-exact --repetitions 5
+python3 doc/benchmarks/seed-extension/run.py \
+  --build-dir /tmp/intarna-anchored-benchmark \
+  --output-dir /tmp/intarna-anchored-heuristic --repetitions 5 --heuristic
+```
+
+The native CLI harness complements those synthetic fixtures with the OxyS/fhlA
+reproduction from #270. Build complete baseline and candidate executables with
+the same compiler, dependencies and release options. The default four cases
+combine `--model=P` with modes M/H and seeded/unseeded prediction, using one
+thread and five alternating samples per executable:
+
+```sh
+python3 doc/benchmarks/seed-extension/anchored-native.py \
+  --binary /path/to/baseline/src/bin/IntaRNA \
+  --candidate /path/to/candidate/src/bin/IntaRNA \
+  --output-dir /tmp/intarna-anchored-native --repetitions 5
+```
+
+Use a separate invocation for seeded H/M pair output, without timing the
+unrelated unseeded pair cases:
+
+```sh
+python3 doc/benchmarks/seed-extension/anchored-native.py \
+  --binary /path/to/baseline/src/bin/IntaRNA \
+  --candidate /path/to/candidate/src/bin/IntaRNA \
+  --output-dir /tmp/intarna-anchored-native-pairs --repetitions 5 \
+  --cases H-seeded M-seeded --pair-output
+```
+
+Native result directories must be new or empty. The harness requires identical
+stdout for each case across both binaries and all repetitions. With
+`--pair-output`, it also compares every finite CSV probability at relative
+tolerance `2e-12`, with no absolute tolerance; matrix labels and `NA` cells must
+match exactly. This permits harmless changes in floating-point summation order
+without ignoring differences in small probabilities.
+
+`manifest.json` records executable hashes, versions, environment, and one command
+per case/variant. `samples.tsv` records individual timings, maximum process RSS,
+output hashes and comparison errors; `results.json` contains the summary and
+verification status. Raw stdout, stderr, GNU time output and requested pair CSVs
+are retained for every sample. Native timings cover fresh complete CLI processes,
+including thermodynamic/accessibility computation and output; they have no
+warmup exclusions. They measure a different scope from the isolated kernel
+runner. Record the resulting measurements and their interpretation in
+[the anchored heuristic runtime analysis](../../analysis/heuristic-anchored-runtime.md).
 
 ## Workloads and measurement limits
 
@@ -112,3 +186,78 @@ bytes from 817,421,572 to 281,640, while retaining maximum-sized workspaces.
 
 To reproduce the recorded sample count, pass `--repetitions 5` to the runner.
 Run once without `--heuristic` and once with it, using separate build directories.
+
+## Left-most exact-anchor comparison (#268)
+
+On 2026-10-16, the exact anchor rewrite was compared with
+`985ba44bdc16e92162e954b7baffa3f3923d4776`, using GCC 14.4.0,
+`-std=c++23 -O3 -DNDEBUG`, one thread, and the same AMD Ryzen 5 7530U.
+Five alternating fresh-process samples were collected per fixture/output mode.
+Exact and heuristic measurements ran sequentially; no project build, test or
+installation ran during the timed samples. CPU affinity, frequency and other
+workstation activity were uncontrolled. `leftmost-*-results.json` and
+`leftmost-*-samples.tsv` retain all timings, allocation counts, requested bytes
+and process RSS; `leftmost-source-hashes.json` records the source, executable
+and full-dump hashes, compiler, commands and measurement environment.
+
+All 328,236 exact boundary/partition/pair entries agree within a maximum
+relative difference of `5.96e-15` (the comparison tolerance is `1e-12`).
+All 271,006 heuristic entries are identical. Each boundary dump includes both
+the complete hybrid weight and the full-boundary coefficient; the comparison
+also rejects duplicate boundary callbacks and nonfinite values.
+
+The exact kernel uses at most 256 left boundaries per batch. Each reusable
+boundary table targets at most 2 MiB, with one row as the minimum when a single
+span rectangle exceeds that budget. All four fixtures use 256-row batches.
+The table reports median kernel time in seconds; ratios are candidate/base.
+
+| Exact fixture | Partition seconds, base → candidate | Ratio | Pair seconds, base → candidate | Ratio |
+| --- | ---: | ---: | ---: | ---: |
+| dense40-many | 0.093366 → 0.304718 | 3.264 | 0.238276 → 1.219707 | 5.119 |
+| dense40-few | 0.055158 → 0.004673 | 0.085 | 0.146767 → 0.008607 | 0.059 |
+| band60-many | 0.015683 → 0.047910 | 3.055 | 0.032126 → 0.176494 | 5.494 |
+| band60-few | 0.012318 → 0.002428 | 0.197 | 0.026294 → 0.004654 | 0.177 |
+
+The few-seed fixtures improve, while both many-seed fixtures regress
+substantially. Recomputing bounded anchor tables and contracting many anchors
+against complete boundaries remains expensive. These measurements do not
+establish a general speedup.
+
+| Exact fixture | Partition allocations, base → candidate | Pair allocations, base → candidate |
+| --- | ---: | ---: |
+| dense40-many | 21 → 1,393 | 27 → 1,398 |
+| dense40-few | 13 → 19 | 19 → 24 |
+| band60-many | 19 → 409 | 25 → 414 |
+| band60-few | 12 → 18 | 18 → 23 |
+
+Exact allocation traffic also increases: the anchor index allocates nodes per
+retained occurrence, and the larger reusable boundary tables require more
+storage. Partition-only requested bytes rise from 65,368–98,072 to
+1,261,507–1,404,889; pair-output requested bytes rise from 124,312–156,952 to
+2,518,467–2,661,849. Median whole-process RSS rises from 3,840–4,224 KiB to
+4,480–6,144 KiB. These figures measure allocation traffic and process RSS,
+respectively; neither is a bound on live kernel memory.
+
+The unchanged heuristic ensemble retains identical allocation counts and
+requested bytes, but its measured median runtime ratios are 1.046–1.225.
+The largest observed regression is dense40-few partition-only
+(0.048834 → 0.059830 seconds). The complete sample ranges are recorded rather
+than assuming that an unchanged recurrence has unchanged performance.
+
+To reproduce the final comparison after configuring the checkout:
+
+```sh
+python3 doc/benchmarks/seed-extension/build.py \
+  --source "$PWD" --output /tmp/intarna-leftmost-benchmark --cxx g++-14 \
+  --baseline 985ba44bdc16e92162e954b7baffa3f3923d4776
+python3 doc/benchmarks/seed-extension/run.py \
+  --build-dir /tmp/intarna-leftmost-benchmark \
+  --output-dir /tmp/intarna-leftmost-exact --repetitions 5
+python3 doc/benchmarks/seed-extension/run.py \
+  --build-dir /tmp/intarna-leftmost-benchmark \
+  --output-dir /tmp/intarna-leftmost-heuristic --repetitions 5 --heuristic
+```
+
+Add the dependency include/runtime options described above when necessary.
+The recorded manifest contains the exact compiler and dependency paths used
+for these measurements.

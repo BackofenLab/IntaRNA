@@ -9,6 +9,7 @@ EXTRA_DIST =	\
 			analysis/seeded-kernel-comparison.md \
 			analysis/seeded-probabilities-validation.md \
 			analysis/seed-extension-partition.md \
+			analysis/heuristic-anchored-runtime.md \
 			seeded-probabilities-example.cpp \
 			api-documentation.md \
 			build-api.sh \
@@ -37,4 +38,19 @@ EXTRA_DIST += benchmarks/seed-extension/README.md \
 			benchmarks/seed-extension/reuse-heuristic-results.json \
 			benchmarks/seed-extension/reuse-exact-samples.tsv \
 			benchmarks/seed-extension/reuse-heuristic-samples.tsv \
-			benchmarks/seed-extension/reuse-source-hashes.json
+			benchmarks/seed-extension/reuse-source-hashes.json \
+			benchmarks/seed-extension/leftmost-exact-results.json \
+			benchmarks/seed-extension/leftmost-heuristic-results.json \
+			benchmarks/seed-extension/leftmost-exact-samples.tsv \
+			benchmarks/seed-extension/leftmost-heuristic-samples.tsv \
+			benchmarks/seed-extension/leftmost-source-hashes.json \
+			benchmarks/seed-extension/anchored-native.py \
+			benchmarks/seed-extension/anchored-native-results.json \
+			benchmarks/seed-extension/anchored-native-samples.tsv \
+			benchmarks/seed-extension/anchored-pairs-results.json \
+			benchmarks/seed-extension/anchored-pairs-samples.tsv \
+			benchmarks/seed-extension/anchored-exact-results.json \
+			benchmarks/seed-extension/anchored-exact-samples.tsv \
+			benchmarks/seed-extension/anchored-heuristic-results.json \
+			benchmarks/seed-extension/anchored-heuristic-samples.tsv \
+			benchmarks/seed-extension/anchored-source-hashes.json
