@@ -18,7 +18,7 @@ SH_LOG_COMPILER = $(SHELL)
 dist_check_SCRIPTS = \
   runAccessibilityBinary.sh \
   runAccessibilityThreads.sh \
-  runBasePairProbabilities.sh
+  runBasePairProbabilities.sh \
   runIntaRNA.sh \
   runIntaRNAeval.sh \
   runKineticSeedExtension.sh \

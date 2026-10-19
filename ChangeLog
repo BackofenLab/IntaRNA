@@ -68,6 +68,9 @@
 
 ## Technical changes and Optimizations
 
+- BUGFIX : restore clean Autotools configuration with dependency tracking and
+  use portable Doxygen header prerequisites (issue #282)
+
 - share exact left-most seed-anchor extensions with heuristic prediction,
   combining each true left extension with one retained right endpoint (#270)
 
@@ -217,6 +220,17 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261020 Alexander Mitrofanov
+ * Makefile.am
+   * Use a make prerequisite wildcard for public Doxygen headers instead of the
+     GNU wildcard function that triggered Automake's portability warning.
+ * tests/Makefile.am
+   * Restore the test-script list continuation lost during a merge, fixing the
+     generated Makefile parse error in config.status dependency bootstrapping
+     and retaining all seven CLI regression drivers (issue #282).
+ * .github/workflows/build.yml
+   + Reject Automake portability warnings before configuring in build CI.
 
 261016 Alexander Mitrofanov
  * SeededPartitionFunction.*, StackSeedDomain.h

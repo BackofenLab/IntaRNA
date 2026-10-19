@@ -87,6 +87,7 @@ jobs:
       - name: Bootstrap and configure
         run: |
           bash autotools-init.sh
+          automake --warnings=portability,error
           ./configure \
             --prefix="$RUNNER_TEMP/intarna-install" \
             --with-vrna="$CONDA_PREFIX" \
