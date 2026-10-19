@@ -16,6 +16,24 @@ extern "C" {
 	#include <ViennaRNA/energy_const.h>
 	#include <ViennaRNA/read_epars.h>
 	#include <ViennaRNA/params/io.h>
+	#include <ViennaRNA/utils/log.h>
+}
+
+namespace {
+
+void
+lockVrnaLogging( const int lock, void * ) noexcept
+{
+	// Logging can occur while the setup mutex is held. Use a separate mutex
+	// for ViennaRNA builds whose logger has no built-in pthread protection.
+	static std::mutex loggingMutex;
+	if (lock) {
+		loggingMutex.lock();
+	} else {
+		loggingMutex.unlock();
+	}
+}
+
 }
 
 namespace IntaRNA {
@@ -31,6 +49,11 @@ VrnaHandler( Z_type temperature
 	model()
 	, RT(getRT(temperature))
 {
+	std::lock_guard<std::mutex> setupLock(getSetupMutex());
+
+	// Install only the locking callback; preserve log outputs and user callbacks.
+	static std::once_flag loggingInitialized;
+	std::call_once(loggingInitialized, [] { vrna_log_lock_set(lockVrnaLogging, nullptr); });
 
 	// load parameters
 	if ( !vrnaParamFile.empty() ) {
@@ -138,6 +161,16 @@ getPfScaleDefault()
 {
 	// get default value from VRNA package
 	return vrna_md_defaults_sfact_get();
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+std::mutex &
+VrnaHandler::
+getSetupMutex()
+{
+	static std::mutex setupMutex;
+	return setupMutex;
 }
 
 ////////////////////////////////////////////////////////////////////////////
