@@ -68,8 +68,8 @@
 
 ## Technical changes and Optimizations
 
-- reuse MFE seed-extension scratch matrices and bounded physical loop energies
-  across seeds in exact and heuristic prediction; document benchmarks (#274)
+- reuse MFE seed-extension scratch matrices and bound predecessor scans in exact
+  and heuristic prediction; evaluate physical energies directly (PR #276 review)
 
 - share exact left-most seed-anchor extensions with heuristic prediction,
   combining each true left extension with one retained right endpoint (#270)
@@ -220,6 +220,22 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261020 Alexander Mitrofanov
+ * PredictorMfe2dSeedExtension.*, PredictorMfe2dHeuristicSeedExtension.cpp
+   - Remove extensionLoopE(), the local loop-energy table, known-value flags,
+     pair-index map and cache initialization/reset/fallback machinery requested
+     in https://github.com/BackofenLab/IntaRNA/pull/276#discussion_r4312235144
+   * Restore direct energy.getE_interLeft() and energy.areComplementary() calls
+     in both predictors and traceback. Retain nonpreserving scratch resize,
+     bounded predecessor scans and their existing traversal order.
+ * PredictorSeedOracle_test.cpp
+   - Remove obsolete cache probes; retain independent recurrence, workspace,
+     tie, maximal-loop, range/offset, traceback and seed-witness regressions.
+ * doc/analysis/mfe-seed-extension-reuse.md,
+   doc/benchmarks/seed-extension/README.md
+   * Describe direct evaluation and label the archived cached-prototype timing
+     evidence explicitly so it is not attributed to the revised implementation.
 
 261016 Alexander Mitrofanov
  * PredictorMfe2dSeedExtension, PredictorMfe2dHeuristicSeedExtension

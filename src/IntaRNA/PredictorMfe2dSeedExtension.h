@@ -4,7 +4,6 @@
 
 #include "IntaRNA/PredictorMfe2d.h"
 #include "IntaRNA/SeedHandlerIdxOffset.h"
-#include <vector>
 
 namespace IntaRNA {
 
@@ -94,39 +93,6 @@ protected:
 
 protected:
 
-	//! One-based complementary-pair indices; zero denotes an unavailable pair.
-	Matrix<size_t> extensionPairIndex;
-	//! Seed-independent loop energies and flags; E_INF is a cacheable result.
-	std::vector<E_type> extensionLoopEnergy;
-	std::vector<unsigned char> extensionLoopKnown;
-	//! Indexed positive loop displacements on the two increasing local strands.
-	size_t extensionLoopWidth1 = 0, extensionLoopWidth2 = 0;
-
-	/** Discard cached values before a prediction changes the local offsets. */
-	void resetExtensionCache();
-	/** Prepare reusable seed-independent pair/loop
-	 * information for this prediction. Cache storage is limited to 16 MiB;
-	 * domains exceeding that limit retain direct energy evaluation.
-	 * @param n number of active positions on sequence 1
-	 * @param m number of active positions on reversed sequence 2
-	 */
-	void prepareExtensionWorkspace(size_t n, size_t m);
-	/** Check pair feasibility in the current prediction's local coordinates.
-	 * @param i1 position in sequence 1
-	 * @param i2 position in reversed sequence 2
-	 * @return whether the pair is complementary and accessible
-	 */
-	bool extensionPairIsValid(size_t i1, size_t i2) const;
-	/** Reuse a seed-independent loop energy, with direct evaluation outside
-	 * the bounded cache. Both pairs use increasing local strand coordinates.
-	 * @param i1 left pair's position in sequence 1
-	 * @param j1 right pair's position in sequence 1
-	 * @param i2 left pair's position in reversed sequence 2
-	 * @param j2 right pair's position in reversed sequence 2
-	 * @return loop energy in hundredths of kcal/mol, or E_INF
-	 */
-	E_type extensionLoopE(size_t i1, size_t j1, size_t i2, size_t j2);
-
 	/**
 	 * Computes all entries of the hybridE matrix for interactions starting in
 	 * i1 and i2 and report all valid interactions to updateOptima()
@@ -167,14 +133,6 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 
-
-inline
-bool
-PredictorMfe2dSeedExtension::extensionPairIsValid(size_t i1, size_t i2) const
-{
-	return extensionPairIndex.size1() ? extensionPairIndex(i1,i2) != 0
-			: energy.areComplementary(i1,i2);
-}
 
 inline
 void

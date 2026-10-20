@@ -46,9 +46,6 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 		throw std::runtime_error("PredictorMfe2dHeuristicSeedExtension::predict("+toString(r1)+","+toString(r2)+") is not sane");
 #endif
 
-	// Cached physical coordinates belong only to this prediction.
-	resetExtensionCache();
-
 	// setup index offset
 	energy.setOffset1(r1.from);
 	energy.setOffset2(r2.from);
@@ -71,9 +68,6 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 		// stop computation
 		return;
 	}
-
-	// Reuse scratch capacity and physical loop energies across seed anchors.
-	prepareExtensionWorkspace(range_size1, range_size2);
 
 	size_t si1 = RnaSequence::lastPos, si2 = RnaSequence::lastPos;
 	while( seedHandler.updateToNextSeed(si1,si2
@@ -154,18 +148,18 @@ fillHybridE_right( const size_t sj1, const size_t sj2
 			// check if complementary
 			if (sj1<j1
 				&& sj2<j2
-				&& extensionPairIsValid(j1,j2) )
+				&& energy.areComplementary(j1,j2) )
 			{
 
 				// left-stacking of j if no-LP
 				if (outConstraint.noLP) {
 					// skip if no stacking possible
-					if (!extensionPairIsValid(j1-noLpShift,j2-noLpShift))
+					if (!energy.areComplementary(j1-noLpShift,j2-noLpShift))
 					{
 						continue;
 					}
 					// get stacking energy to avoid recomputation in recursion below
-					iStackE = extensionLoopE(j1-noLpShift,j1,j2-noLpShift,j2);
+					iStackE = energy.getE_interLeft(j1-noLpShift,j1,j2-noLpShift,j2);
 					// check just stacked seed extension
 					if (j1-noLpShift==sj1 && j2-noLpShift==sj2) {
 						curMinE = std::min( curMinE, iStackE + hybridE_right(0,0) );
@@ -182,7 +176,7 @@ fillHybridE_right( const size_t sj1, const size_t sj2
 						if ( E_isNotINF( hybridE_right(k1-sj1,k2-sj2) ) ) {
 							curMinE = std::min( curMinE,
 									(hybridE_right(k1-sj1,k2-sj2) // left part
-									+ extensionLoopE(k1,j1-noLpShift,k2,j2-noLpShift) // loop
+									+ energy.getE_interLeft(k1,j1-noLpShift,k2,j2-noLpShift) // loop
 									+ iStackE) // right stack if no-LP
 									);
 						}
@@ -213,7 +207,7 @@ fillHybridE_left( const size_t si1, const size_t si2 )
 
 #if INTARNA_IN_DEBUG_MODE
 	// check indices
-	if (!extensionPairIsValid(si1,si2) )
+	if (!energy.areComplementary(si1,si2) )
 		throw std::runtime_error("PredictorMfe2dSeedExtension::fillHybridE_left("+toString(si1)+","+toString(si2)+",..) are not complementary");
 #endif
 
@@ -249,17 +243,17 @@ fillHybridE_left( const size_t si1, const size_t si2 )
 			// check if complementary
 			if (i1<si1
 				&& i2<si2
-				&& extensionPairIsValid(i1,i2) )
+				&& energy.areComplementary(i1,i2) )
 			{
 				// left-stacking of j if no-LP
 				if (outConstraint.noLP) {
 					// skip if no stacking possible
-					if (!extensionPairIsValid(i1+noLpShift,i2+noLpShift))
+					if (!energy.areComplementary(i1+noLpShift,i2+noLpShift))
 					{
 						continue;
 					}
 					// get stacking energy to avoid recomputation in recursion below
-					iStackE = extensionLoopE(i1,i1+noLpShift,i2,i2+noLpShift);
+					iStackE = energy.getE_interLeft(i1,i1+noLpShift,i2,i2+noLpShift);
 					// check just stacked
 					curMinE = std::min( curMinE, iStackE + hybridE_left(l1-noLpShift,l2-noLpShift));
 				}
@@ -274,7 +268,7 @@ fillHybridE_left( const size_t si1, const size_t si2 )
 					if ( E_isNotINF( hybridE_left(si1-k1,si2-k2) ) ) {
 						curMinE = std::min( curMinE,
 								(iStackE // i stacking if no-LP
-										+ extensionLoopE(i1+noLpShift,k1,i2+noLpShift,k2) // loop
+										+ energy.getE_interLeft(i1+noLpShift,k1,i2+noLpShift,k2) // loop
 										+ hybridE_left(si1-k1,si2-k2) ) // right part up to seed
 								);
 					}

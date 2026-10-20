@@ -1,6 +1,12 @@
 # Reusing work in MFE seed extensions
 
 This implements [issue #274](https://github.com/BackofenLab/IntaRNA/issues/274).
+Following the [PR #276 review](https://github.com/BackofenLab/IntaRNA/pull/276#discussion_r4312235144),
+the current implementation retains matrix-capacity reuse and bounded predecessor
+scans, and evaluates pairing and physical loop energies directly through the
+energy model. The local loop-energy cache and its supporting pair map have been
+removed. Historical measurements below describe the earlier cached prototype.
+
 The analysis and measurement baseline is `perf/270-anchored-heuristic` at
 `21b9d8fc33aadd3c44d788c4da10a91cf6694ce1`. Both native MFE seed-extension
 predictors are selected with `--model=X`: `--mode=M` is exact over the
@@ -19,8 +25,8 @@ The following distinctions determine which techniques transfer safely.
 | Technique in the ensemble implementation | MFE application |
 | --- | --- |
 | Reuse workspace; reshape without retaining obsolete cells | Applied to both MFE extension matrices, including traceback. Each recurrence initializes every active cell before reading it. |
-| Evaluate a pair domain once and restrict recurrence transitions | Cache complementary-pair information; compute loop predecessor bounds once per cell. Preserve predecessor traversal order. |
-| Share reusable work across many seed anchors | Cache physical loop energies by the two endpoint pairs, independent of the current seed. Both left/right fills and traceback share these values. |
+| Evaluate a pair domain once and restrict recurrence transitions | Compute loop predecessor bounds once per cell. Preserve predecessor traversal order and evaluate complementary pairs directly. |
+| Share reusable work across many seed anchors | Reuse scratch capacity across seeds. Evaluate physical loop energies directly in both left/right fills and traceback, as requested in review. |
 | Left-most seed ownership and elimination of redundant containing anchors | Not applied. Ensemble ownership prevents double counting in sums; MFE predictions retain their existing seed enumeration, tie handling, tracker updates and approximate `Zall` accounting. |
 | Batch complete boundaries and differentiate partition functions for pair probabilities | Not needed for MFE minimization. It would add state and alter the organization of candidate publication. |
 
@@ -28,36 +34,23 @@ An extension matrix cell is the optimal path **to or from a particular seed
 boundary**. Overlapping seeds have different conditioned subproblems; copying a
 matrix cell merely because the seeds overlap is incorrect. The ensemble kernel
 also resets its per-anchor tables rather than copying numerical values between
-arbitrary overlapping anchors. This implementation reuses their storage and
-the underlying loop energies, while recomputing each anchor's MFE recurrence.
-The loop cache is an additional application of sharing seed-independent work;
-it is not a claim that the ensemble kernel already has the same cache.
+arbitrary overlapping anchors. This implementation reuses their storage while
+recomputing each anchor's MFE recurrence. Physical loop energies still come from
+`energy.getE_interLeft()`.
 
 ## Implementation and limits
 
-`PredictorMfe2dSeedExtension` owns scratch preparation and the cache, used by
-both exact and heuristic MFE extension prediction. The `resize(..., false)` calls
+`PredictorMfe2dSeedExtension` owns the two scratch matrices used by both exact
+and heuristic MFE extension prediction. The `resize(..., false)` calls
 grow extension matrices on demand, reuse capacity, and avoid copying values that
 are immediately overwritten. They do not eagerly reserve the full sequence
 rectangle, which would waste space when only sparse or central seeds exist.
 
-Within one prediction, a physical loop energy depends on its two endpoint
-pairs and the fixed energy model, not on the seed being extended. A dense
-pair-index map assigns complementary pairs compact indices. Lazy cache slots
-are indexed by that pair and positive bounded displacements along both strands.
-C++ consumers must rebuild with matching headers and library because the
-predictor storage layout changes. A separate known flag permits caching `E_INF` without confusing it with an
-uncomputed slot. The native energy model still supplies every new energy.
-
-The combined pair map, energy slots and flags have an element-storage budget of
-16 MiB per predictor. If the complete loop table would exceed this limit, loop
-energies are evaluated directly while the bounded pair map remains available.
-If even the pair map exceeds it, pair checks also use direct evaluation.
-Allocator metadata and the two existing dynamic-programming matrices are
-outside this cache budget. This is a time/memory tradeoff, not a memory reduction.
-All cached values are discarded before each prediction changes sequence
-offsets, including a prediction that subsequently finds no seed. Long direct
-loop probes during traceback fall back to the energy model.
+Pair checks use `energy.areComplementary()` and loop-energy queries use
+`energy.getE_interLeft()` in recurrence fills and traceback. There is no local
+pair map, loop table, known-value flag array, cache budget or cache lifecycle.
+Removing these members changes the predictor object layout; C++ consumers must
+rebuild with matching headers and library.
 
 The predecessor ranges are the same inclusive ranges as before; only their
 construction moves out of the innermost scans. Energy arithmetic, seed order,
@@ -67,7 +60,34 @@ complexity is unchanged. The exact predictor's exhaustive left/right
 combination can still dominate runtime, whereas the heuristic spends more of
 its time building extension tables.
 
-## Validation and measurements
+## Cache-removal review validation
+
+GCC 14.4.0 release and debug `make tests -j2` each passed all eight test drivers
+and 119 API cases. The independent recurrence, workspace, tie, maximal-loop,
+range-change, traceback and seed-witness tests remain enabled. Both affected
+installed public headers compile independently.
+
+One alternating baseline/candidate pass across all 12 native harness cases
+produced 24 byte-identical outputs, including energies, boundaries, traceback,
+seed starts and `Eall`. This comparison used the cached PR #276 head
+`cd193f7b58f3706882ce2d1f24bf0cb9e4f448cd` as baseline and the direct-evaluation
+revision as candidate. It checks output equivalence; one sample per variant
+does not establish a performance result. All 177 tracked `src` files in each
+validation copy were checked against the intended source revision.
+
+The shared base contains the separate [issue #282](https://github.com/BackofenLab/IntaRNA/issues/282)
+Autotools bootstrap defect. Its two Makefile corrections were applied only to
+disposable validation copies so these tests could run; they remain a separate
+change from this cache-removal review. Linux was validated locally; macOS was
+not run.
+
+## Historical cached-prototype validation and measurements
+
+The following results belong to the cached implementation at
+`4994edf7bb754d305c00503f57bbb3d937bfad5b`; they do not measure the current
+implementation after cache removal. Cache-only probes were removed along with
+the cache. Independent recurrence, tie, maximal-loop, range-change and traceback
+regressions remain applicable to the current implementation.
 
 Release and debug `make tests -j2` each passed all seven test drivers. The API
 suite passed 119 cases, with 462,526 assertions in release and 462,527 in debug.
@@ -129,8 +149,10 @@ verification are retained in the benchmark directory as
 
 ## Reproduction
 
-Build the baseline revision above and this revision with the same release
-compiler, dependencies and flags. From this checkout run:
+To reproduce the historical cached-prototype measurements, build the baseline
+revision above and candidate `4994edf7bb754d305c00503f57bbb3d937bfad5b` with the
+same release compiler, dependencies and flags. The harness can also compare
+any other two revisions, but the historical timings do not apply to them. Run:
 
 ```sh
 python3 doc/benchmarks/seed-extension/mfe-native.py \
