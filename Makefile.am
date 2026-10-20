@@ -27,7 +27,7 @@ if enable_doxygen
 @DX_RULES@
 
 # Refresh the API after changes to public headers, the overview, or branding.
-$(DX_DOCDIR)/$(PACKAGE).tag: $(wildcard $(srcdir)/src/IntaRNA/*.h) \
+$(DX_DOCDIR)/$(PACKAGE).tag: $(srcdir)/src/IntaRNA/*.h \
 	$(srcdir)/doc/doxygen/mainpage.md $(srcdir)/doc/doxygen/header.html \
 	$(srcdir)/doc/doxygen/footer.html $(srcdir)/doc/doxygen/intarna.css
 else
