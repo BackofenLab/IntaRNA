@@ -87,3 +87,5 @@ python/intarnapvalue.*
 /build-wasm/
 /webinterface/wasm/
 /webinterface/node_modules/
+
+/scripts/wasm/__pycache__/

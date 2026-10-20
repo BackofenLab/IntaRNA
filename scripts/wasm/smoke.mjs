@@ -7,6 +7,7 @@ const { default: createIntaRNA } = await import(pathToFileURL(asset));
 const diagnostics = [];
 const module = await createIntaRNA({
   noInitialRun: true,
+  locateFile: () => new URL('./intarna.wasm', pathToFileURL(asset)).href,
   print: (line) => diagnostics.push(line),
   printErr: (line) => diagnostics.push(line),
 });

@@ -15,7 +15,12 @@ self.onmessage = async ({ data }) => {
     const request = prepareRequest(data);
     self.postMessage({ type: 'status', message: 'Loading the prediction engine…' });
     const { default: createIntaRNA } = await import('./wasm/intarna.js');
-    const module = await createIntaRNA({ noInitialRun: true, print: log, printErr: log });
+    const module = await createIntaRNA({
+      noInitialRun: true,
+      locateFile: () => new URL('./wasm/intarna.wasm', import.meta.url).href,
+      print: log,
+      printErr: log,
+    });
     module.FS.writeFile('/query.fa', request.query.fasta);
     module.FS.writeFile('/target.fa', request.target.fasta);
     self.postMessage({ type: 'status', message: 'Predicting RNA interactions…' });

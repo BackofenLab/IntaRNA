@@ -5,7 +5,7 @@ sends `{query, target, count}` as text and receives `status`, `result` or `error
 messages. `protocol.js` validates both the UI and worker boundary and constructs
 fixed CLI options; users cannot inject CLI arguments or file paths.
 
-The worker lazily imports `wasm/intarna.js`, awaits `createIntaRNA`, writes
+The worker lazily imports `wasm/intarna.js`, awaits `createIntaRNA` (mapping `locateFile` to the staged lowercase WASM name), writes
 normalized single-record FASTA to `/query.fa` and `/target.fa` in MEMFS, and calls
 `callMain` once. It selects semicolon-delimited CSV output in `/results.csv` and
 reads that file after main returns and the C++ output streams close. Logs are

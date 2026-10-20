@@ -14,6 +14,9 @@
 
 ## Interface and handling
 
+- display sortable/filterable browser results and native CSV downloads;
+  publish the tested interface alongside existing Pages documentation (#286)
+
 - add responsive browser FASTA inputs, validation and abort dialog (#286, step 3)
 
 - run browser predictions in cancellable, isolated Web Workers (#286, step 2)
@@ -228,6 +231,16 @@ energies, restricted partition sums, and trackers.
 ################################################################################
 
 261020 Alexander Mitrofanov
+ * webinterface/results.js, app.js, index.html, styles.css, tests/*, README.md
+   + Parse native CSV, preserve target/query orientation and inclusive indices,
+     and show energy/relative suboptimality with sorting, search and export.
+ * scripts/wasm/stage.sh, test-browser.py, .github/workflows/*
+   + Stage matching WASM assets, notices and provenance; verify the real engine
+     in Chromium and Firefox, including cancellation/restart and error recovery.
+   * Publish one combined Pages artifact with the existing guide/API and the
+     browser application at /webinterface/ (#286, step 4).
+
+261020 Alexander Mitrofanov
  * webinterface/index.html, app.js, styles.css, mark.svg, docs/*
    + Add paired query/target editors, a valid example, bounded RNA/FASTA
      validation and result counts; normalize lowercase and DNA input.
@@ -242,10 +255,13 @@ energies, restricted partition sums, and trackers.
      and stale-message handling (#286, step 2); document the worker protocol.
 
 261020 Alexander Mitrofanov
- * scripts/wasm/*, .github/workflows/build-wasm.yml, configure.ac
+ * scripts/wasm/*, .github/workflows/build-wasm.yml, configure.ac,
+   src/bin/Makefile.am, src/IntaRNA/Makefile.am
    + Build pinned zlib, Boost and ViennaRNA for wasm32, then the existing
      IntaRNA CLI as an isolated ES module with MEMFS and callMain exports.
    * Omit pthread flags for single-thread Emscripten builds; retain native flags.
+   * Resolve generated CLI headers/pkg-config data in the build tree; adapt
+     bundled dlib Unicode and template code to the SDK libc++ and Clang.
    + Document the toolchain and validate native-reference predictions in WASM
      (https://github.com/BackofenLab/IntaRNA/issues/286, step 1).
 

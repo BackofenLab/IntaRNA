@@ -1,5 +1,6 @@
 import { DEFAULTS, parseSequence, prepareRequest } from './protocol.js';
 import { PredictionRunner } from './runner.js';
+import { ResultsView } from './results.js';
 
 const byId = (id) => document.getElementById(id);
 const form = byId('prediction-form');
@@ -7,10 +8,10 @@ const runner = new PredictionRunner();
 const dialog = byId('loading');
 const status = byId('result-status');
 const errorBox = byId('input-error');
+const results = new ResultsView(byId('results-view'));
 
 function clearResults(message = 'Inputs changed. Compute to update the interactions.') {
-  byId('csv-preview').hidden = true;
-  byId('csv-preview').textContent = '';
+  results.clear();
   byId('diagnostics').hidden = true;
   status.textContent = message;
 }
@@ -68,9 +69,8 @@ form.addEventListener('submit', async (event) => {
   setBusy(true);
   try {
     const result = await runner.run(request, (message) => { byId('loading-status').textContent = message; });
-    byId('csv-preview').textContent = result.csv;
-    byId('csv-preview').hidden = false;
-    status.textContent = 'Prediction complete. Coordinates are 1-based and inclusive.';
+    const count = results.show(result.csv);
+    status.textContent = count ? `Prediction complete: ${count} interaction${count === 1 ? '' : 's'}.` : 'No favorable interactions found with these sequences and the default settings.';
     byId('diagnostic-text').textContent = result.diagnostics;
     byId('diagnostics').hidden = !result.diagnostics;
   } catch (error) {

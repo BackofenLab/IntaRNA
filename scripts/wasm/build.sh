@@ -23,7 +23,7 @@ fetch https://zlib.net/fossils/zlib-1.3.1.tar.gz zlib-1.3.1.tar.gz \
 fetch https://archives.boost.io/release/1.87.0/source/boost_1_87_0.tar.bz2 boost_1_87_0.tar.bz2 \
   af57be25cb4c4f4b413ed692fe378affb4352ea50fbe294a11ef548f4d527d89
 fetch https://www.tbi.univie.ac.at/RNA/download/sourcecode/2_7_x/ViennaRNA-2.7.0.tar.gz ViennaRNA-2.7.0.tar.gz \
-  e2addf33e7c0dd4fff31d8e9a46fda8e9efcde0d199f789f20eb0a13b7f7135d
+  9a99fd68ed380894defb4d5e6a8a2871629270028cdf7f16f0a05da6e8c71473
 
 # Keep pkg-config searches inside the WASM prefix, including configure probes.
 export PKG_CONFIG_LIBDIR="$prefix/lib/pkgconfig"
@@ -39,20 +39,22 @@ if [[ ! -f "$prefix/lib/libz.a" ]]; then
    emmake make -j "$jobs"
    emmake make install)
 fi
-if [[ ! -f "$prefix/lib/libboost_serialization.a" ]]; then
+if [[ ! -f "$prefix/.boost-1.87.0-js-exceptions-complete" ]]; then
   tar -xjf "$build/downloads/boost_1_87_0.tar.bz2" -C "$build/sources"
   (cd "$build/sources/boost_1_87_0"
    ./bootstrap.sh --with-libraries=filesystem,program_options,regex,iostreams,serialization,system
    ./b2 -j "$jobs" toolset=emscripten variant=release link=static threading=single \
+     exception-handling=on exception-handling-method=js \
      --with-filesystem --with-program_options --with-regex --with-iostreams \
      --with-serialization --with-system cxxflags="-std=c++23 -fexceptions" \
      -sNO_BZIP2=1 -sNO_LZMA=1 -sNO_ZSTD=1 -sZLIB_INCLUDE="$prefix/include" \
      -sZLIB_LIBPATH="$prefix/lib" --prefix="$prefix" install)
+  touch "$prefix/.boost-1.87.0-js-exceptions-complete"
 fi
 if [[ ! -f "$prefix/lib/libRNA.a" ]]; then
   tar -xzf "$build/downloads/ViennaRNA-2.7.0.tar.gz" -C "$build/sources"
   (cd "$build/sources/ViennaRNA-2.7.0"
-   emconfigure ./configure --host=wasm32-unknown-emscripten --prefix="$prefix" \
+   CPPFLAGS="$CPPFLAGS -I$PWD/src" emconfigure ./configure --host=wasm32-unknown-emscripten --prefix="$prefix" \
      --disable-shared --enable-static --disable-openmp --disable-pthreads \
      --disable-lto --disable-simd --disable-vectorize --disable-mpfr \
      --without-svm --without-gsl --without-swig --without-perl --without-python \
@@ -65,6 +67,21 @@ if [[ ! -f "$prefix/lib/libRNA.a" ]]; then
    emmake make -C src/ViennaRNA install
    emmake make install-pkgconfigDATA)
 fi
+
+# Legacy Autoconf probes declare exit()/inflateEnd() with the wrong signatures,
+# which wasm-ld rejects. Verify real dependency APIs before caching those probes.
+em++ -std=c++23 -O2 -fexceptions -I"$prefix/include" \
+  "$repo/scripts/wasm/dependency-probe.cpp" -L"$prefix/lib" \
+  -lboost_filesystem -lboost_system -lboost_program_options -lboost_regex \
+  -lboost_iostreams -lboost_serialization -lRNA -lz -o "$build/dependency-probe.js"
+export ac_cv_lib_boost_system_exit=yes
+export ac_cv_lib_boost_filesystem_exit=yes
+export ac_cv_lib_boost_program_options_exit=yes
+export ac_cv_lib_boost_regex_exit=yes
+export ac_cv_lib_boost_iostreams_exit=yes
+export ac_cv_lib_z_inflateEnd=yes
+# RNAlib's .pc embeds a native-only -Wl,-fno-lto; this is a static WASM build.
+export VRNA_LIBS="-L$prefix/lib -lRNA -lm"
 
 # Use the native Autotools source lists and CLI entry point, with a JS output.
 (cd "$repo" && bash autotools-init.sh)

@@ -24,13 +24,23 @@ changing dependency versions or compiler flags. Do not reuse this prefix with a
 different SDK. Native libraries are never accepted from system pkg-config paths.
 
 The script supplies absolute source and generated-header include paths for the
-out-of-tree IntaRNA build. ViennaRNA 2.7.0 bundles dlib 19.24, whose Unicode
+out-of-tree IntaRNA build, and uses generated files from the build directory.
+ViennaRNA also needs an explicit source include path when its no-SVM build
+omits the target's normal include flags. ViennaRNA 2.7.0 bundles dlib 19.24, whose Unicode
 `uint32` string requires a generic `std::char_traits` removed in modern libc++.
 The script backports [dlib's upstream `char32_t` typedef](https://github.com/davisking/dlib/blob/master/dlib/unicode/unicode.h)
 in the downloaded source only, adds its matching serialization overload and
 supplies a missing dependent template argument rejected by current Clang.
 `scripts/wasm/patch-vienna.py` checks the expected source before each replacement.
 It does not change the RNA algorithms.
+
+The legacy Boost and zlib configure macros declare dummy test functions with
+incorrect signatures (`exit()` and `inflateEnd()`), which wasm-ld correctly
+rejects. Before caching just those probes, `dependency-probe.cpp` links actual
+filesystem, regex, options, archive, gzip and RNAlib APIs against the WASM
+libraries. Configure still checks C++23, headers, serialization and RNAlib APIs;
+the smoke test executes the real prediction. `VRNA_LIBS` supplies the static
+RNAlib link flags because the upstream `.pc` includes native-only linker flags.
 
 ## Dependencies and runtime
 
@@ -46,7 +56,7 @@ It does not change the RNA algorithms.
   `-pthread`; native builds retain their existing threading flags.
 
 All C++ compilation and linking enables exceptions (`-fexceptions`), including
-Boost and the CLI's input/error handling. The SDK's single-thread mutex support
+Boost (`exception-handling-method=js`) and the CLI's input/error handling. The SDK's single-thread mutex support
 retains ViennaRNA's normal setup/logger locking without requiring browser
 `SharedArrayBuffer` or COOP/COEP headers (unavailable on ordinary GitHub Pages).
 

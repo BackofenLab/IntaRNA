@@ -38,28 +38,34 @@ fatal. New unresolved references should be fixed before merging.
 
 ## GitHub Pages
 
-`.github/workflows/documentation.yml` builds documentation on pull requests to
-`master`, on pushes to `master`, and on manual dispatch. Every successful build
-uploads a `github-pages` artifact for review. Only a push or manual dispatch on
-`BackofenLab/IntaRNA`'s `master` can deploy; pull requests and forks cannot publish.
-The deployment job alone receives Pages and OIDC write permissions.
+`.github/workflows/documentation.yml` is a reusable documentation build, called
+by `build-wasm.yml` for pull requests and pushes to `master`; it can also be run
+manually to inspect documentation artifacts. The documentation build uploads
+`intarna-documentation`, with the README-based Jekyll guide and Doxygen output
+under `api/`.
 
-The workflow first builds the existing README-based Jekyll site with its Slate
-theme, then adds Doxygen output under `api/`. It publishes both together:
+`build-wasm.yml` combines that artifact with the tested browser interface under
+`webinterface/` and publishes **one** Pages artifact. This preserves the existing
+guide and API; two independent publishers would overwrite each other's site.
+Only a push or manual dispatch on `BackofenLab/IntaRNA`'s `master` can deploy.
+Pull requests and forks cannot publish. The deployment job alone receives Pages
+and OIDC write permissions, and deployments share one concurrency group.
 
 - User guide: <https://backofenlab.github.io/IntaRNA/>
 - Development API: <https://backofenlab.github.io/IntaRNA/api/>
+- Browser interface: <https://backofenlab.github.io/IntaRNA/webinterface/>
 
-### One-time activation after merge
+### Pages configuration
 
-The repository currently publishes from the root of the `master` branch. After
-merging the documentation workflow, a repository administrator must select
-**Settings → Pages → Build and deployment → Source → GitHub Actions**, then run
-the **Documentation** workflow on `master` (or push a subsequent commit).
-Retain any required approval rules on the `github-pages` environment. The PR
-does not change the live publishing settings. See GitHub's
+The repository already uses **Settings → Pages → Build and deployment → Source
+→ GitHub Actions**. For another repository, select that source before deploying,
+and deliberately adjust the deployment repository guard. Run the **WebAssembly
+and web interface** workflow on `master` or push a subsequent commit. Retain any
+required approval rules on the `github-pages` environment. This PR does not
+change live publishing settings. See GitHub's
 [custom Pages workflow documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
 
-No generated HTML, access token, or separate documentation branch is needed.
-Both the existing guide and the API are included in the deployment artifact;
-deploying only the API would replace the guide at the site's root.
+No generated HTML, access token, or separate documentation branch is committed.
+The `intarna-pages-preview` artifact contains the combined site for PR review.
+See [the browser deployment notes](../webinterface/docs/step4-results-and-deployment.md)
+for the complete build and validation sequence.

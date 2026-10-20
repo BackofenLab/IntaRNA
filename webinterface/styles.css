@@ -65,3 +65,19 @@ dialog button { margin-top: 14px; }
 @media (max-width: 800px) { .introduction { display: block; padding-top: 32px; } .introduction .local-note { margin-top: 14px; } .brand span { display: none; } }
 @media (max-width: 600px) { .site-header, main { width: calc(100% - 32px); } .site-header { gap: 12px; padding: 20px 0; } nav { gap: 12px; font-size: 12px; } .brand { font-size: 24px; gap: 8px; } .brand img { width: 36px; height: 36px; } .sequence-grid { grid-template-columns: 1fr; } .target-strand { border-left: 0; } .strand { padding: 18px; } .input-help { padding: 0 18px 18px; } .compute-bar { padding: 18px; } .compute-bar .primary { width: 100%; } .results-heading { display: block; } .results-heading p { margin-top: 12px; } }
 @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+
+.table-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 16px 24px; padding-bottom: 18px; font-size: 14px; }
+.table-tools input { display: block; margin-top: 6px; border: 1px solid #9bb1c1; border-radius: 5px; padding: 8px 12px; width: 260px; max-width: 100%; color: var(--ink); background: white; }
+#visible-count { color: var(--muted); margin-right: auto; }
+.table-scroll { width: 100%; overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: white; }
+table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; font-variant-numeric: tabular-nums; }
+th { background: #e8f1f6; padding: 0; white-space: nowrap; }
+th button { display: block; width: 100%; padding: 16px 14px; border: 0; color: var(--ink); background: transparent; text-align: left; font-size: 13px; font-weight: 650; }
+th button:hover { background: #dce9f1; }
+th[aria-sort="ascending"] button::after { content: " ▴"; }
+th[aria-sort="descending"] button::after { content: " ▾"; }
+td { border-top: 1px solid #e0e9ee; padding: 12px 14px; max-width: 260px; overflow-wrap: anywhere; }
+td.number { text-align: right; }
+tr:hover td { background: #f4fafb; }
+td:nth-last-child(2) { color: #075e62; font-weight: 650; }
+.table-note, #no-matches { color: var(--muted); font-size: 13px; margin: 14px 0 20px; }

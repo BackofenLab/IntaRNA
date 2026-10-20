@@ -55,7 +55,18 @@ CCCUCCUCCC</textarea>
     <div class="model-note"><strong>Prediction settings</strong><p>37 °C · Turner energy model · accessibility included · 7-base seed · heuristic prediction · overlapping suboptimals</p></div>
     <section id="results" class="results" aria-labelledby="results-title" aria-busy="false">
       <div class="results-heading"><h2 id="results-title">Interactions</h2><p id="result-status" role="status" aria-live="polite">Enter your sequences or try the example, then compute.</p></div>
-      <pre id="csv-preview" hidden></pre>
+      <div id="results-view" hidden>
+        <div class="table-tools">
+          <label for="search">Filter interactions <input id="search" type="search" placeholder="Search any column" autocomplete="off"></label>
+          <span id="visible-count" role="status" aria-live="polite"></span>
+          <button id="download" class="secondary" type="button">Download CSV</button>
+        </div>
+        <div class="table-scroll" tabindex="0" role="region" aria-label="Interaction results, scroll horizontally for all columns">
+          <table><caption class="sr-only">Predicted interactions. Select a column heading to sort. ΔE is the energy difference from the best reported interaction.</caption><thead><tr></tr></thead><tbody></tbody></table>
+        </div>
+        <p id="no-matches" hidden>No interactions match this filter. Clear the search to see all results.</p>
+        <p class="table-note">ΔE is relative to the best reported interaction. Suboptimals have distinct interaction-site boundaries and may overlap.</p>
+      </div>
       <details id="diagnostics" hidden><summary>Prediction diagnostics</summary><pre id="diagnostic-text"></pre></details>
     </section>
     <footer><p>Positions are 1-based and inclusive. Energy is reported in kcal/mol; lower values indicate more favorable interactions.</p><p>IntaRNA runs locally in your browser. For longer sequences and advanced settings, use the <a href="https://github.com/BackofenLab/IntaRNA#readme">command line version</a>.</p><a href="licenses/">Licenses and third-party notices</a></footer>
