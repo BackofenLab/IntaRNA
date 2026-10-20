@@ -97,6 +97,13 @@ with sync_playwright() as playwright:
     expect(status).to_contain_text("No favorable interactions", timeout=120000)
     expect(page.locator("#results-view")).not_to_be_visible()
 
+    # Sequence identifiers remain text, even if they resemble HTML.
+    page.locator("#query").fill("><img/src=x/onerror=alert(1)>\nGGGAGGAGGG")
+    compute.click()
+    expect(status).to_contain_text("Prediction complete", timeout=120000)
+    assert page.locator("tbody img").count() == 0
+    assert "<img" in rows.first.locator("td").first.inner_text()
+
     # Engine-load failures settle the dialog and allow the user to try again.
     page.get_by_role("button", name="Load example").click()
     page.route("**/wasm/intarna.js", lambda route: route.abort())

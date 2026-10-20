@@ -76,6 +76,8 @@
 ## Technical changes and Optimizations
 
 - cross-compile IntaRNA and pinned dependencies to WebAssembly (#286, step 1)
+- verify browser predictions against native accessibility/energy references and
+  exercise real WASM cancellation and nested Pages paths in Chromium/Firefox
 
 - reuse MFE seed-extension scratch matrices and bound predecessor scans in exact
   and heuristic prediction; evaluate physical energies directly (PR #276 review)
@@ -229,6 +231,14 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261020 Alexander Mitrofanov
+ * scripts/wasm/*, .github/workflows/build-wasm.yml, webinterface/app.js
+   + Execute dependency API probes and test structured accessibility costs,
+     native prediction references, C++ errors, nested paths and literal IDs.
+   * Download archives atomically and clear obsolete diagnostics on input edits.
+ * webinterface/docs/step4-results-and-deployment.md
+   + Record native API/CLI, real WASM and Chromium/Firefox validation (#286).
 
 261020 Alexander Mitrofanov
  * webinterface/results.js, app.js, index.html, styles.css, tests/*, README.md

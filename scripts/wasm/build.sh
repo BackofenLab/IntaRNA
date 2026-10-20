@@ -7,14 +7,15 @@ mkdir -p "$build"
 build=$(cd "$build" && pwd)
 prefix="$build/deps"
 jobs=${JOBS:-2}
-for tool in emcc em++ emar emranlib emconfigure emmake curl pkg-config; do
+for tool in emcc em++ emar emranlib emconfigure emmake curl pkg-config node; do
   command -v "$tool" >/dev/null || { echo "Missing tool: $tool" >&2; exit 1; }
 done
 mkdir -p "$build/downloads" "$build/sources" "$prefix" "$build/site/wasm"
 fetch() {
   local url=$1 name=$2 checksum=$3
   if [[ ! -f "$build/downloads/$name" ]]; then
-    curl --fail --location --retry 3 "$url" -o "$build/downloads/$name"
+    curl --fail --location --retry 3 "$url" -o "$build/downloads/$name.part"
+    mv "$build/downloads/$name.part" "$build/downloads/$name"
   fi
   echo "$checksum  $build/downloads/$name" | sha256sum --check -
 }
@@ -74,6 +75,7 @@ em++ -std=c++23 -O2 -fexceptions -I"$prefix/include" \
   "$repo/scripts/wasm/dependency-probe.cpp" -L"$prefix/lib" \
   -lboost_filesystem -lboost_system -lboost_program_options -lboost_regex \
   -lboost_iostreams -lboost_serialization -lRNA -lz -o "$build/dependency-probe.js"
+node "$build/dependency-probe.js"
 export ac_cv_lib_boost_system_exit=yes
 export ac_cv_lib_boost_filesystem_exit=yes
 export ac_cv_lib_boost_program_options_exit=yes

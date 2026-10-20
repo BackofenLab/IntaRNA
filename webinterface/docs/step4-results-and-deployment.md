@@ -75,3 +75,26 @@ Turner/default-accessibility prediction with the native reference. Browser
 integration runs real WASM (no mocked scientific results), checking coordinates,
 energy, sorting, filtering, CSV download, mobile overflow, abort during download
 and active C++, clean restart, empty predictions and asset-load recovery.
+
+### Local verification, 2026-10-20
+
+- Emscripten 4.0.23 with the exact SHA-256-pinned official archives: successful
+  dependency probe, cross-build and real WASM smoke test. The structured-strand
+  reference reports E = -28.04, ED1 = 4.60, ED2 = 4.86 kcal/mol; the short example
+  reports E = -21.40 with target/query coordinates 1–10 and ten suboptimals.
+  Invalid CLI input returns a nonzero status through C++ error handling.
+- `npm test --prefix webinterface`: all five input/lifecycle/CSV test groups pass.
+- Playwright 1.64.0, Chromium and Firefox: full integration suite passes with the
+  official-dependency engine, including a nested `/site/` URL as used by Pages,
+  active-C++ cancellation, literal HTML-like identifiers and retry after failure.
+  Desktop screenshot visually reviewed; 390 px viewport has no page overflow.
+- Native release build with OpenMP, conda GCC 16.2.0 and ViennaRNA 2.7.2:
+  `make tests -j2` passes all eight API/CLI groups, including 462,689 assertions
+  across 119 API cases. For the separate build directory, tracked `tests/data`
+  fixtures were linked into the build's data directory because the existing
+  shell harness discovers fixtures relative to its working directory.
+- Shell syntax, workflow YAML parsing and `git diff --check`: pass.
+
+GitHub's platform checks independently cover GCC 14 release/debug and Apple
+Clang. Deployment itself occurs only after merge; local browser tests do not
+claim a live Pages deployment.

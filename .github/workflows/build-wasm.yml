@@ -45,15 +45,15 @@ jobs:
           python -m playwright install --with-deps chromium firefox
       - name: Exercise the browser with real WASM
         run: |
-          python -m http.server 8765 --bind 127.0.0.1 --directory build-wasm/site > /tmp/intarna-http.log 2>&1 &
+          python -m http.server 8765 --bind 127.0.0.1 --directory build-wasm > /tmp/intarna-http.log 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid"' EXIT
           for attempt in {1..30}; do
-            if curl --fail --silent http://127.0.0.1:8765/ > /dev/null; then break; fi
+            if curl --fail --silent http://127.0.0.1:8765/site/ > /dev/null; then break; fi
             sleep 1
           done
-          python scripts/wasm/test-browser.py http://127.0.0.1:8765 --screenshot build-wasm/browser.png
-          python scripts/wasm/test-browser.py http://127.0.0.1:8765 --browser firefox
+          python scripts/wasm/test-browser.py http://127.0.0.1:8765/site/ --screenshot build-wasm/browser.png
+          python scripts/wasm/test-browser.py http://127.0.0.1:8765/site/ --browser firefox
       - uses: actions/upload-artifact@v4
         with:
           name: intarna-webinterface

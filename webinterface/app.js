@@ -13,6 +13,7 @@ const results = new ResultsView(byId('results-view'));
 function clearResults(message = 'Inputs changed. Compute to update the interactions.') {
   results.clear();
   byId('diagnostics').hidden = true;
+  byId('diagnostic-text').textContent = '';
   status.textContent = message;
 }
 

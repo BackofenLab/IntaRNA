@@ -36,7 +36,7 @@ It does not change the RNA algorithms.
 
 The legacy Boost and zlib configure macros declare dummy test functions with
 incorrect signatures (`exit()` and `inflateEnd()`), which wasm-ld correctly
-rejects. Before caching just those probes, `dependency-probe.cpp` links actual
+rejects. Before caching just those probes, `dependency-probe.cpp` links and executes actual
 filesystem, regex, options, archive, gzip and RNAlib APIs against the WASM
 libraries. Configure still checks C++23, headers, serialization and RNAlib APIs;
 the smoke test executes the real prediction. `VRNA_LIBS` supplies the static
@@ -70,6 +70,7 @@ failure is reported as a failed prediction; devices may impose lower limits.
 See [Emscripten's Autotools guidance](https://emscripten.org/docs/compiling/Building-Projects.html)
 for `emconfigure`/`emmake`. Generated configure files, dependency sources and WASM
 binaries are build outputs, not tracked source. The artifact must keep JS and
-WASM from the same build together. The Node smoke test runs a real
-Turner/default-accessibility prediction and checks its energy, coordinates and
-suboptimal count against the native CLI.
+WASM from the same build together. The Node smoke test runs real
+Turner/default-accessibility predictions and checks energy, coordinates,
+nonzero accessibility costs, suboptimal counts and C++ error handling against
+the native CLI.
