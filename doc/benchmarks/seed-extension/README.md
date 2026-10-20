@@ -261,3 +261,14 @@ python3 doc/benchmarks/seed-extension/run.py \
 Add the dependency include/runtime options described above when necessary.
 The recorded manifest contains the exact compiler and dependency paths used
 for these measurements.
+
+## MFE extensions (#274)
+
+[`mfe-native.py`](mfe-native.py) compares native `--model=X --mode=M/H`
+executables with byte-exact energy, traceback, seed and `Eall` output. It includes
+OxyS/fhlA, dense, noLP, bulged-seed and no-seed cases. See the
+[analysis and reproduction instructions](../../analysis/mfe-seed-extension-reuse.md)
+and the `mfe-native-*`/`mfe-source-hashes.json` evidence files. Those measurements
+describe the historical cached prototype at `4994edf`, before the PR #276
+review removed local pairing and loop-energy caches; they do not measure the
+current direct-evaluation implementation.

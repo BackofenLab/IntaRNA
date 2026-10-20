@@ -88,11 +88,11 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 		const size_t maxMatrixLen2 = energy.getAccessibility2().getMaxLength()-sl2+1;
 
 		// EL
-		hybridE_left.resize( std::min(si1+1, maxMatrixLen1), std::min(si2+1, maxMatrixLen2) );
+		hybridE_left.resize( std::min(si1+1, maxMatrixLen1), std::min(si2+1, maxMatrixLen2), false );
 		fillHybridE_left(si1, si2);
 
 		// ER
-		hybridE_right.resize( std::min(range_size1-sj1, maxMatrixLen1), std::min(range_size2-sj2, maxMatrixLen2) );
+		hybridE_right.resize( std::min(range_size1-sj1, maxMatrixLen1), std::min(range_size2-sj2, maxMatrixLen2), false );
 		fillHybridE_right(sj1, sj2);
 
 		// update Optimum for all boundary combinations
@@ -143,6 +143,8 @@ fillHybridE_left( const size_t si1, const size_t si2 )
 	// ensure a stacking to the right of the left boundary (i1,i2)
 	const size_t noLpShift = outConstraint.noLP ? 1 : 0;
 	E_type iStackE = E_type(0);
+	const size_t maxLoop1 = energy.getMaxInternalLoopSize1();
+	const size_t maxLoop2 = energy.getMaxInternalLoopSize2();
 
 	// iterate over all window starts i1 (seq1) and i2 (seq2)
 	// via their distance l1/l2 to the left seed boundary si1/si2
@@ -177,12 +179,11 @@ fillHybridE_left( const size_t si1, const size_t si2 )
 				}
 
 				// check all combinations of decompositions into (i1,i2)..(k1,k2)-(si1,si2)
-				for (k1=i1+noLpShift; k1++ < si1; ) {
-					// ensure maximal loop length
-					if (k1-i1-noLpShift > energy.getMaxInternalLoopSize1()+1) break;
-					for (k2=i2+noLpShift; k2++ < si2; ) {
-						// ensure maximal loop length
-						if (k2-i2-noLpShift > energy.getMaxInternalLoopSize2()+1) break;
+				// Bound predecessor scans once per cell while retaining their order.
+				const size_t k1max = i1+noLpShift+std::min(si1-i1-noLpShift,maxLoop1+1);
+				const size_t k2max = i2+noLpShift+std::min(si2-i2-noLpShift,maxLoop2+1);
+				for (k1=i1+noLpShift; k1++ < k1max; ) {
+					for (k2=i2+noLpShift; k2++ < k2max; ) {
 						// check if (k1,k2) are valid left boundary
 		if ( energy.isAccessible1(k1) && energy.isAccessible2(k2) )
 						if ( E_isNotINF( hybridE_left(si1-k1,si2-k2) ) ) {
@@ -221,6 +222,8 @@ fillHybridE_right( const size_t sj1, const size_t sj2 )
 	// ensure a stacking to the right of the left boundary (i1,i2)
 	const size_t noLpShift = outConstraint.noLP ? 1 : 0;
 	E_type iStackE = E_type(0);
+	const size_t maxLoop1 = energy.getMaxInternalLoopSize1();
+	const size_t maxLoop2 = energy.getMaxInternalLoopSize2();
 
 	// iterate over all window starts j1 (seq1) and j2 (seq2)
 	for (j1=sj1; j1-sj1 < hybridE_right.size1(); j1++) {
@@ -255,12 +258,11 @@ fillHybridE_right( const size_t sj1, const size_t sj2 )
 				}
 
 				// check all combinations of decompositions into (i1,i2)..(k1,k2)-(j1,j2)
-				for (k1=j1-noLpShift; k1-- > sj1; ) {
-					// ensure maximal loop length
-					if (j1-noLpShift-k1 > energy.getMaxInternalLoopSize1()+1) break;
-				for (k2=j2-noLpShift; k2-- > sj2; ) {
-					// ensure maximal loop length
-					if (j2-noLpShift-k2 > energy.getMaxInternalLoopSize2()+1) break;
+				// Bound predecessor scans once per cell while retaining their order.
+				const size_t k1min = j1-noLpShift-std::min(j1-noLpShift-sj1,maxLoop1+1);
+				const size_t k2min = j2-noLpShift-std::min(j2-noLpShift-sj2,maxLoop2+1);
+				for (k1=j1-noLpShift; k1-- > k1min; ) {
+				for (k2=j2-noLpShift; k2-- > k2min; ) {
 					// check if (k1,k2) are valid left boundary
 if ( energy.isAccessible1(k1) && energy.isAccessible2(k2) )
 					if ( E_isNotINF( hybridE_right(k1-sj1,k2-sj2) ) ) {
@@ -355,9 +357,9 @@ traceBack( Interaction & interaction )
 				continue;
 			}
 
-			hybridE_left.resize( std::min(si1+1, maxMatrixLen1), std::min(si2+1, maxMatrixLen2) );
+			hybridE_left.resize( std::min(si1+1, maxMatrixLen1), std::min(si2+1, maxMatrixLen2), false );
 			fillHybridE_left( si1, si2 );
-			hybridE_right.resize( std::min(j1-sj1+1, maxMatrixLen1), std::min(j2-sj2+1, maxMatrixLen2) );
+			hybridE_right.resize( std::min(j1-sj1+1, maxMatrixLen1), std::min(j2-sj2+1, maxMatrixLen2), false );
 			fillHybridE_right( sj1, sj2 );
 
 			if ( E_equal( fullE,

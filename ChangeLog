@@ -68,8 +68,8 @@
 
 ## Technical changes and Optimizations
 
-- BUGFIX : restore clean Autotools configuration with dependency tracking and
-  use portable Doxygen header prerequisites (issue #282)
+- reuse MFE seed-extension scratch matrices and bound predecessor scans in exact
+  and heuristic prediction; evaluate physical energies directly (PR #276 review)
 
 - share exact left-most seed-anchor extensions with heuristic prediction,
   combining each true left extension with one retained right endpoint (#270)
@@ -222,15 +222,34 @@ energies, restricted partition sums, and trackers.
 ################################################################################
 
 261020 Alexander Mitrofanov
- * Makefile.am
-   * Use a make prerequisite wildcard for public Doxygen headers instead of the
-     GNU wildcard function that triggered Automake's portability warning.
- * tests/Makefile.am
-   * Restore the test-script list continuation lost during a merge, fixing the
-     generated Makefile parse error in config.status dependency bootstrapping
-     and retaining all seven CLI regression drivers (issue #282).
- * .github/workflows/build.yml
-   + Reject Automake portability warnings before configuring in build CI.
+ * PredictorMfe2dSeedExtension.*, PredictorMfe2dHeuristicSeedExtension.cpp
+   - Remove extensionLoopE(), the local loop-energy table, known-value flags,
+     pair-index map and cache initialization/reset/fallback machinery requested
+     in https://github.com/BackofenLab/IntaRNA/pull/276#discussion_r4312235144
+   * Restore direct energy.getE_interLeft() and energy.areComplementary() calls
+     in both predictors and traceback. Retain nonpreserving scratch resize,
+     bounded predecessor scans and their existing traversal order.
+ * PredictorSeedOracle_test.cpp
+   - Remove obsolete cache probes; retain independent recurrence, workspace,
+     tie, maximal-loop, range/offset, traceback and seed-witness regressions.
+ * doc/analysis/mfe-seed-extension-reuse.md,
+   doc/benchmarks/seed-extension/README.md
+   * Describe direct evaluation and label the archived cached-prototype timing
+     evidence explicitly so it is not attributed to the revised implementation.
+
+261016 Alexander Mitrofanov
+ * PredictorMfe2dSeedExtension, PredictorMfe2dHeuristicSeedExtension
+   * reuse nonpreserving extension workspace capacity across seeds and traceback
+   + cache seed-independent pair feasibility and loop energies within a bounded
+     16 MiB budget per prediction; invalidate caches before changing offsets
+   * bound predecessor scans without changing transition/update order (#274)
+ * tests/PredictorSeedOracle_test.cpp
+   + exercise repeated exact/heuristic predictions and cache correctness
+ * doc/analysis/mfe-seed-extension-reuse.md, doc/benchmarks/seed-extension/
+   + compare ensemble/MFE reuse strategies and record reproducible native
+     runtime, memory and byte-exact output comparisons against 21b9d8f
+ * doc/Makefile.am
+   + distribute the analysis and benchmark evidence
 
 261016 Alexander Mitrofanov
  * SeededPartitionFunction.*, StackSeedDomain.h

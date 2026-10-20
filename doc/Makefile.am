@@ -20,3 +20,4 @@ EXTRA_DIST =	\
 			latex-deps/tocloft.sty \
 			latex-deps/trimclip.sty \
 			latex-deps/xtab.sty
+

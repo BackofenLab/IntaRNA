@@ -8,6 +8,7 @@
 #include "IntaRNA/OutputHandlerInteractionList.h"
 #include "IntaRNA/PredictorMfe2dSeed.h"
 #include "IntaRNA/PredictorMfe2dSeedExtension.h"
+#include "IntaRNA/PredictorMfe2dHeuristicSeedExtension.h"
 #include "IntaRNA/PredictorMfeEns2dSeedExtension.h"
 #include "IntaRNA/PredictorMfeEns2dHeuristicSeedExtension.h"
 #include "IntaRNA/PredictorMfeEnsSeedOnly.h"
@@ -348,12 +349,12 @@ Interaction::PairingVec seedOracleBasePairs(const InteractionEnergy & energy,
 	return basePairs;
 }
 
-const SeededOracleInteraction * findOptimalTrace(
+const SeededOracleInteraction * findSeededTrace(
 		const InteractionEnergy & energy, const SeedOracleResult & oracle,
 		const Interaction & interaction)
 {
 	for (const SeededOracleInteraction & candidate : oracle.interactions) {
-		if (candidate.energy == oracle.mfe
+		if (candidate.energy == interaction.energy
 				&& seedOracleBasePairs(energy, candidate.chain)
 						== interaction.basePairs)
 		{
@@ -374,12 +375,12 @@ bool matchesSeed(const Interaction::Seed & reported,
 			&& E_equal(reported.energy, expected.totalEnergy);
 }
 
-void requireValidSeededMfe(const InteractionEnergy & energy,
+void requireValidSeededInteraction(const InteractionEnergy & energy,
 		const SeedOracleResult & oracle, const Interaction & interaction)
 {
 	REQUIRE_FALSE(interaction.isEmpty());
-	REQUIRE(interaction.energy == oracle.mfe);
-	const SeededOracleInteraction * trace = findOptimalTrace(energy, oracle,
+	REQUIRE(interaction.isValid());
+	const SeededOracleInteraction * trace = findSeededTrace(energy, oracle,
 			interaction);
 	REQUIRE(trace != nullptr);
 	REQUIRE(interaction.seed != nullptr);
@@ -391,6 +392,13 @@ void requireValidSeededMfe(const InteractionEnergy & energy,
 				});
 		REQUIRE(reported != interaction.seed->end());
 	}
+}
+
+void requireValidSeededMfe(const InteractionEnergy & energy,
+		const SeedOracleResult & oracle, const Interaction & interaction)
+{
+	REQUIRE(interaction.energy == oracle.mfe);
+	requireValidSeededInteraction(energy, oracle, interaction);
 }
 
 void compareExactSeededMfePredictors(const InteractionEnergy & energy,
@@ -676,6 +684,174 @@ TEST_CASE("tiny exhaustive seed oracle for exact predictor families",
 #include "IntaRNA/InteractionEnergyVrna.h"
 #include "IntaRNA/SeedHandlerNoBulge.h"
 #include "IntaRNA/OutputHandlerHub.h"
+
+namespace {
+
+template<class PredictorType>
+void checkMfeExtensionWorkspaceReuse(const InteractionEnergy & energy,
+		const SeedConstraint & seedConstraint,
+		const OutputConstraint & outputConstraint, const bool exact)
+{
+	// Change both dimensions and offsets, including a seedless prediction,
+	// before returning to the original shape. Each call must overwrite every
+	// active cell even when its backing allocation came from a larger matrix.
+	const std::vector<std::pair<IndexRange, IndexRange>> ranges{
+		{IndexRange(0, 6), IndexRange(0, 6)},
+		{IndexRange(1, 5), IndexRange(2, 5)},
+		{IndexRange(2, 2), IndexRange(1, 4)},
+		{IndexRange(0, 6), IndexRange(1, 6)},
+		{IndexRange(0, 6), IndexRange(0, 6)}
+	};
+	SeedRecordingOutput reusedOutput(outputConstraint);
+	PredictorType reused(energy, reusedOutput, nullptr,
+			new SeedHandlerMfe(energy, seedConstraint));
+	for (const auto & [range1, range2] : ranges) {
+		CAPTURE(range1.from, range1.to, range2.from, range2.to);
+		const auto oracle = enumerateSeededInteractions(energy, seedConstraint,
+				outputConstraint, range1, range2);
+		const size_t previousCalls = reusedOutput.calls.size();
+		reused.predict(range1, range2);
+		REQUIRE(reusedOutput.calls.size() == previousCalls+1);
+
+		SeedRecordingOutput freshOutput(outputConstraint);
+		PredictorType fresh(energy, freshOutput, nullptr,
+				new SeedHandlerMfe(energy, seedConstraint));
+		fresh.predict(range1, range2);
+		REQUIRE(freshOutput.calls.size() == 1);
+		const Interaction & actual = reusedOutput.last();
+		const Interaction & expected = freshOutput.last();
+		REQUIRE(actual.isEmpty() == expected.isEmpty());
+		if (oracle.interactions.empty()) {
+			REQUIRE(actual.isEmpty());
+			continue;
+		}
+
+		// The heuristic's retained right extension is not assumed globally
+		// optimal. Its reported energy, full traceback and every seed witness
+		// must nevertheless describe one independently enumerated interaction.
+		if (exact) requireValidSeededMfe(energy, oracle, actual);
+		else requireValidSeededInteraction(energy, oracle, actual);
+		REQUIRE(actual.energy == expected.energy);
+		REQUIRE(actual.basePairs == expected.basePairs);
+		REQUIRE(expected.seed != nullptr);
+		REQUIRE(*actual.seed == *expected.seed);
+	}
+	// Equal-energy choices must also survive the intervening range changes.
+	REQUIRE(reusedOutput.calls.front()->basePairs == reusedOutput.last().basePairs);
+	REQUIRE(reusedOutput.calls.front()->energy == reusedOutput.last().energy);
+}
+
+} // namespace
+
+TEST_CASE("MFE seed extensions preserve bounded recurrences and reused workspaces",
+		"[PredictorSeedOracle][MfeSeedExtensionWorkspace]")
+{
+	#include "testEasyLoggingSetup.icc"
+
+	RnaSequence target("target", "GUGGCGG"), query("query", "CCGCCUC");
+	AccessibilityBasePair targetAcc(target, 6, nullptr), queryAcc(query, 5, nullptr);
+	ReverseAccessibility reverseQuery(queryAcc);
+	VrnaHandler vrna;
+	AccessibilityVrna nativeTarget(target, 6, nullptr, vrna);
+	AccessibilityVrna nativeQuery(query, 5, nullptr, vrna);
+	ReverseAccessibility nativeReverse(nativeQuery);
+	const SeedConstraint seedConstraint = makeSeedConstraint(2, 0, 0, 0, false);
+	for (const auto & [loop1, loop2] : std::vector<std::pair<size_t, size_t>>{
+			{0, 0}, {0, 2}, {2, 0}, {2, 1}})
+	{
+		InteractionEnergyBasePair simple(targetAcc, reverseQuery, loop1, loop2);
+		InteractionEnergyVrna nearest(nativeTarget, nativeReverse, vrna, loop1, loop2);
+		for (bool native : {false, true}) for (bool noLP : {false, true})
+		for (bool noGUend : {false, true}) {
+			CAPTURE(loop1, loop2, native, noLP, noGUend);
+			const InteractionEnergy & energy = native
+					? static_cast<const InteractionEnergy &>(nearest) : simple;
+			const OutputConstraint outputConstraint(1,
+					OutputConstraint::OVERLAP_BOTH, E_INF, E_INF, false,
+					noLP, noGUend, false, true);
+			checkMfeExtensionWorkspaceReuse<PredictorMfe2dSeedExtension>(
+					energy, seedConstraint, outputConstraint, true);
+			checkMfeExtensionWorkspaceReuse<PredictorMfe2dHeuristicSeedExtension>(
+					energy, seedConstraint, outputConstraint, false);
+		}
+	}
+}
+
+TEST_CASE("dense MFE seed extension ties retain optimal chains and all seeds",
+		"[PredictorSeedOracle][MfeSeedExtensionWorkspace]")
+{
+	#include "testEasyLoggingSetup.icc"
+
+	RnaSequence target("target", "GGGGGGG"), query("query", "CCCCCCC");
+	AccessibilityDisabled targetAcc(target, 6, nullptr), queryAcc(query, 5, nullptr);
+	ReverseAccessibility reverseQuery(queryAcc);
+	InteractionEnergyBasePair energy(targetAcc, reverseQuery, 2, 1);
+	const SeedConstraint seedConstraint = makeSeedConstraint(2, 0, 0, 0, false);
+	for (bool noLP : {false, true}) {
+		CAPTURE(noLP);
+		const auto outputConstraint = makeOutputConstraint(noLP);
+		const auto oracle = enumerateSeededInteractions(energy, seedConstraint,
+				outputConstraint, IndexRange(0, 6), IndexRange(0, 6));
+		// Five stacked pairs attain the maximum query interaction length.
+		// Both predictors must find this optimum despite many equal-energy seeds.
+		REQUIRE(oracle.mfe == Ekcal_2_E(-5));
+		SeedRecordingOutput output(outputConstraint);
+		PredictorMfe2dHeuristicSeedExtension predictor(energy, output, nullptr,
+				new SeedHandlerMfe(energy, seedConstraint));
+		predictor.predict();
+		REQUIRE(output.calls.size() == 1);
+		requireValidSeededMfe(energy, oracle, output.last());
+		REQUIRE(output.last().seed->size() == 4);
+		checkMfeExtensionWorkspaceReuse<PredictorMfe2dSeedExtension>(
+				energy, seedConstraint, outputConstraint, true);
+		checkMfeExtensionWorkspaceReuse<PredictorMfe2dHeuristicSeedExtension>(
+				energy, seedConstraint, outputConstraint, true);
+	}
+}
+
+TEST_CASE("MFE seed extensions include the maximal loop on both sides of a seed",
+		"[PredictorSeedOracle][MfeSeedExtensionWorkspace]")
+{
+	#include "testEasyLoggingSetup.icc"
+
+	for (bool gapInTarget : {false, true}) for (bool noLP : {false, true})
+	for (size_t gapLimit : {0, 1}) {
+		CAPTURE(gapInTarget, noLP, gapLimit);
+		RnaSequence target("target", gapInTarget ? "GGAGGAGG" : "GGGGGG");
+		RnaSequence query("query", gapInTarget ? "CCCCCC" : "CCACCACC");
+		AccessibilityDisabled targetAcc(target, 0, nullptr), queryAcc(query, 0, nullptr);
+		ReverseAccessibility reverseQuery(queryAcc);
+		InteractionEnergyBasePair energy(targetAcc, reverseQuery,
+				gapInTarget ? gapLimit : 0, gapInTarget ? 0 : gapLimit);
+		IndexRangeList seedRange1, seedRange2;
+		seedRange1.push_back(gapInTarget ? IndexRange(3, 4) : IndexRange(2, 3));
+		seedRange2.push_back(gapInTarget ? IndexRange(2, 3) : IndexRange(3, 4));
+		const SeedConstraint seedConstraint(2, 0, 0, 0, E_INF,
+				Accessibility::ED_UPPER_BOUND, E_INF, seedRange1, seedRange2,
+				"", false, false, noLP);
+		const auto outputConstraint = makeOutputConstraint(noLP);
+		const IndexRange range1(0, target.size()-1), range2(0, query.size()-1);
+		const auto oracle = enumerateSeededInteractions(energy, seedConstraint,
+				outputConstraint, range1, range2);
+		// Only the central block can be a seed. Extending to the flanking
+		// blocks therefore requires a maximal-size loop on each side.
+		REQUIRE(oracle.mfe == Ekcal_2_E((gapLimit == 1 ? -6 : -2)));
+		SeedRecordingOutput exactOutput(outputConstraint);
+		PredictorMfe2dSeedExtension exact(energy, exactOutput, nullptr,
+				new SeedHandlerMfe(energy, seedConstraint));
+		exact.predict(range1, range2);
+		REQUIRE(exactOutput.calls.size() == 1);
+		requireValidSeededMfe(energy, oracle, exactOutput.last());
+		REQUIRE(exactOutput.last().seed->size() == 1);
+		SeedRecordingOutput output(outputConstraint);
+		PredictorMfe2dHeuristicSeedExtension predictor(energy, output, nullptr,
+				new SeedHandlerMfe(energy, seedConstraint));
+		predictor.predict(range1, range2);
+		REQUIRE(output.calls.size() == 1);
+		requireValidSeededMfe(energy, oracle, output.last());
+		REQUIRE(output.last().seed->size() == 1);
+	}
+}
 
 namespace {
 class ExactSeedProbe : public PredictorMfeEns2dSeedExtension {
