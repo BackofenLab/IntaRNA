@@ -82,3 +82,8 @@ python/intarnapvalue.*
 /IntaRNA.pc
 /IntaRNA.exe.stackdump
 /py-compile
+
+# Browser build outputs and local test dependencies
+/build-wasm/
+/webinterface/wasm/
+/webinterface/node_modules/

@@ -1,0 +1,31 @@
+name: WebAssembly and web interface
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: emscripten-core/setup-emsdk@v15
+        with:
+          version: '4.0.23'
+          actions-cache-folder: emsdk-cache
+      - name: Install native build tools
+        run: sudo apt-get update && sudo apt-get install --yes autoconf automake libtool pkg-config
+      - name: Cross-compile dependencies and IntaRNA
+        run: bash scripts/wasm/build.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: intarna-wasm
+          path: build-wasm/site
+          if-no-files-found: error
