@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Predict RNA–RNA interactions with IntaRNA directly in your browser. Sequences stay on your device.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; worker-src 'self'; connect-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <title>IntaRNA · RNA–RNA interaction prediction</title>
+  <link rel="icon" href="mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#workspace">Skip to sequence inputs</a>
+  <header class="site-header">
+    <a class="brand" href="./" aria-label="IntaRNA home"><img src="mark.svg" width="44" height="44" alt="">IntaRNA<span>Interaction prediction</span></a>
+    <nav aria-label="Resources">
+      <a href="https://github.com/BackofenLab/IntaRNA#readme">Documentation</a>
+      <a href="https://github.com/BackofenLab/IntaRNA">Source code</a>
+    </nav>
+  </header>
+  <main id="workspace">
+    <section class="introduction" aria-labelledby="page-title">
+      <div><h1 id="page-title">RNA–RNA interaction prediction</h1>
+        <p>Explore how two RNA sequences interact, with accessibility and seed pairing included.</p>
+      </div>
+      <p class="local-note"><span aria-hidden="true">●</span> Sequences stay on your device</p>
+    </section>
+    <noscript><p class="error">Enable JavaScript to run IntaRNA in your browser.</p></noscript>
+    <form id="prediction-form">
+      <fieldset id="inputs">
+        <legend class="sr-only">Sequences and prediction settings</legend>
+        <div class="sequence-grid">
+          <section class="strand query-strand">
+            <div class="strand-heading"><label for="query">Query RNA</label><span>5′ to 3′</span></div>
+            <textarea id="query" name="query" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="sequence-help query-length" required>>query
+GGGAGGAGGG</textarea>
+            <p class="sequence-meta" id="query-length">10 nucleotides</p>
+          </section>
+          <section class="strand target-strand">
+            <div class="strand-heading"><label for="target">Target RNA</label><span>5′ to 3′</span></div>
+            <textarea id="target" name="target" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="sequence-help target-length" required>>target
+CCCUCCUCCC</textarea>
+            <p class="sequence-meta" id="target-length">10 nucleotides</p>
+          </section>
+        </div>
+        <p id="sequence-help" class="input-help">One FASTA record or plain sequence per field. A, C, G, U/T and N; 7–2,000 nucleotides each, with query length × target length ≤ 1,000,000.</p>
+        <div class="compute-bar">
+          <div class="form-options"><label for="count">Maximum interactions <input id="count" name="count" type="number" min="1" max="100" step="1" value="10" required></label><button id="example" type="button" class="secondary">Load example</button></div>
+          <button id="compute" type="submit" class="primary">Compute interactions</button>
+        </div>
+      </fieldset>
+      <p id="input-error" class="error" role="alert" hidden></p>
+    </form>
+    <div class="model-note"><strong>Prediction settings</strong><p>37 °C · Turner energy model · accessibility included · 7-base seed · heuristic prediction · overlapping suboptimals</p></div>
+    <section id="results" class="results" aria-labelledby="results-title" aria-busy="false">
+      <div class="results-heading"><h2 id="results-title">Interactions</h2><p id="result-status" role="status" aria-live="polite">Enter your sequences or try the example, then compute.</p></div>
+      <pre id="csv-preview" hidden></pre>
+      <details id="diagnostics" hidden><summary>Prediction diagnostics</summary><pre id="diagnostic-text"></pre></details>
+    </section>
+    <footer><p>Positions are 1-based and inclusive. Energy is reported in kcal/mol; lower values indicate more favorable interactions.</p><p>IntaRNA runs locally in your browser. For longer sequences and advanced settings, use the <a href="https://github.com/BackofenLab/IntaRNA#readme">command line version</a>.</p><a href="licenses/">Licenses and third-party notices</a></footer>
+  </main>
+  <dialog id="loading" aria-labelledby="loading-title" aria-describedby="loading-status">
+    <div class="spinner" aria-hidden="true"></div>
+    <h2 id="loading-title">Computing interactions</h2>
+    <p id="loading-status" role="status" aria-live="polite">Loading the prediction engine…</p>
+    <p>The first run downloads the engine. You can stop at any time.</p>
+    <button id="abort" type="button" class="secondary" autofocus>Abort computation</button>
+  </dialog>
+</body>
+</html>
