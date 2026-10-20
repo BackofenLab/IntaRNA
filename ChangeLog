@@ -14,6 +14,8 @@
 
 ## Interface and handling
 
+- run browser predictions in cancellable, isolated Web Workers (#286, step 2)
+
 - orient probability SVGs from the upper-left corner and highlight every MFE
   pair, splitting seed/MFE cell borders into orange and green (PR #259 review)
 
@@ -222,6 +224,13 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261020 Alexander Mitrofanov
+ * webinterface/protocol.js, intarna-worker.js, runner.js, tests/*
+   + Validate FASTA at the worker boundary, run the existing CLI with MEMFS
+     input/output, and report CSV and bounded diagnostics asynchronously.
+   + Terminate each worker on completion, failure or abort; test clean restart
+     and stale-message handling (#286, step 2); document the worker protocol.
 
 261020 Alexander Mitrofanov
  * scripts/wasm/*, .github/workflows/build-wasm.yml, configure.ac
