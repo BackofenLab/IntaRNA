@@ -55,7 +55,7 @@ doxygen-doc
 doxygen-doc/*
 conf3108*
 test-driver
-
+tmp/*
 
 # temp dir
 tmp

@@ -20,6 +20,9 @@ class SeedHandlerExplicit : public SeedHandler
 {
 public:
 
+	/** @return true if all retained accepted patterns contain only paired positions. */
+	bool guaranteesStackOnlySeeds() const override;
+
 	/**
 	 * Construction
 	 * @param energy the energy function to be used for seed prediction
@@ -207,6 +210,9 @@ protected:
 
 	//! container to store
 	boost::unordered_map< Interaction::BasePair, SeedData, Interaction::BasePair::Hash > seedForLeftEnd;
+
+	//! whether or not all seeds are stacked (i.e. no bulges or internal loops)
+	bool allSeedsStacked;
 
 };
 

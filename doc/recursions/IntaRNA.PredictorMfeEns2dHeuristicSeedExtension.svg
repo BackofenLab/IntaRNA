@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1200" viewBox="0 0 1440 1200" role="img" aria-labelledby="title desc">
+<title id="title">Seeded ensemble · one selected right extension</title>
+<desc id="desc">PredictorMfeEns2dHeuristicSeedExtension  |  --model=P --mode=H. Internal recurrence documentation for steps 9 and 11 of PR 258 / PR 259. Equations describe the current implementation; RNA 2 uses reversed energy coordinates.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#60798e"/></marker>
+<pattern id="seed-hatch" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#fff0dc"/><path d="M-2 2 L2 -2 M0 8 L8 0 M6 10 L10 6" stroke="#e0b27a" stroke-width="1"/></pattern></defs>
+<rect width="1440" height="100%" fill="white"/>
+<text x="48" y="48" font-family="DejaVu Sans, sans-serif" font-size="14" fill="#275f8c" text-anchor="start" font-weight="bold">INTARNA  /  RECURRENCE NOTES</text>
+<text x="48" y="91" font-family="DejaVu Sans, sans-serif" font-size="31" fill="#203244" text-anchor="start" font-weight="bold">Seeded ensemble · one selected right extension</text>
+<text x="48" y="125" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">PredictorMfeEns2dHeuristicSeedExtension  |  --model=P --mode=H</text>
+<path d="M48 148 L1392 148" fill="none" stroke="#c4d0da" stroke-width="1.2"/>
+<text x="48" y="185" font-family="DejaVu Sans, sans-serif" font-size="19" fill="#203244" text-anchor="start">For anchor seed a…b: S=BW(E_seed), d=BW(E_init), L=Lₐ(i), R=R_b(j).</text>
+<text x="48" y="214" font-family="DejaVu Sans, sans-serif" font-size="19" fill="#203244" text-anchor="start">L and R use the inherited legacy extension recurrences, even when the seed handler is stack-only.</text>
+<rect x="48" y="249" width="1344" height="198" rx="8" fill="#f3f7fa" stroke="#d0dbe3"/>
+<text x="70" y="283" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#275f8c" text-anchor="start" font-weight="bold">1  Compute R, submit true right extensions, and select j*</text>
+<text x="73" y="317" font-family="DejaVu Serif, sans-serif" font-size="25" fill="#203244" text-anchor="start">updateZ(a,j, d · S · R_b(j), true)     for j <tspan font-family="DejaVu Sans, sans-serif">≻</tspan> b</text>
+<text x="73" y="366" font-family="DejaVu Serif, sans-serif" font-size="24" fill="#203244" text-anchor="start">j* = argmin E_full(a,j, d · S · R_b(j))     over right-end-admissible candidates</text>
+<text x="73" y="411" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">updateOptRightZ compares complete energy and the right GU-end restriction; ties retain the first candidate.</text>
+<path d="M720 458 L720 504" fill="none" stroke="#c4d0da" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="48" y="524" width="1344" height="288" rx="8" fill="#edf6f2" stroke="#d0dbe3"/>
+<text x="70" y="558" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#23796a" text-anchor="start" font-weight="bold">2  Compute corrected L and submit left-side combinations</text>
+<rect x="92" y="621" width="163.35" height="60" fill="#dcebf5"/>
+<text x="173.675" y="658" font-family="DejaVu Serif, sans-serif" font-size="24" fill="#275f8c" text-anchor="middle">L</text>
+<rect x="255.35" y="621" width="133.64999999999998" height="60" fill="url(#seed-hatch)"/>
+<path d="M92 621 L587 621" fill="none" stroke="#203244" stroke-width="2"/>
+<path d="M92 681 L587 681" fill="none" stroke="#203244" stroke-width="2"/>
+<path d="M92 621 L92 681" fill="none" stroke="#203244" stroke-width="2.4"/>
+<text x="92" y="609" font-family="DejaVu Serif, sans-serif" font-size="17" fill="#203244" text-anchor="middle">i</text>
+<path d="M255.35 621 L255.35 681" fill="none" stroke="#bd6518" stroke-width="2.4"/>
+<text x="255.35" y="609" font-family="DejaVu Serif, sans-serif" font-size="17" fill="#203244" text-anchor="middle">a</text>
+<path d="M314.75 621 L314.75 681" fill="none" stroke="#bd6518" stroke-width="2.4"/>
+<path d="M389.0 621 L389.0 681" fill="none" stroke="#bd6518" stroke-width="2.4"/>
+<text x="389.0" y="609" font-family="DejaVu Serif, sans-serif" font-size="17" fill="#203244" text-anchor="middle">b</text>
+<path d="M587 621 L587 681" fill="none" stroke="#203244" stroke-width="2.4"/>
+<text x="587" y="609" font-family="DejaVu Serif, sans-serif" font-size="17" fill="#203244" text-anchor="middle">j*</text>
+<text x="650" y="603" font-family="DejaVu Serif, sans-serif" font-size="25" fill="#203244" text-anchor="start">updateZ(i,b, Lₐ(i) · S, true)</text>
+<text x="650" y="643" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Includes the seed-only case i=a.</text>
+<text x="650" y="695" font-family="DejaVu Serif, sans-serif" font-size="23" fill="#203244" text-anchor="start">updateZ(i,j*, Lₐ(i) · S · R_b(j*), true)</text>
+<text x="650" y="736" font-family="DejaVu Sans, sans-serif" font-size="17" fill="#203244" text-anchor="start">Only for a true left extension and a true selected right extension,</text>
+<text x="650" y="765" font-family="DejaVu Sans, sans-serif" font-size="17" fill="#203244" text-anchor="start">with both complete spans within their limits.</text>
+<rect x="48" y="852" width="1344" height="185" rx="8" fill="#fff7ed" stroke="#d0dbe3"/>
+<text x="70" y="886" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#bd6518" text-anchor="start" font-weight="bold">Candidate family per anchor</text>
+<text x="73" y="916" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">All true right-only extensions + all corrected left-only extensions + left extensions paired with just j*.</text>
+<text x="73" y="945" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">The second phase runs if noGUend is off, or a valid right optimum exists, or anchor end b is not GU.</text>
+<text x="73" y="974" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Initialize j*=b and E_right_opt=∞. A positive selected R is required before combining both sides.</text>
+<text x="73" y="1003" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">No full left/right Cartesian product; bpProb / bpsvg trace this retained family and are labelled approximate.</text>
+<text x="48" y="1082" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Every update is filtered and accumulated by PredictorMfeEns::updateZ; ranked reporting is a separate step.</text>
+<path d="M48 1105 L1392 1105" fill="none" stroke="#c4d0da" stroke-width="1.2"/>
+<text x="48" y="1129" font-family="DejaVu Sans, sans-serif" font-size="14" fill="#275f8c" text-anchor="start" font-weight="bold">Implementation anchors (src/IntaRNA/) · BW(E)=exp(−E/RT) after native energy-unit conversion</text>
+<text x="48" y="1152" font-family="DejaVu Sans, sans-serif" font-size="13" fill="#203244" text-anchor="start">PredictorMfeEns2dHeuristicSeedExtension.cpp: predict(), fillHybridZ_right(), fillHybridZ_left()</text>
+<text x="48" y="1173" font-family="DejaVu Sans, sans-serif" font-size="13" fill="#203244" text-anchor="start">PredictorMfeEns2dHeuristicSeedExtension.h: updateOptRightZ(); inherited legacy fillHybridZ kernels</text>
+</svg>

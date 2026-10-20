@@ -3,8 +3,12 @@
 #define INTARNA_PREDICTORMFEENS2DSEEDEXTENSION_H_
 
 #include "IntaRNA/PredictorMfeEns.h"
+#include "IntaRNA/BasePairProbabilities.h"
 #include "IntaRNA/Matrix.h"
 #include "IntaRNA/SeedHandlerIdxOffset.h"
+#include "IntaRNA/StackSeedDomain.h"
+#include <functional>
+#include <memory>
 
 namespace IntaRNA {
 
@@ -15,6 +19,9 @@ namespace IntaRNA {
  * Note, for each seed start (i1,i2) only the mfe seed is considered for the
  * overall interaction computation instead of considering all possible seeds
  * starting at (i1,i2).
+ * Stack-only seeds use a seed-avoiding left extension and an unconstrained
+ * right extension at the first completed seed, counting each interaction once.
+ * Gapped seeds retain the legacy extension implementation.
  *
  * @author Frank Gelhausen
  * @author Martin Raden
@@ -38,13 +45,16 @@ public:
 	 * @param predTracker the prediction tracker to be used or NULL if no
 	 *         tracking is to be done; if non-NULL, the tracker gets deleted
 	 *         on this->destruction.
+	 * @param pairProbabilities optional non-owning sink; must outlive predictions
+	 *        and remain pending until all disjoint regions have succeeded
 	 * @param seedHandler the seed handler to be used
 	 */
 	PredictorMfeEns2dSeedExtension(
 			const InteractionEnergy & energy
 			, OutputHandler & output
 			, PredictionTracker * predTracker
-			, SeedHandler * seedHandler );
+			, SeedHandler * seedHandler
+			, BasePairProbabilities * pairProbabilities = nullptr );
 
 
 	/**
@@ -73,6 +83,50 @@ public:
 
 protected:
 
+	/** Shared forward/outside objective coefficient. Override here for supported
+	 * reweighting; return zero for forbidden boundaries. Coordinates are local.
+	 * @return complete boundary Boltzmann factor (ED, dangles, ends, energyAdd)
+	 */
+	virtual Z_type exactBoundaryWeight(size_t i1,size_t j1,size_t i2,size_t j2) const;
+	/** Run the selected disjoint stack-seed partition backend. */
+	void predictStackSeeds(const IndexRange & r1,const IndexRange & r2);
+	/** Prepare optional heuristic right endpoints for the admitted stack seeds.
+	 * @param n first active range length
+	 * @param m second active range length
+	 * @param seeds contained seeds used by the partition recurrence
+	 */
+	virtual void prepareStackSeedExtensions(size_t n,size_t m,const StackSeedDomain & seeds);
+	/** Select one right endpoint per anchor for the heuristic retained ensemble.
+	 * An empty function requests the full exact ensemble. Nonempty selectors use
+	 * local increasing coordinates and receive the anchor's first and last pair.
+	 * @return selector shared by the forward and outside recurrences
+	 */
+	virtual std::function<Interaction::BasePair(Interaction::BasePair,Interaction::BasePair)>
+	stackSeedRightSelector() const;
+
+	//! Optional signed reverse trace for the legacy anchored extension recurrences.
+	struct ExtensionProbabilityTrace;
+	std::unique_ptr<ExtensionProbabilityTrace> extensionProbabilityTrace;
+	/** Begin a regional trace; no allocation if no probability sink was requested. */
+	void initExtensionProbabilities(size_t n,size_t m);
+	/** Store the current anchor seed's actual pairs, including its endpoints. */
+	void beginExtensionProbabilitySeed(size_t i1,size_t i2);
+	/** Add one accepted left/seed/right objective to the optional reverse trace.
+	 * All coordinates are local, with seed boundaries in increasing DP order.
+	 * @param left whether the left matrix is a factor (otherwise use initiation)
+	 * @param right whether the right matrix is a factor
+	 */
+	void addExtensionProbabilityRoot(size_t i1,size_t j1,size_t i2,size_t j2,
+			Z_type partZ,bool left,bool right);
+	/** Reverse both extension traces and accumulate actual pair numerators. */
+	void finishExtensionProbabilitySeed();
+	/** Validate and atomically commit this region in original sequence order. */
+	void commitExtensionProbabilities();
+	/** Actual seed pairs strictly before the given local target coordinate. */
+	std::vector<Interaction::BasePair> extensionSeedPrefix(size_t i1,size_t i2,size_t before) const;
+
+	//! optional sequence-pair owner, never deleted or finalized by the predictor
+	BasePairProbabilities * pairProbabilities;
 
 	//! access to the interaction energy handler of the super class
 	using PredictorMfeEns::energy;

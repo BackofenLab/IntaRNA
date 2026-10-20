@@ -118,6 +118,7 @@ The following topics are covered by this documentation:
     - [Minimal energy profiles](#profileMinE)
     - [Minimal energy for all intermolecular index pairs](#pairMinE)
     - [Spot probability profiles](#profileSpotProb) using partition functions
+    - [Actual base-pair probabilities](#bpProb)
     - [Interaction probabilities for interaction spots of interest](#spotProb)
     - [Accessibility and unpaired probabilities](#accessibility)
       - [Local versus global unpaired probabilities](#accLocalGlobal)
@@ -1888,13 +1889,15 @@ targeted file/stream name:
 
 - `qSpotProb:`/`tSpotProb:` [query/target's spot probability profile](#profileSpotProb) (CSV format), respectively
 - `spotProb:` [all spot probabilities](#spotProb) (CSV format)
+- `bpsvg:` [SVG base-pair probability dot plot](#bpsvg), with pairing-probability frames and seed/MFE outlines
+- `bpProb:` [actual base-pair probabilities](#bpProb) for exact stack-seeded ensembles (CSV matrix)
 - `qMinE:`/`tMinE:` [the query/target's minimal interaction energy profile](profileMinE) (CSV format), respectively
 - `pMinE:` [minimal interaction energy for all query-target index pairs](pairMinE) (CSV format)
 - `qAcc:`/`tAcc:` the [query/target's ED accessibility values](#accessibility) (RNAplfold-like format), respectively
 - `qPu:`/`tPu:` the [query/target's unpaired probabilities](#accessibility) (RNAplfold format; rounded!!), respectively
 
 Note, for *multiple sequences* in FASTA input, the provided file names are suffixed by
-- `-t#q#` : for `*spotProb` and `*minE` output, and
+- `-t#q#` : for `bpProb`, `bpsvg`, `*spotProb` and `*minE` output, and
 - `-s#` : for `*Acc` and `*Pu` output,
 where `#` denotes the according target/query sequence number
 within the input where numbering starts with 1.
@@ -1903,6 +1906,9 @@ The column separator within tabular CSV output (defaulting to `;`) can be change
 using `--outSep`, e.g. to produce tab-separated `.tsv` output.
 
 Note further, `qPu:`|`tPu:` will report unpaired probability values based on rounded accessibility (ED) values.
+The ED-to-probability conversion uses each strand's accessibility energy scale:
+computed base-pair accessibility uses RT=1, while ViennaRNA and imported
+accessibility use the configured temperature, independently of the interaction model.
 Thus, these values will most likely differ from values eg. produced by the program RNAplfold.
 We therefore strongly recommend to store `qAcc:`|`tAcc:` values when you want to use them
 as input for subsequent IntaRNA calls!
@@ -2018,6 +2024,156 @@ or `STDERR` instead of a file name.
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
 
 <br />
+<a name="bpProb" />
+
+## Actual base-pair probabilities
+
+`--out=bpProb:FILE` writes the probability that each target/query nucleotide pair
+actually pairs, conditional on an allowed interaction. It requires
+`--model=P --mode=M` with `--noSeed` or a stack-only seed handler, or
+`--model=P --mode=H` for an approximate heuristic ensemble. For example:
+
+```sh
+IntaRNA -t GGAGGG -q CCCC --energy=B --acc=N --seedBP=2 \
+  --model=P --mode=M --out=bpProb:pairs.csv
+```
+
+Every complete ordered interaction is counted once, even when it contains
+several overlapping or disjoint seeds. The exact stack-seeded partition backend
+is also used without `bpProb`, so requesting the matrix does not change `Zall`.
+Computed seeds preserve their handler-specific admission thresholds. Explicit
+stacked seeds may have different lengths, including singletons; competing
+explicit patterns at the same start still retain only the selected minimum-energy
+pattern. Exact and heuristic stack-seeded predictions share left-most seed-anchor
+left/right tables. Removing containing seed occurrences leaves the same canonical
+owner as the first completed admitted seed, choosing the shortest co-ending seed.
+This canonical seed owns the complete chain even if later seeds occur.
+With `--mode=H`, probabilities describe the predictor's retained candidate
+ensemble. Unseeded H retains one continuation per left pair. Stack-seeded H
+retains each canonical seed's one-sided extensions and two-sided extensions
+ending at its selected right endpoint, counting each retained chain once.
+Its partition is therefore at most the exact stack-seeded partition with the
+same constraints; values can differ from the former signed-overlap heuristic.
+Seeded H supports computed or explicit seeds with at least two pairs. Bulged
+seeds retain the legacy extension/correction algorithm, which can retain path
+multiplicities. The [seed-extension recurrence](doc/analysis/seed-extension-partition.md)
+defines ownership, endpoint selection, and the shared inside/outside calculation.
+Kinetic, evaluation, seed-only and exact bulged-seed probability requests remain
+unsupported.
+
+Rows follow the original target and columns the original query, both 5' to 3'.
+The header starts with `bpProb` (exact) or `bpProbApproximate` (heuristic); labels
+contain each nucleotide and its display index (including `tIdxPos0`/`qIdxPos0` shifts). Entries use sufficient significant
+digits for the partition type, with scientific notation for small probabilities.
+A successful empty ensemble contains `NA`; pairs absent from a nonempty ensemble
+have probability zero. The output uses `outSep`, the usual multi-FASTA filename
+suffixes and gzip support. `STDOUT`/`STDERR` receive synchronized complete blocks.
+
+The ensemble is the union of the searched, disjoint target/query region pairs.
+Interactions crossing excluded region boundaries are absent. Region selection,
+`outMinPu`, accessibility, seed admission, loop/span limits, `outNoLP` and
+`outNoGUend` can restrict it. Ranked reporting options (`outNumber`, `outMaxE`,
+`outDeltaE`, overlap selection and `outPerRegion`) do not select the probability
+ensemble. Raw numerators and denominators are merged before normalization.
+Model P continues to reject nonzero `windowWidth`.
+
+Unlike `spotProb` coverage, this output uses interior pair chains: an unpaired
+bulge can have positive site coverage and zero actual-pair probability. There
+is no added unbound-state weight. Individual pair events can coexist, so
+`1 - sum(pair probabilities)` is not a probability of no interaction.
+
+The unseeded exact predictor is enabled by `--noSeed` with the same CSV/SVG
+outputs. Its outside pass follows the existing fixed-right-boundary recurrence,
+including its numerical zero cutoffs, without changing ordinary prediction.
+
+The seeded backend checks nonnegative arithmetic and reports numerical range failures
+as errors, including underflow, overflow and NaN. Positive subnormals are rejected;
+there is currently no scaling fallback. Failed or cancelled regional work never
+produces a successful-looking probability matrix. Heuristic reverse passes likewise
+validate finite arithmetic and reject invalid masses before publication. Ordinary
+floating-point rounding remains; "exact" describes the enumerated ensemble, not
+real arithmetic.
+
+For library use, keep a `BasePairProbabilities` owner alive across predictions,
+pass its optional non-owning pointer to `PredictorMfeEns2dSeedExtension` (stack
+seeds), `PredictorMfeEns2d` (unseeded), or their heuristic subclasses, and call
+`finalize()` only after all requested disjoint regions succeed. A writer is called
+explicitly after finalization; its destructor publishes nothing. The output
+constraint must enable `needZall`. The [standalone API example](doc/seeded-probabilities-example.cpp)
+and [implementation validation report](doc/analysis/seeded-probabilities-validation.md)
+show the public API and measured limits.
+
+<a name="bpsvg" />
+
+### SVG base-pair probability dot plots
+
+`--out=bpsvg:FILE` renders the same actual-pair probabilities as `bpProb` in a
+standalone SVG. Both outputs can be requested together. The same supported
+model/mode combinations, regional ensemble, normalization and success-only
+publication rules apply. Heuristic SVGs are explicitly labelled approximate.
+
+```sh
+IntaRNA -t GGAGGG -q CCCC --energy=B --acc=N --seedBP=2 \
+  --model=P --mode=M --out=bpsvg:pairs.svg --out=bpProb:pairs.csv
+```
+
+The query runs left to right and the target top to bottom, both in original
+5' to 3' order, starting at the upper-left corner. Sequence names label the
+axes, with the query name below the matrix. A subtitle names both sequences
+when either name differs from the defaults `query` and `target`. Nucleotides
+appear on all four sides. Their colored backgrounds show **intramolecular
+pairing probability**, `1-Pu`, computed from the accessibility model's opening
+energies. These are distinct from the interaction-conditional pair probabilities
+in the matrix. Disabled accessibility gives zero at unconstrained bases.
+Each probability rectangle has a hover title with sequence names, indices,
+probability type and three decimal places (scientific notation with two decimal
+places below 0.001). Full-precision values remain in `data-probability` attributes.
+An empty interaction ensemble uses gray `NA` cells while its frame remains defined.
+
+A shared seven-step, white-to-dark-blue palette encodes both probability types:
+`[0,0.01)`, `[0.01,0.1)`, `[0.1,0.25)`, `[0.25,0.5)`, `[0.5,0.75)`,
+`[0.75,0.9)`, and `[0.9,1]`. The legend appears below the plot. Edit the `.p0`
+through `.p6` fill rules in the SVG's `<style>` element to recolor the matrix,
+frames and legend together. No external stylesheet or JavaScript is needed.
+
+Gray guides use the final, shifted sequence indices: every tenth nucleotide,
+with stronger lines at multiples of 50. For a negative multiple, the line is
+before the labelled nucleotide (for example `-11 | -10`); for a positive one,
+it is after it (`10 | 11`). A dashed guide marks `-1 | +1` when both occur.
+Guide labels sit beside the associated nucleotide, on both sides of the plot;
+`+1` is also labelled when it starts a sequence.
+
+Dark orange outlines mark the union of pairs belonging to **admitted seeds**
+contained in searched regions, including overlapping, singleton and mixed-length
+explicit seeds. This annotation uses the predictor's retained seed family and
+span limits; it is independent of ranked interaction reporting and can include
+zero-probability cells. A seed legend is included whenever an outline is present.
+A green rectangle encloses the best reported ensemble interaction's site, and
+green cell borders mark a minimum-energy structure reconstructed within that
+site using the seed, loop and noLP constraints. Ensemble predictors ordinarily
+report only site boundaries; the SVG requests this additional MFE traceback.
+It does not change site ranking or the probability matrix. Where an MFE pair
+also belongs to an admitted seed, its left/right edges are orange and its
+top/bottom edges are green. Both annotations have legends. The best site is retained
+for SVG even with `--outNumber=0`, without adding ranked text output. If no site
+passes the reporting filters, the rectangle and its legend are omitted.
+
+Filenames support `.gz` compression and the usual `-t#q#` multi-FASTA suffixes.
+`STDOUT` and `STDERR` emit each complete SVG as one synchronized block. To obtain
+a standalone SVG on standard output, redirect ordinary output, for example
+`--out=/dev/null --out=bpsvg:STDOUT`. Multiple sequence pairs on a shared stream
+produce consecutive SVG documents; use filenames for separate viewable files.
+
+Library callers can use `BasePairProbabilityWriter::writeSvg()` or
+`writeSvgFile()` with a finalized result, the original energy model, and separate
+target/query accessibility RT values. These must match the ED conversion scales
+of the accessibility sources, which can differ from the interaction model's RT
+(for example, imported Pu with a base-pair interaction model). Construct
+`BasePairProbabilities(targetLength, queryLength, true)` to retain seed annotations;
+the default CSV-only result does not allocate that mask. SVG creation buffers
+the document and uses one rectangle per pair plus the frames, so its size grows
+with the full target-by-query matrix.
+
 <a name="spotProb" />
 
 ### Interaction probabilities for interaction spots of interest
@@ -2398,6 +2554,14 @@ Doxygen and Graphviz and run `bash doc/build-api.sh`, then open
 `doxygen-doc/html/index.html`. See the
 [API documentation build guide](doc/api-documentation.md) for validation,
 Autotools, and publishing instructions.
+
+The [seeded base-pair probability implementation plan](doc/analysis/base-pair-probabilities-plan.md)
+records the reviewed algorithms, numerical contracts, integration, and validation
+for issue #257, including the historical
+[measured kernel comparison](doc/analysis/seeded-kernel-comparison.md).
+The current [seed-extension backend](doc/analysis/seed-extension-partition.md)
+implements first-seed ownership for exact and heuristic stack-seeded ensembles,
+including [actual base-pair output](#bpProb).
 
 When IntaRNA is build while `pkg-config` is present, according pkg-config
 information is generated and installed too.

@@ -215,6 +215,8 @@ reportOptima()
 		output.incrementZ( getZall() );
 	}
 
+	// A zero ranked-output count still publishes ensemble statistics.
+	if (mfeInteractions.empty()) return;
 	// temporary access
 	const OutputConstraint & outConstraint = output.getOutputConstraint();
 	// number of reported interactions

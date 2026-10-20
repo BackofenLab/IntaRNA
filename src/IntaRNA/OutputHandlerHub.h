@@ -26,6 +26,9 @@ protected:
 
 public:
 
+	/** Forward the exact partition policy to every registered output. */
+	void setExactPartition(bool exact) override;
+
 	/**
 	 * construction
 	 * @param outConstraint the output constraint applied to find the reported
@@ -157,6 +160,7 @@ OutputHandlerHub
 	// dont delete on destruction (should be done by original) to avoid double cleanup
 	, deleteOutListOnDestruction(false)
 {
+	exactPartition=toCopy.exactPartition;
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -195,6 +199,7 @@ addOutputHandler( OutputHandler * handler )
 #endif
 	// add if not null
 	if (handler != NULL) {
+		handler->setExactPartition(usesExactPartition());
 		outList.push_back(handler);
 	}
 }
@@ -294,6 +299,7 @@ operator= ( const OutputHandlerHub & toCopy)
 	outList.clear();
 
 	// copy data
+	exactPartition=toCopy.exactPartition;
 	outList = toCopy.outList;
 	// ensure this copy doesnt delete the list content
 	deleteOutListOnDestruction = false;
@@ -303,6 +309,11 @@ operator= ( const OutputHandlerHub & toCopy)
 }
 
 /////////////////////////////////////////////////////////////////////////
+
+inline void OutputHandlerHub::setExactPartition(bool exact) {
+	OutputHandler::setExactPartition(exact);
+	for (auto handler:outList) handler->setExactPartition(exact);
+}
 
 } // namespace
 

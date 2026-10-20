@@ -87,6 +87,7 @@ jobs:
       - name: Bootstrap and configure
         run: |
           bash autotools-init.sh
+          automake --warnings=portability,error
           ./configure \
             --prefix="$RUNNER_TEMP/intarna-install" \
             --with-vrna="$CONDA_PREFIX" \
@@ -128,3 +129,8 @@ jobs:
             ${LDFLAGS:-} $(pkg-config --cflags --libs IntaRNA) \
             -o "$RUNNER_TEMP/intarna-consumer"
           "$RUNNER_TEMP/intarna-consumer"
+          "$CXX" -std=c++23 ${CPPFLAGS:-} ${CXXFLAGS:-} doc/seeded-probabilities-example.cpp \
+            ${LDFLAGS:-} $(pkg-config --cflags --libs IntaRNA) \
+            -o "$RUNNER_TEMP/intarna-probabilities-consumer"
+          "$RUNNER_TEMP/intarna-probabilities-consumer" > "$RUNNER_TEMP/intarna-pair-probabilities.csv"
+          grep -q '^bpProb;' "$RUNNER_TEMP/intarna-pair-probabilities.csv"

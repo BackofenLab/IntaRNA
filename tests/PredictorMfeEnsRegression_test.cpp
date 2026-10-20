@@ -231,7 +231,9 @@ TEST_CASE("ensemble predictor regressions", "[PredictorMfeEns]") {
 		InspectableEnsemblePredictor<PredictorMfeEns2dSeedExtension> exact(
 				energy, exactOut, new SeedHandlerNoBulge(energy, seedConstraint));
 		exact.predict();
-		REQUIRE(exact.getPartitionCount() > 0);
+		// The new exact stack backend streams each completed boundary once.
+		REQUIRE(exact.getPartitionCount() == 0);
+		REQUIRE(exact.getZall() > 0);
 		exact.predict(IndexRange(0, 0), IndexRange(0, 0));
 		REQUIRE(exact.getPartitionCount() == 0);
 		REQUIRE(exact.getZall() == 0.0);
@@ -240,7 +242,9 @@ TEST_CASE("ensemble predictor regressions", "[PredictorMfeEns]") {
 		InspectableEnsemblePredictor<PredictorMfeEns2dHeuristicSeedExtension> heuristic(
 				energy, heuristicOut, new SeedHandlerNoBulge(energy, seedConstraint));
 		heuristic.predict();
-		REQUIRE(heuristic.getPartitionCount() > 0);
+		// The anchored heuristic also finalizes each retained boundary once.
+		REQUIRE(heuristic.getPartitionCount() == 0);
+		REQUIRE(heuristic.getZall() > 0);
 		heuristic.predict(IndexRange(0, 0), IndexRange(0, 0));
 		REQUIRE(heuristic.getPartitionCount() == 0);
 		REQUIRE(heuristic.getZall() == 0.0);

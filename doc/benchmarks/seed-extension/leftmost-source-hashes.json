@@ -1,0 +1,123 @@
+{
+  "baseline": "985ba44bdc16e92162e954b7baffa3f3923d4776",
+  "compiler": "x86_64-conda-linux-gnu-g++ (conda-forge gcc 14.4.0-7) 14.4.0",
+  "commands": [
+    [
+      "/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain-gcc14/bin/x86_64-conda-linux-gnu-g++",
+      "-std=c++23",
+      "-O3",
+      "-DNDEBUG",
+      "-ffunction-sections",
+      "-fdata-sections",
+      "-I/home/alex/CodexProjects/IntaRNA/issue-268-validation/leftmost-benchmark/base",
+      "-I/home/alex/CodexProjects/IntaRNA/pr-worktrees/issue-268/src",
+      "-I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include",
+      "/home/alex/CodexProjects/IntaRNA/issue-268-validation/leftmost-benchmark/driver.cpp",
+      "/home/alex/CodexProjects/IntaRNA/issue-268-validation/leftmost-benchmark/base/IntaRNA/SeededPartitionFunction.cpp",
+      "/home/alex/CodexProjects/IntaRNA/issue-268-validation/leftmost-benchmark/base/IntaRNA/StackSeedDomain.cpp",
+      "-Wl,--gc-sections",
+      "-Wl,-rpath,/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib",
+      "-o",
+      "/home/alex/CodexProjects/IntaRNA/issue-268-validation/leftmost-benchmark/base/benchmark"
+    ],
+    [
+      "/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain-gcc14/bin/x86_64-conda-linux-gnu-g++",
+      "-std=c++23",
+      "-O3",
+      "-DNDEBUG",
+      "-ffunction-sections",
+      "-fdata-sections",
+      "-I/home/alex/CodexProjects/IntaRNA/issue-268-validation/leftmost-benchmark/candidate",
+      "-I/home/alex/CodexProjects/IntaRNA/pr-worktrees/issue-268/src",
+      "-I/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/include",
+      "/home/alex/CodexProjects/IntaRNA/issue-268-validation/leftmost-benchmark/driver.cpp",
+      "/home/alex/CodexProjects/IntaRNA/issue-268-validation/leftmost-benchmark/candidate/IntaRNA/SeededPartitionFunction.cpp",
+      "/home/alex/CodexProjects/IntaRNA/issue-268-validation/leftmost-benchmark/candidate/IntaRNA/StackSeedDomain.cpp",
+      "-Wl,--gc-sections",
+      "-Wl,-rpath,/home/alex/CodexProjects/IntaRNA/issue-246-validation/toolchain/lib",
+      "-o",
+      "/home/alex/CodexProjects/IntaRNA/issue-268-validation/leftmost-benchmark/candidate/benchmark"
+    ]
+  ],
+  "sha256": {
+    "driver.cpp": "98b0133e334b5174146ed440b0ed0f30faf2f83d32f217a386c3d43196f65b93",
+    "build.py": "6a086dd9fa12f3fef28789d2401bd77a691321314cbecd495d9e4869e7b79308",
+    "run.py": "22298ce92cb6940ad23164cac868aa638343d58f251a66ef5e5cc66dae1dee4e",
+    "base/IntaRNA/SeededPartitionFunction.cpp": "8be22d72f0cb67040a1fb23170da1c88d7f0a8a429b6d2aefae30164fc28795e",
+    "base/IntaRNA/SeededPartitionFunction.h": "d5002fe387d6ab6a526bd4bff518615c1954862c9a68c3b828f3a74b33080f13",
+    "base/IntaRNA/StackSeedDomain.cpp": "fccecca0fc31f97ad51e742727d545b1420af534e40b26801deba90850770362",
+    "base/IntaRNA/StackSeedDomain.h": "5708d0d71b23e66a858a50c0d13d84362e40e208fd69620c4dbf3115e18c9e10",
+    "candidate/IntaRNA/SeededPartitionFunction.cpp": "3783c8380e5108146cd903cbbb3fa3d0523749baf713395a15a4f436b3dfdd03",
+    "candidate/IntaRNA/SeededPartitionFunction.h": "8216d82858cca5cf960056d7e11a2ada1118a98e1cf513623839d75fab40381d",
+    "candidate/IntaRNA/StackSeedDomain.cpp": "a41906b5442e5b8ade69dc482919619c28761b908447faab984a84a807d338ee",
+    "candidate/IntaRNA/StackSeedDomain.h": "73275a75976d98800db58bfb019f912b7245a9c26072fe17f7ee16dbdaad93c7"
+  },
+  "shared_header_sha256": {
+    "PartitionArithmetic.h": "5fe71abe6568906057c0a264c2802d3bfd7a902471b21cc838b78f18b04a0bd7",
+    "Matrix.h": "8ecc55e46643ccde16ed89aa63a415a6da7aa3d3c59fe94dd6b4d46d5f5275af",
+    "Interaction.h": "c0ce17a0f5b204bcb366529872346a2316993b749da9c4c9927773726296ebaa",
+    "general.h": "0fff34ca1a1e676debe88326af0a5a0eddeff20e05604abda11096527b12df98",
+    "intarna_config.h": "4cbc306a33335dd49061ed4e3d70f7f70e776f5aa8a6e0e73ea6715cfa4163c2"
+  },
+  "measurements": {
+    "date_utc": "2026-10-16T11:45:07.333125+00:00",
+    "platform": "Linux-6.8.0-147-generic-x86_64-with-glibc2.39",
+    "cpu": "AMD Ryzen 5 7530U with Radeon Graphics",
+    "threads": 1,
+    "repetitions": 5,
+    "cpu_affinity": "not pinned",
+    "concurrent_project_builds_or_tests": false,
+    "commands": [
+      [
+        "python3",
+        "doc/benchmarks/seed-extension/run.py",
+        "--build-dir",
+        "/home/alex/CodexProjects/IntaRNA/issue-268-validation/leftmost-benchmark",
+        "--output-dir",
+        "/home/alex/CodexProjects/IntaRNA/issue-268-validation/leftmost-exact",
+        "--repetitions",
+        "5"
+      ],
+      [
+        "python3",
+        "doc/benchmarks/seed-extension/run.py",
+        "--build-dir",
+        "/home/alex/CodexProjects/IntaRNA/issue-268-validation/leftmost-benchmark",
+        "--output-dir",
+        "/home/alex/CodexProjects/IntaRNA/issue-268-validation/leftmost-heuristic",
+        "--repetitions",
+        "5",
+        "--heuristic"
+      ]
+    ],
+    "notes": [
+      "Five alternating baseline/candidate fresh-process samples per fixture and output mode.",
+      "Exact and heuristic matrices run sequentially, with OMP_NUM_THREADS=1.",
+      "Other workstation activity and CPU frequency were uncontrolled.",
+      "RSS is GNU time whole-process maximum resident set size, not isolated kernel peak allocation.",
+      "Allocation counters measure ordinary new/new[] traffic during compute(), excluding seed construction and serialization."
+    ]
+  },
+  "executable_sha256": {
+    "base": "3e6c276b2ecf9eb0543acb8769a5c3bd1067e1448712be1695af01e58ad1509d",
+    "candidate": "2f8d146f5d9036268a1d59a2c0602f04eb1b3105ad05b8d5be89119806694cb2"
+  },
+  "verification_dump_sha256": {
+    "leftmost-exact/band60-few-base.txt": "43495b154a29bdffc13d52dc35369a07b6817be30966ca6d9826126dc3ee7d0d",
+    "leftmost-exact/band60-few-candidate.txt": "f6a8651d3f85153ba1340ca9e7dfbe943fcfaab3c4e6fa3bead711c6735ebe7f",
+    "leftmost-exact/band60-many-base.txt": "07ef543c5af8fdd86688641d55a491335a61dc335ccc2a8081fede7626bc9138",
+    "leftmost-exact/band60-many-candidate.txt": "fcdd7b7db7db7d20ae1059580bbdb532303580a21d6118a286054f22e760d94e",
+    "leftmost-exact/dense40-few-base.txt": "b1584e72356aa146687930b6b7f96e2b32f261ca84924602426c96b303457000",
+    "leftmost-exact/dense40-few-candidate.txt": "9a5cba3f768f540ff2b2078b82ebd15efcbcb98b18582d3344e379467c548f7e",
+    "leftmost-exact/dense40-many-base.txt": "dccb884aa314b88c205cf359f82cbf7747c153fc2d6d8d8c7fd0417678622802",
+    "leftmost-exact/dense40-many-candidate.txt": "3f07dc4f1b9556a0438a9f8521ae32dbcbe981c5421ca4570c79b6bf04103b87",
+    "leftmost-heuristic/band60-few-base.txt": "b70097c40696705eda01ed157fd8b3863a7d4e4b4b8d1dcd76042a135bf6bff7",
+    "leftmost-heuristic/band60-few-candidate.txt": "b70097c40696705eda01ed157fd8b3863a7d4e4b4b8d1dcd76042a135bf6bff7",
+    "leftmost-heuristic/band60-many-base.txt": "fbecd2caeba9e2e0d9191dde17cd6d2598b65793c431b8bee8357159d4f817b6",
+    "leftmost-heuristic/band60-many-candidate.txt": "fbecd2caeba9e2e0d9191dde17cd6d2598b65793c431b8bee8357159d4f817b6",
+    "leftmost-heuristic/dense40-few-base.txt": "02c503ef9f86cbde99e40a977963e62e8baf60fe47dc8dad81f7f51264da878f",
+    "leftmost-heuristic/dense40-few-candidate.txt": "02c503ef9f86cbde99e40a977963e62e8baf60fe47dc8dad81f7f51264da878f",
+    "leftmost-heuristic/dense40-many-base.txt": "7f9071f1962facde0a9e5691ffa8ff50c7bd14399f009c5997faf9a7313f183e",
+    "leftmost-heuristic/dense40-many-candidate.txt": "7f9071f1962facde0a9e5691ffa8ff50c7bd14399f009c5997faf9a7313f183e"
+  }
+}

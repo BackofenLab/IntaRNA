@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1190" viewBox="0 0 1440 1190" role="img" aria-labelledby="title desc">
+<title id="title">Seeded ensemble · exact stack-seed adapter</title>
+<desc id="desc">PredictorMfeEns2dSeedExtension  |  --model=P --mode=M with stack-only seed capability. Internal recurrence documentation for step 9 of PR 258. Equations describe the current implementation; RNA 2 uses reversed energy coordinates.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#60798e"/></marker>
+<pattern id="seed-hatch" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#fff0dc"/><path d="M-2 2 L2 -2 M0 8 L8 0 M6 10 L10 6" stroke="#e0b27a" stroke-width="1"/></pattern></defs>
+<rect width="1440" height="100%" fill="white"/>
+<text x="48" y="48" font-family="DejaVu Sans, sans-serif" font-size="14" fill="#275f8c" text-anchor="start" font-weight="bold">INTARNA  /  RECURRENCE NOTES</text>
+<text x="48" y="91" font-family="DejaVu Sans, sans-serif" font-size="31" fill="#203244" text-anchor="start" font-weight="bold">Seeded ensemble · exact stack-seed adapter</text>
+<text x="48" y="125" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">PredictorMfeEns2dSeedExtension  |  --model=P --mode=M with stack-only seed capability</text>
+<path d="M48 148 L1392 148" fill="none" stroke="#c4d0da" stroke-width="1.2"/>
+<rect x="48" y="177" width="645" height="128" rx="8" fill="#f3f7fa" stroke="#d0dbe3"/>
+<text x="70" y="211" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#275f8c" text-anchor="start" font-weight="bold">SeedHandler: guaranteesStackOnlySeeds()</text>
+<text x="71" y="238" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">true → predictStackSeeds(): unique seeded-chain partition</text>
+<text x="71" y="267" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">false → legacy anchor extensions; no pair-probability sink</text>
+<rect x="720" y="177" width="672" height="128" rx="8" fill="#fff7ed" stroke="#d0dbe3"/>
+<text x="742" y="211" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#bd6518" text-anchor="start" font-weight="bold">Capability is geometric</text>
+<text x="743" y="238" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Computed or explicit seeds; mixed lengths and singletons.</text>
+<text x="743" y="267" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Preserve handler admission and per-start selection rules.</text>
+<rect x="48" y="344" width="1344" height="223" rx="8" fill="#f3f7fa" stroke="#d0dbe3"/>
+<text x="70" y="378" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#275f8c" text-anchor="start" font-weight="bold">1  Compile active seed occurrences and eligible left boundaries</text>
+<rect x="254.20000000000002" y="438" width="127.35999999999999" height="60" fill="url(#seed-hatch)"/>
+<path d="M95 438 L493 438" fill="none" stroke="#203244" stroke-width="2"/>
+<path d="M95 498 L493 498" fill="none" stroke="#203244" stroke-width="2"/>
+<path d="M95 438 L95 498" fill="none" stroke="#203244" stroke-width="2.4"/>
+<text x="95" y="426" font-family="DejaVu Serif, sans-serif" font-size="17" fill="#203244" text-anchor="middle">p</text>
+<path d="M254.20000000000002 438 L254.20000000000002 498" fill="none" stroke="#bd6518" stroke-width="2.4"/>
+<text x="254.20000000000002" y="426" font-family="DejaVu Serif, sans-serif" font-size="17" fill="#203244" text-anchor="middle">a</text>
+<path d="M321.86 438 L321.86 498" fill="none" stroke="#bd6518" stroke-width="2.4"/>
+<path d="M381.56 438 L381.56 498" fill="none" stroke="#bd6518" stroke-width="2.4"/>
+<text x="381.56" y="426" font-family="DejaVu Serif, sans-serif" font-size="17" fill="#203244" text-anchor="middle">b</text>
+<path d="M493 438 L493 498" fill="none" stroke="#203244" stroke-width="2.4"/>
+<text x="493" y="426" font-family="DejaVu Serif, sans-serif" font-size="17" fill="#203244" text-anchor="middle">q</text>
+<text x="546" y="433" font-family="DejaVu Serif, sans-serif" font-size="24" fill="#203244" text-anchor="start">max(0, bₖ − Wₖ + 1) ≤ pₖ ≤ aₖ     (k=1,2)</text>
+<text x="546" y="478" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Admitted stack a…b must fit both the region and span limits W.</text>
+<text x="546" y="507" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Enumerate the union of these p-boxes once, then require a valid p.</text>
+<text x="546" y="536" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">At p, clip the working grid to both inclusive spans.</text>
+<rect x="48" y="605" width="1344" height="227" rx="8" fill="#edf6f2" stroke="#d0dbe3"/>
+<text x="70" y="639" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#23796a" text-anchor="start" font-weight="bold">2  Give the suffix kernel one consistent energy objective</text>
+<text x="73" y="677" font-family="DejaVu Serif, sans-serif" font-size="25" fill="#203244" text-anchor="start">d(p)=BW(E_init);    t(r,q)=BW(E_interLeft(r₁,q₁,r₂,q₂))</text>
+<text x="73" y="726" font-family="DejaVu Serif, sans-serif" font-size="24" fill="#203244" text-anchor="start">B(p,q)=BW(energy.getE(p₁,q₁,p₂,q₂,0))    if the complete site is admitted</text>
+<text x="73" y="766" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">Invalid / inaccessible / noncomplementary vertices and forbidden transitions cannot contribute.</text>
+<text x="73" y="795" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#203244" text-anchor="start">B owns complete-span ED, native dangles, terminal penalties and energyAdd. Seed energies only admit seeds.</text>
+<rect x="48" y="870" width="1344" height="173" rx="8" fill="#f3f7fa" stroke="#d0dbe3"/>
+<text x="70" y="904" font-family="DejaVu Sans, sans-serif" font-size="21" fill="#275f8c" text-anchor="start" font-weight="bold">3  Commit a completed region</text>
+<text x="73" y="937" font-family="DejaVu Serif, sans-serif" font-size="27" fill="#203244" text-anchor="start">Z_region = ∑ B(p,q) · T₁,p(q)</text>
+<text x="580" y="915" font-family="DejaVu Sans, sans-serif" font-size="17" fill="#203244" text-anchor="start">Complete boundary callback and outside initialization share exactly the same B.</text>
+<text x="580" y="944" font-family="DejaVu Sans, sans-serif" font-size="17" fill="#203244" text-anchor="start">updateExactCompleteZ preserves the partition objective.</text>
+<text x="580" y="973" font-family="DejaVu Sans, sans-serif" font-size="17" fill="#203244" text-anchor="start">Pair masses and optional seed masks map through energy.getBasePair().</text>
+<text x="580" y="1002" font-family="DejaVu Sans, sans-serif" font-size="17" fill="#203244" text-anchor="start">Only a successful computation reaches BasePairProbabilities::addRegion().</text>
+<path d="M48 1095 L1392 1095" fill="none" stroke="#c4d0da" stroke-width="1.2"/>
+<text x="48" y="1119" font-family="DejaVu Sans, sans-serif" font-size="14" fill="#275f8c" text-anchor="start" font-weight="bold">Implementation anchors (src/IntaRNA/) · BW(E)=exp(−E/RT) after native energy-unit conversion</text>
+<text x="48" y="1142" font-family="DejaVu Sans, sans-serif" font-size="13" fill="#203244" text-anchor="start">PredictorMfeEns2dSeedExtension.cpp: predict(), predictStackSeeds(), exactBoundaryWeight()</text>
+<text x="48" y="1163" font-family="DejaVu Sans, sans-serif" font-size="13" fill="#203244" text-anchor="start">StackSeedDomain.cpp; SeededPartitionFunction.cpp; PredictorMfeEns.cpp: updateExactCompleteZ()</text>
+</svg>

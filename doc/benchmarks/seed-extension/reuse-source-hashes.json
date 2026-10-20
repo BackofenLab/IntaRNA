@@ -1,0 +1,19 @@
+{
+  "baseline": "392357c00f0314659cd4c665446f3f6185f4814a",
+  "compiler": "x86_64-conda-linux-gnu-g++ (conda-forge gcc 14.4.0-7) 14.4.0",
+  "sha256": {
+    "driver.cpp": "98b0133e334b5174146ed440b0ed0f30faf2f83d32f217a386c3d43196f65b93",
+    "base/IntaRNA/SeededPartitionFunction.cpp": "9c976a3e95d0163204e4b4c788cbc6ca9f5f9060e04d5eb507b932401aecf91e",
+    "base/IntaRNA/SeededPartitionFunction.h": "d5002fe387d6ab6a526bd4bff518615c1954862c9a68c3b828f3a74b33080f13",
+    "base/IntaRNA/StackSeedDomain.cpp": "fccecca0fc31f97ad51e742727d545b1420af534e40b26801deba90850770362",
+    "base/IntaRNA/StackSeedDomain.h": "5708d0d71b23e66a858a50c0d13d84362e40e208fd69620c4dbf3115e18c9e10",
+    "candidate/IntaRNA/SeededPartitionFunction.cpp": "8be22d72f0cb67040a1fb23170da1c88d7f0a8a429b6d2aefae30164fc28795e",
+    "candidate/IntaRNA/SeededPartitionFunction.h": "d5002fe387d6ab6a526bd4bff518615c1954862c9a68c3b828f3a74b33080f13",
+    "candidate/IntaRNA/StackSeedDomain.cpp": "fccecca0fc31f97ad51e742727d545b1420af534e40b26801deba90850770362",
+    "candidate/IntaRNA/StackSeedDomain.h": "5708d0d71b23e66a858a50c0d13d84362e40e208fd69620c4dbf3115e18c9e10"
+  },
+  "flags": "-std=c++23 -O3 -DNDEBUG -ffunction-sections -fdata-sections -Wl,--gc-sections",
+  "machine": "AMD Ryzen 5 7530U, Linux, 2026-10-15",
+  "repetitions": 5,
+  "notes": "One thread, alternating baseline/candidate processes, not CPU-pinned. No concurrent project builds/tests during recorded timing; other workstation activity is uncontrolled."
+}

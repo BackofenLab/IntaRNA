@@ -6,5 +6,5 @@ includedir=${prefix}/include
 Name: IntaRNA
 Description: RNA-RNA interaction prediction C++ library
 Version: @VERSION@
-Libs: -L${libdir} -lIntaRNA @LIBS@
+Libs: -L${libdir} -lIntaRNA -leasylogging @LIBS@
 Cflags: -I${includedir} @BOOST_CPPFLAGS@ @VRNA_CFLAGS@

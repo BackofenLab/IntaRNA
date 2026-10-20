@@ -8,7 +8,9 @@
 #include "IntaRNA/OutputHandlerInteractionList.h"
 #include "IntaRNA/PredictorMfe2dSeed.h"
 #include "IntaRNA/PredictorMfe2dSeedExtension.h"
+#include "IntaRNA/PredictorMfe2dHeuristicSeedExtension.h"
 #include "IntaRNA/PredictorMfeEns2dSeedExtension.h"
+#include "IntaRNA/PredictorMfeEns2dHeuristicSeedExtension.h"
 #include "IntaRNA/PredictorMfeEnsSeedOnly.h"
 #include "IntaRNA/PredictorMfeSeedOnly.h"
 #include "IntaRNA/ReverseAccessibility.h"
@@ -17,6 +19,7 @@
 #include "IntaRNA/SeedHandlerMfe.h"
 
 #include <algorithm>
+#include <array>
 #include <map>
 #include <memory>
 #include <stdexcept>
@@ -208,6 +211,8 @@ bool passesOutputConstraint(const InteractionEnergy & energy,
 	}
 	const SeedOraclePair & left = chain.front();
 	const SeedOraclePair & right = chain.back();
+	if (right.i1-left.i1+1>energy.getAccessibility1().getMaxLength()
+			|| right.i2-left.i2+1>energy.getAccessibility2().getMaxLength()) return false;
 	if (constraint.noGUend
 			&& (energy.isGU(left.i1, left.i2)
 					|| energy.isGU(right.i1, right.i2)))
@@ -344,12 +349,12 @@ Interaction::PairingVec seedOracleBasePairs(const InteractionEnergy & energy,
 	return basePairs;
 }
 
-const SeededOracleInteraction * findOptimalTrace(
+const SeededOracleInteraction * findSeededTrace(
 		const InteractionEnergy & energy, const SeedOracleResult & oracle,
 		const Interaction & interaction)
 {
 	for (const SeededOracleInteraction & candidate : oracle.interactions) {
-		if (candidate.energy == oracle.mfe
+		if (candidate.energy == interaction.energy
 				&& seedOracleBasePairs(energy, candidate.chain)
 						== interaction.basePairs)
 		{
@@ -370,12 +375,12 @@ bool matchesSeed(const Interaction::Seed & reported,
 			&& E_equal(reported.energy, expected.totalEnergy);
 }
 
-void requireValidSeededMfe(const InteractionEnergy & energy,
+void requireValidSeededInteraction(const InteractionEnergy & energy,
 		const SeedOracleResult & oracle, const Interaction & interaction)
 {
 	REQUIRE_FALSE(interaction.isEmpty());
-	REQUIRE(interaction.energy == oracle.mfe);
-	const SeededOracleInteraction * trace = findOptimalTrace(energy, oracle,
+	REQUIRE(interaction.isValid());
+	const SeededOracleInteraction * trace = findSeededTrace(energy, oracle,
 			interaction);
 	REQUIRE(trace != nullptr);
 	REQUIRE(interaction.seed != nullptr);
@@ -387,6 +392,13 @@ void requireValidSeededMfe(const InteractionEnergy & energy,
 				});
 		REQUIRE(reported != interaction.seed->end());
 	}
+}
+
+void requireValidSeededMfe(const InteractionEnergy & energy,
+		const SeedOracleResult & oracle, const Interaction & interaction)
+{
+	REQUIRE(interaction.energy == oracle.mfe);
+	requireValidSeededInteraction(energy, oracle, interaction);
 }
 
 void compareExactSeededMfePredictors(const InteractionEnergy & energy,
@@ -462,8 +474,9 @@ void requireUniqueAnchorEnsemblePartition(const InteractionEnergy & energy,
 		const OutputConstraint & outputConstraint, const IndexRange & range1,
 		const IndexRange & range2, const SeedOracleResult & oracle)
 {
-	// Seed-extension Z accounting is only asserted in this proved-trivial
-	// domain.  General multi-anchor X-mode Z is not an exact-oracle contract.
+	// This helper also checks gapped seeds, whose legacy partition path is
+	// asserted only in a unique-anchor domain. Stack-only multi-anchor cases
+	// have independent exact partition and marginal checks below.
 	REQUIRE(oracle.interactions.size() == 1);
 	REQUIRE(oracle.interactions.front().seeds.size() == 1);
 	OutputHandlerInteractionList output(outputConstraint, 1);
@@ -663,5 +676,594 @@ TEST_CASE("tiny exhaustive seed oracle for exact predictor families",
 				}));
 		REQUIRE(seedOnly.getZall()
 				== Approx(seedOnlyExpected.partition).epsilon(1e-12));
+	}
+}
+
+#include "IntaRNA/AccessibilityBasePair.h"
+#include "IntaRNA/AccessibilityVrna.h"
+#include "IntaRNA/InteractionEnergyVrna.h"
+#include "IntaRNA/SeedHandlerNoBulge.h"
+#include "IntaRNA/OutputHandlerHub.h"
+
+namespace {
+
+template<class PredictorType>
+void checkMfeExtensionWorkspaceReuse(const InteractionEnergy & energy,
+		const SeedConstraint & seedConstraint,
+		const OutputConstraint & outputConstraint, const bool exact)
+{
+	// Change both dimensions and offsets, including a seedless prediction,
+	// before returning to the original shape. Each call must overwrite every
+	// active cell even when its backing allocation came from a larger matrix.
+	const std::vector<std::pair<IndexRange, IndexRange>> ranges{
+		{IndexRange(0, 6), IndexRange(0, 6)},
+		{IndexRange(1, 5), IndexRange(2, 5)},
+		{IndexRange(2, 2), IndexRange(1, 4)},
+		{IndexRange(0, 6), IndexRange(1, 6)},
+		{IndexRange(0, 6), IndexRange(0, 6)}
+	};
+	SeedRecordingOutput reusedOutput(outputConstraint);
+	PredictorType reused(energy, reusedOutput, nullptr,
+			new SeedHandlerMfe(energy, seedConstraint));
+	for (const auto & [range1, range2] : ranges) {
+		CAPTURE(range1.from, range1.to, range2.from, range2.to);
+		const auto oracle = enumerateSeededInteractions(energy, seedConstraint,
+				outputConstraint, range1, range2);
+		const size_t previousCalls = reusedOutput.calls.size();
+		reused.predict(range1, range2);
+		REQUIRE(reusedOutput.calls.size() == previousCalls+1);
+
+		SeedRecordingOutput freshOutput(outputConstraint);
+		PredictorType fresh(energy, freshOutput, nullptr,
+				new SeedHandlerMfe(energy, seedConstraint));
+		fresh.predict(range1, range2);
+		REQUIRE(freshOutput.calls.size() == 1);
+		const Interaction & actual = reusedOutput.last();
+		const Interaction & expected = freshOutput.last();
+		REQUIRE(actual.isEmpty() == expected.isEmpty());
+		if (oracle.interactions.empty()) {
+			REQUIRE(actual.isEmpty());
+			continue;
+		}
+
+		// The heuristic's retained right extension is not assumed globally
+		// optimal. Its reported energy, full traceback and every seed witness
+		// must nevertheless describe one independently enumerated interaction.
+		if (exact) requireValidSeededMfe(energy, oracle, actual);
+		else requireValidSeededInteraction(energy, oracle, actual);
+		REQUIRE(actual.energy == expected.energy);
+		REQUIRE(actual.basePairs == expected.basePairs);
+		REQUIRE(expected.seed != nullptr);
+		REQUIRE(*actual.seed == *expected.seed);
+	}
+	// Equal-energy choices must also survive the intervening range changes.
+	REQUIRE(reusedOutput.calls.front()->basePairs == reusedOutput.last().basePairs);
+	REQUIRE(reusedOutput.calls.front()->energy == reusedOutput.last().energy);
+}
+
+} // namespace
+
+TEST_CASE("MFE seed extensions preserve bounded recurrences and reused workspaces",
+		"[PredictorSeedOracle][MfeSeedExtensionWorkspace]")
+{
+	#include "testEasyLoggingSetup.icc"
+
+	RnaSequence target("target", "GUGGCGG"), query("query", "CCGCCUC");
+	AccessibilityBasePair targetAcc(target, 6, nullptr), queryAcc(query, 5, nullptr);
+	ReverseAccessibility reverseQuery(queryAcc);
+	VrnaHandler vrna;
+	AccessibilityVrna nativeTarget(target, 6, nullptr, vrna);
+	AccessibilityVrna nativeQuery(query, 5, nullptr, vrna);
+	ReverseAccessibility nativeReverse(nativeQuery);
+	const SeedConstraint seedConstraint = makeSeedConstraint(2, 0, 0, 0, false);
+	for (const auto & [loop1, loop2] : std::vector<std::pair<size_t, size_t>>{
+			{0, 0}, {0, 2}, {2, 0}, {2, 1}})
+	{
+		InteractionEnergyBasePair simple(targetAcc, reverseQuery, loop1, loop2);
+		InteractionEnergyVrna nearest(nativeTarget, nativeReverse, vrna, loop1, loop2);
+		for (bool native : {false, true}) for (bool noLP : {false, true})
+		for (bool noGUend : {false, true}) {
+			CAPTURE(loop1, loop2, native, noLP, noGUend);
+			const InteractionEnergy & energy = native
+					? static_cast<const InteractionEnergy &>(nearest) : simple;
+			const OutputConstraint outputConstraint(1,
+					OutputConstraint::OVERLAP_BOTH, E_INF, E_INF, false,
+					noLP, noGUend, false, true);
+			checkMfeExtensionWorkspaceReuse<PredictorMfe2dSeedExtension>(
+					energy, seedConstraint, outputConstraint, true);
+			checkMfeExtensionWorkspaceReuse<PredictorMfe2dHeuristicSeedExtension>(
+					energy, seedConstraint, outputConstraint, false);
+		}
+	}
+}
+
+TEST_CASE("dense MFE seed extension ties retain optimal chains and all seeds",
+		"[PredictorSeedOracle][MfeSeedExtensionWorkspace]")
+{
+	#include "testEasyLoggingSetup.icc"
+
+	RnaSequence target("target", "GGGGGGG"), query("query", "CCCCCCC");
+	AccessibilityDisabled targetAcc(target, 6, nullptr), queryAcc(query, 5, nullptr);
+	ReverseAccessibility reverseQuery(queryAcc);
+	InteractionEnergyBasePair energy(targetAcc, reverseQuery, 2, 1);
+	const SeedConstraint seedConstraint = makeSeedConstraint(2, 0, 0, 0, false);
+	for (bool noLP : {false, true}) {
+		CAPTURE(noLP);
+		const auto outputConstraint = makeOutputConstraint(noLP);
+		const auto oracle = enumerateSeededInteractions(energy, seedConstraint,
+				outputConstraint, IndexRange(0, 6), IndexRange(0, 6));
+		// Five stacked pairs attain the maximum query interaction length.
+		// Both predictors must find this optimum despite many equal-energy seeds.
+		REQUIRE(oracle.mfe == Ekcal_2_E(-5));
+		SeedRecordingOutput output(outputConstraint);
+		PredictorMfe2dHeuristicSeedExtension predictor(energy, output, nullptr,
+				new SeedHandlerMfe(energy, seedConstraint));
+		predictor.predict();
+		REQUIRE(output.calls.size() == 1);
+		requireValidSeededMfe(energy, oracle, output.last());
+		REQUIRE(output.last().seed->size() == 4);
+		checkMfeExtensionWorkspaceReuse<PredictorMfe2dSeedExtension>(
+				energy, seedConstraint, outputConstraint, true);
+		checkMfeExtensionWorkspaceReuse<PredictorMfe2dHeuristicSeedExtension>(
+				energy, seedConstraint, outputConstraint, true);
+	}
+}
+
+TEST_CASE("MFE seed extensions include the maximal loop on both sides of a seed",
+		"[PredictorSeedOracle][MfeSeedExtensionWorkspace]")
+{
+	#include "testEasyLoggingSetup.icc"
+
+	for (bool gapInTarget : {false, true}) for (bool noLP : {false, true})
+	for (size_t gapLimit : {0, 1}) {
+		CAPTURE(gapInTarget, noLP, gapLimit);
+		RnaSequence target("target", gapInTarget ? "GGAGGAGG" : "GGGGGG");
+		RnaSequence query("query", gapInTarget ? "CCCCCC" : "CCACCACC");
+		AccessibilityDisabled targetAcc(target, 0, nullptr), queryAcc(query, 0, nullptr);
+		ReverseAccessibility reverseQuery(queryAcc);
+		InteractionEnergyBasePair energy(targetAcc, reverseQuery,
+				gapInTarget ? gapLimit : 0, gapInTarget ? 0 : gapLimit);
+		IndexRangeList seedRange1, seedRange2;
+		seedRange1.push_back(gapInTarget ? IndexRange(3, 4) : IndexRange(2, 3));
+		seedRange2.push_back(gapInTarget ? IndexRange(2, 3) : IndexRange(3, 4));
+		const SeedConstraint seedConstraint(2, 0, 0, 0, E_INF,
+				Accessibility::ED_UPPER_BOUND, E_INF, seedRange1, seedRange2,
+				"", false, false, noLP);
+		const auto outputConstraint = makeOutputConstraint(noLP);
+		const IndexRange range1(0, target.size()-1), range2(0, query.size()-1);
+		const auto oracle = enumerateSeededInteractions(energy, seedConstraint,
+				outputConstraint, range1, range2);
+		// Only the central block can be a seed. Extending to the flanking
+		// blocks therefore requires a maximal-size loop on each side.
+		REQUIRE(oracle.mfe == Ekcal_2_E((gapLimit == 1 ? -6 : -2)));
+		SeedRecordingOutput exactOutput(outputConstraint);
+		PredictorMfe2dSeedExtension exact(energy, exactOutput, nullptr,
+				new SeedHandlerMfe(energy, seedConstraint));
+		exact.predict(range1, range2);
+		REQUIRE(exactOutput.calls.size() == 1);
+		requireValidSeededMfe(energy, oracle, exactOutput.last());
+		REQUIRE(exactOutput.last().seed->size() == 1);
+		SeedRecordingOutput output(outputConstraint);
+		PredictorMfe2dHeuristicSeedExtension predictor(energy, output, nullptr,
+				new SeedHandlerMfe(energy, seedConstraint));
+		predictor.predict(range1, range2);
+		REQUIRE(output.calls.size() == 1);
+		requireValidSeededMfe(energy, oracle, output.last());
+		REQUIRE(output.last().seed->size() == 1);
+	}
+}
+
+namespace {
+class ExactSeedProbe : public PredictorMfeEns2dSeedExtension {
+public:
+	using PredictorMfeEns2dSeedExtension::PredictorMfeEns2dSeedExtension;
+	std::map<std::array<size_t,4>,Z_type> boundaries;
+	bool throwUpdate=false;
+	size_t calls=0;
+	bool restored() const { return exactContribution==nullptr && !updateZisComplete; }
+	size_t retained() const { return Z_partition.size(); }
+protected:
+	void updateZ(size_t i,size_t j,size_t k,size_t l,Z_type z,bool hybrid) override {
+		++calls;
+		if (throwUpdate) throw std::runtime_error("injected update failure");
+		if (exactContribution) boundaries[{i,k,j,l}]=z*exactContribution->second;
+		PredictorMfeEns2dSeedExtension::updateZ(i,j,k,l,z,hybrid);
+	}
+};
+void checkNativeStackPartition(const InteractionEnergy & energy,bool noLP,bool noGU) {
+	const SeedConstraint sc=makeSeedConstraint(2,0,0,0,false);
+	OutputConstraint oc(3,OutputConstraint::OVERLAP_BOTH,E_INF,E_INF,false,noLP,noGU,true,false);
+	IndexRange r1(0,energy.size1()-1), r2(0,energy.size2()-1);
+	auto oracle=enumerateSeededInteractions(energy,sc,oc,r1,r2);
+	OutputHandlerInteractionList output(oc,3);
+	ExactSeedProbe p(energy,output,nullptr,new SeedHandlerMfe(energy,sc));
+	p.predict();
+	REQUIRE(p.getZall()==Approx(oracle.unionPartition).epsilon(2e-12));
+	REQUIRE(output.getZ()==p.getZall());
+	REQUIRE(output.usesExactPartition());
+	REQUIRE(p.retained()==0);
+	std::map<std::array<size_t,4>,Z_type> expected;
+	for(const auto & i:oracle.interactions) expected[{i.chain.front().i1,i.chain.front().i2,i.chain.back().i1,i.chain.back().i2}]+=energy.getBoltzmannWeight(i.energy);
+	for(const auto & [b,z]:p.boundaries) REQUIRE(z==Approx(expected[b]).epsilon(2e-12));
+	for(const auto & [b,z]:expected) REQUIRE(p.boundaries[b]==Approx(z).epsilon(2e-12));
+}
+}
+
+TEST_CASE("native exact stacked partitions agree beyond the unique-anchor domain", "[PredictorSeedOracle][SeededPartitionFunction]") {
+	#include "testEasyLoggingSetup.icc"
+	RnaSequence t("t","GUGGCGC"),q("q","GCGCCAC");
+	AccessibilityBasePair at(t,6,nullptr), aq(q,5,nullptr);
+	ReverseAccessibility ar(aq);
+	InteractionEnergyBasePair simple(at,ar,2,1);
+	VrnaHandler vrna;
+	AccessibilityVrna nativeTarget(t,6,nullptr,vrna),nativeQuery(q,5,nullptr,vrna);
+	ReverseAccessibility nativeReverse(nativeQuery);
+	InteractionEnergyVrna nearest(nativeTarget,nativeReverse,vrna,2,1);
+	for(bool noLP:{false,true}) for(bool noGU:{false,true}) {
+		checkNativeStackPartition(simple,noLP,noGU);
+		checkNativeStackPartition(nearest,noLP,noGU);
+	}
+}
+TEST_CASE("exact seeded updates retain tiny weights and restore scopes on exceptions", "[PredictorSeedOracle][SeededPartitionFunction]") {
+	#include "testEasyLoggingSetup.icc"
+	RnaSequence t("t","GGGG"),q("q","CCCC");
+	AccessibilityDisabled at(t,0,nullptr),aq(q,0,nullptr);ReverseAccessibility ar(aq);
+	InteractionEnergyBasePair energy(at,ar,2,2,false,1,-100,3,10000);
+	const auto sc=makeSeedConstraint(2,0,0,0,false);
+	const auto oc=makeOutputConstraint(false);
+	OutputHandlerInteractionList output(oc,1);
+	ExactSeedProbe p(energy,output,nullptr,new SeedHandlerMfe(energy,sc));
+	p.throwUpdate=true;REQUIRE_THROWS(p.predict());REQUIRE(p.restored());
+	p.throwUpdate=false;p.predict();REQUIRE(p.restored());
+	REQUIRE(p.calls>0);
+	REQUIRE(p.getZall()>0);
+	REQUIRE(p.getZall()<1e-19);
+	REQUIRE(output.hasNonzeroZ());
+	auto oracle=enumerateSeededInteractions(energy,sc,oc,IndexRange(0,3),IndexRange(0,3));
+	REQUIRE(double(p.getZall()/oracle.unionPartition)==Approx(1).epsilon(2e-12));
+	OutputHandlerHub hub(oc,false);hub.addOutputHandler(&output);hub.setExactPartition(true);
+	REQUIRE(output.usesExactPartition());
+	p.predict(IndexRange(1,3),IndexRange(1,3));
+	auto sub=enumerateSeededInteractions(energy,sc,oc,IndexRange(1,3),IndexRange(1,3));
+	REQUIRE(double(p.getZall()/sub.unionPartition)==Approx(1).epsilon(2e-12));
+}
+
+namespace {
+class PairTestTracker : public PredictionTracker {
+public:
+	void updateOptimumCalled(size_t,size_t,size_t,size_t,E_type) override {}
+};
+}
+TEST_CASE("raw native pair masses share the exact forward denominator", "[BasePairProbabilities][PredictorSeedOracle]") {
+	#include "testEasyLoggingSetup.icc"
+	RnaSequence t("target","GGAGGG"),q("query","CCUCCC");
+	AccessibilityBasePair at(t,5,nullptr),aq(q,4,nullptr);ReverseAccessibility ar(aq);
+	InteractionEnergyBasePair energy(at,ar,2,1);
+	const auto sc=makeSeedConstraint(2,0,0,0,false);
+	for(bool noLP:{false,true}) for(bool tracker:{false,true}) {
+		auto oc=makeOutputConstraint(noLP);
+		BasePairProbabilities result(t.size(),q.size());
+		OutputHandlerInteractionList output(oc,1);
+		ExactSeedProbe p(energy,output,tracker?new PairTestTracker():nullptr,new SeedHandlerMfe(energy,sc),&result);
+		const IndexRange r1(1,5),r2(1,4);
+		p.predict(r1,r2);result.finalize();
+		auto oracle=enumerateSeededInteractions(energy,sc,oc,r1,r2);
+		REQUIRE(result.getZ()==p.getZall());
+		REQUIRE(result.getZ()==Approx(oracle.unionPartition).epsilon(2e-12));
+		REQUIRE((p.retained()>0)==tracker);
+		Matrix<Z_type> expected(t.size(),q.size(),0);
+		for(const auto & chain:oracle.interactions) for(const auto & pair:chain.chain) {
+			const auto bp=energy.getBasePair(pair.i1,pair.i2);
+			expected(bp.first,bp.second)+=energy.getBoltzmannWeight(chain.energy);
+		}
+		for(size_t i=0;i<t.size();++i) for(size_t j=0;j<q.size();++j)
+			REQUIRE(result.rawMasses()(i,j)==Approx(expected(i,j)).epsilon(2e-12));
+	}
+}
+TEST_CASE("native first-hit marginals respect filtered seeds wobble ends and active ranges", "[BasePairProbabilities][PredictorSeedOracle][SeededPartitionFunction]") {
+	#include "testEasyLoggingSetup.icc"
+	RnaSequence t("target","GUGGGUG"),q("query","CGCCGUC");
+	AccessibilityBasePair at(t,6,nullptr),aq(q,5,nullptr);ReverseAccessibility ar(aq);
+	InteractionEnergyBasePair energy(at,ar,2,1);
+	IndexRangeList seedRange1,seedRange2;
+	seedRange1.push_back({2,5});seedRange2.push_back({2,5});
+	for(bool noLP:{false,true}) for(bool noGUend:{false,true})
+	for(bool noSeedGU:{false,true}) for(size_t offset:{0,1}) {
+		CAPTURE(noLP,noGUend,noSeedGU,offset);
+		const SeedConstraint sc(2,0,0,0,E_INF,Accessibility::ED_UPPER_BOUND,E_INF,
+				seedRange1,seedRange2,"",noSeedGU,false,false);
+		const OutputConstraint oc(1,OutputConstraint::OVERLAP_BOTH,E_INF,E_INF,
+				false,noLP,noGUend,true,false);
+		const IndexRange r1(offset,6),r2(offset,6);
+		const auto oracle=enumerateSeededInteractions(energy,sc,oc,r1,r2);
+		REQUIRE(oracle.unionPartition>0);
+		BasePairProbabilities result(t.size(),q.size());
+		OutputHandlerInteractionList output(oc,1);
+		ExactSeedProbe p(energy,output,nullptr,new SeedHandlerMfe(energy,sc),&result);
+		p.predict(r1,r2);result.finalize();
+		REQUIRE(result.getZ()==Approx(oracle.unionPartition).epsilon(2e-12));
+		Matrix<Z_type> masses(t.size(),q.size(),0);
+		std::map<std::array<size_t,4>,Z_type> boundaries;
+		for(const auto & interaction:oracle.interactions) {
+			const Z_type weight=energy.getBoltzmannWeight(interaction.energy);
+			const auto & first=interaction.chain.front();const auto & last=interaction.chain.back();
+			boundaries[{first.i1-offset,first.i2-offset,last.i1-offset,last.i2-offset}]+=weight;
+			for(const auto & pair:interaction.chain) {
+				const auto bp=energy.getBasePair(pair.i1,pair.i2);
+				masses(bp.first,bp.second)+=weight;
+			}
+		}
+		for(size_t i=0;i<t.size();++i) for(size_t j=0;j<q.size();++j)
+			REQUIRE(result.rawMasses()(i,j)==Approx(masses(i,j)).epsilon(2e-12));
+		for(const auto & [boundary,weight]:boundaries)
+			REQUIRE(p.boundaries[boundary]==Approx(weight).epsilon(2e-12));
+		for(const auto & [boundary,weight]:p.boundaries)
+			REQUIRE(weight==Approx(boundaries[boundary]).epsilon(2e-12));
+	}
+}
+
+TEST_CASE("raw pair owner excludes region crossings and invalidates partial results", "[BasePairProbabilities][PredictorSeedOracle]") {
+	#include "testEasyLoggingSetup.icc"
+	RnaSequence t("t","GGGGGG"),q("q","CCCCCC");
+	AccessibilityDisabled at(t,0,nullptr),aq(q,0,nullptr);ReverseAccessibility ar(aq);
+	InteractionEnergyBasePair energy(at,ar,2,2);
+	const auto sc=makeSeedConstraint(2,0,0,0,false);const auto oc=makeOutputConstraint(false);
+	BasePairProbabilities owner(6,6);OutputHandlerInteractionList output(oc,1);
+	ExactSeedProbe p(energy,output,nullptr,new SeedHandlerMfe(energy,sc),&owner);
+	p.predict({0,2},{0,2});const Z_type first=p.getZall();
+	p.predict({3,5},{3,5});REQUIRE(p.getZall()==first);
+	owner.finalize();REQUIRE(owner.getZ()==2*first);
+	REQUIRE(owner.probabilities()(0,0)==0);
+	BasePairProbabilities failed(6,6);OutputHandlerInteractionList output2(oc,1);
+	ExactSeedProbe p2(energy,output2,nullptr,new SeedHandlerMfe(energy,sc),&failed);
+	p2.predict({0,2},{0,2});p2.throwUpdate=true;
+	REQUIRE_THROWS(p2.predict({3,5},{3,5}));
+	REQUIRE(failed.status()==BasePairProbabilities::Status::failed);
+	REQUIRE_THROWS(failed.finalize());REQUIRE(p2.restored());
+}
+
+#include "SeededChainOracle.h"
+#include "IntaRNA/SeedHandlerExplicit.h"
+TEST_CASE("exact explicit seed regions do not skip seeds when the iterator cursor collides", "[BasePairProbabilities][PredictorSeedOracle]") {
+	#include "testEasyLoggingSetup.icc"
+	using namespace seeded_oracle;
+	RnaSequence t("target","GGGGGG"),q("query","CCCCCC");
+	AccessibilityDisabled at(t,0,nullptr),aq(q,0,nullptr);ReverseAccessibility ar(aq);
+	InteractionEnergyBasePair energy(at,ar,2,2);
+	const SeedConstraint sc(5,0,0,0,E_INF,Accessibility::ED_UPPER_BOUND,E_INF,
+			IndexRangeList(),IndexRangeList(),"1||&5||,4||&2||",false,false,false);
+	const Model model{3,3,3,3,false,{{{0,0},{1,1}}},[](Pair){return true;},
+		[](Pair){return std::exp(1.L);},[](Pair,Pair){return std::exp(1.L);},
+		[](Pair,Pair){return 1.L;}};
+	const auto expected=enumerate(model);
+	const auto oc=makeOutputConstraint(false);
+	BasePairProbabilities result(6,6);
+	OutputHandlerInteractionList output(oc,1);
+	ExactSeedProbe predictor(energy,output,nullptr,new SeedHandlerExplicit(energy,sc),&result);
+	for(size_t offset:{0,3}) {
+		CAPTURE(offset);
+		predictor.predict({offset,offset+2},{offset,offset+2});
+		REQUIRE(double(predictor.getZall())==Approx(double(expected.z)).epsilon(2e-12));
+	}
+	result.finalize();
+	REQUIRE(double(result.getZ())==Approx(double(2*expected.z)).epsilon(2e-12));
+	Matrix<Z_type> masses(6,6,0);
+	for(size_t offset:{0,3}) for(const auto & [pair,weight]:expected.mass)
+		masses(offset+pair.first,5-offset-pair.second)=Z_type(weight);
+	for(size_t i=0;i<6;++i) for(size_t j=0;j<6;++j)
+		REQUIRE(result.rawMasses()(i,j)==Approx(masses(i,j)).epsilon(2e-12));
+}
+
+TEST_CASE("native singleton and mixed explicit seeds count overlapping witnesses once", "[BasePairProbabilities][PredictorSeedOracle]") {
+	#include "testEasyLoggingSetup.icc"
+	using namespace seeded_oracle;
+	RnaSequence t("t","GGGG"),q("q","CCCC");
+	AccessibilityDisabled at(t,0,nullptr),aq(q,0,nullptr);ReverseAccessibility ar(aq);
+	InteractionEnergyBasePair energy(at,ar,2,2);
+	SeedConstraint sc(1,0,0,0,-10000,0,-10000,IndexRangeList(),IndexRangeList(),"1|&4|,2||&2||",true,true,true);
+	for(bool noLP:{false,true}) {
+		BasePairProbabilities result(4,4);auto oc=makeOutputConstraint(noLP);OutputHandlerInteractionList output(oc,1);
+		ExactSeedProbe p(energy,output,nullptr,new SeedHandlerExplicit(energy,sc),&result);
+		p.predict();result.finalize();
+		Model model{4,4,4,4,noLP,{{{0,0}},{{1,1},{2,2}}},[](Pair){return true;},
+			[](Pair){return std::exp(1.L);},[](Pair,Pair){return std::exp(1.L);},[](Pair,Pair){return 1.L;}};
+		auto ref=enumerate(model);
+		REQUIRE(double(result.getZ())==Approx(double(ref.z)).epsilon(2e-12));
+		for(size_t i=0;i<4;++i) for(size_t j=0;j<4;++j)
+			REQUIRE(double(result.rawMasses()(i,3-j))==Approx(double(ref.mass[{i,j}])).epsilon(2e-12));
+	}
+}
+
+TEST_CASE("native exact nested explicit seeds preserve cropped boundary ensembles", "[BasePairProbabilities][PredictorSeedOracle][SeededPartitionFunction]") {
+	#include "testEasyLoggingSetup.icc"
+	using namespace seeded_oracle;
+	RnaSequence target("target","GGCGGCGG"),query("query","CCGCCGCCC");
+	AccessibilityBasePair targetAcc(target,6,nullptr),queryAcc(query,5,nullptr);
+	ReverseAccessibility reverseQuery(queryAcc);
+	InteractionEnergyBasePair energy(targetAcc,reverseQuery,1,2,false,1,-100,3,37);
+	const SeedConstraint sc(1,0,0,0,E_INF,Accessibility::ED_UPPER_BOUND,E_INF,
+			IndexRangeList(),IndexRangeList(),
+			"2|||||&3|||||,3|&6|,4||&4||,6||&2||,1||&8||",false,false,false);
+	// These are independent declared occurrences in increasing energy coordinates.
+	// The five-pair seed starts before, but completes after, the inner singleton.
+	const std::vector<Chain> declared{
+		{{1,2},{2,3},{3,4},{4,5},{5,6}},{{2,3}},
+		{{3,4},{4,5}},{{5,6},{6,7}},{{0,0},{1,1}}};
+	for(bool cropped:{false,true}) for(bool noLP:{false,true}) {
+		CAPTURE(cropped,noLP);
+		const IndexRange r1=cropped?IndexRange(1,6):IndexRange(0,7);
+		const IndexRange r2=cropped?IndexRange(2,7):IndexRange(0,8);
+		const size_t n=r1.to-r1.from+1,m=r2.to-r2.from+1;
+		auto absolute=[&](Pair p){return Pair{p.first+r1.from,p.second+r2.from};};
+		auto weight=[&](E_type e){return E_isINF(e)?0.L:static_cast<long double>(energy.getBoltzmannWeight(e));};
+		Model model{n,m,6,5,noLP,{},
+			[&](Pair p){p=absolute(p);return energy.areComplementary(p.first,p.second);},
+			[&](Pair){return weight(energy.getE_init());},
+			[&](Pair p,Pair q){
+				if(q.first-p.first-1>1 || q.second-p.second-1>2) return 0.L;
+				p=absolute(p);q=absolute(q);
+				return weight(energy.getE_interLeft(p.first,q.first,p.second,q.second));
+			},
+			[&](Pair p,Pair q){
+				p=absolute(p);q=absolute(q);
+				return weight(energy.getE(p.first,q.first,p.second,q.second,E_type(0)));
+			}};
+		for(const auto & seed:declared) {
+			if(seed.front().first<r1.from || seed.front().second<r2.from
+					|| seed.back().first>r1.to || seed.back().second>r2.to) continue;
+			Chain local;
+			for(const auto p:seed) local.push_back({p.first-r1.from,p.second-r2.from});
+			model.seeds.push_back(local);
+		}
+		const auto expected=enumerate(model);
+		REQUIRE(expected.z>0);
+		const auto oc=makeOutputConstraint(noLP);
+		BasePairProbabilities result(target.size(),query.size());
+		OutputHandlerInteractionList output(oc,1);
+		ExactSeedProbe predictor(energy,output,nullptr,new SeedHandlerExplicit(energy,sc),&result);
+		predictor.predict(r1,r2);result.finalize();
+		REQUIRE(double(result.getZ())==Approx(double(expected.z)).epsilon(2e-12));
+		REQUIRE(result.getZ()==predictor.getZall());
+		REQUIRE(output.getZ()==predictor.getZall());
+		for(const auto & [boundary,z]:expected.boundaries)
+			REQUIRE(double(predictor.boundaries[boundary])==Approx(double(z)).epsilon(2e-12));
+		for(const auto & [boundary,z]:predictor.boundaries) {
+			const auto found=expected.boundaries.find(boundary);
+			REQUIRE(found!=expected.boundaries.end());
+			REQUIRE(double(z)==Approx(double(found->second)).epsilon(2e-12));
+		}
+		Matrix<Z_type> masses(target.size(),query.size(),0);
+		for(const auto & [pair,z]:expected.mass) {
+			const Pair p=absolute(pair);
+			masses(p.first,query.size()-1-p.second)=Z_type(z);
+		}
+		for(size_t i=0;i<target.size();++i) for(size_t j=0;j<query.size();++j)
+			REQUIRE(result.rawMasses()(i,j)==Approx(masses(i,j)).epsilon(2e-12));
+
+		// Ensemble output encodes the optimal boundary, whose energy is the
+		// sum of the rounded hybrid free energy and its native boundary energy.
+		E_type best=E_INF;
+		std::map<Boundary,E_type> energies;
+		for(const auto & [boundary,z]:expected.boundaries) {
+			if(z==0) continue;
+			const Pair p=absolute({boundary[0],boundary[1]});
+			const Pair q=absolute({boundary[2],boundary[3]});
+			const E_type boundaryE=energy.getE(p.first,q.first,p.second,q.second,E_type(0));
+			const E_type ensemble=energy.getE(Z_type(z/weight(boundaryE)))+boundaryE;
+			energies[boundary]=ensemble;best=std::min(best,ensemble);
+		}
+		REQUIRE_FALSE(output.empty());
+		const Interaction & reported=**output.begin();
+		REQUIRE(reported.isValid());
+		REQUIRE(reported.energy==best);
+		const auto & first=reported.basePairs.front();
+		const auto & last=reported.basePairs.back();
+		const Boundary reportedBoundary{first.first-r1.from,query.size()-1-first.second-r2.from,
+				last.first-r1.from,query.size()-1-last.second-r2.from};
+		REQUIRE(energies.at(reportedBoundary)==best);
+	}
+}
+
+namespace {
+class AnchoredHeuristicProbe : public PredictorMfeEns2dHeuristicSeedExtension {
+public:
+	using PredictorMfeEns2dHeuristicSeedExtension::PredictorMfeEns2dHeuristicSeedExtension;
+	using Pair=Interaction::BasePair;
+	std::map<Pair,Pair> choices;
+	std::map<Pair,size_t> fillCalls;
+	size_t rankingCalls=0;
+	std::map<seeded_oracle::Boundary,std::pair<Z_type,Z_type>> coefficients;
+	std::map<seeded_oracle::Boundary,size_t> completeCalls;
+protected:
+	void fillHybridZ_right(size_t sj1,size_t sj2,size_t si1,size_t si2) override;
+	void updateOptRightZ(size_t i1,size_t j1,size_t i2,size_t j2,E_type hybrid) override;
+	void updateZ(size_t i1,size_t j1,size_t i2,size_t j2,Z_type z,bool hybrid) override;
+};
+
+void AnchoredHeuristicProbe::fillHybridZ_right(size_t sj1,size_t sj2,size_t si1,size_t si2)
+{
+	++fillCalls[{si1,si2}];
+	PredictorMfeEns2dHeuristicSeedExtension::fillHybridZ_right(sj1,sj2,si1,si2);
+	// A custom native hook fixes the retained endpoint after ordinary ranking.
+	// The shared kernel must use that choice without selecting it again.
+	const auto selected=choices.at({si1,si2});
+	j1opt=selected.first;j2opt=selected.second;E_right_opt=0;
+}
+
+void AnchoredHeuristicProbe::updateOptRightZ(size_t i1,size_t j1,size_t i2,size_t j2,E_type hybrid)
+{
+	++rankingCalls;
+	PredictorMfeEns2dHeuristicSeedExtension::updateOptRightZ(i1,j1,i2,j2,hybrid);
+}
+
+void AnchoredHeuristicProbe::updateZ(size_t i1,size_t j1,size_t i2,size_t j2,Z_type z,bool hybrid)
+{
+	// Right-selection hooks must not publish partial partitions. The common
+	// anchor contraction reports each complete boundary with its final factor.
+	REQUIRE(exactContribution!=nullptr);
+	REQUIRE(updateZisComplete);
+	const seeded_oracle::Boundary boundary{i1,i2,j1,j2};
+	coefficients[boundary]=*exactContribution;
+	++completeCalls[boundary];
+	PredictorMfeEns2dHeuristicSeedExtension::updateZ(i1,j1,i2,j2,z,hybrid);
+}
+}
+
+TEST_CASE("native anchored heuristics preserve right-choice hooks and complete boundary coefficients", "[BasePairProbabilities][PredictorSeedOracle][SeededPartitionFunction]") {
+	#include "testEasyLoggingSetup.icc"
+	using namespace seeded_oracle;
+	RnaSequence target("target","GGGGGGG"),query("query","CCCCCCC");
+	AccessibilityBasePair targetAcc(target,6,nullptr),queryAcc(query,5,nullptr);
+	ReverseAccessibility reverseQuery(queryAcc);
+	InteractionEnergyBasePair energy(targetAcc,reverseQuery,2,1);
+	const SeedConstraint sc(2,0,0,0,E_INF,Accessibility::ED_UPPER_BOUND,E_INF,
+			IndexRangeList(),IndexRangeList(),"1|||||&3|||||,2||&5||,4||&3||",false,false,false);
+	const std::vector<Chain> declared{
+		{{0,0},{1,1},{2,2},{3,3},{4,4}},{{1,1},{2,2}},{{3,3},{4,4}}};
+	const std::map<Pair,Pair> choices{{{0,0},{6,6}},{{1,1},{5,5}},{{3,3},{6,6}}};
+	auto weight=[&](E_type e){return E_isINF(e)?0.L:static_cast<long double>(energy.getBoltzmannWeight(e));};
+	for(bool noLP:{false,true}) {
+		CAPTURE(noLP);
+		Model model{7,7,6,5,noLP,declared,[](Pair){return true;},
+			[&](Pair){return weight(energy.getE_init());},
+			[&](Pair p,Pair q){
+				if(q.first-p.first-1>2 || q.second-p.second-1>1) return 0.L;
+				return weight(energy.getE_interLeft(p.first,q.first,p.second,q.second));
+			},
+			[&](Pair p,Pair q){return weight(energy.getE(p.first,q.first,p.second,q.second,E_type(0)));},
+			[&](Pair p,Pair){return choices.at(p);}};
+		const auto expected=enumerate(model);
+		REQUIRE(expected.z>0);
+		auto hybridModel=model;hybridModel.boundary=[](Pair,Pair){return 1.L;};
+		const auto hybrids=enumerate(hybridModel);
+		const auto oc=makeOutputConstraint(noLP);
+		std::map<Boundary,std::pair<Z_type,Z_type>> previousCoefficients;
+		for(bool pairs:{false,true}) {
+			CAPTURE(pairs);
+			BasePairProbabilities result(target.size(),query.size());
+			OutputHandlerInteractionList output(oc,1);
+			AnchoredHeuristicProbe predictor(energy,output,nullptr,new SeedHandlerExplicit(energy,sc),pairs?&result:nullptr);
+			predictor.choices=choices;predictor.predict();
+			REQUIRE(predictor.rankingCalls>0);
+			REQUIRE(predictor.fillCalls.size()==declared.size());
+			for(const auto & seed:declared) REQUIRE(predictor.fillCalls.at(seed.front())==1);
+			REQUIRE(double(predictor.getZall())==Approx(double(expected.z)).epsilon(2e-12));
+			REQUIRE(output.getZ()==predictor.getZall());
+			REQUIRE(predictor.coefficients.size()==hybrids.boundaries.size());
+			for(const auto & [boundary,h]:hybrids.boundaries) {
+				REQUIRE(predictor.completeCalls.at(boundary)==1);
+				const auto [actualH,b]=predictor.coefficients.at(boundary);
+				REQUIRE(double(actualH)==Approx(double(h)).epsilon(2e-12));
+				REQUIRE(double(b)==Approx(double(model.boundary({boundary[0],boundary[1]},{boundary[2],boundary[3]}))).epsilon(2e-12));
+			}
+			if(!pairs) { previousCoefficients=predictor.coefficients;continue; }
+			REQUIRE(predictor.coefficients==previousCoefficients);
+			result.finalize();REQUIRE(result.isApproximate());
+			REQUIRE(result.getZ()==predictor.getZall());
+			for(size_t i=0;i<target.size();++i) for(size_t j=0;j<query.size();++j) {
+				const auto found=expected.mass.find({i,j});
+				REQUIRE(double(result.rawMasses()(i,query.size()-1-j))==Approx(double(found==expected.mass.end()?0:found->second)).epsilon(2e-12));
+			}
+		}
 	}
 }
