@@ -23,6 +23,15 @@ SHA-256 hashes on every invocation. The build directory is ignored. Delete
 changing dependency versions or compiler flags. Do not reuse this prefix with a
 different SDK. Native libraries are never accepted from system pkg-config paths.
 
+The script supplies absolute source and generated-header include paths for the
+out-of-tree IntaRNA build. ViennaRNA 2.7.0 bundles dlib 19.24, whose Unicode
+`uint32` string requires a generic `std::char_traits` removed in modern libc++.
+The script backports [dlib's upstream `char32_t` typedef](https://github.com/davisking/dlib/blob/master/dlib/unicode/unicode.h)
+in the downloaded source only, adds its matching serialization overload and
+supplies a missing dependent template argument rejected by current Clang.
+`scripts/wasm/patch-vienna.py` checks the expected source before each replacement.
+It does not change the RNA algorithms.
+
 ## Dependencies and runtime
 
 - zlib 1.3.1: static library for compressed accessibility and Boost.Iostreams.

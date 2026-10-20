@@ -58,6 +58,9 @@ if [[ ! -f "$prefix/lib/libRNA.a" ]]; then
      --without-svm --without-gsl --without-swig --without-perl --without-python \
      --without-doc --without-cla --without-check --without-kinfold \
      --without-forester --without-rnalocmin --without-rnaxplorer
+   # Backport dlib's upstream char32_t typedef for modern libc++ char_traits.
+   # Only the downloaded dependency is patched; RNAlib algorithms are unchanged.
+   python3 "$repo/scripts/wasm/patch-vienna.py" "$PWD"
    emmake make -C src/ViennaRNA -j "$jobs"
    emmake make -C src/ViennaRNA install
    emmake make install-pkgconfigDATA)
@@ -67,7 +70,7 @@ fi
 (cd "$repo" && bash autotools-init.sh)
 mkdir -p "$build/intarna"
 (cd "$build/intarna"
- emconfigure "$repo/configure" --host=wasm32-unknown-emscripten \
+ CPPFLAGS="-I$build/intarna/src -I$repo/src $CPPFLAGS" emconfigure "$repo/configure" --host=wasm32-unknown-emscripten \
    --disable-multithreading --disable-log-coloring --with-mdspan=kokkos \
    --with-vrna="$prefix" --with-boost="$prefix" \
    --with-boost-libdir="$prefix/lib" --with-zlib="$prefix"
