@@ -210,6 +210,7 @@ fillHybridZ_right( const size_t sj1, const size_t sj2
 				// seed only not covered due to min-val of r1,r2
 				if(!selectingStackSeedRight) {
 					updateZ(si1, sj1+r1, si2, sj2+r2, seedZ * rightExtZ * initZ, true);
+					if (seedCandidates) addSeedPartition({si1,si2},{si1,si2},{sj1+r1,sj2+r2},seedZ*rightExtZ*initZ);
 					addExtensionProbabilityRoot(si1,sj1+r1,si2,sj2+r2,seedZ*rightExtZ*initZ,false,true);
 				}
 			}
@@ -246,6 +247,7 @@ fillHybridZ_left( const size_t si1, const size_t si2 )
 
 				// Z( left + seed ); covers seed only
 				updateZ(si1-l1, sj1, si2-l2, sj2, curZ * seedZ, true);
+				if (seedCandidates) addSeedPartition({si1,si2},{si1-l1,si2-l2},{sj1,sj2},curZ*seedZ);
 				addExtensionProbabilityRoot(si1-l1,sj1,si2-l2,sj2,curZ*seedZ,true,false);
 
 				// Z( left + seed + rightOpt ) and rightOpt true seed extension
@@ -258,6 +260,7 @@ fillHybridZ_left( const size_t si1, const size_t si2 )
 					)
 				{
 					updateZ(si1-l1, j1opt, si2-l2, j2opt, curZ * seedZ * rightOptZ, true);
+					if (seedCandidates) addSeedPartition({si1,si2},{si1-l1,si2-l2},{j1opt,j2opt},curZ*seedZ*rightOptZ);
 					addExtensionProbabilityRoot(si1-l1,j1opt,si2-l2,j2opt,curZ*seedZ*rightOptZ,true,true);
 				}
 			}

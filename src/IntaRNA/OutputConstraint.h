@@ -62,6 +62,9 @@ public:
 	//! maximal ED penalty of each interacting subsequence to be considered for output
 	const E_type maxED;
 
+	//! candidates retained per generating seed before final output selection; zero disables
+	const size_t reportMaxPerSeed;
+
 public:
 
 	/**
@@ -78,6 +81,9 @@ public:
 	 * @param noGUend whether or not inter-molecular UG base pairs are allowed at interaction ends
 	 * @param needZall whether or not Zall has to be computed for output generation
 	 * @param needBPs whether or not interaction base pairs have to be traced for output generation
+	 * @param maxED maximal accessibility penalty per interacting subsequence
+	 * @param reportMaxPerSeed best distinct sites retained per seed before deduplication
+	 *            and final output restrictions; zero preserves ordinary prediction
 	 */
 	OutputConstraint(	  const size_t reportMax = 1
 						, const ReportOverlap reportOverlap = OVERLAP_BOTH
@@ -88,7 +94,8 @@ public:
 						, const bool noGUend = false
 						, const bool needZall = false
 						, const bool needBPs = true
-						, const E_type maxED = Accessibility::ED_UPPER_BOUND);
+						, const E_type maxED = Accessibility::ED_UPPER_BOUND
+						, const size_t reportMaxPerSeed = 0);
 
 	//! destruction
 	virtual ~OutputConstraint();

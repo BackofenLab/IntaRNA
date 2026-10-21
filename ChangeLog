@@ -14,6 +14,10 @@
 
 ## Interface and handling
 
+- --outNumberPerSeed selects each seed's best candidate sites before final
+  deduplication, energy/overlap/count filtering; model P ranks left-most-anchor
+  ensembles; zero preserves ordinary prediction (#285, #288 review)
+
 - orient probability SVGs from the upper-left corner and highlight every MFE
   pair, splitting seed/MFE cell borders into orange and green (PR #259 review)
 
@@ -220,6 +224,26 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261021 Alexander Mitrofanov
+ * OutputConstraint, OutputHandlerSeedCandidates, PredictorMfe, seeded predictors
+   + Add bounded per-seed candidate selection before global pruning, preserving
+     eligible energy/traceback pairs and deduplicating sites before final filters.
+   * Reuse each MFE mode with an admitted single-seed adapter; preserve ordinary
+     statistics/trackers in one separate pass. Positive quotas can cost one
+     prediction per seed; zero retains the existing path.
+ * SeededPartitionFunction, PredictorMfeEns2d[Heuristic]SeedExtension
+   + Rank/report left-most-anchor site ensemble energies independently of full
+     site partitions, Zall and actual-pair probabilities, per #288 guidance.
+ * CommandLineParsing, IntaRNA, README.md, doc/analysis/output-per-seed.md
+   + --outNumberPerSeed=[0,1000], default zero; merge seed identities across
+     regions/windows and reset per region combination with --outPerRegion.
+   * Reject positive unseeded quotas, ignore evaluation, and apply final overlap
+     constraints to the retained union without refilling quotas (#285).
+ * PredictorSeedOracle_test.cpp, OutputHandlerSeedCandidates_test.cpp,
+   runOutputPerSeed.sh, library/test Makefile.am
+   + Independent chain-enumeration, traceback, seed-only, mode-matrix, merge,
+     filter, CLI and unchanged-probability regressions; register/install sources.
 
 261020 Alexander Mitrofanov
  * PredictorMfe2dSeedExtension.*, PredictorMfe2dHeuristicSeedExtension.cpp
