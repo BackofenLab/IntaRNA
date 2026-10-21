@@ -207,6 +207,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	outPrefix2streamName(),
 	outMode("outMode", "NDCE", 'N' ),
 	outNumber("outNumber", 0, 1000, 1),
+	outNumberPerSeed("outNumberPerSeed", 0, 1000, 0),
 	outOverlap("outOverlap", "NTQB", 'B' ),
 	outDeltaE("outDeltaE", 0.0, 100.0, 100.0),
 	outMaxE("outMaxE", -999.0, +999.0, 0.0),
@@ -985,6 +986,11 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 				->notifier(boost::bind(&CommandLineParsing::validate_numberArgument<int>,this,outNumber,_1))
 			, std::string("number of (sub)optimal interactions to report"
 					" (arg in range ["+toString(outNumber.min)+","+toString(outNumber.max)+"])").c_str())
+	    (outNumberPerSeed.name.c_str()
+			, value<int>(&(outNumberPerSeed.val))
+				->default_value(outNumberPerSeed.def)
+				->notifier(boost::bind(&CommandLineParsing::validate_numberArgument<int>,this,outNumberPerSeed,_1))
+			, "Best distinct sites retained per seed before final energy/overlap/count filtering (0 disables, range [0,1000]); model P uses left-most-anchor ensemble energies.")
 	    (outOverlap.name.c_str()
 			, value<char>(&(outOverlap.val))
 				->default_value(outOverlap.def)
@@ -1636,7 +1642,7 @@ parse(int argc, char** argv)
 				if (windowWidth.val <= windowOverlap.val) {
 					throw error("window-based computation: --windowWidth ("+toString(windowWidth.val)+") has to exceed --windowOverlap ("+toString(windowOverlap.val)+")");
 				}
-				if (outNumber.val > 1 && outOverlap.val != 'B') {
+				if (outNumber.val > 1 && outOverlap.val != 'B' && outNumberPerSeed.val == 0) {
 					throw error("window-based computation: non-overlapping subopt output (-n > 1) only supported for --outOverlap=B");
 				}
 				const bool windowNeedsZall = outMode.val == 'E'
@@ -1647,6 +1653,9 @@ parse(int argc, char** argv)
 				}
 			}
 
+
+			if (outNumberPerSeed.val > 0 && noSeedRequired)
+				throw error("--outNumberPerSeed requires seed-constrained prediction; incompatible with --noSeed");
 
 			//////////////// MODEL ////////////////////////
 
@@ -1729,7 +1738,7 @@ CommandLineParsing::prepareEvaluation( boost::program_options::variables_map & v
 		"model", "mode", "kineticScore", "noSeed", "intLenMax", "qIntLenMax", "tIntLenMax",
 		"intLoopMax", "qIntLoopMax", "tIntLoopMax", "qRegion", "tRegion",
 		"qRegionLenMax", "tRegionLenMax", "windowWidth", "windowOverlap",
-		"outNumber", "outOverlap", "outMaxE", "outDeltaE", "outMinPu",
+		"outNumber", "outNumberPerSeed", "outOverlap", "outMaxE", "outDeltaE", "outMinPu",
 		"outNoLP", "outNoGUend", "outBestSeedOnly", "outPerRegion", "outPairwise"
 	};
 	bool removedSomeOptions = false;
@@ -1749,6 +1758,7 @@ CommandLineParsing::prepareEvaluation( boost::program_options::variables_map & v
 	intLenMax.val = intLenMax.def = 0;
 	qIntLenMax.val = tIntLenMax.val = 0;
 	windowWidth.val = 0;
+	outNumberPerSeed.val = 0;
 	qRegionLenMax.val = tRegionLenMax.val = 0;
 	outNoLP = outNoGUend = outPerRegion = outPairwise = false;
 	// inform user about the ignored options and the retained settings
@@ -1972,7 +1982,7 @@ void
 CommandLineParsing::
 validateRegionOverlap( const IndexRangeList & ranges, const bool isQuery ) const
 {
-	if (isEvaluation() || outPerRegion || ranges.size() <= 1 || outOverlap.val == 'B') {
+	if (isEvaluation() || outPerRegion || outNumberPerSeed.val > 0 || ranges.size() <= 1 || outOverlap.val == 'B') {
 		return;
 	}
 	// Splitting one sequence allows separate predictions to reuse the other.
@@ -2261,6 +2271,7 @@ getOutputConstraint( const InteractionEnergy & energy, bool forPrediction )  con
 			, outNeedsZall
 			, outNeedsBPs
 			, (outMinPu.val>0 ? std::min<E_type>(Accessibility::ED_UPPER_BOUND, energy.getE( outMinPu.val )) : Accessibility::ED_UPPER_BOUND)
+			, outNumberPerSeed.val
 			);
 }
 

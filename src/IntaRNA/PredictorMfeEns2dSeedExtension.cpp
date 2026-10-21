@@ -309,7 +309,9 @@ predict( const IndexRange & r1, const IndexRange & r2 )
 						// check complementarity of boundary
 						if (Z_equal(hybridZ_right(r1,r2),0.0)) continue;
 						// compute partition function given the current seed
-						updateZ(si1-l1, sj1+r1, si2-l2, sj2+r2, hybridZ_left(l1,l2) * seedZ * hybridZ_right(r1,r2), true);
+						const Z_type hybrid = hybridZ_left(l1,l2) * seedZ * hybridZ_right(r1,r2);
+						updateZ(si1-l1, sj1+r1, si2-l2, sj2+r2, hybrid, true);
+						if (seedCandidates) addSeedPartition({si1,si2},{si1-l1,si2-l2},{sj1+r1,sj2+r2},hybrid);
 
 					} // r2
 				} // l2
@@ -376,6 +378,9 @@ PredictorMfeEns2dSeedExtension::predictStackSeeds(const IndexRange & r1,const In
 		[&](K::Pair p,K::Pair q,Z_type h,Z_type b){updateExactCompleteZ(p.first,q.first,p.second,q.second,h,b);},
 		stackSeedRightSelector()
 	};
+	if (seedCandidates) weights.anchorComplete = [&](K::Pair seed,K::Pair left,K::Pair right,Z_type hybrid) {
+		addSeedPartition(seed,left,right,hybrid);
+	};
 	const auto result=K::compute(domain,seeds,weights,pairProbabilities!=nullptr);
 	// Custom updateZ overrides can change the objective even in release builds.
 	PartitionArithmetic::check(Zall);
@@ -401,6 +406,24 @@ PredictorMfeEns2dSeedExtension::predictStackSeeds(const IndexRange & r1,const In
 		// Publish regional masses only after the complete computation has succeeded.
 		pairProbabilities->addRegion(target,query,result.z,original,annotate?&seedPairs:nullptr);
 	}
+}
+
+void PredictorMfeEns2dSeedExtension::addSeedPartition(Interaction::BasePair seed,
+		Interaction::BasePair left, Interaction::BasePair right, Z_type hybridZ)
+{
+	// Keep the mode's left-most-anchor ownership, independent of full-site Z.
+	if (!seedCandidates || hybridZ <= 0 || !isValidOutputSite(left.first,right.first,left.second,right.second)) return;
+	PartitionArithmetic::check(hybridZ);
+	Interaction candidate(energy.getAccessibility1().getSequence(),energy.getAccessibility2().getAccessibilityOrigin().getSequence());
+	candidate.basePairs.push_back(energy.getBasePair(left.first,left.second));
+	if (left != right) candidate.basePairs.push_back(energy.getBasePair(right.first,right.second));
+	candidate.energy = energy.getE(left.first,right.first,left.second,right.second,energy.getE(hybridZ));
+	// Ensemble output represents boundaries; annotate the anchor explicitly.
+	const size_t end1=seed.first+seedHandler.getSeedLength1(seed.first,seed.second)-1;
+	const size_t end2=seed.second+seedHandler.getSeedLength2(seed.first,seed.second)-1;
+	candidate.setSeedRange(energy.getBasePair(seed.first,seed.second),energy.getBasePair(end1,end2),
+			energy.getE(seed.first,end1,seed.second,end2,seedHandler.getSeedE(seed.first,seed.second)+energy.getE_init()));
+	seedCandidates->addSeed(energy.getBasePair(seed.first,seed.second),candidate);
 }
 
 E_type

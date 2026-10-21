@@ -6,8 +6,12 @@
 #include "IntaRNA/Predictor.h"
 
 #include "IntaRNA/IndexRangeList.h"
+#include "IntaRNA/OutputHandlerSeedCandidates.h"
+#include "IntaRNA/SeedHandlerIdxOffset.h"
 
+#include <functional>
 #include <list>
+#include <memory>
 #include <utility>
 
 #include <boost/unordered_map.hpp>
@@ -24,6 +28,30 @@ namespace IntaRNA {
 class PredictorMfe : public Predictor {
 
 protected:
+	/** Predict independently with each admitted seed, preserving this mode's
+	 * recurrences and qualifying traceback. Statistics/trackers use one ordinary
+	 * prediction; seed-specific passes do not contribute to them.
+	 * @param r1 target region in original coordinates
+	 * @param r2 reversed-query region in original coordinates
+	 * @param seeds owned seed wrapper of this predictor
+	 * @param factory constructs this predictor type, owning the supplied tracker
+	 *            and seed adapter; children have per-seed selection disabled
+	 * @return true if positive-quota prediction was handled completely
+	 * @throws std::logic_error if a custom predictor subclass does not override
+	 *            this hook to supply a factory preserving its custom recurrences
+	 */
+	virtual bool predictPerSeed(const IndexRange & r1, const IndexRange & r2,
+			SeedHandlerIdxOffset & seeds,
+			const std::function<Predictor *(OutputHandler &, PredictionTracker *, SeedHandler *)> & factory);
+
+	/** Initialize local selection, or use a caller's shared regional collector. */
+	void initSeedCandidates();
+	//! Active collector; null on the unchanged default path.
+	OutputHandlerSeedCandidates * seedCandidates = nullptr;
+	//! Local collector for API callers that do not provide a regional collector.
+	std::unique_ptr<OutputHandlerSeedCandidates> ownedSeedCandidates;
+	//! Enforce complete-site spans before ranking a seed-constrained child pass.
+	bool perSeedPass = false;
 
 	/**
 	 * Describes the currently best interaction found for a left interaction

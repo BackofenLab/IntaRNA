@@ -96,6 +96,13 @@ void compareKernels(const seeded_oracle::Model & m,
 		std::map<seeded_oracle::Boundary,Z_type> boundaries;
 		std::map<seeded_oracle::Boundary,size_t> calls;
 		std::map<seeded_oracle::Boundary,std::pair<Z_type,Z_type>> coefficients;
+		std::map<seeded_oracle::Pair,std::map<seeded_oracle::Boundary,Z_type>> anchors;
+		if(suffix) w.anchorComplete=[&](auto seed,auto p,auto q,auto h) {
+			REQUIRE(h>0);
+			const seeded_oracle::Boundary site{p.first,p.second,q.first,q.second};
+			REQUIRE(anchors[seed].count(site)==0);
+			anchors[seed][site]=h;
+		};
 		w.complete=[&](auto p,auto q,auto h,auto b){
 			const seeded_oracle::Boundary boundary{p.first,p.second,q.first,q.second};
 			REQUIRE(h>0);
@@ -108,6 +115,14 @@ void compareKernels(const seeded_oracle::Model & m,
 			++calls[boundary];
 		};
 		auto got=suffix?Kernel::compute(d,seeds,w,true):seededStack(d,seeds,w,true);
+		if(suffix) {
+			REQUIRE(anchors.size()==hybrids.anchors.size());
+			for(const auto & [seed,sites]:hybrids.anchors) {
+				REQUIRE(anchors.at(seed).size()==sites.size());
+				for(const auto & [site,h]:sites)
+					REQUIRE(double(anchors.at(seed).at(site))==Approx(double(h)).epsilon(2e-12));
+			}
+		}
 		REQUIRE(double(got.z)==Approx(double(oracle.z)).epsilon(2e-12));
 		for(const auto & [boundary,hybrid]:hybrids.boundaries)
 			if(hybrid>0) REQUIRE(calls[boundary]==1);
@@ -144,12 +159,14 @@ void compareKernels(const seeded_oracle::Model & m,
 		// the same complete hybrid sum and boundary factor appear exactly once.
 		const auto withPairs=boundaries;
 		const auto withPairCoefficients=coefficients;
-		boundaries.clear();calls.clear();coefficients.clear();
+		const auto withPairAnchors=anchors;
+		boundaries.clear();calls.clear();coefficients.clear();anchors.clear();
 		auto only=suffix?Kernel::compute(d,seeds,w,false):seededStack(d,seeds,w,false);
 		REQUIRE(only.z==got.z);
 		REQUIRE(only.mass.storageSize()==0);
 		REQUIRE(boundaries==withPairs);
 		REQUIRE(coefficients==withPairCoefficients);
+		REQUIRE(anchors==withPairAnchors);
 		for(const auto & [boundary,count]:calls) REQUIRE(count==1);
 	}
 }

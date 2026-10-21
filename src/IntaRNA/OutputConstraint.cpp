@@ -16,6 +16,7 @@ OutputConstraint::OutputConstraint(
 		, const bool needZall
 		, const bool needBPs
 		, const E_type maxED
+		, const size_t reportMaxPerSeed
 		)
  :
 	  reportMax(reportMax)
@@ -28,6 +29,7 @@ OutputConstraint::OutputConstraint(
 	, needZall(needZall)
 	, needBPs(needBPs)
 	, maxED(maxED)
+	, reportMaxPerSeed(reportMaxPerSeed)
 {
 	if(deltaE < (E_type)0.0) throw std::runtime_error("OutputConstraint(deltaE="+toString(deltaE)+") not >= 0.0");
 }

@@ -38,6 +38,10 @@ PredictorMfe2dHelixBlockHeuristicSeed::
 predict( const IndexRange & r1
 		, const IndexRange & r2 )
 {
+	if (predictPerSeed(r1,r2,seedHandler,[&](OutputHandler & out, PredictionTracker * tracker, SeedHandler * seed) {
+		return new PredictorMfe2dHelixBlockHeuristicSeed(energy,out,tracker,helixHandler.getConstraint(),seed);
+	})) return;
+
 	// temporary access
 	const OutputConstraint & outConstraint = output.getOutputConstraint();
 #if INTARNA_MULITHREADING

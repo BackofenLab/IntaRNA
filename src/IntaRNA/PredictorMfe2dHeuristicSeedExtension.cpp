@@ -33,6 +33,10 @@ void
 PredictorMfe2dHeuristicSeedExtension::
 predict( const IndexRange & r1, const IndexRange & r2 )
 {
+	if (predictPerSeed(r1,r2,seedHandler,[&](OutputHandler & out, PredictionTracker * tracker, SeedHandler * seed) {
+		return new PredictorMfe2dHeuristicSeedExtension(energy,out,tracker,seed);
+	})) return;
+
 #if INTARNA_MULITHREADING
 	#pragma omp critical(intarna_omp_logOutput)
 #endif
