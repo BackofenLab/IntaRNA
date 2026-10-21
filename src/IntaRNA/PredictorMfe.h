@@ -75,7 +75,7 @@ public:
 				, OutputHandler & output
 				, PredictionTracker * predTracker );
 
-	virtual ~PredictorMfe();
+	virtual ~PredictorMfe() override;
 
 protected:
 
@@ -112,7 +112,7 @@ protected:
 	 */
 	virtual
 	void
-	initOptima();
+	initOptima() override;
 
 	/**
 	 * Checks terminal GU and accessibility constraints for a complete site.
@@ -145,7 +145,7 @@ protected:
 				, const size_t i2, const size_t j2
 				, const E_type energy
 				, const bool isHybridE
-				, const bool incrementZall );
+				, const bool incrementZall ) override;
 
 
 	/**
@@ -199,7 +199,7 @@ protected:
 	 */
 	virtual
 	void
-	reportOptima();
+	reportOptima() override;
 
 };
 

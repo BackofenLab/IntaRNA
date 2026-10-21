@@ -61,7 +61,7 @@ public:
 					, const bool internalLoopGU = true
 				);
 
-	virtual ~InteractionEnergyBasePair();
+	virtual ~InteractionEnergyBasePair() override;
 
 
 	/**
@@ -79,7 +79,7 @@ public:
 	 */
 	virtual
 	E_type
-	getES1( const size_t i1, const size_t j1 ) const;
+	getES1( const size_t i1, const size_t j1 ) const override;
 
 	/**
 	 * Provides the ensemble energy (ES) of all intramolecular substructures
@@ -96,7 +96,7 @@ public:
 	 */
 	virtual
 	E_type
-	getES2( const size_t i2, const size_t j2 ) const;
+	getES2( const size_t i2, const size_t j2 ) const override;
 
 	/**
 	 * Provides the energy contribution for a given number of unpaired
@@ -109,7 +109,7 @@ public:
 	 */
 	virtual
 	E_type
-	getE_multiUnpaired( const size_t numUnpaired ) const;
+	getE_multiUnpaired( const size_t numUnpaired ) const override;
 
 
 	/**
@@ -125,7 +125,7 @@ public:
 	 */
 	virtual
 	E_type
-	getE_multiHelix( const size_t j1, const size_t j2 ) const;
+	getE_multiHelix( const size_t j1, const size_t j2 ) const override;
 
 	/**
 	 * Provides the energy contribution/penalty for closing an intermolecular
@@ -135,7 +135,7 @@ public:
 	 */
 	virtual
 	E_type
-	getE_multiClosing() const;
+	getE_multiClosing() const override;
 
 
 	/**
@@ -145,7 +145,7 @@ public:
 	 */
 	virtual
 	E_type
-	getE_init() const;
+	getE_init() const override;
 
 
 	/**
@@ -165,7 +165,7 @@ public:
 	 */
 	virtual
 	E_type
-	getE_interLeft( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const;
+	getE_interLeft( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const override;
 
 	/**
 	 * Computes the dangling end energy penalty estimate for the left side of
@@ -181,7 +181,7 @@ public:
 	 */
 	virtual
 	E_type
-	getE_danglingLeft( const size_t i1, const size_t i2 ) const;
+	getE_danglingLeft( const size_t i1, const size_t i2 ) const override;
 
 
 	/**
@@ -196,7 +196,7 @@ public:
 	 */
 	virtual
 	E_type
-	getE_danglingRight( const size_t j1, const size_t j2 ) const;
+	getE_danglingRight( const size_t j1, const size_t j2 ) const override;
 
 	/**
 	 * Provides the penalty for closing an interaction with the given
@@ -209,7 +209,7 @@ public:
 	 */
 	virtual
 	E_type
-	getE_endLeft( const size_t i1, const size_t i2 ) const;
+	getE_endLeft( const size_t i1, const size_t i2 ) const override;
 
 	/**
 	 * Provides the penalty for closing an interaction with the given
@@ -222,7 +222,7 @@ public:
 	 */
 	virtual
 	E_type
-	getE_endRight( const size_t j1, const size_t j2 ) const;
+	getE_endRight( const size_t j1, const size_t j2 ) const override;
 
 	/**
 	 * Returns always RT=1 due to the lack of reasonable values for this energy
@@ -231,7 +231,7 @@ public:
 	 */
 	virtual
 	Z_type
-	getRT() const;
+	getRT() const override;
 
 	/**
 	 * Provides the (constant) energy contribution of a base pair (sequence independent)
@@ -249,7 +249,7 @@ public:
 	 */
 	virtual
 	E_type
-	getEall1() const;
+	getEall1() const override;
 
 	/**
 	 * Provides the overall ensemble energy for sequence 2
@@ -258,7 +258,7 @@ public:
 	 */
 	virtual
 	E_type
-	getEall2() const;
+	getEall2() const override;
 
 
 private:

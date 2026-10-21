@@ -49,7 +49,7 @@ public:
 			, SeedHandler * seedHandlerInstance
 	);
 
-	virtual ~PredictorMfe2dHelixBlockHeuristicSeed();
+	virtual ~PredictorMfe2dHelixBlockHeuristicSeed() override;
 
 	/**
 	 * Computes the mfe for the given sequence ranges (i1-j1) in the first
@@ -63,7 +63,7 @@ public:
 	virtual
 	void
 	predict( const IndexRange & r1 = IndexRange(0,RnaSequence::lastPos)
-			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos));
+			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos)) override;
 
 protected:
 
@@ -98,7 +98,7 @@ protected:
 	 */
 	virtual
 	void
-	traceBack( Interaction & interaction );
+	traceBack( Interaction & interaction ) override;
 
 
 	/**
@@ -114,7 +114,7 @@ protected:
 	 */
 	virtual
 	void
-	getNextBest( Interaction & curBest );
+	getNextBest( Interaction & curBest ) override;
 
 	/**
 	 * disables predictionTracker usage

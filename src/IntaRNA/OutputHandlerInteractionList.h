@@ -41,7 +41,7 @@ public:
 								, const size_t maxToStore);
 
 	//! destruction
-	virtual ~OutputHandlerInteractionList();
+	virtual ~OutputHandlerInteractionList() override;
 
 	/**
 	 * Adds a given RNA-RNA interaction to the storage/output.
@@ -50,7 +50,7 @@ public:
 	 */
 	virtual
 	void
-	add( const Interaction & interaction );
+	add( const Interaction & interaction ) override;
 
 	//! whether or not the container is empty
 	//! @return true if no elements are stored
