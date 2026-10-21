@@ -68,6 +68,9 @@
 
 ## Technical changes and Optimizations
 
+- document the per-seed output selection investigation, implementation plan
+  and scientific-semantics questions awaiting review for issue #285
+
 - reuse MFE seed-extension scratch matrices and bound predecessor scans in exact
   and heuristic prediction; evaluate physical energies directly (PR #276 review)
 
@@ -220,6 +223,14 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261021 Alexander Mitrofanov
+ * doc/analysis/output-per-seed.md
+   + Record the current candidate pruning, seed annotation, ensemble ranking
+     and regional merging paths for issue #285.
+   + Propose implementation and validation steps, and ask for guidance on
+     seed membership, model P ranking and special-mode/selection scope before
+     changing prediction behavior, as requested in the issue.
 
 261020 Alexander Mitrofanov
  * PredictorMfe2dSeedExtension.*, PredictorMfe2dHeuristicSeedExtension.cpp
