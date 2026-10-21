@@ -1,50 +1,77 @@
-# Step 3: sequence input interface (#286)
+# Step 3: browser controls (#286, PR #287 review)
 
-## Design
+## Design and layout
 
-The interface is a small scientific workspace: two equally weighted strand
-editors above one results region. Query uses teal (`#087f83`), target uses blue
-(`#315fb8`), with navy text (`#17324d`), pale blue background (`#f1f7fa`), white
-working surfaces and rust (`#aa4b1d`) for errors. Trebuchet/Segoe UI system fonts
-keep the page self-contained; only nucleotide input and structure data use
-monospace. The paired-strand mark is the single visual motif. All working text
-is left aligned. A generic dashboard with metric cards was rejected because
-sequence comparison, input direction and coordinate interpretation matter here.
+The interface follows [vaRRI main-v2](https://github.com/BackofenLab/vaRRI/tree/main-v2):
+header indigo `#344a9a`, action blue `#145a96`, dark blue `#0f4676`, pale blue
+`#eaf2f8`, white `#ffffff` and focus gold `#f4bb44`. Segoe UI/Tahoma/Geneva serve
+labels and body text; Consolas/Liberation Mono serve sequence and structure data.
+The official group and university logos share the header with the IntaRNA mark.
+Their local copies and source attribution are in `webinterface/assets/`.
+
+The layout puts the scientific task first, then mutually exclusive parameter
+groups, followed by the compute button, results, additional files and versions.
+All working content is left aligned; two equally sized strand editors collapse
+into one column on mobile. The shared institutional header is the strongest
+visual element. Parameter borders and blue summaries identify functional groups.
 
 ```text
-IntaRNA                                      Documentation / Source
-RNA–RNA interaction prediction               Runs on this device
-[ Query 5′ → 3′                 ][ Target 5′ → 3′                ]
-[ FASTA editor                 ][ FASTA editor                  ]
-Maximum results / Load example                          Compute
-Results / search / export
-[ sortable interaction coordinates and energy                  ]
+Group logo       IntaRNA / RNA–RNA interaction analysis        University logo
+RNA–RNA interactions                             Sequences stay on your device
+Task: Prediction / Evaluation                                Load example
+[ Sequence input: query + target, start indices, evaluation structures        ]
+[ Query ] [ Target ] [ Seed ] [ Helix ] [ SHAPE ] [ Interaction/energy ]
+[ Output: filters, CSV columns, additional files ] [ General ]
+Reset parameters                                                Compute
+Interactions / search / show-hide columns / CSV download
+Additional output files / diagnostics / compiled versions
 ```
 
-## Input and state
+Every CLI group has a menu. `details[name]` plus a toggle fallback keep at most
+one parameter menu open. Sequence input starts open. Prediction-only controls
+are disabled/hidden during evaluation. Changing task resets parameters to their
+CLI defaults while preserving sequence text; Load example also restores the
+complementary pair. The native default output count is one; browser users can
+request 0–100 interactions per pair. Zero enables accessibility-only output.
 
-`protocol.js` accepts one FASTA record or one plain sequence per input. Wrapped
-lines, lowercase and DNA T are normalized to uppercase RNA U. The only allowed
-nucleotides are A/C/G/U/T/N; N does not match a complementary base. Empty names,
-multiple/misplaced headers, invalid symbols and lengths outside 7–2,000 nt are
-rejected. Query length × target length is limited to 1,000,000 for browser
-memory. The result count is an integer from 1 to 100. These limits are also
-enforced in the worker and do not change the native CLI.
+## Inputs, defaults and validation
 
-The example is a short complementary pair with a seven-base seed. Predictions
-use the native defaults (heuristic prediction, Turner energy model, accessibility
-included, 37 °C, seed length 7) and allow overlapping suboptimal interactions.
-All sequences are entered 5′ to 3′; the CLI handles reverse query accessibility.
+`options.js` defines labels, types, defaults and ranges from
+`src/bin/CommandLineParsing.cpp`. `protocol.js` validates them on both sides of
+the worker boundary. Query/target retain their distinct interior-loop defaults
+(16 and 10). Meta-options such as `acc`, `accW`, `accL`, `intLenMax` and
+`intLoopMax` are represented by per-strand controls to avoid conflicting values.
+FASTA headers supply sequence names instead of `qId`/`tId`. `outCsvSort` selects a native download sort column; table sorting is independent.
+CSV uses a fixed semicolon delimiter.
+Process settings (threads, file/log paths, parameter files, help/version commands)
+are replaced by the worker lifecycle, local data inputs, downloads and displayed
+compiled versions. The base-pair maximization energy model is intentionally
+excluded. The helix-block interaction model B is supported.
 
-The loading dialog reports initialization versus calculation without inventing
-percentages. Abort and Escape terminate the worker and restore the form. Inputs
-are disabled during a prediction; the results are cleared when inputs change or
-a new prediction begins. Errors and empty output have explicit messages.
-Diagnostics are available separately from CSV. Focus returns to Compute after
-the dialog closes. There are visible keyboard focus styles, associated labels,
-live status/error regions, reduced-motion support and a single-column mobile
-layout. Browser tests cover validation, real computation, abort/restart, worker
-load failure, responsive overflow and result interactions.
+Prediction accepts plain sequence or up to 20 FASTA records per strand.
+Evaluation requires one query and target and 1–100 predefined structures.
+Wrapped/lowercase sequence text and DNA T normalize to uppercase RNA U. A/C/G/U/N
+are accepted. Each record is 2–2,000 nt; seed predictions additionally require
+at least `seedBP` nucleotides. FASTA IDs end at the first whitespace, matching the CLI. Duplicate IDs (including collisions after
+native CSV semicolon replacement) are rejected. The total selected all-vs-all
+query length × target length, or sum of pairwise products, is capped at 1,000,000.
+The per-strand start index applies to all records and defaults to one. Negative
+indices skip zero, matching `RnaSequence`; output coordinates remain inclusive.
 
-Serve the staged directory over HTTP; module workers cannot load through
-`file://`. No frontend bundler, external font, CDN or API service is needed.
+Evaluation encodes target then query in 5′ to 3′ dot-bar notation, such as
+`1|||&1|||`, separated by colons. Bars pair antiparallel. Validation checks bounds,
+equal nonzero pair counts and AU/GC/GU complementarity. Evaluation retains energy,
+accessibility and SHAPE controls while excluding prediction/seed/helix/region
+and output-filter constraints, matching the native personality.
+
+Validation also covers numeric ranges, accessibility windows/spans, selected
+FASTA subsets, regions, structural constraints, seed/helix compatibility,
+probability-output requirements and window restrictions. SHAPE and RNAplfold
+accessibility text can be pasted or loaded from a local file (up to 1 MB). Data
+are written to fixed MEMFS paths, never used as user-provided CLI arguments.
+Native diagnostics remain available for model-specific failures.
+
+Inputs/results clear on edits; the form disables during execution. Abort and
+Escape terminate the worker during startup or C++ execution. Status, errors,
+empty output and diagnostic text have dedicated regions. Keyboard focus,
+reduced motion and mobile overflow are covered by real browser tests.

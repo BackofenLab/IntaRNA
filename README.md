@@ -5,8 +5,8 @@
 **Efficient RNA-RNA interaction prediction incorporating accessibility and
 seeding of interaction sites**
 
-Predict short RNA pairs locally with the [browser interface](https://backofenlab.github.io/IntaRNA/webinterface/).
-See the [WebAssembly build instructions](docs/step1-wasm-compilation.md) and
+Predict short RNA pairs or evaluate supplied structures locally with the [browser interface](https://backofenlab.github.io/IntaRNA/webinterface/).
+See the [WebAssembly build instructions](webinterface/docs/step1-wasm-compilation.md) and
 [interface/deployment notes](webinterface/docs/step4-results-and-deployment.md).
 
 

@@ -14,6 +14,7 @@ Activate Emscripten 4.0.23 with `source /path/to/emsdk/emsdk_env.sh`, then run:
 ```sh
 bash scripts/wasm/build.sh
 node scripts/wasm/smoke.mjs
+node scripts/wasm/smoke-protocol.mjs
 ```
 
 `WASM_BUILD_DIR` changes the build directory; `JOBS` defaults to 2. Source
@@ -74,3 +75,18 @@ WASM from the same build together. The Node smoke test runs real
 Turner/default-accessibility predictions and checks energy, coordinates,
 nonzero accessibility costs, suboptimal counts and C++ error handling against
 the native CLI.
+
+## Compiled version information and virtual overrides (PR #287 review)
+
+After copying the paired JS/WASM assets, `write-build-info.mjs` invokes their
+actual `--version` entry point. It records IntaRNA package version, ViennaRNA and
+Boost versions, source repository/revision and dirty status, Emscripten version,
+zlib version and asset hashes in `build-info.txt` and `build-info.json`. The
+interface displays those versions and links both files. Staging checks the
+hashes and preserves provenance even if the staging checkout has moved.
+
+IntaRNA's inherited virtual methods and destructors declare `override`, including
+previously unannotated energy/accessibility, seed/helix, predictor and output
+families. The Emscripten build treats inconsistent missing overrides as errors.
+Vendored Easylogging++ remains unchanged. This annotation-only C++ change does
+not alter algorithms, virtual extension points or scientific defaults.

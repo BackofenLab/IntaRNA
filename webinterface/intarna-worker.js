@@ -1,6 +1,6 @@
 import { prepareRequest, makeArguments } from './protocol.js';
 
-// One main() call per worker: C++ globals and MEMFS never cross predictions.
+// Each task owns a worker; each CLI invocation owns a fresh WASM instance.
 let started = false;
 self.onmessage = async ({ data }) => {
   if (started) return;
@@ -11,28 +11,36 @@ self.onmessage = async ({ data }) => {
     if (diagnostics.length > 25) diagnostics.shift();
   };
   try {
-    // Validate again at the worker boundary before allocating the WASM runtime.
     const request = prepareRequest(data);
     self.postMessage({ type: 'status', message: 'Loading the prediction engine…' });
     const { default: createIntaRNA } = await import('./wasm/intarna.js');
-    const module = await createIntaRNA({
-      noInitialRun: true,
-      locateFile: () => new URL('./wasm/intarna.wasm', import.meta.url).href,
-      print: log,
-      printErr: log,
-    });
-    module.FS.writeFile('/query.fa', request.query.fasta);
-    module.FS.writeFile('/target.fa', request.target.fasta);
-    self.postMessage({ type: 'status', message: 'Predicting RNA interactions…' });
-    const code = module.callMain(makeArguments(request.count));
-    if (code !== 0) throw new Error(`IntaRNA exited with status ${code}.`);
-    const csv = module.FS.readFile('/results.csv', { encoding: 'utf8' });
-    self.postMessage({ type: 'result', csv, diagnostics: diagnostics.join('\n') });
+    const run = async (format) => {
+      const module = await createIntaRNA({
+        noInitialRun: true,
+        locateFile: () => new URL('./wasm/intarna.wasm', import.meta.url).href,
+        print: log, printErr: log,
+      });
+      module.FS.writeFile('/query.fa', request.query.fasta);
+      module.FS.writeFile('/target.fa', request.target.fasta);
+      module.FS.mkdir('/output');
+      for (const [key, value] of Object.entries(request.parameters)) {
+        if (/^(q|t)(Shape|AccFile)$/.test(key) && value) module.FS.writeFile(`/${key}.txt`, value + '\n');
+      }
+      self.postMessage({ type: 'status', message: request.task === 'evaluation' ? 'Evaluating supplied RNA interactions…' : 'Predicting RNA interactions…' });
+      const code = module.callMain(makeArguments(request, format));
+      if (code !== 0) throw new Error(`IntaRNA exited with status ${code}. Check the diagnostics and input settings.`);
+      return module.FS;
+    };
+    const fs = await run('C');
+    const csv = fs.readFile('/results.csv', { encoding: 'utf8' });
+    const files = fs.readdir('/output').filter((name) => name !== '.' && name !== '..').map((name) => ({ name, text: fs.readFile(`/output/${name}`, { encoding: 'utf8' }) }));
+    for (const [key, format] of [['normal', 'N'], ['detailed', 'D'], ['ensemble', 'E']]) {
+      if (!request.outputs.includes(key)) continue;
+      const reportFS = await run(format);
+      files.push({ name: `intarna-${key}.txt`, text: reportFS.readFile('/report.txt', { encoding: 'utf8' }) });
+    }
+    self.postMessage({ type: 'result', csv, csvColumns: request.csvColumns, files, diagnostics: diagnostics.join('\n') });
   } catch (error) {
-    self.postMessage({
-      type: 'error',
-      message: error instanceof Error ? error.message : String(error),
-      diagnostics: diagnostics.join('\n'),
-    });
+    self.postMessage({ type: 'error', message: error instanceof Error ? error.message : String(error), diagnostics: diagnostics.join('\n') });
   }
 };

@@ -89,7 +89,7 @@ export VRNA_LIBS="-L$prefix/lib -lRNA -lm"
 (cd "$repo" && bash autotools-init.sh)
 mkdir -p "$build/intarna"
 (cd "$build/intarna"
- CPPFLAGS="-I$build/intarna/src -I$repo/src $CPPFLAGS" emconfigure "$repo/configure" --host=wasm32-unknown-emscripten \
+ CXXFLAGS="$CXXFLAGS -Werror=inconsistent-missing-override" CPPFLAGS="-I$build/intarna/src -I$repo/src $CPPFLAGS" emconfigure "$repo/configure" --host=wasm32-unknown-emscripten \
    --disable-multithreading --disable-log-coloring --with-mdspan=kokkos \
    --with-vrna="$prefix" --with-boost="$prefix" \
    --with-boost-libdir="$prefix/lib" --with-zlib="$prefix"
@@ -99,4 +99,7 @@ mkdir -p "$build/intarna"
  cp src/bin/IntaRNA.wasm "$build/site/wasm/intarna.wasm")
 # ES modules also work in Node smoke tests without changing package scope.
 printf '{"type":"module"}\n' > "$build/site/wasm/package.json"
+node "$repo/scripts/wasm/write-build-info.mjs" "$repo" "$build/site" \
+  "$(emcc -dumpversion)" "$(git -C "$repo" rev-parse HEAD)" \
+  "$(git -C "$repo" status --porcelain --untracked-files=no)"
 echo "WASM assets: $build/site/wasm"
