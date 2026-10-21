@@ -51,7 +51,7 @@ public:
 			SeedHandler * seedHandler, const char score = 'A');
 
 	/** Frees the owned seed handler and prediction tracker. */
-	virtual ~PredictorSeedExtensionKinetic();
+	virtual ~PredictorSeedExtensionKinetic() override;
 
 	/**
 	 * Extends all feasible seeds within inclusive, zero-based sequence ranges.

@@ -2,7 +2,6 @@ name: WebAssembly and web interface
 
 on:
   pull_request:
-    branches: [master]
   push:
     branches: [master]
   workflow_dispatch:
@@ -36,7 +35,9 @@ jobs:
       - name: Cross-compile dependencies and IntaRNA
         run: bash scripts/wasm/build.sh
       - name: Check real WASM predictions against the native reference
-        run: node scripts/wasm/smoke.mjs
+        run: |
+          node scripts/wasm/smoke.mjs
+          node scripts/wasm/smoke-protocol.mjs
       - name: Stage the static site and notices
         run: bash scripts/wasm/stage.sh
       - name: Install browser test tools

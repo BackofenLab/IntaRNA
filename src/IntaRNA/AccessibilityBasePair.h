@@ -47,7 +47,7 @@ public:
   /***
    * Destructor of AccessibilityBasePair
    */
-  virtual ~AccessibilityBasePair();
+  virtual ~AccessibilityBasePair() override;
 
   /***
    * Returns the accessibility energy value between the indices (from, to)
@@ -59,7 +59,7 @@ public:
    *
    * @throw std::runtime_error in case it does not hold 0 <= from <= to < seq.length
    */
-	virtual E_type getED( const size_t from, const size_t to ) const;
+	virtual E_type getED( const size_t from, const size_t to ) const override;
 
 protected:
 

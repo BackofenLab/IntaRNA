@@ -31,7 +31,7 @@ public:
 	/**
 	 * destruction
 	 */
-	virtual ~HelixHandlerIdxOffset();
+	virtual ~HelixHandlerIdxOffset() override;
 
 	/**
 	 * Access to the underlying interaction energy function
@@ -39,7 +39,7 @@ public:
 	 */
 	virtual
 	const InteractionEnergy&
-	getInteractionEnergy() const;
+	getInteractionEnergy() const override;
 
 	/**
 	 * Access to the currently used index offset for sequence 1
@@ -73,7 +73,7 @@ public:
 	 */
 	virtual
 	const HelixConstraint&
-	getConstraint() const;
+	getConstraint() const override;
 
 	/**
 	 * Computes the helix matrix for the given interval boundaries
@@ -89,7 +89,7 @@ public:
 	 */
 	virtual
 	size_t
-	fillHelix(const size_t i1, const size_t j1, const size_t i2, const size_t j2);
+	fillHelix(const size_t i1, const size_t j1, const size_t i2, const size_t j2) override;
 
 	/**
 	 * Computes the helix matrix for the given interval boundaries for helices containing a seed
@@ -104,7 +104,7 @@ public:
 	 */
 	virtual
 	size_t
-	fillHelixSeed(const size_t i1, const size_t j1, const size_t i2, const size_t j2);
+	fillHelixSeed(const size_t i1, const size_t j1, const size_t i2, const size_t j2) override;
 
 	/**
 	 * Identifies the base pairs of the mfe helix interaction starting at i1,i2
@@ -120,7 +120,7 @@ public:
 	 */
 	virtual
 	void
-	traceBackHelix( Interaction & interaction, const size_t i1, const size_t i2);
+	traceBackHelix( Interaction & interaction, const size_t i1, const size_t i2) override;
 
 	/**
 	 * Identifies the base pairs of the mfe helix interaction, containing a seed, starting at i1,i2
@@ -134,7 +134,7 @@ public:
 	 */
 	virtual
 	void
-	traceBackHelixSeed( Interaction & interaction, const size_t i1, const size_t i2);
+	traceBackHelixSeed( Interaction & interaction, const size_t i1, const size_t i2) override;
 
 	/**
 	 * Access to the mfe of any helix with left-most base pair (i1,i2)
@@ -147,7 +147,7 @@ public:
 	 */
 	virtual
 	E_type
-	getHelixE( const size_t i1, const size_t i2 ) const;
+	getHelixE( const size_t i1, const size_t i2 ) const override;
 
 	/**
 	 * Access to the mfe of any helix with left-most base pair (i1,i2) and containing a seed
@@ -160,7 +160,7 @@ public:
 	 */
 	virtual
 	E_type
-	getHelixSeedE( const size_t i1, const size_t i2 ) const;
+	getHelixSeedE( const size_t i1, const size_t i2 ) const override;
 
 	/**
 	 * Access to the length in seq1 of the mfe helix with left-most base pair (i1,i2)
@@ -173,7 +173,7 @@ public:
 	 */
 	virtual
 	size_t
-	getHelixLength1( const size_t i1, const size_t i2 ) const;
+	getHelixLength1( const size_t i1, const size_t i2 ) const override;
 
 
 	/**
@@ -187,7 +187,7 @@ public:
 	 */
 	virtual
 	size_t
-	getHelixLength2( const size_t i1, const size_t i2 ) const;
+	getHelixLength2( const size_t i1, const size_t i2 ) const override;
 
 	/**
 	 * Access to the length in seq1 of the mfe helix with left-most base pair (i1,i2), containing a seed
@@ -200,7 +200,7 @@ public:
 	 */
 	virtual
 	size_t
-	getHelixSeedLength1( const size_t i1, const size_t i2 ) const;
+	getHelixSeedLength1( const size_t i1, const size_t i2 ) const override;
 
 	/**
 	 * Access to the length in seq2 of the mfe helix with left-most base pair (i1,i2), containing a seed
@@ -213,7 +213,7 @@ public:
 	 */
 	virtual
 	size_t
-	getHelixSeedLength2( const size_t i1, const size_t i2 ) const;
+	getHelixSeedLength2( const size_t i1, const size_t i2 ) const override;
 
 	/**
 	 * Check whether the given seedHandler is of type SeedHandlerIdxOffset
@@ -223,7 +223,7 @@ public:
 	 */
 	virtual
 	void
-	setSeedHandler( SeedHandler & seedHandler);
+	setSeedHandler( SeedHandler & seedHandler) override;
 
 protected:
 

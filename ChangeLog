@@ -14,6 +14,11 @@
 
 ## Interface and handling
 
+- extend the browser interface with vaRRI styling, prediction/evaluation tasks,
+  multi-FASTA, start indices, CLI parameter groups, selectable CSV columns and
+  additional output previews/downloads; label pair-relative differences mfe Δ
+  and display actual compiled versions (PR #287 review)
+
 - display sortable/filterable browser results and native CSV downloads;
   publish the tested interface alongside existing Pages documentation (#286)
 
@@ -74,6 +79,10 @@
 - reject Zall/Eall-dependent output in window mode
 
 ## Technical changes and Optimizations
+
+- annotate inherited virtual methods/destructors with override, preserve compiled
+  WASM asset provenance through staging, and expand protocol/browser validation
+  for the PR #287 review
 
 - cross-compile IntaRNA and pinned dependencies to WebAssembly (#286, step 1)
 - verify browser predictions against native accessibility/energy references and
@@ -231,6 +240,29 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261021 Alexander Mitrofanov
+ * src/IntaRNA/*.h
+   * Mark 194 inherited virtual methods and 45 derived destructors override;
+     keep algorithms, interfaces and third-party headers unchanged.
+ * webinterface/{options,columns,protocol,app,results,intarna-worker}.js
+   + Add CLI-based parameter groups and validation, multi-FASTA prediction,
+     signed per-strand start indices and IntaRNAeval structure evaluation.
+   + Provide all CSV columns, table visibility controls, pair-relative mfe Δ,
+     local SHAPE/accessibility data and previews/downloads of native extra files.
+ * webinterface/index.html, styles.css, assets/*
+   * Follow vaRRI main-v2 colors and institutional header; keep one parameter
+     group open at a time and adapt controls/defaults to the selected task.
+ * scripts/wasm/{build,stage}.sh, write-build-info.mjs
+   + Record actual compiled engine/library versions and asset hashes in text/JSON
+     at build time; preserve/check provenance during staging and show it in UI.
+   * Reject inconsistent missing overrides in the Emscripten build.
+ * webinterface/tests/*, scripts/wasm/{smoke-protocol.mjs,test-browser.py}
+   + Exercise task validation/defaults, real WASM evaluation/prediction, multiple
+     records/coordinates, imported data, columns/reports and worker lifecycle.
+ * .github/workflows/{build,build-wasm}.yml, README.md, webinterface/docs/*
+   * Run WASM/browser checks on dependent PRs and document revised behavior,
+     provenance, native option replacements and browser limits (PR #287 review).
 
 261020 Alexander Mitrofanov
  * scripts/wasm/*, .github/workflows/build-wasm.yml, webinterface/app.js

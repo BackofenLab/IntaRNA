@@ -41,7 +41,7 @@ public:
 	/**
 	 * destruction, enforces a flush on the output stream.
 	 */
-	virtual ~OutputHandlerText();
+	virtual ~OutputHandlerText() override;
 
 	/**
 	 * Write a given RNA-RNA interaction in simple text format to the output
@@ -51,7 +51,7 @@ public:
 	 */
 	virtual
 	void
-	add( const Interaction & interaction );
+	add( const Interaction & interaction ) override;
 
 protected:
 

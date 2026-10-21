@@ -52,7 +52,7 @@ public:
 	/**
 	 * data cleanup
 	 */
-	virtual ~PredictorMfeEns2dHeuristicSeedExtension();
+	virtual ~PredictorMfeEns2dHeuristicSeedExtension() override;
 
 
 	/**
@@ -70,7 +70,7 @@ public:
 	virtual
 	void
 	predict( const IndexRange & r1 = IndexRange(0,RnaSequence::lastPos)
-			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos) );
+			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos) ) override;
 
 
 protected:
@@ -157,7 +157,7 @@ protected:
 	 */
 	virtual
 	void
-	fillHybridZ_left( const size_t j1, const size_t j2 );
+	fillHybridZ_left( const size_t j1, const size_t j2 ) override;
 
 };
 

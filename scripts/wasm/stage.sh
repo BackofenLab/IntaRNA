@@ -7,7 +7,8 @@ site="$build/site"
 test -s "$site/wasm/intarna.js"
 test -s "$site/wasm/intarna.wasm"
 mkdir -p "$site/licenses"
-for file in index.html styles.css app.js mark.svg protocol.js runner.js results.js; do
+cp -R "$repo/webinterface/assets" "$site/"
+for file in index.html styles.css app.js mark.svg protocol.js runner.js results.js options.js columns.js; do
   cp "$repo/webinterface/$file" "$site/$file"
 done
 cp "$repo/webinterface/intarna-worker.js" "$site/intarna-worker.js"
@@ -42,18 +43,16 @@ cat > "$site/licenses/index.html" <<'HTML'
 </ul><p><a href="../build-info.json">Build provenance</a> · <a href="../">Back to IntaRNA</a></p>
 </html>
 HTML
-python3 - "$repo" "$site" <<'PY'
-import json
-import subprocess
-import sys
+# Provenance belongs to the compiled assets, never the later staging revision.
+python3 - "$site" <<'PYINFO'
+import hashlib, json, sys
 from pathlib import Path
-repo, site = sys.argv[1:]
-metadata = {
-    "source": "https://github.com/BackofenLab/IntaRNA",
-    "commit": subprocess.check_output(["git", "-C", repo, "rev-parse", "HEAD"], text=True).strip(),
-    "emscripten": "4.0.23", "boost": "1.87.0", "viennarna": "2.7.0", "zlib": "1.3.1",
-    "threading": "single worker per prediction",
-}
-Path(site, "build-info.json").write_text(json.dumps(metadata, indent=2) + "\n")
-PY
+site = Path(sys.argv[1])
+metadata = json.loads((site / "build-info.json").read_text())
+if not (site / "build-info.txt").is_file():
+    raise SystemExit("Missing compiled version text")
+for name, digest in metadata["sha256"].items():
+    if hashlib.sha256((site / "wasm" / name).read_bytes()).hexdigest() != digest:
+        raise SystemExit(f"Mismatched engine: {name}")
+PYINFO
 echo "Static site: $site"

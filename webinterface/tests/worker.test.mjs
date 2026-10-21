@@ -1,19 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { PredictionRunner } from '../runner.js';
-import { DEFAULTS, parseSequence, prepareRequest, makeArguments } from '../protocol.js';
-
-test('FASTA normalization and boundary validation', () => {
-  assert.equal(parseSequence('>test\r\nacgt n\r\nACG', 'Query').fasta, '>test\nACGUNACG\n');
-  for (const input of ['', 'ACGU', '>\nACGUACGU', '>one\nACGUACGU\n>two\nACGUACGU', 'ACGU-ACGU', 'ACGU\n>bad']) {
-    assert.throws(() => parseSequence(input, 'Query'));
-  }
-  assert.equal(prepareRequest(DEFAULTS).query.sequence, 'GGGAGGAGGG');
-  assert.throws(() => prepareRequest({ ...DEFAULTS, query: 'A'.repeat(2001) }));
-  assert.throws(() => prepareRequest({ ...DEFAULTS, query: 'A'.repeat(1001), target: 'C'.repeat(1000) }));
-  for (const count of [0, 101, 1.5, NaN, '--help']) assert.throws(() => prepareRequest({ ...DEFAULTS, count }));
-  assert.ok(makeArguments(10).includes('--out=/results.csv'));
-});
+import { DEFAULTS } from '../protocol.js';
 
 function fakeWorker() {
   return { terminated: false, terminate() { this.terminated = true; }, postMessage() {}, send(data) { this.onmessage({ data }); } };
