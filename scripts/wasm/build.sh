@@ -5,7 +5,9 @@ repo=$(cd "$(dirname "$0")/../.." && pwd)
 build=${WASM_BUILD_DIR:-"$repo/build-wasm"}
 mkdir -p "$build"
 build=$(cd "$build" && pwd)
-prefix="$build/deps"
+# Keep legacy RNAlib headers out of Boost's -I path: ordinary -I searches take
+# precedence over the -isystem ViennaRNA paths produced by IntaRNA's configure.
+prefix="$build/deps/common"
 jobs=${JOBS:-2}
 for tool in emcc em++ emar emranlib emconfigure emmake curl pkg-config node python3; do
   command -v "$tool" >/dev/null || { echo "Missing tool: $tool" >&2; exit 1; }
@@ -28,7 +30,7 @@ fetch "$vienna_url" "ViennaRNA-$vienna_version.tar.gz" "$vienna_sha256"
 # Separate source, installed RNAlib and IntaRNA objects by archive identity so
 # changing the release cannot reuse headers, libraries or objects from an old one.
 vienna_id="vienna-$vienna_version-$vienna_sha256"
-vienna_prefix="$prefix/$vienna_id"
+vienna_prefix="$build/deps/$vienna_id"
 vienna_sources="$build/sources/$vienna_id"
 intarna_build="$build/intarna-$vienna_id"
 

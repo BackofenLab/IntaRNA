@@ -85,6 +85,36 @@ class ReleaseTests(unittest.TestCase):
                     self.assertNotEqual(result.returncode, 0)
                     self.assertEqual(result.stdout, "")
 
+    def test_provenance_rejects_stale_engine_and_records_selected_archive(self):
+        manifest = json.loads(SCRIPT.with_suffix(".json").read_text())
+        with TemporaryDirectory(prefix="vienna engine ") as directory:
+            site = Path(directory)
+            assets = site / "wasm"
+            assets.mkdir()
+            (assets / "package.json").write_text('{"type":"module"}')
+            (assets / "intarna.wasm").write_bytes(b"test engine")
+            for version in ["2.7.0", manifest["version"]]:
+                (assets / "intarna.js").write_text(
+                    "export default async ({print}) => ({callMain() {"
+                    f"print('IntaRNA 3.4.1 using Vienna RNA package {version} and boost 1.87.0');"
+                    "return 0;}});"
+                )
+                result = subprocess.run([
+                    "node", str(SCRIPT.with_name("write-build-info.mjs")),
+                    str(SCRIPT.parents[2]), str(site), "4.0.23", "test-commit", "",
+                    manifest["version"], manifest["url"], manifest["sha256"],
+                ], capture_output=True, text=True)
+                if version == "2.7.0":
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn("differs from selected", result.stderr)
+                    self.assertFalse((site / "build-info.json").exists())
+                else:
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    metadata = json.loads((site / "build-info.json").read_text())
+                    self.assertEqual(metadata["viennarna"], version)
+                    self.assertEqual(metadata["viennarnaArchive"], manifest)
+                    self.assertIn(manifest["sha256"], (site / "build-info.txt").read_text())
+
 
 if __name__ == "__main__":
     unittest.main()

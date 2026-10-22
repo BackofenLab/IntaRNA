@@ -50,7 +50,9 @@ validation, without an SDK or external network access. The build directory is
 ignored. ViennaRNA sources, its installation prefix and IntaRNA objects are
 separated by the selected version and checksum, so upgrades cannot reuse an
 older RNAlib or IntaRNA object cache (including the old 2.7.0 prefix). zlib and
-Boost caches remain reusable. Delete the build directory for a fresh build
+Boost use a separate `build-wasm/deps/common` prefix, so legacy ViennaRNA headers
+cannot override the selected release through Boost's include path. Their caches
+remain reusable across ViennaRNA upgrades. Delete the build directory for a fresh build
 after changing compiler flags or SDKs. Native libraries are never accepted
 from system pkg-config paths.
 
