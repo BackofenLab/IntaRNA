@@ -1,5 +1,6 @@
 // Integration coverage of browser argument translation against the real CLI.
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { DEFAULTS, EVALUATION_EXAMPLE, prepareRequest, makeArguments } from '../../webinterface/protocol.js';
@@ -8,6 +9,7 @@ import { parseResults, projectCsv } from '../../webinterface/results.js';
 import { archiveFiles } from '../../webinterface/archive.js';
 const asset = resolve(process.argv[2] || 'build-wasm/site/wasm/intarna.js');
 const { default: createIntaRNA } = await import(pathToFileURL(asset));
+const compiledVersion = readFileSync(new URL('../build-info.txt', pathToFileURL(asset)), 'utf8');
 async function run(input, format = 'C') {
   const request = prepareRequest({ ...DEFAULTS, ...input });
   const diagnostics = [];
@@ -54,7 +56,7 @@ async function replayArchive(input) {
   const outputs = fs.readdir('/output').filter((name) => name !== '.' && name !== '..').map((name) => ({ name, text: fs.readFile(`/output/${name}`, { encoding: 'utf8' }) }));
   const reports = [['normal', 'N'], ['detailed', 'D'], ['ensemble', 'E']].filter(([key]) => request.outputs.includes(key));
   for (const [key, format] of reports) outputs.push({ name: `intarna-${key}.txt`, text: (await run(input, format)).text });
-  const files = archiveFiles(request, { csv: original.text, files: outputs }, 'IntaRNA 3.4.1\nViennaRNA 2.7.0\n');
+  const files = archiveFiles(request, { csv: original.text, files: outputs }, compiledVersion);
   for (const config of ['parameters', ...reports.map(([key]) => key)]) {
     const diagnostics = [];
     const module = await createIntaRNA({ noInitialRun: true, locateFile: () => new URL('./intarna.wasm', pathToFileURL(asset)).href, print: (line) => diagnostics.push(line), printErr: (line) => diagnostics.push(line) });

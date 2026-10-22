@@ -7,7 +7,7 @@ mkdir -p "$build"
 build=$(cd "$build" && pwd)
 prefix="$build/deps"
 jobs=${JOBS:-2}
-for tool in emcc em++ emar emranlib emconfigure emmake curl pkg-config node; do
+for tool in emcc em++ emar emranlib emconfigure emmake curl pkg-config node python3; do
   command -v "$tool" >/dev/null || { echo "Missing tool: $tool" >&2; exit 1; }
 done
 mkdir -p "$build/downloads" "$build/sources" "$prefix" "$build/site/wasm"
@@ -18,16 +18,27 @@ fetch https://zlib.net/fossils/zlib-1.3.1.tar.gz zlib-1.3.1.tar.gz \
   9a93b2b7dfdac77ceba5a558a580e74667dd6fede4585b91eefb60f03b72df23
 fetch https://archives.boost.io/release/1.87.0/source/boost_1_87_0.tar.bz2 boost_1_87_0.tar.bz2 \
   af57be25cb4c4f4b413ed692fe378affb4352ea50fbe294a11ef548f4d527d89
-fetch https://github.com/ViennaRNA/ViennaRNA/releases/download/v2.7.0/ViennaRNA-2.7.0.tar.gz ViennaRNA-2.7.0.tar.gz \
-  e2addf33e7c0dd4fff31d8e9a46fda8e9efcde0d199f789f20eb0a13b7f7135d
+# CI supplies the newest stable 2.x manifest; local builds use the checked-in pin.
+read -r vienna_version vienna_url vienna_sha256 < <(
+  python3 "$repo/scripts/wasm/vienna-release.py" --fields \
+    --manifest "${WASM_VIENNA_RELEASE:-$repo/scripts/wasm/vienna-release.json}"
+)
+echo "Building ViennaRNA $vienna_version (SHA-256 $vienna_sha256)"
+fetch "$vienna_url" "ViennaRNA-$vienna_version.tar.gz" "$vienna_sha256"
+# Separate source, installed RNAlib and IntaRNA objects by archive identity so
+# changing the release cannot reuse headers, libraries or objects from an old one.
+vienna_id="vienna-$vienna_version-$vienna_sha256"
+vienna_prefix="$prefix/$vienna_id"
+vienna_sources="$build/sources/$vienna_id"
+intarna_build="$build/intarna-$vienna_id"
 
 # Keep pkg-config searches inside the WASM prefix, including configure probes.
-export PKG_CONFIG_LIBDIR="$prefix/lib/pkgconfig"
+export PKG_CONFIG_LIBDIR="$vienna_prefix/lib/pkgconfig:$prefix/lib/pkgconfig"
 export PKG_CONFIG_PATH="$PKG_CONFIG_LIBDIR"
 export CFLAGS='-O3 -fexceptions'
 export CXXFLAGS='-O3 -fexceptions'
-export CPPFLAGS="-I$prefix/include"
-export LDFLAGS="-L$prefix/lib -fexceptions"
+export CPPFLAGS="-I$vienna_prefix/include -I$prefix/include"
+export LDFLAGS="-L$vienna_prefix/lib -L$prefix/lib -fexceptions"
 if [[ ! -f "$prefix/lib/libz.a" ]]; then
   tar -xzf "$build/downloads/zlib-1.3.1.tar.gz" -C "$build/sources"
   (cd "$build/sources/zlib-1.3.1"
@@ -47,27 +58,26 @@ if [[ ! -f "$prefix/.boost-1.87.0-js-exceptions-complete" ]]; then
      -sZLIB_LIBPATH="$prefix/lib" --prefix="$prefix" install)
   touch "$prefix/.boost-1.87.0-js-exceptions-complete"
 fi
-if [[ ! -f "$prefix/lib/libRNA.a" ]]; then
-  tar -xzf "$build/downloads/ViennaRNA-2.7.0.tar.gz" -C "$build/sources"
-  (cd "$build/sources/ViennaRNA-2.7.0"
-   CPPFLAGS="$CPPFLAGS -I$PWD/src" emconfigure ./configure --host=wasm32-unknown-emscripten --prefix="$prefix" \
+if [[ ! -f "$vienna_prefix/.complete" ]]; then
+  mkdir -p "$vienna_sources"
+  tar -xzf "$build/downloads/ViennaRNA-$vienna_version.tar.gz" -C "$vienna_sources"
+  (cd "$vienna_sources/ViennaRNA-$vienna_version"
+   CPPFLAGS="$CPPFLAGS -I$PWD/src" emconfigure ./configure --host=wasm32-unknown-emscripten --prefix="$vienna_prefix" \
      --disable-shared --enable-static --disable-openmp --disable-pthreads \
      --disable-lto --disable-simd --disable-vectorize --disable-mpfr \
      --without-svm --without-gsl --without-swig --without-perl --without-python \
      --without-doc --without-cla --without-check --without-kinfold \
      --without-forester --without-rnalocmin --without-rnaxplorer
-   # Backport dlib's upstream char32_t typedef for modern libc++ char_traits.
-   # Only the downloaded dependency is patched; RNAlib algorithms are unchanged.
-   python3 "$repo/scripts/wasm/patch-vienna.py" "$PWD"
    emmake make -C src/ViennaRNA -j "$jobs"
    emmake make -C src/ViennaRNA install
    emmake make install-pkgconfigDATA)
+  touch "$vienna_prefix/.complete"
 fi
 
 # Legacy Autoconf probes declare exit()/inflateEnd() with the wrong signatures,
 # which wasm-ld rejects. Verify real dependency APIs before caching those probes.
-em++ -std=c++23 -O2 -fexceptions -I"$prefix/include" \
-  "$repo/scripts/wasm/dependency-probe.cpp" -L"$prefix/lib" \
+em++ -std=c++23 -O2 -fexceptions -I"$vienna_prefix/include" -I"$prefix/include" \
+  "$repo/scripts/wasm/dependency-probe.cpp" -L"$vienna_prefix/lib" -L"$prefix/lib" \
   -lboost_filesystem -lboost_system -lboost_program_options -lboost_regex \
   -lboost_iostreams -lboost_serialization -lRNA -lz -o "$build/dependency-probe.js"
 node "$build/dependency-probe.js"
@@ -78,15 +88,15 @@ export ac_cv_lib_boost_regex_exit=yes
 export ac_cv_lib_boost_iostreams_exit=yes
 export ac_cv_lib_z_inflateEnd=yes
 # RNAlib's .pc embeds a native-only -Wl,-fno-lto; this is a static WASM build.
-export VRNA_LIBS="-L$prefix/lib -lRNA -lm"
+export VRNA_LIBS="-L$vienna_prefix/lib -lRNA -lm"
 
 # Use the native Autotools source lists and CLI entry point, with a JS output.
 (cd "$repo" && bash autotools-init.sh)
-mkdir -p "$build/intarna"
-(cd "$build/intarna"
- CXXFLAGS="$CXXFLAGS -Werror=inconsistent-missing-override" CPPFLAGS="-I$build/intarna/src -I$repo/src $CPPFLAGS" emconfigure "$repo/configure" --host=wasm32-unknown-emscripten \
+mkdir -p "$intarna_build"
+(cd "$intarna_build"
+ CXXFLAGS="$CXXFLAGS -Werror=inconsistent-missing-override" CPPFLAGS="-I$intarna_build/src -I$repo/src $CPPFLAGS" emconfigure "$repo/configure" --host=wasm32-unknown-emscripten \
    --disable-multithreading --disable-log-coloring --with-mdspan=kokkos \
-   --with-vrna="$prefix" --with-boost="$prefix" \
+   --with-vrna="$vienna_prefix" --with-boost="$prefix" \
    --with-boost-libdir="$prefix/lib" --with-zlib="$prefix"
  emmake make -C src -j "$jobs" EXEEXT=.js \
    LDFLAGS="$LDFLAGS -sMODULARIZE=1 -sEXPORT_ES6=1 -sEXPORT_NAME=createIntaRNA -sENVIRONMENT=web,worker,node -sINVOKE_RUN=0 -sEXIT_RUNTIME=1 -sEXPORTED_RUNTIME_METHODS=FS,callMain -sALLOW_MEMORY_GROWTH=1 -sMAXIMUM_MEMORY=1073741824 -sSTACK_SIZE=8388608"
@@ -96,5 +106,6 @@ mkdir -p "$build/intarna"
 printf '{"type":"module"}\n' > "$build/site/wasm/package.json"
 node "$repo/scripts/wasm/write-build-info.mjs" "$repo" "$build/site" \
   "$(emcc -dumpversion)" "$(git -C "$repo" rev-parse HEAD)" \
-  "$(git -C "$repo" status --porcelain --untracked-files=no)"
+  "$(git -C "$repo" status --porcelain --untracked-files=no)" \
+  "$vienna_version" "$vienna_url" "$vienna_sha256"
 echo "WASM assets: $build/site/wasm"
