@@ -2,25 +2,49 @@ import { DEFAULTS, EVALUATION_EXAMPLE, parseFasta, prepareRequest, CSV_COLUMNS }
 import { GROUPS, FIELDS, EXTRA_OUTPUTS } from './options.js';
 import { CSV_CATALOG } from './columns.js';
 import { PredictionRunner } from './runner.js';
-import { ResultsView, downloadText } from './results.js';
+import { ResultsView, downloadText, downloadBlob } from './results.js';
+import { createArchive } from './archive.js';
 
 const byId = (id) => document.getElementById(id);
 const form = byId('prediction-form'), runner = new PredictionRunner();
 const dialog = byId('loading'), status = byId('result-status'), errorBox = byId('input-error');
 const results = new ResultsView(byId('results-view'));
 const csvInputs = [], outputInputs = [];
+let completedRun = null;
 function element(tag, text, className) {
   const node = document.createElement(tag);
   if (text) node.textContent = text;
   if (className) node.className = className;
   return node;
 }
-function group(key, label) {
-  const details = element('details', '', 'parameter-group');
-  details.id = key; details.name = 'parameters'; details.append(element('summary', label));
-  const body = element('div', '', 'group-body'); details.append(body);
-  byId('parameter-groups').append(details); return body;
+function activateGroup(key, focus = false) {
+  for (const tab of byId('parameter-tabs').children) {
+    const active = tab.getAttribute('aria-controls') === key;
+    tab.setAttribute('aria-selected', String(active)); tab.tabIndex = active ? 0 : -1;
+    byId(tab.getAttribute('aria-controls')).hidden = !active;
+    if (active && focus) tab.focus();
+  }
 }
+function addTab(key, label) {
+  const tab = element('button', label); tab.type = 'button'; tab.id = `tab-${key}`;
+  tab.setAttribute('role', 'tab'); tab.setAttribute('aria-controls', key);
+  tab.addEventListener('click', () => activateGroup(key));
+  byId('parameter-tabs').append(tab);
+}
+function group(key, label) {
+  const panel = element('section', '', 'parameter-group'); panel.id = key;
+  panel.setAttribute('role', 'tabpanel'); panel.setAttribute('aria-labelledby', `tab-${key}`);
+  const body = element('div', '', 'group-body'); panel.append(body);
+  byId('parameter-groups').append(panel); addTab(key, label); return body;
+}
+addTab('sequence-input', 'Sequence input');
+byId('parameter-tabs').addEventListener('keydown', (event) => {
+  if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+  const tabs = [...byId('parameter-tabs').children].filter((tab) => !tab.hidden);
+  const current = tabs.indexOf(document.activeElement);
+  const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (current + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+  event.preventDefault(); activateGroup(tabs[next].getAttribute('aria-controls'), true);
+});
 for (const definition of GROUPS) {
   const body = group(definition.key, definition.label), grid = element('div', '', 'field-grid'); body.append(grid);
   for (const field of definition.fields) {
@@ -69,12 +93,8 @@ const generalBody = group('general-options', 'General');
 generalBody.append(element('p', 'Tasks run locally in one worker. Abort or Escape stops computation immediately. Process-level settings (threads, log paths, parameter-file paths and terminal help) are available in the CLI.'));
 const docs = element('a', 'Full CLI parameter documentation'); docs.href = 'https://github.com/BackofenLab/IntaRNA#readme'; generalBody.append(docs);
 
-// Use explicit grouping as a fallback for browsers without details[name].
-for (const details of document.querySelectorAll('.parameter-group')) {
-  details.addEventListener('toggle', () => { if (details.open) for (const other of document.querySelectorAll('.parameter-group')) if (other !== details) other.open = false; });
-}
 function clearResults(message = 'Inputs changed. Compute to update the interactions.') {
-  results.clear(); byId('output-files').hidden = true; byId('file-list').replaceChildren();
+  completedRun = null; results.clear(); byId('output-files').hidden = true; byId('file-list').replaceChildren();
   byId('diagnostics').hidden = true; byId('diagnostic-text').textContent = ''; status.textContent = message;
 }
 function updateLength(name) {
@@ -89,7 +109,11 @@ function updateAvailability() {
   byId('task-help').textContent = evaluation ? 'Evaluate supplied structures for one query and one target. Prediction constraints are ignored.' : 'Predict interactions for all query–target sequence pairs.';
   byId('compute').textContent = evaluation ? 'Evaluate interactions' : 'Compute interactions';
   for (const definition of GROUPS) {
-    const details = byId(definition.key); details.hidden = evaluation && !!definition.prediction;
+    const tab = byId(`tab-${definition.key}`); tab.hidden = evaluation && !!definition.prediction;
+    if (tab.hidden) {
+      byId(definition.key).hidden = true;
+      if (tab.getAttribute('aria-selected') === 'true') activateGroup('sequence-input');
+    }
     for (const field of definition.fields) {
       const input = byId(field.key);
       input.disabled = evaluation && !!field.prediction || !evaluation && definition.key === 'helix-options' && byId('model').value !== 'B' || field.key === 'kineticScore' && byId('mode').value !== 'K';
@@ -113,7 +137,7 @@ form.addEventListener('input', (event) => {
 });
 byId('example').addEventListener('click', () => {
   byId('query').value = DEFAULTS.query; byId('target').value = DEFAULTS.target;
-  resetParameters(); byId('sequence-input').open = true; clearResults('Example loaded. Compute to analyze its interactions.');
+  resetParameters(); activateGroup('sequence-input'); clearResults('Example loaded. Compute to analyze its interactions.');
 });
 byId('abort').addEventListener('click', () => runner.abort());
 dialog.addEventListener('cancel', (event) => { event.preventDefault(); runner.abort(); });
@@ -137,13 +161,15 @@ form.addEventListener('submit', async (event) => {
     csvColumns: csvInputs.filter((input) => input.checked).map((input) => input.value), outputs: outputInputs.filter((input) => input.checked && !input.disabled).map((input) => input.value),
   };
   errorBox.hidden = true;
-  try { prepareRequest(request); } catch (error) { errorBox.textContent = error.message; errorBox.hidden = false; return; }
+  let prepared;
+  try { prepared = prepareRequest(request); } catch (error) { errorBox.textContent = error.message; errorBox.hidden = false; return; }
   clearResults('Computing interactions…'); byId('loading-status').textContent = 'Loading the prediction engine…';
   byId('inputs').disabled = true; byId('results').setAttribute('aria-busy', 'true'); dialog.showModal();
   try {
     const result = await runner.run(request, (message) => { byId('loading-status').textContent = message; });
-    const count = results.show(result.csv, result.csvColumns);
+    const count = results.show(result.csv, result.csvColumns, prepared);
     status.textContent = count ? `${request.task === 'evaluation' ? 'Evaluation' : 'Prediction'} complete: ${count} interaction${count === 1 ? '' : 's'}.` : request.task === 'prediction' && Number(request.parameters.outNumber) === 0 ? 'Accessibility computation complete. No interaction rows requested.' : 'No favorable interactions found with these sequences and settings.';
+    completedRun = { request: prepared, result };
     showFiles(result.files); byId('diagnostic-text').textContent = result.diagnostics; byId('diagnostics').hidden = !result.diagnostics;
   } catch (error) {
     if (error.name === 'AbortError') status.textContent = 'Computation aborted. You can edit the sequences and try again.';
@@ -152,8 +178,26 @@ form.addEventListener('submit', async (event) => {
     byId('inputs').disabled = false; updateAvailability(); byId('results').setAttribute('aria-busy', 'false'); dialog.close(); byId('compute').focus();
   }
 });
+activateGroup('sequence-input');
 resetParameters();
+const buildInfo = fetch(new URL('./build-info.txt', import.meta.url)).then((response) => {
+  if (!response.ok) throw new Error('Missing build provenance'); return response.text();
+});
+// Keep the rejection handled even if no archive is requested.
+buildInfo.catch(() => {});
 fetch(new URL('./build-info.json', import.meta.url)).then((response) => {
   if (!response.ok) throw new Error('Missing build provenance'); return response.json();
 }).then((info) => { byId('version-info').textContent = `IntaRNA ${info.intarna} (${info.commit.slice(0, 12)}${info.dirty ? ', modified sources' : ''}) · ViennaRNA ${info.viennarna} · Emscripten ${info.emscripten}`; }).catch(() => { byId('version-info').textContent = 'Build versions unavailable. Serve the staged interface with its compiled engine and build-info files.'; });
 if (!globalThis.Worker || !globalThis.WebAssembly) { byId('compute').disabled = true; errorBox.textContent = 'This browser needs WebAssembly and Web Workers. Use a current browser or the command line version.'; errorBox.hidden = false; }
+
+byId('download-zip').addEventListener('click', async () => {
+  const run = completedRun; if (!run) return;
+  const button = byId('download-zip'); button.disabled = true;
+  try {
+    const provenance = await buildInfo;
+    if (completedRun !== run) return;
+    downloadBlob('intarna-results.zip', new Blob([createArchive(run.request, run.result, provenance)], { type: 'application/zip' }));
+  } catch (error) {
+    errorBox.textContent = `ZIP download failed: ${error.message}. Reload the staged interface with its compiled version files.`; errorBox.hidden = false;
+  } finally { button.disabled = false; }
+});

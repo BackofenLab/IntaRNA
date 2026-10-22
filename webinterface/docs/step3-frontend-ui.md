@@ -13,24 +13,31 @@ The layout puts the scientific task first, then mutually exclusive parameter
 groups, followed by the compute button, results, additional files and versions.
 All working content is left aligned; two equally sized strand editors collapse
 into one column on mobile. The shared institutional header is the strongest
-visual element. Parameter borders and blue summaries identify functional groups.
+visual element. The wrapping tab bar identifies parameter groups. Numeric inputs
+are 9 rem wide within a responsive grid of compact controls; text/data fields
+retain useful width.
+The institutional link reads “Bioinformatics - University of Freiburg” and opens
+the group website. Footer and table notes use the available width, wrapping only
+when the viewport requires it.
 
 ```text
 Group logo       IntaRNA / RNA–RNA interaction analysis        University logo
-RNA–RNA interactions                             Sequences stay on your device
+RNA–RNA interactions                             Computations stay on your device
 Task: Prediction / Evaluation                                Load example
-[ Sequence input: query + target, start indices, evaluation structures        ]
-[ Query ] [ Target ] [ Seed ] [ Helix ] [ SHAPE ] [ Interaction/energy ]
-[ Output: filters, CSV columns, additional files ] [ General ]
+[ Sequence input | Query | Target | Seed | Helix | SHAPE | Energy | Output | General ]
+[ Active panel: e.g. query + target, start indices, evaluation structures      ]
 Reset parameters                                                Compute
-Interactions / search / show-hide columns / CSV download
+Interactions / search / show-hide columns / CSV + ZIP download
+Selected interaction / embedded vaRRI
 Additional output files / diagnostics / compiled versions
 ```
 
-Every CLI group has a menu. `details[name]` plus a toggle fallback keep at most
-one parameter menu open. Sequence input starts open. Prediction-only controls
-are disabled/hidden during evaluation. Changing task resets parameters to their
-CLI defaults while preserving sequence text; Load example also restores the
+Every CLI group has a tab with one visible panel. Sequence input is selected
+initially. Tabs expose `aria-selected`, `aria-controls` and roving focus; Left/Right
+move between available tabs, and Home/End select the first/last. Tab names wrap
+on narrow screens. Prediction-only tabs and controls are disabled/hidden during
+evaluation; if the selected tab becomes unavailable, Sequence input is selected.
+Changing task resets parameters to their CLI defaults while preserving sequence text; Load example also restores the
 complementary pair. The native default output count is one; browser users can
 request 0–100 interactions per pair. Zero enables accessibility-only output.
 

@@ -6,6 +6,7 @@
 seeding of interaction sites**
 
 Predict short RNA pairs or evaluate supplied structures locally with the [browser interface](https://backofenlab.github.io/IntaRNA/webinterface/).
+Select an interaction to view it in vaRRI, or download a ZIP with inputs, compiled versions, reproducible parameters and all outputs.
 See the [WebAssembly build instructions](webinterface/docs/step1-wasm-compilation.md) and
 [interface/deployment notes](webinterface/docs/step4-results-and-deployment.md).
 

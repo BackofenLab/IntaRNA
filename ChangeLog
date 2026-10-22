@@ -14,6 +14,10 @@
 
 ## Interface and handling
 
+- add selected-interaction vaRRI embeds and reproducible all-output ZIP downloads
+  to the browser interface; compact parameters into accessible tabs and update
+  the Freiburg group header and full-width result/footer notes (PR #287 review)
+
 - extend the browser interface with vaRRI styling, prediction/evaluation tasks,
   multi-FASTA, start indices, CLI parameter groups, selectable CSV columns and
   additional output previews/downloads; label pair-relative differences mfe Δ
@@ -240,6 +244,27 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261022 Alexander Mitrofanov
+ * webinterface/{archive,visualization}.js
+   + Build local UTF-8 ZIPs with normalized FASTA, compiled version provenance,
+     portable parameter files, selected CSV, auxiliary inputs and all outputs;
+     include separate replay configurations for native text report modes.
+   + Construct selected-row vaRRI URLs from full target/query sequences, native
+     dot-bracket output, names and signed indices, preserving strand direction.
+ * webinterface/{app,results,protocol}.js, index.html, styles.css
+   + Add row selection, embedded vaRRI/full-viewer link and Download ZIP action;
+     preserve completed-run inputs and clear exports/viewer when inputs change.
+   * Replace folded groups with keyboard-accessible tabs and compact parameter
+     grids; link Bioinformatics - University of Freiburg to the group website
+     and remove artificial width limits from table/footer notes.
+ * scripts/wasm/{stage.sh,smoke-protocol.mjs,test-browser.py}
+   * Stage the new modules; verify byte-identical replay through fresh engines
+     and browser tab/selection/ZIP behavior in Chromium and Firefox.
+ * webinterface/tests/export.test.mjs, README.md, webinterface/docs/*
+   + Cover coordinate/identity mapping, effective settings and archive inputs;
+     document replay commands, external visualization and browser limitations
+     (https://github.com/BackofenLab/IntaRNA/pull/287#issuecomment-6321503136).
 
 261021 Alexander Mitrofanov
  * src/IntaRNA/*.h

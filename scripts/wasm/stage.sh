@@ -8,7 +8,7 @@ test -s "$site/wasm/intarna.js"
 test -s "$site/wasm/intarna.wasm"
 mkdir -p "$site/licenses"
 cp -R "$repo/webinterface/assets" "$site/"
-for file in index.html styles.css app.js mark.svg protocol.js runner.js results.js options.js columns.js; do
+for file in index.html styles.css app.js mark.svg protocol.js runner.js results.js options.js columns.js archive.js visualization.js; do
   cp "$repo/webinterface/$file" "$site/$file"
 done
 cp "$repo/webinterface/intarna-worker.js" "$site/intarna-worker.js"

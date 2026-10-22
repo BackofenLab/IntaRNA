@@ -24,8 +24,11 @@ exits and JS/runtime failures settle as errors, without partial successful files
 Both success and failure terminate the worker. Abort uses `Worker.terminate()`
 on the main thread and immediately rejects with `AbortError`, including during
 synchronous C++ execution. Stale messages are ignored and the next task starts
-fresh. Inputs are never uploaded or persisted. No backend, shared memory or
-cross-origin isolation is needed. A single WASM instance can grow up to 1 GiB.
+fresh. Computation never uploads or persists inputs. Selecting a result to
+visualize it loads the external vaRRI viewer with that pair and its structure
+in the URL. The iframe is cleared on input edits; no third-party viewer is
+loaded before selection. No backend, shared memory or cross-origin isolation
+is needed for computation. A single WASM instance can grow up to 1 GiB.
 
 Run `npm test --prefix webinterface`, then the native-reference WASM smoke tests
 and Chromium/Firefox suites described in step 4.

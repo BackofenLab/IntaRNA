@@ -3,8 +3,8 @@
 ## Results contract
 
 The CSV checklist covers all `OutputHandlerCsv` column IDs. The worker requests
-those columns plus internal target/query IDs, coordinates and energy needed for
-pair grouping and result validation. Downloads project the untouched native CSV
+those columns plus internal target/query IDs, coordinates, energy and `hybridDP`
+needed for pair grouping, result validation and visualization. Downloads project the untouched native CSV
 cells onto the user's selected columns, in selection order, retaining every row
 regardless of table filtering/visibility. No computed mfe difference is inserted
 into native CSV. The selected-column catalog is checked against the C++ mapping.
@@ -26,6 +26,59 @@ run; it does not change selected CSV output. All identifiers, output previews
 and diagnostics render with `textContent`. Selected extra files appear below the
 table with bounded text previews and complete downloads, including SVG source.
 Empty output is successful and still permits CSV/accessibility downloads.
+
+## Selected interaction in vaRRI
+
+Each row has a keyboard-accessible View button; clicking a row also selects it.
+Selection survives table sorting, filtering and visibility changes. Input edits,
+new runs, errors and cancellation clear the viewer and archive snapshot.
+`visualization.js` uses native seq1 = target, seq2 = query and maps the native
+CSV identifiers to the completed run's normalized FASTA records (including
+semicolon-to-underscore ID conversion). It pads the interaction dot-bracket
+structure with unpaired positions to the full input lengths, using each start
+index and the native negative-to-positive transition that skips zero.
+
+The URL follows [vaRRI's embedding API](https://github.com/BackofenLab/vaRRI/blob/main-v2/docs/sharing-and-input.md):
+`sequence`, `structure`, `seqName1/2`, `startIndex1/2`, and
+`showRenderingOnly=true`. Names use the main-v2 API; older deployed vaRRI versions
+may retain generic strand names. A separate Open in vaRRI link opens the full
+viewer. The local status always identifies the selected pair and coordinates.
+Zero-based CLI start indices remain accepted for computation/export, but vaRRI
+requires nonzero start indices; choosing View for such a run explains this limit.
+
+No external viewer loads until a row is selected. The interface explains that
+selection shares that pair and structure through vaRRI's URL. Computation and
+ZIP generation remain local. CSP permits frames only at the vaRRI deployment;
+the iframe sends no referrer. Viewer availability depends on that external site;
+the full-viewer link permits retry, and scientific outputs remain downloadable.
+
+## Reproducible ZIP download
+
+Download ZIP sits beside Download CSV. `archive.js` creates a standard UTF-8,
+uncompressed ZIP with CRC-32 checksums locally, without a library or CDN. It uses
+the completed request and result, independent of table sorting/filtering and
+column visibility. Editing inputs discards the completed snapshot.
+
+The archive contains:
+
+- `query.fa` and `target.fa`: the exact normalized FASTA consumed by the worker.
+- `parameters.cfg`: native parameter-file syntax, non-default effective analysis
+  settings, explicit input/output routing and the selected CSV columns. Comments
+  include the exact compiled version/provenance text and the replay command
+  `IntaRNA --parameterFile=parameters.cfg` from the extracted directory.
+- `build-info.txt`: original compiled engine/library versions and asset hashes.
+- `intarna-interactions.csv`: all results with the selected CSV columns, identical
+  to Download CSV even if the table has been sorted, filtered or columns hidden.
+- Every generated additional output, with its original filename and contents.
+- Local SHAPE/accessibility input files when supplied, referenced by relative paths.
+- Separate `normal.cfg`, `detailed.cfg` or `ensemble.cfg` when those reports were
+  requested, with their replay commands also listed in `parameters.cfg`. Each
+  report requires a separate native invocation, matching worker behavior.
+
+Replay with the recorded IntaRNA and library versions. Export translates MEMFS
+paths to portable relative paths and omits defaults using the worker's own
+argument builder. ZIP download reports a clear error if compiled version text
+is unavailable, rather than claiming incomplete provenance.
 
 ## Packaging and deployment
 
@@ -137,3 +190,26 @@ claim a live Pages deployment.
 - Staging preserves compiled metadata byte-for-byte; a deliberately changed
   copied JS engine is rejected by its asset digest check. Shell syntax,
   workflow YAML, Python syntax and `git diff --check` pass.
+
+### PR #287 follow-up verification, 2026-10-22
+
+- All 12 Node test groups pass, including coordinate/strand mapping, non-default
+  export settings, auxiliary inputs and report configurations.
+- `node scripts/wasm/smoke.mjs` and `node scripts/wasm/smoke-protocol.mjs` pass
+  using the previously compiled Emscripten 4.0.23 engine (revision `fc62a23`).
+  The latter executes exported parameter files in fresh engines with only
+  archived inputs and verifies byte-identical CSV, per-record outputs,
+  probability SVGs and ASCII/detailed/ensemble reports. Cases include signed
+  multi-FASTA, changed energy/seed settings, SHAPE and accessibility imports.
+- Chromium 156 and Firefox 157 with Playwright 1.64.0 pass the real-WASM browser
+  suite at a nested URL. It covers tab keyboard behavior, selection/encoded
+  viewer URLs, Python `zipfile` validation of downloaded ZIP contents, hidden
+  CSV columns, evaluation reports, empty results and the existing lifecycle
+  checks. Only the third-party iframe response is stubbed in CI; computation
+  runs the real engine. Desktop/parameter/mobile screenshots were reviewed.
+- A separate live Chromium check renders RNA base circles in the actual hosted
+  vaRRI iframe. An independent Python `zipfile` check verifies CRCs, Unicode
+  filenames/data and empty files in the ZIP writer's output.
+- Native `make tests -j2` passes all eight API/CLI groups (462,689 assertions in
+  119 API cases). No C++ or compiled engine changes were needed for this follow-up.
+- Staging, shell/Python syntax and `git diff --check` pass.
