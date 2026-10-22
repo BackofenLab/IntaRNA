@@ -30,6 +30,8 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
+      - name: Test dependency download integrity and cache recovery
+        run: python scripts/wasm/test-downloads.py
       - name: Test input, worker lifecycle and CSV handling
         run: npm test --prefix webinterface
       - name: Cross-compile dependencies and IntaRNA

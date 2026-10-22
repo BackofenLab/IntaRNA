@@ -84,6 +84,10 @@
 
 ## Technical changes and Optimizations
 
+- BUGFIX : restore WASM dependency downloads using the pinned official ViennaRNA
+  release asset; verify downloads before caching and recover invalid caches
+  (PR #291)
+
 - annotate inherited virtual methods/destructors with override, preserve compiled
   WASM asset provenance through staging, and expand protocol/browser validation
   for the PR #287 review
@@ -244,6 +248,20 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261022 Alexander Mitrofanov
+ * scripts/wasm/{build,download}.sh
+   * Use the official GitHub ViennaRNA 2.7.0 release asset and pin its SHA-256;
+     the university endpoint returned a short HTTP 200 text response, failing
+     the WASM build before compilation (PR #291).
+   + Verify archives before caching, discard invalid cached responses and remove
+     failed partial downloads so rerunning a build can recover automatically.
+ * scripts/wasm/test-downloads.py, .github/workflows/build-wasm.yml
+   + Test verified-cache reuse, invalid-cache recovery, checksum failures,
+     HTTP errors and truncated transfers against a local HTTP server in CI.
+ * webinterface/docs/step1-wasm-compilation.md
+   * Document the release source, archive verification and download regression
+     command, including recovery behavior for failed or outdated caches.
 
 261022 Alexander Mitrofanov
  * webinterface/{archive,visualization}.js

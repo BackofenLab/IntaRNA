@@ -19,7 +19,15 @@ node scripts/wasm/smoke-protocol.mjs
 
 `WASM_BUILD_DIR` changes the build directory; `JOBS` defaults to 2. Source
 archives are downloaded into `build-wasm/downloads` and verified by pinned
-SHA-256 hashes on every invocation. The build directory is ignored. Delete
+SHA-256 hashes on every invocation. ViennaRNA 2.7.0 uses the official GitHub
+release asset, with its own pinned checksum; the university download endpoint
+returned an HTTP 200 text response instead of the archive in PR #291's build.
+`scripts/wasm/download.sh` removes invalid cached archives and checks new
+downloads before moving them from `.part` into the cache. Failed transfers and
+checksum mismatches leave no cached archive or partial file, so a subsequent
+build can retry. Run `python3 scripts/wasm/test-downloads.py` to check download,
+cache recovery and failure handling against a local HTTP server, without an SDK
+or external network access. The build directory is ignored. Delete
 `build-wasm/deps` and `build-wasm/sources` for a fresh dependency build after
 changing dependency versions or compiler flags. Do not reuse this prefix with a
 different SDK. Native libraries are never accepted from system pkg-config paths.

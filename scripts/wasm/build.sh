@@ -12,19 +12,14 @@ for tool in emcc em++ emar emranlib emconfigure emmake curl pkg-config node; do
 done
 mkdir -p "$build/downloads" "$build/sources" "$prefix" "$build/site/wasm"
 fetch() {
-  local url=$1 name=$2 checksum=$3
-  if [[ ! -f "$build/downloads/$name" ]]; then
-    curl --fail --location --retry 3 "$url" -o "$build/downloads/$name.part"
-    mv "$build/downloads/$name.part" "$build/downloads/$name"
-  fi
-  echo "$checksum  $build/downloads/$name" | sha256sum --check -
+  bash "$repo/scripts/wasm/download.sh" "$1" "$build/downloads/$2" "$3"
 }
 fetch https://zlib.net/fossils/zlib-1.3.1.tar.gz zlib-1.3.1.tar.gz \
   9a93b2b7dfdac77ceba5a558a580e74667dd6fede4585b91eefb60f03b72df23
 fetch https://archives.boost.io/release/1.87.0/source/boost_1_87_0.tar.bz2 boost_1_87_0.tar.bz2 \
   af57be25cb4c4f4b413ed692fe378affb4352ea50fbe294a11ef548f4d527d89
-fetch https://www.tbi.univie.ac.at/RNA/download/sourcecode/2_7_x/ViennaRNA-2.7.0.tar.gz ViennaRNA-2.7.0.tar.gz \
-  9a99fd68ed380894defb4d5e6a8a2871629270028cdf7f16f0a05da6e8c71473
+fetch https://github.com/ViennaRNA/ViennaRNA/releases/download/v2.7.0/ViennaRNA-2.7.0.tar.gz ViennaRNA-2.7.0.tar.gz \
+  e2addf33e7c0dd4fff31d8e9a46fda8e9efcde0d199f789f20eb0a13b7f7135d
 
 # Keep pkg-config searches inside the WASM prefix, including configure probes.
 export PKG_CONFIG_LIBDIR="$prefix/lib/pkgconfig"
