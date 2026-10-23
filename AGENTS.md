@@ -11,7 +11,7 @@ with the code and build files when their conventions change.
 - `src/bin/`: the executable and `CommandLineParsing` for CLI options and wiring.
 - `tests/`: Catch-based API tests; `tests/data/`: CLI parameters and reference
   results exercised by `tests/runIntaRNA.sh`.
-- `python/`, `perl/`, `R/`: companion tools; consult their local documentation
+- `python/`, `R/`: companion tools; consult their local documentation
   when changing them.
 - [README.md](README.md): user-facing installation, options and library usage.
   [doc/refactor/](doc/refactor/) records earlier analyses and measurements;

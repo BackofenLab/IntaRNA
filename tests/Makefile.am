@@ -20,6 +20,7 @@ dist_check_SCRIPTS = \
   runAccessibilityThreads.sh \
   runBasePairProbabilities.sh \
   runIntaRNA.sh \
+  runIntaRNAFuse.sh \
   runIntaRNAeval.sh \
   runKineticSeedExtension.sh \
   runOutputOverlap.sh 
@@ -95,4 +96,4 @@ runApiTests_CXXFLAGS =	-I$(top_builddir)/src \
 
 
 
-EXTRA_DIST = tools/export-seeded-theory.py testBasePairProbabilities.py testBasePairProbabilitySvg.py
+EXTRA_DIST = tools/export-seeded-theory.py testBasePairProbabilities.py testBasePairProbabilitySvg.py testIntaRNAFuse.py
