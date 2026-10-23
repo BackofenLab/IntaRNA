@@ -47,3 +47,22 @@ manual entry, and replace only that strand after successful validation. Predicti
 accepts multi-FASTA; evaluation requires one record. Invalid files leave the
 previous input intact. A later edit, reset, import or computation discards any
 pending file read, so delayed reads cannot replace newer input.
+
+## Validation of the PR #287 revision (2026-10-23)
+
+- GCC 14 release and debug: `make tests -j2` passed all nine API/CLI groups,
+  including `runParameterFile.sh`. The existing out-of-tree CLI fixture harness
+  required source data files linked into each build's `tests/data` directory.
+- `npm test --prefix gui`: all 18 tests passed.
+- Emscripten 4.0.23 / ViennaRNA 2.7.2 / Boost 1.87.0: actual WASM build,
+  `node scripts/wasm/smoke.mjs` and `node scripts/wasm/smoke-protocol.mjs` passed.
+  Exported JSON reproduced selected CSV, signed/multiple sequences, additional
+  outputs and reports byte for byte in fresh engines.
+- `scripts/wasm/test-browser.py` passed in Chromium and Firefox at a nested URL,
+  covering blank startup/reset, both JSON examples, Load/Store round trips,
+  FASTA file upload/drop, stale-read protection, task keyboard controls, JSON ZIP
+  contents, result exploration, cancellation/recovery and mobile overflow.
+  The desktop screenshot was inspected.
+- Embedded ViennaRNA energy-parameter text matched native file input. Existing
+  dependency-download and ViennaRNA-release tests, shell syntax, workflow YAML,
+  source-distribution contents, vendor checksums and `git diff --check` passed.

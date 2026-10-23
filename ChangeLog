@@ -107,6 +107,9 @@
 
 ## Technical changes and Optimizations
 
+- record JSON/WASM/browser regression validation and preserve pinned JSON vendor
+  checksums while marking upstream files as vendored for review (PR #287)
+
 - build WASM with ViennaRNA 2.7.2 locally and the newest stable 2.x in CI;
   verify published archive checksums, isolate versioned caches and retain
   selected dependency provenance and notices (PR #292 review)
@@ -275,6 +278,12 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261023 Alexander Mitrofanov
+ * .gitattributes, gui/docs/json-workflow.md
+     + Preserve exact upstream license whitespace and mark the JSON header and
+       license as vendored. Record native release/debug, WASM replay, browser,
+       distribution and provenance validation for the PR #287 revisions.
 
 261023 Alexander Mitrofanov
  * src/bin/CommandLineParsing.cpp, ParameterFile.h, tests/testParameterFile.py
