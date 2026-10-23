@@ -24,7 +24,7 @@ IntaRNA_CXXFLAGS = $(AM_CXXFLAGS) @INTARNA_SYSTEM_CPPFLAGS@
 # generated intaRNA sources 
 nodist_IntaRNA_SOURCES = 	\
 					../config.h \
-					IntaRNA/intarna_config.h
+					../IntaRNA/intarna_config.h
 
 # intaRNA sources
 IntaRNA_SOURCES =	IntaRNA.cpp \

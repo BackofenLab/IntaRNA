@@ -60,7 +60,7 @@ public:
 	/**
 	 * data cleanup
 	 */
-	virtual ~PredictorMfeEns2dSeedExtension();
+	virtual ~PredictorMfeEns2dSeedExtension() override;
 
 
 	/**
@@ -78,7 +78,7 @@ public:
 	virtual
 	void
 	predict( const IndexRange & r1 = IndexRange(0,RnaSequence::lastPos)
-			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos) );
+			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos) ) override;
 
 
 protected:
@@ -177,7 +177,7 @@ protected:
 	 */
 	virtual
 	void
-	traceBack( Interaction & interaction );
+	traceBack( Interaction & interaction ) override;
 
 	/**
 	 * Returns the hybridization energy of the non overlapping part of seeds

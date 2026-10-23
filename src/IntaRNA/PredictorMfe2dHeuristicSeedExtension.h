@@ -48,7 +48,7 @@ public:
 	/**
 	 * data cleanup
 	 */
-	virtual ~PredictorMfe2dHeuristicSeedExtension();
+	virtual ~PredictorMfe2dHeuristicSeedExtension() override;
 
 
 	/**
@@ -66,7 +66,7 @@ public:
 	virtual
 	void
 	predict( const IndexRange & r1 = IndexRange(0,RnaSequence::lastPos)
-			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos) );
+			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos) ) override;
 
 
 protected:

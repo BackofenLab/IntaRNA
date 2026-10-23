@@ -38,7 +38,7 @@ public:
 					, OutputHandler & output
 					, PredictionTracker * predTracker );
 
-	virtual ~PredictorMfe2d();
+	virtual ~PredictorMfe2d() override;
 
 	/**
 	 * Computes the mfe for the given sequence ranges (i1-j1) in the first
@@ -53,7 +53,7 @@ public:
 	void
 	predict( const IndexRange & r1 = IndexRange(0,RnaSequence::lastPos)
 			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos)
-			);
+			) override;
 
 protected:
 
@@ -94,7 +94,7 @@ protected:
 	 */
 	virtual
 	void
-	traceBack( Interaction & interaction );
+	traceBack( Interaction & interaction ) override;
 
 };
 

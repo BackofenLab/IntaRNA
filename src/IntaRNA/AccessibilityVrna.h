@@ -57,7 +57,7 @@ public:
 	/**
 	 * destruction
 	 */
-	virtual ~AccessibilityVrna();
+	virtual ~AccessibilityVrna() override;
 
 	/**
 	 * Returns the accessibility energy value for the given range in the
@@ -72,7 +72,7 @@ public:
 	 */
 	virtual
 	E_type
-	getED( const size_t from, const size_t to ) const;
+	getED( const size_t from, const size_t to ) const override;
 
 
 	/**

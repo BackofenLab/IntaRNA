@@ -69,7 +69,7 @@ public:
 	/**
 	 * destruction: write the profile(s) to the according streams.
 	 */
-	virtual ~PredictionTrackerSpotProbAll();
+	virtual ~PredictionTrackerSpotProbAll() override;
 
 
 	/**
@@ -87,7 +87,7 @@ public:
 	updateOptimumCalled( const size_t i1, const size_t j1
 						, const size_t i2, const size_t j2
 						, const E_type energy
-						);
+						) override;
 
 
 protected:

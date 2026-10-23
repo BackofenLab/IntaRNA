@@ -202,7 +202,7 @@ public:
 	/**
 	 * destruction
 	 */
-	virtual ~OutputHandlerCsv();
+	virtual ~OutputHandlerCsv() override;
 
 	/**
 	 * Write a given RNA-RNA interaction in simple text format to the output
@@ -212,7 +212,7 @@ public:
 	 */
 	virtual
 	void
-	add( const Interaction & interaction  );
+	add( const Interaction & interaction  ) override;
 
 	/**
 	 * Converts a list of Coltypes to their string representation.

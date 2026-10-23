@@ -52,7 +52,7 @@ public:
 	/**
 	 * destruction
 	 */
-	virtual ~AccessibilityFromStream();
+	virtual ~AccessibilityFromStream() override;
 
 
 	/**
@@ -68,7 +68,7 @@ public:
 	 */
 	virtual
 	E_type
-	getED( const size_t from, const size_t to ) const;
+	getED( const size_t from, const size_t to ) const override;
 
 	/**
 	 * Access to the maximal length of accessible regions (>0) to be considered.
@@ -80,7 +80,7 @@ public:
 	 */
 	virtual
 	size_t
-	getMaxLength() const;
+	getMaxLength() const override;
 
 
 	/**
