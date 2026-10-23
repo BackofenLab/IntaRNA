@@ -4,6 +4,8 @@
   --brand-blue:#145a96;
   --brand-blue-dark:#0f4676;
   --brand-blue-soft:#eaf2f8;
+  --table-header:#d9e8f6;
+  --table-selection:#c6e5f4;
   --brand-accent:#f4bb44;
   --surface:#fff;
   --surface-muted:#f3f7fb;
@@ -282,7 +284,25 @@ fieldset {
   grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
   gap:20px 24px;
   align-items:start;
+  margin-bottom:20px;
 }
+
+/* Explicit rows preserve the requested grouping; subgrid aligns inputs below
+   labels of different heights without fixing a font-dependent label height. */
+.field-grid.columns-1 { grid-template-columns:minmax(0,1fr); }
+.field-grid.columns-2 { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.field-grid.columns-3 { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.field-grid.columns-4 { grid-template-columns:repeat(4,minmax(0,1fr)); }
+.field-grid.columns-5 { grid-template-columns:repeat(5,minmax(0,1fr)); }
+.field-grid > .field:not(.check) { display:grid; grid-row:span 4; grid-template-rows:subgrid; row-gap:5px; }
+.field-grid > .field:not(.check) > :nth-child(2) { align-self:start; }
+.accessibility-columns { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:24px; margin-top:20px; }
+.accessibility-columns > div { min-width:0; }
+.seed-mode { max-width:24rem; margin-bottom:20px; }
+.field-grid:has(#noSeed) { display:none; }
+#query,#target { white-space:pre; overflow:auto; }
+#sequence-help,#general-options p { max-width:none; }
+.input-warning { font-size:.85rem; color:#79510b; max-width:none; overflow-wrap:anywhere; }
 
 .strand-heading,.sequence-meta {
   display:flex;
@@ -354,10 +374,6 @@ fieldset {
   background:transparent;
 }
 
-.field:has(textarea) {
-  grid-column:1/-1;
-}
-
 .field:has(:disabled) {
   opacity:.65;
 }
@@ -395,6 +411,11 @@ fieldset {
   font-size:.8rem;
   padding:.3rem .6rem;
 }
+
+.csv-group { margin-top:16px; }
+.csv-group legend { font-weight:600; }
+.text-button { background:none; border:0; padding:.15rem .5rem; color:var(--brand-blue); font-size:.8rem; text-decoration:underline; font-weight:400; }
+.csv-columns { grid-template-columns:repeat(auto-fill,minmax(125px,1fr)); gap:6px 16px; padding:6px 0; }
 
 .results {
   background:var(--surface);
@@ -450,14 +471,15 @@ table {
 }
 
 th {
-  background:var(--brand-blue-soft);
+  background:var(--table-header);
   text-align:left;
+  padding:0 5px;
 }
 
 th button {
   background:transparent;
   border:0;
-  padding:12px;
+  padding:10px 0;
   color:var(--brand-blue-dark);
   width:100%;
   text-align:left;
@@ -473,7 +495,7 @@ th[aria-sort=descending] button::after {
 
 td {
   border-top:1px solid #e0e8f0;
-  padding:10px 12px;
+  padding:10px 5px;
 }
 
 tr:nth-child(even) {
@@ -491,7 +513,7 @@ td.number {
 }
 
 .view-interaction {
-  padding:.25rem .6rem;
+  padding:.25rem .35rem;
   color:var(--brand-blue-dark);
   background:var(--surface);
 }
@@ -500,9 +522,10 @@ tbody tr {
   cursor:pointer;
 }
 
-tbody tr:hover,tbody tr.selected {
+tbody tr:hover {
   background:var(--brand-blue-soft);
 }
+tbody tr.selected { background:var(--table-selection); }
 
 .view-interaction[aria-pressed=true] {
   background:var(--brand-blue);
@@ -674,6 +697,7 @@ dialog::backdrop {
   .field-grid {
     grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr));
   }
+  .field-grid[class*=columns-],.accessibility-columns { grid-template-columns:1fr; }
   .results {
     padding:14px;
   }
@@ -721,8 +745,9 @@ textarea.drag-over { outline:3px solid var(--brand-accent); background:var(--bra
 .task-choice:has(:checked) small { color:white; }
 .task-choice:has(:focus-visible) { outline:3px solid var(--brand-accent); outline-offset:3px; }
 .compute-bar { justify-content:flex-start; gap:8px; }
-#compute { margin-left:auto; }
-@media(max-width:480px) { #compute { flex-basis:100%; margin-left:0; } }
+#compute { margin-right:24px; }
+.parameter-actions-label { font-size:.9rem; }
+@media(max-width:480px) { #compute { flex-basis:100%; margin-right:0; } .parameter-actions-label { flex-basis:100%; } }
 
 /* Every completed run owns its controls and output, even while folded. */
 .session { margin-top:18px; border:1px solid var(--border); border-radius:6px; min-width:0; }

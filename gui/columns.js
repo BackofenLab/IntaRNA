@@ -313,3 +313,23 @@ export const CSV_CATALOG = [
     "numeric": true
   }
 ];
+
+// Every native column appears once. Ensemble energies and their components are
+// grouped with probabilities so users can see the cost/meaning of those outputs.
+export const CSV_GROUPS = [
+  { label: 'Energy', keys: ['E', 'ED1', 'ED2', 'E_init', 'E_loops', 'E_dangleL', 'E_dangleR', 'E_endL', 'E_endR', 'E_hybrid', 'E_norm', 'E_hybridNorm', 'E_add', 'seedE', 'seedED1', 'seedED2'] },
+  { label: 'Output', keys: ['subseqDP', 'subseqDB', 'hybridDP', 'hybridDB', 'hybridDPfull', 'hybridDBfull', 'bpList'] },
+  { label: 'Sequence', keys: ['id1', 'id2', 'seq1', 'seq2', 'subseq1', 'subseq2'] },
+  { label: 'Interaction', keys: ['start1', 'end1', 'start2', 'end2', 'seedStart1', 'seedEnd1', 'seedStart2', 'seedEnd2'] },
+  { label: 'Partition Function', keys: ['Pu1', 'Pu2', 'seedPu1', 'seedPu2', 'w', 'Etotal', 'Eall', 'Eall1', 'Eall2', 'Zall', 'Zall1', 'Zall2', 'EallTotal', 'P_E', 'RT'] },
+];
+
+export function defaultColumns(task) {
+  const context = ['id1', 'start1', 'end1', 'id2', 'start2', 'end2', 'subseqDP', 'hybridDP', 'E'];
+  // Seed energies remain available in evaluation, where native output is NAN.
+  // List them explicitly: seedEnd1/2 are coordinates, not energy columns.
+  const extra = task === 'evaluation'
+    ? [...CSV_CATALOG.filter(({ key }) => key.startsWith('E')).map(({ key }) => key), 'seedE', 'seedED1', 'seedED2']
+    : ['ED1', 'ED2', 'seedE', 'seedStart1', 'seedStart2'];
+  return [...new Set([...context, ...extra])];
+}

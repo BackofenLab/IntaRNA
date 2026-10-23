@@ -4,8 +4,14 @@
   "configuration": {
     "schema": "IntaRNA-parameters-v1",
     "parameters": {
-      "query": {"text": ">query\nGGGAGGAGGG\n"},
-      "target": {"text": ">target\nCCCUCCUCCC\n"}
+      "query": {
+        "text": ">query\nGGGAGGAGGG\n"
+      },
+      "target": {
+        "text": ">target\nCCCUCCUCCC\n"
+      },
+      "outNumber": 10,
+      "outCsvCols": "id1,start1,end1,id2,start2,end2,subseqDP,hybridDP,E,ED1,ED2,seedE,seedStart1,seedStart2"
     }
   }
 }

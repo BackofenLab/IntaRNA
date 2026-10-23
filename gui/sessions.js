@@ -14,14 +14,14 @@ export class SessionsView {
     this.selected = null;
     for (const session of this.entries.values()) {
       session.root.dataset.selected = 'false';
-      session.toggle.textContent = session.panel.hidden ? 'Show results' : 'Restore inputs';
+      session.toggle.textContent = 'Show';
     }
   }
 
   setExpanded(session, expanded) {
     session.panel.hidden = !expanded;
     session.toggle.setAttribute('aria-expanded', String(expanded));
-    session.toggle.textContent = expanded ? 'Hide results' : 'Show results';
+    session.toggle.textContent = expanded ? 'Hide' : 'Show';
     // Unload third-party viewers while folded. The table selection is retained
     // and can be visualized again without recomputing the prediction.
     if (!expanded) session.view.visualization.clear();
@@ -65,6 +65,17 @@ export class SessionsView {
     name.addEventListener('change', () => { rename(); name.value = session.name; });
     name.addEventListener('keydown', (event) => { if (event.key === 'Enter') name.blur(); });
     rename();
+    // The name and header background also select a run. Action buttons retain
+    // their own behavior, so exporting/deleting cannot overwrite edited inputs.
+    const header = root.querySelector('.session-header');
+    header.tabIndex = 0; header.setAttribute('role', 'group');
+    header.setAttribute('aria-label', 'Select result and restore its inputs');
+    for (const event of ['click', 'focusin']) header.addEventListener(event, (event) => {
+      if (!event.target.closest('button') && (this.selected !== id || session.panel.hidden)) this.select(session);
+    });
+    header.addEventListener('keydown', (event) => {
+      if (event.target === header && ['Enter', ' '].includes(event.key)) { event.preventDefault(); this.select(session); }
+    });
     // Clicking or keyboard-focusing an output area selects its computed inputs.
     for (const event of ['click', 'focusin']) session.panel.addEventListener(event, () => {
       if (this.selected !== id) this.select(session);

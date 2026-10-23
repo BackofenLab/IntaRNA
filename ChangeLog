@@ -14,6 +14,9 @@
 
 ## Interface and handling
 
+- reorganize GUI parameters, add conditional seed/accessibility controls and
+  grouped CSV defaults, expand FASTA limits and refine result headers (PR #299)
+
 - retain computed GUI runs as named, foldable sessions with JSON input restoration,
   independent outputs, per-session ZIP export and deletion (PR #297 review)
 
@@ -281,6 +284,27 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261024 Alexander Mitrofanov
+ * gui/{app,options,columns}.js, gui/{index.html,styles.css}
+   * organize tabs/rows as Sequences, Seed, Output, Model & Energy, Query,
+     Target and CLI-only; align wrapped labels and place Compute first
+   + add a three-way seed selector, synchronized accessibility flags and
+     mode-dependent input availability; place SHAPE beside accessibility
+   * group compact CSV choices with descriptions and group selection actions;
+     default to 10 predictions and expanded task-specific energy columns,
+     explicitly preserving browser defaults in native-compatible JSON
+ * gui/{protocol,uploads,parameter-file}.js, gui/examples/
+   * accept 50 FASTA records per strand of 2-5,000 nt each, with longest
+     selected query x longest selected target <= 1,000,000; allow 1 MB FASTA
+   + warn about ignored FASTA header descriptions while using first-token IDs
+ * gui/{sessions,results}.js
+   * select results from the header/name, order Show/Hide before the name and
+     ZIP/delete actions, compact table headings and distinguish selected rows
+ * gui/tests/, scripts/wasm/test-browser.py, README.md, gui/docs/
+   + cover limits, native JSON replay/defaults, dependent controls, grouped CSV
+     choices, desktop/mobile alignment and result header selection
+   * address https://github.com/BackofenLab/IntaRNA/pull/299#issuecomment-6375752155
 
 261023 Alexander Mitrofanov
  * gui/{app,sessions,results,visualization}.js, gui/{index.html,styles.css}

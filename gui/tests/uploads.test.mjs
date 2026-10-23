@@ -9,5 +9,7 @@ test('FASTA uploads accept text/CRLF and validate size, format and task before r
   assert.equal(await readFastaFile(file(multi), 'Query', 'prediction'), multi);
   await assert.rejects(readFastaFile(file(multi), 'Query', 'evaluation'), /exactly one/);
   for (const invalid of ['', '\u0000bin', '>q\n--!', '>q\n']) await assert.rejects(readFastaFile(file(invalid), 'Query', 'prediction'));
-  await assert.rejects(readFastaFile({ size: 60001, text: () => { throw Error('must not read'); } }, 'Query', 'prediction'), /60 KB/);
+  const batch = Array.from({ length: 50 }, (_, i) => `>q${i}\n${'A'.repeat(5000)}\n`).join('');
+  assert.equal(await readFastaFile(file(batch), 'Query', 'prediction'), batch);
+  await assert.rejects(readFastaFile({ size: 1000001, text: () => { throw Error('must not read'); } }, 'Query', 'prediction'), /1 MB/);
 });
