@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { DEFAULTS, EVALUATION_EXAMPLE, prepareRequest, makeArguments } from '../../webinterface/protocol.js';
-import { CSV_CATALOG } from '../../webinterface/columns.js';
-import { parseResults, projectCsv } from '../../webinterface/results.js';
-import { archiveFiles } from '../../webinterface/archive.js';
+import { DEFAULTS, CSV_COLUMNS, EVALUATION_EXAMPLE, prepareRequest, makeParameterDocument } from '../../gui/protocol.js';
+import { CSV_CATALOG } from '../../gui/columns.js';
+import { parseResults, projectCsv } from '../../gui/results.js';
+import { archiveFiles } from '../../gui/archive.js';
 const asset = resolve(process.argv[2] || 'build-wasm/site/wasm/intarna.js');
 const { default: createIntaRNA } = await import(pathToFileURL(asset));
 const compiledVersion = readFileSync(new URL('../build-info.txt', pathToFileURL(asset)), 'utf8');
@@ -14,11 +14,9 @@ async function run(input, format = 'C') {
   const request = prepareRequest({ ...DEFAULTS, ...input });
   const diagnostics = [];
   const module = await createIntaRNA({ noInitialRun: true, locateFile: () => new URL('./intarna.wasm', pathToFileURL(asset)).href, print: (line) => diagnostics.push(line), printErr: (line) => diagnostics.push(line) });
-  module.FS.writeFile('/query.fa', request.query.fasta);
-  module.FS.writeFile('/target.fa', request.target.fasta);
+  module.FS.writeFile('/parameter.json', JSON.stringify(makeParameterDocument(request, format)));
   module.FS.mkdir('/output');
-  for (const [key, value] of Object.entries(request.parameters)) if (/^(q|t)(Shape|AccFile)$/.test(key) && value) module.FS.writeFile(`/${key}.txt`, value + '\n');
-  const args = makeArguments(request, format);
+  const args = ['--parameterFile=/parameter.json'];
   assert.equal(module.callMain(args), 0, `${args.join(' ')}\n${diagnostics.join('\n')}`);
   const text = module.FS.readFile(format === 'C' ? '/results.csv' : '/report.txt', { encoding: 'utf8' });
   return { rows: format === 'C' ? parseResults(text) : [], text, fs: module.FS, request };
@@ -60,8 +58,10 @@ async function replayArchive(input) {
   for (const config of ['parameters', ...reports.map(([key]) => key)]) {
     const diagnostics = [];
     const module = await createIntaRNA({ noInitialRun: true, locateFile: () => new URL('./intarna.wasm', pathToFileURL(asset)).href, print: (line) => diagnostics.push(line), printErr: (line) => diagnostics.push(line) });
-    for (const file of files.filter((file) => /\.cfg$|^(query|target)\.fa$|^[qt](Shape|AccFile)\.txt$/.test(file.name))) module.FS.writeFile(`/${file.name}`, file.text);
-    assert.equal(module.callMain([`--parameterFile=${config}.cfg`]), 0, diagnostics.join('\n'));
+    module.FS.writeFile('/parameter.json', files.find((file) => file.name === 'parameter.json').text);
+    const arguments_ = ['--parameterFile=/parameter.json', `--out=${config === 'parameters' ? 'intarna-interactions.csv' : `intarna-${config}.txt`}`];
+    if (config !== 'parameters') arguments_.push(`--outMode=${reports.find(([key]) => key === config)[1]}`, `--outCsvCols=${CSV_COLUMNS}`, "--outCsvSort", "");
+    assert.equal(module.callMain(arguments_), 0, diagnostics.join('\n'));
     const expected = config === 'parameters' ? [{ name: 'intarna-interactions.csv', text: projectCsv(original.text, request.csvColumns) }, ...outputs.filter((file) => !file.name.startsWith('intarna-'))] : outputs.filter((file) => file.name === `intarna-${config}.txt`);
     for (const file of expected) assert.equal(module.FS.readFile(`/${file.name}`, { encoding: 'utf8' }), file.text, file.name);
   }

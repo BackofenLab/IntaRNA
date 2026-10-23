@@ -221,21 +221,11 @@ fieldset {
   min-width:0;
 }
 
-.task-bar,.compute-bar,.table-tools {
+.compute-bar,.table-tools {
   display:flex;
   align-items:center;
   flex-wrap:wrap;
   justify-content:space-between;
-  gap:12px;
-}
-
-.task-bar {
-  margin-bottom:8px;
-}
-
-.task-bar label {
-  display:flex;
-  align-items:center;
   gap:12px;
 }
 
@@ -693,9 +683,6 @@ dialog::backdrop {
   .table-tools input {
     width:100%;
   }
-  .task-bar label {
-    flex-wrap:wrap;
-  }
   h1 {
     font-size:1.55rem;
   }
@@ -709,3 +696,30 @@ dialog::backdrop {
     animation:none;
   }
 }
+
+/* Examples are a compact disclosure list with descriptions, not another form. */
+.examples-menu { position:relative; }
+.examples-menu > summary { list-style:none; padding:.6rem 1rem; border:1px solid var(--border); border-radius:5px; background:var(--surface); color:var(--brand-blue-dark); font-weight:600; }
+.examples-menu > summary::after { content:' ▾'; }
+.examples-menu > div { position:absolute; bottom:calc(100% + .5rem); left:0; width:min(26rem,80vw); padding:.4rem; background:var(--surface); border:1px solid var(--border); border-radius:5px; box-shadow:0 6px 20px #1c2b3920; z-index:2; }
+.examples-menu button { width:100%; text-align:left; background:var(--surface); border:0; }
+.examples-menu button:hover { background:var(--brand-blue-soft); }
+.examples-menu button strong,.examples-menu button span { display:block; }
+.examples-menu button span { font-size:.85rem; font-weight:400; color:var(--muted); }
+textarea::placeholder { color:#687d8e; opacity:1; }
+
+.strand-heading { flex-wrap:wrap; gap:.4rem .7rem; }
+.upload-controls { display:flex; align-items:center; flex-wrap:wrap; gap:.4rem; margin-left:auto; }
+button.small-button { padding:.25rem .65rem; font-size:.85rem; }
+textarea.drag-over { outline:3px solid var(--brand-accent); background:var(--brand-blue-soft); }
+
+/* Native radio semantics keep the task overview visible and keyboard operable. */
+.task-selector { display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:.6rem; }
+.task-choice { position:relative; display:flex; align-items:baseline; gap:.6rem; padding:.55rem 1rem; border:1px solid var(--border); border-radius:5px; background:var(--surface); cursor:pointer; }
+.task-choice input { position:absolute; inset:0; opacity:0; width:100%; height:100%; margin:0; cursor:pointer; z-index:1; }
+.task-choice:has(:checked) { background:var(--brand-blue); color:white; border-color:var(--brand-blue); }
+.task-choice:has(:checked) small { color:white; }
+.task-choice:has(:focus-visible) { outline:3px solid var(--brand-accent); outline-offset:3px; }
+.compute-bar { justify-content:flex-start; gap:8px; }
+#compute { margin-left:auto; }
+@media(max-width:480px) { #compute { flex-basis:100%; margin-left:0; } }

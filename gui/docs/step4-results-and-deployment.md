@@ -59,26 +59,16 @@ uncompressed ZIP with CRC-32 checksums locally, without a library or CDN. It use
 the completed request and result, independent of table sorting/filtering and
 column visibility. Editing inputs discards the completed snapshot.
 
-The archive contains:
+The archive contains only `parameter.json`, `intarna-interactions.csv`, and every
+generated additional output with its original filename and contents. JSON embeds
+normalized FASTA and any SHAPE/accessibility text, non-default settings, selected
+CSV columns, compiled provenance and native replay commands in `_comment`.
+Additional report commands override CSV-only settings and use another native
+invocation, matching the worker. All JSON is valid with standard parsers.
 
-- `query.fa` and `target.fa`: the exact normalized FASTA consumed by the worker.
-- `parameters.cfg`: native parameter-file syntax, non-default effective analysis
-  settings, explicit input/output routing and the selected CSV columns. Comments
-  include the exact compiled version/provenance text and the replay command
-  `IntaRNA --parameterFile=parameters.cfg` from the extracted directory.
-- `build-info.txt`: original compiled engine/library versions and asset hashes.
-- `intarna-interactions.csv`: all results with the selected CSV columns, identical
-  to Download CSV even if the table has been sorted, filtered or columns hidden.
-- Every generated additional output, with its original filename and contents.
-- Local SHAPE/accessibility input files when supplied, referenced by relative paths.
-- Separate `normal.cfg`, `detailed.cfg` or `ensemble.cfg` when those reports were
-  requested, with their replay commands also listed in `parameters.cfg`. Each
-  report requires a separate native invocation, matching worker behavior.
-
-Replay with the recorded IntaRNA and library versions. Export translates MEMFS
-paths to portable relative paths and omits defaults using the worker's own
-argument builder. ZIP download reports a clear error if compiled version text
-is unavailable, rather than claiming incomplete provenance.
+Load/Store use this same JSON format. Store snapshots the current editable form;
+ZIP snapshots the completed run and ignores table filtering/sorting/visibility.
+Both require the compiled version file. See [the JSON workflow](json-workflow.md).
 
 ## Packaging and deployment
 
@@ -87,7 +77,7 @@ bash scripts/wasm/build.sh
 node scripts/wasm/smoke.mjs
 node scripts/wasm/smoke-protocol.mjs
 bash scripts/wasm/stage.sh
-npm test --prefix webinterface
+npm test --prefix gui
 python3 -m pip install -r scripts/wasm/requirements-browser.txt
 python3 -m playwright install chromium firefox
 python3 -m http.server 8765 --directory build-wasm/site
@@ -115,7 +105,7 @@ the actual default branch, `master`. After JS tests, the real WASM smoke test an
 Chromium/Firefox integration tests pass, the package job combines:
 
 - Existing Jekyll guide at `/IntaRNA/` and API at `/IntaRNA/api/`.
-- Tested application at `/IntaRNA/webinterface/`.
+- Tested application at `/IntaRNA/gui/`.
 
 The artifact `intarna-pages-preview` permits PR review of the complete site.
 Pull requests and manual runs on feature branches do not publish. Only a push
@@ -146,7 +136,7 @@ and active C++, clean restart, empty predictions and asset-load recovery.
   reference reports E = -28.04, ED1 = 4.60, ED2 = 4.86 kcal/mol; the short example
   reports E = -21.40 with target/query coordinates 1–10 and ten suboptimals.
   Invalid CLI input returns a nonzero status through C++ error handling.
-- `npm test --prefix webinterface`: all five input/lifecycle/CSV test groups pass.
+- `npm test --prefix gui`: all five input/lifecycle/CSV test groups pass.
 - Playwright 1.64.0, Chromium and Firefox: full integration suite passes with the
   official-dependency engine, including a nested `/site/` URL as used by Pages,
   active-C++ cancellation, literal HTML-like identifiers and retry after failure.
@@ -177,7 +167,7 @@ claim a live Pages deployment.
   Native imported accessibility reserves one length column for dangling-end
   treatment; its energy is compared with the corresponding restricted native
   interaction length rather than the unrestricted prediction.
-- `npm test --prefix webinterface`: ten protocol/results/lifecycle groups pass.
+- `npm test --prefix gui`: ten protocol/results/lifecycle groups pass.
 - Real Chromium/Firefox integration covers all parameter groups, CLI defaults,
   compiled versions/logos, task changes, multiple records, signed coordinates,
   selected/visible CSV columns, additional previews/downloads and the original

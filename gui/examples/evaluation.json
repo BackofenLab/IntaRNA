@@ -1,0 +1,13 @@
+{
+  "name": "Evaluate a duplex",
+  "description": "Evaluate the energy of a supplied ten-base-pair RNA interaction.",
+  "configuration": {
+    "schema": "IntaRNA-parameters-v1",
+    "parameters": {
+      "personality": "IntaRNAeval",
+      "query": {"text": ">query\nGGGAGGAGGG\n"},
+      "target": {"text": ">target\nCCCUCCUCCC\n"},
+      "rri": "1||||||||||&1||||||||||"
+    }
+  }
+}

@@ -3,6 +3,7 @@ import argparse
 from pathlib import Path
 from io import BytesIO
 import re
+import json
 from urllib.parse import parse_qs, urljoin, urlparse
 from zipfile import ZipFile
 from playwright.sync_api import sync_playwright, expect
@@ -36,6 +37,11 @@ with sync_playwright() as playwright:
         expect(page.locator('#tab-' + key)).to_have_attribute('aria-selected', 'true')
         assert page.locator('.parameter-group:visible').count() == 1
 
+    def load_example(task='prediction'):
+        page.locator('#examples-menu summary').click()
+        page.get_by_role('button', name='Evaluate a duplex' if task == 'evaluation' else 'Short duplex', exact=False).click()
+        expect(page.locator('#query')).to_have_value('>query\nGGGAGGAGGG\n')
+
     def download_archive():
         with page.expect_download() as downloaded:
             page.locator('#download-zip').click()
@@ -54,6 +60,11 @@ with sync_playwright() as playwright:
         expect(status).to_contain_text('complete:', timeout=120000)
         expect(page.locator('#input-error')).not_to_be_visible()
 
+    expect(page.locator('#query')).to_have_value('')
+    expect(page.locator('#target')).to_have_value('')
+    expect(page.locator('#query')).to_have_attribute('placeholder', '>query\nGGGAGGAGGG')
+    compute.click()
+    expect(page.locator('#input-error')).to_contain_text('enter a sequence')
     metadata = page.request.get(urljoin(args.url, 'build-info.json')).json()
     vienna_version = metadata['viennarna']
     assert re.fullmatch(r'2\.\d+\.\d+', vienna_version)
@@ -63,6 +74,15 @@ with sync_playwright() as playwright:
         assert logo.evaluate('node => node.complete && node.naturalWidth > 0')
     for key in ['query-options', 'target-options', 'seed-options', 'helix-options', 'shape-options', 'interaction-options', 'output-options', 'general-options', 'sequence-input']:
         open_group(key)
+
+    expect(page.get_by_role('radio', name='Prediction')).to_be_checked()
+    expect(page.get_by_role('radio', name='Evaluation')).to_be_visible()
+    page.get_by_role('radio', name='Prediction').focus()
+    page.keyboard.press('ArrowRight')
+    expect(page.get_by_role('radio', name='Evaluation')).to_be_checked()
+    expect(page.locator('#task-help')).to_contain_text('Evaluate supplied structures')
+    page.keyboard.press('ArrowLeft')
+    expect(page.get_by_role('radio', name='Prediction')).to_be_checked()
 
     # Tabs support keyboard navigation and wrap without page overflow.
     page.locator('#tab-sequence-input').focus()
@@ -74,17 +94,42 @@ with sync_playwright() as playwright:
     page.keyboard.press('Home')
     expect(page.locator('#tab-sequence-input')).to_be_focused()
 
+    # Upload and file drop use local text, validate before replacing, and reset.
+    with page.expect_file_chooser() as chooser:
+        page.locator('#query-upload-button').click()
+    chooser.value.set_files({'name': 'query.fa', 'mimeType': 'text/plain', 'buffer': b'>uploaded\nGGGAGGAGGG\n'})
+    expect(page.locator('#query')).to_have_value('>uploaded\nGGGAGGAGGG\n')
+    page.locator('#target').evaluate(r"""node => {
+      const transfer = new DataTransfer();
+      transfer.items.add(new File(['>dropped\nCCCUCCUCCC\n'], 'target.fa', {type:'text/plain'}));
+      node.dispatchEvent(new DragEvent('drop', {dataTransfer:transfer, bubbles:true, cancelable:true}));
+    }""")
+    expect(page.locator('#target')).to_have_value('>dropped\nCCCUCCUCCC\n')
+    page.locator('#query-upload').set_input_files({'name': 'bad.fa', 'mimeType': 'text/plain', 'buffer': b'not a sequence!'})
+    expect(page.locator('#input-error')).to_be_visible()
+    expect(page.locator('#query')).to_have_value('>uploaded\nGGGAGGAGGG\n')
+    # A file read completing after Reset cannot restore the previous input.
+    page.evaluate(r"""() => { window.originalFileText = File.prototype.text; File.prototype.text = function() { return new Promise(resolve => { window.finishRead = () => resolve('>late\nGGGAGGAGGG\n'); }); }; }""")
+    page.locator('#query-upload').set_input_files({'name': 'late.fa', 'mimeType': 'text/plain', 'buffer': b'>late\nGGGAGGAGGG\n'})
+    page.locator('#reset').click()
+    page.evaluate('() => { File.prototype.text = window.originalFileText; window.finishRead(); }')
+    expect(page.locator('#query')).to_have_value('')
+
     # JavaScript validation works even when the offending control is in another tab.
     fill('query', '>bad\nACGU-ACGU')
     compute.click()
     expect(page.locator('#input-error')).to_contain_text('use only')
     expect(page.locator('#loading')).not_to_be_visible()
-    page.locator('#example').click()
+    load_example()
     fill('temperature', '101')
     open_group('sequence-input')
     compute.click()
     expect(page.locator('#input-error')).to_contain_text('Temperature')
     page.locator('#reset').click()
+    expect(page.locator('#query')).to_have_value('')
+    expect(page.locator('#target')).to_have_value('')
+    expect(page.locator('#rri')).to_have_value('')
+    load_example()
 
     # Reference prediction, selectable CSV output and independent table visibility.
     fill('outNumber', 10)
@@ -125,12 +170,33 @@ with sync_playwright() as playwright:
     assert 'showRenderingOnly' not in page.locator('#varri-link').get_attribute('href')
     archive = download_archive()
     assert archive['intarna-interactions.csv'] == csv
-    assert archive['query.fa'] == '>query\nGGGAGGAGGG\n'
-    assert '# IntaRNA 3.4.1' in archive['parameters.cfg']
-    assert f'Vienna RNA package {vienna_version}' in archive['parameters.cfg']
-    assert 'outNumber = 10' in archive['parameters.cfg']
-    assert 'IntaRNA --parameterFile=parameters.cfg' in archive['parameters.cfg']
-    assert 'temperature =' not in archive['parameters.cfg']
+    saved = json.loads(archive['parameter.json'])
+    assert set(archive) == {'parameter.json', 'intarna-interactions.csv'}
+    assert saved['parameters']['query']['text'] == '>query\nGGGAGGAGGG\n'
+    assert 'IntaRNA 3.4.1' in archive['parameter.json']
+    assert f'Vienna RNA package {vienna_version}' in archive['parameter.json']
+    assert saved['parameters']['outNumber'] == 10
+    assert 'IntaRNA --parameterFile=parameter.json' in archive['parameter.json']
+    assert 'temperature' not in saved['parameters']
+    # Store snapshots the editable form; Load is atomic and preserves CSV order.
+    with page.expect_download() as stored:
+        page.locator('#store-parameters').click()
+    settings = Path(stored.value.path()).read_bytes()
+    imported = json.loads(settings)
+    imported['parameters']['outCsvCols'] = 'E,id2'
+    imported['parameters']['temperature'] = 24
+    page.locator('#parameter-upload').set_input_files({'name': 'settings.json', 'mimeType': 'application/json', 'buffer': json.dumps(imported).encode()})
+    expect(page.locator('#temperature')).to_have_value('24')
+    expect(page.locator('#results-view')).not_to_be_visible()
+    with page.expect_download() as stored_again:
+        page.locator('#store-parameters').click()
+    assert json.loads(Path(stored_again.value.path()).read_text())['parameters']['outCsvCols'] == 'E,id2'
+    page.locator('#parameter-upload').set_input_files({'name': 'bad.json', 'mimeType': 'application/json', 'buffer': b'{invalid'})
+    expect(page.locator('#input-error')).to_be_visible()
+    expect(page.locator('#temperature')).to_have_value('24')
+    page.locator('#parameter-upload').set_input_files({'name': 'settings.json', 'mimeType': 'application/json', 'buffer': settings})
+    expect(page.locator('#temperature')).to_have_value('37')
+    predict()
     if args.screenshot:
 
         open_group('sequence-input')
@@ -140,7 +206,7 @@ with sync_playwright() as playwright:
     page.set_viewport_size({'width': 1440, 'height': 1100})
 
     # Multi-FASTA prediction, signed inclusive output and additional files.
-    page.locator('#example').click()
+    load_example()
     fill('query', '>q1\nGGGAGGAGGG\n>q2\nGGGAGGAGGG')
     fill('qIdxPos0', -3)
     fill('tIdxPos0', -5)
@@ -154,8 +220,9 @@ with sync_playwright() as playwright:
     expect(page.locator('#file-list pre').first).to_contain_text('minE')
     archive = download_archive()
     assert len([name for name in archive if name.startswith('qMinE')]) == 2
-    assert archive['query.fa'].count('>') == 2
-    assert 'qIdxPos0 = -3' in archive['parameters.cfg']
+    saved = json.loads(archive['parameter.json'])
+    assert saved['parameters']['query']['text'].count('>') == 2
+    assert saved['parameters']['qIdxPos0'] == -3
     rows.nth(1).get_by_role('button', name='Visualize').click()
     query = parse_qs(urlparse(page.locator('#varri-frame').get_attribute('src')).query)
     assert query['seqName2'] == ['q2']
@@ -171,13 +238,13 @@ with sync_playwright() as playwright:
 
     # Evaluation resets native defaults and removes prediction-only controls.
     fill('query', '>q1\nGGGAGGAGGG\n>q2\nGGGAGGAGGG')
-    page.locator('#task').select_option('evaluation')
+    page.get_by_role('radio', name='Evaluation').check()
     expect(page.locator('#seed-options')).not_to_be_visible()
     expect(page.locator('#outNumber')).to_be_disabled()
     fill('rri', '1||||||||||&1||||||||||')
     compute.click()
     expect(page.locator('#input-error')).to_contain_text('exactly one')
-    page.locator('#example').click()
+    load_example('evaluation')
     fill('rri', '1||||||||||&1||||||||||:1|||||||||&2|||||||||')
     open_group('output-options')
     page.locator('#output-options input[value="detailed"]').check()
@@ -194,10 +261,11 @@ with sync_playwright() as playwright:
     assert '-21.4' in Path(report.value.path()).read_text()
     archive = download_archive()
     assert '-21.4' in archive['intarna-detailed.txt']
-    assert 'personality = IntaRNAeval' in archive['parameters.cfg']
-    assert 'rri = 1||||||||||&1||||||||||:1|||||||||&2|||||||||' in archive['parameters.cfg']
-    assert 'seedBP =' not in archive['parameters.cfg']
-    assert 'out = intarna-detailed.txt' in archive['detailed.cfg']
+    saved = json.loads(archive['parameter.json'])
+    assert saved['parameters']['personality'] == 'IntaRNAeval'
+    assert saved['parameters']['rri'] == '1||||||||||&1||||||||||:1|||||||||&2|||||||||'
+    assert 'seedBP' not in saved['parameters']
+    assert 'detailed' in saved['gui']['reports']
 
     # Visualization stays available when structure/identity columns are deselected.
     open_group('output-options')
@@ -208,14 +276,14 @@ with sync_playwright() as playwright:
     expect(page.locator('#varri-frame')).to_be_visible()
     archive = download_archive()
     assert archive['intarna-interactions.csv'].splitlines()[0] == 'E'
-    assert 'hybridDP' not in archive['parameters.cfg']
+    assert json.loads(archive['parameter.json'])['parameters']['outCsvCols'] == 'E'
     fill('rri', '1|||&1||')
     compute.click()
     expect(page.locator('#input-error')).to_contain_text('same nonzero')
 
     # Startup and synchronous C++ cancellation both allow a fresh prediction.
-    page.locator('#task').select_option('prediction')
-    page.locator('#example').click()
+    page.get_by_role('radio', name='Prediction').check()
+    load_example()
     held_routes = []
     page.route('**/wasm/intarna.wasm', lambda route: held_routes.append(route))
     compute.click()
@@ -231,7 +299,7 @@ with sync_playwright() as playwright:
     expect(page.locator('#loading-status')).to_contain_text('Predicting RNA', timeout=120000)
     page.keyboard.press('Escape')
     expect(status).to_contain_text('aborted')
-    page.locator('#example').click()
+    load_example()
     predict()
 
     fill('query', '>no_pairs\nNNNNNNNNNN')
@@ -245,7 +313,7 @@ with sync_playwright() as playwright:
     assert page.locator('tbody img').count() == 0
     assert '<img' in rows.first.inner_text()
 
-    page.locator('#example').click()
+    load_example()
     page.route('**/wasm/intarna.js', lambda route: route.abort())
     compute.click()
     expect(status).to_contain_text('failed', timeout=30000)

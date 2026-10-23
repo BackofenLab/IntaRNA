@@ -1,16 +1,22 @@
-import { DEFAULTS, EVALUATION_EXAMPLE, parseFasta, prepareRequest, CSV_COLUMNS } from './protocol.js';
+import { parseFasta, prepareRequest, CSV_COLUMNS } from './protocol.js';
 import { GROUPS, FIELDS, EXTRA_OUTPUTS } from './options.js';
 import { CSV_CATALOG } from './columns.js';
 import { PredictionRunner } from './runner.js';
 import { ResultsView, downloadText, downloadBlob } from './results.js';
 import { createArchive } from './archive.js';
+import { importParameters, serializeParameters, MAX_PARAMETER_BYTES } from './parameter-file.js';
+import { readFastaFile } from './uploads.js';
 
 const byId = (id) => document.getElementById(id);
 const form = byId('prediction-form'), runner = new PredictionRunner();
+const getTask = () => form.querySelector('input[name=task]:checked').value;
+const setTask = (task) => { for (const input of form.querySelectorAll('input[name=task]')) input.checked = input.value === task; };
 const dialog = byId('loading'), status = byId('result-status'), errorBox = byId('input-error');
 const results = new ResultsView(byId('results-view'));
 const csvInputs = [], outputInputs = [];
 let completedRun = null;
+let inputRevision = 0;
+let csvOrder = CSV_COLUMNS.split(',');
 function element(tag, text, className) {
   const node = document.createElement(tag);
   if (text) node.textContent = text;
@@ -62,9 +68,14 @@ for (const definition of GROUPS) {
       const upload = element('input'); upload.type = 'file'; upload.accept = '.txt,.csv,.shape,.dat'; upload.setAttribute('aria-label', `Load ${field.label} from a local text file`);
       upload.dataset.for = field.key;
       upload.addEventListener('change', async () => {
-        const file = upload.files[0]; if (!file) return;
-        if (file.size > 1000000) { errorBox.textContent = 'Choose a text file of at most 1 MB.'; errorBox.hidden = false; return; }
-        input.value = await file.text(); input.dispatchEvent(new Event('input', { bubbles: true })); upload.value = '';
+        const file = upload.files[0]; upload.value = ''; if (!file) return;
+        const revision = ++inputRevision;
+        try {
+          if (file.size > 1000000) throw new Error('Choose a text file of at most 1 MB.');
+          const content = await file.text();
+          if (inputRevision !== revision) return;
+          input.value = content; input.dispatchEvent(new Event('input', { bubbles: true }));
+        } catch (error) { if (inputRevision === revision) showInputError(error); }
       }); wrapper.append(upload);
     }
     grid.append(wrapper);
@@ -83,7 +94,7 @@ const csvPicker = element('div', '', 'checkbox-grid'); outputBody.append(csvPick
 for (const column of [...CSV_COLUMNS.split(',').map((key) => CSV_CATALOG.find((column) => column.key === key)), ...CSV_CATALOG.filter((column) => !CSV_COLUMNS.split(',').includes(column.key))]) csvInputs.push(checkbox(csvPicker, column.key, `${column.key} — ${column.description}`, column.description));
 for (const [name, selection] of [['Select all', CSV_CATALOG.map((c) => c.key)], ['CLI defaults', CSV_COLUMNS.split(',')], ['Clear selection', []]]) {
   const button = element('button', name); button.type = 'button';
-  button.addEventListener('click', () => { for (const input of csvInputs) input.checked = selection.includes(input.value); clearResults(); }); selectionTools.append(button);
+  button.addEventListener('click', () => { csvOrder = [...selection]; for (const input of csvInputs) input.checked = selection.includes(input.value); clearResults(); }); selectionTools.append(button);
 }
 outputBody.append(element('h3', 'Additional output files', 'subheading'));
 outputBody.append(element('p', 'Reports are computed with the same settings. ASCII, detailed and ensemble reports each run a fresh engine instance and can take extra time.', 'input-help'));
@@ -94,17 +105,19 @@ generalBody.append(element('p', 'Tasks run locally in one worker. Abort or Escap
 const docs = element('a', 'Full CLI parameter documentation'); docs.href = 'https://github.com/BackofenLab/IntaRNA#readme'; generalBody.append(docs);
 
 function clearResults(message = 'Inputs changed. Compute to update the interactions.') {
+  inputRevision++;
   completedRun = null; results.clear(); byId('output-files').hidden = true; byId('file-list').replaceChildren();
   byId('diagnostics').hidden = true; byId('diagnostic-text').textContent = ''; status.textContent = message;
 }
 function updateLength(name) {
+  if (!byId(name).value.trim()) { byId(`${name}-length`).textContent = 'No sequence entered'; return; }
   try {
-    const parsed = parseFasta(byId(name).value, name === 'query' ? 'Query' : 'Target', byId('task').value === 'prediction');
+    const parsed = parseFasta(byId(name).value, name === 'query' ? 'Query' : 'Target', getTask() === 'prediction');
     byId(`${name}-length`).textContent = `${parsed.records.length} record${parsed.records.length === 1 ? '' : 's'}, ${parsed.records.reduce((sum, r) => sum + r.sequence.length, 0).toLocaleString()} nucleotides`;
   } catch { byId(`${name}-length`).textContent = 'Check sequence format and length'; }
 }
 function updateAvailability() {
-  const evaluation = byId('task').value === 'evaluation';
+  const evaluation = getTask() === 'evaluation';
   byId('evaluation-input').hidden = !evaluation;
   byId('task-help').textContent = evaluation ? 'Evaluate supplied structures for one query and one target. Prediction constraints are ignored.' : 'Predict interactions for all query–target sequence pairs.';
   byId('compute').textContent = evaluation ? 'Evaluate interactions' : 'Compute interactions';
@@ -122,22 +135,119 @@ function updateAvailability() {
   for (const input of outputInputs) { input.disabled = evaluation && EXTRA_OUTPUTS.find((entry) => entry.key === input.value).prediction; if (input.disabled) input.checked = false; }
   updateLength('query'); updateLength('target');
 }
-function resetParameters() {
+function resetParameters({ clearInputs = false } = {}) {
+  if (clearInputs) {
+    setTask('prediction');
+    byId('query').value = ''; byId('target').value = '';
+    for (const input of form.querySelectorAll('input[type=file]')) input.value = '';
+    byId('examples-menu').open = false; activateGroup('sequence-input');
+  }
+  csvOrder = CSV_COLUMNS.split(',');
   for (const field of FIELDS) { const input = byId(field.key); if (field.type === 'checkbox') input.checked = field.value; else input.value = field.value; }
   for (const input of csvInputs) input.checked = CSV_COLUMNS.split(',').includes(input.value);
   for (const input of outputInputs) input.checked = false;
-  byId('qIdxPos0').value = 1; byId('tIdxPos0').value = 1; byId('rri').value = EVALUATION_EXAMPLE;
-  updateAvailability(); errorBox.hidden = true; clearResults('Parameters reset to CLI defaults. Compute to update the interactions.');
+  byId('qIdxPos0').value = 1; byId('tIdxPos0').value = 1; byId('rri').value = '';
+  updateAvailability(); errorBox.hidden = true; clearResults(clearInputs ? 'Inputs cleared. Enter sequences or choose an example.' : 'Parameters reset to CLI defaults. Compute to update the interactions.');
 }
 byId('task').addEventListener('change', resetParameters);
-byId('reset').addEventListener('click', resetParameters);
+byId('reset').addEventListener('click', () => resetParameters({ clearInputs: true }));
 form.addEventListener('input', (event) => {
   if (event.target.type === 'file') return;
   updateAvailability(); errorBox.hidden = true; clearResults();
 });
-byId('example').addEventListener('click', () => {
-  byId('query').value = DEFAULTS.query; byId('target').value = DEFAULTS.target;
-  resetParameters(); activateGroup('sequence-input'); clearResults('Example loaded. Compute to analyze its interactions.');
+function showInputError(error) {
+  errorBox.textContent = error.message; errorBox.hidden = false;
+}
+function applyParameters(request, message = 'Parameters loaded. Compute to analyze the inputs.') {
+  // Import validates every setting before this atomic UI update.
+  setTask(request.task);
+  resetParameters();
+  for (const key of ['query', 'target', 'qIdxPos0', 'tIdxPos0', 'rri']) byId(key).value = request[key];
+  for (const field of FIELDS) {
+    const value = request.parameters[field.key] ?? field.value;
+    if (field.type === 'checkbox') byId(field.key).checked = value;
+    else byId(field.key).value = value;
+  }
+  csvOrder = [...request.csvColumns];
+  for (const input of csvInputs) input.checked = request.csvColumns.includes(input.value);
+  for (const input of outputInputs) input.checked = request.outputs.includes(input.value);
+  updateAvailability(); activateGroup('sequence-input'); clearResults(message);
+}
+for (const strand of ['query', 'target']) {
+  const input = byId(strand), picker = byId(`${strand}-upload`);
+  const loadFasta = async (files) => {
+    if (byId('inputs').disabled) return;
+    const revision = ++inputRevision;
+    try {
+      if (files.length !== 1) throw new Error('Choose or drop one FASTA file per field.');
+      const content = await readFastaFile(files[0], strand === 'query' ? 'Query' : 'Target', getTask());
+      if (inputRevision !== revision) return;
+      input.value = content;
+      updateAvailability(); errorBox.hidden = true;
+      clearResults(`${strand === 'query' ? 'Query' : 'Target'} FASTA loaded. Compute to analyze the inputs.`);
+    } catch (error) { if (inputRevision === revision) showInputError(error); }
+  };
+  byId(`${strand}-upload-button`).addEventListener('click', () => picker.click());
+  picker.addEventListener('change', () => { const files = [...picker.files]; picker.value = ''; if (files.length) loadFasta(files); });
+  input.addEventListener('dragover', (event) => {
+    if (event.dataTransfer.types.includes('Files')) { event.preventDefault(); event.dataTransfer.dropEffect = 'copy'; input.classList.add('drag-over'); }
+  });
+  input.addEventListener('dragleave', () => input.classList.remove('drag-over'));
+  input.addEventListener('drop', (event) => {
+    input.classList.remove('drag-over');
+    if (!event.dataTransfer.types.includes('Files')) return;
+    event.preventDefault(); loadFasta([...event.dataTransfer.files]);
+  });
+}
+byId('load-parameters').addEventListener('click', () => byId('parameter-upload').click());
+byId('parameter-upload').addEventListener('change', async (event) => {
+  const file = event.target.files[0]; event.target.value = ''; if (!file) return;
+  const revision = ++inputRevision;
+  try {
+    if (file.size > MAX_PARAMETER_BYTES) throw new Error('Choose a JSON file of at most 5 MB.');
+    const imported = importParameters(await file.text());
+    if (inputRevision !== revision) return;
+    applyParameters(imported);
+  } catch (error) { if (inputRevision === revision) showInputError(error); }
+});
+byId('store-parameters').addEventListener('click', async () => {
+  // Snapshot before waiting for build metadata so edits cannot change the download.
+  const request = currentRequest();
+  try { downloadText('parameter.json', serializeParameters(request, await buildInfo)); }
+  catch (error) { showInputError(error); }
+});
+async function loadExamples() {
+  const container = byId('example-options');
+  try {
+    const response = await fetch(new URL('./examples/index.json', import.meta.url));
+    if (!response.ok) throw new Error('Example list is unavailable.');
+    const files = await response.json();
+    if (!Array.isArray(files) || !files.length || files.some((name) => typeof name !== 'string' || !/^[a-z0-9-]+\.json$/.test(name))) throw new Error('Invalid example list.');
+    const examples = await Promise.all(files.map(async (filename) => {
+      const response = await fetch(new URL(`./examples/${filename}`, import.meta.url));
+      if (!response.ok) throw new Error('An example is unavailable.');
+      const example = await response.json();
+      if (typeof example.name !== 'string' || typeof example.description !== 'string') throw new Error('Invalid example description.');
+      const request = importParameters(example.configuration);
+      prepareRequest(request);
+      return { ...example, request };
+    }));
+    container.replaceChildren();
+    for (const example of examples) {
+      const button = element('button'); button.type = 'button';
+      button.append(element('strong', example.name), element('span', example.description));
+      button.addEventListener('click', () => {
+        if (byId('inputs').disabled) return;
+        applyParameters(example.request, `${example.name} loaded. Compute to analyze the example.`);
+        byId('examples-menu').open = false;
+      });
+      container.append(button);
+    }
+  } catch (error) { container.replaceChildren(element('p', `${error.message} Reload to try again.`, 'input-help')); }
+}
+loadExamples();
+byId('examples-menu').addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') { byId('examples-menu').open = false; byId('examples-menu').querySelector('summary').focus(); }
 });
 byId('abort').addEventListener('click', () => runner.abort());
 dialog.addEventListener('cancel', (event) => { event.preventDefault(); runner.abort(); });
@@ -152,14 +262,19 @@ function showFiles(files) {
   }
   byId('output-files').hidden = !files.length;
 }
-form.addEventListener('submit', async (event) => {
-  event.preventDefault();
-  const request = {
-    task: byId('task').value, query: byId('query').value, target: byId('target').value,
+function currentRequest() {
+  const selected = csvInputs.filter((input) => input.checked).map((input) => input.value);
+  const columns = [...csvOrder.filter((key) => selected.includes(key)), ...selected.filter((key) => !csvOrder.includes(key))];
+  return {
+    task: getTask(), query: byId('query').value, target: byId('target').value,
     qIdxPos0: byId('qIdxPos0').value, tIdxPos0: byId('tIdxPos0').value, rri: byId('rri').value,
     parameters: Object.fromEntries(FIELDS.map((field) => [field.key, field.type === 'checkbox' ? byId(field.key).checked : byId(field.key).value])),
-    csvColumns: csvInputs.filter((input) => input.checked).map((input) => input.value), outputs: outputInputs.filter((input) => input.checked && !input.disabled).map((input) => input.value),
+    csvColumns: columns, outputs: outputInputs.filter((input) => input.checked && !input.disabled).map((input) => input.value),
   };
+}
+form.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const request = currentRequest();
   errorBox.hidden = true;
   let prepared;
   try { prepared = prepareRequest(request); } catch (error) { errorBox.textContent = error.message; errorBox.hidden = false; return; }
@@ -179,7 +294,7 @@ form.addEventListener('submit', async (event) => {
   }
 });
 activateGroup('sequence-input');
-resetParameters();
+resetParameters({ clearInputs: true });
 const buildInfo = fetch(new URL('./build-info.txt', import.meta.url)).then((response) => {
   if (!response.ok) throw new Error('Missing build provenance'); return response.text();
 });

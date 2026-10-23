@@ -29,7 +29,12 @@ nodist_IntaRNA_SOURCES = 	\
 # intaRNA sources
 IntaRNA_SOURCES =	IntaRNA.cpp \
 					CommandLineParsing.h \
-					CommandLineParsing.cpp
+					CommandLineParsing.cpp \
+					ParameterFile.h \
+					ParameterFile.cpp \
+					nlohmann/json.hpp
+
+EXTRA_DIST = nlohmann/LICENSE.MIT nlohmann/README.md
 					
 IntaRNA_LDADD = 	$(top_builddir)/src/IntaRNA/libIntaRNA.a \
 					$(top_builddir)/src/libeasylogging.a

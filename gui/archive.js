@@ -1,4 +1,4 @@
-import { makeArguments } from './protocol.js';
+import { serializeParameters } from './parameter-file.js';
 import { projectCsv } from './results.js';
 
 const encoder = new TextEncoder();
@@ -48,32 +48,11 @@ export function zipFiles(files) {
 }
 
 export function archiveFiles(request, result, provenance) {
-  if (!provenance?.trim()) throw new Error('Compiled version information is unavailable');
-  const versionComments = provenance.trimEnd().split(/\r?\n/).map((line) => `# ${line}`).join('\n');
-  const reports = [['normal', 'N'], ['detailed', 'D'], ['ensemble', 'E']].filter(([key]) => request.outputs.includes(key));
-  const config = (format, filename) => {
-    // Reuse the worker's effective arguments, replacing only MEMFS paths and
-    // internal visualization columns. Optional data are shipped as text files.
-    const args = makeArguments(request, format).filter((arg) => !['--qIdxPos0=1', '--tIdxPos0=1'].includes(arg));
-    const settings = args.map((arg) => {
-      if (arg.startsWith('--outCsvCols=')) return `outCsvCols = ${request.csvColumns.join(',')}`;
-      return arg.slice(2).replace('=', ' = ').replace(/\/(query\.fa|target\.fa|[qt](?:Shape|AccFile)\.txt)/g, '$1')
-        .replace('/results.csv', 'intarna-interactions.csv').replace('/report.txt', `intarna-${filename}.txt`).replace('/output/', '');
-    });
-    return `${versionComments}\n# Run from the extracted archive directory with these compiled library versions.\n# Reproduce: IntaRNA --parameterFile=${filename}.cfg\n# Only non-default analysis settings are listed; input/output routing is explicit.\n${settings.join('\n')}\n`;
-  };
-  const parameters = config('C', 'parameters') + reports.map(([key]) => `# Additional report: IntaRNA --parameterFile=${key}.cfg\n`).join('');
-  const files = [
-    { name: 'query.fa', text: request.query.fasta }, { name: 'target.fa', text: request.target.fasta },
-    { name: 'parameters.cfg', text: parameters }, { name: 'build-info.txt', text: provenance },
+  return [
+    { name: 'parameter.json', text: serializeParameters({ ...request, qIdxPos0: request.parameters.qIdxPos0, tIdxPos0: request.parameters.tIdxPos0 }, provenance) },
     { name: 'intarna-interactions.csv', text: projectCsv(result.csv, request.csvColumns) },
     ...result.files,
-    ...reports.map(([key, format]) => ({ name: `${key}.cfg`, text: config(format, key) })),
   ];
-  for (const [key, value] of Object.entries(request.parameters)) {
-    if (/^(q|t)(Shape|AccFile)$/.test(key) && value) files.push({ name: `${key}.txt`, text: value + '\n' });
-  }
-  return files;
 }
 
 export function createArchive(request, result, provenance) {

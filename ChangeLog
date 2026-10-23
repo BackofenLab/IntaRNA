@@ -14,6 +14,29 @@
 
 ## Interface and handling
 
+- permit clearing inherited CSV sorting when replaying JSON as text reports;
+  validate JSON/GUI behavior in native release/debug and real browsers (#287)
+
+- show prediction/evaluation tasks as always-visible choices with task-specific
+  descriptions and an expanded Seeds/Accessibility heading (PR #287 review)
+
+- upload or drop local FASTA files into each GUI strand with validation and
+  protection against stale asynchronous reads (PR #287 review)
+
+- clear all inputs on GUI reset and load named examples from maintainable JSON
+  files through an Example menu (PR #287 review)
+
+- load/store GUI settings as portable JSON; ZIPs contain parameter.json with
+  embedded inputs/provenance and all outputs (PR #287 review)
+
+- use one embedded-input JSON parameter document for each WASM invocation
+  (PR #287 review)
+
+- accept JSON parameter files with embedded text inputs and personality defaults
+  through --parameterFile while retaining legacy configuration (PR #287 review)
+
+- rename the browser interface directory and Pages URL to gui (PR #287 review)
+
 - add selected-interaction vaRRI embeds and reproducible all-output ZIP downloads
   to the browser interface; compact parameters into accessible tabs and update
   the Freiburg group header and full-width result/footer notes (PR #287 review)
@@ -83,6 +106,9 @@
 - reject Zall/Eall-dependent output in window mode
 
 ## Technical changes and Optimizations
+
+- record JSON/WASM/browser regression validation and preserve pinned JSON vendor
+  checksums while marking upstream files as vendored for review (PR #287)
 
 - build WASM with ViennaRNA 2.7.2 locally and the newest stable 2.x in CI;
   verify published archive checksums, isolate versioned caches and retain
@@ -252,6 +278,81 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261023 Alexander Mitrofanov
+ * .gitattributes, gui/docs/json-workflow.md
+     + Preserve exact upstream license whitespace and mark the JSON header and
+       license as vendored. Record native release/debug, WASM replay, browser,
+       distribution and provenance validation for the PR #287 revisions.
+
+261023 Alexander Mitrofanov
+ * src/bin/CommandLineParsing.cpp, ParameterFile.h, tests/testParameterFile.py
+     * Accept an explicitly empty CSV sort value to clear a parameter-file
+       setting when reproducing non-CSV reports from the same JSON document.
+ * gui/app.js, gui/styles.css, scripts/wasm/test-browser.py
+     * Keep pending auxiliary-file reads from restoring reset inputs, return
+       Reset to Sequence input and make the entire task label clickable.
+ * doc/{Makefile.am,json-parameters.md}
+     + Include JSON format documentation in source distributions and record the
+       observed WASM footprint and reproducible dependency comparison (#287).
+
+261023 Alexander Mitrofanov
+ * gui/{index.html,app.js,styles.css}, scripts/wasm/test-browser.py
+     * Replace the task dropdown with visible, highlighted native radio choices
+       and task descriptions; update the heading to include Seeds/Accessibility.
+     * Keep Example, Reset, Load and Store adjacent and test keyboard selection
+       and responsive layout (PR #287 review).
+
+261023 Alexander Mitrofanov
+ * gui/{uploads.js,app.js,index.html,styles.css}, gui/docs/json-workflow.md
+     + Add Upload controls and file-drop hints to both FASTA headers; validate
+       file size/contents before replacing a strand and invalidate stale reads.
+ * gui/tests/uploads.test.mjs, scripts/wasm/{test-browser.py,stage.sh}
+     + Test local upload/drop, invalid files and reset during a pending read;
+       stage the file-input module (PR #287 review).
+
+261023 Alexander Mitrofanov
+ * gui/{app.js,index.html,styles.css,examples/}, gui/docs/json-workflow.md
+     * Reset clears inputs/results and restores defaults; example FASTA is shown
+       only as placeholders. Add a described Example dropdown beside Reset.
+     + Ship two editable JSON examples and a manifest, using the common importer.
+ * gui/tests/parameter-file.test.mjs, scripts/wasm/{stage.sh,test-browser.py}
+     + Validate/stage example files and check empty startup/reset behavior (#287).
+
+261023 Alexander Mitrofanov
+ * gui/parameter-file.js, archive.js, app.js, index.html, protocol.js
+     + Load and Store non-default settings and embedded inputs using native JSON;
+       validate imports before replacing the form and retain CSV selection order.
+     * ZIP exports contain only parameter.json and outputs. Record version and
+       native replay commands, including overrides for additional report formats.
+ * gui/tests/, scripts/wasm/{smoke-protocol.mjs,test-browser.py,stage.sh},
+   gui/docs/{json-workflow.md,step4-results-and-deployment.md}
+     + Test JSON round trips, invalid imports, real WASM replay and output equality;
+       stage the serializer and nlohmann/json license (PR #287 review).
+
+261023 Alexander Mitrofanov
+ * gui/protocol.js, gui/intarna-worker.js, gui/tests/protocol.test.mjs,
+   gui/docs/step2-worker-architecture.md
+     * Pass --parameterFile=/parameter.json to each WASM instance using the
+       native JSON format with embedded FASTA, SHAPE and accessibility text.
+       Preserve native output routing and independent report invocations (#287).
+
+261023 Alexander Mitrofanov
+ * src/bin/ParameterFile.{h,cpp}, CommandLineParsing.{h,cpp}, Makefile.am
+     + Detect JSON parameter files; reuse native CLI validation and precedence,
+       support embedded input text and retain files until computation finishes.
+     * Honor parameter-file personalities when selecting native defaults.
+ * src/bin/nlohmann/, doc/json-parameters.md, README.md, scripts/wasm/stage.sh
+     + Vendor nlohmann/json 3.12.0 with its license, document the schema,
+       dependency tradeoff and reproduction contract (PR #287 review).
+ * tests/runParameterFile.sh, tests/testParameterFile.py, tests/Makefile.am
+     + Check legacy/JSON equivalence, embedded inputs, precedence and errors.
+
+261023 Alexander Mitrofanov
+ * gui/, scripts/wasm/, .github/workflows/build-wasm.yml, README.md,
+   doc/api-documentation.md, .gitignore
+     * Rename webinterface to gui, including imports, staging, tests and the
+       combined Pages artifact at /IntaRNA/gui/ (PR #287 review).
 
 261022 Alexander Mitrofanov
  * scripts/wasm/{vienna-release.py,vienna-release.json}, build.sh

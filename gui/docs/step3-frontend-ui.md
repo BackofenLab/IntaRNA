@@ -7,7 +7,7 @@ header indigo `#344a9a`, action blue `#145a96`, dark blue `#0f4676`, pale blue
 `#eaf2f8`, white `#ffffff` and focus gold `#f4bb44`. Segoe UI/Tahoma/Geneva serve
 labels and body text; Consolas/Liberation Mono serve sequence and structure data.
 The official group and university logos share the header with the IntaRNA mark.
-Their local copies and source attribution are in `webinterface/assets/`.
+Their local copies and source attribution are in `gui/assets/`.
 
 The layout puts the scientific task first, then mutually exclusive parameter
 groups, followed by the compute button, results, additional files and versions.

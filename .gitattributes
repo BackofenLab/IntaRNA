@@ -1,0 +1,3 @@
+# Keep the third-party parser separate in reviews and preserve upstream bytes.
+src/bin/nlohmann/json.hpp linguist-vendored
+src/bin/nlohmann/LICENSE.MIT linguist-vendored -whitespace

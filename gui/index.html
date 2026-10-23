@@ -19,44 +19,46 @@
   </header>
   <main id="workspace">
     <section class="introduction" aria-labelledby="page-title">
-      <div><h1 id="page-title">RNA–RNA interactions</h1><p>Predict interactions or evaluate the energy of structures you provide.</p></div>
+      <div><h1 id="page-title">RNA–RNA interactions considering Seeds and Accessibility</h1></div>
       <p class="local-note">Computations stay on your device</p>
     </section>
     <noscript><p class="error">Enable JavaScript to run IntaRNA in your browser.</p></noscript>
     <form id="prediction-form" novalidate>
       <fieldset id="inputs">
         <legend class="sr-only">Task, sequences and parameters</legend>
-        <div class="task-bar"><label for="task">Task <select id="task"><option value="prediction">Prediction (IntaRNA)</option><option value="evaluation">Evaluation (IntaRNAeval)</option></select></label><button id="example" type="button" class="secondary">Load example</button></div>
+        <fieldset id="task" class="task-selector" aria-describedby="task-help">
+          <legend class="sr-only">Analysis task</legend>
+          <label class="task-choice"><input type="radio" name="task" value="prediction" checked><span>Prediction</span><small>IntaRNA</small></label>
+          <label class="task-choice"><input type="radio" name="task" value="evaluation"><span>Evaluation</span><small>IntaRNAeval</small></label>
+        </fieldset>
         <p id="task-help">Predict interactions for all query–target sequence pairs.</p>
         <div id="parameter-groups">
           <div id="parameter-tabs" role="tablist" aria-label="Parameter groups"></div>
           <section class="parameter-group" id="sequence-input" role="tabpanel" aria-labelledby="tab-sequence-input">
             <div class="group-body">
               <div class="sequence-grid">
-                <section class="strand"><div class="strand-heading"><label for="query">Query RNA</label><span>5′ to 3′</span></div>
-                  <textarea id="query" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="sequence-help query-length">>query
-GGGAGGAGGG</textarea>
-                  <div class="sequence-meta"><span id="query-length">1 record, 10 nucleotides</span><label for="qIdxPos0">Start index <input id="qIdxPos0" type="number" min="-2000000000" max="2000000000" step="1" value="1"></label></div>
+                <section class="strand"><div class="strand-heading"><label for="query">Query RNA</label><span>5′ to 3′</span><div class="upload-controls"><button id="query-upload-button" type="button" class="secondary small-button" aria-label="Upload query FASTA">Upload</button><small>or drop in the field</small><input id="query-upload" type="file" accept=".fa,.fasta,.fna,.fas,.txt,text/plain" hidden></div></div>
+                  <textarea id="query" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="sequence-help query-length" placeholder=">query&#10;GGGAGGAGGG"></textarea>
+                  <div class="sequence-meta"><span id="query-length">No sequence entered</span><label for="qIdxPos0">Start index <input id="qIdxPos0" type="number" min="-2000000000" max="2000000000" step="1" value="1"></label></div>
                 </section>
-                <section class="strand"><div class="strand-heading"><label for="target">Target RNA</label><span>5′ to 3′</span></div>
-                  <textarea id="target" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="sequence-help target-length">>target
-CCCUCCUCCC</textarea>
-                  <div class="sequence-meta"><span id="target-length">1 record, 10 nucleotides</span><label for="tIdxPos0">Start index <input id="tIdxPos0" type="number" min="-2000000000" max="2000000000" step="1" value="1"></label></div>
+                <section class="strand"><div class="strand-heading"><label for="target">Target RNA</label><span>5′ to 3′</span><div class="upload-controls"><button id="target-upload-button" type="button" class="secondary small-button" aria-label="Upload target FASTA">Upload</button><small>or drop in the field</small><input id="target-upload" type="file" accept=".fa,.fasta,.fna,.fas,.txt,text/plain" hidden></div></div>
+                  <textarea id="target" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="sequence-help target-length" placeholder=">target&#10;CCCUCCUCCC"></textarea>
+                  <div class="sequence-meta"><span id="target-length">No sequence entered</span><label for="tIdxPos0">Start index <input id="tIdxPos0" type="number" min="-2000000000" max="2000000000" step="1" value="1"></label></div>
                 </section>
               </div>
               <p id="sequence-help" class="input-help">Plain sequence or multi-FASTA (prediction only), A/C/G/U/T/N. Up to 20 records per field and 2–2,000 nt per record; total query × target length across selected pairs ≤ 1,000,000. Seed predictions also require at least as many nucleotides as seed base pairs. Signed start indices apply to every record on that strand; negative indexing skips zero.</p>
-              <div id="evaluation-input" hidden><label for="rri">Interactions to evaluate (target &amp; query)</label><textarea id="rri" spellcheck="false" aria-describedby="rri-help">1||||||||||&amp;1||||||||||</textarea><p id="rri-help" class="input-help">Each strand uses its start coordinate and dots/bars in 5′ to 3′ order; pair bars antiparallel. Example: 1|||&amp;1|||. Separate structures with a colon. Evaluation retains energy/accessibility settings and ignores prediction filters.</p></div>
+              <div id="evaluation-input" hidden><label for="rri">Interactions to evaluate (target &amp; query)</label><textarea id="rri" spellcheck="false" aria-describedby="rri-help" placeholder="1||||||||||&amp;1||||||||||"></textarea><p id="rri-help" class="input-help">Each strand uses its start coordinate and dots/bars in 5′ to 3′ order; pair bars antiparallel. Example: 1|||&amp;1|||. Separate structures with a colon. Evaluation retains energy/accessibility settings and ignores prediction filters.</p></div>
             </div>
           </section>
         </div>
-        <div class="compute-bar"><button id="reset" type="button" class="secondary">Reset parameters</button><button id="compute" type="submit" class="primary">Compute interactions</button></div>
+        <div class="compute-bar"><details id="examples-menu" class="examples-menu"><summary>Example</summary><div id="example-options"><p class="input-help">Loading examples…</p></div></details><button id="reset" type="button" class="secondary">Reset parameters</button><button id="load-parameters" type="button" class="secondary" title="Load settings and embedded inputs from JSON">Load</button><button id="store-parameters" type="button" class="secondary" title="Download current settings and embedded inputs as JSON">Store</button><input id="parameter-upload" type="file" accept=".json,application/json" hidden><button id="compute" type="submit" class="primary">Compute interactions</button></div>
       </fieldset>
       <p id="input-error" class="error" role="alert" hidden></p>
     </form>
     <section id="results" class="results" aria-labelledby="results-title" aria-busy="false">
-      <div class="results-heading"><h2 id="results-title">Interactions</h2><p id="result-status" role="status" aria-live="polite">Enter your sequences or try the example, then compute.</p></div>
+      <div class="results-heading"><h2 id="results-title">Interactions</h2><p id="result-status" role="status" aria-live="polite">Enter your sequences or choose an example, then compute.</p></div>
       <div id="results-view" hidden>
-        <div class="table-tools"><label for="search">Filter interactions <input id="search" type="search" placeholder="Search any column" autocomplete="off"></label><span id="visible-count" role="status" aria-live="polite"></span><div class="download-actions"><button id="download" class="secondary" type="button">Download CSV</button><button id="download-zip" class="secondary" type="button" title="Download input FASTA, reproducible parameters, compiled versions, CSV and all additional output files in one ZIP.">Download ZIP</button></div></div>
+        <div class="table-tools"><label for="search">Filter interactions <input id="search" type="search" placeholder="Search any column" autocomplete="off"></label><span id="visible-count" role="status" aria-live="polite"></span><div class="download-actions"><button id="download" class="secondary" type="button">Download CSV</button><button id="download-zip" class="secondary" type="button" title="Download parameter.json with embedded inputs and compiled versions, CSV and all additional output files in one ZIP.">Download ZIP</button></div></div>
         <details class="column-picker"><summary>Show or hide table columns</summary><div id="visible-columns" class="checkbox-grid"></div></details>
         <div class="table-scroll" tabindex="0" role="region" aria-label="Interaction results, scroll horizontally for all columns"><table><caption class="sr-only">Interactions. Select a heading to sort. mfe Δ is relative to the best reported interaction for the same sequence pair.</caption><thead><tr></tr></thead><tbody></tbody></table></div>
         <p id="no-matches" hidden>No interactions match this filter. Clear the search to see all results.</p>

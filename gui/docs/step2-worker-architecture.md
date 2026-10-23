@@ -7,9 +7,10 @@ messages. `prepareRequest` validates both the UI and worker boundary; argument
 construction only accepts schema keys, enumerated output formats and fixed paths.
 
 The worker imports `wasm/intarna.js`, maps `locateFile` to the lowercase WASM
-asset and creates an isolated `createIntaRNA` instance. It writes normalized
-multi-FASTA to `/query.fa` and `/target.fa`; local SHAPE/accessibility text uses
-fixed `q/tShape.txt` or `q/tAccFile.txt` paths. CSV is written to `/results.csv`;
+asset and creates an isolated `createIntaRNA` instance. It writes one `/parameter.json` document using the native
+[JSON contract](../../doc/json-parameters.md), embedding normalized multi-FASTA
+and SHAPE/accessibility text. Each invocation passes only
+`--parameterFile=/parameter.json`. CSV is written to `/results.csv`;
 additional native output prefixes write files under `/output/`. Multi-FASTA
 filenames use the CLI's native record-number suffixes.
 
@@ -30,5 +31,5 @@ in the URL. The iframe is cleared on input edits; no third-party viewer is
 loaded before selection. No backend, shared memory or cross-origin isolation
 is needed for computation. A single WASM instance can grow up to 1 GiB.
 
-Run `npm test --prefix webinterface`, then the native-reference WASM smoke tests
+Run `npm test --prefix gui`, then the native-reference WASM smoke tests
 and Chromium/Firefox suites described in step 4.

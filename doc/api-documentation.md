@@ -45,7 +45,7 @@ manually to inspect documentation artifacts. The documentation build uploads
 under `api/`.
 
 `build-wasm.yml` combines that artifact with the tested browser interface under
-`webinterface/` and publishes **one** Pages artifact. This preserves the existing
+`gui/` and publishes **one** Pages artifact. This preserves the existing
 guide and API; two independent publishers would overwrite each other's site.
 Only a push or manual dispatch on `BackofenLab/IntaRNA`'s `master` can deploy.
 Pull requests and forks cannot publish. The deployment job alone receives Pages
@@ -53,7 +53,7 @@ and OIDC write permissions, and deployments share one concurrency group.
 
 - User guide: <https://backofenlab.github.io/IntaRNA/>
 - Development API: <https://backofenlab.github.io/IntaRNA/api/>
-- Browser interface: <https://backofenlab.github.io/IntaRNA/webinterface/>
+- Browser interface: <https://backofenlab.github.io/IntaRNA/gui/>
 
 ### Pages configuration
 
@@ -67,5 +67,5 @@ change live publishing settings. See GitHub's
 
 No generated HTML, access token, or separate documentation branch is committed.
 The `intarna-pages-preview` artifact contains the combined site for PR review.
-See [the browser deployment notes](../webinterface/docs/step4-results-and-deployment.md)
+See [the browser deployment notes](../gui/docs/step4-results-and-deployment.md)
 for the complete build and validation sequence.
