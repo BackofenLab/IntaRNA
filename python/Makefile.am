@@ -7,9 +7,9 @@ SUBDIRS = copomus intarnapvalue bin
 
 dist_bin_SCRIPTS = \
 	CopomuS.py \
-	IntaRNA-fuse.py
-
-EXTRA_DIST = README.md
+	IntaRNA-fuse.py \
+	IntaRNA_CSV_p-value.py \
+	IntaRNA_plotRegions.py
 
 # auxiliary scripts to be part of distribution 
 noinst_PYTHON = setup.py
@@ -30,3 +30,11 @@ install-exec-hook:
 endif
 
 endif
+
+# Optional output-analysis tools; dependencies are installed by the user.
+EXTRA_DIST = README.md requirements-output-tools.txt plotRegions.example.png \
+	examples/regions.csv examples/regions.params tests/test_output_tools.py
+
+.PHONY: check-output-tools
+check-output-tools:
+	$(PYTHON) -m unittest discover -s $(srcdir)/tests -v

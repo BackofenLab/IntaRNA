@@ -5,7 +5,7 @@
 export GCC_COLORS ?= "error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01"
 
 # sub directories to check for Makefiles
-SUBDIRS = src python R tests doc .
+SUBDIRS = src python tests doc .
 
 # list of all personalities to be installed
 PERSONALITIES=@PERSONALITIES@
