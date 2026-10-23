@@ -40,27 +40,38 @@ class CommonToolsTests(unittest.TestCase):
 
     def test_lookup_siblings_source_tree_path_and_frozen_executable(self):
         with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
+            # macOS temporary directories can already contain symlink components.
+            root = Path(directory).resolve()
             script = root / 'python' / 'script.py'
             source = root / 'src' / 'bin' / 'IntaRNA'
             sibling = script.parent / 'IntaRNA'
             source.parent.mkdir(parents=True)
             sibling.parent.mkdir()
+            linked_directory = root / 'linked-python'
+            linked_directory.symlink_to(script.parent, target_is_directory=True)
+            scripts = (script, linked_directory / script.name)
             for path in (source, sibling):
                 path.write_text('#!/bin/sh\nexit 0\n')
                 path.chmod(0o755)
             with patch.dict('os.environ', {'PATH': ''}):
-                self.assertEqual(find_program('IntaRNA', script), str(sibling))
+                for script_path in scripts:
+                    with self.subTest(script=script_path, lookup='sibling'):
+                        self.assertEqual(find_program('IntaRNA', script_path), str(sibling))
                 sibling.unlink()
-                self.assertEqual(find_program('IntaRNA', script), str(source))
+                for script_path in scripts:
+                    with self.subTest(script=script_path, lookup='source'):
+                        self.assertEqual(find_program('IntaRNA', script_path), str(source))
                 source.unlink()
-                with self.assertRaises(RuntimeError):
-                    find_program('IntaRNA', script)
+                for script_path in scripts:
+                    with self.subTest(script=script_path, lookup='missing'), self.assertRaises(RuntimeError):
+                        find_program('IntaRNA', script_path)
             sibling.write_text('#!/bin/sh\nexit 0\n')
             sibling.chmod(0o755)
-            with patch.object(sys, 'frozen', True, create=True), \
-                    patch.object(sys, 'executable', str(sibling.parent / 'IntaRNApvalue')):
-                self.assertEqual(find_program('IntaRNA'), str(sibling))
+            for script_path in scripts:
+                with self.subTest(script=script_path, lookup='frozen'), \
+                        patch.object(sys, 'frozen', True, create=True), \
+                        patch.object(sys, 'executable', str(script_path.parent / 'IntaRNApvalue')):
+                    self.assertEqual(find_program('IntaRNA'), str(sibling))
 
     def test_optional_builder_uses_paths_and_propagates_failures(self):
         spec = importlib.util.spec_from_file_location('companion_builder', ROOT / 'bin' / 'build.py')

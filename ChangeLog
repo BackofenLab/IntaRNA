@@ -221,6 +221,9 @@ energies, restricted partition sums, and trackers.
 
 # Auxiliary Python output tools
 
+- handle symlinked temporary directories in companion executable-lookup tests,
+  including macOS /var aliases (PR #298)
+
 - align companion tools on Python 3.10+, declare pip dependencies, install shared
   modules, and exercise source/installed/native commands in CI (PR #298)
 
@@ -242,6 +245,14 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261024 Alexander Mitrofanov
+ * python/tests/test_common_tools.py
+   * Compare executable lookup against canonical fixture paths so macOS /var
+     aliases do not cause false failures after the helper resolves symlinks.
+   + Exercise sibling, source-tree fallback, missing and frozen executable
+     lookup through an explicit directory symlink on every tested platform.
+     Reproduce and verify the macOS CI failure using an aliased TMPDIR (PR #298).
 
 261024 Alexander Mitrofanov
  * python/setup.py, python/pyproject.toml, python/MANIFEST.in, python/*/Makefile.am,
