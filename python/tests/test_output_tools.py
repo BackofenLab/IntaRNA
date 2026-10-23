@@ -14,6 +14,7 @@ from unittest.mock import patch
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
 
 
 def load_script(name, filename):
@@ -160,7 +161,7 @@ class OutputToolsTests(unittest.TestCase):
     def test_publish_failure_cleans_temporary_output(self):
         source, _ = self.energy_table()
         before = source.read_bytes()
-        with patch.object(pvalue.os, "replace", side_effect=OSError("cannot replace")):
+        with patch("intarna_tools.os.replace", side_effect=OSError("cannot replace")):
             with self.assertRaises(OSError):
                 pvalue.extend_csv(source, source)
         self.assertEqual(source.read_bytes(), before)

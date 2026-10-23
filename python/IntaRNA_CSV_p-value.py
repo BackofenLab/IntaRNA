@@ -4,10 +4,9 @@
 import argparse
 import csv
 import math
-import os
-from pathlib import Path
-import shutil
-import tempfile
+
+
+from intarna_tools import atomic_text_output, csv_header, csv_rows
 
 
 def fit_gev(energies):
@@ -71,20 +70,14 @@ def extend_csv(source, destination, energy_column="E"):
     """Validate and fit the entire table before atomically publishing the output."""
     with open(source, newline="", encoding="utf-8-sig") as handle:
         reader = csv.reader(handle, delimiter=";", strict=True)
-        header = next(reader, [])
-        if not header or len(set(header)) != len(header):
-            raise ValueError("CSV must have a nonempty header with unique column names")
+        header = csv_header(reader)
         if energy_column not in header:
             raise ValueError("energy column {!r} is missing".format(energy_column))
         if "p-value" in header or "fdr" in header:
             raise ValueError("CSV already contains a 'p-value' or 'fdr' column")
         column = header.index(energy_column)
         rows, energies = [], []
-        for row in reader:
-            if not row:  # Allow blank lines, as in read.csv().
-                continue
-            if len(row) != len(header):
-                raise ValueError("CSV line {} has the wrong number of fields".format(reader.line_num))
+        for row in csv_rows(reader, header):
             try:
                 energy = float(row[column])
             except ValueError:
@@ -97,22 +90,11 @@ def extend_csv(source, destination, energy_column="E"):
     # Preserve the historical seven-decimal rounding *before* BH adjustment.
     pvalues = [round(float(p), 7) for p in gev_pvalues(energies, fit_gev(energies))]
     fdrs = adjust_bh(pvalues)
-    destination = Path(destination).resolve()
-    temporary = None
-    try:
-        with tempfile.NamedTemporaryFile(mode="w", newline="", encoding="utf-8",
-                                         dir=destination.parent, delete=False) as handle:
-            temporary = Path(handle.name)
-            writer = csv.writer(handle, delimiter=";", lineterminator="\n")
-            writer.writerow(header + ["p-value", "fdr"])
-            for row, pvalue, fdr in zip(rows, pvalues, fdrs):
-                writer.writerow(row + [format(pvalue, ".7f"), format(fdr, ".7f")])
-        if destination.exists():
-            shutil.copymode(destination, temporary)
-        os.replace(temporary, destination)
-    finally:
-        if temporary is not None and temporary.exists():
-            temporary.unlink()
+    with atomic_text_output(destination) as handle:
+        writer = csv.writer(handle, delimiter=";", lineterminator="\n")
+        writer.writerow(header + ["p-value", "fdr"])
+        for row, pvalue, fdr in zip(rows, pvalues, fdrs):
+            writer.writerow(row + [format(pvalue, ".7f"), format(fdr, ".7f")])
 
 
 def main(argv=None):

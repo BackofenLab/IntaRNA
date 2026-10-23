@@ -68,6 +68,9 @@
 
 ## Technical changes and Optimizations
 
+- share Python companion-tool command execution, input validation and atomic
+  output handling after rebasing onto IntaRNA-fuse (PR #298 review)
+
 - reuse MFE seed-extension scratch matrices and bound predecessor scans in exact
   and heuristic prediction; evaluate physical energies directly (PR #276 review)
 
@@ -230,6 +233,15 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261024 Alexander Mitrofanov
+ * python/intarna_tools.py, python/IntaRNA-fuse.py, python/IntaRNA_CSV_p-value.py,
+   python/IntaRNA_plotRegions.py, python/Makefile.am, tests/testIntaRNAFuse.py,
+   python/tests/test_output_tools.py
+   + Share dependency-free executable lookup, checked subprocess calls, RNA/FASTA
+     validation, CSV validation and atomic text publication between Python tools.
+   * Rebase onto feat/294-python-intarna-fuse; retain both migrations, their
+     installation rules and regression suites (PR #298).
 
 261023 Alexander Mitrofanov
  * python/IntaRNA_CSV_p-value.py, python/IntaRNA_plotRegions.py

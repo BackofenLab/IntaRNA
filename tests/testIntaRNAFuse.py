@@ -62,6 +62,7 @@ class FuseTests(unittest.TestCase):
         self.script = self.root / 'scripts' / SCRIPT.name
         self.script.parent.mkdir()
         shutil.copyfile(SCRIPT, self.script)
+        shutil.copyfile(SCRIPT.parent / "intarna_tools.py", self.script.parent / "intarna_tools.py")
         self.bin = self.root / 'tools with spaces'
         self.bin.mkdir()
         for name in ('IntaRNA', 'RNAfold'):
@@ -218,6 +219,7 @@ class NativeFuseTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix='native fuse ') as tmp:
             script = Path(tmp) / SCRIPT.name
             shutil.copyfile(SCRIPT, script)
+            shutil.copyfile(SCRIPT.parent / "intarna_tools.py", script.parent / "intarna_tools.py")
             env = dict(os.environ, PATH=str(binary.parent) + os.pathsep + os.environ['PATH'])
             output = csv_rows(subprocess.check_output(
                 [sys.executable, str(script), '-t', target, '-q', query, '-n', '3'],

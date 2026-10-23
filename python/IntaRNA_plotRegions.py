@@ -7,6 +7,9 @@ import math
 from pathlib import Path
 
 
+from intarna_tools import csv_header, csv_rows
+
+
 FORMATS = {".pdf", ".png", ".svg", ".eps", ".ps", ".jpeg", ".tiff"}
 
 
@@ -57,18 +60,12 @@ def read_regions(source, parameters):
     regions = []
     with open(source, newline="", encoding="utf-8-sig") as handle:
         reader = csv.reader(handle, delimiter=";", strict=True)
-        header = next(reader, [])
-        if not header or len(set(header)) != len(header):
-            raise ValueError("CSV must have a nonempty header with unique column names")
+        header = csv_header(reader)
         for key in ("id", "start", "end"):
             if parameters[key] not in header:
                 raise ValueError("missing CSV column: " + parameters[key])
         columns = [header.index(parameters[key]) for key in ("id", "start", "end")]
-        for row in reader:
-            if not row:
-                continue
-            if len(row) != len(header):
-                raise ValueError("CSV line {} has the wrong number of fields".format(reader.line_num))
+        for row in csv_rows(reader, header):
             try:
                 start, end = (int(row[index]) for index in columns[1:])
             except ValueError:
