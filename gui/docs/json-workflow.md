@@ -25,3 +25,16 @@ Additional report commands are listed in `_comment`. They override `outMode`
 and CSV-only settings while retaining the same inputs and analysis settings.
 Reports run independently, matching the worker. The WASM integration test
 replays the JSON in fresh engines and compares every output byte.
+
+## Reset and examples
+
+Reset clears sequences, interactions, uploaded files and results and restores
+prediction defaults. Empty FASTA fields show the short demonstration sequences
+as placeholders only. The Example disclosure menu sits to the left of Reset.
+
+Maintainers edit `gui/examples/index.json` (an array of local JSON filenames).
+Each listed file contains `name`, `description`, and `configuration`, where the
+configuration is the same native JSON document used by Load. Two replaceable
+examples cover prediction and evaluation. Loading validates their settings and
+sequences through the same importer and computation validator. Missing or invalid
+examples show an error in the menu; they never overwrite the form.

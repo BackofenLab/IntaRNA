@@ -43,3 +43,16 @@ test('invalid/native-only settings are rejected before replacing the form', () =
   assert.throws(() => importParameters(' '.repeat(5000001)), /5 MB/);
   assert.deepEqual(importParameters('\ufeff'+JSON.stringify(base)).csvColumns, CSV_COLUMNS.split(','));
 });
+
+test('maintainer examples use the same JSON import and prediction validation', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const examples = JSON.parse(await readFile(new URL('../examples/index.json', import.meta.url)));
+  assert.equal(examples.length, 2);
+  const tasks = new Set();
+  for (const file of examples) {
+    const example = JSON.parse(await readFile(new URL(`../examples/${file}`, import.meta.url)));
+    assert.ok(example.name && example.description);
+    tasks.add(prepareRequest(importParameters(example.configuration)).task);
+  }
+  assert.deepEqual([...tasks].sort(), ['evaluation', 'prediction']);
+});

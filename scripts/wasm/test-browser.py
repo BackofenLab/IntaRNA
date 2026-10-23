@@ -37,6 +37,11 @@ with sync_playwright() as playwright:
         expect(page.locator('#tab-' + key)).to_have_attribute('aria-selected', 'true')
         assert page.locator('.parameter-group:visible').count() == 1
 
+    def load_example(task='prediction'):
+        page.locator('#examples-menu summary').click()
+        page.get_by_role('button', name='Evaluate a duplex' if task == 'evaluation' else 'Short duplex', exact=False).click()
+        expect(page.locator('#query')).to_have_value('>query\nGGGAGGAGGG\n')
+
     def download_archive():
         with page.expect_download() as downloaded:
             page.locator('#download-zip').click()
@@ -55,6 +60,11 @@ with sync_playwright() as playwright:
         expect(status).to_contain_text('complete:', timeout=120000)
         expect(page.locator('#input-error')).not_to_be_visible()
 
+    expect(page.locator('#query')).to_have_value('')
+    expect(page.locator('#target')).to_have_value('')
+    expect(page.locator('#query')).to_have_attribute('placeholder', '>query\nGGGAGGAGGG')
+    compute.click()
+    expect(page.locator('#input-error')).to_contain_text('enter a sequence')
     metadata = page.request.get(urljoin(args.url, 'build-info.json')).json()
     vienna_version = metadata['viennarna']
     assert re.fullmatch(r'2\.\d+\.\d+', vienna_version)
@@ -80,12 +90,16 @@ with sync_playwright() as playwright:
     compute.click()
     expect(page.locator('#input-error')).to_contain_text('use only')
     expect(page.locator('#loading')).not_to_be_visible()
-    page.locator('#example').click()
+    load_example()
     fill('temperature', '101')
     open_group('sequence-input')
     compute.click()
     expect(page.locator('#input-error')).to_contain_text('Temperature')
     page.locator('#reset').click()
+    expect(page.locator('#query')).to_have_value('')
+    expect(page.locator('#target')).to_have_value('')
+    expect(page.locator('#rri')).to_have_value('')
+    load_example()
 
     # Reference prediction, selectable CSV output and independent table visibility.
     fill('outNumber', 10)
@@ -162,7 +176,7 @@ with sync_playwright() as playwright:
     page.set_viewport_size({'width': 1440, 'height': 1100})
 
     # Multi-FASTA prediction, signed inclusive output and additional files.
-    page.locator('#example').click()
+    load_example()
     fill('query', '>q1\nGGGAGGAGGG\n>q2\nGGGAGGAGGG')
     fill('qIdxPos0', -3)
     fill('tIdxPos0', -5)
@@ -200,7 +214,7 @@ with sync_playwright() as playwright:
     fill('rri', '1||||||||||&1||||||||||')
     compute.click()
     expect(page.locator('#input-error')).to_contain_text('exactly one')
-    page.locator('#example').click()
+    load_example('evaluation')
     fill('rri', '1||||||||||&1||||||||||:1|||||||||&2|||||||||')
     open_group('output-options')
     page.locator('#output-options input[value="detailed"]').check()
@@ -239,7 +253,7 @@ with sync_playwright() as playwright:
 
     # Startup and synchronous C++ cancellation both allow a fresh prediction.
     page.locator('#task').select_option('prediction')
-    page.locator('#example').click()
+    load_example()
     held_routes = []
     page.route('**/wasm/intarna.wasm', lambda route: held_routes.append(route))
     compute.click()
@@ -255,7 +269,7 @@ with sync_playwright() as playwright:
     expect(page.locator('#loading-status')).to_contain_text('Predicting RNA', timeout=120000)
     page.keyboard.press('Escape')
     expect(status).to_contain_text('aborted')
-    page.locator('#example').click()
+    load_example()
     predict()
 
     fill('query', '>no_pairs\nNNNNNNNNNN')
@@ -269,7 +283,7 @@ with sync_playwright() as playwright:
     assert page.locator('tbody img').count() == 0
     assert '<img' in rows.first.inner_text()
 
-    page.locator('#example').click()
+    load_example()
     page.route('**/wasm/intarna.js', lambda route: route.abort())
     compute.click()
     expect(status).to_contain_text('failed', timeout=30000)

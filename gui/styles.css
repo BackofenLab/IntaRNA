@@ -709,3 +709,14 @@ dialog::backdrop {
     animation:none;
   }
 }
+
+/* Examples are a compact disclosure list with descriptions, not another form. */
+.examples-menu { position:relative; }
+.examples-menu > summary { list-style:none; padding:.6rem 1rem; border:1px solid var(--border); border-radius:5px; background:var(--surface); color:var(--brand-blue-dark); font-weight:600; }
+.examples-menu > summary::after { content:' ▾'; }
+.examples-menu > div { position:absolute; bottom:calc(100% + .5rem); left:0; width:min(26rem,80vw); padding:.4rem; background:var(--surface); border:1px solid var(--border); border-radius:5px; box-shadow:0 6px 20px #1c2b3920; z-index:2; }
+.examples-menu button { width:100%; text-align:left; background:var(--surface); border:0; }
+.examples-menu button:hover { background:var(--brand-blue-soft); }
+.examples-menu button strong,.examples-menu button span { display:block; }
+.examples-menu button span { font-size:.85rem; font-weight:400; color:var(--muted); }
+textarea::placeholder { color:#687d8e; opacity:1; }

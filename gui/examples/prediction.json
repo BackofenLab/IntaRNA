@@ -1,0 +1,11 @@
+{
+  "name": "Short duplex",
+  "description": "Predict interactions between two complementary ten-nucleotide RNAs.",
+  "configuration": {
+    "schema": "IntaRNA-parameters-v1",
+    "parameters": {
+      "query": {"text": ">query\nGGGAGGAGGG\n"},
+      "target": {"text": ">target\nCCCUCCUCCC\n"}
+    }
+  }
+}

@@ -1,4 +1,4 @@
-import { DEFAULTS, EVALUATION_EXAMPLE, parseFasta, prepareRequest, CSV_COLUMNS } from './protocol.js';
+import { parseFasta, prepareRequest, CSV_COLUMNS } from './protocol.js';
 import { GROUPS, FIELDS, EXTRA_OUTPUTS } from './options.js';
 import { CSV_CATALOG } from './columns.js';
 import { PredictionRunner } from './runner.js';
@@ -100,6 +100,7 @@ function clearResults(message = 'Inputs changed. Compute to update the interacti
   byId('diagnostics').hidden = true; byId('diagnostic-text').textContent = ''; status.textContent = message;
 }
 function updateLength(name) {
+  if (!byId(name).value.trim()) { byId(`${name}-length`).textContent = 'No sequence entered'; return; }
   try {
     const parsed = parseFasta(byId(name).value, name === 'query' ? 'Query' : 'Target', byId('task').value === 'prediction');
     byId(`${name}-length`).textContent = `${parsed.records.length} record${parsed.records.length === 1 ? '' : 's'}, ${parsed.records.reduce((sum, r) => sum + r.sequence.length, 0).toLocaleString()} nucleotides`;
@@ -124,23 +125,24 @@ function updateAvailability() {
   for (const input of outputInputs) { input.disabled = evaluation && EXTRA_OUTPUTS.find((entry) => entry.key === input.value).prediction; if (input.disabled) input.checked = false; }
   updateLength('query'); updateLength('target');
 }
-function resetParameters() {
+function resetParameters({ clearInputs = false } = {}) {
+  if (clearInputs) {
+    byId('task').value = 'prediction';
+    byId('query').value = ''; byId('target').value = '';
+    for (const input of form.querySelectorAll('input[type=file]')) input.value = '';
+  }
   csvOrder = CSV_COLUMNS.split(',');
   for (const field of FIELDS) { const input = byId(field.key); if (field.type === 'checkbox') input.checked = field.value; else input.value = field.value; }
   for (const input of csvInputs) input.checked = CSV_COLUMNS.split(',').includes(input.value);
   for (const input of outputInputs) input.checked = false;
-  byId('qIdxPos0').value = 1; byId('tIdxPos0').value = 1; byId('rri').value = EVALUATION_EXAMPLE;
-  updateAvailability(); errorBox.hidden = true; clearResults('Parameters reset to CLI defaults. Compute to update the interactions.');
+  byId('qIdxPos0').value = 1; byId('tIdxPos0').value = 1; byId('rri').value = '';
+  updateAvailability(); errorBox.hidden = true; clearResults(clearInputs ? 'Inputs cleared. Enter sequences or choose an example.' : 'Parameters reset to CLI defaults. Compute to update the interactions.');
 }
 byId('task').addEventListener('change', resetParameters);
-byId('reset').addEventListener('click', resetParameters);
+byId('reset').addEventListener('click', () => resetParameters({ clearInputs: true }));
 form.addEventListener('input', (event) => {
   if (event.target.type === 'file') return;
   updateAvailability(); errorBox.hidden = true; clearResults();
-});
-byId('example').addEventListener('click', () => {
-  byId('query').value = DEFAULTS.query; byId('target').value = DEFAULTS.target;
-  resetParameters(); activateGroup('sequence-input'); clearResults('Example loaded. Compute to analyze its interactions.');
 });
 function showInputError(error) {
   errorBox.textContent = error.message; errorBox.hidden = false;
@@ -173,6 +175,39 @@ byId('store-parameters').addEventListener('click', async () => {
   const request = currentRequest();
   try { downloadText('parameter.json', serializeParameters(request, await buildInfo)); }
   catch (error) { showInputError(error); }
+});
+async function loadExamples() {
+  const container = byId('example-options');
+  try {
+    const response = await fetch(new URL('./examples/index.json', import.meta.url));
+    if (!response.ok) throw new Error('Example list is unavailable.');
+    const files = await response.json();
+    if (!Array.isArray(files) || !files.length || files.some((name) => typeof name !== 'string' || !/^[a-z0-9-]+\.json$/.test(name))) throw new Error('Invalid example list.');
+    const examples = await Promise.all(files.map(async (filename) => {
+      const response = await fetch(new URL(`./examples/${filename}`, import.meta.url));
+      if (!response.ok) throw new Error('An example is unavailable.');
+      const example = await response.json();
+      if (typeof example.name !== 'string' || typeof example.description !== 'string') throw new Error('Invalid example description.');
+      const request = importParameters(example.configuration);
+      prepareRequest(request);
+      return { ...example, request };
+    }));
+    container.replaceChildren();
+    for (const example of examples) {
+      const button = element('button'); button.type = 'button';
+      button.append(element('strong', example.name), element('span', example.description));
+      button.addEventListener('click', () => {
+        if (byId('inputs').disabled) return;
+        applyParameters(example.request, `${example.name} loaded. Compute to analyze the example.`);
+        byId('examples-menu').open = false;
+      });
+      container.append(button);
+    }
+  } catch (error) { container.replaceChildren(element('p', `${error.message} Reload to try again.`, 'input-help')); }
+}
+loadExamples();
+byId('examples-menu').addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') { byId('examples-menu').open = false; byId('examples-menu').querySelector('summary').focus(); }
 });
 byId('abort').addEventListener('click', () => runner.abort());
 dialog.addEventListener('cancel', (event) => { event.preventDefault(); runner.abort(); });
@@ -219,7 +254,7 @@ form.addEventListener('submit', async (event) => {
   }
 });
 activateGroup('sequence-input');
-resetParameters();
+resetParameters({ clearInputs: true });
 const buildInfo = fetch(new URL('./build-info.txt', import.meta.url)).then((response) => {
   if (!response.ok) throw new Error('Missing build provenance'); return response.text();
 });

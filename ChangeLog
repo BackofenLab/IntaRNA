@@ -14,6 +14,9 @@
 
 ## Interface and handling
 
+- clear all inputs on GUI reset and load named examples from maintainable JSON
+  files through an Example menu (PR #287 review)
+
 - load/store GUI settings as portable JSON; ZIPs contain parameter.json with
   embedded inputs/provenance and all outputs (PR #287 review)
 
@@ -263,6 +266,14 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261023 Alexander Mitrofanov
+ * gui/{app.js,index.html,styles.css,examples/}, gui/docs/json-workflow.md
+     * Reset clears inputs/results and restores defaults; example FASTA is shown
+       only as placeholders. Add a described Example dropdown beside Reset.
+     + Ship two editable JSON examples and a manifest, using the common importer.
+ * gui/tests/parameter-file.test.mjs, scripts/wasm/{stage.sh,test-browser.py}
+     + Validate/stage example files and check empty startup/reset behavior (#287).
 
 261023 Alexander Mitrofanov
  * gui/parameter-file.js, archive.js, app.js, index.html, protocol.js
