@@ -84,6 +84,10 @@
 
 ## Technical changes and Optimizations
 
+- build WASM with ViennaRNA 2.7.2 locally and the newest stable 2.x in CI;
+  verify published archive checksums, isolate versioned caches and retain
+  selected dependency provenance and notices (PR #292 review)
+
 - BUGFIX : restore WASM dependency downloads using the pinned official ViennaRNA
   release asset; verify downloads before caching and recover invalid caches
   (PR #291)
@@ -248,6 +252,27 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261022 Alexander Mitrofanov
+ * scripts/wasm/{vienna-release.py,vienna-release.json}, build.sh
+   + Resolve the newest stable ViennaRNA >=2.7.2 and <3 from all official GitHub
+     release pages in CI; require its release tarball and published SHA-256.
+   * Pin 2.7.2 for reproducible local builds and accept saved release manifests.
+     Isolate RNAlib sources/installations and IntaRNA objects by archive identity
+     and keep Boost/zlib in a separate prefix to prevent reuse or include-path
+     shadowing of libraries/headers from another release (PR #292).
+ * scripts/wasm/patch-vienna.py
+   - Remove the dlib 19.24 compatibility patch; ViennaRNA 2.7.2 bundles dlib 20.0.
+ * scripts/wasm/{write-build-info.mjs,stage.sh,smoke-protocol.mjs,test-browser.py}
+   * Record the selected archive URL/checksum, check the compiled ViennaRNA
+     version, stage matching dependency notices and test actual version exports.
+ * scripts/wasm/test-vienna-release.py, .github/workflows/build-wasm.yml
+   + Cover numeric version selection, pagination, major-3/prerelease exclusion,
+     missing/invalid asset metadata, API failures, manifest validation and
+     rejection of compiled engines with a stale ViennaRNA version.
+ * webinterface/docs/step1-wasm-compilation.md
+   * Document latest-2.x CI selection, pinned local reproduction, versioned
+     caches, current bundled dlib and archive provenance.
 
 261022 Alexander Mitrofanov
  * scripts/wasm/{build,download}.sh
