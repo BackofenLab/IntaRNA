@@ -99,7 +99,7 @@ with sync_playwright() as playwright:
         page.locator('#query-upload-button').click()
     chooser.value.set_files({'name': 'query.fa', 'mimeType': 'text/plain', 'buffer': b'>uploaded\nGGGAGGAGGG\n'})
     expect(page.locator('#query')).to_have_value('>uploaded\nGGGAGGAGGG\n')
-    page.locator('#target').evaluate("""node => {
+    page.locator('#target').evaluate(r"""node => {
       const transfer = new DataTransfer();
       transfer.items.add(new File(['>dropped\nCCCUCCUCCC\n'], 'target.fa', {type:'text/plain'}));
       node.dispatchEvent(new DragEvent('drop', {dataTransfer:transfer, bubbles:true, cancelable:true}));
@@ -109,7 +109,7 @@ with sync_playwright() as playwright:
     expect(page.locator('#input-error')).to_be_visible()
     expect(page.locator('#query')).to_have_value('>uploaded\nGGGAGGAGGG\n')
     # A file read completing after Reset cannot restore the previous input.
-    page.evaluate("""() => { window.originalFileText = File.prototype.text; File.prototype.text = function() { return new Promise(resolve => { window.finishRead = () => resolve('>late\nGGGAGGAGGG\n'); }); }; }""")
+    page.evaluate(r"""() => { window.originalFileText = File.prototype.text; File.prototype.text = function() { return new Promise(resolve => { window.finishRead = () => resolve('>late\nGGGAGGAGGG\n'); }); }; }""")
     page.locator('#query-upload').set_input_files({'name': 'late.fa', 'mimeType': 'text/plain', 'buffer': b'>late\nGGGAGGAGGG\n'})
     page.locator('#reset').click()
     page.evaluate('() => { File.prototype.text = window.originalFileText; window.finishRead(); }')

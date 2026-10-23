@@ -68,9 +68,14 @@ for (const definition of GROUPS) {
       const upload = element('input'); upload.type = 'file'; upload.accept = '.txt,.csv,.shape,.dat'; upload.setAttribute('aria-label', `Load ${field.label} from a local text file`);
       upload.dataset.for = field.key;
       upload.addEventListener('change', async () => {
-        const file = upload.files[0]; if (!file) return;
-        if (file.size > 1000000) { errorBox.textContent = 'Choose a text file of at most 1 MB.'; errorBox.hidden = false; return; }
-        input.value = await file.text(); input.dispatchEvent(new Event('input', { bubbles: true })); upload.value = '';
+        const file = upload.files[0]; upload.value = ''; if (!file) return;
+        const revision = ++inputRevision;
+        try {
+          if (file.size > 1000000) throw new Error('Choose a text file of at most 1 MB.');
+          const content = await file.text();
+          if (inputRevision !== revision) return;
+          input.value = content; input.dispatchEvent(new Event('input', { bubbles: true }));
+        } catch (error) { if (inputRevision === revision) showInputError(error); }
       }); wrapper.append(upload);
     }
     grid.append(wrapper);
@@ -135,6 +140,7 @@ function resetParameters({ clearInputs = false } = {}) {
     setTask('prediction');
     byId('query').value = ''; byId('target').value = '';
     for (const input of form.querySelectorAll('input[type=file]')) input.value = '';
+    byId('examples-menu').open = false; activateGroup('sequence-input');
   }
   csvOrder = CSV_COLUMNS.split(',');
   for (const field of FIELDS) { const input = byId(field.key); if (field.type === 'checkbox') input.checked = field.value; else input.value = field.value; }

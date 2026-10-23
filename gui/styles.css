@@ -716,7 +716,7 @@ textarea.drag-over { outline:3px solid var(--brand-accent); background:var(--bra
 /* Native radio semantics keep the task overview visible and keyboard operable. */
 .task-selector { display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:.6rem; }
 .task-choice { position:relative; display:flex; align-items:baseline; gap:.6rem; padding:.55rem 1rem; border:1px solid var(--border); border-radius:5px; background:var(--surface); cursor:pointer; }
-.task-choice input { position:absolute; opacity:0; width:1px; height:1px; }
+.task-choice input { position:absolute; inset:0; opacity:0; width:100%; height:100%; margin:0; cursor:pointer; z-index:1; }
 .task-choice:has(:checked) { background:var(--brand-blue); color:white; border-color:var(--brand-blue); }
 .task-choice:has(:checked) small { color:white; }
 .task-choice:has(:focus-visible) { outline:3px solid var(--brand-accent); outline-offset:3px; }

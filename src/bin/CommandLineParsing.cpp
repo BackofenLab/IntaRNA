@@ -1868,6 +1868,9 @@ void CommandLineParsing::validate_outCsvCols(const std::string & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 void CommandLineParsing::validate_outCsvSort(const std::string & value) {
+	// An explicit empty value clears a sort inherited from a parameter file.
+	if (value.empty()) return;
+
 	OutputHandlerCsv::ColTypeList lst;
 	try {
 		// try to parse

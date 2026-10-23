@@ -14,6 +14,9 @@
 
 ## Interface and handling
 
+- permit clearing inherited CSV sorting when replaying JSON as text reports;
+  validate JSON/GUI behavior in native release/debug and real browsers (#287)
+
 - show prediction/evaluation tasks as always-visible choices with task-specific
   descriptions and an expanded Seeds/Accessibility heading (PR #287 review)
 
@@ -272,6 +275,17 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261023 Alexander Mitrofanov
+ * src/bin/CommandLineParsing.cpp, ParameterFile.h, tests/testParameterFile.py
+     * Accept an explicitly empty CSV sort value to clear a parameter-file
+       setting when reproducing non-CSV reports from the same JSON document.
+ * gui/app.js, gui/styles.css, scripts/wasm/test-browser.py
+     * Keep pending auxiliary-file reads from restoring reset inputs, return
+       Reset to Sequence input and make the entire task label clickable.
+ * doc/{Makefile.am,json-parameters.md}
+     + Include JSON format documentation in source distributions and record the
+       observed WASM footprint and reproducible dependency comparison (#287).
 
 261023 Alexander Mitrofanov
  * gui/{index.html,app.js,styles.css}, scripts/wasm/test-browser.py

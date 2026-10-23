@@ -8,7 +8,7 @@
 /** Reads legacy or JSON CLI parameters and owns any embedded input files. */
 class ParameterFile {
 public:
-	ParameterFile() = default;
+	ParameterFile();
 	~ParameterFile();
 	ParameterFile(const ParameterFile&) = delete;
 	ParameterFile& operator=(const ParameterFile&) = delete;
@@ -38,5 +38,8 @@ private:
 	/** Materialize text with a generated basename; return its absolute path. */
 	std::string writeText(const std::string& name, const std::string& text);
 };
+
+inline
+ParameterFile::ParameterFile() = default;
 
 #endif

@@ -66,3 +66,14 @@ flag, public library API or WASM build dependency. The tradeoff is a vendored
 header to maintain and extra compile/binary size; the parser is outside prediction
 loops. Checksums and update instructions live in `src/bin/nlohmann/README.md`.
 The source distribution and staged GUI include the license.
+
+### Observed WASM footprint
+
+With Emscripten 4.0.23, ViennaRNA 2.7.2 and Boost 1.87.0 using
+`scripts/wasm/build.sh`, the cached pre-JSON engine at `d44d7a6` is 3,217,224 bytes
+(781,737 bytes with Python `gzip.compress(..., mtime=0)`). The JSON-enabled engine
+is 3,362,458 bytes (823,241 gzip): an increase of 145,234 bytes raw and 41,504
+compressed. These are local artifact-size observations with matching dependency
+versions, not runtime benchmarks or guarantees for other toolchains. Reproduce
+by building both revisions, comparing `site/wasm/intarna.wasm`, and checking
+`site/build-info.json` for compiler/library provenance.

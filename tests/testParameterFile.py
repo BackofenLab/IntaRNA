@@ -91,6 +91,11 @@ with tempfile.TemporaryDirectory(prefix="intarna-parameters-test-") as temporary
     run(write({**embedded, **evaluation}))
     assert (root / "result.csv").read_text() == expected
 
+    # Report replay can clear CSV-only settings from the same JSON document.
+    sorted_settings = {**embedded, "outCsvSort": "E"}
+    run(write(sorted_settings), "--outMode=D", "--outCsvCols=id1,start1,end1,id2,start2,end2,subseqDP,hybridDP,E", "--outCsvSort", "")
+    assert "-21.4" in (root / "result.csv").read_text()
+
     # Reject malformed/schema/type errors and ensure cleanup even after errors.
     for bad in [{"unknown": 1}, {"temperature": None}, {"temperature": []}, {"temperature": {}},
                 {"temperature": 999}, {"query": {"text": "bad sequence!"}}, {"parameterFile": "other.json"},
