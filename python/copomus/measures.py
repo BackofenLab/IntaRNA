@@ -1,8 +1,6 @@
 # Copyright 2019
 # Author: Fabio Gutmann <https://github.com/fabio-gut>
 
-import os
-from tempfile import gettempdir
 from copomus.mutation import Mutation
 from copomus.indexing import idx_to_array_index
 
@@ -21,17 +19,12 @@ class Measure:
         pass
 
     def read_temp_file(self):
-        data = []
-        for pipe in self.out_pipes:
-            file_name = f'CopomuS_{pipe}_{os.getpid()}.temp'
-            with open(os.path.join(gettempdir(), file_name), 'r') as f:
-                data.append(f.read())
-            os.remove(os.path.join(gettempdir(), file_name))
-        return data
+        """Return profiles shared by all measures for this prediction."""
+        return [self.profiles[pipe] for pipe in self.out_pipes]
 
     # noinspection PyTypeChecker
     def is_valid(self, alpha: float, beta: float = None) -> bool:
-        beta = alpha if not beta else beta
+        beta = alpha if beta is None else beta
 
         res = (self.score['ww'] < 0 and self.score['mm'] < 0 and
                (self.score['mw'] >= 0 or
@@ -92,14 +85,14 @@ class MinDeltaEnergy(Measure):
 
     def post_compute(self):
         score = {
-            'wm/ww': round(self.score['wm'] - self.score['ww'], 2) if self.score['wm'] and self.score['ww'] else '',
-            'mw/ww': round(self.score['mw'] - self.score['ww'], 2) if self.score['mw'] and self.score['ww'] else '',
-            'wm/mm': round(self.score['wm'] - self.score['mm'], 2) if self.score['wm'] and self.score['mm'] else '',
-            'mw/mm': round(self.score['mw'] - self.score['mm'], 2) if self.score['mw'] and self.score['mm'] else '',
-            'ww/mm': round(self.score['ww'] - self.score['mm'], 2) if self.score['ww'] and self.score['mm'] else ''
+            'wm/ww': round(self.score['wm'] - self.score['ww'], 2) if self.score['wm'] is not None and self.score['ww'] is not None else None,
+            'mw/ww': round(self.score['mw'] - self.score['ww'], 2) if self.score['mw'] is not None and self.score['ww'] is not None else None,
+            'wm/mm': round(self.score['wm'] - self.score['mm'], 2) if self.score['wm'] is not None and self.score['mm'] is not None else None,
+            'mw/mm': round(self.score['mw'] - self.score['mm'], 2) if self.score['mw'] is not None and self.score['mm'] is not None else None,
+            'ww/mm': round(self.score['ww'] - self.score['mm'], 2) if self.score['ww'] is not None and self.score['mm'] is not None else None
         }
         self.score = score
-        entries = [v for k, v in self.score.items() if v != '' and k != 'ww/mm']
+        entries = [v for k, v in self.score.items() if v is not None and k != 'ww/mm']
         self.score['min'] = min(entries) if entries else None
 
     def __lt__(self, other):
@@ -107,7 +100,7 @@ class MinDeltaEnergy(Measure):
             return False
         elif other.non_i():
             return True
-        return self.score['min'] > 0 > other.score['min'] or 0 < other.score['min'] < self.score['min']
+        return self.score['min'] > other.score['min']
 
     def __eq__(self, other):
         if self.non_i() and not other.non_i() or not self.non_i() and other.non_i():
@@ -136,6 +129,7 @@ class MFECover(Measure):
 
     def calculate_score(self, data: dict, mut_type: str, m: Mutation = None, param_file: str = ''):
         if not data:
+            self.score[mut_type] = False
             return
         mfe_cover = (m.target_n in range(data['start1'], data['end1']+1)) and \
                     (m.query_n in range(data['start2'], data['end2']+1))
@@ -278,8 +272,9 @@ class AccessProfileQuery(Measure):
             return False
         if self.non_i() and other.non_i():
             return True
-        return self.is_valid(0) == other.is_valid(0) and \
-               self.score['mm'] - self.score['ww'] == other.score['mm'] - other.score['ww']
+        return (self.is_valid(0) == other.is_valid(0) and
+                (not self.is_valid(0) or
+                 self.score['mm'] - self.score['ww'] == other.score['mm'] - other.score['ww']))
 
 
 class ConstantAccessProfileQuery(Measure):

@@ -14,6 +14,9 @@
 
 ## Interface and handling
 
+- fix CopomuS explicit mutations, GC filters, signed indices, zero scores and
+  shared profiles; validate inputs and preserve output on failure (PR #298)
+
 - orient probability SVGs from the upper-left corner and highlight every MFE
   pair, splitting seed/MFE cell borders into orange and green (PR #259 review)
 
@@ -233,6 +236,19 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261024 Alexander Mitrofanov
+ * python/CopomuS.py, python/copomus/*.py, python/tests/test_copomus.py
+   * Validate sequences/FASTA, mutation positions and bases, delimiters and counts;
+     repair the explicit-selector call signature and CG/GC filter mismatch.
+   * Preserve zero energies and quoted CSV identifiers; fix signed-index conversion,
+     neighboring pairs across zero, and minimum-delta ordering at/below zero.
+   * Share profile contents across accessibility measures, clean private temporary
+     files, and reuse the wildtype prediction for all candidates (PR #298).
+   * Report errors on stderr and replace output only after successful computation.
+ * python/copomus/README.md, python/Makefile.am
+   * Correct option names, defaults, Python requirements and mutation/ranking docs;
+     distribute the focused regressions.
 
 261024 Alexander Mitrofanov
  * python/intarna_tools.py, python/IntaRNA-fuse.py, python/IntaRNA_CSV_p-value.py,

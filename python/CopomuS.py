@@ -5,16 +5,16 @@
 
 
 __intarna_min__ = '3.1.2'
-__python_min__ = '3.7.0'
+__python_min__ = '3.10.0'
 
 import os
 import sys
-from platform import python_version
 
 
 import csv
-from tempfile import gettempdir
-from argparse import ArgumentParser, FileType, SUPPRESS
+from tempfile import TemporaryDirectory
+from pathlib import Path
+from argparse import ArgumentParser, SUPPRESS
 from typing import List
 from copomus.mutation import Mutation
 from copomus.IntaRNA import IntaRNA
@@ -23,9 +23,7 @@ from copomus.candidate_filters import get_filter
 from copomus.mutation_generators import get_generator
 
 
-if IntaRNA.version_tuple(python_version()) < IntaRNA.version_tuple(__python_min__):
-    sys.stderr.write(f'CopomuS requires python >= {__python_min__}\n')
-    sys.exit(1)
+from intarna_tools import atomic_text_output, nonnegative_integer, read_sequence
 
 
 class CopomuS:
@@ -45,9 +43,9 @@ class CopomuS:
         self.alpha, self.beta = 0.0, 0.0
         self.threads = 0
 
-    def main(self):
+    def main(self, argv=None):
         # PARSE COMMAND LINE ARGS
-        self.parse_cmd_args()
+        self.parse_cmd_args(argv)
 
         # CHECK INTARNA BIN AND VERSION
         IntaRNA.check_binary(__intarna_min__)
@@ -64,8 +62,7 @@ class CopomuS:
                 bp = func(bp, self.query, self.target, self.qidxpos0, self.tidxpos0)
 
         if not bp:
-            sys.stderr.write('There are no base pair candidates left after filtering!\n')
-            sys.exit(1)
+            raise ValueError('There are no base pair candidates left after filtering')
 
         # CREATE MUTATIONS
         if not self.mutation_encoding:
@@ -89,7 +86,7 @@ class CopomuS:
         # OUTPUT
         self.output_csv(mutations)
 
-    def parse_cmd_args(self):
+    def parse_cmd_args(self, argv=None):
         defaults = {
             'measures': ['mfeCover', 'E', 'minDeltaE'],
             'selector': 'mfe',
@@ -120,14 +117,14 @@ class CopomuS:
                             default=[],
                             help='Filters candidate base pairs, can be used multiple times. '
                                  f"(Default: {defaults['filters']})",
-                            choices=['GU', 'AU', 'CG', 'lp', 'lpMfe', 'he', 'heMfe'])
+                            choices=['GU', 'AU', 'CG', 'GC', 'lp', 'lpMfe', 'he', 'heMfe'])
         parser.add_argument('-g', '--generator', dest='mutation_generator', default=defaults['generator'],
                             choices=['flip', 'any'], help='Defines the method used for generating mutated sequences. '
                                                           f"(Default: {defaults['generator']})")
         parser.add_argument('--mutationEncoding', dest='mutation_encoding',
                             help='Allows direct candidate selection by specifying a mutation encoding. '
                                  'Overwrites options -s, -f, and -g')
-        parser.add_argument('-o', '--output', dest='output', nargs='?', type=FileType('w'), default=sys.stdout,
+        parser.add_argument('-o', '--output', dest='output', default=None,
                             help='Which file the output should be written to. (Default: STDOUT)')
         parser.add_argument('-d', '--delimiter', dest='delimiter', default='\t',
                             help='Defines the delimiter used to separate columns in the output, default tab. '
@@ -135,60 +132,57 @@ class CopomuS:
         parser.add_argument('-p', '--parameterFile', dest='param_file', default='',
                             help='Optional parameter file for IntaRNA to provide further parameters and '
                                  'prediction constraints.')
-        parser.add_argument('--threads', dest='threads', default=defaults['threads'], type=int,
+        parser.add_argument('--threads', dest='threads', default=defaults['threads'], type=nonnegative_integer,
                             help='Threads used for IntaRNA call')
         parser.add_argument('--alpha', dest='alpha', type=float, default=defaults['alpha'], help=SUPPRESS)
         parser.add_argument('--beta', dest='beta', type=float, default=defaults['beta'], help=SUPPRESS)
 
-        args = parser.parse_args()
-
-        mm = []  # filter out any duplicate entries for measures
-        args.measures = defaults['measures'] if not args.measures else args.measures
-        for m in args.measures:
-            if m not in mm:
-                mm.append(m)
-        args.measures = mm
-
-        ff = []  # filter out any duplicate entries for filters
-        args.candidate_filters = defaults['filters'] if not args.candidate_filters else args.candidate_filters
-        for f in args.candidate_filters:
-            if f not in ff:
-                ff.append(f)
-        args.candidate_filters = ff
-
-        args.query = args.query.upper().replace('T', 'U')  # capitalize sequences and replace T -> U
-        args.target = args.target.upper().replace('T', 'U')
-
-        if args.param_file and not os.path.exists(args.param_file):
-            sys.stderr.write(f'Cannot find provided parameter file: {args.param_file}\n')
-            sys.exit(1)
-
-        for key, value in args.__dict__.items():
-            self.__setattr__(key, value)
+        args = parser.parse_args(argv)
+        args.measures = list(dict.fromkeys(args.measures or defaults['measures']))
+        args.candidate_filters = list(dict.fromkeys(args.candidate_filters))
+        try:
+            args.query = read_sequence(args.query)
+            args.target = read_sequence(args.target)
+            if args.param_file and not Path(args.param_file).is_file():
+                raise ValueError(f'Cannot find provided parameter file: {args.param_file}')
+            if len(args.delimiter) != 1 or args.delimiter in '\r\n\0':
+                raise ValueError('delimiter must be one non-newline character')
+        except (OSError, ValueError) as error:
+            parser.error(str(error))
+        for key, value in vars(args).items():
+            setattr(self, key, value)
 
     def run_tests(self, mutations: List[Mutation]):
-        for mut in mutations:
-            outcsvcols = list(set([j for i in [mm.outcsvcols for mm in mut.measures] for j in i]))  # combine lists
-            outcsvcols = ','.join(outcsvcols)  # join columns
-            outcsvcols = 'id1' if not outcsvcols else outcsvcols  # if no col -> select id1
-
-            out_pipes = [j for i in [m.out_pipes for m in mut.measures] for j in i]  # combine lists
-
-            # create args for IntaRNA call
-            out_param = [f'--out={x}:{os.path.join(gettempdir(), f"CopomuS_{x}")}_{os.getpid()}.temp' for x in out_pipes]
-
-            for mode in ['ww', 'wm', 'mw', 'mm']:  # go through each mutation mode
-                q = mut.qw if mode[0] == 'w' else mut.qm  # get actual sequences
-                t = mut.tw if mode[1] == 'w' else mut.tm
-
-                i = IntaRNA()  # call IntaRNA, we have 4 calls per base pair, one for each mutation mode
-                data = i.run(q, t, mut.qidxpos0, mut.tidxpos0, outcsvcols, self.threads, 1, self.param_file, out_param)
-
-                for m in mut.measures:  # add results to each measure
-                    m.calculate_score(data, mode, mut, self.param_file)
-
-            for m in mut.measures:
-                m.post_compute()
+        # Evaluate wildtype once: its sequences and requested outputs are identical
+        # for every candidate. Profile contents are immutable and shared by measures.
+        wildtype = None
+        with TemporaryDirectory(prefix='CopomuS-') as directory:
+            for mut in mutations:
+                columns = list(dict.fromkeys(c for m in mut.measures for c in m.outcsvcols))
+                pipes = list(dict.fromkeys(p for m in mut.measures for p in m.out_pipes))
+                paths = {pipe: Path(directory) / pipe for pipe in pipes}
+                out_params = [f'--out={pipe}:{path}' for pipe, path in paths.items()]
+                for mode in ('ww', 'wm', 'mw', 'mm'):
+                    if mode == 'ww' and wildtype is not None:
+                        data, profiles = wildtype
+                    else:
+                        query = mut.qw if mode[0] == 'w' else mut.qm
+                        target = mut.tw if mode[1] == 'w' else mut.tm
+                        # Remove prior outputs so a missing profile cannot reuse stale data.
+                        for path in paths.values():
+                            path.unlink(missing_ok=True)
+                        data = IntaRNA().run(query, target, mut.qidxpos0, mut.tidxpos0,
+                                             ','.join(columns) or 'id1', self.threads,
+                                             1, self.param_file, out_params)
+                        profiles = {pipe: path.read_text(encoding='utf-8')
+                                    for pipe, path in paths.items()}
+                        if mode == 'ww':
+                            wildtype = data, profiles
+                    for measure in mut.measures:
+                        measure.profiles = profiles
+                        measure.calculate_score(data, mode, mut, self.param_file)
+                for measure in mut.measures:
+                    measure.post_compute()
 
     def calculate_ranks(self, mutations: List[Mutation]):
         # Calculate total ranking order
@@ -215,8 +209,16 @@ class CopomuS:
                 mutations[mut_id].ranks[m_id] = rank
 
     def output_csv(self, mutations: List[Mutation]):
+        # Open a destination only after all predictions and ranking succeeded.
+        if self.output:
+            with atomic_text_output(self.output) as handle:
+                self.write_csv(mutations, handle)
+        else:
+            self.write_csv(mutations, sys.stdout)
+
+    def write_csv(self, mutations: List[Mutation], handle):
         # CREATE CSV WRITER
-        writer = csv.writer(self.output, delimiter=self.delimiter)
+        writer = csv.writer(handle, delimiter=self.delimiter, lineterminator="\n")
 
         # WRITE CSV
         headers = [j for i in
@@ -237,6 +239,14 @@ class CopomuS:
             writer.writerow([str(m), m.ranks['total'], m.query_n, m.target_n, m.bp_ww, m.bp_mm] + values)  # write csv
 
 
+def main(argv=None):
+    try:
+        CopomuS().main(argv)
+    except (OSError, ValueError, RuntimeError, csv.Error) as error:
+        print(f'Error: {error}', file=sys.stderr)
+        return 1
+    return 0
+
+
 if __name__ == '__main__':
-    c = CopomuS()
-    c.main()
+    raise SystemExit(main())

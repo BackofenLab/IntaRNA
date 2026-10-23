@@ -15,7 +15,9 @@ def idx_to_array_index(idx: int, idxpos0: int):
     >>> idx_to_array_index(1, -1)
     1
     """
-    return idx - idxpos0 - (1 if (idxpos0 < 0 < idx or idx < 0 < idxpos0) else 0)
+    if idxpos0 < 0 and idx == 0:
+        raise ValueError('index zero is skipped for negative sequence offsets')
+    return idx - idxpos0 - (1 if idxpos0 < 0 < idx else 0)
 
 
 def array_index_to_idx(i: int, idxpos0: int):
@@ -31,7 +33,7 @@ def array_index_to_idx(i: int, idxpos0: int):
     >>> array_index_to_idx(1, -1)
     1
     """
-    return idxpos0 + i + (1 if (idxpos0 < 0 < i or i < 0 < idxpos0) else 0)
+    return idxpos0 + i + (1 if idxpos0 < 0 <= idxpos0 + i else 0)
 
 
 def add_sub_idx(i1: int, change: int):
