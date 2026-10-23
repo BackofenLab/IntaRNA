@@ -14,6 +14,9 @@
 
 ## Interface and handling
 
+- accept JSON parameter files with embedded text inputs and personality defaults
+  through --parameterFile while retaining legacy configuration (PR #287 review)
+
 - rename the browser interface directory and Pages URL to gui (PR #287 review)
 
 - add selected-interaction vaRRI embeds and reproducible all-output ZIP downloads
@@ -254,6 +257,17 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261023 Alexander Mitrofanov
+ * src/bin/ParameterFile.{h,cpp}, CommandLineParsing.{h,cpp}, Makefile.am
+     + Detect JSON parameter files; reuse native CLI validation and precedence,
+       support embedded input text and retain files until computation finishes.
+     * Honor parameter-file personalities when selecting native defaults.
+ * src/bin/nlohmann/, doc/json-parameters.md, README.md, scripts/wasm/stage.sh
+     + Vendor nlohmann/json 3.12.0 with its license, document the schema,
+       dependency tradeoff and reproduction contract (PR #287 review).
+ * tests/runParameterFile.sh, tests/testParameterFile.py, tests/Makefile.am
+     + Check legacy/JSON equivalence, embedded inputs, precedence and errors.
 
 261023 Alexander Mitrofanov
  * gui/, scripts/wasm/, .github/workflows/build-wasm.yml, README.md,

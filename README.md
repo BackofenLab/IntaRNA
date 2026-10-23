@@ -504,6 +504,11 @@ using `configure --disable-multithreading`.
 <br />
 <a name="parameterFile" />
 
+JSON parameter files, including embedded FASTA, accessibility, SHAPE and energy
+parameter text, are also accepted by `--parameterFile` with automatic format
+detection. See [JSON format, examples and precedence](doc/json-parameters.md).
+
+
 ## Load arguments from file
 
 If you are using IntaRNA with similar command line arguments (parameters), you 
