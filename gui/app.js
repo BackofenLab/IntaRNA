@@ -5,6 +5,7 @@ import { PredictionRunner } from './runner.js';
 import { ResultsView, downloadText, downloadBlob } from './results.js';
 import { createArchive } from './archive.js';
 import { importParameters, serializeParameters, MAX_PARAMETER_BYTES } from './parameter-file.js';
+import { readFastaFile } from './uploads.js';
 
 const byId = (id) => document.getElementById(id);
 const form = byId('prediction-form'), runner = new PredictionRunner();
@@ -12,6 +13,7 @@ const dialog = byId('loading'), status = byId('result-status'), errorBox = byId(
 const results = new ResultsView(byId('results-view'));
 const csvInputs = [], outputInputs = [];
 let completedRun = null;
+let inputRevision = 0;
 let csvOrder = CSV_COLUMNS.split(',');
 function element(tag, text, className) {
   const node = document.createElement(tag);
@@ -96,6 +98,7 @@ generalBody.append(element('p', 'Tasks run locally in one worker. Abort or Escap
 const docs = element('a', 'Full CLI parameter documentation'); docs.href = 'https://github.com/BackofenLab/IntaRNA#readme'; generalBody.append(docs);
 
 function clearResults(message = 'Inputs changed. Compute to update the interactions.') {
+  inputRevision++;
   completedRun = null; results.clear(); byId('output-files').hidden = true; byId('file-list').replaceChildren();
   byId('diagnostics').hidden = true; byId('diagnostic-text').textContent = ''; status.textContent = message;
 }
@@ -162,13 +165,42 @@ function applyParameters(request, message = 'Parameters loaded. Compute to analy
   for (const input of outputInputs) input.checked = request.outputs.includes(input.value);
   updateAvailability(); activateGroup('sequence-input'); clearResults(message);
 }
+for (const strand of ['query', 'target']) {
+  const input = byId(strand), picker = byId(`${strand}-upload`);
+  const loadFasta = async (files) => {
+    if (byId('inputs').disabled) return;
+    const revision = ++inputRevision;
+    try {
+      if (files.length !== 1) throw new Error('Choose or drop one FASTA file per field.');
+      const content = await readFastaFile(files[0], strand === 'query' ? 'Query' : 'Target', byId('task').value);
+      if (inputRevision !== revision) return;
+      input.value = content;
+      updateAvailability(); errorBox.hidden = true;
+      clearResults(`${strand === 'query' ? 'Query' : 'Target'} FASTA loaded. Compute to analyze the inputs.`);
+    } catch (error) { if (inputRevision === revision) showInputError(error); }
+  };
+  byId(`${strand}-upload-button`).addEventListener('click', () => picker.click());
+  picker.addEventListener('change', () => { const files = [...picker.files]; picker.value = ''; if (files.length) loadFasta(files); });
+  input.addEventListener('dragover', (event) => {
+    if (event.dataTransfer.types.includes('Files')) { event.preventDefault(); event.dataTransfer.dropEffect = 'copy'; input.classList.add('drag-over'); }
+  });
+  input.addEventListener('dragleave', () => input.classList.remove('drag-over'));
+  input.addEventListener('drop', (event) => {
+    input.classList.remove('drag-over');
+    if (!event.dataTransfer.types.includes('Files')) return;
+    event.preventDefault(); loadFasta([...event.dataTransfer.files]);
+  });
+}
 byId('load-parameters').addEventListener('click', () => byId('parameter-upload').click());
 byId('parameter-upload').addEventListener('change', async (event) => {
   const file = event.target.files[0]; event.target.value = ''; if (!file) return;
+  const revision = ++inputRevision;
   try {
     if (file.size > MAX_PARAMETER_BYTES) throw new Error('Choose a JSON file of at most 5 MB.');
-    applyParameters(importParameters(await file.text()));
-  } catch (error) { showInputError(error); }
+    const imported = importParameters(await file.text());
+    if (inputRevision !== revision) return;
+    applyParameters(imported);
+  } catch (error) { if (inputRevision === revision) showInputError(error); }
 });
 byId('store-parameters').addEventListener('click', async () => {
   // Snapshot before waiting for build metadata so edits cannot change the download.

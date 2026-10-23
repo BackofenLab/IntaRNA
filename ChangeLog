@@ -14,6 +14,9 @@
 
 ## Interface and handling
 
+- upload or drop local FASTA files into each GUI strand with validation and
+  protection against stale asynchronous reads (PR #287 review)
+
 - clear all inputs on GUI reset and load named examples from maintainable JSON
   files through an Example menu (PR #287 review)
 
@@ -266,6 +269,14 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261023 Alexander Mitrofanov
+ * gui/{uploads.js,app.js,index.html,styles.css}, gui/docs/json-workflow.md
+     + Add Upload controls and file-drop hints to both FASTA headers; validate
+       file size/contents before replacing a strand and invalidate stale reads.
+ * gui/tests/uploads.test.mjs, scripts/wasm/{test-browser.py,stage.sh}
+     + Test local upload/drop, invalid files and reset during a pending read;
+       stage the file-input module (PR #287 review).
 
 261023 Alexander Mitrofanov
  * gui/{app.js,index.html,styles.css,examples/}, gui/docs/json-workflow.md

@@ -33,11 +33,11 @@
           <section class="parameter-group" id="sequence-input" role="tabpanel" aria-labelledby="tab-sequence-input">
             <div class="group-body">
               <div class="sequence-grid">
-                <section class="strand"><div class="strand-heading"><label for="query">Query RNA</label><span>5′ to 3′</span></div>
+                <section class="strand"><div class="strand-heading"><label for="query">Query RNA</label><span>5′ to 3′</span><div class="upload-controls"><button id="query-upload-button" type="button" class="secondary small-button" aria-label="Upload query FASTA">Upload</button><small>or drop in the field</small><input id="query-upload" type="file" accept=".fa,.fasta,.fna,.fas,.txt,text/plain" hidden></div></div>
                   <textarea id="query" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="sequence-help query-length" placeholder=">query&#10;GGGAGGAGGG"></textarea>
                   <div class="sequence-meta"><span id="query-length">No sequence entered</span><label for="qIdxPos0">Start index <input id="qIdxPos0" type="number" min="-2000000000" max="2000000000" step="1" value="1"></label></div>
                 </section>
-                <section class="strand"><div class="strand-heading"><label for="target">Target RNA</label><span>5′ to 3′</span></div>
+                <section class="strand"><div class="strand-heading"><label for="target">Target RNA</label><span>5′ to 3′</span><div class="upload-controls"><button id="target-upload-button" type="button" class="secondary small-button" aria-label="Upload target FASTA">Upload</button><small>or drop in the field</small><input id="target-upload" type="file" accept=".fa,.fasta,.fna,.fas,.txt,text/plain" hidden></div></div>
                   <textarea id="target" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="sequence-help target-length" placeholder=">target&#10;CCCUCCUCCC"></textarea>
                   <div class="sequence-meta"><span id="target-length">No sequence entered</span><label for="tIdxPos0">Start index <input id="tIdxPos0" type="number" min="-2000000000" max="2000000000" step="1" value="1"></label></div>
                 </section>

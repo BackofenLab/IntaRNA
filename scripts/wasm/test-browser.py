@@ -85,6 +85,27 @@ with sync_playwright() as playwright:
     page.keyboard.press('Home')
     expect(page.locator('#tab-sequence-input')).to_be_focused()
 
+    # Upload and file drop use local text, validate before replacing, and reset.
+    with page.expect_file_chooser() as chooser:
+        page.locator('#query-upload-button').click()
+    chooser.value.set_files({'name': 'query.fa', 'mimeType': 'text/plain', 'buffer': b'>uploaded\nGGGAGGAGGG\n'})
+    expect(page.locator('#query')).to_have_value('>uploaded\nGGGAGGAGGG\n')
+    page.locator('#target').evaluate("""node => {
+      const transfer = new DataTransfer();
+      transfer.items.add(new File(['>dropped\nCCCUCCUCCC\n'], 'target.fa', {type:'text/plain'}));
+      node.dispatchEvent(new DragEvent('drop', {dataTransfer:transfer, bubbles:true, cancelable:true}));
+    }""")
+    expect(page.locator('#target')).to_have_value('>dropped\nCCCUCCUCCC\n')
+    page.locator('#query-upload').set_input_files({'name': 'bad.fa', 'mimeType': 'text/plain', 'buffer': b'not a sequence!'})
+    expect(page.locator('#input-error')).to_be_visible()
+    expect(page.locator('#query')).to_have_value('>uploaded\nGGGAGGAGGG\n')
+    # A file read completing after Reset cannot restore the previous input.
+    page.evaluate("""() => { window.originalFileText = File.prototype.text; File.prototype.text = function() { return new Promise(resolve => { window.finishRead = () => resolve('>late\nGGGAGGAGGG\n'); }); }; }""")
+    page.locator('#query-upload').set_input_files({'name': 'late.fa', 'mimeType': 'text/plain', 'buffer': b'>late\nGGGAGGAGGG\n'})
+    page.locator('#reset').click()
+    page.evaluate('() => { File.prototype.text = window.originalFileText; window.finishRead(); }')
+    expect(page.locator('#query')).to_have_value('')
+
     # JavaScript validation works even when the offending control is in another tab.
     fill('query', '>bad\nACGU-ACGU')
     compute.click()

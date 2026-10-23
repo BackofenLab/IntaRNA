@@ -38,3 +38,12 @@ configuration is the same native JSON document used by Load. Two replaceable
 examples cover prediction and evaluation. Loading validates their settings and
 sequences through the same importer and computation validator. Missing or invalid
 examples show an error in the menu; they never overwrite the form.
+
+## Local FASTA files
+
+Each strand has an Upload button and accepts a text-file drop into its textarea.
+Files are read locally (at most 60 KB), validated with the same FASTA checks as
+manual entry, and replace only that strand after successful validation. Prediction
+accepts multi-FASTA; evaluation requires one record. Invalid files leave the
+previous input intact. A later edit, reset, import or computation discards any
+pending file read, so delayed reads cannot replace newer input.

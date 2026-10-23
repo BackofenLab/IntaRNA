@@ -720,3 +720,8 @@ dialog::backdrop {
 .examples-menu button strong,.examples-menu button span { display:block; }
 .examples-menu button span { font-size:.85rem; font-weight:400; color:var(--muted); }
 textarea::placeholder { color:#687d8e; opacity:1; }
+
+.strand-heading { flex-wrap:wrap; gap:.4rem .7rem; }
+.upload-controls { display:flex; align-items:center; flex-wrap:wrap; gap:.4rem; margin-left:auto; }
+button.small-button { padding:.25rem .65rem; font-size:.85rem; }
+textarea.drag-over { outline:3px solid var(--brand-accent); background:var(--brand-blue-soft); }
