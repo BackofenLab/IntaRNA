@@ -9,6 +9,8 @@ import { readFastaFile } from './uploads.js';
 
 const byId = (id) => document.getElementById(id);
 const form = byId('prediction-form'), runner = new PredictionRunner();
+const getTask = () => form.querySelector('input[name=task]:checked').value;
+const setTask = (task) => { for (const input of form.querySelectorAll('input[name=task]')) input.checked = input.value === task; };
 const dialog = byId('loading'), status = byId('result-status'), errorBox = byId('input-error');
 const results = new ResultsView(byId('results-view'));
 const csvInputs = [], outputInputs = [];
@@ -105,12 +107,12 @@ function clearResults(message = 'Inputs changed. Compute to update the interacti
 function updateLength(name) {
   if (!byId(name).value.trim()) { byId(`${name}-length`).textContent = 'No sequence entered'; return; }
   try {
-    const parsed = parseFasta(byId(name).value, name === 'query' ? 'Query' : 'Target', byId('task').value === 'prediction');
+    const parsed = parseFasta(byId(name).value, name === 'query' ? 'Query' : 'Target', getTask() === 'prediction');
     byId(`${name}-length`).textContent = `${parsed.records.length} record${parsed.records.length === 1 ? '' : 's'}, ${parsed.records.reduce((sum, r) => sum + r.sequence.length, 0).toLocaleString()} nucleotides`;
   } catch { byId(`${name}-length`).textContent = 'Check sequence format and length'; }
 }
 function updateAvailability() {
-  const evaluation = byId('task').value === 'evaluation';
+  const evaluation = getTask() === 'evaluation';
   byId('evaluation-input').hidden = !evaluation;
   byId('task-help').textContent = evaluation ? 'Evaluate supplied structures for one query and one target. Prediction constraints are ignored.' : 'Predict interactions for all query–target sequence pairs.';
   byId('compute').textContent = evaluation ? 'Evaluate interactions' : 'Compute interactions';
@@ -130,7 +132,7 @@ function updateAvailability() {
 }
 function resetParameters({ clearInputs = false } = {}) {
   if (clearInputs) {
-    byId('task').value = 'prediction';
+    setTask('prediction');
     byId('query').value = ''; byId('target').value = '';
     for (const input of form.querySelectorAll('input[type=file]')) input.value = '';
   }
@@ -152,7 +154,7 @@ function showInputError(error) {
 }
 function applyParameters(request, message = 'Parameters loaded. Compute to analyze the inputs.') {
   // Import validates every setting before this atomic UI update.
-  byId('task').value = request.task;
+  setTask(request.task);
   resetParameters();
   for (const key of ['query', 'target', 'qIdxPos0', 'tIdxPos0', 'rri']) byId(key).value = request[key];
   for (const field of FIELDS) {
@@ -172,7 +174,7 @@ for (const strand of ['query', 'target']) {
     const revision = ++inputRevision;
     try {
       if (files.length !== 1) throw new Error('Choose or drop one FASTA file per field.');
-      const content = await readFastaFile(files[0], strand === 'query' ? 'Query' : 'Target', byId('task').value);
+      const content = await readFastaFile(files[0], strand === 'query' ? 'Query' : 'Target', getTask());
       if (inputRevision !== revision) return;
       input.value = content;
       updateAvailability(); errorBox.hidden = true;
@@ -258,7 +260,7 @@ function currentRequest() {
   const selected = csvInputs.filter((input) => input.checked).map((input) => input.value);
   const columns = [...csvOrder.filter((key) => selected.includes(key)), ...selected.filter((key) => !csvOrder.includes(key))];
   return {
-    task: byId('task').value, query: byId('query').value, target: byId('target').value,
+    task: getTask(), query: byId('query').value, target: byId('target').value,
     qIdxPos0: byId('qIdxPos0').value, tIdxPos0: byId('tIdxPos0').value, rri: byId('rri').value,
     parameters: Object.fromEntries(FIELDS.map((field) => [field.key, field.type === 'checkbox' ? byId(field.key).checked : byId(field.key).value])),
     csvColumns: columns, outputs: outputInputs.filter((input) => input.checked && !input.disabled).map((input) => input.value),

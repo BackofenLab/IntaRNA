@@ -19,14 +19,18 @@
   </header>
   <main id="workspace">
     <section class="introduction" aria-labelledby="page-title">
-      <div><h1 id="page-title">RNA–RNA interactions</h1><p>Predict interactions or evaluate the energy of structures you provide.</p></div>
+      <div><h1 id="page-title">RNA–RNA interactions considering Seeds and Accessibility</h1></div>
       <p class="local-note">Computations stay on your device</p>
     </section>
     <noscript><p class="error">Enable JavaScript to run IntaRNA in your browser.</p></noscript>
     <form id="prediction-form" novalidate>
       <fieldset id="inputs">
         <legend class="sr-only">Task, sequences and parameters</legend>
-        <div class="task-bar"><label for="task">Task <select id="task"><option value="prediction">Prediction (IntaRNA)</option><option value="evaluation">Evaluation (IntaRNAeval)</option></select></label></div>
+        <fieldset id="task" class="task-selector" aria-describedby="task-help">
+          <legend class="sr-only">Analysis task</legend>
+          <label class="task-choice"><input type="radio" name="task" value="prediction" checked><span>Prediction</span><small>IntaRNA</small></label>
+          <label class="task-choice"><input type="radio" name="task" value="evaluation"><span>Evaluation</span><small>IntaRNAeval</small></label>
+        </fieldset>
         <p id="task-help">Predict interactions for all query–target sequence pairs.</p>
         <div id="parameter-groups">
           <div id="parameter-tabs" role="tablist" aria-label="Parameter groups"></div>

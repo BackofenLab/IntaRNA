@@ -75,6 +75,15 @@ with sync_playwright() as playwright:
     for key in ['query-options', 'target-options', 'seed-options', 'helix-options', 'shape-options', 'interaction-options', 'output-options', 'general-options', 'sequence-input']:
         open_group(key)
 
+    expect(page.get_by_role('radio', name='Prediction')).to_be_checked()
+    expect(page.get_by_role('radio', name='Evaluation')).to_be_visible()
+    page.get_by_role('radio', name='Prediction').focus()
+    page.keyboard.press('ArrowRight')
+    expect(page.get_by_role('radio', name='Evaluation')).to_be_checked()
+    expect(page.locator('#task-help')).to_contain_text('Evaluate supplied structures')
+    page.keyboard.press('ArrowLeft')
+    expect(page.get_by_role('radio', name='Prediction')).to_be_checked()
+
     # Tabs support keyboard navigation and wrap without page overflow.
     page.locator('#tab-sequence-input').focus()
     page.keyboard.press('ArrowRight')
@@ -229,7 +238,7 @@ with sync_playwright() as playwright:
 
     # Evaluation resets native defaults and removes prediction-only controls.
     fill('query', '>q1\nGGGAGGAGGG\n>q2\nGGGAGGAGGG')
-    page.locator('#task').select_option('evaluation')
+    page.get_by_role('radio', name='Evaluation').check()
     expect(page.locator('#seed-options')).not_to_be_visible()
     expect(page.locator('#outNumber')).to_be_disabled()
     fill('rri', '1||||||||||&1||||||||||')
@@ -273,7 +282,7 @@ with sync_playwright() as playwright:
     expect(page.locator('#input-error')).to_contain_text('same nonzero')
 
     # Startup and synchronous C++ cancellation both allow a fresh prediction.
-    page.locator('#task').select_option('prediction')
+    page.get_by_role('radio', name='Prediction').check()
     load_example()
     held_routes = []
     page.route('**/wasm/intarna.wasm', lambda route: held_routes.append(route))
