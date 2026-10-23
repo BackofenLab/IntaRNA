@@ -182,6 +182,12 @@ h3 {
 
 .university-link {
   margin-left:auto;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  font-size:.85rem;
+  line-height:1.35;
+  text-align:right;
 }
 
 main {
@@ -238,34 +244,54 @@ fieldset {
   color:var(--muted);
 }
 
-.parameter-group {
+#parameter-groups {
   border:1px solid var(--border);
   background:#fbfdff;
   border-radius:8px;
-  margin-bottom:8px;
 }
 
-.parameter-group > summary {
-  padding:.75rem 1rem;
-  color:var(--brand-blue-dark);
-  font-weight:700;
-  user-select:none;
-}
-
-.parameter-group[open] > summary {
-  background:var(--brand-blue-soft);
+#parameter-tabs {
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px;
+  padding:8px;
   border-bottom:1px solid var(--border);
+  background:var(--brand-blue-soft);
   border-radius:7px 7px 0 0;
+}
+
+[role=tab] {
+  border-color:transparent;
+  background:transparent;
+  color:var(--brand-blue-dark);
+  padding:.55rem .75rem;
+  font-size:.85rem;
+}
+
+[role=tab][aria-selected=true] {
+  background:var(--brand-blue);
+  color:white;
+}
+
+[role=tab]:hover {
+  border-color:var(--brand-blue);
 }
 
 .group-body {
   padding:18px;
 }
 
-.sequence-grid,.field-grid {
+.sequence-grid {
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
   gap:18px 24px;
+}
+
+.field-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:20px 24px;
+  align-items:start;
 }
 
 .strand-heading,.sequence-meta {
@@ -321,6 +347,10 @@ fieldset {
 
 .field label {
   font-size:.9rem;
+}
+
+.field input[type=number] {
+  width:9rem;
 }
 
 .field-hint {
@@ -393,6 +423,12 @@ fieldset {
   margin:18px 0 12px;
 }
 
+.download-actions {
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
 .table-tools label {
   display:flex;
   gap:8px;
@@ -461,6 +497,53 @@ td.number {
 
 .table-note {
   margin:12px 0;
+  max-width:none;
+}
+
+.view-interaction {
+  padding:.25rem .6rem;
+  color:var(--brand-blue-dark);
+  background:var(--surface);
+}
+
+tbody tr {
+  cursor:pointer;
+}
+
+tbody tr:hover,tbody tr.selected {
+  background:var(--brand-blue-soft);
+}
+
+.view-interaction[aria-pressed=true] {
+  background:var(--brand-blue);
+  color:white;
+}
+
+#visualization {
+  margin-top:20px;
+}
+
+.visualization-heading {
+  display:flex;
+  align-items:baseline;
+  flex-wrap:wrap;
+  gap:16px;
+}
+
+#varri-frame {
+  display:block;
+  width:100%;
+  height:600px;
+  margin-top:12px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:white;
+}
+
+#visualization-status {
+  max-width:none;
+  overflow-wrap:anywhere;
+  font-size:.9rem;
 }
 
 #output-files {
@@ -495,6 +578,7 @@ footer {
 
 footer p {
   margin-bottom:8px;
+  max-width:none;
 }
 
 .error {
@@ -571,6 +655,10 @@ dialog::backdrop {
   .uni-logo {
     height:36px;
   }
+  .university-link {
+    font-size:.75rem;
+    gap:8px;
+  }
   .brand {
     font-size:1.2rem;
   }
@@ -590,8 +678,11 @@ dialog::backdrop {
   .local-note {
     margin-top:12px;
   }
-  .sequence-grid,.field-grid {
+  .sequence-grid {
     grid-template-columns:1fr;
+  }
+  .field-grid {
+    grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr));
   }
   .results {
     padding:14px;

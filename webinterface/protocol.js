@@ -222,7 +222,7 @@ export function makeArguments(request, format = 'C') {
   }
   if (request.rri) args.push(`--rri=${request.rri}`);
   if (format === 'C') {
-    args.push(`--outCsvCols=${[...new Set([...request.csvColumns, ...CONTEXT_COLUMNS])].join(',')}`);
+    args.push(`--outCsvCols=${[...new Set([...request.csvColumns, ...CONTEXT_COLUMNS, 'hybridDP'])].join(',')}`);
     for (const key of request.outputs.filter((key) => !['normal', 'detailed', 'ensemble'].includes(key))) {
       const spots = key === 'spotProb' && request.parameters.outSpotProbSpots ? `${request.parameters.outSpotProbSpots}:` : '';
       args.push(`--out=${key}:${spots}/output/${key}${key === 'bpsvg' ? '.svg' : '.csv'}`);

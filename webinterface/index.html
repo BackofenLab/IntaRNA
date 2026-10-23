@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Predict or evaluate RNA–RNA interactions locally with IntaRNA.">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; worker-src 'self'; connect-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; worker-src 'self'; connect-src 'self'; frame-src https://backofenlab.github.io/vaRRI/; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
   <title>IntaRNA · RNA–RNA interactions</title>
   <link rel="icon" href="mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
@@ -15,12 +15,12 @@
   <header class="site-header">
     <a href="https://www.bioinf.uni-freiburg.de" aria-label="Bioinformatics Group Freiburg"><img class="group-logo" src="assets/bioinf-fr-logo-blau.png" alt="Bioinformatics Group Freiburg"></a>
     <a class="brand" href="./"><img src="mark.svg" width="44" height="44" alt=""><span>IntaRNA<small>RNA–RNA interaction analysis</small></span></a>
-    <a class="university-link" href="https://uni-freiburg.de" aria-label="University of Freiburg"><img class="uni-logo" src="assets/logo-uni-freiburg.png" alt="University of Freiburg"></a>
+    <a class="university-link" href="https://www.bioinf.uni-freiburg.de" aria-label="Bioinformatics - University of Freiburg"><span>Bioinformatics -<br>University of Freiburg</span><img class="uni-logo" src="assets/logo-uni-freiburg.png" alt="University of Freiburg"></a>
   </header>
   <main id="workspace">
     <section class="introduction" aria-labelledby="page-title">
       <div><h1 id="page-title">RNA–RNA interactions</h1><p>Predict interactions or evaluate the energy of structures you provide.</p></div>
-      <p class="local-note">Sequences stay on your device</p>
+      <p class="local-note">Computations stay on your device</p>
     </section>
     <noscript><p class="error">Enable JavaScript to run IntaRNA in your browser.</p></noscript>
     <form id="prediction-form" novalidate>
@@ -29,8 +29,8 @@
         <div class="task-bar"><label for="task">Task <select id="task"><option value="prediction">Prediction (IntaRNA)</option><option value="evaluation">Evaluation (IntaRNAeval)</option></select></label><button id="example" type="button" class="secondary">Load example</button></div>
         <p id="task-help">Predict interactions for all query–target sequence pairs.</p>
         <div id="parameter-groups">
-          <details class="parameter-group" id="sequence-input" name="parameters" open>
-            <summary>Sequence input</summary>
+          <div id="parameter-tabs" role="tablist" aria-label="Parameter groups"></div>
+          <section class="parameter-group" id="sequence-input" role="tabpanel" aria-labelledby="tab-sequence-input">
             <div class="group-body">
               <div class="sequence-grid">
                 <section class="strand"><div class="strand-heading"><label for="query">Query RNA</label><span>5′ to 3′</span></div>
@@ -47,7 +47,7 @@ CCCUCCUCCC</textarea>
               <p id="sequence-help" class="input-help">Plain sequence or multi-FASTA (prediction only), A/C/G/U/T/N. Up to 20 records per field and 2–2,000 nt per record; total query × target length across selected pairs ≤ 1,000,000. Seed predictions also require at least as many nucleotides as seed base pairs. Signed start indices apply to every record on that strand; negative indexing skips zero.</p>
               <div id="evaluation-input" hidden><label for="rri">Interactions to evaluate (target &amp; query)</label><textarea id="rri" spellcheck="false" aria-describedby="rri-help">1||||||||||&amp;1||||||||||</textarea><p id="rri-help" class="input-help">Each strand uses its start coordinate and dots/bars in 5′ to 3′ order; pair bars antiparallel. Example: 1|||&amp;1|||. Separate structures with a colon. Evaluation retains energy/accessibility settings and ignores prediction filters.</p></div>
             </div>
-          </details>
+          </section>
         </div>
         <div class="compute-bar"><button id="reset" type="button" class="secondary">Reset parameters</button><button id="compute" type="submit" class="primary">Compute interactions</button></div>
       </fieldset>
@@ -56,11 +56,17 @@ CCCUCCUCCC</textarea>
     <section id="results" class="results" aria-labelledby="results-title" aria-busy="false">
       <div class="results-heading"><h2 id="results-title">Interactions</h2><p id="result-status" role="status" aria-live="polite">Enter your sequences or try the example, then compute.</p></div>
       <div id="results-view" hidden>
-        <div class="table-tools"><label for="search">Filter interactions <input id="search" type="search" placeholder="Search any column" autocomplete="off"></label><span id="visible-count" role="status" aria-live="polite"></span><button id="download" class="secondary" type="button">Download CSV</button></div>
+        <div class="table-tools"><label for="search">Filter interactions <input id="search" type="search" placeholder="Search any column" autocomplete="off"></label><span id="visible-count" role="status" aria-live="polite"></span><div class="download-actions"><button id="download" class="secondary" type="button">Download CSV</button><button id="download-zip" class="secondary" type="button" title="Download input FASTA, reproducible parameters, compiled versions, CSV and all additional output files in one ZIP.">Download ZIP</button></div></div>
         <details class="column-picker"><summary>Show or hide table columns</summary><div id="visible-columns" class="checkbox-grid"></div></details>
         <div class="table-scroll" tabindex="0" role="region" aria-label="Interaction results, scroll horizontally for all columns"><table><caption class="sr-only">Interactions. Select a heading to sort. mfe Δ is relative to the best reported interaction for the same sequence pair.</caption><thead><tr></tr></thead><tbody></tbody></table></div>
         <p id="no-matches" hidden>No interactions match this filter. Clear the search to see all results.</p>
         <p class="table-note">mfe Δ is the energy difference from the best reported interaction for the same query–target pair; in evaluation, the reference is the best supplied structure. It is not a free-energy change. Coordinates are inclusive and use your start indices. Table visibility does not change the selected CSV download columns.</p>
+        <section id="visualization" aria-labelledby="visualization-title">
+          <div class="visualization-heading"><h3 id="visualization-title">Interaction visualization</h3><a id="varri-link" target="_blank" rel="noopener noreferrer" hidden>Open in vaRRI</a></div>
+          <p id="visualization-status" role="status">Select View on an interaction to visualize it.</p>
+          <p class="input-help">Selecting View loads vaRRI with that sequence pair and structure in its URL.</p>
+          <iframe id="varri-frame" title="Selected RNA interaction in vaRRI" referrerpolicy="no-referrer" hidden></iframe>
+        </section>
       </div>
       <section id="output-files" hidden aria-labelledby="files-title"><h3 id="files-title">Additional output files</h3><div id="file-list"></div></section>
       <details id="diagnostics" hidden><summary>Computation diagnostics</summary><pre id="diagnostic-text"></pre></details>

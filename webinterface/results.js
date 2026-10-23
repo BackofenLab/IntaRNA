@@ -1,5 +1,6 @@
 import { CSV_CATALOG } from './columns.js';
 import { CONTEXT_COLUMNS } from './protocol.js';
+import { InteractionVisualization } from './visualization.js';
 
 export const COLUMNS = Object.freeze([...CSV_CATALOG, { key: 'deltaE', label: 'mfe Δ (kcal/mol)', numeric: true }]);
 const catalog = new Map(COLUMNS.map((column) => [column.key, column]));
@@ -53,7 +54,10 @@ export function projectCsv(csv, columns) {
   return lines.map((line) => { const cells = line.split(';'); return indices.map((index) => cells[index]).join(';'); }).join('\n') + '\n';
 }
 export function downloadText(name, text) {
-  const url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
+  downloadBlob(name, new Blob([text], { type: 'text/plain;charset=utf-8' }));
+}
+export function downloadBlob(name, blob) {
+  const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url; link.download = name; link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -61,6 +65,7 @@ export function downloadText(name, text) {
 export class ResultsView {
   constructor(root) {
     this.root = root; this.rows = []; this.key = 'E'; this.direction = 1;
+    this.visualization = new InteractionVisualization(root);
     this.search = root.querySelector('#search');
     this.table = root.querySelector('table');
     this.body = this.table.querySelector('tbody');
@@ -73,9 +78,11 @@ export class ResultsView {
   }
   clear() {
     this.rows = []; this.csv = ''; this.body.replaceChildren(); this.root.hidden = true;
+    this.selected = null; this.visualization.clear();
   }
-  show(csv, columns = csv.trim().split('\n')[0].split(';')) {
+  show(csv, columns = csv.trim().split('\n')[0].split(';'), request) {
     this.rows = parseResults(csv); this.csv = projectCsv(csv, columns);
+    this.request = request; this.selected = null; this.visualization.clear();
     this.columns = columns.map((key) => catalog.get(key));
     if (columns.includes('E')) this.columns.push(catalog.get('deltaE'));
     this.visible = new Set(this.columns.map((c) => c.key));
@@ -96,6 +103,8 @@ export class ResultsView {
     const rows = selectRows(this.rows, this.search.value, this.key, this.direction);
     const columns = this.columns.filter((column) => this.visible.has(column.key));
     this.header.replaceChildren();
+    const viewHeading = document.createElement('th'); viewHeading.scope = 'col'; viewHeading.textContent = 'vaRRI';
+    this.header.append(viewHeading);
     for (const column of columns) {
       const cell = document.createElement('th'), button = document.createElement('button');
       cell.scope = 'col'; button.type = 'button'; button.textContent = column.label;
@@ -108,6 +117,19 @@ export class ResultsView {
     this.body.replaceChildren();
     for (const row of rows) {
       const tr = document.createElement('tr');
+      tr.classList.toggle('selected', row === this.selected);
+      const action = document.createElement('td'), view = document.createElement('button');
+      view.type = 'button'; view.textContent = 'View'; view.className = 'view-interaction';
+      view.setAttribute('aria-label', `Visualize ${row.id1} ${row.start1}–${row.end1} with ${row.id2} ${row.start2}–${row.end2}`);
+      view.setAttribute('aria-pressed', String(row === this.selected));
+      tr.addEventListener('click', () => {
+        this.selected = row; this.visualization.show(row, this.request);
+        for (const other of this.body.children) {
+          other.classList.toggle('selected', other === tr);
+          other.querySelector('.view-interaction').setAttribute('aria-pressed', String(other === tr));
+        }
+      });
+      action.append(view); tr.append(action);
       for (const column of columns) {
         const cell = document.createElement('td');
         cell.textContent = ['E', 'deltaE'].includes(column.key) ? Number(row[column.key]).toFixed(2) : String(row[column.key]);

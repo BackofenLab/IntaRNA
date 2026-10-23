@@ -30,8 +30,19 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
+      - name: Test dependency download integrity and cache recovery
+        run: |
+          python scripts/wasm/test-downloads.py
+          python scripts/wasm/test-vienna-release.py
       - name: Test input, worker lifecycle and CSV handling
         run: npm test --prefix webinterface
+      - name: Resolve newest stable ViennaRNA 2.x release and checksum
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python scripts/wasm/vienna-release.py --latest > "$RUNNER_TEMP/vienna-release.json"
+          cat "$RUNNER_TEMP/vienna-release.json"
+          echo "WASM_VIENNA_RELEASE=$RUNNER_TEMP/vienna-release.json" >> "$GITHUB_ENV"
       - name: Cross-compile dependencies and IntaRNA
         run: bash scripts/wasm/build.sh
       - name: Check real WASM predictions against the native reference
