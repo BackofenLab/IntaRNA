@@ -59,26 +59,16 @@ uncompressed ZIP with CRC-32 checksums locally, without a library or CDN. It use
 the completed request and result, independent of table sorting/filtering and
 column visibility. Editing inputs discards the completed snapshot.
 
-The archive contains:
+The archive contains only `parameter.json`, `intarna-interactions.csv`, and every
+generated additional output with its original filename and contents. JSON embeds
+normalized FASTA and any SHAPE/accessibility text, non-default settings, selected
+CSV columns, compiled provenance and native replay commands in `_comment`.
+Additional report commands override CSV-only settings and use another native
+invocation, matching the worker. All JSON is valid with standard parsers.
 
-- `query.fa` and `target.fa`: the exact normalized FASTA consumed by the worker.
-- `parameters.cfg`: native parameter-file syntax, non-default effective analysis
-  settings, explicit input/output routing and the selected CSV columns. Comments
-  include the exact compiled version/provenance text and the replay command
-  `IntaRNA --parameterFile=parameters.cfg` from the extracted directory.
-- `build-info.txt`: original compiled engine/library versions and asset hashes.
-- `intarna-interactions.csv`: all results with the selected CSV columns, identical
-  to Download CSV even if the table has been sorted, filtered or columns hidden.
-- Every generated additional output, with its original filename and contents.
-- Local SHAPE/accessibility input files when supplied, referenced by relative paths.
-- Separate `normal.cfg`, `detailed.cfg` or `ensemble.cfg` when those reports were
-  requested, with their replay commands also listed in `parameters.cfg`. Each
-  report requires a separate native invocation, matching worker behavior.
-
-Replay with the recorded IntaRNA and library versions. Export translates MEMFS
-paths to portable relative paths and omits defaults using the worker's own
-argument builder. ZIP download reports a clear error if compiled version text
-is unavailable, rather than claiming incomplete provenance.
+Load/Store use this same JSON format. Store snapshots the current editable form;
+ZIP snapshots the completed run and ignores table filtering/sorting/visibility.
+Both require the compiled version file. See [the JSON workflow](json-workflow.md).
 
 ## Packaging and deployment
 

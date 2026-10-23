@@ -3,6 +3,7 @@ import argparse
 from pathlib import Path
 from io import BytesIO
 import re
+import json
 from urllib.parse import parse_qs, urljoin, urlparse
 from zipfile import ZipFile
 from playwright.sync_api import sync_playwright, expect
@@ -125,12 +126,33 @@ with sync_playwright() as playwright:
     assert 'showRenderingOnly' not in page.locator('#varri-link').get_attribute('href')
     archive = download_archive()
     assert archive['intarna-interactions.csv'] == csv
-    assert archive['query.fa'] == '>query\nGGGAGGAGGG\n'
-    assert '# IntaRNA 3.4.1' in archive['parameters.cfg']
-    assert f'Vienna RNA package {vienna_version}' in archive['parameters.cfg']
-    assert 'outNumber = 10' in archive['parameters.cfg']
-    assert 'IntaRNA --parameterFile=parameters.cfg' in archive['parameters.cfg']
-    assert 'temperature =' not in archive['parameters.cfg']
+    saved = json.loads(archive['parameter.json'])
+    assert set(archive) == {'parameter.json', 'intarna-interactions.csv'}
+    assert saved['parameters']['query']['text'] == '>query\nGGGAGGAGGG\n'
+    assert 'IntaRNA 3.4.1' in archive['parameter.json']
+    assert f'Vienna RNA package {vienna_version}' in archive['parameter.json']
+    assert saved['parameters']['outNumber'] == 10
+    assert 'IntaRNA --parameterFile=parameter.json' in archive['parameter.json']
+    assert 'temperature' not in saved['parameters']
+    # Store snapshots the editable form; Load is atomic and preserves CSV order.
+    with page.expect_download() as stored:
+        page.locator('#store-parameters').click()
+    settings = Path(stored.value.path()).read_bytes()
+    imported = json.loads(settings)
+    imported['parameters']['outCsvCols'] = 'E,id2'
+    imported['parameters']['temperature'] = 24
+    page.locator('#parameter-upload').set_input_files({'name': 'settings.json', 'mimeType': 'application/json', 'buffer': json.dumps(imported).encode()})
+    expect(page.locator('#temperature')).to_have_value('24')
+    expect(page.locator('#results-view')).not_to_be_visible()
+    with page.expect_download() as stored_again:
+        page.locator('#store-parameters').click()
+    assert json.loads(Path(stored_again.value.path()).read_text())['parameters']['outCsvCols'] == 'E,id2'
+    page.locator('#parameter-upload').set_input_files({'name': 'bad.json', 'mimeType': 'application/json', 'buffer': b'{invalid'})
+    expect(page.locator('#input-error')).to_be_visible()
+    expect(page.locator('#temperature')).to_have_value('24')
+    page.locator('#parameter-upload').set_input_files({'name': 'settings.json', 'mimeType': 'application/json', 'buffer': settings})
+    expect(page.locator('#temperature')).to_have_value('37')
+    predict()
     if args.screenshot:
 
         open_group('sequence-input')
@@ -154,8 +176,9 @@ with sync_playwright() as playwright:
     expect(page.locator('#file-list pre').first).to_contain_text('minE')
     archive = download_archive()
     assert len([name for name in archive if name.startswith('qMinE')]) == 2
-    assert archive['query.fa'].count('>') == 2
-    assert 'qIdxPos0 = -3' in archive['parameters.cfg']
+    saved = json.loads(archive['parameter.json'])
+    assert saved['parameters']['query']['text'].count('>') == 2
+    assert saved['parameters']['qIdxPos0'] == -3
     rows.nth(1).get_by_role('button', name='Visualize').click()
     query = parse_qs(urlparse(page.locator('#varri-frame').get_attribute('src')).query)
     assert query['seqName2'] == ['q2']
@@ -194,10 +217,11 @@ with sync_playwright() as playwright:
     assert '-21.4' in Path(report.value.path()).read_text()
     archive = download_archive()
     assert '-21.4' in archive['intarna-detailed.txt']
-    assert 'personality = IntaRNAeval' in archive['parameters.cfg']
-    assert 'rri = 1||||||||||&1||||||||||:1|||||||||&2|||||||||' in archive['parameters.cfg']
-    assert 'seedBP =' not in archive['parameters.cfg']
-    assert 'out = intarna-detailed.txt' in archive['detailed.cfg']
+    saved = json.loads(archive['parameter.json'])
+    assert saved['parameters']['personality'] == 'IntaRNAeval'
+    assert saved['parameters']['rri'] == '1||||||||||&1||||||||||:1|||||||||&2|||||||||'
+    assert 'seedBP' not in saved['parameters']
+    assert 'detailed' in saved['gui']['reports']
 
     # Visualization stays available when structure/identity columns are deselected.
     open_group('output-options')
@@ -208,7 +232,7 @@ with sync_playwright() as playwright:
     expect(page.locator('#varri-frame')).to_be_visible()
     archive = download_archive()
     assert archive['intarna-interactions.csv'].splitlines()[0] == 'E'
-    assert 'hybridDP' not in archive['parameters.cfg']
+    assert json.loads(archive['parameter.json'])['parameters']['outCsvCols'] == 'E'
     fill('rri', '1|||&1||')
     compute.click()
     expect(page.locator('#input-error')).to_contain_text('same nonzero')

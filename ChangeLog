@@ -14,6 +14,9 @@
 
 ## Interface and handling
 
+- load/store GUI settings as portable JSON; ZIPs contain parameter.json with
+  embedded inputs/provenance and all outputs (PR #287 review)
+
 - use one embedded-input JSON parameter document for each WASM invocation
   (PR #287 review)
 
@@ -260,6 +263,17 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261023 Alexander Mitrofanov
+ * gui/parameter-file.js, archive.js, app.js, index.html, protocol.js
+     + Load and Store non-default settings and embedded inputs using native JSON;
+       validate imports before replacing the form and retain CSV selection order.
+     * ZIP exports contain only parameter.json and outputs. Record version and
+       native replay commands, including overrides for additional report formats.
+ * gui/tests/, scripts/wasm/{smoke-protocol.mjs,test-browser.py,stage.sh},
+   gui/docs/{json-workflow.md,step4-results-and-deployment.md}
+     + Test JSON round trips, invalid imports, real WASM replay and output equality;
+       stage the serializer and nlohmann/json license (PR #287 review).
 
 261023 Alexander Mitrofanov
  * gui/protocol.js, gui/intarna-worker.js, gui/tests/protocol.test.mjs,

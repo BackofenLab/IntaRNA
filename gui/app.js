@@ -4,6 +4,7 @@ import { CSV_CATALOG } from './columns.js';
 import { PredictionRunner } from './runner.js';
 import { ResultsView, downloadText, downloadBlob } from './results.js';
 import { createArchive } from './archive.js';
+import { importParameters, serializeParameters, MAX_PARAMETER_BYTES } from './parameter-file.js';
 
 const byId = (id) => document.getElementById(id);
 const form = byId('prediction-form'), runner = new PredictionRunner();
@@ -11,6 +12,7 @@ const dialog = byId('loading'), status = byId('result-status'), errorBox = byId(
 const results = new ResultsView(byId('results-view'));
 const csvInputs = [], outputInputs = [];
 let completedRun = null;
+let csvOrder = CSV_COLUMNS.split(',');
 function element(tag, text, className) {
   const node = document.createElement(tag);
   if (text) node.textContent = text;
@@ -83,7 +85,7 @@ const csvPicker = element('div', '', 'checkbox-grid'); outputBody.append(csvPick
 for (const column of [...CSV_COLUMNS.split(',').map((key) => CSV_CATALOG.find((column) => column.key === key)), ...CSV_CATALOG.filter((column) => !CSV_COLUMNS.split(',').includes(column.key))]) csvInputs.push(checkbox(csvPicker, column.key, `${column.key} — ${column.description}`, column.description));
 for (const [name, selection] of [['Select all', CSV_CATALOG.map((c) => c.key)], ['CLI defaults', CSV_COLUMNS.split(',')], ['Clear selection', []]]) {
   const button = element('button', name); button.type = 'button';
-  button.addEventListener('click', () => { for (const input of csvInputs) input.checked = selection.includes(input.value); clearResults(); }); selectionTools.append(button);
+  button.addEventListener('click', () => { csvOrder = [...selection]; for (const input of csvInputs) input.checked = selection.includes(input.value); clearResults(); }); selectionTools.append(button);
 }
 outputBody.append(element('h3', 'Additional output files', 'subheading'));
 outputBody.append(element('p', 'Reports are computed with the same settings. ASCII, detailed and ensemble reports each run a fresh engine instance and can take extra time.', 'input-help'));
@@ -123,6 +125,7 @@ function updateAvailability() {
   updateLength('query'); updateLength('target');
 }
 function resetParameters() {
+  csvOrder = CSV_COLUMNS.split(',');
   for (const field of FIELDS) { const input = byId(field.key); if (field.type === 'checkbox') input.checked = field.value; else input.value = field.value; }
   for (const input of csvInputs) input.checked = CSV_COLUMNS.split(',').includes(input.value);
   for (const input of outputInputs) input.checked = false;
@@ -139,6 +142,38 @@ byId('example').addEventListener('click', () => {
   byId('query').value = DEFAULTS.query; byId('target').value = DEFAULTS.target;
   resetParameters(); activateGroup('sequence-input'); clearResults('Example loaded. Compute to analyze its interactions.');
 });
+function showInputError(error) {
+  errorBox.textContent = error.message; errorBox.hidden = false;
+}
+function applyParameters(request, message = 'Parameters loaded. Compute to analyze the inputs.') {
+  // Import validates every setting before this atomic UI update.
+  byId('task').value = request.task;
+  resetParameters();
+  for (const key of ['query', 'target', 'qIdxPos0', 'tIdxPos0', 'rri']) byId(key).value = request[key];
+  for (const field of FIELDS) {
+    const value = request.parameters[field.key] ?? field.value;
+    if (field.type === 'checkbox') byId(field.key).checked = value;
+    else byId(field.key).value = value;
+  }
+  csvOrder = [...request.csvColumns];
+  for (const input of csvInputs) input.checked = request.csvColumns.includes(input.value);
+  for (const input of outputInputs) input.checked = request.outputs.includes(input.value);
+  updateAvailability(); activateGroup('sequence-input'); clearResults(message);
+}
+byId('load-parameters').addEventListener('click', () => byId('parameter-upload').click());
+byId('parameter-upload').addEventListener('change', async (event) => {
+  const file = event.target.files[0]; event.target.value = ''; if (!file) return;
+  try {
+    if (file.size > MAX_PARAMETER_BYTES) throw new Error('Choose a JSON file of at most 5 MB.');
+    applyParameters(importParameters(await file.text()));
+  } catch (error) { showInputError(error); }
+});
+byId('store-parameters').addEventListener('click', async () => {
+  // Snapshot before waiting for build metadata so edits cannot change the download.
+  const request = currentRequest();
+  try { downloadText('parameter.json', serializeParameters(request, await buildInfo)); }
+  catch (error) { showInputError(error); }
+});
 byId('abort').addEventListener('click', () => runner.abort());
 dialog.addEventListener('cancel', (event) => { event.preventDefault(); runner.abort(); });
 window.addEventListener('pagehide', () => runner.abort());
@@ -152,14 +187,19 @@ function showFiles(files) {
   }
   byId('output-files').hidden = !files.length;
 }
-form.addEventListener('submit', async (event) => {
-  event.preventDefault();
-  const request = {
+function currentRequest() {
+  const selected = csvInputs.filter((input) => input.checked).map((input) => input.value);
+  const columns = [...csvOrder.filter((key) => selected.includes(key)), ...selected.filter((key) => !csvOrder.includes(key))];
+  return {
     task: byId('task').value, query: byId('query').value, target: byId('target').value,
     qIdxPos0: byId('qIdxPos0').value, tIdxPos0: byId('tIdxPos0').value, rri: byId('rri').value,
     parameters: Object.fromEntries(FIELDS.map((field) => [field.key, field.type === 'checkbox' ? byId(field.key).checked : byId(field.key).value])),
-    csvColumns: csvInputs.filter((input) => input.checked).map((input) => input.value), outputs: outputInputs.filter((input) => input.checked && !input.disabled).map((input) => input.value),
+    csvColumns: columns, outputs: outputInputs.filter((input) => input.checked && !input.disabled).map((input) => input.value),
   };
+}
+form.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const request = currentRequest();
   errorBox.hidden = true;
   let prepared;
   try { prepared = prepareRequest(request); } catch (error) { errorBox.textContent = error.message; errorBox.hidden = false; return; }

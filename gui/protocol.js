@@ -221,7 +221,7 @@ export function makeArguments(request, format = 'C') {
   const args = ['--query=/query.fa', '--target=/target.fa', `--outMode=${format}`, `--out=${format === 'C' ? '/results.csv' : '/report.txt'}`];
   if (request.task === 'evaluation') args.push('--personality=IntaRNAeval');
   for (const [key, value] of Object.entries(request.parameters)) {
-    if (key === 'outSpotProbSpots' || key === 'kineticScore' && request.parameters.mode !== 'K') continue;
+    if (key === 'outCsvSort' && format !== 'C' || key === 'outSpotProbSpots' || key === 'kineticScore' && request.parameters.mode !== 'K') continue;
     // Omit defaults: the native parser distinguishes explicit values in several
     // cross-option checks, especially accessibility/region constraints.
     if (value === '' || value === PARAMETER_DEFAULTS[key]) continue;
