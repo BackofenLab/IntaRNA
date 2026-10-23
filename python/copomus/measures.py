@@ -1,6 +1,7 @@
 # Copyright 2019
 # Author: Fabio Gutmann <https://github.com/fabio-gut>
 
+import math
 from copomus.mutation import Mutation
 from copomus.indexing import idx_to_array_index
 
@@ -18,9 +19,19 @@ class Measure:
     def post_compute(self):
         pass
 
-    def read_temp_file(self):
-        """Return profiles shared by all measures for this prediction."""
-        return [self.profiles[pipe] for pipe in self.out_pipes]
+    def profile_value(self, pipe, index):
+        """Read a finite profile energy or NA, rejecting malformed/missing rows."""
+        header_lines, delimiter, column = (2, '\t', 1) if pipe == 'qAcc' else (1, ';', 2)
+        try:
+            value = self.profiles[pipe].splitlines()[index + header_lines].split(delimiter)[column]
+        except (KeyError, IndexError) as error:
+            raise ValueError(f'IntaRNA returned an incomplete {pipe} profile') from error
+        if value == 'NA':
+            return None
+        number = float(value)
+        if not math.isfinite(number):
+            raise ValueError(f'IntaRNA returned a nonfinite {pipe} profile energy')
+        return number
 
     # noinspection PyTypeChecker
     def is_valid(self, alpha: float, beta: float = None) -> bool:
@@ -168,14 +179,8 @@ class EnergyProfileQuery(Measure):
         self.score['is_valid'] = int(self.is_valid(self.alpha, self.beta))
 
     def calculate_score(self, data: dict, mut_type: str, m: Mutation = None, param_file: str = ''):
-        data = self.read_temp_file()[0]
-        data = data.strip().split('\n')
-        value = data[idx_to_array_index(m.query_n, m.qidxpos0) + 1].split(';')[2]
-        if value == 'NA':
-            self.score[mut_type] = None
-        else:
-            # noinspection PyTypeChecker
-            self.score[mut_type] = float(value)
+        self.score[mut_type] = self.profile_value('qMinE', idx_to_array_index(m.query_n, m.qidxpos0))
+
 
     def __lt__(self, other):
         if self.non_i():
@@ -210,14 +215,8 @@ class EnergyProfileTarget(Measure):
 
     # noinspection PyTypeChecker
     def calculate_score(self, data: dict, mut_type: str, m: Mutation = None, param_file: str = ''):
-        data = self.read_temp_file()[0]
-        data = data.strip().split('\n')
-        value = data[idx_to_array_index(m.target_n, m.tidxpos0) + 1].split(';')[2]
-        if value == 'NA':
-            self.score[mut_type] = None
-        else:
-            # noinspection PyTypeChecker
-            self.score[mut_type] = float(value)
+        self.score[mut_type] = self.profile_value('tMinE', idx_to_array_index(m.target_n, m.tidxpos0))
+
 
     def __lt__(self, other):
         if self.non_i():
@@ -249,12 +248,9 @@ class AccessProfileQuery(Measure):
         self.score['is_valid'] = int(self.is_valid(0))
 
     def calculate_score(self, data: dict, mut_type: str, m: Mutation = None, param_file: str = ''):
-        data = self.read_temp_file()[0]
-        data = data.strip().split('\n')
-        # noinspection PyTypeChecker
-        self.score[mut_type] = float(data[idx_to_array_index(m.query_n, m.qidxpos0) + 2].split('\t')[1])
+        self.score[mut_type] = self.profile_value('qAcc', idx_to_array_index(m.query_n, m.qidxpos0))
 
-    # noinspection PyTypeChecker
+
     def is_valid(self, alpha: float, beta: float = None, gamma: float = 0) -> bool:
         return self.score['ww'] < self.score['mm']
 
@@ -292,12 +288,9 @@ class ConstantAccessProfileQuery(Measure):
         self.score['is_valid'] = int(self.is_valid(1))
 
     def calculate_score(self, data: dict, mut_type: str, m: Mutation = None, param_file: str = ''):
-        data = self.read_temp_file()[0]
-        data = data.strip().split('\n')
-        # noinspection PyTypeChecker
-        self.score[mut_type] = float(data[idx_to_array_index(m.query_n, m.qidxpos0) + 2].split('\t')[1])
+        self.score[mut_type] = self.profile_value('qAcc', idx_to_array_index(m.query_n, m.qidxpos0))
 
-    # noinspection PyTypeChecker
+
     def is_valid(self, alpha: float, beta: float = None, gamma: float = 0) -> bool:
         return abs(self.score['ww'] - self.score['mm']) < alpha
 

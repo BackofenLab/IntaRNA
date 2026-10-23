@@ -11,3 +11,5 @@ dist_copomus_DATA = \
 		
 copomusdir = $(bindir)/copomus
 
+
+EXTRA_DIST = README.md CopomuS-logo.jpg

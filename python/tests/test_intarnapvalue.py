@@ -156,6 +156,17 @@ class PvalueTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     method(-1, scores)
 
+    def test_standalone_shuffle_cli(self):
+        script = ROOT / 'intarnapvalue' / 'dinucl_shuffle.py'
+        for seq, expected in (('a', 'A\nA\n'), ('t', 'U\nU\n')):
+            result = subprocess.run([sys.executable, '-S', str(script), seq, '--samples', '2'],
+                                    cwd=tempfile.gettempdir(), capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(result.stdout, expected)
+        result = subprocess.run([sys.executable, '-S', str(script), 'AX'], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 2)
+        self.assertNotIn('Traceback', result.stderr)
+
     def test_cli_help_without_binary_or_dependencies(self):
         result = subprocess.run([sys.executable, '-S', '-m', 'intarnapvalue', '--help'],
                                 env={**os.environ, 'PYTHONPATH': str(ROOT), 'PATH': ''},

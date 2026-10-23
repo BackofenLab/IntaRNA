@@ -1,4 +1,4 @@
-# Optional dependencies for IntaRNA_CSV_p-value.py and IntaRNA_plotRegions.py.
+# Optional scientific dependencies for IntaRNA Python companion tools.
 # Requires Python >= 3.10. The C++ predictor does not need these packages.
 numpy>=1.23
 scipy>=1.9

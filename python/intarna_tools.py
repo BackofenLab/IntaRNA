@@ -56,10 +56,13 @@ def read_sequence(value):
 
 def find_program(name, script_path=__file__):
     """Prefer executable siblings, then the source-tree IntaRNA, then PATH."""
-    directory = Path(script_path).resolve().parent
+    directory = Path(sys.executable if getattr(sys, "frozen", False) else script_path).resolve().parent
     candidates = [directory / name]
     if name == 'IntaRNA':
         candidates.append(directory.parent / 'src' / 'bin' / name)
+    if script_path == __file__ and not getattr(sys, 'frozen', False):
+        # pip installs the shared module in site-packages, separate from bin.
+        candidates.append(Path(sys.argv[0]).absolute().parent / name)
     for candidate in candidates:
         found = shutil.which(str(candidate))
         if found:

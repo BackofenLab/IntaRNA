@@ -112,6 +112,18 @@ class CopomuSTests(unittest.TestCase):
             self.assertEqual(mut.measures[0].score, mut.measures[1].score | {'is_valid': 0})
             self.assertIsNotNone(mut.measures[0].score['ww'])
 
+    def test_profile_na_and_malformed_rows(self):
+        measure = Measure()
+        measure.profiles = {'qAcc': '# header\n# columns\n1\tNA\n',
+                            'qMinE': 'idx;nt;E\n1;G;0\n'}
+        self.assertIsNone(measure.profile_value('qAcc', 0))
+        self.assertEqual(measure.profile_value('qMinE', 0), 0)
+        with self.assertRaises(ValueError):
+            measure.profile_value('qAcc', 1)
+        measure.profiles['qAcc'] = '# header\n# columns\n1\tinf\n'
+        with self.assertRaises(ValueError):
+            measure.profile_value('qAcc', 0)
+
     def test_cli_validation_and_failed_output_preservation(self):
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / 'results.tsv'

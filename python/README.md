@@ -1,5 +1,36 @@
 # Auxiliary Python tools
 
+All companion tools require **Python 3.10+**. They use `argparse` for `--help`,
+write results to stdout or the requested output file, and report failures on
+stderr with a nonzero exit status. Existing positional arguments and option
+names remain supported. CopomuS and IntaRNApvalue accept RNA/DNA literals or
+one-record FASTA files; IntaRNA-fuse retains literal sequences (including N).
+
+| Tool | Purpose | Additional dependencies |
+| --- | --- | --- |
+| [IntaRNA-fuse.py](#intarna-fusepy) | Combine compatible interaction sites | IntaRNA, RNAfold |
+| [CopomuS.py](copomus/README.md) | Rank compensatory point mutations | IntaRNA >= 3.1.2 |
+| [IntaRNApvalue](intarnapvalue/README.md) | Significance from shuffled sequences | IntaRNA; NumPy/SciPy for fits |
+| [IntaRNA_CSV_p-value.py](#intarna_csv_p-valuepy) | Genome-wide energy p-values/FDRs | NumPy, SciPy |
+| [IntaRNA_plotRegions.py](#intarna_plotregionspy) | Plot interaction regions | NumPy, SciPy, Matplotlib |
+
+Run from the checkout or install all commands/modules with
+`python3 -m pip install './python[plot]'` from the repository root (omit `[plot]`
+if plotting is not needed). Native IntaRNA and RNAfold are installed separately.
+`make install` installs the four `.py` scripts with their supporting modules;
+`--enable-intarnapvalue` additionally installs the Python package using pip with
+no dependency downloads. That optional hook requires pip/setuptools in the
+selected Python environment. Install scientific dependencies separately for it.
+For a custom prefix outside that interpreter's normal search path, add
+`PREFIX/lib/pythonX.Y/site-packages` to `PYTHONPATH` when invoking IntaRNApvalue;
+using `pip install` in a virtual environment avoids that manual path setup.
+The optional hook does not uninstall an existing package in another prefix.
+
+`intarna_tools.py` shares checked command execution, executable lookup, input
+validation and atomic output between the scripts. Keep it beside scripts when
+copying them manually; keep `copomus/` beside `CopomuS.py` as well. Installed
+Python packages include the helper automatically. Imports perform no predictions.
+
 ## Output analysis and visualization
 
 The former R tools are now standalone Python scripts in this folder. Replace
@@ -23,8 +54,8 @@ Run the scripts directly from the checkout as shown below. `make install` also
 installs both executable `.py` scripts in the configured `bin` directory; their
 `#!/usr/bin/env python3` interpreter must have the dependencies installed.
 Autotools does not install these Python dependencies. They are optional for the
-C++ IntaRNA predictor. These scripts are independent of the `intarnapvalue`
-package installed by `python/setup.py`.
+C++ IntaRNA predictor. The fitted CSV and shuffled-sequence workflows have separate statistical models,
+although they are distributed together by the Python package.
 
 ### `IntaRNA_CSV_p-value.py`
 
@@ -122,10 +153,13 @@ After installing the optional dependencies, run from the repository root:
 python3 -m unittest discover -s python/tests -v
 ```
 
-In a configured build, `make -C python check-output-tools` runs the same tests.
+In a configured build, `make -C python check-python-tools` runs the same tests
+(`check-output-tools` remains an alias).
 They cover GEV formulas and known-distribution fitting, BH correction, CSV
-preservation and errors, region coordinates and parameters, and every output
-format. These tests also run in the Python output-tools CI workflow.
+preservation and errors, every plot format, mutation coordinates/ranking/profiles,
+shuffled sampling and failure handling. Native smoke tests run when IntaRNA is
+available. CI checks minimum/current scientific dependencies on Python 3.10/3.13,
+installed command entry points, and native behavior in the C++ build matrix.
 
 ## [IntaRNA-fuse.py](IntaRNA-fuse.py)
 
@@ -136,7 +170,7 @@ overlaps the original MFE by at least two nucleotides on **each** strand, it
 reports a fused interaction using the suboptimal site and that constrained MFE.
 This preserves the compatibility criterion of the former Perl script.
 
-Requires Python 3.6 or newer (standard library only), IntaRNA, and ViennaRNA's
+Requires Python 3.10 or newer (standard library only), IntaRNA, and ViennaRNA's
 `RNAfold`. `make install` installs `IntaRNA-fuse.py` alongside `IntaRNA`; no pip
 installation or `--enable-intarnapvalue` is needed. The script looks for
 executables beside itself and on `PATH`, and also checks `../src/bin/IntaRNA`

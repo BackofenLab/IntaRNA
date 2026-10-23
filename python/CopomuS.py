@@ -5,9 +5,8 @@
 
 
 __intarna_min__ = '3.1.2'
-__python_min__ = '3.10.0'
 
-import os
+import math
 import sys
 
 
@@ -98,8 +97,8 @@ class CopomuS:
         }
 
         parser = ArgumentParser(description='Checks different measures for rating mutations')
-        parser.add_argument('-q', '--query', dest='query', required=True, help='The query sequence.')
-        parser.add_argument('-t', '--target', dest='target', required=True, help='The target sequence.')
+        parser.add_argument('-q', '--query', dest='query', required=True, help='Query RNA/DNA sequence or single-record FASTA file.')
+        parser.add_argument('-t', '--target', dest='target', required=True, help='Target RNA/DNA sequence or single-record FASTA file.')
         parser.add_argument('--qIdxPos0', dest='qidxpos0', default=1,
                             type=int, help='The starting index for the query. (Default: 1)')
         parser.add_argument('--tIdxPos0', dest='tidxpos0', default=1, type=int,
@@ -143,6 +142,8 @@ class CopomuS:
         try:
             args.query = read_sequence(args.query)
             args.target = read_sequence(args.target)
+            if not all(math.isfinite(value) for value in (args.alpha, args.beta)):
+                raise ValueError('alpha and beta must be finite')
             if args.param_file and not Path(args.param_file).is_file():
                 raise ValueError(f'Cannot find provided parameter file: {args.param_file}')
             if len(args.delimiter) != 1 or args.delimiter in '\r\n\0':

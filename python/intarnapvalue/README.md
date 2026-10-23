@@ -84,6 +84,10 @@ Corrected both-strand sampling changes results from earlier releases. Batch
 results are restored to input order so thread scheduling does not reorder scores.
 Diagnostics use stderr; successful stdout contains only the requested numbers.
 
+The internal shuffle utility also remains directly runnable:
+`python3 python/intarnapvalue/dinucl_shuffle.py ACGU --samples 10 --randSeed example`
+from the repository root (default: 4000 shuffles).
+
 ## Python API and tests
 
 Passing an argument list configures an instance without running predictions:

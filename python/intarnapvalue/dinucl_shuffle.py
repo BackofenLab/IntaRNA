@@ -9,10 +9,15 @@
 # right fashion.
 
 
+import argparse
+from pathlib import Path
 import sys
 import random
 from collections import deque
-from intarna_tools import normalize_sequence
+# Preserve direct invocation of this historical standalone utility.
+if __name__ == '__main__' and not __package__:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from intarna_tools import normalize_sequence, positive_integer
 
 
 def compute_count_and_lists(s):
@@ -167,10 +172,22 @@ def dinucl_shuffle(s, rng=None):
     return t
 
 
+def main(argv=None):
+    """Print composition-preserving shuffles of one RNA/DNA sequence."""
+    parser = argparse.ArgumentParser(description=main.__doc__)
+    parser.add_argument('sequence')
+    parser.add_argument('-s', '--samples', type=positive_integer, default=4000)
+    parser.add_argument('--randSeed', help='random seed string')
+    args = parser.parse_args(argv)
+    try:
+        sequence = normalize_sequence(args.sequence)
+    except ValueError as error:
+        parser.error(str(error))
+    rng = random.Random(args.randSeed)
+    for _ in range(args.samples):
+        print(dinucl_shuffle(sequence, rng))
+    return 0
+
+
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
-        print("Usage: ./dinucl_shuffle.py <RNA sequence>")
-        sys.exit(1)
-    seq = sys.argv[1]
-    for _ in range(4000):
-        print(dinucl_shuffle(seq))
+    raise SystemExit(main())

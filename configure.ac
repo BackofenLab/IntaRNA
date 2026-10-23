@@ -8,7 +8,7 @@ BOOST_REQUIRED_VERSION=1.50.0
 # minimal Vienna RNA version providing the logger locking API
 VRNA_REQUIRED_VERSION=2.7.0
 # minimal required version of python interpreter (to install intarnapvalue)
-PYTHON_REQUIRED_VERSION=3.6
+PYTHON_REQUIRED_VERSION=3.10
 
 
 AC_CANONICAL_HOST

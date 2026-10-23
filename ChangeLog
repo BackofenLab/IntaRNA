@@ -221,6 +221,9 @@ energies, restricted partition sums, and trackers.
 
 # Auxiliary Python output tools
 
+- align companion tools on Python 3.10+, declare pip dependencies, install shared
+  modules, and exercise source/installed/native commands in CI (PR #298)
+
 - replace both R scripts with Python GEV/FDR estimation and region plotting;
   document optional dependencies, migration and regression tests (issue #295)
 
@@ -239,6 +242,26 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261024 Alexander Mitrofanov
+ * python/setup.py, python/pyproject.toml, python/MANIFEST.in, python/*/Makefile.am,
+   python/Makefile.am, configure.ac, python/intarna_tools.py
+   * Declare Python 3.10+ and NumPy/SciPy dependencies, offer optional plotting,
+     and install shared helpers alongside standalone scripts and Python modules.
+   * Replace legacy setup.py installation with an opt-in pip hook honoring DESTDIR
+     without fetching dependencies or uninstalling packages in another prefix.
+ * python/bin/build.py, python/intarnapvalue/test.py, python/README.md,
+   python/bin/README.md, python/DEVELOPMENT.md, python/requirements-output-tools.txt
+   * Make executable builds independent of the working directory and fail visibly;
+     refresh documentation, source-test entry point and audit/performance notes.
+   * Preserve direct invocation of the shuffle utility with argparse validation,
+     optional sample counts and local random seeds.
+ * python/copomus/measures.py, python/CopomuS.py, python/tests/*.py,
+   .github/workflows/{build,python-output-tools}.yml, .gitignore
+   * Validate shared profiles and thresholds; test malformed/NA profile data,
+     installed lookup, atomic writes, native sampling and mutation workflows.
+   * Exercise all companion tools and installation in Python/C++ CI, including
+     the dependent PR base; exclude Python caches/build outputs (PR #298).
 
 261024 Alexander Mitrofanov
  * python/intarnapvalue/intarna_pvalue.py, python/intarnapvalue/__main__.py
