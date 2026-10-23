@@ -426,7 +426,7 @@ fieldset {
   font-size:.9rem;
 }
 
-#visible-count {
+[data-role=visible-count] {
   font-size:.85rem;
   color:var(--muted);
 }
@@ -509,7 +509,7 @@ tbody tr:hover,tbody tr.selected {
   color:white;
 }
 
-#visualization {
+[data-role=visualization] {
   margin-top:20px;
 }
 
@@ -520,7 +520,7 @@ tbody tr:hover,tbody tr.selected {
   gap:16px;
 }
 
-#varri-frame {
+[data-role=varri-frame] {
   display:block;
   width:100%;
   height:600px;
@@ -530,17 +530,17 @@ tbody tr:hover,tbody tr.selected {
   background:white;
 }
 
-#visualization-status {
+[data-role=visualization-status] {
   max-width:none;
   overflow-wrap:anywhere;
   font-size:.9rem;
 }
 
-#output-files {
+[data-role=output-files] {
   margin-top:24px;
 }
 
-#file-list details,#diagnostics {
+[data-role=file-list] details,:is(#diagnostics, [data-role=diagnostics]) {
   border-top:1px solid var(--border);
   margin-top:12px;
   padding-top:12px;
@@ -555,7 +555,7 @@ pre {
   padding:12px;
 }
 
-#diagnostics pre {
+:is(#diagnostics, [data-role=diagnostics]) pre {
   white-space:pre-wrap;
   overflow-wrap:anywhere;
 }
@@ -723,3 +723,17 @@ textarea.drag-over { outline:3px solid var(--brand-accent); background:var(--bra
 .compute-bar { justify-content:flex-start; gap:8px; }
 #compute { margin-left:auto; }
 @media(max-width:480px) { #compute { flex-basis:100%; margin-left:0; } }
+
+/* Every completed run owns its controls and output, even while folded. */
+.session { margin-top:18px; border:1px solid var(--border); border-radius:6px; min-width:0; }
+.session[data-selected=true] { border-color:var(--brand-blue); }
+.session-header { display:flex; align-items:center; flex-wrap:wrap; gap:10px; padding:14px; background:var(--surface-muted); border-radius:6px; }
+.session-name { display:flex; align-items:center; flex:1 1 20rem; gap:10px; font-size:.85rem; }
+.session-name input { flex:1; width:12rem; font-weight:600; }
+.session-header button { font-size:.85rem; }
+.session-header [data-role=toggle]::before { content:'▸ '; }
+.session-header [aria-expanded=true]::before { content:'▾ '; }
+.delete-session { display:inline-flex; align-items:center; }
+.session-panel { padding:16px; }
+.session-summary { color:var(--muted); }
+@media(max-width:480px) { .session-header,.session-panel { padding:10px; } }

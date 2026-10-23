@@ -14,6 +14,9 @@
 
 ## Interface and handling
 
+- retain computed GUI runs as named, foldable sessions with JSON input restoration,
+  independent outputs, per-session ZIP export and deletion (PR #297 review)
+
 - permit clearing inherited CSV sorting when replaying JSON as text reports;
   validate JSON/GUI behavior in native release/debug and real browsers (#287)
 
@@ -278,6 +281,19 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261023 Alexander Mitrofanov
+ * gui/{app,sessions,results,visualization}.js, gui/{index.html,styles.css}
+   + retain successful runs in browser memory with unique IDs, editable names,
+     independent results/diagnostics and JSON snapshots of their computed inputs
+   * restore inputs and fold other output areas on selection; preserve sessions
+     across edits, reset, imports, failures and aborts; unload folded viewers
+   + export each session's original JSON/outputs from its header and delete it
+     without overwriting editable inputs; keep controls keyboard accessible
+ * scripts/wasm/{stage.sh,test-browser.py}, README.md, gui/docs/
+   * stage the sessions module, exercise session lifetime and archive isolation
+     in real browsers, and document temporary storage and updated reset behavior
+   * follow-up to https://github.com/BackofenLab/IntaRNA/pull/297#issuecomment-6367326708
 
 261023 Alexander Mitrofanov
  * .gitattributes, gui/docs/json-workflow.md

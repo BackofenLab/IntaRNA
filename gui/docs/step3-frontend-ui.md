@@ -78,7 +78,7 @@ accessibility text can be pasted or loaded from a local file (up to 1 MB). Data
 are written to fixed MEMFS paths, never used as user-provided CLI arguments.
 Native diagnostics remain available for model-specific failures.
 
-Inputs/results clear on edits; the form disables during execution. Abort and
-Escape terminate the worker during startup or C++ execution. Status, errors,
+Edits update the form while completed sessions retain their inputs and results;
+the form disables during execution. Abort and Escape terminate the worker during startup or C++ execution. Status, errors,
 empty output and diagnostic text have dedicated regions. Keyboard focus,
 reduced motion and mobile overflow are covered by real browser tests.

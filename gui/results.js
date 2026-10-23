@@ -66,15 +66,15 @@ export class ResultsView {
   constructor(root) {
     this.root = root; this.rows = []; this.key = 'E'; this.direction = 1;
     this.visualization = new InteractionVisualization(root);
-    this.search = root.querySelector('#search');
+    this.search = root.querySelector('[data-role=search]');
     this.table = root.querySelector('table');
     this.body = this.table.querySelector('tbody');
     this.header = this.table.querySelector('thead tr');
-    this.count = root.querySelector('#visible-count');
-    this.empty = root.querySelector('#no-matches');
-    this.picker = root.querySelector('#visible-columns');
+    this.count = root.querySelector('[data-role=visible-count]');
+    this.empty = root.querySelector('[data-role=no-matches]');
+    this.picker = root.querySelector('[data-role=visible-columns]');
     this.search.addEventListener('input', () => this.render());
-    root.querySelector('#download').addEventListener('click', () => downloadText('intarna-interactions.csv', this.csv));
+    root.querySelector('[data-role=download]').addEventListener('click', () => downloadText('intarna-interactions.csv', this.csv));
   }
   clear() {
     this.rows = []; this.csv = ''; this.body.replaceChildren(); this.root.hidden = true;

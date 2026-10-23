@@ -30,8 +30,10 @@ Empty output is successful and still permits CSV/accessibility downloads.
 ## Selected interaction in vaRRI
 
 Each row has a keyboard-accessible View button; clicking a row also selects it.
-Selection survives table sorting, filtering and visibility changes. Input edits,
-new runs, errors and cancellation clear the viewer and archive snapshot.
+Selection survives table sorting, filtering and visibility changes within each
+session. Input edits, new runs, errors and cancellation preserve prior sessions
+and their archive snapshots. Folding a session unloads its viewer; reopening
+restores its selected interaction.
 `visualization.js` uses native seq1 = target, seq2 = query and maps the native
 CSV identifiers to the completed run's normalized FASTA records (including
 semicolon-to-underscore ID conversion). It pads the interaction dot-bracket
@@ -54,10 +56,10 @@ the full-viewer link permits retry, and scientific outputs remain downloadable.
 
 ## Reproducible ZIP download
 
-Download ZIP sits beside Download CSV. `archive.js` creates a standard UTF-8,
-uncompressed ZIP with CRC-32 checksums locally, without a library or CDN. It uses
+Download ZIP sits in each session header, including while its output is folded.
+`archive.js` creates a standard UTF-8, uncompressed ZIP with CRC-32 checksums locally, without a library or CDN. It uses
 the completed request and result, independent of table sorting/filtering and
-column visibility. Editing inputs discards the completed snapshot.
+column visibility. Editing inputs preserves every completed snapshot.
 
 The archive contains only `parameter.json`, `intarna-interactions.csv`, and every
 generated additional output with its original filename and contents. JSON embeds
@@ -68,7 +70,9 @@ invocation, matching the worker. All JSON is valid with standard parsers.
 
 Load/Store use this same JSON format. Store snapshots the current editable form;
 ZIP snapshots the completed run and ignores table filtering/sorting/visibility.
-Both require the compiled version file. See [the JSON workflow](json-workflow.md).
+Store requires the compiled version file. Completed sessions still retain their
+results if that file is unavailable, recording the missing version information
+explicitly in JSON. See [the JSON workflow](json-workflow.md).
 
 ## Packaging and deployment
 
