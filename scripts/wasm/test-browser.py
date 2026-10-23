@@ -76,7 +76,7 @@ with sync_playwright() as playwright:
     expect(page.locator('#version-info')).to_contain_text(f'ViennaRNA {vienna_version}')
     for logo in page.locator('.site-header img').all():
         assert logo.evaluate('node => node.complete && node.naturalWidth > 0')
-    for key in ['query-options', 'target-options', 'seed-options', 'helix-options', 'shape-options', 'interaction-options', 'output-options', 'general-options', 'sequence-input']:
+    for key in ['seed-options', 'output-options', 'interaction-options', 'query-options', 'target-options', 'general-options', 'sequence-input']:
         open_group(key)
 
     expect(page.get_by_role('radio', name='Prediction')).to_be_checked()
@@ -91,12 +91,89 @@ with sync_playwright() as playwright:
     # Tabs support keyboard navigation and wrap without page overflow.
     page.locator('#tab-sequence-input').focus()
     page.keyboard.press('ArrowRight')
-    expect(page.locator('#tab-query-options')).to_be_focused()
-    expect(page.locator('#query-options')).to_be_visible()
+    expect(page.locator('#tab-seed-options')).to_be_focused()
+    expect(page.locator('#seed-options')).to_be_visible()
     page.keyboard.press('End')
     expect(page.locator('#tab-general-options')).to_be_focused()
     page.keyboard.press('Home')
     expect(page.locator('#tab-sequence-input')).to_be_focused()
+
+    # Review layout, task defaults and modes work with native parameters.
+    assert page.locator('[role=tab]').all_text_contents() == ['Sequences', 'Seed', 'Output', 'Model & Energy', 'Query', 'Target', 'CLI-only']
+    expect(page.locator('.brand')).to_contain_text('IntaRNA package')
+    expect(page.locator('#results-title')).to_have_text('Results')
+    expect(page.locator('#outNumber')).to_have_value('10')
+    assert page.locator('.compute-bar').evaluate('node => node.firstElementChild.id') == 'compute'
+    assert page.locator('.sequence-meta').first.evaluate('node => node.firstElementChild.tagName') == 'LABEL'
+    fill('query', '>named\tignored description\n' + 'G' * 1000 + '\n' * 20 + 'GG')
+    expect(page.locator('#query-warning')).to_contain_text('ignoring FASTA description')
+    expect(page.locator('#query-warning')).to_contain_text('named')
+    assert page.locator('#query').evaluate('node => node.scrollWidth > node.clientWidth && node.scrollHeight > node.clientHeight')
+    fill('query', '>named   \nGGGAGGAGGG')
+    expect(page.locator('#query-warning')).not_to_be_visible()
+
+    for prefix, group in [('q', 'query-options'), ('t', 'target-options')]:
+        open_group(group)
+        # Each explicit row shares label height, including wrapped labels.
+        for keys in [[prefix + suffix for suffix in ['Set', 'Region', 'IntLenMax', 'IntLoopMax', 'RegionLenMax']], [prefix + suffix for suffix in ['Acc', 'AccW', 'AccL', 'PfScale']]]:
+            tops = [page.locator('#' + key).bounding_box()['y'] for key in keys]
+            assert max(tops) - min(tops) < 1, tops
+        expect(page.locator('#' + prefix + 'AccFile')).to_be_disabled()
+        page.locator('#' + prefix + 'Acc').select_option('P')
+        expect(page.locator('#' + prefix + 'AccFile')).to_be_enabled()
+        for suffix in ['AccW', 'AccL']:
+            expect(page.locator('#' + prefix + suffix)).to_be_disabled()
+        page.locator('#' + prefix + 'Acc').select_option('N')
+        for suffix in ['AccW', 'AccL', 'AccConstr', 'AccFile', 'PfScale', 'Shape', 'ShapeMethod', 'ShapeConversion']:
+            expect(page.locator('#' + prefix + suffix)).to_be_disabled()
+        expect(page.locator('input[data-for="' + prefix + 'Shape"]')).to_be_disabled()
+        page.locator('#' + prefix + 'Acc').select_option('C')
+        expect(page.locator('#' + prefix + 'Shape')).to_be_enabled()
+    page.locator('#accNoLP-target').check()
+    expect(page.locator('#accNoLP')).to_be_checked()
+    open_group('query-options')
+    page.locator('#accNoLP').uncheck()
+    expect(page.locator('#accNoLP-target')).not_to_be_checked()
+    open_group('interaction-options')
+    expect(page.locator('#helixMinBP')).to_be_disabled()
+    page.locator('#model').select_option('B')
+    expect(page.locator('#helixMinBP')).to_be_enabled()
+    page.locator('#model').select_option('X')
+    expect(page.locator('#helixMinBP')).to_be_disabled()
+    open_group('seed-options')
+    expect(page.locator('#seedTQ')).to_be_disabled()
+    page.locator('#seed-mode').select_option('none')
+    for key in ['seedBP', 'seedTQ', 'seedQRange', 'seedNoGU']:
+        expect(page.locator('#' + key)).to_be_disabled()
+    page.locator('#seed-mode').select_option('explicit')
+    expect(page.locator('#seedTQ')).to_be_enabled()
+    expect(page.locator('#seedBP')).to_be_disabled()
+    page.locator('#seed-mode').select_option('identify')
+    expect(page.locator('#seedBP')).to_be_enabled()
+    expect(page.locator('#seedTQ')).to_be_disabled()
+    open_group('output-options')
+    groups = page.locator('.csv-group')
+    assert groups.count() == 5
+    for group in groups.all():
+        group.get_by_role('button', name=re.compile('^Select all')).click()
+        assert group.locator('input:not(:checked)').count() == 0
+        group.get_by_role('button', name='Deselect all').click()
+        assert group.locator('input:checked').count() == 0
+    page.get_by_role('button', name='Task defaults', exact=True).click()
+    for key in ['ED1', 'ED2', 'seedE', 'seedStart1', 'seedStart2']:
+        expect(page.locator('.csv-group input[value="' + key + '"]')).to_be_checked()
+    assert all(label.get_attribute('title') and ' — ' not in label.inner_text() for label in groups.locator('label').all())
+    # Inspect all changed panels at desktop and mobile widths.
+    for width in [1440, 390]:
+        page.set_viewport_size({'width': width, 'height': 1100 if width == 1440 else 844})
+        for key in ['sequence-input', 'seed-options', 'output-options', 'interaction-options', 'query-options', 'target-options', 'general-options']:
+            open_group(key)
+            assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'), (width, key)
+            if args.screenshot:
+                path = Path(args.screenshot)
+                page.screenshot(path=str(path.with_name(f'{path.stem}-{key}-{width}.png')), full_page=True)
+    page.set_viewport_size({'width': 1440, 'height': 1100})
+    page.locator('#reset').click()
 
     # Upload and file drop use local text, validate before replacing, and reset.
     with page.expect_file_chooser() as chooser:
@@ -135,13 +212,50 @@ with sync_playwright() as playwright:
     expect(page.locator('#rri')).to_have_value('')
     load_example()
 
+    # Disabled stale edits neither block a run nor leak into JSON. Re-enabling
+    # restores local edits; loading/storing uses effective native settings.
+    fill('seedBP', '')
+    page.locator('#seed-mode').select_option('explicit')
+    compute.click()
+    expect(page.locator('#input-error')).to_contain_text('Explicit seed: enter')
+    fill('seedTQ', '1|||&1|||')
+    predict()
+    explicit_settings = json.loads(download_archive()['parameter.json'])
+    assert explicit_settings['parameters']['seedTQ'] == '1|||&1|||'
+    assert 'seedBP' not in explicit_settings['parameters']
+    with page.expect_download() as stored:
+        page.locator('#store-parameters').click()
+    explicit_file = Path(stored.value.path()).read_bytes()
+    page.locator('#reset').click()
+    page.locator('#parameter-upload').set_input_files({'name': 'explicit.json', 'mimeType': 'application/json', 'buffer': explicit_file})
+    expect(page.locator('#seed-mode')).to_have_value('explicit')
+    open_group('seed-options')
+    page.locator('#seedTQ').fill('invalid inactive seed')
+    page.locator('#seed-mode').select_option('none')
+    fill('qShape', 'invalid inactive shape')
+    page.locator('#qAcc').select_option('N')
+    open_group('target-options')
+    page.locator('#accNoGUend-target').check()
+    predict()
+    inactive_settings = json.loads(download_archive()['parameter.json'])['parameters']
+    assert inactive_settings['noSeed'] is True
+    assert inactive_settings['qAcc'] == 'N'
+    assert inactive_settings['accNoGUend'] is True
+    assert 'qShape' not in inactive_settings and 'seedTQ' not in inactive_settings
+    open_group('query-options')
+    page.locator('#qAcc').select_option('C')
+    expect(page.locator('#qShape')).to_have_value('invalid inactive shape')
+    page.locator('#reset').click()
+    load_example()
+
     # Reference prediction, selectable CSV output and independent table visibility.
     fill('outNumber', 10)
     page.locator('#outCsvSort').select_option('E')
     predict()
     expect(rows).to_have_count(10)
     assert rows.first.locator('td').all_text_contents()[1:7] == ['target', '1', '10', 'query', '1', '10']
-    assert rows.first.locator('td').all_text_contents()[-2:] == ['-21.40', '0.00']
+    assert rows.first.locator('td').nth(9).inner_text() == '-21.40'
+    assert rows.first.locator('td').last.inner_text() == '0.00'
     page.get_by_role('button', name='Sort by Energy (kcal/mol)', exact=False).click()
     assert float(rows.first.locator('td').nth(9).inner_text()) == -14.3
     page.get_by_role('button', name='Sort by Energy (kcal/mol)', exact=False).click()
@@ -157,9 +271,12 @@ with sync_playwright() as playwright:
     with page.expect_download() as downloaded:
         active.locator('[data-role=download]').click()
     csv = Path(downloaded.value.path()).read_text()
-    assert csv.splitlines()[0] == 'id1;start1;end1;id2;start2;end2;subseqDP;hybridDP;E'
+    assert csv.splitlines()[0] == 'id1;start1;end1;id2;start2;end2;subseqDP;hybridDP;E;ED1;ED2;seedE;seedStart1;seedStart2'
     assert 'target;1;10;query;1;10;' in csv
     assert 'deltaE' not in csv
+    assert active.locator('thead th').first.inner_text() == ''
+    assert active.locator('thead th button br').count() >= 4
+    assert rows.first.locator('td').first.evaluate('node => getComputedStyle(node).paddingLeft') == '5px'
     assert not visualization_urls  # Third-party content loads only on selection.
     rows.first.get_by_role('button', name='Visualize').click()
     expect(active.locator('[data-role=varri-frame]')).to_be_visible()
@@ -211,6 +328,7 @@ with sync_playwright() as playwright:
 
     # Multi-FASTA prediction, signed inclusive output and additional files.
     load_example()
+    fill('outNumber', 1)
     fill('query', '>q1\nGGGAGGAGGG\n>q2\nGGGAGGAGGG')
     fill('qIdxPos0', -3)
     fill('tIdxPos0', -5)
@@ -400,9 +518,12 @@ with sync_playwright() as playwright:
     assert 'intarna-detailed.txt' in second_archive
 
     # Selecting reloads all computed inputs while retaining each table's filter.
-    first.locator('[data-role=toggle]').press('Space')
+    first.locator('.session-header').focus()
+    first.locator('.session-header').press('Space')
     expect(second.locator('[data-role=panel]')).not_to_be_visible()
     expect(first.locator('[data-role=panel]')).to_be_visible()
+    assert first.locator('.session-header').evaluate('node => node.firstElementChild.dataset.role') == 'toggle'
+    expect(first.locator('[data-role=toggle]')).to_have_text('Hide')
     expect(page.get_by_role('radio', name='Prediction')).to_be_checked()
     expect(page.locator('#qIdxPos0')).to_have_value('-3')
     expect(page.locator('#tIdxPos0')).to_have_value('-5')
@@ -442,6 +563,8 @@ with sync_playwright() as playwright:
     # Names are literal text and cannot introduce markup, duplicate IDs or paths.
     first.get_by_label('Session name', exact=True).fill('<img src=x onerror=alert(1)> / β')
     first.get_by_label('Session name', exact=True).press('Enter')
+    expect(page.locator('#temperature')).to_have_value('24')
+    expect(first.locator('[data-role=panel]')).to_be_visible()
     assert first.locator('img').count() == 0
     with page.expect_download() as renamed:
         first.locator('[data-role=download-zip]').click()
@@ -464,6 +587,7 @@ with sync_playwright() as playwright:
     page.set_viewport_size({'width': 1440, 'height': 1100})
 
     # Delete releases only that output; current inputs and other sessions survive.
+    second.locator('[data-role=toggle]').click()
     first.locator('[data-role=delete]').click()
     expect(sessions).to_have_count(1)
     expect(page.locator('#temperature')).to_have_value('42')
