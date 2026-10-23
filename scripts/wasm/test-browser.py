@@ -29,7 +29,9 @@ with sync_playwright() as playwright:
     page.wait_for_load_state('networkidle')
     compute = page.locator('#compute')
     status = page.locator('#result-status')
-    rows = page.locator('tbody tr')
+    sessions = page.locator('.session')
+    active = page.locator('.session:has([data-role=panel]:not([hidden]))')
+    rows = active.locator('tbody tr')
 
     def open_group(key):
         page.locator('#tab-' + key).click()
@@ -42,9 +44,9 @@ with sync_playwright() as playwright:
         page.get_by_role('button', name='Evaluate a duplex' if task == 'evaluation' else 'Short duplex', exact=False).click()
         expect(page.locator('#query')).to_have_value('>query\nGGGAGGAGGG\n')
 
-    def download_archive():
+    def download_archive(session=None):
         with page.expect_download() as downloaded:
-            page.locator('#download-zip').click()
+            (active if session is None else session).locator('[data-role=download-zip]').click()
         with ZipFile(BytesIO(Path(downloaded.value.path()).read_bytes())) as archive:
             assert archive.testzip() is None
             return {name: archive.read(name).decode() for name in archive.namelist()}
@@ -56,9 +58,11 @@ with sync_playwright() as playwright:
         page.locator('#' + key).fill(str(value))
 
     def predict():
+        count = sessions.count()
         compute.click()
         expect(status).to_contain_text('complete:', timeout=120000)
         expect(page.locator('#input-error')).not_to_be_visible()
+        expect(sessions).to_have_count(count + 1)
 
     expect(page.locator('#query')).to_have_value('')
     expect(page.locator('#target')).to_have_value('')
@@ -141,33 +145,33 @@ with sync_playwright() as playwright:
     page.get_by_role('button', name='Sort by Energy (kcal/mol)', exact=False).click()
     assert float(rows.first.locator('td').nth(9).inner_text()) == -14.3
     page.get_by_role('button', name='Sort by Energy (kcal/mol)', exact=False).click()
-    page.locator('#search').fill('-21.4')
+    active.locator('[data-role=search]').fill('-21.4')
     expect(rows).to_have_count(1)
-    page.locator('#search').fill('no match')
-    expect(page.locator('#no-matches')).to_be_visible()
-    page.locator('#search').fill('')
-    page.locator('.column-picker summary').click()
-    page.locator('#visible-columns input[value="start1"]').uncheck()
-    assert 'Target start' not in page.locator('thead').inner_text()
-    page.locator('#visible-columns input[value="start1"]').check()
+    active.locator('[data-role=search]').fill('no match')
+    expect(active.locator('[data-role=no-matches]')).to_be_visible()
+    active.locator('[data-role=search]').fill('')
+    active.locator('.column-picker summary').click()
+    active.locator('[data-role=visible-columns] input[value="start1"]').uncheck()
+    assert 'Target start' not in active.locator('thead').inner_text()
+    active.locator('[data-role=visible-columns] input[value="start1"]').check()
     with page.expect_download() as downloaded:
-        page.locator('#download').click()
+        active.locator('[data-role=download]').click()
     csv = Path(downloaded.value.path()).read_text()
     assert csv.splitlines()[0] == 'id1;start1;end1;id2;start2;end2;subseqDP;hybridDP;E'
     assert 'target;1;10;query;1;10;' in csv
     assert 'deltaE' not in csv
     assert not visualization_urls  # Third-party content loads only on selection.
     rows.first.get_by_role('button', name='Visualize').click()
-    expect(page.locator('#varri-frame')).to_be_visible()
-    expect(page.frame_locator('#varri-frame').get_by_role('heading', name='vaRRI viewer')).to_be_visible()
+    expect(active.locator('[data-role=varri-frame]')).to_be_visible()
+    expect(active.frame_locator('[data-role=varri-frame]').get_by_role('heading', name='vaRRI viewer')).to_be_visible()
     expect(rows.first.locator('button')).to_have_attribute('aria-pressed', 'true')
-    query = parse_qs(urlparse(page.locator('#varri-frame').get_attribute('src')).query)
+    query = parse_qs(urlparse(active.locator('[data-role=varri-frame]').get_attribute('src')).query)
     assert query['sequence'] == ['CCCUCCUCCC&GGGAGGAGGG']
     assert query['structure'] == ['((((((((((&))))))))))']
     assert query['seqName1'] == ['target'] and query['seqName2'] == ['query']
     assert query['startIndex1'] == ['1']
     assert query['showRenderingOnly'] == ['true']
-    assert 'showRenderingOnly' not in page.locator('#varri-link').get_attribute('href')
+    assert 'showRenderingOnly' not in active.locator('[data-role=varri-link]').get_attribute('href')
     archive = download_archive()
     assert archive['intarna-interactions.csv'] == csv
     saved = json.loads(archive['parameter.json'])
@@ -187,7 +191,7 @@ with sync_playwright() as playwright:
     imported['parameters']['temperature'] = 24
     page.locator('#parameter-upload').set_input_files({'name': 'settings.json', 'mimeType': 'application/json', 'buffer': json.dumps(imported).encode()})
     expect(page.locator('#temperature')).to_have_value('24')
-    expect(page.locator('#results-view')).not_to_be_visible()
+    expect(active.locator('[data-role=results-view]')).to_be_visible()
     with page.expect_download() as stored_again:
         page.locator('#store-parameters').click()
     assert json.loads(Path(stored_again.value.path()).read_text())['parameters']['outCsvCols'] == 'E,id2'
@@ -215,16 +219,16 @@ with sync_playwright() as playwright:
     predict()
     expect(rows).to_have_count(2)
     assert rows.first.locator('td').all_text_contents()[1:7] == ['target', '-5', '5', 'q1', '-3', '7']
-    expect(page.locator('#file-list details')).to_have_count(2)
-    page.locator('#file-list summary').first.click()
-    expect(page.locator('#file-list pre').first).to_contain_text('minE')
+    expect(active.locator('[data-role=file-list] details')).to_have_count(2)
+    active.locator('[data-role=file-list] summary').first.click()
+    expect(active.locator('[data-role=file-list] pre').first).to_contain_text('minE')
     archive = download_archive()
     assert len([name for name in archive if name.startswith('qMinE')]) == 2
     saved = json.loads(archive['parameter.json'])
     assert saved['parameters']['query']['text'].count('>') == 2
     assert saved['parameters']['qIdxPos0'] == -3
     rows.nth(1).get_by_role('button', name='Visualize').click()
-    query = parse_qs(urlparse(page.locator('#varri-frame').get_attribute('src')).query)
+    query = parse_qs(urlparse(active.locator('[data-role=varri-frame]').get_attribute('src')).query)
     assert query['seqName2'] == ['q2']
     assert query['startIndex1'] == ['-5'] and query['startIndex2'] == ['-3']
 
@@ -232,9 +236,9 @@ with sync_playwright() as playwright:
     fill('query', '>q first\nGGGAGGAGGG\n>q second\nGGGAGGAGGG')
     compute.click()
     expect(page.locator('#input-error')).to_contain_text('unique')
-    expect(page.locator('#varri-frame')).not_to_be_visible()
-    assert page.locator('#varri-frame').get_attribute('src') is None
-    expect(page.locator('#download-zip')).not_to_be_visible()
+    expect(active.locator('[data-role=varri-frame]')).to_be_visible()
+    expect(active.locator('[data-role=download-zip]')).to_be_visible()
+    assert download_archive() == archive
 
     # Evaluation resets native defaults and removes prediction-only controls.
     fill('query', '>q1\nGGGAGGAGGG\n>q2\nGGGAGGAGGG')
@@ -252,12 +256,12 @@ with sync_playwright() as playwright:
     predict()
     expect(status).to_contain_text('Evaluation complete')
     expect(rows).to_have_count(2)
-    expect(page.locator('thead')).to_contain_text('ED1')
-    expect(page.locator('#file-list summary')).to_contain_text('intarna-detailed.txt')
-    page.locator('#file-list summary').click()
-    expect(page.locator('#file-list pre')).to_contain_text('-21.4')
+    expect(active.locator('thead')).to_contain_text('ED1')
+    expect(active.locator('[data-role=file-list] summary')).to_contain_text('intarna-detailed.txt')
+    active.locator('[data-role=file-list] summary').click()
+    expect(active.locator('[data-role=file-list] pre')).to_contain_text('-21.4')
     with page.expect_download() as report:
-        page.locator('#file-list button').click()
+        active.locator('[data-role=file-list] button').click()
     assert '-21.4' in Path(report.value.path()).read_text()
     archive = download_archive()
     assert '-21.4' in archive['intarna-detailed.txt']
@@ -273,7 +277,7 @@ with sync_playwright() as playwright:
     page.locator('#output-options input[value="E"]').check()
     predict()
     rows.first.get_by_role('button', name='Visualize').click()
-    expect(page.locator('#varri-frame')).to_be_visible()
+    expect(active.locator('[data-role=varri-frame]')).to_be_visible()
     archive = download_archive()
     assert archive['intarna-interactions.csv'].splitlines()[0] == 'E'
     assert json.loads(archive['parameter.json'])['parameters']['outCsvCols'] == 'E'
@@ -285,11 +289,13 @@ with sync_playwright() as playwright:
     page.get_by_role('radio', name='Prediction').check()
     load_example()
     held_routes = []
+    session_count = sessions.count()
     page.route('**/wasm/intarna.wasm', lambda route: held_routes.append(route))
     compute.click()
     expect(page.locator('#loading')).to_be_visible()
     page.locator('#abort').click()
     expect(status).to_contain_text('aborted')
+    expect(sessions).to_have_count(session_count)
     for route in held_routes:
         route.abort()
     page.unroute('**/wasm/intarna.wasm')
@@ -299,6 +305,7 @@ with sync_playwright() as playwright:
     expect(page.locator('#loading-status')).to_contain_text('Predicting RNA', timeout=120000)
     page.keyboard.press('Escape')
     expect(status).to_contain_text('aborted')
+    expect(sessions).to_have_count(session_count)
     load_example()
     predict()
 
@@ -306,21 +313,171 @@ with sync_playwright() as playwright:
     compute.click()
     expect(status).to_contain_text('No favorable interactions', timeout=120000)
     expect(rows).to_have_count(0)
-    expect(page.locator('#varri-frame')).not_to_be_visible()
+    expect(active.locator('[data-role=varri-frame]')).not_to_be_visible()
     assert download_archive()['intarna-interactions.csv'].count('\n') == 1
     fill('query', '><img/src=x/onerror=alert(1)>\nGGGAGGAGGG')
     predict()
-    assert page.locator('tbody img').count() == 0
+    assert active.locator('tbody img').count() == 0
     assert '<img' in rows.first.inner_text()
 
     load_example()
+    session_count = sessions.count()
     page.route('**/wasm/intarna.js', lambda route: route.abort())
     compute.click()
     expect(status).to_contain_text('failed', timeout=30000)
+    expect(sessions).to_have_count(session_count)
     expect(page.locator('#loading')).not_to_be_visible()
     expect(compute).to_be_enabled()
     page.unroute('**/wasm/intarna.js')
     predict()
+    # Sessions retain independent JSON inputs, outputs and exploration state.
+    count_before_reload = sessions.count()
+    assert count_before_reload > 1
+    page.reload()
+    page.wait_for_load_state('networkidle')
+    expect(sessions).to_have_count(0)
+    load_example()
+    fill('temperature', 24)
+    fill('qIdxPos0', -3)
+    fill('tIdxPos0', -5)
+    fill('qShape', '1 0.2\n2 0.3')
+    fill('outNumber', 3)
+    open_group('output-options')
+    page.locator('#output-options input[value="qMinE"]').check()
+    predict()
+    first_id = active.get_attribute('data-session-id')
+    first = page.locator(f'[data-session-id="{first_id}"]')
+    first.get_by_label('Session name', exact=True).fill('Cool duplex')
+    first.get_by_label('Session name', exact=True).press('Enter')
+    first_archive = download_archive(first)
+    first_csv = first_archive['intarna-interactions.csv']
+    first.locator('[data-role=search]').fill('no match')
+    expect(first.locator('[data-role=no-matches]')).to_be_visible()
+    first.locator('.column-picker summary').click()
+    first.locator('[data-role=visible-columns] input[value="start1"]').uncheck()
+    first_diagnostics = first.locator('[data-role=diagnostic-text]').text_content()
+
+    # Edits and Reset preserve outputs. Restore also works for an unfolded run.
+    fill('temperature', 31)
+    expect(first.locator('[data-role=panel]')).to_be_visible()
+    assert download_archive(first) == first_archive
+    first.locator('[data-role=summary]').click()
+    expect(page.locator('#temperature')).to_have_value('24')
+    fill('temperature', 31)
+    first.locator('[data-role=toggle]').click()
+    expect(page.locator('#temperature')).to_have_value('24')
+    expect(first.locator('[data-role=panel]')).to_be_visible()
+    first.locator('[data-role=toggle]').click()
+    expect(first.locator('[data-role=panel]')).not_to_be_visible()
+    first.locator('[data-role=toggle]').press('Enter')
+    expect(first.locator('[data-role=panel]')).to_be_visible()
+    page.locator('#reset').click()
+    expect(sessions).to_have_count(1)
+    expect(page.locator('#query')).to_have_value('')
+    assert download_archive(first) == first_archive
+
+    # A different task, CSV order and output report own a second result area.
+    load_example('evaluation')
+    with page.expect_download() as stored:
+        page.locator('#store-parameters').click()
+    second_settings = json.loads(Path(stored.value.path()).read_text())
+    second_settings['parameters']['temperature'] = 42
+    second_settings['parameters']['outCsvCols'] = 'E,id2'
+    second_settings['gui'] = {'reports': ['detailed']}
+    page.locator('#parameter-upload').set_input_files({'name': 'evaluation.json', 'mimeType': 'application/json', 'buffer': json.dumps(second_settings).encode()})
+    predict()
+    expect(sessions).to_have_count(2)
+    second_id = active.get_attribute('data-session-id')
+    assert second_id != first_id
+    second = page.locator(f'[data-session-id="{second_id}"]')
+    expect(first.locator('[data-role=panel]')).not_to_be_visible()
+    expect(first.locator('[data-role=download-zip]')).to_be_visible()
+    assert download_archive(first) == first_archive
+    expect(page.get_by_role('radio', name='Evaluation')).to_be_checked()
+    expect(page.locator('#temperature')).to_have_value('42')
+    second_archive = download_archive(second)
+    assert second_archive['intarna-interactions.csv'].splitlines()[0] == 'E;id2'
+    assert 'intarna-detailed.txt' in second_archive
+
+    # Selecting reloads all computed inputs while retaining each table's filter.
+    first.locator('[data-role=toggle]').press('Space')
+    expect(second.locator('[data-role=panel]')).not_to_be_visible()
+    expect(first.locator('[data-role=panel]')).to_be_visible()
+    expect(page.get_by_role('radio', name='Prediction')).to_be_checked()
+    expect(page.locator('#qIdxPos0')).to_have_value('-3')
+    expect(page.locator('#tIdxPos0')).to_have_value('-5')
+    expect(page.locator('#qShape')).to_have_value('1 0.2\n2 0.3')
+    expect(page.locator('#temperature')).to_have_value('24')
+    expect(page.locator('#output-options input[value="qMinE"]')).to_be_checked()
+    expect(page.locator('#output-options input[value="detailed"]')).not_to_be_checked()
+    expect(first.locator('[data-role=search]')).to_have_value('no match')
+    expect(first.locator('[data-role=visible-columns] input[value="start1"]')).not_to_be_checked()
+    assert first.locator('[data-role=diagnostic-text]').text_content() == first_diagnostics
+    with page.expect_download() as restored:
+        page.locator('#store-parameters').click()
+    assert Path(restored.value.path()).read_text() == first_archive['parameter.json']
+    first.locator('[data-role=search]').fill('')
+    expect(first.locator('tbody tr')).to_have_count(3)
+    first.locator('tbody tr').first.get_by_role('button', name='Visualize').click()
+    first_url = first.locator('[data-role=varri-frame]').get_attribute('src')
+    assert parse_qs(urlparse(first_url).query)['startIndex1'] == ['-5']
+
+    # A pending file read must not overwrite a selected session's snapshot.
+    page.evaluate(r"""() => { window.originalFileText = File.prototype.text; File.prototype.text = function() { return new Promise(resolve => { window.finishRead = () => resolve('>late\nGGGAGGAGGG\n'); }); }; }""")
+    page.locator('#query-upload').set_input_files({'name': 'late.fa', 'mimeType': 'text/plain', 'buffer': b'>late\nGGGAGGAGGG\n'})
+    second.locator('[data-role=toggle]').click()
+    page.evaluate('() => { File.prototype.text = window.originalFileText; window.finishRead(); }')
+    expect(page.locator('#query')).to_have_value('>query\nGGGAGGAGGG\n')
+    expect(page.locator('#qShape')).to_have_value('')
+    expect(page.locator('#temperature')).to_have_value('42')
+    expect(page.get_by_role('radio', name='Evaluation')).to_be_checked()
+    expect(page.locator('#rri')).to_have_value(second_settings['parameters']['rri'])
+    expect(page.locator('#output-options input[value="detailed"]')).to_be_checked()
+    assert first.locator('[data-role=varri-frame]').get_attribute('src') is None
+    with page.expect_download() as restored:
+        page.locator('#store-parameters').click()
+    assert Path(restored.value.path()).read_text() == second_archive['parameter.json']
+    assert download_archive(first)['intarna-interactions.csv'] == first_csv
+
+    # Names are literal text and cannot introduce markup, duplicate IDs or paths.
+    first.get_by_label('Session name', exact=True).fill('<img src=x onerror=alert(1)> / β')
+    first.get_by_label('Session name', exact=True).press('Enter')
+    assert first.locator('img').count() == 0
+    with page.expect_download() as renamed:
+        first.locator('[data-role=download-zip]').click()
+    assert '/' not in renamed.value.suggested_filename
+    assert '\\' not in renamed.value.suggested_filename
+    ids = page.locator('[id]').evaluate_all('nodes => nodes.map(node => node.id)')
+    assert len(ids) == len(set(ids))
+    first.get_by_label('Session name', exact=True).fill('')
+    first.get_by_label('Session name', exact=True).press('Enter')
+    expect(first.get_by_label('Session name', exact=True)).to_have_value('Prediction 1')
+    first.get_by_label('Session name', exact=True).fill('Cool duplex — 24 °C')
+    first.get_by_label('Session name', exact=True).press('Enter')
+    if args.screenshot:
+        page.screenshot(path=args.screenshot, full_page=True)
+    page.set_viewport_size({'width': 390, 'height': 844})
+    assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+    for session in [first, second]:
+        expect(session.locator('[data-role=download-zip]')).to_be_visible()
+        expect(session.locator('[data-role=delete]')).to_be_visible()
+    page.set_viewport_size({'width': 1440, 'height': 1100})
+
+    # Delete releases only that output; current inputs and other sessions survive.
+    first.locator('[data-role=delete]').click()
+    expect(sessions).to_have_count(1)
+    expect(page.locator('#temperature')).to_have_value('42')
+    assert download_archive(second) == second_archive
+    second.locator('[data-role=delete]').click()
+    expect(sessions).to_have_count(0)
+    expect(compute).to_be_focused()
+    expect(page.locator('#temperature')).to_have_value('42')
+    predict()
+    assert active.get_attribute('data-session-id') not in [first_id, second_id]
+    assert download_archive() == second_archive
+    page.reload()
+    page.wait_for_load_state('networkidle')
+    expect(sessions).to_have_count(0)
     assert errors == [], errors
     browser.close()
-print(f'{args.browser}: real WASM, groups/defaults/versions, prediction/evaluation, FASTA/coordinates, tabs/keyboard, visualization URLs/selection, ZIP replay contents, columns/reports, mobile and abort/recovery passed')
+print(f'{args.browser}: real WASM, groups/defaults/versions, prediction/evaluation, FASTA/coordinates, tabs/keyboard, visualization URLs/selection, ZIP replay contents, columns/reports, mobile, abort/recovery and retained session lifecycle passed')

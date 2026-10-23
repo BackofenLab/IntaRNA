@@ -26,7 +26,7 @@ PYSOURCE
 vienna_source="$build/sources/vienna-$vienna_version-$vienna_sha256/ViennaRNA-$vienna_version"
 mkdir -p "$site/licenses"
 cp -R "$repo/gui/assets" "$repo/gui/examples" "$site/"
-for file in index.html styles.css app.js mark.svg protocol.js runner.js results.js options.js columns.js archive.js visualization.js parameter-file.js uploads.js; do
+for file in index.html styles.css app.js mark.svg protocol.js runner.js results.js options.js columns.js archive.js sessions.js visualization.js parameter-file.js uploads.js; do
   cp "$repo/gui/$file" "$site/$file"
 done
 cp "$repo/gui/intarna-worker.js" "$site/intarna-worker.js"
