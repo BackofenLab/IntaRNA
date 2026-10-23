@@ -109,11 +109,10 @@ export function validateInteractions(encoding, query, target, qStart, tStart, se
   }
 }
 
-export function prepareRequest(request) {
-  const task = request?.task ?? 'prediction';
-  if (!['prediction', 'evaluation'].includes(task)) throw new Error('Choose prediction or evaluation.');
-  const evaluating = task === 'evaluation';
-  const query = parseFasta(request.query, 'Query', !evaluating), target = parseFasta(request.target, 'Target', !evaluating);
+// Validate scalar controls independently so unfinished forms can be saved/loaded.
+export function normalizeParameters(request) {
+  if (!['prediction', 'evaluation'].includes(request.task ?? 'prediction')) throw new Error('Choose prediction or evaluation.');
+  const evaluating = request.task === 'evaluation';
   const parameters = {};
   const supplied = request.parameters ?? {};
   for (const field of FIELDS) {
@@ -138,6 +137,15 @@ export function prepareRequest(request) {
     if (!Number.isInteger(n) || n < -2000000000 || n > 2000000000) throw new Error(`${key}: use an integer between -2,000,000,000 and 2,000,000,000.`);
     parameters[key] = n;
   }
+  return parameters;
+}
+
+export function prepareRequest(request) {
+  const task = request?.task ?? 'prediction';
+  if (!['prediction', 'evaluation'].includes(task)) throw new Error('Choose prediction or evaluation.');
+  const evaluating = task === 'evaluation';
+  const query = parseFasta(request.query, 'Query', !evaluating), target = parseFasta(request.target, 'Target', !evaluating);
+  const parameters = normalizeParameters(request);
   const qRecords = selectedRecords(query, parameters.qSet, 'qSet'), tRecords = selectedRecords(target, parameters.tSet, 'tSet');
   if (parameters.outPairwise && qRecords.length !== tRecords.length) throw new Error('Pairwise output requires the same number of selected query and target records.');
   const work = parameters.outPairwise ? qRecords.reduce((sum, q, i) => sum + q.sequence.length * tRecords[i].sequence.length, 0) : qRecords.reduce((sum, q) => sum + q.sequence.length, 0) * tRecords.reduce((sum, t) => sum + t.sequence.length, 0);
@@ -229,4 +237,22 @@ export function makeArguments(request, format = 'C') {
     }
   }
   return args;
+}
+
+export const JSON_SCHEMA = 'IntaRNA-parameters-v1';
+
+// One parameter document crosses the JS/native boundary. File contents use the
+// native JSON embedding contract, so no browser-specific input paths are needed.
+export function makeParameterDocument(request, format = 'C') {
+  const parameters = {};
+  for (const argument of makeArguments(request, format)) {
+    const separator = argument.indexOf('='), key = argument.slice(2, separator);
+    let value = argument.slice(separator + 1);
+    if (key === 'query' || key === 'target') value = { text: request[key].fasta };
+    else if (/^[qt](Shape|AccFile)$/.test(key)) value = { text: request.parameters[key] + '\n' };
+    else if (Object.hasOwn(request.parameters, key)) value = request.parameters[key];
+    if (key === 'out') (parameters.out ??= []).push(value);
+    else if (!(['qIdxPos0', 'tIdxPos0'].includes(key) && value === 1)) parameters[key] = value;
+  }
+  return { schema: JSON_SCHEMA, parameters };
 }

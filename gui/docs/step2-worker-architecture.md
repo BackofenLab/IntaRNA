@@ -7,9 +7,10 @@ messages. `prepareRequest` validates both the UI and worker boundary; argument
 construction only accepts schema keys, enumerated output formats and fixed paths.
 
 The worker imports `wasm/intarna.js`, maps `locateFile` to the lowercase WASM
-asset and creates an isolated `createIntaRNA` instance. It writes normalized
-multi-FASTA to `/query.fa` and `/target.fa`; local SHAPE/accessibility text uses
-fixed `q/tShape.txt` or `q/tAccFile.txt` paths. CSV is written to `/results.csv`;
+asset and creates an isolated `createIntaRNA` instance. It writes one `/parameter.json` document using the native
+[JSON contract](../../doc/json-parameters.md), embedding normalized multi-FASTA
+and SHAPE/accessibility text. Each invocation passes only
+`--parameterFile=/parameter.json`. CSV is written to `/results.csv`;
 additional native output prefixes write files under `/output/`. Multi-FASTA
 filenames use the CLI's native record-number suffixes.
 

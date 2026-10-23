@@ -69,3 +69,19 @@ test('browser catalog covers every native CSV column and every control names a C
   const source = readFileSync(new URL('../../src/bin/CommandLineParsing.cpp', import.meta.url), 'utf8');
   for (const field of FIELDS.filter((field) => field.key !== 'outSpotProbSpots')) assert.ok(source.includes(`"${field.key}"`), field.key);
 });
+
+test('JSON worker boundary embeds all inputs with typed non-default settings', async () => {
+  const { makeParameterDocument, JSON_SCHEMA } = await import('../protocol.js');
+  const prepared = prepareRequest(request({ temperature: 20, noSeed: true, qShape: '1 0.2' }, { outputs: ['qPu'] }));
+  const document = JSON.parse(JSON.stringify(makeParameterDocument(prepared)));
+  assert.equal(document.schema, JSON_SCHEMA);
+  assert.equal(document.parameters.query.text, prepared.query.fasta);
+  assert.equal(document.parameters.target.text, prepared.target.fasta);
+  assert.equal(document.parameters.qShape.text, '1 0.2\n');
+  assert.equal(document.parameters.temperature, 20);
+  assert.equal(document.parameters.noSeed, true);
+  assert.equal(document.parameters.qIdxPos0, undefined);
+  assert.deepEqual(document.parameters.out, ['/results.csv', 'qPu:/output/qPu.csv']);
+  const worker = readFileSync(new URL('../intarna-worker.js', import.meta.url), 'utf8');
+  assert.ok(worker.includes("callMain(['--parameterFile=/parameter.json'])"));
+});

@@ -14,6 +14,9 @@
 
 ## Interface and handling
 
+- use one embedded-input JSON parameter document for each WASM invocation
+  (PR #287 review)
+
 - accept JSON parameter files with embedded text inputs and personality defaults
   through --parameterFile while retaining legacy configuration (PR #287 review)
 
@@ -257,6 +260,13 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261023 Alexander Mitrofanov
+ * gui/protocol.js, gui/intarna-worker.js, gui/tests/protocol.test.mjs,
+   gui/docs/step2-worker-architecture.md
+     * Pass --parameterFile=/parameter.json to each WASM instance using the
+       native JSON format with embedded FASTA, SHAPE and accessibility text.
+       Preserve native output routing and independent report invocations (#287).
 
 261023 Alexander Mitrofanov
  * src/bin/ParameterFile.{h,cpp}, CommandLineParsing.{h,cpp}, Makefile.am
