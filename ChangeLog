@@ -218,8 +218,30 @@ energies, restricted partition sums, and trackers.
 
 - bugfix version checking
 
+# IntaRNA-fuse.py
+
+- replace the Perl prototype with an installed Python script, honor input
+  sequences, validate external results, and document the fusion workflow (#294)
+
 ################################################################################  
 ################################################################################
+
+261023 Alexander Mitrofanov
+ * python/IntaRNA-fuse.py, tests/testIntaRNAFuse.py, tests/runIntaRNAFuse.sh
+   + Port the non-overlapping-site compatibility check and joint-accessibility
+     energy calculation to Python's standard library, retaining the CSV layout,
+     overlap criterion and both initiation terms.
+   * Honor required target/query sequences instead of overwriting them with
+     examples; handle empty predictions and reject failed commands or invalid
+     output without silently replacing missing energies with zero.
+   + Check sequence forwarding, constraints, fused energies, column selection,
+     executable lookup and failures with subprocess fixtures and native tools.
+ * perl/, Makefile.am, configure.ac, python/Makefile.am, tests/Makefile.am
+   - Remove the Perl script/directory and their Autotools references.
+   + Install/distribute the Python replacement and run its regression suite.
+ * README.md, python/README.md, AGENTS.md
+   + Document installation, usage, migration, output and energy semantics;
+     update companion-tool paths for https://github.com/BackofenLab/IntaRNA/issues/294
 
 261020 Alexander Mitrofanov
  * PredictorMfe2dSeedExtension.*, PredictorMfe2dHeuristicSeedExtension.cpp

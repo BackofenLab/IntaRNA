@@ -128,6 +128,9 @@ The following topics are covered by this documentation:
 - [Library for integration in external tools](#lib)
 - [Auxiliary R scripts for output visualization etc.](/R)
 - [Auxiliary python scripts for IntaRNA-based pipelines](/python)
+  - [IntaRNA-fuse.py](python/README.md#intarna-fusepy) combines compatible
+    interaction sites using joint accessibility costs (requires Python 3 and
+    RNAfold; installed by `make install`).
 
 
 <br /><br /><br /><br />

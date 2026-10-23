@@ -6,7 +6,10 @@ SUBDIRS = copomus intarnapvalue bin
 # scripts to be installed in $(bindir) directly
 
 dist_bin_SCRIPTS = \
-	CopomuS.py
+	CopomuS.py \
+	IntaRNA-fuse.py
+
+EXTRA_DIST = README.md
 
 # auxiliary scripts to be part of distribution 
 noinst_PYTHON = setup.py
