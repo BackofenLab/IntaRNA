@@ -87,7 +87,7 @@ bash scripts/wasm/build.sh
 node scripts/wasm/smoke.mjs
 node scripts/wasm/smoke-protocol.mjs
 bash scripts/wasm/stage.sh
-npm test --prefix webinterface
+npm test --prefix gui
 python3 -m pip install -r scripts/wasm/requirements-browser.txt
 python3 -m playwright install chromium firefox
 python3 -m http.server 8765 --directory build-wasm/site
@@ -115,7 +115,7 @@ the actual default branch, `master`. After JS tests, the real WASM smoke test an
 Chromium/Firefox integration tests pass, the package job combines:
 
 - Existing Jekyll guide at `/IntaRNA/` and API at `/IntaRNA/api/`.
-- Tested application at `/IntaRNA/webinterface/`.
+- Tested application at `/IntaRNA/gui/`.
 
 The artifact `intarna-pages-preview` permits PR review of the complete site.
 Pull requests and manual runs on feature branches do not publish. Only a push
@@ -146,7 +146,7 @@ and active C++, clean restart, empty predictions and asset-load recovery.
   reference reports E = -28.04, ED1 = 4.60, ED2 = 4.86 kcal/mol; the short example
   reports E = -21.40 with target/query coordinates 1–10 and ten suboptimals.
   Invalid CLI input returns a nonzero status through C++ error handling.
-- `npm test --prefix webinterface`: all five input/lifecycle/CSV test groups pass.
+- `npm test --prefix gui`: all five input/lifecycle/CSV test groups pass.
 - Playwright 1.64.0, Chromium and Firefox: full integration suite passes with the
   official-dependency engine, including a nested `/site/` URL as used by Pages,
   active-C++ cancellation, literal HTML-like identifiers and retry after failure.
@@ -177,7 +177,7 @@ claim a live Pages deployment.
   Native imported accessibility reserves one length column for dangling-end
   treatment; its energy is compared with the corresponding restricted native
   interaction length rather than the unrestricted prediction.
-- `npm test --prefix webinterface`: ten protocol/results/lifecycle groups pass.
+- `npm test --prefix gui`: ten protocol/results/lifecycle groups pass.
 - Real Chromium/Firefox integration covers all parameter groups, CLI defaults,
   compiled versions/logos, task changes, multiple records, signed coordinates,
   selected/visible CSV columns, additional previews/downloads and the original

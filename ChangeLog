@@ -14,6 +14,8 @@
 
 ## Interface and handling
 
+- rename the browser interface directory and Pages URL to gui (PR #287 review)
+
 - add selected-interaction vaRRI embeds and reproducible all-output ZIP downloads
   to the browser interface; compact parameters into accessible tabs and update
   the Freiburg group header and full-width result/footer notes (PR #287 review)
@@ -252,6 +254,12 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261023 Alexander Mitrofanov
+ * gui/, scripts/wasm/, .github/workflows/build-wasm.yml, README.md,
+   doc/api-documentation.md, .gitignore
+     * Rename webinterface to gui, including imports, staging, tests and the
+       combined Pages artifact at /IntaRNA/gui/ (PR #287 review).
 
 261022 Alexander Mitrofanov
  * scripts/wasm/{vienna-release.py,vienna-release.json}, build.sh

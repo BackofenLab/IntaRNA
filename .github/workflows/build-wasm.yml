@@ -35,7 +35,7 @@ jobs:
           python scripts/wasm/test-downloads.py
           python scripts/wasm/test-vienna-release.py
       - name: Test input, worker lifecycle and CSV handling
-        run: npm test --prefix webinterface
+        run: npm test --prefix gui
       - name: Resolve newest stable ViennaRNA 2.x release and checksum
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -68,7 +68,7 @@ jobs:
           python scripts/wasm/test-browser.py http://127.0.0.1:8765/site/ --browser firefox
       - uses: actions/upload-artifact@v4
         with:
-          name: intarna-webinterface
+          name: intarna-gui
           path: build-wasm/site
           if-no-files-found: error
 
@@ -82,14 +82,14 @@ jobs:
           path: _site
       - uses: actions/download-artifact@v4
         with:
-          name: intarna-webinterface
-          path: _site/webinterface
+          name: intarna-gui
+          path: _site/gui
       - name: Verify documentation and browser interface coexist
         run: |
           test -s _site/index.html
           test -s _site/api/index.html
-          test -s _site/webinterface/index.html
-          test -s _site/webinterface/wasm/intarna.wasm
+          test -s _site/gui/index.html
+          test -s _site/gui/wasm/intarna.wasm
       - uses: actions/upload-artifact@v4
         with:
           name: intarna-pages-preview

@@ -25,11 +25,11 @@ PYSOURCE
 )
 vienna_source="$build/sources/vienna-$vienna_version-$vienna_sha256/ViennaRNA-$vienna_version"
 mkdir -p "$site/licenses"
-cp -R "$repo/webinterface/assets" "$site/"
+cp -R "$repo/gui/assets" "$site/"
 for file in index.html styles.css app.js mark.svg protocol.js runner.js results.js options.js columns.js archive.js visualization.js; do
-  cp "$repo/webinterface/$file" "$site/$file"
+  cp "$repo/gui/$file" "$site/$file"
 done
-cp "$repo/webinterface/intarna-worker.js" "$site/intarna-worker.js"
+cp "$repo/gui/intarna-worker.js" "$site/intarna-worker.js"
 touch "$site/.nojekyll"
 cp "$repo/LICENSE" "$site/licenses/IntaRNA.txt"
 cp "$repo/src/easylogging++.LICENCE.txt" "$site/licenses/easylogging.txt"

@@ -30,5 +30,5 @@ in the URL. The iframe is cleared on input edits; no third-party viewer is
 loaded before selection. No backend, shared memory or cross-origin isolation
 is needed for computation. A single WASM instance can grow up to 1 GiB.
 
-Run `npm test --prefix webinterface`, then the native-reference WASM smoke tests
+Run `npm test --prefix gui`, then the native-reference WASM smoke tests
 and Chromium/Firefox suites described in step 4.
