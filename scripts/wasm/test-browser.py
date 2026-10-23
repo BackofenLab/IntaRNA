@@ -2,7 +2,8 @@
 import argparse
 from pathlib import Path
 from io import BytesIO
-from urllib.parse import parse_qs, urlparse
+import re
+from urllib.parse import parse_qs, urljoin, urlparse
 from zipfile import ZipFile
 from playwright.sync_api import sync_playwright, expect
 
@@ -53,7 +54,11 @@ with sync_playwright() as playwright:
         expect(status).to_contain_text('complete:', timeout=120000)
         expect(page.locator('#input-error')).not_to_be_visible()
 
-    expect(page.locator('#version-info')).to_contain_text('ViennaRNA 2.7.0')
+    metadata = page.request.get(urljoin(args.url, 'build-info.json')).json()
+    vienna_version = metadata['viennarna']
+    assert re.fullmatch(r'2\.\d+\.\d+', vienna_version)
+    assert metadata['viennarnaArchive']['version'] == vienna_version
+    expect(page.locator('#version-info')).to_contain_text(f'ViennaRNA {vienna_version}')
     for logo in page.locator('.site-header img').all():
         assert logo.evaluate('node => node.complete && node.naturalWidth > 0')
     for key in ['query-options', 'target-options', 'seed-options', 'helix-options', 'shape-options', 'interaction-options', 'output-options', 'general-options', 'sequence-input']:
@@ -122,7 +127,7 @@ with sync_playwright() as playwright:
     assert archive['intarna-interactions.csv'] == csv
     assert archive['query.fa'] == '>query\nGGGAGGAGGG\n'
     assert '# IntaRNA 3.4.1' in archive['parameters.cfg']
-    assert 'Vienna RNA package 2.7.0' in archive['parameters.cfg']
+    assert f'Vienna RNA package {vienna_version}' in archive['parameters.cfg']
     assert 'outNumber = 10' in archive['parameters.cfg']
     assert 'IntaRNA --parameterFile=parameters.cfg' in archive['parameters.cfg']
     assert 'temperature =' not in archive['parameters.cfg']

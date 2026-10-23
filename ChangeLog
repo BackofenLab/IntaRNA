@@ -84,6 +84,14 @@
 
 ## Technical changes and Optimizations
 
+- build WASM with ViennaRNA 2.7.2 locally and the newest stable 2.x in CI;
+  verify published archive checksums, isolate versioned caches and retain
+  selected dependency provenance and notices (PR #292 review)
+
+- BUGFIX : restore WASM dependency downloads using the pinned official ViennaRNA
+  release asset; verify downloads before caching and recover invalid caches
+  (PR #291)
+
 - annotate inherited virtual methods/destructors with override, preserve compiled
   WASM asset provenance through staging, and expand protocol/browser validation
   for the PR #287 review
@@ -244,6 +252,41 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261022 Alexander Mitrofanov
+ * scripts/wasm/{vienna-release.py,vienna-release.json}, build.sh
+   + Resolve the newest stable ViennaRNA >=2.7.2 and <3 from all official GitHub
+     release pages in CI; require its release tarball and published SHA-256.
+   * Pin 2.7.2 for reproducible local builds and accept saved release manifests.
+     Isolate RNAlib sources/installations and IntaRNA objects by archive identity
+     and keep Boost/zlib in a separate prefix to prevent reuse or include-path
+     shadowing of libraries/headers from another release (PR #292).
+ * scripts/wasm/patch-vienna.py
+   - Remove the dlib 19.24 compatibility patch; ViennaRNA 2.7.2 bundles dlib 20.0.
+ * scripts/wasm/{write-build-info.mjs,stage.sh,smoke-protocol.mjs,test-browser.py}
+   * Record the selected archive URL/checksum, check the compiled ViennaRNA
+     version, stage matching dependency notices and test actual version exports.
+ * scripts/wasm/test-vienna-release.py, .github/workflows/build-wasm.yml
+   + Cover numeric version selection, pagination, major-3/prerelease exclusion,
+     missing/invalid asset metadata, API failures, manifest validation and
+     rejection of compiled engines with a stale ViennaRNA version.
+ * webinterface/docs/step1-wasm-compilation.md
+   * Document latest-2.x CI selection, pinned local reproduction, versioned
+     caches, current bundled dlib and archive provenance.
+
+261022 Alexander Mitrofanov
+ * scripts/wasm/{build,download}.sh
+   * Use the official GitHub ViennaRNA 2.7.0 release asset and pin its SHA-256;
+     the university endpoint returned a short HTTP 200 text response, failing
+     the WASM build before compilation (PR #291).
+   + Verify archives before caching, discard invalid cached responses and remove
+     failed partial downloads so rerunning a build can recover automatically.
+ * scripts/wasm/test-downloads.py, .github/workflows/build-wasm.yml
+   + Test verified-cache reuse, invalid-cache recovery, checksum failures,
+     HTTP errors and truncated transfers against a local HTTP server in CI.
+ * webinterface/docs/step1-wasm-compilation.md
+   * Document the release source, archive verification and download regression
+     command, including recovery behavior for failed or outdated caches.
 
 261022 Alexander Mitrofanov
  * webinterface/{archive,visualization}.js
