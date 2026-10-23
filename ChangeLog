@@ -14,6 +14,9 @@
 
 ## Interface and handling
 
+- fix IntaRNApvalue both-strand sampling and parameter consistency, bound retries,
+  validate FASTA/fits and expose empirical p-values (PR #298)
+
 - fix CopomuS explicit mutations, GC filters, signed indices, zero scores and
   shared profiles; validate inputs and preserve output on failure (PR #298)
 
@@ -236,6 +239,23 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261024 Alexander Mitrofanov
+ * python/intarnapvalue/intarna_pvalue.py, python/intarnapvalue/__main__.py
+   * Independently shuffle the correct target and query in pairwise batches;
+     apply the same parameter file to observed and shuffled predictions.
+   * Bound favorable-interaction resampling with --max-attempts, fail immediately
+     on command errors, and validate sample IDs/energies before publication.
+   * Normalize wrapped single-record FASTA and DNA, validate counts, preserve
+     zero energies, isolate RNG state and keep score ordering deterministic.
+   * Evaluate fitted CDFs instead of numerical integration; retain historical
+     raw-energy models, validate fits and expose empirical/none modes (PR #298).
+ * python/intarnapvalue/dinucl_shuffle.py, python/tests/test_intarnapvalue.py
+   * Handle singleton and invalid sequences; remove quadratic front-deletion
+     from Euler-path construction and support instance-local RNGs.
+   + Test composition, sampling, bounded errors, constraints and CDF equivalence.
+ * python/intarnapvalue/README.md, python/Makefile.am
+   * Document real options, conditional sampling, dependencies and API behavior.
 
 261024 Alexander Mitrofanov
  * python/CopomuS.py, python/copomus/*.py, python/tests/test_copomus.py

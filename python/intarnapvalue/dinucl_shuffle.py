@@ -11,6 +11,8 @@
 
 import sys
 import random
+from collections import deque
+from intarna_tools import normalize_sequence
 
 
 def compute_count_and_lists(s):
@@ -50,13 +52,14 @@ def compute_count_and_lists(s):
     assert (nucl_total == len(s))
     assert (dinucl_total == len(s)-1)
     return nucl_cnt, dinucl_cnt, nucl_dict
- 
- 
-def choose_edge(x, dinucl_cnt):
+
+
+def choose_edge(x, dinucl_cnt, rng=None):
+    rng = random if rng is None else rng
     num_in_list = 0
     for y in ['A', 'C', 'G', 'U']:
         num_in_list += dinucl_cnt[x][y]
-    z = random.random()
+    z = rng.random()
     denom = dinucl_cnt[x]['A'] + dinucl_cnt[x]['C'] + dinucl_cnt[x]['G'] + dinucl_cnt[x]['U']
     numerator = dinucl_cnt[x]['A']
     if z < float(numerator)/float(denom):
@@ -93,9 +96,9 @@ def connected_to_last(edge_list, nucl_list, last_ch):
         if x != last_ch and d[x] == 0:
             return 0
     return 1
- 
 
-def eulerian(s):
+
+def eulerian(s, rng=None):
     nucl_cnt, dinucl_cnt, nucl_dict = compute_count_and_lists(s)
     # compute nucleotides appearing in s
     nucl_list = []
@@ -113,16 +116,17 @@ def eulerian(s):
     edge_list = []
     for x in nucl_list:
         if x != last_ch:
-            edge_list.append([x, choose_edge(x, dinucl_cnt)])
+            edge_list.append([x, choose_edge(x, dinucl_cnt, rng)])
     ok = connected_to_last(edge_list, nucl_list, last_ch)
     return ok, edge_list, nucl_list, last_ch
 
 
-def shuffle_edge_list(l):
+def shuffle_edge_list(l, rng=None):
+    rng = random if rng is None else rng
     n = len(l)
     barrier = n
     for i in range(n-1):
-        z = int(random.random() * barrier)
+        z = int(rng.random() * barrier)
         tmp = l[z]
         l[z] = l[barrier - 1]
         l[barrier - 1] = tmp
@@ -130,11 +134,15 @@ def shuffle_edge_list(l):
     return l
 
 
-def dinucl_shuffle(s):
+def dinucl_shuffle(s, rng=None):
+    """Preserve endpoints and mono/dinucleotide counts, using an optional RNG."""
+    s = normalize_sequence(s)
+    if len(s) == 1:
+        return s
     ok = 0
     edge_list, nucl_list = [], []  # initialize arrays
     while not ok:
-        ok, edge_list, nucl_list, last_ch = eulerian(s)
+        ok, edge_list, nucl_list, last_ch = eulerian(s, rng)
     nucl_cnt, dinucl_cnt, nucl_dict = compute_count_and_lists(s)
 
     # remove last edges from each vertex list, shuffle, then add back
@@ -142,22 +150,22 @@ def dinucl_shuffle(s):
     for x, y in edge_list:
         nucl_dict[x].remove(y)
     for x in nucl_list:
-        shuffle_edge_list(nucl_dict[x])
+        shuffle_edge_list(nucl_dict[x], rng)
     for x, y in edge_list:
         nucl_dict[x].append(y)
 
     # construct the eulerian path
+    nucl_dict = {base: deque(edges) for base, edges in nucl_dict.items()}
     l = [s[0]]
     prev_ch = s[0]
     for i in range(len(s)-2):
-        ch = nucl_dict[prev_ch][0]
+        ch = nucl_dict[prev_ch].popleft()
         l.append(ch)
-        del nucl_dict[prev_ch][0]
         prev_ch = ch
     l.append(s[-1])
     t = ''.join(l)
     return t
- 
+
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
