@@ -14,6 +14,12 @@
 
 ## Interface and handling
 
+- fix IntaRNApvalue both-strand sampling and parameter consistency, bound retries,
+  validate FASTA/fits and expose empirical p-values (PR #298)
+
+- fix CopomuS explicit mutations, GC filters, signed indices, zero scores and
+  shared profiles; validate inputs and preserve output on failure (PR #298)
+
 - orient probability SVGs from the upper-left corner and highlight every MFE
   pair, splitting seed/MFE cell borders into orange and green (PR #259 review)
 
@@ -67,6 +73,9 @@
 - reject Zall/Eall-dependent output in window mode
 
 ## Technical changes and Optimizations
+
+- share Python companion-tool command execution, input validation and atomic
+  output handling after rebasing onto IntaRNA-fuse (PR #298 review)
 
 - reuse MFE seed-extension scratch matrices and bound predecessor scans in exact
   and heuristic prediction; evaluate physical energies directly (PR #276 review)
@@ -210,6 +219,17 @@ and accessibility models, and the output can include distinct structures,
 energies, restricted partition sums, and trackers.
 
 
+# Auxiliary Python output tools
+
+- handle symlinked temporary directories in companion executable-lookup tests,
+  including macOS /var aliases (PR #298)
+
+- align companion tools on Python 3.10+, declare pip dependencies, install shared
+  modules, and exercise source/installed/native commands in CI (PR #298)
+
+- replace both R scripts with Python GEV/FDR estimation and region plotting;
+  document optional dependencies, migration and regression tests (issue #295)
+
 # IntaRNA_plotRegions.R
 
 - fix deprecation warning
@@ -225,6 +245,92 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261024 Alexander Mitrofanov
+ * python/tests/test_common_tools.py
+   * Compare executable lookup against canonical fixture paths so macOS /var
+     aliases do not cause false failures after the helper resolves symlinks.
+   + Exercise sibling, source-tree fallback, missing and frozen executable
+     lookup through an explicit directory symlink on every tested platform.
+     Reproduce and verify the macOS CI failure using an aliased TMPDIR (PR #298).
+
+261024 Alexander Mitrofanov
+ * python/setup.py, python/pyproject.toml, python/MANIFEST.in, python/*/Makefile.am,
+   python/Makefile.am, configure.ac, python/intarna_tools.py
+   * Declare Python 3.10+ and NumPy/SciPy dependencies, offer optional plotting,
+     and install shared helpers alongside standalone scripts and Python modules.
+   * Replace legacy setup.py installation with an opt-in pip hook honoring DESTDIR
+     without fetching dependencies or uninstalling packages in another prefix.
+ * python/bin/build.py, python/intarnapvalue/test.py, python/README.md,
+   python/bin/README.md, python/DEVELOPMENT.md, python/requirements-output-tools.txt
+   * Make executable builds independent of the working directory and fail visibly;
+     refresh documentation, source-test entry point and audit/performance notes.
+   * Preserve direct invocation of the shuffle utility with argparse validation,
+     optional sample counts and local random seeds.
+ * python/copomus/measures.py, python/CopomuS.py, python/tests/*.py,
+   .github/workflows/{build,python-output-tools}.yml, .gitignore
+   * Validate shared profiles and thresholds; test malformed/NA profile data,
+     installed lookup, atomic writes, native sampling and mutation workflows.
+   * Exercise all companion tools and installation in Python/C++ CI, including
+     the dependent PR base; exclude Python caches/build outputs (PR #298).
+
+261024 Alexander Mitrofanov
+ * python/intarnapvalue/intarna_pvalue.py, python/intarnapvalue/__main__.py
+   * Independently shuffle the correct target and query in pairwise batches;
+     apply the same parameter file to observed and shuffled predictions.
+   * Bound favorable-interaction resampling with --max-attempts, fail immediately
+     on command errors, and validate sample IDs/energies before publication.
+   * Normalize wrapped single-record FASTA and DNA, validate counts, preserve
+     zero energies, isolate RNG state and keep score ordering deterministic.
+   * Evaluate fitted CDFs instead of numerical integration; retain historical
+     raw-energy models, validate fits and expose empirical/none modes (PR #298).
+ * python/intarnapvalue/dinucl_shuffle.py, python/tests/test_intarnapvalue.py
+   * Handle singleton and invalid sequences; remove quadratic front-deletion
+     from Euler-path construction and support instance-local RNGs.
+   + Test composition, sampling, bounded errors, constraints and CDF equivalence.
+ * python/intarnapvalue/README.md, python/Makefile.am
+   * Document real options, conditional sampling, dependencies and API behavior.
+
+261024 Alexander Mitrofanov
+ * python/CopomuS.py, python/copomus/*.py, python/tests/test_copomus.py
+   * Validate sequences/FASTA, mutation positions and bases, delimiters and counts;
+     repair the explicit-selector call signature and CG/GC filter mismatch.
+   * Preserve zero energies and quoted CSV identifiers; fix signed-index conversion,
+     neighboring pairs across zero, and minimum-delta ordering at/below zero.
+   * Share profile contents across accessibility measures, clean private temporary
+     files, and reuse the wildtype prediction for all candidates (PR #298).
+   * Report errors on stderr and replace output only after successful computation.
+ * python/copomus/README.md, python/Makefile.am
+   * Correct option names, defaults, Python requirements and mutation/ranking docs;
+     distribute the focused regressions.
+
+261024 Alexander Mitrofanov
+ * python/intarna_tools.py, python/IntaRNA-fuse.py, python/IntaRNA_CSV_p-value.py,
+   python/IntaRNA_plotRegions.py, python/Makefile.am, tests/testIntaRNAFuse.py,
+   python/tests/test_output_tools.py
+   + Share dependency-free executable lookup, checked subprocess calls, RNA/FASTA
+     validation, CSV validation and atomic text publication between Python tools.
+   * Rebase onto feat/294-python-intarna-fuse; retain both migrations, their
+     installation rules and regression suites (PR #298).
+
+261023 Alexander Mitrofanov
+ * python/IntaRNA_CSV_p-value.py, python/IntaRNA_plotRegions.py
+   + Replace the R tools with standalone Python scripts preserving positional
+     arguments, negated-energy GEV tails, seven-digit rounding/BH correction,
+     ordered region rows, inclusive coverage and plotting parameter files.
+   + Validate input and fitting; publish CSV atomically, preserve original CSV
+     fields, and support all previous figure formats without a display.
+ * python/tests/test_output_tools.py, .github/workflows/python-output-tools.yml
+   + Test analytical tails, known GEV samples, BH, CSV errors/round trips,
+     plotting parameters, coverage and all seven output formats in Python CI.
+ * python/README.md, python/requirements-output-tools.txt, python/examples/*,
+   python/plotRegions.example.png, README.md, AGENTS.md
+   + Document Python dependencies, migration, statistical and rendering
+     differences, parameter defaults and examples; replace README R snippets.
+ * Makefile.am, configure.ac, python/Makefile.am, R/*
+   * Install/distribute the Python replacements, documentation and fixtures.
+   - Remove the R scripts and their build directory.
+   * Resolves https://github.com/BackofenLab/IntaRNA/issues/295
 
 261023 Alexander Mitrofanov
  * python/IntaRNA-fuse.py, tests/testIntaRNAFuse.py, tests/runIntaRNAFuse.sh

@@ -8,7 +8,7 @@ BOOST_REQUIRED_VERSION=1.50.0
 # minimal Vienna RNA version providing the logger locking API
 VRNA_REQUIRED_VERSION=2.7.0
 # minimal required version of python interpreter (to install intarnapvalue)
-PYTHON_REQUIRED_VERSION=3.6
+PYTHON_REQUIRED_VERSION=3.10
 
 
 AC_CANONICAL_HOST
@@ -570,7 +570,6 @@ AC_CONFIG_FILES([src/Makefile])
 AC_CONFIG_FILES([src/IntaRNA/Makefile])
 AC_CONFIG_FILES([src/IntaRNA/intarna_config.h])
 AC_CONFIG_FILES([src/bin/Makefile])
-AC_CONFIG_FILES([R/Makefile])
 AC_CONFIG_FILES([python/Makefile])
 AC_CONFIG_FILES([python/bin/Makefile])
 AC_CONFIG_FILES([python/intarnapvalue/Makefile])

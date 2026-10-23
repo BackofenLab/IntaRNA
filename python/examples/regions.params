@@ -1,0 +1,9 @@
+# Plot query regions in CSV order.
+id = id2
+start = start2
+end = end2
+title = Query interaction regions
+xvline = 50
+xmin = 1
+xmax = 130
+rows = 200

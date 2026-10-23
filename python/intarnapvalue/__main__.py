@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-
 # Copyright 2019
 # Author: Fabio Gutmann <https://github.com/fabio-gut>
 
-from intarnapvalue import intarna_pvalue
+from intarnapvalue.intarna_pvalue import main
 
-i = intarna_pvalue.IntaRNApvalue()
+if __name__ == '__main__':
+    raise SystemExit(main())

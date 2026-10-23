@@ -1,135 +1,81 @@
 # Copyright 2019
 # Author: Fabio Gutmann <https://github.com/fabio-gut>
 
-import sys
-from typing import Dict, Union, List
-from subprocess import Popen, PIPE, run
+"""Checked IntaRNA subprocess and CSV adapter used by CopomuS."""
+
+import csv
+import io
+import math
+import re
+from intarna_tools import csv_header, csv_rows, find_program, run_command
 
 
 class IntaRNA:
-    """IntaRNA python3 wrapper"""
-    def __init__(self):
-        pass
+    """IntaRNA Python wrapper; no-interaction output is represented by False."""
 
     @staticmethod
-    def version_tuple(versionstring: str):
-        """
-        Decomposes a version string into a tuple of entries
-        :param versionstring: The string encoding of a version, i.e. dot-separated numbers
-        """
-        return tuple(map(int, versionstring.split('.')))
+    def version_tuple(versionstring):
+        """Read numeric release components, accepting development suffixes."""
+        match = re.match(r'(\d+)\.(\d+)\.(\d+)', versionstring)
+        if not match:
+            raise ValueError(f'Unrecognized IntaRNA version: {versionstring}')
+        return tuple(map(int, match.groups()))
 
     @staticmethod
-    def check_binary(required_version: str):
-        """
-        Checks weather or not the IntaRNA binary can be found in PATH and exits with return code 1 if not found.
-        :param required_version: The minimum required version for IntaRNA
-        """
-        p = run('IntaRNA --version', shell=True, stdout=PIPE, stderr=PIPE, universal_newlines=True)
-        if p.returncode:
-            sys.stderr.write('Please add the IntaRNA binary to your PATH.\n')
-            sys.exit(1)
-        if IntaRNA.version_tuple(p.stdout.split('\n')[0].split()[1]) < IntaRNA.version_tuple(required_version):
-            sys.stderr.write(f'This tool requires IntaRNA version {required_version}, please upgrade\n')
-            sys.exit(1)
+    def check_binary(required_version):
+        """Check executable availability and the minimum supported release."""
+        output = run_command([find_program('IntaRNA'), '--version'])
+        match = re.search(r'IntaRNA\s+(\d+\.\d+\.\d+\S*)', output)
+        if not match or IntaRNA.version_tuple(match[1]) < IntaRNA.version_tuple(required_version):
+            raise RuntimeError(f'This tool requires IntaRNA version {required_version} or newer')
 
-    def run(self, query: str, target: str, qidxpos0: int, tidxpos0: int, outcsvcols: str, threads: int, n: int = 1,
-            param_file: str = '', extra_params: list = '', raw_stdout: bool = False) -> \
-            Union[Dict[str, any], List[Dict[str, any]], str]:
-        """
-        Runs IntaRNA on a pair of sequences and returns a dictionary with the output
-        :param query: The query sequence
-        :param target: The target sequence
-        :param qidxpos0: The starting index for the query sequence
-        :param tidxpos0: The starting index for the target sequence
-        :param outcsvcols: The csvcols returned by IntaRNA
-        :param threads: Thread count used by IntaRNA
-        :param n: The number of suboptimal interactions returned
-        :param param_file: Optional path to a file with additional parameters
-        :param extra_params: Optional list of additional parameters
-        :param raw_stdout: Weather or not stdout should be returned in raw format, not as a dict
-        :return: Dictionary with column name as key and payload as value
-        """
-        if not extra_params:
-            extra_params = []
-        param_file = f'--parameterFile={param_file}' if param_file else ''
-        p = Popen(['IntaRNA', '-q', query, '-t', target, '--outMode=C', f'--outcsvcols={outcsvcols}',
-                   f'--qIdxPos0={qidxpos0}', f'--tIdxPos0={tidxpos0}', f'--outNumber={n}', f'--threads={threads}', param_file]
-                  + extra_params, stdout=PIPE, stderr=PIPE, universal_newlines=True)
-
-        stdout, stderr = p.communicate()
-        if p.returncode:
-            sys.stderr.write(f'IntaRNA Error: {stdout} {stderr}\n')
-            sys.exit(p.returncode)
-        if not raw_stdout:
-            if n == 1:
-                d = self.output_to_dict(stdout)
-                if type(d) != bool:
-                    return d[0]
-                else:
-                    return d
-            return self.output_to_dict(stdout)
-        else:
+    def run(self, query, target, qidxpos0, tidxpos0, outcsvcols, threads, n=1,
+            param_file='', extra_params=None, raw_stdout=False):
+        """Return one typed CSV row, all suboptimal rows, or raw stdout."""
+        command = [find_program('IntaRNA'), '-q', query, '-t', target, '--outMode=C',
+                   f'--outCsvCols={outcsvcols}', f'--qIdxPos0={qidxpos0}',
+                   f'--tIdxPos0={tidxpos0}', f'--outNumber={n}', f'--threads={threads}']
+        if param_file:
+            command.append(f'--parameterFile={param_file}')
+        stdout = run_command(command + list(extra_params or []))
+        if raw_stdout:
             return stdout
+        rows = self.output_to_dict(stdout)
+        return rows[0] if rows and n == 1 else rows
 
     @staticmethod
-    def output_to_dict(data: str) -> Union[List[Dict[str, any]], bool]:
-        """
-        Transforms IntaRNA output into a dictionary
-        :param data: Raw IntaRNA output
-        :return: dictionary with colname as key and payload as value (casted into fitting type)
-        >>> d = IntaRNA.output_to_dict('start1;end1;id1;id2;E\\n34;42;target;query;-4.7\\n')
-        >>> d
+    def output_to_dict(data):
+        r"""Parse quoted CSV, preserving IDs and numeric zero; only NA/empty is missing.
+
+        >>> IntaRNA.output_to_dict('start1;end1;id1;id2;E\n34;42;target;query;-4.7\n')
         [{'start1': 34, 'end1': 42, 'id1': 'target', 'id2': 'query', 'E': -4.7}]
-        >>> [type(x) for x in d[0].values()]
-        [<class 'int'>, <class 'int'>, <class 'str'>, <class 'str'>, <class 'float'>]
         """
-        subopts = []
-
-        lines = data.rstrip().split('\n')
-        if len(lines) == 2:
-            headers, entries = lines
-            entries = [entries]
-        elif len(lines) > 2:
-            headers = lines[0]
-            entries = lines[1:]
-        else:
-            headers = lines[0]
-            entries = ['']
-        headers = headers.split(';')
-
-        for values in entries:
-            d = {}
-            values = values.split(';')
-            if len(headers) != len(values):  # no interaction between query and target
-                return False
-
-            for i, h in enumerate(headers):
+        reader = csv.reader(io.StringIO(data), delimiter=';', strict=True)
+        header = csv_header(reader)
+        rows = []
+        for fields in csv_rows(reader, header):
+            row = {}
+            for name, value in zip(header, fields):
+                if name in ('id1', 'id2', 'seq1', 'seq2', 'subseq1', 'subseq2'):
+                    row[name] = value
+                    continue
+                if value in ('', 'NA'):
+                    row[name] = None
+                    continue
                 try:
-                    value = int(values[i])  # try to cast to int
+                    number = int(value)
                 except ValueError:
                     try:
-                        value = float(values[i])  # try to cast to float
+                        number = float(value)
                     except ValueError:
-                        value = values[i]  # leave as string
-                d[h] = value
-            subopts.append(d)
-
-        for subopt in subopts:
-            for k, v in subopt.items():
-                if not v:
-                    subopt[k] = None
-
-        return subopts
+                        number = value
+                if isinstance(number, float) and not math.isfinite(number):
+                    raise ValueError(f'IntaRNA returned a nonfinite {name}')
+                row[name] = number
+            rows.append(row)
+        return rows or False
 
     @staticmethod
-    def to_fasta(sequences: Dict[str, str]) -> str:
-        """
-        Transforms sequences into a FASTA string
-        :param sequences: A dictionary with sequence name as key and raw sequence as tuple
-        :return: A FASTA string containing all sequences
-        """
-        fasta_str = ''
-        for name, seq in sequences.items():
-            fasta_str += f'>{name}\n{seq}\n'
-        return fasta_str
+    def to_fasta(sequences):
+        """Format a mapping of record names to sequences."""
+        return ''.join(f'>{name}\n{seq}\n' for name, seq in sequences.items())

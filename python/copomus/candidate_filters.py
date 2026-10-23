@@ -2,7 +2,7 @@
 # Author: Fabio Gutmann <https://github.com/fabio-gut>
 
 from typing import Tuple, List
-from copomus.indexing import idx_to_array_index
+from copomus.indexing import idx_to_array_index, add_sub_idx
 
 
 def _filter_bp_type(bps: List[Tuple[int, int]], q: str, t: str, qidxpos0: int, tidxpos0: int, bp_type='') -> \
@@ -34,7 +34,7 @@ def _filter_bp_type(bps: List[Tuple[int, int]], q: str, t: str, qidxpos0: int, t
     return new_bps
 
 
-def _neighbors_in_mfe(q_index: int, t_index: int, bps: List[Tuple[int, int]]) -> int:
+def _neighbors_in_mfe(q_index: int, t_index: int, bps: List[Tuple[int, int]], qidxpos0=1, tidxpos0=1) -> int:
     """
     Counts how many neighboring base pairs are in the MFE region
     :param q_index: Base pair index on the query
@@ -48,7 +48,9 @@ def _neighbors_in_mfe(q_index: int, t_index: int, bps: List[Tuple[int, int]]) ->
     """
     count = 0
     for q_o, t_o in [(+1, -1), (-1, +1)]:  # get neighbors by offset
-        if (q_index+q_o, t_index+t_o) in bps:
+        q_neighbor = q_index + q_o if qidxpos0 == 0 else add_sub_idx(q_index, q_o)
+        t_neighbor = t_index + t_o if tidxpos0 == 0 else add_sub_idx(t_index, t_o)
+        if (q_neighbor, t_neighbor) in bps:
             count += 1
     return count
 
@@ -99,9 +101,10 @@ def filter_gc(bps: List[Tuple[int, int]], q: str, t: str, qidxpos0: int, tidxpos
 def filter_lp(bps: List[Tuple[int, int]], q: str, t: str, qidxpos0: int, tidxpos0: int) -> List[Tuple[int, int]]:
     """Filters lonely base pairs that can not stack (both neighbors not in MFE and both neighbors cant pair)"""
     new_bps = []
+    bp_set = set(bps)
 
     for q_index, t_index in bps:
-        if not _neighbors_in_mfe(q_index, t_index, bps) and \
+        if not _neighbors_in_mfe(q_index, t_index, bp_set, qidxpos0, tidxpos0) and \
            not _neighbors_can_pair(q_index, t_index, q, t, qidxpos0, tidxpos0):
             continue
         new_bps.append((q_index, t_index))
@@ -111,9 +114,10 @@ def filter_lp(bps: List[Tuple[int, int]], q: str, t: str, qidxpos0: int, tidxpos
 def filter_lp_mfe(bps: List[Tuple[int, int]], q: str, t: str, qidxpos0: int, tidxpos0: int) -> List[Tuple[int, int]]:
     """Filters lonely base pairs in MFE interaction (both neighbors not in MFE)"""
     new_bps = []
+    bp_set = set(bps)
 
     for q_index, t_index in bps:
-        if not _neighbors_in_mfe(q_index, t_index, bps):
+        if not _neighbors_in_mfe(q_index, t_index, bp_set, qidxpos0, tidxpos0):
             continue
         new_bps.append((q_index, t_index))
     return new_bps
@@ -133,9 +137,10 @@ def filter_he(bps: List[Tuple[int, int]], q: str, t: str, qidxpos0: int, tidxpos
 def filter_he_mfe(bps: List[Tuple[int, int]], q: str, t: str, qidxpos0: int, tidxpos0: int) -> List[Tuple[int, int]]:
     """Filters helix ends (One neighbor in MFE, the other one is not)"""
     new_bps = []
+    bp_set = set(bps)
 
     for q_index, t_index in bps:
-        if _neighbors_in_mfe(q_index, t_index, bps) == 1:
+        if _neighbors_in_mfe(q_index, t_index, bp_set, qidxpos0, tidxpos0) == 1:
             continue
         new_bps.append((q_index, t_index))
     return new_bps
@@ -146,6 +151,7 @@ def get_filter(string: str) -> any:
         'GU': filter_gu,
         'AU': filter_au,
         'GC': filter_gc,
+        'CG': filter_gc,
         'lp': filter_lp,
         'lpMfe': filter_lp_mfe,
         'he': filter_he,
