@@ -158,6 +158,11 @@ with sync_playwright() as playwright:
     page.locator('#seed-mode').select_option('identify')
     expect(page.locator('#seedBP')).to_be_enabled()
     expect(page.locator('#seedTQ')).to_be_disabled()
+    open_group('output-options')
+    output_labels = page.locator('#output-options .checkbox-grid label')
+    assert output_labels.count() == 15
+    assert all(label.get_attribute('title') for label in output_labels.all())
+    expect(page.locator('#output-options input[value="pMinE"]').locator('xpath=..')).to_have_attribute('title', re.compile('energy heatmap'))
     open_group('csv-options')
     groups = page.locator('.csv-group')
     assert groups.count() == 5

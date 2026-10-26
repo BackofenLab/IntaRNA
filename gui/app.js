@@ -152,7 +152,7 @@ const outputBody = byId('output-options').querySelector('.group-body');
 outputBody.append(element('h3', 'Additional output files', 'subheading'));
 outputBody.append(element('p', 'Reports are computed with the same settings. ASCII, detailed and ensemble reports each run a fresh engine instance and can take extra time.', 'input-help'));
 const outputPicker = element('div', '', 'checkbox-grid'); outputBody.append(outputPicker);
-for (const output of EXTRA_OUTPUTS) outputInputs.push(checkbox(outputPicker, output.key, output.label));
+for (const output of EXTRA_OUTPUTS) outputInputs.push(checkbox(outputPicker, output.key, output.label, output.description));
 const generalBody = group('general-options', 'CLI-only');
 generalBody.append(element('p', 'Process-level settings (threads, log paths, parameter-file paths and terminal help) are available in the CLI.'));
 const docs = element('a', 'Full CLI parameter documentation'); docs.href = 'https://github.com/BackofenLab/IntaRNA#readme'; generalBody.append(docs);
