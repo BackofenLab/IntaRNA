@@ -114,10 +114,17 @@ with sync_playwright() as playwright:
 
     for prefix, group in [('q', 'query-options'), ('t', 'target-options')]:
         open_group(group)
-        # Each explicit row shares label height, including wrapped labels.
+        # Each explicit row shares label height, including wrapped labels, and
+        # compact controls stay left-aligned instead of filling the panel.
         for keys in [[prefix + suffix for suffix in ['Set', 'Region', 'IntLenMax', 'IntLoopMax', 'RegionLenMax']], [prefix + suffix for suffix in ['Acc', 'AccW', 'AccL', 'PfScale']]]:
             tops = [page.locator('#' + key).bounding_box()['y'] for key in keys]
             assert max(tops) - min(tops) < 1, tops
+            label_bottoms = [page.locator('#' + key).locator('xpath=preceding-sibling::label').bounding_box()['y'] + page.locator('#' + key).locator('xpath=preceding-sibling::label').bounding_box()['height'] for key in keys]
+            assert max(label_bottoms) - min(label_bottoms) < 1, label_bottoms
+        first = page.locator('#' + prefix + 'Set').bounding_box()
+        second = page.locator('#' + prefix + 'Region').bounding_box()
+        assert 8 <= second['x'] - first['x'] - first['width'] <= 20
+        assert page.locator('#' + prefix + 'AccW').bounding_box()['width'] <= 224
         expect(page.locator('#' + prefix + 'AccFile')).to_be_disabled()
         page.locator('#' + prefix + 'Acc').select_option('P')
         expect(page.locator('#' + prefix + 'AccFile')).to_be_enabled()

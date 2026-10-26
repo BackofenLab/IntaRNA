@@ -281,24 +281,28 @@ fieldset {
 
 .field-grid {
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
-  gap:20px 24px;
-  align-items:start;
-  margin-bottom:20px;
+  grid-template-columns:repeat(auto-fit,minmax(10rem,14rem));
+  gap:12px 16px;
+  align-items:end;
+  justify-content:start;
+  margin-bottom:12px;
 }
 
 /* Explicit rows preserve the requested grouping; subgrid aligns inputs below
-   labels of different heights without fixing a font-dependent label height. */
-.field-grid.columns-1 { grid-template-columns:minmax(0,1fr); }
-.field-grid.columns-2 { grid-template-columns:repeat(2,minmax(0,1fr)); }
-.field-grid.columns-3 { grid-template-columns:repeat(3,minmax(0,1fr)); }
-.field-grid.columns-4 { grid-template-columns:repeat(4,minmax(0,1fr)); }
-.field-grid.columns-5 { grid-template-columns:repeat(5,minmax(0,1fr)); }
+   labels of different heights without fixing a font-dependent label height.
+   Bounded tracks keep short rows left-aligned instead of stretching controls
+   across the complete panel. */
+.field-grid.columns-1 { grid-template-columns:minmax(10rem,38rem); }
+.field-grid.columns-2 { grid-template-columns:repeat(2,minmax(10rem,18rem)); }
+.field-grid.columns-3 { grid-template-columns:repeat(3,minmax(9rem,14rem)); }
+.field-grid.columns-4 { grid-template-columns:repeat(4,minmax(8.5rem,12rem)); }
+.field-grid.columns-5 { grid-template-columns:repeat(5,minmax(8rem,11rem)); }
 .field-grid > .field:not(.check) { display:grid; grid-row:span 4; grid-template-rows:subgrid; row-gap:5px; }
+.field-grid > .field:not(.check) > label { align-self:end; }
 .field-grid > .field:not(.check) > :nth-child(2) { align-self:start; }
-.accessibility-columns { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:24px; margin-top:20px; }
+.accessibility-columns { display:grid; grid-template-columns:repeat(2,minmax(16rem,32rem)); gap:16px; justify-content:start; margin-top:12px; }
 .accessibility-columns > div { min-width:0; }
-.seed-mode { max-width:24rem; margin-bottom:20px; }
+.seed-mode { max-width:24rem; margin-bottom:12px; }
 .field-grid:has(#noSeed) { display:none; }
 #query,#target { white-space:pre; overflow:auto; }
 #sequence-help,#general-options p { max-width:none; }
