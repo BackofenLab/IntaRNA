@@ -4,7 +4,7 @@ on:
   push:
     branches: [master]
   pull_request:
-    branches: [master]
+    branches: [master, feat/294-python-intarna-fuse]
 
 defaults:
   run:
@@ -105,6 +105,8 @@ jobs:
           make -j 2
           make install
           make tests -j 2
+          python3 -m pip install -r python/requirements-output-tools.txt
+          PATH="$RUNNER_TEMP/intarna-install/bin:$PATH" make -C python check-python-tools
           "$RUNNER_TEMP/intarna-install/bin/IntaRNA" -h
 
       - name: Compile every installed public header independently

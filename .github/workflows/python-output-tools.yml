@@ -1,0 +1,35 @@
+name: Python companion tools
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  companion-tools:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        include:
+          - python: '3.10'
+            dependencies: numpy==1.23.5 scipy==1.9.3 matplotlib==3.6.3
+          - python: '3.13'
+            dependencies: -r python/requirements-output-tools.txt
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install setuptools wheel ${{ matrix.dependencies }}
+      - run: python -m unittest discover -s python/tests -v
+        env:
+          MPLBACKEND: Agg
+      - run: python tests/testIntaRNAFuse.py
+      - name: Check installed commands away from the checkout
+        run: |
+          python -m venv --system-site-packages "$RUNNER_TEMP/companions"
+          "$RUNNER_TEMP/companions/bin/python" -m pip install --no-deps --no-build-isolation ./python
+          cd "$RUNNER_TEMP"
+          for tool in CopomuS.py IntaRNA-fuse.py IntaRNA_CSV_p-value.py IntaRNA_plotRegions.py IntaRNApvalue; do
+            "$RUNNER_TEMP/companions/bin/$tool" --help
+          done

@@ -5,3 +5,5 @@ noinst_PYTHON = \
 	dinucl_shuffle.py \
 	intarna_pvalue.py \
 	test.py
+
+EXTRA_DIST = README.md

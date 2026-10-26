@@ -1,32 +1,33 @@
-
-# sub directories to check for Makefiles
+# Companion modules and optional executable builder.
 SUBDIRS = copomus intarnapvalue bin
-
-
-# scripts to be installed in $(bindir) directly
 
 dist_bin_SCRIPTS = \
 	CopomuS.py \
-	IntaRNA-fuse.py
+	IntaRNA-fuse.py \
+	IntaRNA_CSV_p-value.py \
+	IntaRNA_plotRegions.py
 
-EXTRA_DIST = README.md
-
-# auxiliary scripts to be part of distribution 
+# Standalone scripts import this module from their installed directory.
+dist_pythonhelpers_DATA = intarna_tools.py
+pythonhelpersdir = $(bindir)
 noinst_PYTHON = setup.py
 
-# install python modules
 if HAVE_PYTHON
-
 if INSTALL_INTARNAPVALUE
-
-# ensure pip is installed
-# create python directory if non-existing with current prefix
+# Install modules using the selected interpreter without fetching dependencies.
+# Users install NumPy/SciPy in that interpreter's environment as documented.
 install-exec-hook:
-	@ $(PYTHON) -m ensurepip --default-pip
-	@ $(MKDIR_P) -p ${pythondir}
-	@ export PYTHONPATH=$PYTHONPATH:${pythondir}; \
-		$(PYTHON) setup.py install --prefix=${prefix}
-
+	$(PYTHON) -m pip install --ignore-installed --no-deps --no-build-isolation \
+		--prefix="$(DESTDIR)$(prefix)" "$(abs_srcdir)"
+endif
 endif
 
-endif
+EXTRA_DIST = README.md DEVELOPMENT.md requirements-output-tools.txt pyproject.toml MANIFEST.in \
+	plotRegions.example.png examples/regions.csv examples/regions.params \
+	tests/test_output_tools.py tests/test_copomus.py tests/test_intarnapvalue.py \
+	tests/test_common_tools.py tests/test_native_tools.py
+
+.PHONY: check-output-tools check-python-tools
+check-output-tools: check-python-tools
+check-python-tools:
+	$(PYTHON) -m unittest discover -s $(srcdir)/tests -v

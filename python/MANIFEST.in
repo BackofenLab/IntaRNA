@@ -1,0 +1,6 @@
+include README.md DEVELOPMENT.md requirements-output-tools.txt
+recursive-include copomus *.md *.jpg
+recursive-include intarnapvalue *.md
+recursive-include examples *.csv *.params
+recursive-include tests *.py
+include plotRegions.example.png

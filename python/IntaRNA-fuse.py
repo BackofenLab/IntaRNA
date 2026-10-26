@@ -11,9 +11,10 @@ from decimal import Decimal, InvalidOperation
 import io
 from pathlib import Path
 import re
-import shutil
-import subprocess
 import sys
+
+
+from intarna_tools import find_program, positive_integer, run_command
 
 
 ESSENTIAL_COLUMNS = ('E', 'start1', 'end1', 'start2', 'end2', 'ED1', 'ED2', 'E_init')
@@ -25,13 +26,6 @@ def sequence(value):
     if not re.fullmatch('[ACGUTNacgutn]+', value):
         raise argparse.ArgumentTypeError('expected a nonempty sequence of A, C, G, U, T or N')
     return value
-
-
-def positive_integer(value):
-    number = int(value)
-    if number < 1:
-        raise argparse.ArgumentTypeError('expected a positive integer')
-    return number
 
 
 def parse_args(argv=None):
@@ -53,35 +47,6 @@ def parse_args(argv=None):
     if missing:
         parser.error('-o is missing essential CSV columns: ' + ','.join(missing))
     return args
-
-
-def find_program(name):
-    """Prefer installed siblings, then the source-tree binary, then PATH."""
-    script_dir = Path(__file__).resolve().parent
-    candidates = [script_dir / name]
-    if name == 'IntaRNA':
-        candidates.append(script_dir.parent / 'src' / 'bin' / name)
-    for candidate in candidates:
-        found = shutil.which(str(candidate))
-        if found:
-            return found
-    found = shutil.which(name)
-    if not found:
-        raise RuntimeError('{} executable not found beside the script or on PATH'.format(name))
-    return found
-
-
-def run_command(command, input_text=None):
-    """Pass sequences and constraints without shell interpretation; check failures."""
-    result = subprocess.run(command, input=input_text, universal_newlines=True,
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    if result.returncode:
-        detail = (result.stderr or result.stdout).strip()
-        raise RuntimeError('{} exited with status {}: {}'.format(
-            Path(command[0]).name, result.returncode, detail))
-    if result.stderr:
-        sys.stderr.write(result.stderr)
-    return result.stdout
 
 
 def energy(value):

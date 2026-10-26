@@ -82,3 +82,11 @@ python/intarnapvalue.*
 /IntaRNA.pc
 /IntaRNA.exe.stackdump
 /py-compile
+
+# Python companion-tool build products
+__pycache__/
+*.py[cod]
+*.egg-info/
+python/build/
+python/dist/
+python/bin/build/

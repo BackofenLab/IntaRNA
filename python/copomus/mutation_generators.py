@@ -4,7 +4,7 @@
 from copy import deepcopy
 from copomus.indexing import idx_to_array_index
 from copomus.measures import get_measure
-from copomus.mutation import Mutation
+from copomus.mutation import Mutation, parse_mutation_encoding
 from typing import List, Tuple
 
 
@@ -66,13 +66,7 @@ def gen_specific(query: str, target: str, qidxpos0: int, tidxpos0: int, mms: Lis
     for m in mms:
         mm.append(get_measure(m, alpha, beta))
 
-    for mut in encoding.split(','):  # split block mutations into single mutations
-        q, t = mut.split('&')
-        q_index = int(q[1:len(q)-1])  # mutation indices
-        t_index = int(t[1:len(t)-1])
-
-        bp_mm = f'{q[len(q)-1]}{t[len(t)-1]}'
-
+    for q_index, t_index, bp_mm in parse_mutation_encoding(encoding, query, target, qidxpos0, tidxpos0):
         m = Mutation(deepcopy(mm), query, target, qidxpos0, tidxpos0, q_index, t_index, bp_mm)
         mutations.append(m)
     return mutations
