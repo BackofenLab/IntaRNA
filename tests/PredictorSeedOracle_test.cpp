@@ -1267,3 +1267,198 @@ TEST_CASE("native anchored heuristics preserve right-choice hooks and complete b
 		}
 	}
 }
+
+namespace {
+using PerSeedSite = std::pair<Interaction::BasePair,Interaction::BasePair>;
+using PerSeedResults = std::map<PerSeedSite,E_type>;
+
+PerSeedResults perSeedExpected(const InteractionEnergy & energy, const SeedOracleResult & oracle,
+		const size_t quota, const bool ensemble, const bool seedOnly = false)
+{
+	// Enumerate chains independently, then group MFE conformations by every
+	// contained seed, or ensemble weights by the first (left-most) seed only.
+	using Pair = Interaction::BasePair;
+	std::map<Pair,std::map<PerSeedSite,E_type>> minima;
+	std::map<Pair,std::map<PerSeedSite,Z_type>> partitions;
+	for (const auto & interaction : oracle.interactions) {
+		if (seedOnly && interaction.chain.size() != 2) continue;
+		const auto & first = interaction.chain.front(), & last = interaction.chain.back();
+		const PerSeedSite site(energy.getBasePair(first.i1,first.i2),energy.getBasePair(last.i1,last.i2));
+		for (size_t k=0;k<interaction.seeds.size();++k) {
+			if (ensemble && k) break;
+			const auto & start = interaction.chain[interaction.seeds[k].firstPair];
+			const Pair seed = energy.getBasePair(start.i1,start.i2);
+			auto [it,inserted] = minima[seed].try_emplace(site,interaction.energy);
+			if (!inserted) it->second = std::min(it->second,interaction.energy);
+			partitions[seed][site] += energy.getBoltzmannWeight(interaction.energy);
+		}
+	}
+	PerSeedResults result;
+	for (const auto & [seed,sites] : minima) {
+		std::vector<Interaction> ranked;
+		for (const auto & [site,mfe] : sites) {
+			Interaction candidate(energy.getAccessibility1().getSequence(),energy.getAccessibility2().getAccessibilityOrigin().getSequence());
+			candidate.basePairs = {site.first,site.second};
+			candidate.energy = mfe;
+			if (ensemble) {
+				const size_t i=energy.getIndex1(site.first),j=energy.getIndex1(site.second);
+				const size_t k=energy.getIndex2(site.first),l=energy.getIndex2(site.second);
+				const E_type boundary = energy.getE(i,j,k,l,E_type(0));
+				candidate.energy = boundary + energy.getE(partitions.at(seed).at(site)/energy.getBoltzmannWeight(boundary));
+			}
+			ranked.push_back(candidate);
+		}
+		std::sort(ranked.begin(),ranked.end());
+		for (size_t k=0;k<std::min(quota,ranked.size());++k) {
+			const auto & candidate=ranked[k];
+			const PerSeedSite site(candidate.basePairs.front(),candidate.basePairs.back());
+			auto [it,inserted]=result.try_emplace(site,candidate.energy);
+			if (!inserted) it->second=std::min(it->second,candidate.energy);
+		}
+	}
+	return result;
+}
+
+PerSeedResults perSeedActual(const OutputHandlerInteractionList & output)
+{
+	PerSeedResults result;
+	for (const Interaction * candidate : output) {
+		REQUIRE(candidate->isValid());
+		const auto [it,inserted]=result.emplace(PerSeedSite(candidate->basePairs.front(),candidate->basePairs.back()),candidate->energy);
+		REQUIRE(inserted);
+	}
+	return result;
+}
+} // namespace
+
+TEST_CASE("per-seed exact MFE and anchor ensembles match independent chain enumeration", "[PredictorSeedOracle][OutputPerSeed]") {
+	#include "testEasyLoggingSetup.icc"
+	RnaSequence target("target","AGCGGCG"),query("query","CCGCCGC");
+	AccessibilityDisabled tAcc(target,6,nullptr),qAcc(query,6,nullptr);
+	ReverseAccessibility reverse(qAcc);
+	InteractionEnergyBasePair energy(tAcc,reverse,2,2,false,1,-100,3,37);
+	const auto sc=makeSeedConstraint(2,0,0,0,false);
+	for (bool noLP : {false,true}) for (bool cropped : {false,true}) for (size_t quota : {1,2,1000}) {
+		CAPTURE(noLP,cropped,quota);
+		const IndexRange r1=cropped?IndexRange(1,5):IndexRange(0,6);
+		const IndexRange r2=cropped?IndexRange(1,6):IndexRange(0,6);
+		const OutputConstraint c(1000,OutputConstraint::OVERLAP_BOTH,E_INF,E_INF,false,noLP,false,true,true,Accessibility::ED_UPPER_BOUND,quota);
+		const auto oracle=enumerateSeededInteractions(energy,sc,c,r1,r2);
+		REQUIRE_FALSE(oracle.interactions.empty());
+		for (char model : {'S','X','P'}) {
+			CAPTURE(model);
+			OutputHandlerInteractionList output(c,1000);
+			std::unique_ptr<Predictor> predictor;
+			if (model=='S') predictor=std::make_unique<PredictorMfe2dSeed>(energy,output,nullptr,new SeedHandlerMfe(energy,sc));
+			if (model=='X') predictor=std::make_unique<PredictorMfe2dSeedExtension>(energy,output,nullptr,new SeedHandlerMfe(energy,sc));
+			if (model=='P') predictor=std::make_unique<PredictorMfeEns2dSeedExtension>(energy,output,nullptr,new SeedHandlerMfe(energy,sc));
+			predictor->predict(r1,r2);
+			const auto actual=perSeedActual(output), expected=perSeedExpected(energy,oracle,quota,model=='P');
+			std::ostringstream diagnostic;
+			for (const auto & [site,e] : actual) diagnostic << " actual " << site.first.first << ',' << site.first.second << '-' << site.second.first << ',' << site.second.second << ':' << e;
+			for (const auto & [site,e] : expected) diagnostic << " expected " << site.first.first << ',' << site.first.second << '-' << site.second.first << ',' << site.second.second << ':' << e;
+			CAPTURE(diagnostic.str());
+			REQUIRE(actual==expected);
+			if (model=='P') REQUIRE(double(predictor->getZall())==Approx(double(oracle.unionPartition)).epsilon(1e-12));
+			if (model!='P') for (const Interaction * interaction : output) {
+				// Each retained structure must be a physical chain of its stated
+				// energy, even when another seed has a better trace at that site.
+				bool found=false;
+				for (const auto & chain : oracle.interactions) {
+					Interaction::PairingVec pairs;
+					for (const auto & p : chain.chain) pairs.push_back(energy.getBasePair(p.i1,p.i2));
+					found=found || (pairs==interaction->basePairs && chain.energy==interaction->energy);
+				}
+				REQUIRE(found);
+			}
+		}
+	}
+}
+
+TEST_CASE("per-seed seed-only ranking retains every seed site", "[PredictorSeedOracle][OutputPerSeed]") {
+	#include "testEasyLoggingSetup.icc"
+	RnaSequence target("target","GGGGG"),query("query","CCCCC");
+	AccessibilityDisabled tAcc(target,5,nullptr),qAcc(query,5,nullptr);ReverseAccessibility reverse(qAcc);
+	InteractionEnergyBasePair energy(tAcc,reverse,1,1);
+	const auto sc=makeSeedConstraint(2,0,0,0,false);
+	for (bool ensemble : {false,true}) {
+		const OutputConstraint c(1000,OutputConstraint::OVERLAP_BOTH,E_INF,E_INF,false,false,false,true,true,Accessibility::ED_UPPER_BOUND,1);
+		const auto oracle=enumerateSeededInteractions(energy,sc,c,IndexRange(0,4),IndexRange(0,4));
+		OutputHandlerInteractionList output(c,1000);
+		std::unique_ptr<Predictor> predictor;
+		if (ensemble) predictor=std::make_unique<PredictorMfeEnsSeedOnly>(energy,output,nullptr,new SeedHandlerMfe(energy,sc));
+		else predictor=std::make_unique<PredictorMfeSeedOnly>(energy,output,nullptr,new SeedHandlerMfe(energy,sc));
+		predictor->predict();
+		REQUIRE(perSeedActual(output)==perSeedExpected(energy,oracle,1,false,true));
+	}
+}
+
+namespace {
+class PerSeedHeuristicChoices : public PredictorMfeEns2dHeuristicSeedExtension {
+public:
+	using PredictorMfeEns2dHeuristicSeedExtension::PredictorMfeEns2dHeuristicSeedExtension;
+	std::map<Interaction::BasePair,Interaction::BasePair> choices() const;
+};
+inline std::map<Interaction::BasePair,Interaction::BasePair> PerSeedHeuristicChoices::choices() const
+{ return {stackSeedRight.begin(),stackSeedRight.end()}; }
+
+PerSeedResults expectedAnchorSites(const InteractionEnergy & energy, const seeded_oracle::Result & oracle, size_t quota)
+{
+	PerSeedResults expected;
+	for (const auto & [seed,sites] : oracle.anchors) {
+		std::vector<Interaction> ranked;
+		for (const auto & [site,z] : sites) {
+			Interaction candidate(energy.getAccessibility1().getSequence(),energy.getAccessibility2().getAccessibilityOrigin().getSequence());
+			candidate.basePairs={energy.getBasePair(site[0],site[1]),energy.getBasePair(site[2],site[3])};
+			candidate.energy=energy.getE(Z_type(z)); // disabled accessibility and zero boundary terms
+			ranked.push_back(candidate);
+		}
+		std::sort(ranked.begin(),ranked.end());
+		for (size_t i=0;i<std::min(quota,ranked.size());++i) {
+			const auto & c=ranked[i];
+			auto [it,inserted]=expected.try_emplace(PerSeedSite(c.basePairs.front(),c.basePairs.back()),c.energy);
+			if (!inserted) it->second=std::min(it->second,c.energy);
+		}
+	}
+	return expected;
+}
+}
+
+TEST_CASE("per-seed ensemble selection uses anchor partitions in heuristic and bulged modes", "[PredictorSeedOracle][OutputPerSeed]") {
+	#include "testEasyLoggingSetup.icc"
+	using namespace seeded_oracle;
+	RnaSequence target("target","GGGGGG"),query("query","CCCCCC");
+	AccessibilityDisabled tAcc(target,6,nullptr),qAcc(query,6,nullptr);ReverseAccessibility reverse(qAcc);
+	InteractionEnergyBasePair energy(tAcc,reverse,2,2);
+	auto weight=[&](E_type e) { return E_isINF(e)?0.L:static_cast<long double>(energy.getBoltzmannWeight(e)); };
+	for (bool gapped : {false,true}) for (bool heuristic : {false,true}) for (size_t quota : {1,2,1000}) {
+		CAPTURE(gapped,heuristic,quota);
+		const SeedConstraint sc(gapped?3:2,0,0,0,E_INF,Accessibility::ED_UPPER_BOUND,E_INF,
+				IndexRangeList(),IndexRangeList(),gapped?"2|||&2||.|":"",false,false,false);
+		Model model{6,6,6,6,false,{},[](Pair){return true;},
+				[&](Pair){return weight(energy.getE_init());},
+				[&](Pair p,Pair q){return weight(energy.getE_interLeft(p.first,q.first,p.second,q.second));},
+				[](Pair,Pair){return 1.L;}};
+		if (gapped) model.seeds={{{1,1},{2,3},{3,4}}};
+		else for (size_t i=0;i<5;++i) for (size_t j=0;j<5;++j) model.seeds.push_back({{i,j},{i+1,j+1}});
+		OutputConstraint c(1000,OutputConstraint::OVERLAP_BOTH,E_INF,E_INF,false,false,false,true,true,Accessibility::ED_UPPER_BOUND,quota);
+		OutputHandlerInteractionList output(c,1000);
+		std::unique_ptr<PredictorMfeEns2dSeedExtension> predictor;
+		SeedHandler * seeds=gapped?static_cast<SeedHandler *>(new SeedHandlerExplicit(energy,sc)):new SeedHandlerMfe(energy,sc);
+		if (heuristic) predictor=std::make_unique<PerSeedHeuristicChoices>(energy,output,nullptr,seeds);
+		else predictor=std::make_unique<PredictorMfeEns2dSeedExtension>(energy,output,nullptr,seeds);
+		predictor->predict();
+		if (heuristic) {
+			// Freeze the native right-endpoint choice, then independently enumerate
+			// physical chains admitted by that heuristic's exact retained domain.
+			if (gapped) model.selectRight=[](Pair,Pair){return Pair(4,5);};
+			else {
+				const auto choices=static_cast<PerSeedHeuristicChoices *>(predictor.get())->choices();
+				model.selectRight=[choices](Pair p,Pair){return choices.at(p);};
+			}
+		}
+		const auto expected=enumerate(model);
+		REQUIRE(perSeedActual(output)==expectedAnchorSites(energy,expected,quota));
+		REQUIRE(double(predictor->getZall())==Approx(double(expected.z)).epsilon(1e-12));
+	}
+}

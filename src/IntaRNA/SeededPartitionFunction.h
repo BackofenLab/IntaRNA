@@ -44,6 +44,11 @@ public:
 		 * or not strictly later on both strands, contribute no two-sided extension.
 		 */
 		std::function<Pair(Pair,Pair)> selectRight;
+		/** Optional positive partition for one canonical left-most anchor and
+		 * complete site (anchor, left boundary, right boundary, hybrid partition).
+		 * Independent of complete/outside callbacks and includes initiation once.
+		 */
+		std::function<void(Pair,Pair,Pair,Z_type)> anchorComplete;
 	};
 	/** Raw unnormalized result; pair masses remain empty in partition-only mode. */
 	struct Result { Z_type z=0; Matrix<Z_type> mass; };

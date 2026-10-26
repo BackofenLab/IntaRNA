@@ -51,6 +51,7 @@ const fields = new Map([
   number('windowWidth', 'Prediction window width', 0, 0, 99999, { ...prediction, hint: '0 disables prediction windows; otherwise at least 10 nt.' }),
   number('windowOverlap', 'Prediction window overlap', 150, 0, 99999, prediction),
   number('outNumber', 'Maximum interactions per sequence pair', 1, 0, 100, { ...prediction, hint: 'Browser limit: 100; 0 computes accessibility only.' }),
+  number('outNumberPerSeed', 'Best sites retained per seed', 0, 0, 1000, { ...prediction, hint: '0 disables per-seed candidate selection; positive values can increase runtime.' }),
   select('outOverlap', 'Allow overlapping interactions', 'B', { B: 'Both strands', N: 'Neither strand', T: 'Target only', Q: 'Query only' }, prediction),
   number('outMaxE', 'Maximum interaction energy (exclusive, kcal/mol)', 0, -999, 999, { ...prediction, step: 'any' }),
   number('outDeltaE', 'Maximum difference from MFE (kcal/mol)', 100, 0, 100, { ...prediction, step: 'any' }),
@@ -86,7 +87,12 @@ export const GROUPS = [
     ['noSeed'], ['seedTQ'], ['seedBP', 'seedMaxUP', 'seedQMaxUP', 'seedTMaxUP'],
     ['seedMaxE', 'seedMinPu', 'seedMaxEhybrid'], ['seedQRange', 'seedTRange'], ['seedNoGU', 'seedNoGUend'],
   ]) },
-  { key: 'output-options', label: 'Output', fields: [...fields.values()].filter((field) => field.key.startsWith('out') && field.key !== 'outCsvSort') },
+  { key: 'output-options', label: 'Output', rows: rows([
+    ['outNumber', 'outNumberPerSeed', 'outOverlap'],
+    ['outMaxE', 'outDeltaE', 'outMinPu'],
+    ['outBestSeedOnly', 'outNoLP', 'outNoGUend', 'outPerRegion', 'outPairwise'],
+    ['outSpotProbSpots'],
+  ]) },
   { key: 'csv-options', label: 'CSV', fields: [fields.get('outCsvSort')] },
   { key: 'interaction-options', label: 'Model & Energy', rows: rows([
     ['model', 'mode'], ['energyVRNA', 'temperature', 'energyAdd'], ['energyNoDangles'],

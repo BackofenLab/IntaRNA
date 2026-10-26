@@ -61,6 +61,10 @@ PredictorSeedExtensionKinetic::~PredictorSeedExtensionKinetic()
 void
 PredictorSeedExtensionKinetic::predict(const IndexRange & r1, const IndexRange & r2)
 {
+	if (predictPerSeed(r1,r2,seedHandler,[&](OutputHandler & out, PredictionTracker * tracker, SeedHandler * seed) {
+		return new PredictorSeedExtensionKinetic(energy,out,tracker,seed,score);
+	})) return;
+
 	const size_t size1 = energy.getAccessibility1().getSequence().size();
 	const size_t size2 = energy.getAccessibility2().getSequence().size();
 	if (!r1.isAscending() || !r2.isAscending()
