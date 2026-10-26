@@ -28,6 +28,7 @@ struct Model {
 struct Result {
 	long double z = 0, unseeded = 0, pairCount = 0;
 	std::map<Boundary, long double> boundaries;
+	std::map<Pair, std::map<Boundary, long double>> anchors;
 	std::map<Pair, long double> mass, spots;
 };
 inline bool stack(Pair a, Pair b) {
@@ -59,6 +60,7 @@ inline Result enumerate(const Model & model) {
 			if (retained) {
 				out.z += w;
 				out.boundaries[{p.first, p.second, q.first, q.second}] += w;
+				if (w > 0) out.anchors[owner->front()][{p.first,p.second,q.first,q.second}] += w;
 				out.pairCount += w * chain.size();
 				for (Pair pair : chain) out.mass[pair] += w;
 				for (size_t i=p.first; i<=q.first; ++i)

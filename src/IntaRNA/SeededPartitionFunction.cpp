@@ -239,6 +239,7 @@ computeAnchored(const Kernel::Domain & d,const StackSeedDomain & seeds,
 			for(size_t h=supportBegin;h<2;++h) sourceLeft[h]=A::multiply(source,leftTotal(u,v)[h]);
 			auto joinRight=[&](size_t i,size_t j) {
 				const size_t endpoint=(u+length-1+i)*maxM+v+length-1+j;
+				Z_type anchorZ=0;
 				for(size_t h=supportBegin;h<2;++h) for(size_t k=supportBegin;k<2;++k) {
 					if(singleton && h==0 && k==0) continue;
 					const Z_type l=leftTotal(u,v)[h],r=rightTotal(i,j)[k];
@@ -246,6 +247,7 @@ computeAnchored(const Kernel::Domain & d,const StackSeedDomain & seeds,
 					const Z_type value=A::multiply(sourceLeft[h],r);
 					if(!outside) {
 						hybrid(b,endpoint)=A::add(hybrid(b,endpoint),value);
+						if(w.anchorComplete) anchorZ=A::add(anchorZ,value);
 						continue;
 					}
 					const Z_type coefficient=boundary(b,endpoint);
@@ -256,6 +258,8 @@ computeAnchored(const Kernel::Domain & d,const StackSeedDomain & seeds,
 					const size_t frontier=singleton && i==0 && j==0?0:1;
 					dRight(i,j)[k*2+frontier]=A::add(dRight(i,j)[k*2+frontier],A::multiply(adj,l));
 				}
+				// Publish the whole anchor-site ensemble before seeds are merged.
+				if(!outside && w.anchorComplete && anchorZ>0) w.anchorComplete(s,p,rightPair(i,j),anchorZ);
 			};
 			if(!w.selectRight || (u==0 && v==0)) {
 				// Exact prediction and a heuristic seed with no left extension

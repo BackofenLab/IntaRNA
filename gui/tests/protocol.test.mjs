@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { DEFAULTS, EVALUATION_EXAMPLE, parseSequence, parseFasta, prepareRequest, makeArguments, CSV_COLUMNS, sequenceOffset } from '../protocol.js';
-import { FIELDS } from '../options.js';
+import { FIELDS, GROUPS } from '../options.js';
 import { CSV_CATALOG, CSV_GROUPS, defaultColumns } from '../columns.js';
 const request = (parameters = {}, extra = {}) => ({ ...DEFAULTS, parameters, ...extra });
 
@@ -22,12 +22,13 @@ test('FASTA normalization, identifiers, bounded multi-record work and subsets', 
 test('CLI defaults, ranges and strict typed controls reject invalid values', () => {
   const prepared = prepareRequest(DEFAULTS);
   assert.equal(prepared.parameters.outNumber, 1);
+  assert.equal(prepared.parameters.outNumberPerSeed, 0);
   assert.equal(prepared.parameters.qIntLoopMax, 16);
   assert.equal(prepared.parameters.tIntLoopMax, 10);
   assert.equal(prepared.csvColumns.join(','), CSV_COLUMNS);
   assert.ok(!makeArguments(prepared).some((arg) => arg.startsWith('--personality=')));
   assert.ok(!makeArguments(prepared).some((arg) => arg.startsWith('--kineticScore=')));
-  for (const parameters of [{ outNumber: 101 }, { outNumber: 1.5 }, { temperature: '' }, { temperature: Infinity }, { qAccW: 2 }, { qAccW: 50 }, { model: '--help' }, { noSeed: 'false' }, { seedBP: 11 }]) assert.throws(() => prepareRequest(request(parameters)));
+  for (const parameters of [{ outNumber: 101 }, { outNumber: 1.5 }, { outNumberPerSeed: -1 }, { outNumberPerSeed: 1001 }, { outNumberPerSeed: 1.5 }, { temperature: '' }, { temperature: Infinity }, { qAccW: 2 }, { qAccW: 50 }, { model: '--help' }, { noSeed: 'false' }, { seedBP: 11 }]) assert.throws(() => prepareRequest(request(parameters)));
   for (const qIdxPos0 of ['--help', NaN, 2e9+1, '', false]) assert.throws(() => prepareRequest(request({}, { qIdxPos0 })));
   assert.doesNotThrow(() => prepareRequest(request({}, { qIdxPos0: -2e9 })));
   assert.doesNotThrow(() => prepareRequest(request({}, { qIdxPos0: 0 })));
@@ -49,8 +50,10 @@ test('evaluation validates antiparallel supplied structures in signed coordinate
 });
 
 test('cross-option constraints, regions, probabilities, SHAPE and local file arguments', () => {
-  for (const parameters of [{ noSeed: true, mode: 'S' }, { mode: 'K', model: 'P' }, { model: 'B', mode: 'M' }, { model: 'B', helixMaxBP: 4 }, { qRegion: '8-2' }, { qAccConstr: 'b:1-20' }, { qAccConstr: 'bbb' }, { qShapeMethod: 'X' }, { tShapeConversion: 'bad' }, { qShape: '1 nope' }, { qAcc: 'P' }, { qAcc: 'P', qAccFile: 'bad' }, { outSpotProbSpots: '20&1' }, { windowWidth: 100 }, { qIntLenMax: 3 }, { qAcc: 'N', qRegionLenMax: 20 }, { qRegion: '1-10', qRegionLenMax: 20 }, { seedTQ: '1.|||||||||&1|||||||||.' }]) assert.throws(() => prepareRequest(request(parameters)));
+  for (const parameters of [{ noSeed: true, mode: 'S' }, { noSeed: true, outNumberPerSeed: 1 }, { mode: 'K', model: 'P' }, { model: 'B', mode: 'M' }, { model: 'B', helixMaxBP: 4 }, { qRegion: '8-2' }, { qAccConstr: 'b:1-20' }, { qAccConstr: 'bbb' }, { qShapeMethod: 'X' }, { tShapeConversion: 'bad' }, { qShape: '1 nope' }, { qAcc: 'P' }, { qAcc: 'P', qAccFile: 'bad' }, { outSpotProbSpots: '20&1' }, { windowWidth: 100 }, { qIntLenMax: 3 }, { qAcc: 'N', qRegionLenMax: 20 }, { qRegion: '1-10', qRegionLenMax: 20 }, { seedTQ: '1.|||||||||&1|||||||||.' }]) assert.throws(() => prepareRequest(request(parameters)));
   assert.doesNotThrow(() => prepareRequest(request({ noSeed: true, qAccConstr: 'b:1-2,p:8-9', qRegion: '1-10' })));
+  assert.doesNotThrow(() => prepareRequest(request({ outNumberPerSeed: 1, outNumber: 3, outOverlap: 'N', windowWidth: 200 })));
+  assert.doesNotThrow(() => prepareRequest(request({ outNumberPerSeed: 1, outOverlap: 'N', qRegion: '1-4,6-10' })));
   assert.throws(() => prepareRequest(request({ mode: 'K' }, { csvColumns: ['Eall'] })), /ensemble/);
   assert.throws(() => prepareRequest(request({}, { outputs: ['bpsvg'] })), /model P/);
   assert.throws(() => prepareRequest(request({ outCsvSort: 'ED1' })), /sort column/);
@@ -60,6 +63,15 @@ test('cross-option constraints, regions, probabilities, SHAPE and local file arg
   assert.ok(args.includes('--out=spotProb:1&2:/output/spotProb.csv'));
   assert.ok(args.includes('--out=bpsvg:/output/bpsvg.svg'));
   assert.ok(!makeArguments(prepared, 'D').some((arg) => arg.startsWith('--outCsvCols')));
+});
+
+test('output controls preserve the reviewed three-row filter order', () => {
+  const rows = GROUPS.find((group) => group.key === 'output-options').rows.map((row) => row.map((field) => field.key));
+  assert.deepEqual(rows.slice(0, 3), [
+    ['outNumber', 'outNumberPerSeed', 'outOverlap'],
+    ['outMaxE', 'outDeltaE', 'outMinPu'],
+    ['outBestSeedOnly', 'outNoLP', 'outNoGUend', 'outPerRegion', 'outPairwise'],
+  ]);
 });
 
 test('browser catalog covers every native CSV column and every control names a CLI option', () => {
@@ -111,9 +123,10 @@ test('CSV groups cover native columns once and task defaults serialize explicitl
   for (const key of ['seedStart1', 'seedStart2', 'seedEnd1', 'seedEnd2']) assert.ok(!defaultColumns('evaluation').includes(key), key);
   for (const key of ['ED1', 'ED2', 'seedE', 'seedStart1', 'seedStart2']) assert.ok(defaultColumns('prediction').includes(key), key);
   const { exportParameters, importParameters } = await import('../parameter-file.js');
-  const input = request({ outNumber: 10 }, { csvColumns: defaultColumns('prediction') });
+  const input = request({ outNumber: 10, outNumberPerSeed: 2 }, { csvColumns: defaultColumns('prediction') });
   const saved = exportParameters(input, 'test');
   assert.equal(saved.parameters.outNumber, 10);
+  assert.equal(saved.parameters.outNumberPerSeed, 2);
   assert.equal(saved.parameters.outCsvCols, input.csvColumns.join(','));
   assert.deepEqual(prepareRequest(importParameters(saved)), prepareRequest(input));
 });

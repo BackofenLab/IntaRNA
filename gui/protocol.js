@@ -187,6 +187,7 @@ export function prepareRequest(request) {
   } else {
     if (parameters.model === 'B' && parameters.mode !== 'H') throw new Error('Helix-block model B supports heuristic mode only.');
     if (parameters.noSeed && ['S', 'K'].includes(parameters.mode)) throw new Error('Seed-only and greedy prediction require a seed.');
+    if (parameters.noSeed && parameters.outNumberPerSeed > 0) throw new Error('Per-seed candidate selection requires a seed.');
     if (parameters.mode === 'K' && (parameters.model !== 'X' || needsEnsemble)) throw new Error('Greedy prediction requires model X and cannot produce ensemble/probability output.');
     if (parameters.seedTQ) validateInteractions(parameters.seedTQ, oneRecord(qRecords, 'Explicit seeds'), oneRecord(tRecords, 'Explicit seeds'), parameters.qIdxPos0, parameters.tIdxPos0, ',');
     const minimumSeedLength = parameters.seedTQ ? Math.min(...parameters.seedTQ.split(',').map((seed) => seed.split('&')[0].split('|').length - 1)) : parameters.seedBP;
@@ -196,11 +197,11 @@ export function prepareRequest(request) {
     if (outputs.some((key) => ['bpProb', 'bpsvg'].includes(key)) && (parameters.model !== 'P' || !['H', 'M'].includes(parameters.mode) || parameters.windowWidth || parameters.mode === 'M' && !parameters.noSeed && (parameters.seedTQ || parameters.seedMaxUP || parameters.seedQMaxUP > 0 || parameters.seedTMaxUP > 0))) throw new Error('Base-pair probabilities require model P, heuristic/exact mode and no windows; exact mode supports no seed or stack-only seeds.');
     if (parameters.windowWidth) {
       const maxLength = Math.max(...['q', 't'].map((p) => parameters[`${p}Acc`] === 'N' ? parameters[`${p}IntLenMax`] : Math.max(parameters[`${p}AccW`], parameters[`${p}IntLenMax`])));
-      if (parameters.windowWidth < 10 || parameters.windowOverlap >= parameters.windowWidth || parameters.windowOverlap < maxLength || ['q', 't'].some((p) => !parameters[`${p}IntLenMax`] && (parameters[`${p}Acc`] === 'N' || !parameters[`${p}AccW`])) || parameters.outNumber > 1 && parameters.outOverlap !== 'B' || needsEnsemble || parameters.model === 'P') throw new Error('Prediction windows require width ≥ 10, overlap below width and at least the bounded interaction lengths, overlapping output, and no ensemble statistics/model P.');
+      if (parameters.windowWidth < 10 || parameters.windowOverlap >= parameters.windowWidth || parameters.windowOverlap < maxLength || ['q', 't'].some((p) => !parameters[`${p}IntLenMax`] && (parameters[`${p}Acc`] === 'N' || !parameters[`${p}AccW`])) || parameters.outNumberPerSeed === 0 && parameters.outNumber > 1 && parameters.outOverlap !== 'B' || needsEnsemble || parameters.model === 'P') throw new Error('Prediction windows require width ≥ 10, overlap below width and at least the bounded interaction lengths, overlapping output unless per-seed selection is enabled, and no ensemble statistics/model P.');
     }
     // Non-overlap constraints in native merged regions require a single region on
     // the relevant strand; automatic region detection is only safe per region.
-    if (!parameters.outPerRegion && parameters.outOverlap !== 'B') {
+    if (!parameters.outPerRegion && parameters.outNumberPerSeed === 0 && parameters.outOverlap !== 'B') {
       for (const p of ['q', 't']) {
         if ((parameters.outOverlap === 'N' || parameters.outOverlap === (p === 'q' ? 'T' : 'Q')) && (parameters[`${p}Region`].includes(',') || parameters[`${p}RegionLenMax`])) throw new Error('Non-overlapping output with multiple/automatic regions requires output per region.');
       }

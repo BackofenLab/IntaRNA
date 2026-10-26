@@ -20,7 +20,10 @@ keep their scientific grouping without stretching across the complete panel,
 use 16 px horizontal gaps and bottom-align labels above their controls.
 The Seed tab places the constraint selector (12 rem) beside Explicit seeds on
 desktop; the CSV sort selector uses a 19 rem track. Both controls stack at mobile
-widths.
+widths. Output places the global count, per-seed candidate count and overlap mode
+in its first row; energy/accessibility thresholds form the second row and the
+existing boolean filters follow in the third. Per-seed selection defaults to zero
+and accepts the native 0–1,000 range.
 The institutional link reads “Bioinformatics - University of Freiburg” and opens
 the group website. Footer and table notes use the available width, wrapping only
 when the viewport requires it.

@@ -44,7 +44,7 @@ assert.ok(probabilities.fs.readFile('/output/bpsvg.svg', { encoding: 'utf8' }).i
 const accessibility = await run({ parameters: { outNumber: 0 }, outputs: ['qPu'] });
 const imported = await run({ parameters: { qAcc: 'P', qAccFile: accessibility.fs.readFile('/output/qPu.csv', { encoding: 'utf8' }) } });
 assert.equal(imported.rows[0].E, (await run({ parameters: { qIntLenMax: 9 } })).rows[0].E);
-for (const parameters of [{ energyVRNA: 'Turner99', temperature: 20 }, { energyVRNA: 'Andronescu07' }, { model: 'B' }, { mode: 'K' }, { noSeed: true, mode: 'M' }, { seedMaxUP: 1 }, { qAccConstr: '..........', qShape: '1 0.2\n2 0.3' }, { outOverlap: 'N', outNumber: 3 }, { outCsvSort: 'E', outNumber: 3 }]) assert.ok((await run({ parameters })).rows.length >= 1);
+for (const parameters of [{ energyVRNA: 'Turner99', temperature: 20 }, { energyVRNA: 'Andronescu07' }, { model: 'B' }, { mode: 'K' }, { noSeed: true, mode: 'M' }, { seedMaxUP: 1 }, { qAccConstr: '..........', qShape: '1 0.2\n2 0.3' }, { outNumberPerSeed: 1 }, { outOverlap: 'N', outNumber: 3 }, { outCsvSort: 'E', outNumber: 3 }]) assert.ok((await run({ parameters })).rows.length >= 1);
 console.log('Browser protocol: native-reference prediction/evaluation, signed coordinates, multi-FASTA, all columns, imported accessibility, energy/seed/helix/SHAPE options and output files passed');
 
 // Execute exported parameter files in fresh engines with only archived inputs.

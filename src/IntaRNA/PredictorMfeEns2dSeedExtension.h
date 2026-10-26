@@ -30,6 +30,14 @@ namespace IntaRNA {
 class PredictorMfeEns2dSeedExtension: public PredictorMfeEns {
 
 protected:
+	/** Retain an anchor-specific site ensemble before full-site aggregation.
+	 * @param seed local anchor start, sequence 2 reversed
+	 * @param left local left site boundary
+	 * @param right local right site boundary
+	 * @param hybridZ partition assigned to this left-most seed, including initiation
+	 */
+	void addSeedPartition(Interaction::BasePair seed, Interaction::BasePair left,
+			Interaction::BasePair right, Z_type hybridZ);
 
 	//! matrix type to hold the partition functions for interaction site starts
 	typedef Matrix<Z_type> Z2dMatrix;

@@ -23,7 +23,8 @@ dist_check_SCRIPTS = \
   runIntaRNA.sh \
   runIntaRNAeval.sh \
   runKineticSeedExtension.sh \
-  runOutputOverlap.sh 
+  runOutputOverlap.sh \
+  runOutputPerSeed.sh
   
 # the program to build
 check_PROGRAMS = runApiTests 
@@ -77,6 +78,7 @@ runApiTests_SOURCES =	\
 					OutputStreamHandlerSortedCsv_test.cpp \
 					OutputHandlerHub_test.cpp \
 					OutputHandlerInteractionList_test.cpp \
+					OutputHandlerSeedCandidates_test.cpp \
 					SeedHandlerExplicit_test.cpp \
 					SeedHandlerNoBulge_test.cpp \
 					SeedHandlerMfe_test.cpp \

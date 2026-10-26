@@ -773,6 +773,9 @@ protected:
 	CharParameter outMode;
 	//! number of (sub)optimal interactions to report
 	NumberParameter<int> outNumber;
+
+	//! candidate quota per generating seed; zero disables
+	NumberParameter<int> outNumberPerSeed;
 	//! whether or not reported interactions can to be overlapping
 	CharParameter outOverlap;
 	//! deltaE to mfe allowed to report an interaction
