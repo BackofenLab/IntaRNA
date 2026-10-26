@@ -1,6 +1,7 @@
 import { ResultsView, downloadBlob } from './results.js';
 import { serializeParameters, importParameters } from './parameter-file.js';
 import { zipFiles } from './archive.js';
+import { AdditionalOutputView } from './output-visualization.js';
 
 // Sessions live only in this page. Each owns a JSON snapshot and its own view;
 // editing the form or exploring another session cannot change an earlier run.
@@ -25,7 +26,10 @@ export class SessionsView {
     // Unload third-party viewers while folded. The table selection is retained
     // and can be visualized again without recomputing the prediction.
     if (!expanded) session.view.visualization.clear();
-    else if (session.view.selected) session.view.visualization.show(session.view.selected, session.view.request);
+    else {
+      if (session.view.selected) session.view.visualization.show(session.view.selected, session.view.request);
+      for (const fileView of session.fileViews) fileView.resize();
+    }
   }
 
   select(session, restore = true) {
@@ -46,7 +50,7 @@ export class SessionsView {
     const id = `session-${this.nextNumber}`, task = request.task === 'evaluation' ? 'Evaluation' : 'Prediction';
     const session = {
       id, name: `${task} ${this.nextNumber}`, parameterJson, root,
-      panel: find('panel'), toggle: find('toggle'), view: new ResultsView(find('results-view')),
+      panel: find('panel'), toggle: find('toggle'), view: new ResultsView(find('results-view')), fileViews: [],
     };
     const count = session.view.show(result.csv, result.csvColumns, request);
     const summary = count ? `${task} complete: ${count} interaction${count === 1 ? '' : 's'}.` : request.task === 'prediction' && request.parameters.outNumber === 0 ? 'Accessibility computation complete. No interaction rows requested.' : 'No favorable interactions found with these sequences and settings.';
@@ -94,16 +98,11 @@ export class SessionsView {
         downloadBlob(`${filename}.zip`, new Blob([zipFiles(files)], { type: 'application/zip' }));
       } catch (error) { this.reportError(new Error(`ZIP download failed: ${error.message}`)); }
     });
-    for (const file of result.files) {
-      const details = document.createElement('details'), label = document.createElement('summary'); label.textContent = file.name;
-      const preview = document.createElement('pre'); preview.textContent = file.text.slice(0, 100000);
-      const download = document.createElement('button'); download.type = 'button'; download.className = 'secondary'; download.textContent = 'Download file';
-      download.addEventListener('click', () => downloadBlob(file.name, new Blob([file.text], { type: 'text/plain;charset=utf-8' })));
-      details.append(label, download, preview);
-      if (file.text.length > 100000) {
-        const note = document.createElement('p'); note.textContent = 'Preview limited to 100,000 characters. Download contains the complete file.'; details.append(note);
-      }
-      find('file-list').append(details);
+    for (const [index, file] of result.files.entries()) {
+      const fileView = new AdditionalOutputView(file, request, `${id}-file-${index}`, () => {
+        downloadBlob(file.name, new Blob([file.text], { type: 'text/plain;charset=utf-8' }));
+      });
+      session.fileViews.push(fileView); find('file-list').append(fileView.root);
     }
     find('output-files').hidden = !result.files.length;
     find('diagnostic-text').textContent = result.diagnostics; find('diagnostics').hidden = !result.diagnostics;
@@ -111,7 +110,9 @@ export class SessionsView {
     find('delete').addEventListener('click', () => {
       const entries = [...this.entries.values()], index = entries.indexOf(session);
       const next = entries[index + 1] ?? entries[index - 1];
-      session.view.clear(); root.remove(); this.entries.delete(id);
+      session.view.clear();
+      for (const fileView of session.fileViews) fileView.destroy();
+      root.remove(); this.entries.delete(id);
       // Deleting output does not silently overwrite an edited form.
       if (this.selected === id) this.selected = null;
       this.announce(`${session.name} deleted. ${this.entries.size} session${this.entries.size === 1 ? '' : 's'} remaining.`);

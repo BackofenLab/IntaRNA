@@ -573,6 +573,95 @@ tbody tr.selected { background:var(--table-selection); }
   padding-top:12px;
 }
 
+.output-file-summary {
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:6px 10px;
+  min-height:2.2rem;
+  color:var(--brand-blue-dark);
+  font-weight:600;
+  list-style:none;
+}
+
+.output-file-summary::before {
+  content:'▸';
+  width:.8rem;
+}
+
+.output-file[open] > .output-file-summary::before {
+  content:'▾';
+}
+
+.output-file-name {
+  overflow-wrap:anywhere;
+}
+
+.output-file-context {
+  color:var(--muted);
+  font-size:.85rem;
+  font-weight:400;
+}
+
+.output-download {
+  padding:.1rem .35rem;
+}
+
+.output-file-body {
+  padding:.8rem 0 .25rem 1.15rem;
+}
+
+.output-tabs {
+  display:flex;
+  gap:4px;
+  border-bottom:1px solid var(--border);
+}
+
+.output-tab {
+  border:0;
+  border-bottom:3px solid transparent;
+  border-radius:0;
+  padding:.5rem .8rem;
+  color:var(--brand-blue-dark);
+  background:transparent;
+}
+
+.output-tab[aria-selected=true] {
+  border-bottom-color:var(--brand-blue);
+  background:var(--brand-blue-soft);
+}
+
+.output-tab-panel {
+  padding-top:12px;
+  min-width:0;
+}
+
+.plot-tools {
+  display:flex;
+  justify-content:flex-end;
+  min-height:2.6rem;
+}
+
+.plot-tools button {
+  font-size:.85rem;
+  padding:.35rem .7rem;
+}
+
+.output-plot {
+  width:100%;
+  min-height:420px;
+}
+
+.output-plot-status {
+  max-width:none;
+  color:var(--muted);
+  font-size:.85rem;
+}
+
+.output-tab-panel pre {
+  margin:0;
+}
+
 pre {
   white-space:pre;
   overflow:auto;
@@ -716,6 +805,9 @@ dialog::backdrop {
   }
   .group-body {
     padding:14px;
+  }
+  .output-file-body {
+    padding-left:0;
   }
 }
 

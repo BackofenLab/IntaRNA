@@ -24,8 +24,26 @@ Every heading is a keyboard-operable sort button with `aria-sort`. Search covers
 all returned values. A separate checklist shows/hides table columns after the
 run; it does not change selected CSV output. All identifiers, output previews
 and diagnostics render with `textContent`. Selected extra files appear below the
-table with bounded text previews and complete downloads, including SVG source.
+table with their original filename, covered sequence/sequence-pair names, a
+header-level download, and bounded text previews, including SVG source.
 Empty output is successful and still permits CSV/accessibility downloads.
+
+## Additional output visualizations
+
+Plot-capable additional CSV files open on a Visualization tab, with the original
+File Content in an adjacent tab. Query/target minimum-energy and spot-probability
+profiles use line plots; pair minimum-energy and all-spot probability matrices
+use heatmaps; explicitly requested spot probabilities use a bar plot. Plot axes
+use the literal coordinate strings from IntaRNA rather than numerical scales, so
+signed indices cross from -1 to 1 without inventing coordinate zero. Plot titles
+and additional-file headers identify the target/query records covered by native
+`-t#q#` or `-s#` filename suffixes.
+
+Plotly renders locally from the pinned Cartesian bundle. A separate Export PNG
+button produces a 1400 × 850 image for the active plot; the normal file download
+and reproducible ZIP retain untouched native data. Plots render lazily when their
+file is unfolded, resize with restored sessions, and are purged when a session is
+deleted. Non-plot formats keep the direct content view.
 
 ## Selected interaction in vaRRI
 
@@ -91,15 +109,20 @@ python3 scripts/wasm/test-browser.py http://127.0.0.1:8765 --browser firefox
 ```
 
 The staging script includes matched WASM assets, only the application source
-files needed at runtime, compiled version metadata and dependency notices. Build-time `build-info.json`
+files needed at runtime, compiled version metadata and dependency notices. It
+also verifies and stages the pinned Plotly.js 4.1.2 Cartesian bundle and MIT
+license; no CDN is used. Build-time `build-info.json`
 and `build-info.txt` record actual CLI IntaRNA/ViennaRNA/Boost versions, source
 commit and tracked modifications, SDK version and asset SHA-256 digests. Staging
 checks these digests and preserves the original metadata; it never replaces the
 compiled revision with a later staging checkout. The footer displays versions.
 It needs the same activated SDK and dependency build directory as the build.
-No compiled artifacts are committed. HTTP(S), module workers and WebAssembly
+No generated WASM artifacts are committed; the reviewed minified Plotly browser
+distribution is the only new runtime artifact. HTTP(S), module workers and WebAssembly
 are required; `file://` and legacy browsers are unsupported. No backend,
-SharedArrayBuffer, credentials, CDN or cross-origin headers are needed.
+SharedArrayBuffer, credentials, CDN or cross-origin headers are needed. CSP
+keeps scripts/styles same-origin and allows ephemeral blob images solely for
+PNG export.
 
 The existing repository already publishes its user guide and API with Pages.
 Publishing a second independent artifact would overwrite them. Therefore
@@ -155,6 +178,21 @@ and active C++, clean restart, empty predictions and asset-load recovery.
 GitHub's platform checks independently cover GCC 14 release/debug and Apple
 Clang. Deployment itself occurs only after merge; local browser tests do not
 claim a live Pages deployment.
+
+### PR #287 visualization review verification, 2026-10-26
+
+- `npm test --prefix gui`: all 25 protocol, results, output-visualization,
+  archive, upload and worker tests pass. Profile and matrix cases cover signed
+  categorical coordinates, sequence names, missing values and malformed data.
+- Playwright 1.64.0 with Chromium 156 and Firefox 157 passes the full real-WASM
+  suite, including the compact desktop/mobile parameter layout, separate CSV
+  tab, output tooltips, native-file headers, Plotly rendering and a PNG whose
+  signature is checked after download. The staged GUI uses the matching
+  revision `7378801` engine; scientific code and compiled assets are unchanged.
+- Desktop screenshots for every parameter tab and the completed session were
+  visually reviewed; the 390 px viewport has no document overflow.
+- Plotly 4.1.2 is pinned by npm integrity and bundle SHA-256, staged locally with
+  its MIT license. Shell/Python syntax and `git diff --check` pass.
 
 ### PR #287 review verification, 2026-10-21
 

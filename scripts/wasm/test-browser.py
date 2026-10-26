@@ -18,7 +18,9 @@ with sync_playwright() as playwright:
     browser = getattr(playwright, args.browser).launch(headless=True)
     page = browser.new_page(viewport={'width': 1440, 'height': 1100})
     errors = []
+    csp_errors = []
     page.on('pageerror', lambda error: errors.append(str(error)))
+    page.on('console', lambda message: csp_errors.append(message.text) if message.type == 'error' and ('Content Security Policy' in message.text or 'Refused to apply inline style' in message.text) else None)
     # Keep browser tests offline and inspect the exact third-party URL separately.
     visualization_urls = []
     def viewer(route):
@@ -262,6 +264,7 @@ with sync_playwright() as playwright:
 
     # Reference prediction, selectable CSV output and independent table visibility.
     fill('outNumber', 10)
+    open_group('csv-options')
     page.locator('#outCsvSort').select_option('E')
     predict()
     expect(rows).to_have_count(10)
@@ -349,9 +352,26 @@ with sync_playwright() as playwright:
     predict()
     expect(rows).to_have_count(2)
     assert rows.first.locator('td').all_text_contents()[1:7] == ['target', '-5', '5', 'q1', '-3', '7']
-    expect(active.locator('[data-role=file-list] details')).to_have_count(2)
-    active.locator('[data-role=file-list] summary').first.click()
-    expect(active.locator('[data-role=file-list] pre').first).to_contain_text('minE')
+    output_files = active.locator('[data-role=file-list] details')
+    expect(output_files).to_have_count(2)
+    expect(output_files.nth(0).locator('summary')).to_contain_text('target : q1')
+    expect(output_files.nth(1).locator('summary')).to_contain_text('target : q2')
+    output_files.first.locator('summary').click()
+    expect(output_files.first.get_by_role('tab', name='Visualization')).to_have_attribute('aria-selected', 'true')
+    expect(output_files.first.locator('.js-plotly-plot')).to_be_visible(timeout=30000)
+    expect(output_files.first.locator('.gtitle')).to_contain_text('q1')
+    if args.screenshot:
+        path = Path(args.screenshot)
+        page.screenshot(path=str(path.with_name(f'{path.stem}-additional-output.png')), full_page=True)
+    with page.expect_download(timeout=30000) as image:
+        output_files.first.get_by_role('button', name='Export PNG').click()
+    assert Path(image.value.path()).read_bytes().startswith(b'\x89PNG\r\n\x1a\n')
+    output_files.first.get_by_role('tab', name='File Content').click()
+    expect(output_files.first.locator('pre')).to_be_visible()
+    expect(output_files.first.locator('pre')).to_contain_text('minE')
+    with page.expect_download() as output_download:
+        output_files.first.get_by_role('button', name=re.compile('^Download qMinE')).click()
+    assert 'minE' in Path(output_download.value.path()).read_text()
     archive = download_archive()
     assert len([name for name in archive if name.startswith('qMinE')]) == 2
     saved = json.loads(archive['parameter.json'])
@@ -616,5 +636,6 @@ with sync_playwright() as playwright:
     page.wait_for_load_state('networkidle')
     expect(sessions).to_have_count(0)
     assert errors == [], errors
+    assert csp_errors == [], csp_errors
     browser.close()
 print(f'{args.browser}: real WASM, groups/defaults/versions, prediction/evaluation, FASTA/coordinates, tabs/keyboard, visualization URLs/selection, ZIP replay contents, columns/reports, mobile, abort/recovery and retained session lifecycle passed')

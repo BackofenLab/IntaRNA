@@ -4,10 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Predict or evaluate RNA–RNA interactions locally with IntaRNA.">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; worker-src 'self'; connect-src 'self'; frame-src https://backofenlab.github.io/vaRRI/; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; worker-src 'self'; connect-src 'self'; frame-src https://backofenlab.github.io/vaRRI/; img-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'none'">
   <title>IntaRNA · RNA–RNA interactions</title>
   <link rel="icon" href="mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
+  <link id="plotly.js-style-global" class="no-inline-styles" rel="stylesheet" href="vendor/plotly.css">
+  <script src="vendor/plotly-cartesian.min.js"></script>
   <script type="module" src="app.js"></script>
 </head>
 <body>
