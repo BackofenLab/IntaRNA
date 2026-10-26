@@ -37,7 +37,7 @@ public:
 	 * - prints ensemble information to stream and
 	 * - enforces a flush on the output stream.
 	 */
-	virtual ~OutputHandlerEnsemble();
+	virtual ~OutputHandlerEnsemble() override;
 
 	/**
 	 * Does nothing but counts the call
@@ -47,7 +47,7 @@ public:
 	 */
 	virtual
 	void
-	add( const Interaction & interaction );
+	add( const Interaction & interaction ) override;
 
 protected:
 

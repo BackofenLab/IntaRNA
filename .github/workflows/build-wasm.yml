@@ -1,0 +1,123 @@
+name: WebAssembly and web interface
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  documentation:
+    uses: ./.github/workflows/documentation.yml
+
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: emscripten-core/setup-emsdk@v15
+        with:
+          version: '4.0.23'
+          actions-cache-folder: emsdk-cache
+      - name: Install native build tools
+        run: sudo apt-get update && sudo apt-get install --yes autoconf automake libtool pkg-config
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Test dependency download integrity and cache recovery
+        run: |
+          python scripts/wasm/test-downloads.py
+          python scripts/wasm/test-vienna-release.py
+      - name: Test input, worker lifecycle and CSV handling
+        run: npm test --prefix gui
+      - name: Resolve newest stable ViennaRNA 2.x release and checksum
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python scripts/wasm/vienna-release.py --latest > "$RUNNER_TEMP/vienna-release.json"
+          cat "$RUNNER_TEMP/vienna-release.json"
+          echo "WASM_VIENNA_RELEASE=$RUNNER_TEMP/vienna-release.json" >> "$GITHUB_ENV"
+      - name: Cross-compile dependencies and IntaRNA
+        run: bash scripts/wasm/build.sh
+      - name: Check real WASM predictions against the native reference
+        run: |
+          node scripts/wasm/smoke.mjs
+          node scripts/wasm/smoke-protocol.mjs
+      - name: Stage the static site and notices
+        run: bash scripts/wasm/stage.sh
+      - name: Install browser test tools
+        run: |
+          python -m pip install -r scripts/wasm/requirements-browser.txt
+          python -m playwright install --with-deps chromium firefox
+      - name: Exercise the browser with real WASM
+        run: |
+          python -m http.server 8765 --bind 127.0.0.1 --directory build-wasm > /tmp/intarna-http.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid"' EXIT
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:8765/site/ > /dev/null; then break; fi
+            sleep 1
+          done
+          python scripts/wasm/test-browser.py http://127.0.0.1:8765/site/ --screenshot build-wasm/browser.png
+          python scripts/wasm/test-browser.py http://127.0.0.1:8765/site/ --browser firefox
+      - uses: actions/upload-artifact@v4
+        with:
+          name: intarna-gui
+          path: build-wasm/site
+          if-no-files-found: error
+
+  package:
+    needs: [build, documentation]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: intarna-documentation
+          path: _site
+      - uses: actions/download-artifact@v4
+        with:
+          name: intarna-gui
+          path: _site/gui
+      - name: Verify documentation and browser interface coexist
+        run: |
+          test -s _site/index.html
+          test -s _site/api/index.html
+          test -s _site/gui/index.html
+          test -s _site/gui/wasm/intarna.wasm
+          test -s _site/gui/vendor/plotly-cartesian.min.js
+          test -s _site/gui/vendor/plotly.css
+          test -s _site/gui/licenses/Plotly.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: intarna-pages-preview
+          path: _site
+      - name: Upload GitHub Pages artifact
+        if: github.repository == 'BackofenLab/IntaRNA' && github.ref == 'refs/heads/master' && github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  deploy:
+    if: github.repository == 'BackofenLab/IntaRNA' && github.ref == 'refs/heads/master' && github.event_name != 'pull_request'
+    needs: package
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+      - name: Deploy tested site and existing documentation
+        id: deployment
+        uses: actions/deploy-pages@v4

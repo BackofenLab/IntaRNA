@@ -53,7 +53,7 @@ public:
 	/**
 	 * data cleanup
 	 */
-	virtual ~PredictorMfe2dSeed();
+	virtual ~PredictorMfe2dSeed() override;
 
 
 	/**
@@ -71,7 +71,7 @@ public:
 	virtual
 	void
 	predict( const IndexRange & r1 = IndexRange(0,RnaSequence::lastPos)
-			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos) );
+			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos) ) override;
 
 
 protected:
@@ -112,7 +112,7 @@ protected:
 	fillHybridE( const size_t j1, const size_t j2
 				, const size_t i1init, const size_t i2init
 				, const bool callUpdateOptima
-				);
+				) override;
 
 	/**
 	 * Fills a given interaction (boundaries given) with the according
@@ -121,7 +121,7 @@ protected:
 	 */
 	virtual
 	void
-	traceBack( Interaction & interaction );
+	traceBack( Interaction & interaction ) override;
 
 };
 

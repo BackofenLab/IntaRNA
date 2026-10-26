@@ -44,7 +44,7 @@ public:
 							, OutputHandler & output
 							, PredictionTracker * predTracker );
 
-	virtual ~PredictorMfe2dHeuristic();
+	virtual ~PredictorMfe2dHeuristic() override;
 
 	/**
 	 * Computes the mfe for the given sequence ranges (i1-j1) in the first
@@ -58,7 +58,7 @@ public:
 	virtual
 	void
 	predict( const IndexRange & r1 = IndexRange(0,RnaSequence::lastPos)
-			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos) );
+			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos) ) override;
 
 protected:
 
@@ -91,7 +91,7 @@ protected:
 	 */
 	virtual
 	void
-	traceBack( Interaction & interaction );
+	traceBack( Interaction & interaction ) override;
 
 	/**
 	 * Identifies the next best interaction with an energy equal to or higher
@@ -105,7 +105,7 @@ protected:
 	 */
 	virtual
 	void
-	getNextBest( Interaction & curBest );
+	getNextBest( Interaction & curBest ) override;
 
 	/**
 	 * Overwrites function of super class to surpress the update.
@@ -120,7 +120,7 @@ protected:
 	void
 	updateMfe4leftEnd(const size_t i1, const size_t j1
 					, const size_t i2, const size_t j2
-					, const Interaction & curInteraction );
+					, const Interaction & curInteraction ) override;
 
 };
 

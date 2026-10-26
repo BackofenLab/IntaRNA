@@ -44,7 +44,7 @@ public:
 	/**
 	 * destruction
 	 */
-	virtual ~PredictionTrackerHub();
+	virtual ~PredictionTrackerHub() override;
 
 	/**
 	 * Informs all registered trackers that Predictor.updateOptima() was called
@@ -61,7 +61,7 @@ public:
 	updateOptimumCalled( const size_t i1, const size_t j1
 						, const size_t i2, const size_t j2
 						, const E_type energy
-						);
+						) override;
 
 	/**
 	 * Adds a new PredictionTracker to the forwarding list.

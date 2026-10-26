@@ -252,7 +252,10 @@ AS_IF([test x"$multithreadingEnabled" = x"yes"], [
 ], [
 	AC_DEFINE([INTARNA_MULITHREADING], [0], [Disabling multi-threading support])
 	AC_SUBST([INTARNA_MULITHREADING],[0])
-	AM_CXXFLAGS="$AM_CXXFLAGS -pthread"
+	# Emscripten's single-thread runtime supplies mutex stubs. -pthread would
+	# instead require SharedArrayBuffer and cross-origin isolation on Pages.
+	AS_CASE([$host_os], [emscripten*], [],
+		[AM_CXXFLAGS="$AM_CXXFLAGS -pthread"])
 ])
 
 ###############################################################################

@@ -36,7 +36,7 @@ public:
 				, OutputHandler & output
 				, PredictionTracker * predTracker );
 
-	virtual ~PredictorMfeEns();
+	virtual ~PredictorMfeEns() override;
 
 protected:
 
@@ -127,7 +127,7 @@ protected:
 	 */
 	virtual
 	void
-	reportOptima();
+	reportOptima() override;
 
 	/**
 	 * Reports interaction boundaries only (no base pair tracking)
@@ -135,7 +135,7 @@ protected:
 	 */
 	virtual
 	void
-	traceBack( Interaction & interaction );
+	traceBack( Interaction & interaction ) override;
 
 private:
 

@@ -4,7 +4,6 @@ on:
   push:
     branches: [master]
   pull_request:
-    branches: [master, feat/294-python-intarna-fuse]
 
 defaults:
   run:

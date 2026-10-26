@@ -50,7 +50,7 @@ public:
 	/**
 	 * destruction
 	 */
-	virtual ~OutputHandlerHub();
+	virtual ~OutputHandlerHub() override;
 
 
 	/**
@@ -61,7 +61,7 @@ public:
 	 */
 	virtual
 	void
-	add( const Interaction & interaction  );
+	add( const Interaction & interaction  ) override;
 
 	/**
 	 * Returns the maximal number of reported interactions among all handlers
@@ -70,7 +70,7 @@ public:
 	 */
 	virtual
 	size_t
-	reported() const;
+	reported() const override;
 
 	/**
 	 * Increments the overall partition function with the given value.
@@ -83,7 +83,7 @@ public:
 	 */
 	virtual
 	void
-	incrementZ( const Z_type subZ );
+	incrementZ( const Z_type subZ ) override;
 
 	/**
 	 * Access to the partition function (initialized with 0) aggregated via
@@ -93,7 +93,7 @@ public:
 	 */
 	virtual
 	Z_type
-	getZ() const;
+	getZ() const override;
 
 	/**
 	 * Adds a new OutputHandler to the forwarding list.

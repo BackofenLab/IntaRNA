@@ -90,3 +90,10 @@ __pycache__/
 python/build/
 python/dist/
 python/bin/build/
+
+# Browser build outputs and local test dependencies
+/build-wasm/
+/gui/wasm/
+/gui/node_modules/
+
+/scripts/wasm/__pycache__/

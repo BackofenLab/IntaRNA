@@ -3,8 +3,150 @@
 
 #include <iostream>
 #include <algorithm>
+#include <typeinfo>
 
 namespace IntaRNA {
+namespace {
+
+/** Borrow one already computed seed, while retaining all original annotations. */
+class SelectedSeed : public SeedHandlerIdxOffset {
+public:
+	SelectedSeed(SeedHandler & original, const Interaction::BasePair & selected);
+	size_t fillSeed(size_t i, size_t j, size_t k, size_t l) override;
+	bool isSeedBound(size_t i, size_t j) const override;
+	E_type getSeedE(size_t i, size_t j) const override;
+	size_t getSeedLength1(size_t i, size_t j) const override;
+	size_t getSeedLength2(size_t i, size_t j) const override;
+	bool updateToNextSeed(size_t & i, size_t & j, size_t lo1, size_t hi1, size_t lo2, size_t hi2) const override;
+private:
+	const Interaction::BasePair selected;
+};
+
+inline SelectedSeed::SelectedSeed(SeedHandler & original, const Interaction::BasePair & selected)
+	: SeedHandlerIdxOffset(&original,false), selected(selected)
+{}
+
+inline bool SelectedSeed::isSeedBound(size_t i, size_t j) const
+{ return selected == Interaction::BasePair(i,j) && SeedHandlerIdxOffset::isSeedBound(i,j); }
+inline E_type SelectedSeed::getSeedE(size_t i, size_t j) const
+{ return isSeedBound(i,j) ? SeedHandlerIdxOffset::getSeedE(i,j) : E_INF; }
+inline size_t SelectedSeed::getSeedLength1(size_t i, size_t j) const
+{ return isSeedBound(i,j) ? SeedHandlerIdxOffset::getSeedLength1(i,j) : 0; }
+inline size_t SelectedSeed::getSeedLength2(size_t i, size_t j) const
+{ return isSeedBound(i,j) ? SeedHandlerIdxOffset::getSeedLength2(i,j) : 0; }
+inline size_t SelectedSeed::fillSeed(size_t i, size_t j, size_t k, size_t l)
+{ return selected.first >= i && selected.first <= j && selected.second >= k && selected.second <= l && isSeedBound(selected.first,selected.second); }
+inline bool SelectedSeed::updateToNextSeed(size_t & i, size_t & j, size_t lo1, size_t hi1, size_t lo2, size_t hi2) const
+{
+	if (Interaction::BasePair(i,j) == selected || (selected.first < lo1 || selected.first > hi1 || selected.second < lo2 || selected.second > hi2 || !isSeedBound(selected.first,selected.second))) return false;
+	i = selected.first; j = selected.second;
+	return true;
+}
+
+/** Forward callbacks without transferring ownership of the caller's tracker. */
+class BorrowedTracker : public PredictionTracker {
+public:
+	explicit BorrowedTracker(PredictionTracker & tracker);
+	void updateOptimumCalled(size_t i, size_t j, size_t k, size_t l, E_type e) override;
+private:
+	PredictionTracker & tracker;
+};
+inline BorrowedTracker::BorrowedTracker(PredictionTracker & tracker) : tracker(tracker) {}
+inline void BorrowedTracker::updateOptimumCalled(size_t i,size_t j,size_t k,size_t l,E_type e)
+{ tracker.updateOptimumCalled(i,j,k,l,e); }
+
+/** Discard ordinary ranking while collecting its unchanged partition total. */
+class StatisticsOutput : public OutputHandler {
+public:
+	explicit StatisticsOutput(const OutputConstraint & constraint);
+	void add(const Interaction &) override;
+};
+inline StatisticsOutput::StatisticsOutput(const OutputConstraint & constraint) : OutputHandler(constraint) {}
+inline void StatisticsOutput::add(const Interaction &) {}
+
+/** Tag the independently ranked candidates with their generating seed. */
+class SeedOutput : public OutputHandler {
+public:
+	SeedOutput(const OutputConstraint & constraint, OutputHandlerSeedCandidates & destination, Interaction::BasePair seed);
+	void add(const Interaction & interaction) override;
+private:
+	OutputHandlerSeedCandidates & destination;
+	const Interaction::BasePair seed;
+};
+inline SeedOutput::SeedOutput(const OutputConstraint & constraint, OutputHandlerSeedCandidates & destination, Interaction::BasePair seed)
+	: OutputHandler(constraint), destination(destination), seed(seed) {}
+inline void SeedOutput::add(const Interaction & interaction) { destination.addSeed(seed,interaction); }
+
+} // namespace
+
+void PredictorMfe::initSeedCandidates()
+{
+	ownedSeedCandidates.reset();
+	seedCandidates = nullptr;
+	if (!output.getOutputConstraint().reportMaxPerSeed) return;
+	seedCandidates = dynamic_cast<OutputHandlerSeedCandidates *>(&output);
+	if (!seedCandidates) {
+		ownedSeedCandidates = std::make_unique<OutputHandlerSeedCandidates>(output.getOutputConstraint());
+		seedCandidates = ownedSeedCandidates.get();
+	}
+}
+
+bool PredictorMfe::predictPerSeed(const IndexRange & r1, const IndexRange & r2,
+		SeedHandlerIdxOffset & seeds,
+		const std::function<Predictor *(OutputHandler &, PredictionTracker *, SeedHandler *)> & factory)
+{
+	const auto & c = output.getOutputConstraint();
+	if (!c.reportMaxPerSeed) return false;
+	// Validate before unsigned range arithmetic or seed-table access.
+	energy.setOffset1(0); energy.setOffset2(0);
+	const size_t n = energy.size1(), m = energy.size2();
+	if (!r1.isAscending() || !r2.isAscending() || r1.from >= n || r2.from >= m)
+		throw std::invalid_argument("per-seed prediction: invalid sequence range");
+	initSeedCandidates();
+	SeedHandler & original = seeds.getOriginalSeedHandler();
+	// A custom recurrence must explicitly supply its own child factory rather
+	// than silently reverting to a standard predictor when quotas are enabled.
+	auto create = [&](OutputHandler & out, PredictionTracker * tracker, SeedHandler * handler) {
+		std::unique_ptr<Predictor> child(factory(out,tracker,handler));
+		if (typeid(*child) != typeid(*this))
+			throw std::logic_error("per-seed prediction: custom predictor must override predictPerSeed with its own factory");
+		return child;
+	};
+	// Compute statistics once with every seed and the original prediction mode.
+	Zall = 0;
+	if (c.needZall || predTracker) {
+		const OutputConstraint ordinary(c.reportMax,c.reportOverlap,c.maxE,c.deltaE,c.bestSeedOnly,
+				c.noLP,c.noGUend,c.needZall,c.needBPs,c.maxED);
+		StatisticsOutput statistics(ordinary);
+		auto predictor = create(statistics,
+				predTracker ? new BorrowedTracker(*predTracker) : nullptr,
+				new SeedHandlerIdxOffset(&original,false));
+		predictor->predict(r1,r2);
+		Zall = predictor->getZall();
+		if (statistics.usesExactPartition()) output.setExactPartition(true);
+		output.incrementZ(statistics.getZ());
+	}
+	// Reuse the admitted seed table; singleton adapters never refill or own it.
+	const size_t last1 = std::min(r1.to,n-1), last2 = std::min(r2.to,m-1);
+	if (c.reportMax && original.fillSeed(r1.from,last1,r2.from,last2)) {
+		const OutputConstraint perSeed(c.reportMaxPerSeed,OutputConstraint::OVERLAP_BOTH,E_INF,E_INF,
+				c.bestSeedOnly,c.noLP,c.noGUend,false,c.needBPs,c.maxED);
+		size_t i = RnaSequence::lastPos, j = RnaSequence::lastPos;
+		while (original.updateToNextSeed(i,j,r1.from,last1,r2.from,last2)) {
+			const size_t l1 = original.getSeedLength1(i,j), l2 = original.getSeedLength2(i,j);
+			if (!l1 || !l2 || l1-1 > last1-i || l2-1 > last2-j
+					|| l1 > energy.getAccessibility1().getMaxLength() || l2 > energy.getAccessibility2().getMaxLength()) continue;
+			SeedOutput ranked(perSeed,*seedCandidates,energy.getBasePair(i,j));
+			auto predictor = create(ranked,nullptr,new SelectedSeed(original,{i,j}));
+			// Legacy recurrences may visit cells beyond the output span. Exclude
+			// those before they can spend a seed's quota, retaining zero behavior.
+			static_cast<PredictorMfe *>(predictor.get())->perSeedPass = true;
+			predictor->predict(r1,r2);
+		}
+	}
+	if (ownedSeedCandidates) seedCandidates->report(output);
+	return true;
+}
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -34,6 +176,7 @@ void
 PredictorMfe::
 initOptima()
 {
+	initSeedCandidates();
 	// temporary access
 	const OutputConstraint & outConstraint = output.getOutputConstraint();
 
@@ -79,6 +222,8 @@ isValidOutputSite( const size_t i1, const size_t j1,
 		const size_t i2, const size_t j2 ) const
 {
 	const OutputConstraint & constraint = output.getOutputConstraint();
+	if (perSeedPass && (j1-i1+1 > energy.getAccessibility1().getMaxLength()
+			|| j2-i2+1 > energy.getAccessibility2().getMaxLength())) return false;
 	if (constraint.noGUend && (energy.isGU(i1,i2) || energy.isGU(j1,j2))) {
 		return false;
 	}
@@ -213,6 +358,11 @@ reportOptima()
 	// store overall partition function
 	if (Z_isNotINF(getZall())) {
 		output.incrementZ( getZall() );
+	}
+	// Ensemble candidates were ranked by anchor before shared site pruning.
+	if (seedCandidates) {
+		if (ownedSeedCandidates) seedCandidates->report(output);
+		return;
 	}
 
 	// A zero ranked-output count still publishes ensemble statistics.

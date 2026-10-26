@@ -16,6 +16,7 @@ SH_LOG_COMPILER = $(SHELL)
 
 # the script needed for tests
 dist_check_SCRIPTS = \
+  runParameterFile.sh \
   runAccessibilityBinary.sh \
   runAccessibilityThreads.sh \
   runBasePairProbabilities.sh \
@@ -23,7 +24,8 @@ dist_check_SCRIPTS = \
   runIntaRNAFuse.sh \
   runIntaRNAeval.sh \
   runKineticSeedExtension.sh \
-  runOutputOverlap.sh 
+  runOutputOverlap.sh \
+  runOutputPerSeed.sh
   
 # the program to build
 check_PROGRAMS = runApiTests 
@@ -77,6 +79,7 @@ runApiTests_SOURCES =	\
 					OutputStreamHandlerSortedCsv_test.cpp \
 					OutputHandlerHub_test.cpp \
 					OutputHandlerInteractionList_test.cpp \
+					OutputHandlerSeedCandidates_test.cpp \
 					SeedHandlerExplicit_test.cpp \
 					SeedHandlerNoBulge_test.cpp \
 					SeedHandlerMfe_test.cpp \
@@ -96,4 +99,4 @@ runApiTests_CXXFLAGS =	-I$(top_builddir)/src \
 
 
 
-EXTRA_DIST = tools/export-seeded-theory.py testBasePairProbabilities.py testBasePairProbabilitySvg.py testIntaRNAFuse.py
+EXTRA_DIST = testParameterFile.py tools/export-seeded-theory.py testBasePairProbabilities.py testBasePairProbabilitySvg.py testIntaRNAFuse.py

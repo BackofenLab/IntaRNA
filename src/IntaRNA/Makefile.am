@@ -61,6 +61,7 @@ libIntaRNA_a_HEADERS =    \
 					OutputHandlerEnsemble.h \
 					OutputHandlerHub.h \
 					OutputHandlerInteractionList.h \
+					OutputHandlerSeedCandidates.h \
 					OutputHandlerText.h \
 					PredictionTracker.h \
 					PredictionTrackerHub.h \
@@ -132,6 +133,7 @@ libIntaRNA_a_SOURCES = \
 					OutputHandlerEnsemble.cpp \
 					OutputHandlerCsv.cpp \
 					OutputHandlerInteractionList.cpp \
+					OutputHandlerSeedCandidates.cpp \
 					OutputHandlerText.cpp \
 					PredictionTrackerPairMinE.cpp \
 					PredictionTrackerProfileMinE.cpp \
@@ -178,7 +180,7 @@ nodist_libIntaRNA_a_SOURCES = \
 
 if enable_pkg_config
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = $(top_srcdir)/IntaRNA.pc
+pkgconfig_DATA = $(top_builddir)/IntaRNA.pc
 endif
 
 ###############################################################################

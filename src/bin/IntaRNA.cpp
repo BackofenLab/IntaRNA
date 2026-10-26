@@ -23,6 +23,7 @@ INITIALIZE_EASYLOGGINGPP
 #include "IntaRNA/Predictor.h"
 #include "IntaRNA/OutputHandler.h"
 #include "IntaRNA/OutputHandlerInteractionList.h"
+#include "IntaRNA/OutputHandlerSeedCandidates.h"
 
 using namespace IntaRNA;
 
@@ -243,6 +244,11 @@ int main(int argc, char **argv){
 										(parameters.reportBestPerRegion() ? std::numeric_limits<size_t>::max() : 1 )
 											* parameters.getOutputConstraint(*energy,true).reportMax );
 
+								// Positive quotas retain seed identities until the agreed merge scope.
+								std::unique_ptr<OutputHandlerSeedCandidates> seedInteractions;
+								if (bestInteractions.getOutputConstraint().reportMaxPerSeed)
+									seedInteractions = std::make_unique<OutputHandlerSeedCandidates>(bestInteractions.getOutputConstraint());
+
 								// One owner spans all disjoint searched regions for this sequence pair.
 								std::unique_ptr<BasePairProbabilities> pairProbabilities(parameters.getBasePairProbabilityResult(*energy));
 
@@ -292,7 +298,7 @@ int main(int argc, char **argv){
 												// The prediction collector merges equal-energy structures with
 												// identical boundaries and pair counts, even if inner pairs differ.
 												std::unique_ptr<Predictor> predictor(parameters.getPredictor( *energy,
-														parameters.isEvaluation() ? *output : bestInteractions, pairProbabilities.get() ));
+														parameters.isEvaluation() ? *output : (seedInteractions ? static_cast<OutputHandler &>(*seedInteractions) : bestInteractions), pairProbabilities.get() ));
 												INTARNA_CHECK_NOT_NULL(predictor.get(),"predictor initialization failed");
 		
 												// run prediction for this window combination
@@ -331,8 +337,20 @@ int main(int argc, char **argv){
 										} // if not threadAborted
 #endif		
 									}} // window combinations
+									// Windows of one region combination share quotas and final selection.
+									if (seedInteractions && parameters.reportBestPerRegion()) {
+										seedInteractions->report(bestInteractions);
+										seedInteractions->clear();
+									}
+
 								} // target ranges
 								} // query ranges
+								if (seedInteractions) {
+									if (!parameters.reportBestPerRegion()) seedInteractions->report(bestInteractions);
+									bestInteractions.setExactPartition(seedInteractions->usesExactPartition());
+									bestInteractions.incrementZ(seedInteractions->getZ());
+								}
+
 								bool publish=true;
 #if INTARNA_MULITHREADING
 								#pragma omp flush(threadAborted)

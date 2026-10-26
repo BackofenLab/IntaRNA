@@ -23,7 +23,7 @@ public:
 	/**
 	 * destruction
 	 */
-	virtual ~ReverseAccessibility();
+	virtual ~ReverseAccessibility() override;
 
 	/**
 	 * Access to the accessibility energy value (according to reversed indices).
@@ -35,7 +35,7 @@ public:
 	 */
 	virtual
 	E_type
-	getED( const size_t from, const size_t to ) const;
+	getED( const size_t from, const size_t to ) const override;
 
 
 	/**
@@ -44,7 +44,7 @@ public:
 	 */
 	virtual
 	const RnaSequence &
-	getSequence() const;
+	getSequence() const override;
 
 
 	/**
@@ -56,7 +56,7 @@ public:
 	 */
 	virtual
 	const AccessibilityConstraint&
-	getAccConstraint() const;
+	getAccConstraint() const override;
 
 	/**
 	 * Access to the original not-reversed accessibility object.
