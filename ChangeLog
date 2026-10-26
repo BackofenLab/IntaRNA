@@ -14,6 +14,9 @@
 
 ## Interface and handling
 
+- keep real-browser regression inputs stable when maintainers replace the GUI
+  examples, while continuing to verify that each task's example loads
+
 - --outNumberPerSeed selects each seed's best candidate sites before final
   deduplication, energy/overlap/count filtering; model P ranks left-most-anchor
   ensembles; zero preserves ordinary prediction; the GUI exposes the quota next
@@ -326,6 +329,11 @@ energies, restricted partition sums, and trackers.
    + Independent chain-enumeration, traceback, seed-only, mode-matrix, merge,
      filter, CLI and unchanged-probability regressions; register/install sources.
      
+261026 Alexander Mitrofanov
+ * scripts/wasm/test-browser.py
+   * decouple deterministic numerical browser checks from replaceable GUI example
+     payloads while retaining real-browser coverage of prediction/evaluation loading
+
 261026 Alexander Mitrofanov
  * gui/app.js, gui/{index.html,styles.css}, scripts/wasm/test-browser.py
    * place Explicit seeds beside a half-width Seed constraint selector and halve

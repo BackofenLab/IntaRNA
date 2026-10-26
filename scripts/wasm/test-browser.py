@@ -41,9 +41,23 @@ with sync_playwright() as playwright:
         expect(page.locator('#tab-' + key)).to_have_attribute('aria-selected', 'true')
         assert page.locator('.parameter-group:visible').count() == 1
 
-    def load_example(task='prediction'):
+    def load_reference(task='prediction'):
         page.locator('#examples-menu summary').click()
-        page.get_by_role('button', name='Evaluate a duplex' if task == 'evaluation' else 'Short duplex', exact=False).click()
+        page.locator(f'#example-options [data-example-task="{task}"]').click()
+        expect(page.locator('#query')).not_to_have_value('')
+        expect(page.locator('#target')).not_to_have_value('')
+        if task == 'evaluation':
+            expect(page.locator('#rri')).not_to_have_value('')
+
+        # Examples are maintainer-editable content. Exercise their loading, then
+        # use a fixed small pair so numerical browser regressions stay stable.
+        page.locator('#reset').click()
+        if task == 'evaluation':
+            page.get_by_role('radio', name='Evaluation').check()
+        page.locator('#query').fill('>query\nGGGAGGAGGG\n')
+        page.locator('#target').fill('>target\nCCCUCCUCCC\n')
+        if task == 'evaluation':
+            page.locator('#rri').fill('1||||||||||&1||||||||||')
         expect(page.locator('#query')).to_have_value('>query\nGGGAGGAGGG\n')
 
     def download_archive(session=None):
@@ -90,11 +104,13 @@ with sync_playwright() as playwright:
     page.keyboard.press('ArrowLeft')
     expect(page.get_by_role('radio', name='Prediction')).to_be_checked()
     page.locator('#examples-menu summary').click()
-    expect(page.get_by_role('button', name='Short duplex', exact=False)).to_be_visible()
-    expect(page.get_by_role('button', name='Evaluate a duplex', exact=False)).not_to_be_visible()
+    prediction_example = page.locator('#example-options [data-example-task="prediction"]')
+    evaluation_example = page.locator('#example-options [data-example-task="evaluation"]')
+    expect(prediction_example).to_be_visible()
+    expect(evaluation_example).not_to_be_visible()
     page.get_by_role('radio', name='Evaluation').check()
-    expect(page.get_by_role('button', name='Evaluate a duplex', exact=False)).to_be_visible()
-    expect(page.get_by_role('button', name='Short duplex', exact=False)).not_to_be_visible()
+    expect(evaluation_example).to_be_visible()
+    expect(prediction_example).not_to_be_visible()
     page.get_by_role('radio', name='Prediction').check()
     page.locator('#examples-menu summary').click()
 
@@ -242,7 +258,7 @@ with sync_playwright() as playwright:
     compute.click()
     expect(page.locator('#input-error')).to_contain_text('use only')
     expect(page.locator('#loading')).not_to_be_visible()
-    load_example()
+    load_reference()
     fill('temperature', '101')
     open_group('sequence-input')
     compute.click()
@@ -251,7 +267,7 @@ with sync_playwright() as playwright:
     expect(page.locator('#query')).to_have_value('')
     expect(page.locator('#target')).to_have_value('')
     expect(page.locator('#rri')).to_have_value('')
-    load_example()
+    load_reference()
 
     # Disabled stale edits neither block a run nor leak into JSON. Re-enabling
     # restores local edits; loading/storing uses effective native settings.
@@ -287,7 +303,7 @@ with sync_playwright() as playwright:
     page.locator('#qAcc').select_option('C')
     expect(page.locator('#qShape')).to_have_value('invalid inactive shape')
     page.locator('#reset').click()
-    load_example()
+    load_reference()
 
     # Reference prediction, selectable CSV output and independent table visibility.
     fill('outNumber', 10)
@@ -378,7 +394,7 @@ with sync_playwright() as playwright:
     page.set_viewport_size({'width': 1440, 'height': 1100})
 
     # Multi-FASTA prediction, signed inclusive output and additional files.
-    load_example()
+    load_reference()
     fill('outNumber', 1)
     fill('query', '>q1\nGGGAGGAGGG\n>q2\nGGGAGGAGGG')
     fill('qIdxPos0', -3)
@@ -435,7 +451,7 @@ with sync_playwright() as playwright:
     fill('rri', '1||||||||||&1||||||||||')
     compute.click()
     expect(page.locator('#input-error')).to_contain_text('exactly one')
-    load_example('evaluation')
+    load_reference('evaluation')
     fill('rri', '1||||||||||&1||||||||||:1|||||||||&2|||||||||')
     open_group('output-options')
     page.locator('#output-options input[value="detailed"]').check()
@@ -475,7 +491,7 @@ with sync_playwright() as playwright:
 
     # Startup and synchronous C++ cancellation both allow a fresh prediction.
     page.get_by_role('radio', name='Prediction').check()
-    load_example()
+    load_reference()
     held_routes = []
     session_count = sessions.count()
     page.route('**/wasm/intarna.wasm', lambda route: held_routes.append(route))
@@ -494,7 +510,7 @@ with sync_playwright() as playwright:
     page.keyboard.press('Escape')
     expect(status).to_contain_text('aborted')
     expect(sessions).to_have_count(session_count)
-    load_example()
+    load_reference()
     predict()
 
     fill('query', '>no_pairs\nNNNNNNNNNN')
@@ -508,7 +524,7 @@ with sync_playwright() as playwright:
     assert active.locator('tbody img').count() == 0
     assert '<img' in rows.first.inner_text()
 
-    load_example()
+    load_reference()
     session_count = sessions.count()
     page.route('**/wasm/intarna.js', lambda route: route.abort())
     compute.click()
@@ -524,7 +540,7 @@ with sync_playwright() as playwright:
     page.reload()
     page.wait_for_load_state('networkidle')
     expect(sessions).to_have_count(0)
-    load_example()
+    load_reference()
     fill('temperature', 24)
     fill('qIdxPos0', -3)
     fill('tIdxPos0', -5)
@@ -566,7 +582,7 @@ with sync_playwright() as playwright:
 
     # A different task, CSV order and output report own a second result area.
     page.get_by_role('radio', name='Evaluation').check()
-    load_example('evaluation')
+    load_reference('evaluation')
     with page.expect_download() as stored:
         page.locator('#store-parameters').click()
     second_settings = json.loads(Path(stored.value.path()).read_text())
