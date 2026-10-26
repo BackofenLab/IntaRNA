@@ -117,6 +117,9 @@
 
 ## Technical changes and Optimizations
 
+- reduce ordinary heuristic ensemble runtime by batching more source boundaries
+  and avoiding exhaustive span probes for sparse seed domains (issue #301)
+
 - record JSON/WASM/browser regression validation and preserve pinned JSON vendor
   checksums while marking upstream files as vendored for review (PR #287)
 
@@ -308,6 +311,15 @@ energies, restricted partition sums, and trackers.
      responsive compact layout, plot rendering and PNG downloads in real
      Chromium/Firefox with the existing WASM engine
    * address https://github.com/BackofenLab/IntaRNA/pull/287#issuecomment-6416573560
+ * src/IntaRNA/SeededPartitionFunction.cpp
+   * Select sparse batch anchors by scanning admitted seeds instead of probing
+     every possible pair in every source span; retain the grid lookup for dense
+     domains and deterministic anchor order.
+   * Let partition-only heuristic ensembles batch up to 16 MiB of hybrid
+     coefficients, reducing repeated anchor-extension work without increasing
+     exact or pair-probability table budgets (issue #301).
+ * doc/analysis/{seed-extension-partition.md,heuristic-anchored-runtime.md}
+   * Document the adaptive anchor lookup and targeted runtime/memory tradeoff.
 
 261024 Alexander Mitrofanov
  * gui/{app,options,columns}.js, gui/{index.html,styles.css}
