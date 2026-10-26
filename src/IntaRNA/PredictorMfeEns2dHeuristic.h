@@ -52,7 +52,7 @@ public:
 							, PredictionTracker * predTracker
 							, BasePairProbabilities * pairProbabilities = nullptr );
 
-	virtual ~PredictorMfeEns2dHeuristic();
+	virtual ~PredictorMfeEns2dHeuristic() override;
 
 	/**
 	 * Computes the mfe for the given sequence ranges (i1-j1) in the first
@@ -66,7 +66,7 @@ public:
 	virtual
 	void
 	predict( const IndexRange & r1 = IndexRange(0,RnaSequence::lastPos)
-			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos) );
+			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos) ) override;
 
 protected:
 

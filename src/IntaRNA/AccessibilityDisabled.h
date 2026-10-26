@@ -38,7 +38,7 @@ public:
 	/**
 	 * destruction
 	 */
-	virtual ~AccessibilityDisabled();
+	virtual ~AccessibilityDisabled() override;
 
 	/**
 	 * Always returns a zero accessibility energy value.
@@ -50,7 +50,7 @@ public:
 	 */
 	virtual
 	E_type
-	getED( const size_t from, const size_t to ) const;
+	getED( const size_t from, const size_t to ) const override;
 
 };
 

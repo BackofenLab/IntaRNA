@@ -1,0 +1,49 @@
+/* Static copy of the runtime rules installed by plotly-cartesian.min.js 4.1.2.
+   Keeping them same-origin lets the application retain style-src 'self'. */
+.js-plotly-plot .plotly,.js-plotly-plot .plotly div{direction:ltr;font-family:"Open Sans",verdana,arial,sans-serif;margin:0;padding:0;border:0}
+.js-plotly-plot .plotly input,.js-plotly-plot .plotly button{font-family:"Open Sans",verdana,arial,sans-serif}
+.js-plotly-plot .plotly input:focus,.js-plotly-plot .plotly button:focus{outline:none}
+.js-plotly-plot .plotly a{text-decoration:none}
+.js-plotly-plot .plotly a:hover{text-decoration:none}
+.js-plotly-plot .plotly .crisp{shape-rendering:crispedges}
+.js-plotly-plot .plotly .user-select-none{user-select:none}
+.js-plotly-plot .plotly svg a{fill:#447adb}
+.js-plotly-plot .plotly svg a:hover{fill:#3c6dc5}
+.js-plotly-plot .plotly .main-svg{position:absolute;top:0;left:0;pointer-events:none}
+.js-plotly-plot .plotly .main-svg .draglayer{pointer-events:all}
+.js-plotly-plot .plotly .cursor-default{cursor:default}
+.js-plotly-plot .plotly .cursor-pointer{cursor:pointer}
+.js-plotly-plot .plotly .cursor-crosshair{cursor:crosshair}
+.js-plotly-plot .plotly .cursor-move{cursor:move}
+.js-plotly-plot .plotly .cursor-col-resize{cursor:col-resize}
+.js-plotly-plot .plotly .cursor-row-resize{cursor:row-resize}
+.js-plotly-plot .plotly .cursor-ns-resize{cursor:ns-resize}
+.js-plotly-plot .plotly .cursor-ew-resize{cursor:ew-resize}
+.js-plotly-plot .plotly .cursor-sw-resize{cursor:sw-resize}
+.js-plotly-plot .plotly .cursor-s-resize{cursor:s-resize}
+.js-plotly-plot .plotly .cursor-se-resize{cursor:se-resize}
+.js-plotly-plot .plotly .cursor-w-resize{cursor:w-resize}
+.js-plotly-plot .plotly .cursor-e-resize{cursor:e-resize}
+.js-plotly-plot .plotly .cursor-nw-resize{cursor:nw-resize}
+.js-plotly-plot .plotly .cursor-n-resize{cursor:n-resize}
+.js-plotly-plot .plotly .cursor-ne-resize{cursor:ne-resize}
+.js-plotly-plot .plotly .cursor-grab{cursor:grab}
+.js-plotly-plot .plotly .modebar{position:absolute;top:2px;right:2px}
+.js-plotly-plot .plotly .ease-bg{transition:background-color .3s}
+.js-plotly-plot .plotly .modebar--hover>:not(.watermark){opacity:0;transition:opacity .3s}
+.js-plotly-plot .plotly:hover .modebar--hover .modebar-group,.js-plotly-plot .plotly:focus-within .modebar--hover .modebar-group{opacity:1}
+.js-plotly-plot .plotly .modebar-group{float:left;display:inline-block;box-sizing:border-box;padding-left:8px;position:relative;vertical-align:middle;white-space:nowrap}
+.js-plotly-plot .plotly .modebar-group a{display:grid;place-content:center}
+.js-plotly-plot .plotly .modebar-btn{position:relative;font-size:16px;padding:3px 4px;height:22px;cursor:pointer;line-height:normal;box-sizing:border-box;border:none;background:transparent}
+.js-plotly-plot .plotly .modebar-btn svg{position:relative}
+.js-plotly-plot .plotly .modebar-btn:focus-visible{outline:1px solid #000;outline-offset:1px;border-radius:3px}
+.js-plotly-plot .plotly .modebar.vertical{display:flex;flex-flow:column wrap;align-content:flex-end;max-height:100%}
+.js-plotly-plot .plotly .modebar.vertical svg{top:-1px}
+.js-plotly-plot .plotly .modebar.vertical .modebar-group{display:block;float:none;padding-left:0;padding-bottom:8px}
+.js-plotly-plot .plotly .modebar.vertical .modebar-group .modebar-btn{display:block;text-align:center}
+.js-plotly-plot .plotly [data-title]::before,.js-plotly-plot .plotly [data-title]::after{position:absolute;transform:translate3d(0,0,0);display:none;opacity:0;z-index:1001;pointer-events:none;top:110%;right:50%}
+.js-plotly-plot .plotly [data-title]:hover::before,.js-plotly-plot .plotly [data-title]:hover::after{display:block;opacity:1}
+.js-plotly-plot .plotly [data-title]::before{content:"";background:transparent;border:6px solid transparent;border-bottom-color:#69738a;z-index:1002;margin-top:-12px;margin-right:-6px}
+.js-plotly-plot .plotly [data-title]::after{content:attr(data-title);background:#69738a;color:#fff;padding:8px 10px;font-size:12px;line-height:12px;white-space:nowrap;margin-right:-18px;border-radius:2px}
+.js-plotly-plot .plotly .vertical [data-title]::before,.js-plotly-plot .plotly .vertical [data-title]::after{top:0;right:200%}
+.js-plotly-plot .plotly .vertical [data-title]::before{border-color:transparent transparent transparent #69738a;margin-top:8px;margin-right:-30px}

@@ -62,7 +62,7 @@ public:
 	/**
 	 * destruction
 	 */
-	virtual ~SeedHandlerMfe();
+	virtual ~SeedHandlerMfe() override;
 
 	/**
 	 * Computes the seed matrix for the given interval boundaries
@@ -74,7 +74,7 @@ public:
 	 */
 	virtual
 	size_t
-	fillSeed(const size_t i1, const size_t j1, const size_t i2, const size_t j2);
+	fillSeed(const size_t i1, const size_t j1, const size_t i2, const size_t j2) override;
 
 	/**
 	 * Identifies the base pairs of the mfe seed interaction starting at i1,i2
@@ -88,7 +88,7 @@ public:
 	 */
 	virtual
 	void
-	traceBackSeed( Interaction & interaction, const size_t i1, const size_t i2) const;
+	traceBackSeed( Interaction & interaction, const size_t i1, const size_t i2) const override;
 
 
 	/**
@@ -99,7 +99,7 @@ public:
 	 */
 	virtual
 	E_type
-	getSeedE( const size_t i1, const size_t i2 ) const;
+	getSeedE( const size_t i1, const size_t i2 ) const override;
 
 	/**
 	 * Checks whether or not a given base pair is the left-most base pair of
@@ -111,7 +111,7 @@ public:
 	 */
 	virtual
 	bool
-	isSeedBound( const size_t i1, const size_t i2 ) const;
+	isSeedBound( const size_t i1, const size_t i2 ) const override;
 
 	/**
 	 * Access to the length in seq1 of the mfe seed with left-most base pair (i1,i2)
@@ -121,7 +121,7 @@ public:
 	 */
 	virtual
 	size_t
-	getSeedLength1( const size_t i1, const size_t i2 ) const;
+	getSeedLength1( const size_t i1, const size_t i2 ) const override;
 
 	/**
 	 * Access to the length in seq2 of the mfe seed with left-most base pair (i1,i2)
@@ -131,7 +131,7 @@ public:
 	 */
 	virtual
 	size_t
-	getSeedLength2( const size_t i1, const size_t i2 ) const;
+	getSeedLength2( const size_t i1, const size_t i2 ) const override;
 
 
 

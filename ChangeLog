@@ -14,6 +14,58 @@
 
 ## Interface and handling
 
+- refine GUI seed and CSV control widths, filter examples by task, cap result
+  table height and use dark active tabs for additional output views (PR #303 review)
+
+- compact and left-align GUI parameter rows, split CSV controls into their own
+  tab, describe every additional output format and plot energy/probability files
+  with sequence names, source tabs and PNG export (PR #287 review)
+
+- reorganize GUI parameters, add conditional seed/accessibility controls and
+  grouped CSV defaults, expand FASTA limits and refine result headers (PR #299)
+
+- retain computed GUI runs as named, foldable sessions with JSON input restoration,
+  independent outputs, per-session ZIP export and deletion (PR #297 review)
+
+- permit clearing inherited CSV sorting when replaying JSON as text reports;
+  validate JSON/GUI behavior in native release/debug and real browsers (#287)
+
+- show prediction/evaluation tasks as always-visible choices with task-specific
+  descriptions and an expanded Seeds/Accessibility heading (PR #287 review)
+
+- upload or drop local FASTA files into each GUI strand with validation and
+  protection against stale asynchronous reads (PR #287 review)
+
+- clear all inputs on GUI reset and load named examples from maintainable JSON
+  files through an Example menu (PR #287 review)
+
+- load/store GUI settings as portable JSON; ZIPs contain parameter.json with
+  embedded inputs/provenance and all outputs (PR #287 review)
+
+- use one embedded-input JSON parameter document for each WASM invocation
+  (PR #287 review)
+
+- accept JSON parameter files with embedded text inputs and personality defaults
+  through --parameterFile while retaining legacy configuration (PR #287 review)
+
+- rename the browser interface directory and Pages URL to gui (PR #287 review)
+
+- add selected-interaction vaRRI embeds and reproducible all-output ZIP downloads
+  to the browser interface; compact parameters into accessible tabs and update
+  the Freiburg group header and full-width result/footer notes (PR #287 review)
+
+- extend the browser interface with vaRRI styling, prediction/evaluation tasks,
+  multi-FASTA, start indices, CLI parameter groups, selectable CSV columns and
+  additional output previews/downloads; label pair-relative differences mfe Δ
+  and display actual compiled versions (PR #287 review)
+
+- display sortable/filterable browser results and native CSV downloads;
+  publish the tested interface alongside existing Pages documentation (#286)
+
+- add responsive browser FASTA inputs, validation and abort dialog (#286, step 3)
+
+- run browser predictions in cancellable, isolated Web Workers (#286, step 2)
+
 - orient probability SVGs from the upper-left corner and highlight every MFE
   pair, splitting seed/MFE cell borders into orange and green (PR #259 review)
 
@@ -67,6 +119,28 @@
 - reject Zall/Eall-dependent output in window mode
 
 ## Technical changes and Optimizations
+
+- reduce ordinary heuristic ensemble runtime by batching more source boundaries
+  and avoiding exhaustive span probes for sparse seed domains (issue #301)
+
+- record JSON/WASM/browser regression validation and preserve pinned JSON vendor
+  checksums while marking upstream files as vendored for review (PR #287)
+
+- build WASM with ViennaRNA 2.7.2 locally and the newest stable 2.x in CI;
+  verify published archive checksums, isolate versioned caches and retain
+  selected dependency provenance and notices (PR #292 review)
+
+- BUGFIX : restore WASM dependency downloads using the pinned official ViennaRNA
+  release asset; verify downloads before caching and recover invalid caches
+  (PR #291)
+
+- annotate inherited virtual methods/destructors with override, preserve compiled
+  WASM asset provenance through staging, and expand protocol/browser validation
+  for the PR #287 review
+
+- cross-compile IntaRNA and pinned dependencies to WebAssembly (#286, step 1)
+- verify browser predictions against native accessibility/energy references and
+  exercise real WASM cancellation and nested Pages paths in Chromium/Firefox
 
 - reuse MFE seed-extension scratch matrices and bound predecessor scans in exact
   and heuristic prediction; evaluate physical energies directly (PR #276 review)
@@ -220,6 +294,276 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261026 Alexander Mitrofanov
+ * gui/app.js, gui/{index.html,styles.css}, scripts/wasm/test-browser.py
+   * place Explicit seeds beside a half-width Seed constraint selector and halve
+     the CSV sort selector width; verify desktop/mobile control geometry
+   * show only examples for the selected task, retain complete CSV downloads while
+     scrolling result tables above 500 px, and match output tab selection styling
+     to the parameter tabs (PR #303 maintainer review)
+ * gui/docs/{json-workflow,step3-frontend-ui,step4-results-and-deployment}.md
+   * document task-specific examples, compact controls and the bounded result table
+
+261026 Alexander Mitrofanov
+ * gui/{app,options,sessions,output-visualization}.js,
+   gui/{index.html,styles.css}
+   * compact bounded parameter rows while preserving their grouping and align
+     wrapped labels above left-aligned controls
+   * move CSV sorting/column selection into a dedicated tab between Output and
+     Model & Energy; add content/use tooltips to all additional output formats
+   + show sequence-aware Plotly profiles, heatmaps and selected-spot bars beside
+     native file content; add header downloads and verified PNG export
+ * .gitattributes, gui/vendor/, scripts/wasm/stage.sh,
+   .github/workflows/build-wasm.yml
+   + vendor and checksum Plotly.js Cartesian 4.1.2, stage its MIT license and
+     verify both assets in the combined Pages artifact
+ * gui/tests/output-visualization.test.mjs, scripts/wasm/test-browser.py,
+   README.md, gui/docs/
+   + cover signed categorical axes, file/sequence mapping, malformed data,
+     responsive compact layout, plot rendering and PNG downloads in real
+     Chromium/Firefox with the existing WASM engine
+   * address https://github.com/BackofenLab/IntaRNA/pull/287#issuecomment-6416573560
+ * src/IntaRNA/SeededPartitionFunction.cpp
+   * Select sparse batch anchors by scanning admitted seeds instead of probing
+     every possible pair in every source span; retain the grid lookup for dense
+     domains and deterministic anchor order.
+   * Let partition-only heuristic ensembles batch up to 16 MiB of hybrid
+     coefficients, reducing repeated anchor-extension work without increasing
+     exact or pair-probability table budgets (issue #301).
+ * doc/analysis/{seed-extension-partition.md,heuristic-anchored-runtime.md}
+   * Document the adaptive anchor lookup and targeted runtime/memory tradeoff.
+
+261024 Alexander Mitrofanov
+ * gui/{app,options,columns}.js, gui/{index.html,styles.css}
+   * organize tabs/rows as Sequences, Seed, Output, Model & Energy, Query,
+     Target and CLI-only; align wrapped labels and place Compute first
+   + add a three-way seed selector, synchronized accessibility flags and
+     mode-dependent input availability; place SHAPE beside accessibility
+   * group compact CSV choices with descriptions and group selection actions;
+     default to 10 predictions and expanded task-specific energy columns,
+     explicitly preserving browser defaults in native-compatible JSON
+ * gui/{protocol,uploads,parameter-file}.js, gui/examples/
+   * accept 50 FASTA records per strand of 2-5,000 nt each, with longest
+     selected query x longest selected target <= 1,000,000; allow 1 MB FASTA
+   + warn about ignored FASTA header descriptions while using first-token IDs
+ * gui/{sessions,results}.js
+   * select results from the header/name, order Show/Hide before the name and
+     ZIP/delete actions, compact table headings and distinguish selected rows
+ * gui/tests/, scripts/wasm/test-browser.py, README.md, gui/docs/
+   + cover limits, native JSON replay/defaults, dependent controls, grouped CSV
+     choices, desktop/mobile alignment and result header selection
+   * address https://github.com/BackofenLab/IntaRNA/pull/299#issuecomment-6375752155
+
+261023 Alexander Mitrofanov
+ * gui/{app,sessions,results,visualization}.js, gui/{index.html,styles.css}
+   + retain successful runs in browser memory with unique IDs, editable names,
+     independent results/diagnostics and JSON snapshots of their computed inputs
+   * restore inputs and fold other output areas on selection; preserve sessions
+     across edits, reset, imports, failures and aborts; unload folded viewers
+   + export each session's original JSON/outputs from its header and delete it
+     without overwriting editable inputs; keep controls keyboard accessible
+ * scripts/wasm/{stage.sh,test-browser.py}, README.md, gui/docs/
+   * stage the sessions module, exercise session lifetime and archive isolation
+     in real browsers, and document temporary storage and updated reset behavior
+   * follow-up to https://github.com/BackofenLab/IntaRNA/pull/297#issuecomment-6367326708
+
+261023 Alexander Mitrofanov
+ * .gitattributes, gui/docs/json-workflow.md
+     + Preserve exact upstream license whitespace and mark the JSON header and
+       license as vendored. Record native release/debug, WASM replay, browser,
+       distribution and provenance validation for the PR #287 revisions.
+
+261023 Alexander Mitrofanov
+ * src/bin/CommandLineParsing.cpp, ParameterFile.h, tests/testParameterFile.py
+     * Accept an explicitly empty CSV sort value to clear a parameter-file
+       setting when reproducing non-CSV reports from the same JSON document.
+ * gui/app.js, gui/styles.css, scripts/wasm/test-browser.py
+     * Keep pending auxiliary-file reads from restoring reset inputs, return
+       Reset to Sequence input and make the entire task label clickable.
+ * doc/{Makefile.am,json-parameters.md}
+     + Include JSON format documentation in source distributions and record the
+       observed WASM footprint and reproducible dependency comparison (#287).
+
+261023 Alexander Mitrofanov
+ * gui/{index.html,app.js,styles.css}, scripts/wasm/test-browser.py
+     * Replace the task dropdown with visible, highlighted native radio choices
+       and task descriptions; update the heading to include Seeds/Accessibility.
+     * Keep Example, Reset, Load and Store adjacent and test keyboard selection
+       and responsive layout (PR #287 review).
+
+261023 Alexander Mitrofanov
+ * gui/{uploads.js,app.js,index.html,styles.css}, gui/docs/json-workflow.md
+     + Add Upload controls and file-drop hints to both FASTA headers; validate
+       file size/contents before replacing a strand and invalidate stale reads.
+ * gui/tests/uploads.test.mjs, scripts/wasm/{test-browser.py,stage.sh}
+     + Test local upload/drop, invalid files and reset during a pending read;
+       stage the file-input module (PR #287 review).
+
+261023 Alexander Mitrofanov
+ * gui/{app.js,index.html,styles.css,examples/}, gui/docs/json-workflow.md
+     * Reset clears inputs/results and restores defaults; example FASTA is shown
+       only as placeholders. Add a described Example dropdown beside Reset.
+     + Ship two editable JSON examples and a manifest, using the common importer.
+ * gui/tests/parameter-file.test.mjs, scripts/wasm/{stage.sh,test-browser.py}
+     + Validate/stage example files and check empty startup/reset behavior (#287).
+
+261023 Alexander Mitrofanov
+ * gui/parameter-file.js, archive.js, app.js, index.html, protocol.js
+     + Load and Store non-default settings and embedded inputs using native JSON;
+       validate imports before replacing the form and retain CSV selection order.
+     * ZIP exports contain only parameter.json and outputs. Record version and
+       native replay commands, including overrides for additional report formats.
+ * gui/tests/, scripts/wasm/{smoke-protocol.mjs,test-browser.py,stage.sh},
+   gui/docs/{json-workflow.md,step4-results-and-deployment.md}
+     + Test JSON round trips, invalid imports, real WASM replay and output equality;
+       stage the serializer and nlohmann/json license (PR #287 review).
+
+261023 Alexander Mitrofanov
+ * gui/protocol.js, gui/intarna-worker.js, gui/tests/protocol.test.mjs,
+   gui/docs/step2-worker-architecture.md
+     * Pass --parameterFile=/parameter.json to each WASM instance using the
+       native JSON format with embedded FASTA, SHAPE and accessibility text.
+       Preserve native output routing and independent report invocations (#287).
+
+261023 Alexander Mitrofanov
+ * src/bin/ParameterFile.{h,cpp}, CommandLineParsing.{h,cpp}, Makefile.am
+     + Detect JSON parameter files; reuse native CLI validation and precedence,
+       support embedded input text and retain files until computation finishes.
+     * Honor parameter-file personalities when selecting native defaults.
+ * src/bin/nlohmann/, doc/json-parameters.md, README.md, scripts/wasm/stage.sh
+     + Vendor nlohmann/json 3.12.0 with its license, document the schema,
+       dependency tradeoff and reproduction contract (PR #287 review).
+ * tests/runParameterFile.sh, tests/testParameterFile.py, tests/Makefile.am
+     + Check legacy/JSON equivalence, embedded inputs, precedence and errors.
+
+261023 Alexander Mitrofanov
+ * gui/, scripts/wasm/, .github/workflows/build-wasm.yml, README.md,
+   doc/api-documentation.md, .gitignore
+     * Rename webinterface to gui, including imports, staging, tests and the
+       combined Pages artifact at /IntaRNA/gui/ (PR #287 review).
+
+261022 Alexander Mitrofanov
+ * scripts/wasm/{vienna-release.py,vienna-release.json}, build.sh
+   + Resolve the newest stable ViennaRNA >=2.7.2 and <3 from all official GitHub
+     release pages in CI; require its release tarball and published SHA-256.
+   * Pin 2.7.2 for reproducible local builds and accept saved release manifests.
+     Isolate RNAlib sources/installations and IntaRNA objects by archive identity
+     and keep Boost/zlib in a separate prefix to prevent reuse or include-path
+     shadowing of libraries/headers from another release (PR #292).
+ * scripts/wasm/patch-vienna.py
+   - Remove the dlib 19.24 compatibility patch; ViennaRNA 2.7.2 bundles dlib 20.0.
+ * scripts/wasm/{write-build-info.mjs,stage.sh,smoke-protocol.mjs,test-browser.py}
+   * Record the selected archive URL/checksum, check the compiled ViennaRNA
+     version, stage matching dependency notices and test actual version exports.
+ * scripts/wasm/test-vienna-release.py, .github/workflows/build-wasm.yml
+   + Cover numeric version selection, pagination, major-3/prerelease exclusion,
+     missing/invalid asset metadata, API failures, manifest validation and
+     rejection of compiled engines with a stale ViennaRNA version.
+ * webinterface/docs/step1-wasm-compilation.md
+   * Document latest-2.x CI selection, pinned local reproduction, versioned
+     caches, current bundled dlib and archive provenance.
+
+261022 Alexander Mitrofanov
+ * scripts/wasm/{build,download}.sh
+   * Use the official GitHub ViennaRNA 2.7.0 release asset and pin its SHA-256;
+     the university endpoint returned a short HTTP 200 text response, failing
+     the WASM build before compilation (PR #291).
+   + Verify archives before caching, discard invalid cached responses and remove
+     failed partial downloads so rerunning a build can recover automatically.
+ * scripts/wasm/test-downloads.py, .github/workflows/build-wasm.yml
+   + Test verified-cache reuse, invalid-cache recovery, checksum failures,
+     HTTP errors and truncated transfers against a local HTTP server in CI.
+ * webinterface/docs/step1-wasm-compilation.md
+   * Document the release source, archive verification and download regression
+     command, including recovery behavior for failed or outdated caches.
+
+261022 Alexander Mitrofanov
+ * webinterface/{archive,visualization}.js
+   + Build local UTF-8 ZIPs with normalized FASTA, compiled version provenance,
+     portable parameter files, selected CSV, auxiliary inputs and all outputs;
+     include separate replay configurations for native text report modes.
+   + Construct selected-row vaRRI URLs from full target/query sequences, native
+     dot-bracket output, names and signed indices, preserving strand direction.
+ * webinterface/{app,results,protocol}.js, index.html, styles.css
+   + Add row selection, embedded vaRRI/full-viewer link and Download ZIP action;
+     preserve completed-run inputs and clear exports/viewer when inputs change.
+   * Replace folded groups with keyboard-accessible tabs and compact parameter
+     grids; link Bioinformatics - University of Freiburg to the group website
+     and remove artificial width limits from table/footer notes.
+ * scripts/wasm/{stage.sh,smoke-protocol.mjs,test-browser.py}
+   * Stage the new modules; verify byte-identical replay through fresh engines
+     and browser tab/selection/ZIP behavior in Chromium and Firefox.
+ * webinterface/tests/export.test.mjs, README.md, webinterface/docs/*
+   + Cover coordinate/identity mapping, effective settings and archive inputs;
+     document replay commands, external visualization and browser limitations
+     (https://github.com/BackofenLab/IntaRNA/pull/287#issuecomment-6321503136).
+
+261021 Alexander Mitrofanov
+ * src/IntaRNA/*.h
+   * Mark 194 inherited virtual methods and 45 derived destructors override;
+     keep algorithms, interfaces and third-party headers unchanged.
+ * webinterface/{options,columns,protocol,app,results,intarna-worker}.js
+   + Add CLI-based parameter groups and validation, multi-FASTA prediction,
+     signed per-strand start indices and IntaRNAeval structure evaluation.
+   + Provide all CSV columns, table visibility controls, pair-relative mfe Δ,
+     local SHAPE/accessibility data and previews/downloads of native extra files.
+ * webinterface/index.html, styles.css, assets/*
+   * Follow vaRRI main-v2 colors and institutional header; keep one parameter
+     group open at a time and adapt controls/defaults to the selected task.
+ * scripts/wasm/{build,stage}.sh, write-build-info.mjs
+   + Record actual compiled engine/library versions and asset hashes in text/JSON
+     at build time; preserve/check provenance during staging and show it in UI.
+   * Reject inconsistent missing overrides in the Emscripten build.
+ * webinterface/tests/*, scripts/wasm/{smoke-protocol.mjs,test-browser.py}
+   + Exercise task validation/defaults, real WASM evaluation/prediction, multiple
+     records/coordinates, imported data, columns/reports and worker lifecycle.
+ * .github/workflows/{build,build-wasm}.yml, README.md, webinterface/docs/*
+   * Run WASM/browser checks on dependent PRs and document revised behavior,
+     provenance, native option replacements and browser limits (PR #287 review).
+
+261020 Alexander Mitrofanov
+ * scripts/wasm/*, .github/workflows/build-wasm.yml, webinterface/app.js
+   + Execute dependency API probes and test structured accessibility costs,
+     native prediction references, C++ errors, nested paths and literal IDs.
+   * Download archives atomically and clear obsolete diagnostics on input edits.
+ * webinterface/docs/step4-results-and-deployment.md
+   + Record native API/CLI, real WASM and Chromium/Firefox validation (#286).
+
+261020 Alexander Mitrofanov
+ * webinterface/results.js, app.js, index.html, styles.css, tests/*, README.md
+   + Parse native CSV, preserve target/query orientation and inclusive indices,
+     and show energy/relative suboptimality with sorting, search and export.
+ * scripts/wasm/stage.sh, test-browser.py, .github/workflows/*
+   + Stage matching WASM assets, notices and provenance; verify the real engine
+     in Chromium and Firefox, including cancellation/restart and error recovery.
+   * Publish one combined Pages artifact with the existing guide/API and the
+     browser application at /webinterface/ (#286, step 4).
+
+261020 Alexander Mitrofanov
+ * webinterface/index.html, app.js, styles.css, mark.svg, docs/*
+   + Add paired query/target editors, a valid example, bounded RNA/FASTA
+     validation and result counts; normalize lowercase and DNA input.
+   + Keep the form responsive during predictions, display errors/diagnostics,
+     and abort by button or Escape (#286, step 3).
+
+261020 Alexander Mitrofanov
+ * webinterface/protocol.js, intarna-worker.js, runner.js, tests/*
+   + Validate FASTA at the worker boundary, run the existing CLI with MEMFS
+     input/output, and report CSV and bounded diagnostics asynchronously.
+   + Terminate each worker on completion, failure or abort; test clean restart
+     and stale-message handling (#286, step 2); document the worker protocol.
+
+261020 Alexander Mitrofanov
+ * scripts/wasm/*, .github/workflows/build-wasm.yml, configure.ac,
+   src/bin/Makefile.am, src/IntaRNA/Makefile.am
+   + Build pinned zlib, Boost and ViennaRNA for wasm32, then the existing
+     IntaRNA CLI as an isolated ES module with MEMFS and callMain exports.
+   * Omit pthread flags for single-thread Emscripten builds; retain native flags.
+   * Resolve generated CLI headers/pkg-config data in the build tree; adapt
+     bundled dlib Unicode and template code to the SDK libc++ and Clang.
+   + Document the toolchain and validate native-reference predictions in WASM
+     (https://github.com/BackofenLab/IntaRNA/issues/286, step 1).
 
 261020 Alexander Mitrofanov
  * PredictorMfe2dSeedExtension.*, PredictorMfe2dHeuristicSeedExtension.cpp

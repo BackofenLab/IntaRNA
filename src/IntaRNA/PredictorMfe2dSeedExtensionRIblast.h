@@ -60,7 +60,7 @@ public:
 	/**
 	 * data cleanup
 	 */
-	virtual ~PredictorMfe2dSeedExtensionRIblast();
+	virtual ~PredictorMfe2dSeedExtensionRIblast() override;
 
 
 	/**
@@ -78,7 +78,7 @@ public:
 	virtual
 	void
 	predict( const IndexRange & r1 = IndexRange(0,RnaSequence::lastPos)
-			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos) );
+			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos) ) override;
 
 
 protected:
@@ -141,7 +141,7 @@ protected:
 	 */
 	virtual
 	void
-	traceBack( Interaction & interaction );
+	traceBack( Interaction & interaction ) override;
 
 	void
 	printMatrix( const E2dMatrix & matrix );

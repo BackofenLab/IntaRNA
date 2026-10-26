@@ -30,7 +30,7 @@ public:
 								, const size_t offset2 = 0 );
 
 
-	virtual ~InteractionEnergyIdxOffset();
+	virtual ~InteractionEnergyIdxOffset() override;
 
 	/**
 	 * Access to the currently used index offset for sequence 1
@@ -77,7 +77,7 @@ public:
 	E_type
 	getE( const size_t i1, const size_t j1
 			, const size_t i2, const size_t j2
-			, const E_type hybridE ) const;
+			, const E_type hybridE ) const override;
 
 	/**
 	 * Provides the ensemble energy for a given partition function Z.
@@ -88,7 +88,7 @@ public:
 	 */
 	virtual
 	E_type
-	getE( const Z_type Z ) const;
+	getE( const Z_type Z ) const override;
 
 	/**
 	 * Checks whether or not two positions (shifted by offset) can form a base pair
@@ -98,7 +98,7 @@ public:
 	 */
 	virtual
 	bool
-	areComplementary( const size_t i1, const size_t i2 ) const;
+	areComplementary( const size_t i1, const size_t i2 ) const override;
 
 	/**
 	 * Checks whether or not two positions can form a GU base pair
@@ -108,7 +108,7 @@ public:
 	 */
 	virtual
 	bool
-	isGU( const size_t i1, const size_t i2 ) const;
+	isGU( const size_t i1, const size_t i2 ) const override;
 
 	/**
 	 * Length of sequence 1 excluding the index offset
@@ -116,7 +116,7 @@ public:
 	 */
 	virtual
 	size_t
-	size1() const;
+	size1() const override;
 
 	/**
 	 * Length of sequence 2 excluding index offset
@@ -124,7 +124,7 @@ public:
 	 */
 	virtual
 	size_t
-	size2() const;
+	size2() const override;
 
 	/**
 	 * Provides the ED penalty for making a region with sequence 1 accessible
@@ -137,7 +137,7 @@ public:
 	 */
 	virtual
 	E_type
-	getED1( const size_t i1, const size_t j1 ) const;
+	getED1( const size_t i1, const size_t j1 ) const override;
 
 	/**
 	 * Provides the ED penalty for making a region with (the reversed)
@@ -151,7 +151,7 @@ public:
 	 */
 	virtual
 	E_type
-	getED2( const size_t i2, const size_t j2 ) const;
+	getED2( const size_t i2, const size_t j2 ) const override;
 
 	/**
 	 * Whether or not position i is accessible for interaction in sequence 1
@@ -163,7 +163,7 @@ public:
 	 */
 	virtual
 	bool
-	isAccessible1( const size_t i ) const;
+	isAccessible1( const size_t i ) const override;
 
 	/**
 	 * Whether or not position i is accessible for interaction in sequence 2
@@ -175,7 +175,7 @@ public:
 	 */
 	virtual
 	bool
-	isAccessible2( const size_t i ) const;
+	isAccessible2( const size_t i ) const override;
 
 	/**
 	 * Provides the energy contribution of an interaction site gap, i.e. the
@@ -197,7 +197,7 @@ public:
 	E_type
 	getE_multi(  const size_t i1, const size_t j1
 				, const size_t i2, const size_t j2
-				, const ES_multi_mode ES_mode ) const;
+				, const ES_multi_mode ES_mode ) const override;
 
 	/**
 	 * Provides the ensemble energy (ES) of all intramolecular substructures
@@ -214,7 +214,7 @@ public:
 	 */
 	virtual
 	E_type
-	getES1( const size_t i1, const size_t j1 ) const;
+	getES1( const size_t i1, const size_t j1 ) const override;
 
 	/**
 	 * Provides the ensemble energy (ES) of all intramolecular substructures
@@ -231,7 +231,7 @@ public:
 	 */
 	virtual
 	E_type
-	getES2( const size_t i2, const size_t j2 ) const;
+	getES2( const size_t i2, const size_t j2 ) const override;
 
 	/**
 	 * Provides the energy contribution for a given number of unpaired
@@ -244,7 +244,7 @@ public:
 	 */
 	virtual
 	E_type
-	getE_multiUnpaired( const size_t numUnpaired ) const;
+	getE_multiUnpaired( const size_t numUnpaired ) const override;
 
 
 	/**
@@ -262,7 +262,7 @@ public:
 	 */
 	virtual
 	E_type
-	getE_multiHelix( const size_t j1, const size_t j2 ) const;
+	getE_multiHelix( const size_t j1, const size_t j2 ) const override;
 
 	/**
 	 * Provides the energy contribution/penalty for closing an intermolecular
@@ -273,7 +273,7 @@ public:
 	 */
 	virtual
 	E_type
-	getE_multiClosing() const;
+	getE_multiClosing() const override;
 
 	/**
 	 * Provides the duplex initiation energy.
@@ -282,7 +282,7 @@ public:
 	 */
 	virtual
 	E_type
-	getE_init( ) const;
+	getE_init( ) const override;
 
 
 	/**
@@ -306,7 +306,7 @@ public:
 	 */
 	virtual
 	E_type
-	getE_interLeft( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const;
+	getE_interLeft( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const override;
 
 
 	/**
@@ -323,7 +323,7 @@ public:
 	 */
 	virtual
 	E_type
-	getE_danglingLeft( const size_t i1, const size_t i2 ) const;
+	getE_danglingLeft( const size_t i1, const size_t i2 ) const override;
 
 
 	/**
@@ -340,7 +340,7 @@ public:
 	 */
 	virtual
 	E_type
-	getE_danglingRight( const size_t j1, const size_t j2 ) const;
+	getE_danglingRight( const size_t j1, const size_t j2 ) const override;
 
 	/**
 	 * Provides the penalty for closing an interaction with the given
@@ -355,7 +355,7 @@ public:
 	 */
 	virtual
 	E_type
-	getE_endLeft( const size_t i1, const size_t i2 ) const;
+	getE_endLeft( const size_t i1, const size_t i2 ) const override;
 
 	/**
 	 * Provides the penalty for closing an interaction with the given
@@ -370,7 +370,7 @@ public:
 	 */
 	virtual
 	E_type
-	getE_endRight( const size_t j1, const size_t j2 ) const;
+	getE_endRight( const size_t j1, const size_t j2 ) const override;
 
 	/**
 	 * Computes the probability of the dangling ends for the left side
@@ -388,7 +388,7 @@ public:
 	 */
 	virtual
 	Z_type
-	getPr_danglingLeft( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const;
+	getPr_danglingLeft( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const override;
 
 	/**
 	 * Computes the probability of the dangling ends for the right side
@@ -406,7 +406,7 @@ public:
 	 */
 	virtual
 	Z_type
-	getPr_danglingRight( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const;
+	getPr_danglingRight( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const override;
 
 
 
@@ -415,7 +415,7 @@ public:
 	 */
 	virtual
 	Z_type
-	getRT() const;
+	getRT() const override;
 
 	/**
 	 * Provides the base pair encoding for the given indices after shifting by
@@ -426,7 +426,7 @@ public:
 	 */
 	virtual
 	Interaction::BasePair
-	getBasePair( const size_t i1, const size_t i2 ) const;
+	getBasePair( const size_t i1, const size_t i2 ) const override;
 
 
 	/**
@@ -436,7 +436,7 @@ public:
 	 */
 	virtual
 	size_t
-	getIndex1( const Interaction::BasePair & bp ) const;
+	getIndex1( const Interaction::BasePair & bp ) const override;
 
 
 	/**
@@ -446,7 +446,7 @@ public:
 	 */
 	virtual
 	size_t
-	getIndex2( const Interaction::BasePair & bp ) const;
+	getIndex2( const Interaction::BasePair & bp ) const override;
 
 
 	/**
@@ -467,7 +467,7 @@ public:
 	 */
 	virtual
 	bool
-	isValidInternalLoop( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const;
+	isValidInternalLoop( const size_t i1, const size_t j1, const size_t i2, const size_t j2 ) const override;
 
 	/**
 	 * Provides the overall ensemble energy for sequence 1
@@ -476,7 +476,7 @@ public:
 	 */
 	virtual
 	E_type
-	getEall1() const;
+	getEall1() const override;
 
 	/**
 	 * Provides the overall ensemble energy for sequence 2
@@ -485,7 +485,7 @@ public:
 	 */
 	virtual
 	E_type
-	getEall2() const;
+	getEall2() const override;
 
 
 protected:

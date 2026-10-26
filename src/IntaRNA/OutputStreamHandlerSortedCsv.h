@@ -46,14 +46,14 @@ public:
 	 * - calls flush() on the final output
 	 * - destruction of the underlying OutputStreamHandler
 	 */
-	virtual ~OutputStreamHandlerSortedCsv();
+	virtual ~OutputStreamHandlerSortedCsv() override;
 
 	/**
 	 * Access to the ostream to which unsorted CSV output is to be written.
 	 * @return the output stream to write unsorted CSV output to
 	 */
 	virtual
-	std::ostream& getOutStream();
+	std::ostream& getOutStream() override;
 
 
 protected:
