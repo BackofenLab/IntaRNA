@@ -42,26 +42,15 @@ with sync_playwright() as playwright:
         assert page.locator('.parameter-group:visible').count() == 1
 
     def load_reference(task='prediction'):
+        # Numerical regressions use their own small inputs. GUI examples are
+        # maintainer-editable content and are validated separately.
+        page.locator('#reset').click()
         if task == 'evaluation':
             page.get_by_role('radio', name='Evaluation').check()
         elif task == 'mutation':
             page.get_by_role('radio', name='Mutation Design').check()
         else:
             page.get_by_role('radio', name='Prediction').check()
-        page.locator('#examples-menu summary').click()
-        page.locator(f'#example-options [data-example-task="{task}"]').click()
-        expect(page.locator('#query')).not_to_have_value('')
-        expect(page.locator('#target')).not_to_have_value('')
-        if task == 'evaluation':
-            expect(page.locator('#rri')).not_to_have_value('')
-
-        # Examples are maintainer-editable content. Exercise their loading, then
-        # use a fixed small pair so numerical browser regressions stay stable.
-        page.locator('#reset').click()
-        if task == 'evaluation':
-            page.get_by_role('radio', name='Evaluation').check()
-        elif task == 'mutation':
-            page.get_by_role('radio', name='Mutation Design').check()
         page.locator('#query').fill('>query\nGGGAGGAGGG\n')
         page.locator('#target').fill('>target\nCCCUCCUCCC\n')
         if task == 'evaluation':
@@ -355,7 +344,7 @@ with sync_playwright() as playwright:
     with page.expect_download() as downloaded:
         active.locator('[data-role=download]').click()
     csv = Path(downloaded.value.path()).read_text()
-    assert csv.splitlines()[0] == 'id1;start1;end1;id2;start2;end2;subseqDP;hybridDP;E;ED1;ED2;seedE;seedStart1;seedStart2'
+    assert csv.splitlines()[0] == 'id1;start1;end1;id2;start2;end2;subseqDP;hybridDP;E;ED1;ED2;seedE;seedStart1;seedEnd1;seedStart2;seedEnd2'
     assert 'target;1;10;query;1;10;' in csv
     assert 'deltaE' not in csv
     assert active.locator('thead th').first.inner_text() == ''
