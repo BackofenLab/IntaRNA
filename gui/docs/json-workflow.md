@@ -68,7 +68,8 @@ uses native defaults for omitted parameters. Inactive controls keep their edits
 in the form for switching modes, but their values are omitted from executed and
 stored settings. Previously computed sessions remain available. Empty FASTA
 fields show the short demonstration sequences as placeholders only. The Examples
-disclosure menu follows the Input Parameters label.
+disclosure menu follows the Input Parameters label and lists only examples for
+the selected Prediction or Evaluation task.
 
 Maintainers edit `gui/examples/index.json` (an array of local JSON filenames).
 Each listed file contains `name`, `description`, and `configuration`, where the

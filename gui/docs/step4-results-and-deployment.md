@@ -23,7 +23,9 @@ This is relative suboptimality, not a free-energy change or probability.
 Every heading is a keyboard-operable sort button with `aria-sort`. Search covers
 all returned values. A separate checklist shows/hides table columns after the
 run; it does not change selected CSV output. All identifiers, output previews
-and diagnostics render with `textContent`. Selected extra files appear below the
+and diagnostics render with `textContent`. The table has a 500 px maximum height
+with vertical scrolling for longer results and a sticky heading; CSV downloads
+still contain every selected row. Selected extra files appear below the
 table with their original filename, covered sequence/sequence-pair names, a
 header-level download, and bounded text previews, including SVG source.
 Empty output is successful and still permits CSV/accessibility downloads.

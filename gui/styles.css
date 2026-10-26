@@ -302,7 +302,15 @@ fieldset {
 .field-grid > .field:not(.check) > :nth-child(2) { align-self:start; }
 .accessibility-columns { display:grid; grid-template-columns:repeat(2,minmax(16rem,32rem)); gap:16px; justify-content:start; margin-top:12px; }
 .accessibility-columns > div { min-width:0; }
-.seed-mode { max-width:24rem; margin-bottom:12px; }
+.seed-primary-row {
+  display:grid;
+  grid-template-columns:minmax(10rem,12rem) minmax(12rem,24rem);
+  gap:12px 16px;
+  align-items:start;
+  margin-bottom:12px;
+}
+.seed-primary-row .field { min-width:0; }
+#csv-options .field-grid.columns-1 { grid-template-columns:minmax(10rem,19rem); }
 .field-grid:has(#noSeed) { display:none; }
 #query,#target { white-space:pre; overflow:auto; }
 #sequence-help,#general-options p { max-width:none; }
@@ -463,6 +471,7 @@ fieldset {
 
 .table-scroll {
   width:100%;
+  max-height:500px;
   overflow:auto;
   border:1px solid var(--border);
 }
@@ -478,6 +487,9 @@ th {
   background:var(--table-header);
   text-align:left;
   padding:0 5px;
+  position:sticky;
+  top:0;
+  z-index:1;
 }
 
 th button {
@@ -614,21 +626,28 @@ tbody tr.selected { background:var(--table-selection); }
 .output-tabs {
   display:flex;
   gap:4px;
+  padding:8px;
   border-bottom:1px solid var(--border);
+  border-radius:5px 5px 0 0;
+  background:var(--brand-blue-soft);
 }
 
 .output-tab {
-  border:0;
-  border-bottom:3px solid transparent;
-  border-radius:0;
-  padding:.5rem .8rem;
+  border:1px solid transparent;
+  border-radius:5px;
+  padding:.55rem .75rem;
   color:var(--brand-blue-dark);
   background:transparent;
 }
 
 .output-tab[aria-selected=true] {
-  border-bottom-color:var(--brand-blue);
-  background:var(--brand-blue-soft);
+  border-color:var(--brand-blue);
+  background:var(--brand-blue);
+  color:white;
+}
+
+.output-tab:hover {
+  border-color:var(--brand-blue);
 }
 
 .output-tab-panel {
@@ -791,6 +810,8 @@ dialog::backdrop {
     grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr));
   }
   .field-grid[class*=columns-],.accessibility-columns { grid-template-columns:1fr; }
+  .seed-primary-row { grid-template-columns:1fr; }
+  #csv-options .field-grid.columns-1 { grid-template-columns:1fr; }
   .results {
     padding:14px;
   }
