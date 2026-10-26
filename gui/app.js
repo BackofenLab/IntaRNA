@@ -1,9 +1,9 @@
 import { parseFasta, prepareRequest, CSV_COLUMNS } from './protocol.js';
-import { GROUPS, FIELDS, EXTRA_OUTPUTS } from './options.js';
-import { CSV_CATALOG } from './columns.js';
+import { GROUPS, FIELDS, EXTRA_OUTPUTS, UI_DEFAULTS } from './options.js';
+import { CSV_CATALOG, CSV_GROUPS, defaultColumns } from './columns.js';
 import { PredictionRunner } from './runner.js';
-import { ResultsView, downloadText, downloadBlob } from './results.js';
-import { createArchive } from './archive.js';
+import { downloadText } from './results.js';
+import { SessionsView } from './sessions.js';
 import { importParameters, serializeParameters, MAX_PARAMETER_BYTES } from './parameter-file.js';
 import { readFastaFile } from './uploads.js';
 
@@ -12,9 +12,10 @@ const form = byId('prediction-form'), runner = new PredictionRunner();
 const getTask = () => form.querySelector('input[name=task]:checked').value;
 const setTask = (task) => { for (const input of form.querySelectorAll('input[name=task]')) input.checked = input.value === task; };
 const dialog = byId('loading'), status = byId('result-status'), errorBox = byId('input-error');
-const results = new ResultsView(byId('results-view'));
+const sessions = new SessionsView(byId('sessions'), byId('session-template'), (request, name) => {
+  applyParameters(request, `${name} selected. Its computed inputs have been restored.`);
+}, showInputError, (message) => { status.textContent = message; });
 const csvInputs = [], outputInputs = [];
-let completedRun = null;
 let inputRevision = 0;
 let csvOrder = CSV_COLUMNS.split(',');
 function element(tag, text, className) {
@@ -43,7 +44,7 @@ function group(key, label) {
   const body = element('div', '', 'group-body'); panel.append(body);
   byId('parameter-groups').append(panel); addTab(key, label); return body;
 }
-addTab('sequence-input', 'Sequence input');
+addTab('sequence-input', 'Sequences');
 byId('parameter-tabs').addEventListener('keydown', (event) => {
   if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
   const tabs = [...byId('parameter-tabs').children].filter((tab) => !tab.hidden);
@@ -51,34 +52,67 @@ byId('parameter-tabs').addEventListener('keydown', (event) => {
   const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (current + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
   event.preventDefault(); activateGroup(tabs[next].getAttribute('aria-controls'), true);
 });
+// Render each requested row explicitly; labels share a grid row so wrapped
+// labels do not push neighboring controls out of alignment.
+function renderField(field, id = field.key) {
+  const wrapper = element('div', '', `field${field.type === 'checkbox' ? ' check' : ''}`);
+  const label = element('label', field.label); label.htmlFor = id; label.title = `--${field.key}`;
+  const input = element(field.type === 'select' ? 'select' : field.type === 'textarea' ? 'textarea' : 'input'); input.id = id;
+  if (input.tagName === 'INPUT') input.type = field.type;
+  if (field.type === 'select') for (const [value, name] of Object.entries(field.choices)) { const option = element('option', name); option.value = value; input.append(option); }
+  if (field.type === 'number') { input.min = field.min; input.max = field.max; input.step = field.step ?? 1; }
+  if (field.type === 'checkbox') { input.checked = field.value; wrapper.append(input, label); }
+  else { input.value = field.value; wrapper.append(label, input); }
+  if (field.hint) { const hint = element('p', field.hint, 'field-hint'); hint.id = `${id}-help`; input.setAttribute('aria-describedby', hint.id); wrapper.append(hint); }
+  if (field.type === 'textarea') {
+    input.spellcheck = false;
+    const upload = element('input'); upload.type = 'file'; upload.accept = '.txt,.csv,.shape,.dat'; upload.setAttribute('aria-label', `Load ${field.label} from a local text file`);
+    upload.dataset.for = field.key;
+    upload.addEventListener('change', async () => {
+      const file = upload.files[0]; upload.value = ''; if (!file) return;
+      const revision = ++inputRevision;
+      try {
+        if (file.size > 1000000) throw new Error('Choose a text file of at most 1 MB.');
+        const content = await file.text();
+        if (inputRevision !== revision || input.disabled) return;
+        input.value = content; input.dispatchEvent(new Event('input', { bubbles: true }));
+      } catch (error) { if (inputRevision === revision) showInputError(error); }
+    }); wrapper.append(upload);
+  }
+  if (field.key === 'noSeed') wrapper.hidden = true;
+  return wrapper;
+}
+function fieldRow(body, fields, suffix = '') {
+  const grid = element('div', '', `field-grid columns-${fields.length}`);
+  for (const field of fields) grid.append(renderField(field, field.key + suffix));
+  body.append(grid); return grid;
+}
 for (const definition of GROUPS) {
-  const body = group(definition.key, definition.label), grid = element('div', '', 'field-grid'); body.append(grid);
-  for (const field of definition.fields) {
-    const wrapper = element('div', '', `field${field.type === 'checkbox' ? ' check' : ''}`);
-    const label = element('label', field.label); label.htmlFor = field.key; label.title = `--${field.key}`;
-    const input = element(field.type === 'select' ? 'select' : field.type === 'textarea' ? 'textarea' : 'input'); input.id = field.key;
-    if (input.tagName === 'INPUT') input.type = field.type;
-    if (field.type === 'select') for (const [value, name] of Object.entries(field.choices)) { const option = element('option', name); option.value = value; input.append(option); }
-    if (field.type === 'number') { input.min = field.min; input.max = field.max; input.step = field.step ?? 1; }
-    if (field.type === 'checkbox') { input.checked = field.value; wrapper.append(input, label); }
-    else { input.value = field.value; wrapper.append(label, input); }
-    if (field.hint) { const hint = element('p', field.hint, 'field-hint'); hint.id = `${field.key}-help`; input.setAttribute('aria-describedby', hint.id); wrapper.append(hint); }
-    if (field.type === 'textarea') {
-      input.spellcheck = false;
-      const upload = element('input'); upload.type = 'file'; upload.accept = '.txt,.csv,.shape,.dat'; upload.setAttribute('aria-label', `Load ${field.label} from a local text file`);
-      upload.dataset.for = field.key;
-      upload.addEventListener('change', async () => {
-        const file = upload.files[0]; upload.value = ''; if (!file) return;
-        const revision = ++inputRevision;
-        try {
-          if (file.size > 1000000) throw new Error('Choose a text file of at most 1 MB.');
-          const content = await file.text();
-          if (inputRevision !== revision) return;
-          input.value = content; input.dispatchEvent(new Event('input', { bubbles: true }));
-        } catch (error) { if (inputRevision === revision) showInputError(error); }
-      }); wrapper.append(upload);
+  const body = group(definition.key, definition.label);
+  if (definition.key === 'seed-options') {
+    const wrapper = element('div', '', 'field seed-mode');
+    const label = element('label', 'Seed constraint'); label.htmlFor = 'seed-mode';
+    const select = element('select'); select.id = 'seed-mode';
+    for (const [value, name] of [['none', 'Disable seed constraint'], ['explicit', 'Explicit seed'], ['identify', 'Identify seeds']]) {
+      const option = element('option', name); option.value = value; select.append(option);
     }
-    grid.append(wrapper);
+    select.value = 'identify'; wrapper.append(label, select); body.append(wrapper);
+  }
+  if (definition.rows) {
+    for (const row of definition.rows) fieldRow(body, row);
+  } else fieldRow(body, definition.fields);
+  if (definition.strand) {
+    const p = definition.strand;
+    const shared = FIELDS.filter((field) => ['accNoLP', 'accNoGUend'].includes(field.key));
+    fieldRow(body, shared, p === 't' ? '-target' : '');
+    body.append(element('p', 'These two accessibility settings apply to both strands.', 'input-help'));
+    const columns = element('div', '', 'accessibility-columns'); body.append(columns);
+    const accessibility = element('div'), shape = element('div'); columns.append(accessibility, shape);
+    const field = (key) => FIELDS.find((entry) => entry.key === p + key);
+    fieldRow(accessibility, [field('AccConstr')]);
+    fieldRow(accessibility, [field('AccFile')]);
+    fieldRow(shape, [field('Shape')]);
+    fieldRow(shape, [field('ShapeMethod'), field('ShapeConversion')]);
   }
 }
 function checkbox(container, key, labelText, description) {
@@ -88,31 +122,51 @@ function checkbox(container, key, labelText, description) {
 }
 const outputBody = byId('output-options').querySelector('.group-body');
 outputBody.append(element('h3', 'CSV output columns', 'subheading'));
-outputBody.append(element('p', 'seq1 is the target; seq2 is the query. Select columns for both the table and CSV download. You can hide table columns after computation without changing the CSV.', 'input-help'));
+outputBody.append(element('p', 'seq1 is the target; seq2 is the query. Hover over a column name for details. Select columns for the table and CSV download; table visibility can be changed after computation.', 'input-help'));
 const selectionTools = element('div', '', 'selection-tools'); outputBody.append(selectionTools);
-const csvPicker = element('div', '', 'checkbox-grid'); outputBody.append(csvPicker);
-for (const column of [...CSV_COLUMNS.split(',').map((key) => CSV_CATALOG.find((column) => column.key === key)), ...CSV_CATALOG.filter((column) => !CSV_COLUMNS.split(',').includes(column.key))]) csvInputs.push(checkbox(csvPicker, column.key, `${column.key} — ${column.description}`, column.description));
-for (const [name, selection] of [['Select all', CSV_CATALOG.map((c) => c.key)], ['CLI defaults', CSV_COLUMNS.split(',')], ['Clear selection', []]]) {
+const selectColumns = (selection) => {
+  csvOrder = [...selection]; for (const input of csvInputs) input.checked = selection.includes(input.value); inputsChanged();
+};
+for (const [name, selection] of [['Select all', () => CSV_CATALOG.map((c) => c.key)], ['Task defaults', () => defaultColumns(getTask())], ['Clear selection', () => []]]) {
   const button = element('button', name); button.type = 'button';
-  button.addEventListener('click', () => { csvOrder = [...selection]; for (const input of csvInputs) input.checked = selection.includes(input.value); clearResults(); }); selectionTools.append(button);
+  button.addEventListener('click', () => selectColumns(selection())); selectionTools.append(button);
+}
+for (const group of CSV_GROUPS) {
+  const section = element('fieldset', '', 'csv-group'), legend = element('legend', group.label);
+  section.dataset.csvGroup = group.label;
+  for (const [name, checked] of [['Select all', true], ['Deselect all', false]]) {
+    const button = element('button', name, 'text-button'); button.type = 'button';
+    button.setAttribute('aria-label', `${name} ${group.label} columns`);
+    button.addEventListener('click', () => {
+      for (const input of csvInputs.filter((input) => group.keys.includes(input.value))) input.checked = checked;
+      inputsChanged();
+    }); legend.append(button);
+  }
+  const picker = element('div', '', 'checkbox-grid csv-columns'); section.append(legend, picker); outputBody.append(section);
+  for (const key of group.keys) {
+    const column = CSV_CATALOG.find((column) => column.key === key);
+    csvInputs.push(checkbox(picker, key, key, column.description));
+  }
 }
 outputBody.append(element('h3', 'Additional output files', 'subheading'));
 outputBody.append(element('p', 'Reports are computed with the same settings. ASCII, detailed and ensemble reports each run a fresh engine instance and can take extra time.', 'input-help'));
 const outputPicker = element('div', '', 'checkbox-grid'); outputBody.append(outputPicker);
 for (const output of EXTRA_OUTPUTS) outputInputs.push(checkbox(outputPicker, output.key, output.label));
-const generalBody = group('general-options', 'General');
-generalBody.append(element('p', 'Tasks run locally in one worker. Abort or Escape stops computation immediately. Process-level settings (threads, log paths, parameter-file paths and terminal help) are available in the CLI.'));
+const generalBody = group('general-options', 'CLI-only');
+generalBody.append(element('p', 'Process-level settings (threads, log paths, parameter-file paths and terminal help) are available in the CLI.'));
 const docs = element('a', 'Full CLI parameter documentation'); docs.href = 'https://github.com/BackofenLab/IntaRNA#readme'; generalBody.append(docs);
 
-function clearResults(message = 'Inputs changed. Compute to update the interactions.') {
+function inputsChanged(message = 'Inputs changed. Compute to update the interactions.') {
   inputRevision++;
-  completedRun = null; results.clear(); byId('output-files').hidden = true; byId('file-list').replaceChildren();
+  sessions.deselect();
   byId('diagnostics').hidden = true; byId('diagnostic-text').textContent = ''; status.textContent = message;
 }
 function updateLength(name) {
+  const warning = byId(`${name}-warning`); warning.hidden = true; warning.textContent = '';
   if (!byId(name).value.trim()) { byId(`${name}-length`).textContent = 'No sequence entered'; return; }
   try {
     const parsed = parseFasta(byId(name).value, name === 'query' ? 'Query' : 'Target', getTask() === 'prediction');
+    warning.textContent = parsed.warnings.join(' '); warning.hidden = !parsed.warnings.length;
     byId(`${name}-length`).textContent = `${parsed.records.length} record${parsed.records.length === 1 ? '' : 's'}, ${parsed.records.reduce((sum, r) => sum + r.sequence.length, 0).toLocaleString()} nucleotides`;
   } catch { byId(`${name}-length`).textContent = 'Check sequence format and length'; }
 }
@@ -129,9 +183,22 @@ function updateAvailability() {
     }
     for (const field of definition.fields) {
       const input = byId(field.key);
-      input.disabled = evaluation && !!field.prediction || !evaluation && definition.key === 'helix-options' && byId('model').value !== 'B' || field.key === 'kineticScore' && byId('mode').value !== 'K';
+      input.disabled = evaluation && !!field.prediction || field.key.startsWith('helix') && byId('model').value !== 'B' || field.key === 'kineticScore' && byId('mode').value !== 'K';
     }
   }
+  byId('noSeed').checked = byId('seed-mode').value === 'none';
+  for (const field of FIELDS.filter((field) => field.key.startsWith('seed'))) {
+    byId(field.key).disabled = evaluation || (field.key === 'seedTQ' ? byId('seed-mode').value !== 'explicit' : byId('seed-mode').value !== 'identify');
+  }
+  for (const p of ['q', 't']) {
+    const mode = byId(`${p}Acc`).value;
+    for (const key of ['AccW', 'AccL', 'PfScale', 'AccConstr', 'AccFile', 'Shape', 'ShapeMethod', 'ShapeConversion']) {
+      byId(p + key).disabled = mode === 'N' || ['AccW', 'AccL'].includes(key) && mode !== 'C' || key === 'AccFile' && !['P', 'E'].includes(mode);
+    }
+    for (const key of ['accNoLP', 'accNoGUend']) byId(key + (p === 't' ? '-target' : '')).disabled = mode === 'N';
+  }
+  // Upload controls follow the text area they populate, including async reads.
+  for (const upload of form.querySelectorAll('input[data-for]')) upload.disabled = byId(upload.dataset.for).disabled;
   for (const input of outputInputs) { input.disabled = evaluation && EXTRA_OUTPUTS.find((entry) => entry.key === input.value).prediction; if (input.disabled) input.checked = false; }
   updateLength('query'); updateLength('target');
 }
@@ -142,18 +209,27 @@ function resetParameters({ clearInputs = false } = {}) {
     for (const input of form.querySelectorAll('input[type=file]')) input.value = '';
     byId('examples-menu').open = false; activateGroup('sequence-input');
   }
-  csvOrder = CSV_COLUMNS.split(',');
-  for (const field of FIELDS) { const input = byId(field.key); if (field.type === 'checkbox') input.checked = field.value; else input.value = field.value; }
-  for (const input of csvInputs) input.checked = CSV_COLUMNS.split(',').includes(input.value);
+  csvOrder = defaultColumns(getTask());
+  byId('seed-mode').value = 'identify';
+  for (const field of FIELDS) { const input = byId(field.key); if (field.type === 'checkbox') input.checked = UI_DEFAULTS[field.key]; else input.value = UI_DEFAULTS[field.key]; }
+  syncAccessibilityFlags();
+  for (const input of csvInputs) input.checked = csvOrder.includes(input.value);
   for (const input of outputInputs) input.checked = false;
   byId('qIdxPos0').value = 1; byId('tIdxPos0').value = 1; byId('rri').value = '';
-  updateAvailability(); errorBox.hidden = true; clearResults(clearInputs ? 'Inputs cleared. Enter sequences or choose an example.' : 'Parameters reset to CLI defaults. Compute to update the interactions.');
+  updateAvailability(); errorBox.hidden = true; inputsChanged(clearInputs ? 'Inputs cleared. Enter sequences or choose an example.' : 'Parameters reset to task defaults. Compute to update the interactions.');
 }
 byId('task').addEventListener('change', resetParameters);
 byId('reset').addEventListener('click', () => resetParameters({ clearInputs: true }));
+function syncAccessibilityFlags(source) {
+  for (const key of ['accNoLP', 'accNoGUend']) {
+    if (source?.id === key + '-target') byId(key).checked = source.checked;
+    byId(key + '-target').checked = byId(key).checked;
+  }
+}
 form.addEventListener('input', (event) => {
   if (event.target.type === 'file') return;
-  updateAvailability(); errorBox.hidden = true; clearResults();
+  syncAccessibilityFlags(event.target);
+  updateAvailability(); errorBox.hidden = true; inputsChanged();
 });
 function showInputError(error) {
   errorBox.textContent = error.message; errorBox.hidden = false;
@@ -168,10 +244,12 @@ function applyParameters(request, message = 'Parameters loaded. Compute to analy
     if (field.type === 'checkbox') byId(field.key).checked = value;
     else byId(field.key).value = value;
   }
+  byId('seed-mode').value = request.parameters.noSeed ? 'none' : request.parameters.seedTQ ? 'explicit' : 'identify';
+  syncAccessibilityFlags();
   csvOrder = [...request.csvColumns];
   for (const input of csvInputs) input.checked = request.csvColumns.includes(input.value);
   for (const input of outputInputs) input.checked = request.outputs.includes(input.value);
-  updateAvailability(); activateGroup('sequence-input'); clearResults(message);
+  updateAvailability(); activateGroup('sequence-input'); inputsChanged(message);
 }
 for (const strand of ['query', 'target']) {
   const input = byId(strand), picker = byId(`${strand}-upload`);
@@ -184,7 +262,7 @@ for (const strand of ['query', 'target']) {
       if (inputRevision !== revision) return;
       input.value = content;
       updateAvailability(); errorBox.hidden = true;
-      clearResults(`${strand === 'query' ? 'Query' : 'Target'} FASTA loaded. Compute to analyze the inputs.`);
+      inputsChanged(`${strand === 'query' ? 'Query' : 'Target'} FASTA loaded. Compute to analyze the inputs.`);
     } catch (error) { if (inputRevision === revision) showInputError(error); }
   };
   byId(`${strand}-upload-button`).addEventListener('click', () => picker.click());
@@ -252,15 +330,16 @@ byId('examples-menu').addEventListener('keydown', (event) => {
 byId('abort').addEventListener('click', () => runner.abort());
 dialog.addEventListener('cancel', (event) => { event.preventDefault(); runner.abort(); });
 window.addEventListener('pagehide', () => runner.abort());
-function showFiles(files) {
-  for (const file of files) {
-    const details = element('details'), summary = element('summary', file.name), preview = element('pre', file.text.slice(0, 100000));
-    const download = element('button', 'Download file', 'secondary'); download.type = 'button'; download.addEventListener('click', () => downloadText(file.name, file.text));
-    details.append(summary, download, preview);
-    if (file.text.length > 100000) details.append(element('p', 'Preview limited to 100,000 characters. Download contains the complete file.'));
-    byId('file-list').append(details);
-  }
-  byId('output-files').hidden = !files.length;
+function currentParameters() {
+  // Keep inactive edits in the form for toggling back, but exclude them from
+  // validation, saved JSON and native computation. Shared flags stay active
+  // whenever either strand uses accessibility.
+  return Object.fromEntries(FIELDS.map((field) => {
+    const input = byId(field.key);
+    const inactive = ['accNoLP', 'accNoGUend'].includes(field.key)
+      ? input.disabled && byId(field.key + '-target').disabled : input.disabled;
+    return [field.key, inactive ? field.value : field.type === 'checkbox' ? input.checked : input.value];
+  }));
 }
 function currentRequest() {
   const selected = csvInputs.filter((input) => input.checked).map((input) => input.value);
@@ -268,7 +347,7 @@ function currentRequest() {
   return {
     task: getTask(), query: byId('query').value, target: byId('target').value,
     qIdxPos0: byId('qIdxPos0').value, tIdxPos0: byId('tIdxPos0').value, rri: byId('rri').value,
-    parameters: Object.fromEntries(FIELDS.map((field) => [field.key, field.type === 'checkbox' ? byId(field.key).checked : byId(field.key).value])),
+    parameters: currentParameters(),
     csvColumns: columns, outputs: outputInputs.filter((input) => input.checked && !input.disabled).map((input) => input.value),
   };
 }
@@ -277,15 +356,16 @@ form.addEventListener('submit', async (event) => {
   const request = currentRequest();
   errorBox.hidden = true;
   let prepared;
-  try { prepared = prepareRequest(request); } catch (error) { errorBox.textContent = error.message; errorBox.hidden = false; return; }
-  clearResults('Computing interactions…'); byId('loading-status').textContent = 'Loading the prediction engine…';
+  try {
+    if (getTask() === 'prediction' && byId('seed-mode').value === 'explicit' && !request.parameters.seedTQ.trim()) throw new Error('Explicit seed: enter target&query dot-bar encodings.');
+    prepared = prepareRequest(request); } catch (error) { errorBox.textContent = error.message; errorBox.hidden = false; return; }
+  inputsChanged('Computing interactions…'); byId('loading-status').textContent = 'Loading the prediction engine…';
   byId('inputs').disabled = true; byId('results').setAttribute('aria-busy', 'true'); dialog.showModal();
   try {
     const result = await runner.run(request, (message) => { byId('loading-status').textContent = message; });
-    const count = results.show(result.csv, result.csvColumns, prepared);
-    status.textContent = count ? `${request.task === 'evaluation' ? 'Evaluation' : 'Prediction'} complete: ${count} interaction${count === 1 ? '' : 's'}.` : request.task === 'prediction' && Number(request.parameters.outNumber) === 0 ? 'Accessibility computation complete. No interaction rows requested.' : 'No favorable interactions found with these sequences and settings.';
-    completedRun = { request: prepared, result };
-    showFiles(result.files); byId('diagnostic-text').textContent = result.diagnostics; byId('diagnostics').hidden = !result.diagnostics;
+    // Keep the executed inputs and outputs together, independent of later edits.
+    const provenance = await buildInfo.catch(() => 'Compiled version information is unavailable.');
+    status.textContent = sessions.add(prepared, result, provenance);
   } catch (error) {
     if (error.name === 'AbortError') status.textContent = 'Computation aborted. You can edit the sequences and try again.';
     else { status.textContent = 'Computation failed.'; errorBox.textContent = error.message; errorBox.hidden = false; byId('diagnostic-text').textContent = error.diagnostics || ''; byId('diagnostics').hidden = !error.diagnostics; }
@@ -304,15 +384,3 @@ fetch(new URL('./build-info.json', import.meta.url)).then((response) => {
   if (!response.ok) throw new Error('Missing build provenance'); return response.json();
 }).then((info) => { byId('version-info').textContent = `IntaRNA ${info.intarna} (${info.commit.slice(0, 12)}${info.dirty ? ', modified sources' : ''}) · ViennaRNA ${info.viennarna} · Emscripten ${info.emscripten}`; }).catch(() => { byId('version-info').textContent = 'Build versions unavailable. Serve the staged interface with its compiled engine and build-info files.'; });
 if (!globalThis.Worker || !globalThis.WebAssembly) { byId('compute').disabled = true; errorBox.textContent = 'This browser needs WebAssembly and Web Workers. Use a current browser or the command line version.'; errorBox.hidden = false; }
-
-byId('download-zip').addEventListener('click', async () => {
-  const run = completedRun; if (!run) return;
-  const button = byId('download-zip'); button.disabled = true;
-  try {
-    const provenance = await buildInfo;
-    if (completedRun !== run) return;
-    downloadBlob('intarna-results.zip', new Blob([createArchive(run.request, run.result, provenance)], { type: 'application/zip' }));
-  } catch (error) {
-    errorBox.textContent = `ZIP download failed: ${error.message}. Reload the staged interface with its compiled version files.`; errorBox.hidden = false;
-  } finally { button.disabled = false; }
-});

@@ -27,8 +27,8 @@ export function visualizationUrl(row, request) {
 
 export class InteractionVisualization {
   constructor(root) {
-    this.frame = root.querySelector('#varri-frame'); this.link = root.querySelector('#varri-link');
-    this.status = root.querySelector('#visualization-status');
+    this.frame = root.querySelector('[data-role=varri-frame]'); this.link = root.querySelector('[data-role=varri-link]');
+    this.status = root.querySelector('[data-role=visualization-status]');
   }
   clear() {
     this.frame.removeAttribute('src'); this.frame.hidden = true;

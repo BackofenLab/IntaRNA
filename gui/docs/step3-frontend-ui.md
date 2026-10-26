@@ -21,25 +21,26 @@ the group website. Footer and table notes use the available width, wrapping only
 when the viewport requires it.
 
 ```text
-Group logo       IntaRNA / RNA–RNA interaction analysis        University logo
+Group logo       IntaRNA package / RNA–RNA interaction analysis        University logo
 RNA–RNA interactions                             Computations stay on your device
-Task: Prediction / Evaluation                                Load example
-[ Sequence input | Query | Target | Seed | Helix | SHAPE | Energy | Output | General ]
+Task: Prediction / Evaluation
+[ Sequences | Seed | Output | Model & Energy | Query | Target | CLI-only ]
 [ Active panel: e.g. query + target, start indices, evaluation structures      ]
-Reset parameters                                                Compute
-Interactions / search / show-hide columns / CSV + ZIP download
+Compute     Input Parameters: Examples / Store / Load / Reset
+Results / Show-Hide / name / ZIP download / delete
+Interactions / search / show-hide columns / CSV download
 Selected interaction / embedded vaRRI
 Additional output files / diagnostics / compiled versions
 ```
 
-Every CLI group has a tab with one visible panel. Sequence input is selected
+Every CLI group has a tab with one visible panel. Sequences is selected
 initially. Tabs expose `aria-selected`, `aria-controls` and roving focus; Left/Right
 move between available tabs, and Home/End select the first/last. Tab names wrap
 on narrow screens. Prediction-only tabs and controls are disabled/hidden during
-evaluation; if the selected tab becomes unavailable, Sequence input is selected.
-Changing task resets parameters to their CLI defaults while preserving sequence text; Load example also restores the
-complementary pair. The native default output count is one; browser users can
-request 0–100 interactions per pair. Zero enables accessibility-only output.
+evaluation; if the selected tab becomes unavailable, Sequences is selected.
+Changing task resets parameters to their task defaults while preserving sequence text; Load example also restores the
+complementary pair. The browser defaults to 10 interactions per pair (the native default remains
+one), and accepts 0–100. Zero enables accessibility-only output.
 
 ## Inputs, defaults and validation
 
@@ -53,15 +54,29 @@ CSV uses a fixed semicolon delimiter.
 Process settings (threads, file/log paths, parameter files, help/version commands)
 are replaced by the worker lifecycle, local data inputs, downloads and displayed
 compiled versions. The base-pair maximization energy model is intentionally
-excluded. The helix-block interaction model B is supported.
+excluded. The helix-block interaction model B is supported, with helix controls at the end
+of Model & Energy, enabled only for model B. Seed constraint offers Disable,
+Explicit seed and Identify seeds, enabling only the relevant controls. Query and
+Target include their own accessibility/SHAPE columns and synchronized copies of
+the two shared accessibility flags. Ignore disables accessibility controls;
+import modes disable window/span and enable the data input. Disabled settings
+remain editable when re-enabled but do not enter the request. Explicit row grids
+align inputs even when their labels wrap.
 
-Prediction accepts plain sequence or up to 20 FASTA records per strand.
+CSV columns are grouped as Energy, Output, Sequence, Interaction and Partition
+Function, with per-group selection actions and name-only labels with description
+tooltips. Prediction adds ED1, ED2, seedE, seedStart1 and seedStart2 to the native
+CSV columns; evaluation selects all energy outputs. JSON records these browser
+defaults explicitly so native replay retains the same output.
+
+Prediction accepts plain sequence or up to 50 FASTA records per strand.
 Evaluation requires one query and target and 1–100 predefined structures.
 Wrapped/lowercase sequence text and DNA T normalize to uppercase RNA U. A/C/G/U/N
-are accepted. Each record is 2–2,000 nt; seed predictions additionally require
+are accepted. Each record is 2–5,000 nt; seed predictions additionally require
 at least `seedBP` nucleotides. FASTA IDs end at the first whitespace, matching the CLI. Duplicate IDs (including collisions after
-native CSV semicolon replacement) are rejected. The total selected all-vs-all
-query length × target length, or sum of pairwise products, is capped at 1,000,000.
+native CSV semicolon replacement) are rejected. Ignored header descriptions are reported below the input. The longest selected
+query length × longest selected target length is capped at 1,000,000, including
+pairwise mode; the cap is not summed over records.
 The per-strand start index applies to all records and defaults to one. Negative
 indices skip zero, matching `RnaSequence`; output coordinates remain inclusive.
 
@@ -78,7 +93,7 @@ accessibility text can be pasted or loaded from a local file (up to 1 MB). Data
 are written to fixed MEMFS paths, never used as user-provided CLI arguments.
 Native diagnostics remain available for model-specific failures.
 
-Inputs/results clear on edits; the form disables during execution. Abort and
-Escape terminate the worker during startup or C++ execution. Status, errors,
+Edits update the form while completed sessions retain their inputs and results;
+the form disables during execution. Abort and Escape terminate the worker during startup or C++ execution. Status, errors,
 empty output and diagnostic text have dedicated regions. Keyboard focus,
 reduced motion and mobile overflow are covered by real browser tests.

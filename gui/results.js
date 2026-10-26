@@ -66,15 +66,15 @@ export class ResultsView {
   constructor(root) {
     this.root = root; this.rows = []; this.key = 'E'; this.direction = 1;
     this.visualization = new InteractionVisualization(root);
-    this.search = root.querySelector('#search');
+    this.search = root.querySelector('[data-role=search]');
     this.table = root.querySelector('table');
     this.body = this.table.querySelector('tbody');
     this.header = this.table.querySelector('thead tr');
-    this.count = root.querySelector('#visible-count');
-    this.empty = root.querySelector('#no-matches');
-    this.picker = root.querySelector('#visible-columns');
+    this.count = root.querySelector('[data-role=visible-count]');
+    this.empty = root.querySelector('[data-role=no-matches]');
+    this.picker = root.querySelector('[data-role=visible-columns]');
     this.search.addEventListener('input', () => this.render());
-    root.querySelector('#download').addEventListener('click', () => downloadText('intarna-interactions.csv', this.csv));
+    root.querySelector('[data-role=download]').addEventListener('click', () => downloadText('intarna-interactions.csv', this.csv));
   }
   clear() {
     this.rows = []; this.csv = ''; this.body.replaceChildren(); this.root.hidden = true;
@@ -103,11 +103,15 @@ export class ResultsView {
     const rows = selectRows(this.rows, this.search.value, this.key, this.direction);
     const columns = this.columns.filter((column) => this.visible.has(column.key));
     this.header.replaceChildren();
-    const viewHeading = document.createElement('th'); viewHeading.scope = 'col'; viewHeading.textContent = 'vaRRI';
+    const viewHeading = document.createElement('th'); viewHeading.scope = 'col'; viewHeading.setAttribute('aria-label', 'Interaction visualization');
     this.header.append(viewHeading);
     for (const column of columns) {
       const cell = document.createElement('th'), button = document.createElement('button');
-      cell.scope = 'col'; button.type = 'button'; button.textContent = column.label;
+      cell.scope = 'col'; button.type = 'button';
+      const split = column.numeric ? column.label.indexOf(' ') : -1;
+      if (split > 0) button.append(document.createTextNode(column.label.slice(0, split)), document.createElement('br'), document.createTextNode(column.label.slice(split + 1)));
+      else button.textContent = column.label;
+      button.title = column.description ?? column.label;
       const active = column.key === this.key, direction = this.direction === 1 ? 'ascending' : 'descending';
       cell.setAttribute('aria-sort', active ? direction : 'none');
       button.setAttribute('aria-label', `Sort by ${column.label}${active ? `, currently ${direction}` : ''}`);

@@ -1,6 +1,7 @@
 # JSON settings and reproducible runs
 
-Load and Store sit to the right of Reset parameters. Store downloads
+The action bar starts with Compute/Evaluate, followed by Input Parameters:
+Examples, Store, Load and Reset. Store downloads
 `parameter.json` containing non-default settings and embedded input text in the
 [native JSON format](../../doc/json-parameters.md). `_comment` records compiled
 tool/library versions and executable reproduction commands. It is JSON metadata,
@@ -26,11 +27,48 @@ and CSV-only settings while retaining the same inputs and analysis settings.
 Reports run independently, matching the worker. The WASM integration test
 replays the JSON in fresh engines and compares every output byte.
 
+## Computed sessions
+
+Each successful computation, including a run with no interaction rows, creates a
+new session with a unique ID within the page and a default name such as
+`Prediction 1` or `Evaluation 2`. The session retains the computed inputs in JSON,
+CSV output, additional files and diagnostics. Editing parameters, Load, examples,
+Reset, invalid inputs, failed computations and cancellation preserve prior
+sessions. Failed or aborted computations do not create a session.
+
+The newest session opens automatically under **Results**. Use **Show**, select
+its header/name, or select its output area to restore that session’s
+computed inputs and fold the other sessions. The task, sequence text, signed
+indices, SHAPE/accessibility text, CSV selection/order and additional output
+selection are restored together. **Hide** folds the output. Each session
+keeps its own filter, sorting and visible columns; folded vaRRI frames are unloaded
+and restored when their session is reopened.
+
+Edit **Session name** directly in the header. Names are plain text; an empty name
+returns to the default. **Download ZIP** remains available while folded and always
+archives that session’s original JSON and complete outputs, regardless of the
+current form or table filters. The session name supplies a safe download filename;
+ZIP members remain `parameter.json` and output files. The garbage-bin button
+removes only its session and releases its output; it does not change form inputs.
+
+Sessions exist only in the current page’s browser memory. They are not written to
+browser storage or uploaded. Reloading or closing the page discards them; use ZIP
+exports to retain results. Memory use grows with the runs kept open, so delete
+sessions that are no longer needed. Store continues to save the editable form.
+If compiled metadata cannot be fetched, a completed run is still retained and its
+JSON explicitly records that version information is unavailable.
+
 ## Reset and examples
 
-Reset clears sequences, interactions, uploaded files and results and restores
-prediction defaults. Empty FASTA fields show the short demonstration sequences
-as placeholders only. The Example disclosure menu sits to the left of Reset.
+Reset clears the editable sequences, interactions and uploaded files and restores
+prediction defaults (10 interactions per pair, expanded energy/seed columns).
+Evaluation defaults select all energy columns. These GUI defaults are written
+explicitly in JSON when they differ from the CLI; importing existing JSON still
+uses native defaults for omitted parameters. Inactive controls keep their edits
+in the form for switching modes, but their values are omitted from executed and
+stored settings. Previously computed sessions remain available. Empty FASTA
+fields show the short demonstration sequences as placeholders only. The Examples
+disclosure menu follows the Input Parameters label.
 
 Maintainers edit `gui/examples/index.json` (an array of local JSON filenames).
 Each listed file contains `name`, `description`, and `configuration`, where the
@@ -42,9 +80,13 @@ examples show an error in the menu; they never overwrite the form.
 ## Local FASTA files
 
 Each strand has an Upload button and accepts a text-file drop into its textarea.
-Files are read locally (at most 60 KB), validated with the same FASTA checks as
+Files are read locally (at most 1 MB), validated with the same FASTA checks as
 manual entry, and replace only that strand after successful validation. Prediction
-accepts multi-FASTA; evaluation requires one record. Invalid files leave the
+accepts up to 50 FASTA records per strand, each 2–5,000 nt; evaluation requires
+one record. The longest selected query × longest selected target must be at most
+1,000,000. Names end at the first whitespace; ignored header descriptions produce
+a warning below the corresponding field. Both FASTA fields scroll horizontally
+and vertically. Invalid files leave the
 previous input intact. A later edit, reset, import or computation discards any
 pending file read, so delayed reads cannot replace newer input.
 
@@ -66,3 +108,42 @@ pending file read, so delayed reads cannot replace newer input.
 - Embedded ViennaRNA energy-parameter text matched native file input. Existing
   dependency-download and ViennaRNA-release tests, shell syntax, workflow YAML,
   source-distribution contents, vendor checksums and `git diff --check` passed.
+
+## Session follow-up validation (2026-10-23)
+
+- `npm test --prefix gui`: all 18 Node tests passed.
+- `scripts/wasm/test-browser.py` passed in Chromium and Firefox with real WASM
+  at nested URLs. Session checks cover input/JSON restoration, task changes,
+  signed indices, SHAPE text, CSV order, reports, independent filters/columns,
+  edits/reset/imports, failed/aborted runs, keyboard selection, safe renaming,
+  folded-session archives, deletion, stale file reads and page reload.
+- Desktop screenshots were inspected; session controls remain accessible at a
+  390 px viewport without document overflow.
+- `node scripts/wasm/smoke-protocol.mjs` passed native-reference checks and
+  byte-identical archive replay. Browser checks reused the parent branch’s
+  compiled Emscripten 4.0.23 / ViennaRNA 2.7.2 assets with their original metadata;
+  this follow-up changes no C++ code or worker protocol.
+- A fresh GCC 14 release build passed `make tests -j2`: all nine native API/CLI
+  groups passed. Tracked fixtures were linked into the out-of-tree build’s
+  `tests/data` directory for the existing CLI harness.
+- Static staging (including the new session module and engine digest checks),
+  shell syntax and `git diff --check` passed.
+
+## PR #299 review validation (2026-10-24)
+
+- `npm test --prefix gui`: all 20 tests passed, including FASTA limits, header
+  warnings, complete column grouping and explicit browser-default JSON replay.
+- `scripts/wasm/test-browser.py` passed with real WASM in Chromium and Firefox.
+  It covers the reordered panels, aligned controls, shared accessibility flags,
+  seed/accessibility/helix modes, inactive values, explicit-seed Load/Store,
+  group selection, FASTA scrolling/warnings and result header/name selection,
+  plus the existing prediction/evaluation, ZIP, abort and session checks.
+- Desktop and 390 px mobile screenshots were inspected. All seven panels have
+  no document overflow; table contents retain their own horizontal scrolling.
+- `node scripts/wasm/smoke-protocol.mjs <staged-engine>` passed native-reference
+  checks and byte-identical JSON archive replay. The unchanged engine uses the
+  parent branch's Emscripten 4.0.23 / ViennaRNA 2.7.2 assets and original metadata.
+- A fresh GCC 14 release build passed `make tests -j2`: all nine API/CLI groups.
+  Existing CLI fixtures were linked into the out-of-tree `tests/data` directory.
+- Static staging with engine digest validation, JavaScript/Python syntax checks,
+  shell syntax and `git diff --check` passed.

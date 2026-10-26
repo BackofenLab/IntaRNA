@@ -1,4 +1,4 @@
-import { JSON_SCHEMA, CSV_COLUMNS, normalizeParameters } from './protocol.js';
+import { JSON_SCHEMA, CSV_COLUMNS, LIMITS, normalizeParameters } from './protocol.js';
 import { FIELDS, PARAMETER_DEFAULTS, EXTRA_OUTPUTS } from './options.js';
 import { CSV_CATALOG } from './columns.js';
 
@@ -25,8 +25,8 @@ export function exportParameters(request, provenance) {
   const normalized = normalizeParameters(request);
   const { columns, outputs } = selections(request);
   const parameters = {
-    query: { text: text(typeof request.query === 'string' ? request.query : request.query.fasta, 'Query', 60000) },
-    target: { text: text(typeof request.target === 'string' ? request.target : request.target.fasta, 'Target', 60000) },
+    query: { text: text(typeof request.query === 'string' ? request.query : request.query.fasta, 'Query', LIMITS.maxFastaBytes) },
+    target: { text: text(typeof request.target === 'string' ? request.target : request.target.fasta, 'Target', LIMITS.maxFastaBytes) },
   };
   if (request.task === 'evaluation') parameters.personality = 'IntaRNAeval';
   for (const [key, value] of Object.entries(normalized)) {
@@ -73,7 +73,7 @@ export function importParameters(source) {
       // Plain nucleotide strings are native inline sequences; file paths need
       // explicit embedding because the browser cannot open local paths.
       if (typeof content !== 'string' || (content === value && (embeddedKeys.includes(key) || !/^[ACGUTNacgutn]*$/.test(value)))) throw new Error(`${key}: embed the input using {"text":"file contents"}.`);
-      if (key === 'query' || key === 'target') request[key] = text(content, key, 60000);
+      if (key === 'query' || key === 'target') request[key] = text(content, key, LIMITS.maxFastaBytes);
       else request.parameters[key] = text(content, key);
     } else if (key === 'personality') {
       if (!['IntaRNA', 'IntaRNAeval'].includes(value)) throw new Error('The browser supports IntaRNA prediction and IntaRNAeval evaluation.');
