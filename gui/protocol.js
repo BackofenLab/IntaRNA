@@ -1,5 +1,6 @@
 import { FIELDS, PARAMETER_DEFAULTS, EXTRA_OUTPUTS, ENSEMBLE_COLUMNS } from './options.js';
 import { CSV_CATALOG } from './columns.js';
+import { normalizeCopomus } from './copomus-options.js';
 
 // Bound the largest pair's matrix while allowing batches of shorter sequences.
 export const LIMITS = Object.freeze({ minLength: 2, maxLength: 5000, maxRecords: 50, maxPairs: 1000000, maxFastaBytes: 1000000 });
@@ -25,7 +26,7 @@ export function parseFasta(text, label, multiple = true) {
       current.sequence += line.replace(/\s/g, '').toUpperCase().replaceAll('T', 'U');
     }
   }
-  if ((!multiple && records.length !== 1) || records.length > LIMITS.maxRecords) throw new Error(`${label}: ${multiple ? 'use at most 50 FASTA records' : 'evaluation requires exactly one FASTA record'}.`);
+  if ((!multiple && records.length !== 1) || records.length > LIMITS.maxRecords) throw new Error(`${label}: ${multiple ? 'use at most 50 FASTA records' : 'this task requires exactly one FASTA record'}.`);
   const ids = new Set();
   for (const record of records) {
     if (!record.sequence || /[^ACGUN]/.test(record.sequence)) throw new Error(`${label}: use only A, C, G, U, T or N in every sequence.`);
@@ -111,7 +112,7 @@ export function validateInteractions(encoding, query, target, qStart, tStart, se
 
 // Validate scalar controls independently so unfinished forms can be saved/loaded.
 export function normalizeParameters(request) {
-  if (!['prediction', 'evaluation'].includes(request.task ?? 'prediction')) throw new Error('Choose prediction or evaluation.');
+  if (!['prediction', 'evaluation', 'mutation'].includes(request.task ?? 'prediction')) throw new Error('Choose prediction, evaluation or Mutation Design.');
   const evaluating = request.task === 'evaluation';
   const parameters = {};
   const supplied = request.parameters ?? {};
@@ -142,10 +143,15 @@ export function normalizeParameters(request) {
 
 export function prepareRequest(request) {
   const task = request?.task ?? 'prediction';
-  if (!['prediction', 'evaluation'].includes(task)) throw new Error('Choose prediction or evaluation.');
+  if (!['prediction', 'evaluation', 'mutation'].includes(task)) throw new Error('Choose prediction, evaluation or Mutation Design.');
   const evaluating = task === 'evaluation';
-  const query = parseFasta(request.query, 'Query', !evaluating), target = parseFasta(request.target, 'Target', !evaluating);
+  const mutationDesign = task === 'mutation';
+  const query = parseFasta(request.query, 'Query', task === 'prediction'), target = parseFasta(request.target, 'Target', task === 'prediction');
   const parameters = normalizeParameters(request);
+  const copomus = mutationDesign ? normalizeCopomus(request.copomus, {
+    query: query.records[0], target: target.records[0],
+    qIdxPos0: parameters.qIdxPos0, tIdxPos0: parameters.tIdxPos0,
+  }) : undefined;
   const qRecords = selectedRecords(query, parameters.qSet, 'qSet'), tRecords = selectedRecords(target, parameters.tSet, 'tSet');
   if (parameters.outPairwise && qRecords.length !== tRecords.length) throw new Error('Pairwise output requires the same number of selected query and target records.');
   const work = Math.max(...qRecords.map((q) => q.sequence.length)) * Math.max(...tRecords.map((t) => t.sequence.length));
@@ -180,6 +186,7 @@ export function prepareRequest(request) {
   if (parameters.outCsvSort && !csvColumns.includes(parameters.outCsvSort)) throw new Error('The CSV sort column must be selected for output.');
   const outputs = request.outputs ?? [];
   if (!Array.isArray(outputs) || new Set(outputs).size !== outputs.length || outputs.some((key) => !EXTRA_OUTPUTS.some((entry) => entry.key === key && (!evaluating || !entry.prediction)))) throw new Error('Choose available additional output formats for this task.');
+  if (mutationDesign && outputs.length) throw new Error('Mutation Design produces its own extended CopomuS output; disable IntaRNA additional output files.');
   if (outputs.includes('ensemble') && (qRecords.length !== 1 || tRecords.length !== 1)) throw new Error('Ensemble reports require one query and one target.');
   const needsEnsemble = csvColumns.some((c) => ENSEMBLE_COLUMNS.includes(c)) || outputs.some((c) => ['ensemble', 'spotProb', 'qSpotProb', 'tSpotProb'].includes(c));
   if (evaluating) {
@@ -215,7 +222,7 @@ export function prepareRequest(request) {
       }
     }
   }
-  return { task, query, target, parameters, csvColumns, outputs, rri: evaluating ? request.rri : '' };
+  return { task, query, target, parameters, csvColumns, outputs, rri: evaluating ? request.rri : '', ...(copomus ? { copomus } : {}) };
 }
 
 export function makeArguments(request, format = 'C') {

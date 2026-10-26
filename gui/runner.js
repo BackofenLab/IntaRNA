@@ -1,6 +1,6 @@
 // The main thread stays available even while synchronous C++ is calculating.
 export class PredictionRunner {
-  constructor(workerFactory = () => new Worker(new URL('./intarna-worker.js', import.meta.url), { type: 'module' })) {
+  constructor(workerFactory = (request) => new Worker(new URL(request.task === 'mutation' ? './copomus-worker.js' : './intarna-worker.js', import.meta.url), { type: 'module' })) {
     this.workerFactory = workerFactory;
     this.worker = null;
     this.cancel = null;
@@ -9,7 +9,7 @@ export class PredictionRunner {
   run(request, onStatus = () => {}) {
     if (this.worker) return Promise.reject(new Error('A prediction is already running.'));
     return new Promise((resolve, reject) => {
-      const worker = this.workerFactory();
+      const worker = this.workerFactory(request);
       this.worker = worker;
       const finish = (error, result) => {
         if (this.worker !== worker) return; // Ignore queued messages after abort.
@@ -32,7 +32,7 @@ export class PredictionRunner {
       };
       worker.onerror = (event) => {
         event.preventDefault();
-        finish(new Error('Could not load or run the prediction engine. Reload the page and check that intarna.js and intarna.wasm are served together.'));
+        finish(new Error('Could not load or run the local analysis engine. Reload the page and check that the staged IntaRNA, Pyodide and Python assets are served together.'));
       };
       worker.onmessageerror = () => finish(new Error('Could not read the prediction engine response.'));
       try {

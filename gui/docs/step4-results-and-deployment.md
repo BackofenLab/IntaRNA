@@ -113,14 +113,14 @@ python3 scripts/wasm/test-browser.py http://127.0.0.1:8765 --browser firefox
 The staging script includes matched WASM assets, only the application source
 files needed at runtime, compiled version metadata and dependency notices. It
 also verifies and stages the pinned Plotly.js 4.1.2 Cartesian bundle and MIT
-license; no CDN is used. Build-time `build-info.json`
+license plus the Pyodide 314.0.7 core runtime and MPL-2.0 license; no CDN is used. Build-time `build-info.json`
 and `build-info.txt` record actual CLI IntaRNA/ViennaRNA/Boost versions, source
 commit and tracked modifications, SDK version and asset SHA-256 digests. Staging
 checks these digests and preserves the original metadata; it never replaces the
 compiled revision with a later staging checkout. The footer displays versions.
 It needs the same activated SDK and dependency build directory as the build.
-No generated WASM artifacts are committed; the reviewed minified Plotly browser
-distribution is the only new runtime artifact. HTTP(S), module workers and WebAssembly
+No generated WASM or Pyodide artifacts are committed; both runtimes are staged
+from checksum-verified build inputs. HTTP(S), module workers and WebAssembly
 are required; `file://` and legacy browsers are unsupported. No backend,
 SharedArrayBuffer, credentials, CDN or cross-origin headers are needed. CSP
 keeps scripts/styles same-origin and allows ephemeral blob images solely for

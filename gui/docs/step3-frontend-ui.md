@@ -31,7 +31,7 @@ when the viewport requires it.
 ```text
 Group logo       IntaRNA package / RNA–RNA interaction analysis        University logo
 RNA–RNA interactions                             Computations stay on your device
-Task: Prediction / Evaluation
+Task: Prediction / Evaluation / Mutation Design
 [ Sequences | Seed | Output | CSV | Model & Energy | Query | Target | CLI-only ]
 [ Active panel: e.g. query + target, start indices, evaluation structures      ]
 Compute     Input Parameters: Examples / Store / Load / Reset
@@ -84,6 +84,11 @@ format and intended use, including the model restrictions shown in its label.
 
 Prediction accepts plain sequence or up to 50 FASTA records per strand.
 Evaluation requires one query and target and 1–100 predefined structures.
+Mutation Design also requires one query and target, rejects ambiguous bases and
+places CopomuS measures, candidate selection/filters, mutation generation,
+thresholds and explicit mutation encodings in the Sequences panel. Its Output
+and CSV tabs are hidden because CopomuS owns the extended TSV schema. See
+[copomus.md](copomus.md) for the cross-runtime workflow and browser limit.
 Wrapped/lowercase sequence text and DNA T normalize to uppercase RNA U. A/C/G/U/N
 are accepted. Each record is 2–5,000 nt; seed predictions additionally require
 at least `seedBP` nucleotides. FASTA IDs end at the first whitespace, matching the CLI. Duplicate IDs (including collisions after

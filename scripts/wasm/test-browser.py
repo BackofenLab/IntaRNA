@@ -33,7 +33,7 @@ with sync_playwright() as playwright:
     status = page.locator('#result-status')
     sessions = page.locator('.session')
     active = page.locator('.session:has([data-role=panel]:not([hidden]))')
-    rows = active.locator('tbody tr')
+    rows = active.locator('[data-role=results-view] tbody tr')
 
     def open_group(key):
         page.locator('#tab-' + key).click()
@@ -42,6 +42,12 @@ with sync_playwright() as playwright:
         assert page.locator('.parameter-group:visible').count() == 1
 
     def load_reference(task='prediction'):
+        if task == 'evaluation':
+            page.get_by_role('radio', name='Evaluation').check()
+        elif task == 'mutation':
+            page.get_by_role('radio', name='Mutation Design').check()
+        else:
+            page.get_by_role('radio', name='Prediction').check()
         page.locator('#examples-menu summary').click()
         page.locator(f'#example-options [data-example-task="{task}"]').click()
         expect(page.locator('#query')).not_to_have_value('')
@@ -54,10 +60,14 @@ with sync_playwright() as playwright:
         page.locator('#reset').click()
         if task == 'evaluation':
             page.get_by_role('radio', name='Evaluation').check()
+        elif task == 'mutation':
+            page.get_by_role('radio', name='Mutation Design').check()
         page.locator('#query').fill('>query\nGGGAGGAGGG\n')
         page.locator('#target').fill('>target\nCCCUCCUCCC\n')
         if task == 'evaluation':
             page.locator('#rri').fill('1||||||||||&1||||||||||')
+        elif task == 'mutation':
+            page.locator('#copomus-mutation-encoding').fill('G1C&C10G')
         expect(page.locator('#query')).to_have_value('>query\nGGGAGGAGGG\n')
 
     def download_archive(session=None):
@@ -106,11 +116,18 @@ with sync_playwright() as playwright:
     page.locator('#examples-menu summary').click()
     prediction_example = page.locator('#example-options [data-example-task="prediction"]')
     evaluation_example = page.locator('#example-options [data-example-task="evaluation"]')
+    mutation_example = page.locator('#example-options [data-example-task="mutation"]')
     expect(prediction_example).to_be_visible()
     expect(evaluation_example).not_to_be_visible()
+    expect(mutation_example).not_to_be_visible()
     page.get_by_role('radio', name='Evaluation').check()
     expect(evaluation_example).to_be_visible()
     expect(prediction_example).not_to_be_visible()
+    expect(mutation_example).not_to_be_visible()
+    page.get_by_role('radio', name='Mutation Design').check()
+    expect(mutation_example).to_be_visible()
+    expect(prediction_example).not_to_be_visible()
+    expect(evaluation_example).not_to_be_visible()
     page.get_by_role('radio', name='Prediction').check()
     page.locator('#examples-menu summary').click()
 
@@ -311,7 +328,7 @@ with sync_playwright() as playwright:
     page.locator('#outCsvSort').select_option('E')
     predict()
     expect(rows).to_have_count(10)
-    assert active.locator('.table-scroll').evaluate('''node => {
+    assert active.locator('[data-role=results-view] .table-scroll').evaluate('''node => {
         const body = node.querySelector('tbody');
         const copies = [...body.children].map(row => row.cloneNode(true));
         body.append(...copies);
@@ -331,9 +348,9 @@ with sync_playwright() as playwright:
     active.locator('[data-role=search]').fill('no match')
     expect(active.locator('[data-role=no-matches]')).to_be_visible()
     active.locator('[data-role=search]').fill('')
-    active.locator('.column-picker summary').click()
+    active.locator('[data-role=results-view] .column-picker summary').click()
     active.locator('[data-role=visible-columns] input[value="start1"]').uncheck()
-    assert 'Target start' not in active.locator('thead').inner_text()
+    assert 'Target start' not in active.locator('[data-role=results-view] thead').inner_text()
     active.locator('[data-role=visible-columns] input[value="start1"]').check()
     with page.expect_download() as downloaded:
         active.locator('[data-role=download]').click()
@@ -460,7 +477,7 @@ with sync_playwright() as playwright:
     predict()
     expect(status).to_contain_text('Evaluation complete')
     expect(rows).to_have_count(2)
-    expect(active.locator('thead')).to_contain_text('ED1')
+    expect(active.locator('[data-role=results-view] thead')).to_contain_text('ED1')
     expect(active.locator('[data-role=file-list] summary')).to_contain_text('intarna-detailed.txt')
     active.locator('[data-role=file-list] summary').click()
     expect(active.locator('[data-role=file-list] pre')).to_contain_text('-21.4')
@@ -521,7 +538,7 @@ with sync_playwright() as playwright:
     assert download_archive()['intarna-interactions.csv'].count('\n') == 1
     fill('query', '><img/src=x/onerror=alert(1)>\nGGGAGGAGGG')
     predict()
-    assert active.locator('tbody img').count() == 0
+    assert active.locator('[data-role=results-view] tbody img').count() == 0
     assert '<img' in rows.first.inner_text()
 
     load_reference()
@@ -557,7 +574,7 @@ with sync_playwright() as playwright:
     first_csv = first_archive['intarna-interactions.csv']
     first.locator('[data-role=search]').fill('no match')
     expect(first.locator('[data-role=no-matches]')).to_be_visible()
-    first.locator('.column-picker summary').click()
+    first.locator('[data-role=results-view] .column-picker summary').click()
     first.locator('[data-role=visible-columns] input[value="start1"]').uncheck()
     first_diagnostics = first.locator('[data-role=diagnostic-text]').text_content()
 
@@ -625,8 +642,8 @@ with sync_playwright() as playwright:
         page.locator('#store-parameters').click()
     assert Path(restored.value.path()).read_text() == first_archive['parameter.json']
     first.locator('[data-role=search]').fill('')
-    expect(first.locator('tbody tr')).to_have_count(3)
-    first.locator('tbody tr').first.get_by_role('button', name='Visualize').click()
+    expect(first.locator('[data-role=results-view] tbody tr')).to_have_count(3)
+    first.locator('[data-role=results-view] tbody tr').first.get_by_role('button', name='Visualize').click()
     first_url = first.locator('[data-role=varri-frame]').get_attribute('src')
     assert parse_qs(urlparse(first_url).query)['startIndex1'] == ['-5']
 
@@ -689,7 +706,41 @@ with sync_playwright() as playwright:
     page.reload()
     page.wait_for_load_state('networkidle')
     expect(sessions).to_have_count(0)
+
+    # CopomuS runs its Python workflow in Pyodide and every scientific call in
+    # fresh IntaRNA WASM instances. Keep one explicit mutation and include a
+    # profile measure so the cross-runtime file path stays deterministic and fast.
+    load_reference('mutation')
+    expect(page.locator('#mutation-input')).to_be_visible()
+    expect(page.locator('#tab-output-options')).not_to_be_visible()
+    expect(page.locator('#tab-csv-options')).not_to_be_visible()
+    for measure in ['mfeCover', 'minDeltaE']:
+        page.locator(f'#copomus-measures input[value="{measure}"]').uncheck()
+    page.locator('#copomus-measures input[value="EDqi"]').check()
+    priority_up = page.get_by_role('button', name='Move Query accessibility earlier in ranking priority')
+    priority_up.click()
+    priority_up.click()
+    predict()
+    mutation_session = active
+    mutation_view = mutation_session.locator('[data-role=mutation-results-view]')
+    expect(mutation_view).to_be_visible()
+    expect(mutation_view.locator('tbody tr')).to_have_count(1)
+    expect(mutation_view.locator('tbody tr')).to_contain_text('G1C&C10G')
+    mutation_view.locator('tbody tr').click()
+    expect(mutation_view.locator('[data-role=mutation-modes]')).to_be_visible()
+    expect(mutation_view.locator('[data-role=mutation-modes] button[value="mm"]')).to_have_attribute('aria-pressed', 'true')
+    expect(mutation_view.locator('[data-role=mutation-varri-frame]')).to_be_visible()
+    mutation_url = mutation_view.locator('[data-role=mutation-varri-frame]').get_attribute('src')
+    assert parse_qs(urlparse(mutation_url).query)['sequence'] == ['CCCUCCUCCG&CGGAGGAGGG']
+    mutation_archive = download_archive(mutation_session)
+    assert 'copomus-mutations.tsv' in mutation_archive
+    assert mutation_archive['copomus-mutations.tsv'].startswith('mutation\trank\tqIndex\ttIndex')
+    mutation_parameters = json.loads(mutation_archive['parameter.json'])
+    assert mutation_parameters['gui']['task'] == 'mutation'
+    assert mutation_parameters['gui']['copomus']['measures'] == ['EDqi', 'E']
+    mutation_session.locator('[data-role=delete]').click()
+    expect(sessions).to_have_count(0)
     assert errors == [], errors
     assert csp_errors == [], csp_errors
     browser.close()
-print(f'{args.browser}: real WASM, groups/defaults/versions, prediction/evaluation, FASTA/coordinates, tabs/keyboard, visualization URLs/selection, ZIP replay contents, columns/reports, mobile, abort/recovery and retained session lifecycle passed')
+print(f'{args.browser}: real WASM, prediction/evaluation/CopomuS mutation design, FASTA/coordinates, tabs/keyboard, visualization URLs/selection, ZIP replay contents, columns/reports, mobile, abort/recovery and retained session lifecycle passed')

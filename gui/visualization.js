@@ -27,9 +27,9 @@ export function visualizationUrl(row, request) {
 }
 
 export class InteractionVisualization {
-  constructor(root) {
-    this.frame = root.querySelector('[data-role=varri-frame]'); this.link = root.querySelector('[data-role=varri-link]');
-    this.status = root.querySelector('[data-role=visualization-status]');
+  constructor(root, rolePrefix = '') {
+    this.frame = root.querySelector(`[data-role=${rolePrefix}varri-frame]`); this.link = root.querySelector(`[data-role=${rolePrefix}varri-link]`);
+    this.status = root.querySelector(`[data-role=${rolePrefix}visualization-status]`);
   }
   clear() {
     this.frame.removeAttribute('src'); this.frame.hidden = true;

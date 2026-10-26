@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Predict or evaluate RNA–RNA interactions locally with IntaRNA.">
+  <meta name="description" content="Predict, evaluate or design compensatory RNA mutations locally with IntaRNA and CopomuS.">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; worker-src 'self'; connect-src 'self'; frame-src https://backofenlab.github.io/vaRRI/; img-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'none'">
   <title>IntaRNA · RNA–RNA interactions</title>
   <link rel="icon" href="mark.svg" type="image/svg+xml">
@@ -32,6 +32,7 @@
           <legend class="sr-only">Analysis task</legend>
           <label class="task-choice"><input type="radio" name="task" value="prediction" checked><span>Prediction</span><small>IntaRNA</small></label>
           <label class="task-choice"><input type="radio" name="task" value="evaluation"><span>Evaluation</span><small>IntaRNAeval</small></label>
+          <label class="task-choice"><input type="radio" name="task" value="mutation"><span>Mutation Design</span><small>CopomuS</small></label>
         </fieldset>
         <p id="task-help">Predict interactions for all query–target sequence pairs.</p>
         <div id="parameter-groups">
@@ -50,6 +51,20 @@
               </div>
               <p id="sequence-help" class="input-help">Plain sequence or multi-FASTA (prediction only), A/C/G/U/T/N. Up to 50 records per field and 2–5,000 nt per record; longest selected query × longest selected target ≤ 1,000,000. FASTA names stop at the first whitespace. Seed predictions also require at least as many nucleotides as seed base pairs. Signed start indices apply to every record on that strand; negative indexing skips zero.</p>
               <div id="evaluation-input" hidden><label for="rri">Interactions to evaluate (target &amp; query)</label><textarea id="rri" spellcheck="false" aria-describedby="rri-help" placeholder="1||||||||||&amp;1||||||||||"></textarea><p id="rri-help" class="input-help">Each strand uses its start coordinate and dots/bars in 5′ to 3′ order; pair bars antiparallel. Example: 1|||&amp;1|||. Separate structures with a colon. Evaluation retains energy/accessibility settings and ignores prediction filters.</p></div>
+              <section id="mutation-input" class="mutation-input" hidden aria-labelledby="mutation-options-title">
+                <h3 id="mutation-options-title">Compensatory mutation settings</h3>
+                <div class="field-grid columns-4 mutation-primary-options">
+                  <div class="field"><label for="copomus-candidate-selection">Candidate selection</label><select id="copomus-candidate-selection"><option value="mfe">MFE base pairs</option><option value="mfeSO">MFE-region suboptimals</option></select></div>
+                  <div class="field"><label for="copomus-generator">Mutation generator</label><select id="copomus-generator"><option value="flip">Flip base pair</option><option value="any">All pairing substitutions</option></select></div>
+                  <div class="field"><label for="copomus-alpha">Wildtype separation α</label><input id="copomus-alpha" type="number" step="any" value="1"></div>
+                  <div class="field"><label for="copomus-beta">Compensatory separation β</label><input id="copomus-beta" type="number" step="any" value="1"></div>
+                </div>
+                <div class="mutation-option-grid">
+                  <fieldset><legend>Ranking measures</legend><div id="copomus-measures" class="checkbox-grid"></div></fieldset>
+                  <fieldset><legend>Candidate filters</legend><div id="copomus-filters" class="checkbox-grid"></div></fieldset>
+                </div>
+                <div class="field"><label for="copomus-mutation-encoding">Explicit mutations (optional)</label><textarea id="copomus-mutation-encoding" rows="2" spellcheck="false" placeholder="G1C&amp;C10G"></textarea><p class="field-hint">Query-first substitutions separated by commas. When supplied, explicit mutations replace candidate selection, filters and the generator. Browser runs are limited to 100 generated mutations.</p></div>
+              </section>
             </div>
           </section>
         </div>
@@ -83,6 +98,22 @@
                 <p data-role="visualization-status" role="status">Select View on an interaction to visualize it.</p>
                 <p class="input-help">Selecting View loads vaRRI with that sequence pair and structure in its URL.</p>
                 <iframe data-role="varri-frame" title="Selected RNA interaction in vaRRI" referrerpolicy="no-referrer" hidden></iframe>
+              </section>
+            </div>
+            <div data-role="mutation-results-view" class="mutation-results-view" hidden>
+              <div class="table-tools"><label>Filter mutations <input data-role="mutation-search" type="search" placeholder="Search any column" autocomplete="off"></label><span data-role="mutation-visible-count" role="status" aria-live="polite"></span><div class="download-actions"><button data-role="mutation-download" class="secondary" type="button">Download TSV</button></div></div>
+              <details class="column-picker"><summary>Show or hide mutation columns</summary><div data-role="mutation-visible-columns" class="checkbox-grid"></div></details>
+              <div class="table-scroll" tabindex="0" role="region" aria-label="Compensatory mutation results, scroll to see more rows or columns"><table><caption class="sr-only">Ranked compensatory mutations. Select View to compare wildtype, single-mutant and compensatory interactions.</caption><thead><tr></tr></thead><tbody></tbody></table></div>
+              <p data-role="mutation-no-matches" hidden>No mutations match this filter.</p>
+              <p class="table-note">Ranks and scores follow the selected CopomuS measures. NA denotes an unavailable interaction or profile score.</p>
+              <section data-role="visualization" aria-label="Compensatory mutation visualization">
+                <div class="visualization-heading"><h3 data-role="mutation-visualization-title">Compensatory-mutation visualization</h3><a data-role="mutation-varri-link" target="_blank" rel="noopener noreferrer" hidden>Open in vaRRI</a></div>
+                <div data-role="mutation-modes" class="mutation-modes" hidden aria-label="Mutation state">
+                  <button type="button" value="ww" aria-pressed="false">Wild type</button><button type="button" value="mw" aria-pressed="false">Query mutant</button><button type="button" value="wm" aria-pressed="false">Target mutant</button><button type="button" value="mm" aria-pressed="false">Compensatory</button>
+                </div>
+                <p data-role="mutation-visualization-status" role="status">Select View on a mutation to compare its four interaction states.</p>
+                <p class="input-help">The compensatory state mutates both strands; the single-mutant states show the intended interaction disruption.</p>
+                <iframe data-role="mutation-varri-frame" title="Selected compensatory mutation in vaRRI" referrerpolicy="no-referrer" hidden></iframe>
               </section>
             </div>
             <section data-role="output-files" hidden aria-label="Additional output files"><h3 data-role="files-title">Additional output files</h3><div data-role="file-list"></div></section>

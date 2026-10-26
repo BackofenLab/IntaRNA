@@ -9,6 +9,7 @@ test('JSON round trip retains embedded inputs, typed options, selected columns a
   for (const request of [
     { ...DEFAULTS, query: '>q1\nGGGAGGAGGG\n>q2\nGGGAGGAGGG', qIdxPos0: -3, tIdxPos0: -5, parameters: { temperature: 22, noSeed: true, mode: 'M', qRegion: '-3-7', outSpotProbSpots: '-5&-3' }, csvColumns: ['E', 'id2'], outputs: ['normal', 'qPu', 'spotProb'] },
     { ...DEFAULTS, task: 'evaluation', rri: EVALUATION_EXAMPLE, parameters: { qShape: '1 0.2\n2 0.3' }, outputs: ['detailed', 'ensemble'] },
+    { ...DEFAULTS, task: 'mutation', qIdxPos0: -3, tIdxPos0: -5, copomus: { measures: ['EDqi', 'E'], candidateSelection: 'mfeSO', candidateFilters: ['GU'], generator: 'any', mutationEncoding: 'G-3C&C5G', alpha: 2, beta: 3 } },
   ]) {
     const document = exportParameters(request, provenance);
     const imported = importParameters(JSON.stringify(document));
@@ -47,12 +48,12 @@ test('invalid/native-only settings are rejected before replacing the form', () =
 test('maintainer examples use the same JSON import and prediction validation', async () => {
   const { readFile } = await import('node:fs/promises');
   const examples = JSON.parse(await readFile(new URL('../examples/index.json', import.meta.url)));
-  assert.equal(examples.length, 2);
+  assert.equal(examples.length, 3);
   const tasks = new Set();
   for (const file of examples) {
     const example = JSON.parse(await readFile(new URL(`../examples/${file}`, import.meta.url)));
     assert.ok(example.name && example.description);
     tasks.add(prepareRequest(importParameters(example.configuration)).task);
   }
-  assert.deepEqual([...tasks].sort(), ['evaluation', 'prediction']);
+  assert.deepEqual([...tasks].sort(), ['evaluation', 'mutation', 'prediction']);
 });

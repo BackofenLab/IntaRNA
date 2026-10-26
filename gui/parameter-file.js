@@ -1,6 +1,7 @@
 import { JSON_SCHEMA, CSV_COLUMNS, LIMITS, normalizeParameters } from './protocol.js';
 import { FIELDS, PARAMETER_DEFAULTS, EXTRA_OUTPUTS } from './options.js';
 import { CSV_CATALOG } from './columns.js';
+import { COPOMUS_DEFAULTS, normalizeCopomus } from './copomus-options.js';
 
 export const MAX_PARAMETER_BYTES = 5000000;
 const reports = { normal: 'N', detailed: 'D', ensemble: 'E' };
@@ -44,10 +45,16 @@ export function exportParameters(request, provenance) {
   const selectedReports = outputs.filter((key) => Object.hasOwn(reports, key));
   const comments = [
     ...provenance.trimEnd().split(/\r?\n/),
-    'Reproduce: IntaRNA --parameterFile=parameter.json --out=intarna-interactions.csv',
+    request.task === 'mutation'
+      ? 'Reproduce the mutation workflow with python3 CopomuS.py and the embedded sequences/settings.'
+      : 'Reproduce: IntaRNA --parameterFile=parameter.json --out=intarna-interactions.csv',
     ...selectedReports.map((key) => `Additional report: IntaRNA --parameterFile=parameter.json --outMode=${reports[key]} --outCsvCols=${CSV_COLUMNS} --outCsvSort '' --out=intarna-${key}.txt`),
   ];
   const gui = {};
+  if (request.task === 'mutation') {
+    gui.task = 'mutation';
+    gui.copomus = normalizeCopomus(request.copomus);
+  }
   if (selectedReports.length) gui.reports = selectedReports;
   if (normalized.outSpotProbSpots) gui.outSpotProbSpots = normalized.outSpotProbSpots;
   return { schema: JSON_SCHEMA, _comment: comments, parameters, ...(Object.keys(gui).length ? { gui } : {}) };
@@ -64,7 +71,7 @@ export function importParameters(source) {
   const document = typeof source === 'string' ? JSON.parse(source.replace(/^\uFEFF/, '')) : source;
   if (!object(document) || document.schema !== JSON_SCHEMA || !object(document.parameters)) throw new Error(`Expected a ${JSON_SCHEMA} parameter document.`);
   for (const key of Object.keys(document)) if (!['schema', '_comment', 'parameters', 'gui'].includes(key)) throw new Error(`Unknown JSON document field: ${key}`);
-  const request = { task: 'prediction', query: '', target: '', qIdxPos0: 1, tIdxPos0: 1, rri: '', parameters: {}, outputs: [], csvColumns: CSV_COLUMNS.split(',') };
+  const request = { task: 'prediction', query: '', target: '', qIdxPos0: 1, tIdxPos0: 1, rri: '', parameters: {}, outputs: [], csvColumns: CSV_COLUMNS.split(','), copomus: { ...COPOMUS_DEFAULTS, measures: [...COPOMUS_DEFAULTS.measures], candidateFilters: [] } };
   const known = new Set(FIELDS.map((field) => field.key));
   for (const [key, value] of Object.entries(document.parameters)) {
     if (value === null) throw new Error(`${key}: null is not a parameter value.`);
@@ -98,8 +105,14 @@ export function importParameters(source) {
   }
   if (document.gui !== undefined) {
     if (!object(document.gui)) throw new Error('gui must be an object.');
+    if (document.gui.task !== undefined) {
+      if (document.gui.task !== 'mutation' || request.task === 'evaluation') throw new Error('gui.task must select Mutation Design without an IntaRNAeval personality.');
+      request.task = 'mutation';
+    }
     for (const [key, value] of Object.entries(document.gui)) {
-      if (key === 'reports' && Array.isArray(value) && value.every((entry) => Object.hasOwn(reports, entry))) request.outputs.push(...value);
+      if (key === 'task') continue;
+      if (key === 'copomus') request.copomus = normalizeCopomus(value);
+      else if (key === 'reports' && Array.isArray(value) && value.every((entry) => Object.hasOwn(reports, entry))) request.outputs.push(...value);
       else if (key === 'outSpotProbSpots') {
         if (request.parameters.outSpotProbSpots && request.parameters.outSpotProbSpots !== value) throw new Error('Conflicting spotProb selections.');
         request.parameters.outSpotProbSpots = text(value, key, 10000);
@@ -107,10 +120,13 @@ export function importParameters(source) {
     }
   }
   selections(request);
+  if (request.task === 'mutation' && request.outputs.length) throw new Error('Mutation Design parameter files cannot request IntaRNA additional outputs.');
+  if (request.task !== 'mutation' && document.gui?.copomus !== undefined) throw new Error('CopomuS settings require gui.task Mutation Design.');
   // Keep prediction-only controls from being silently ignored on import.
   if (request.task === 'evaluation' && FIELDS.some((field) => field.prediction && Object.hasOwn(request.parameters, field.key))) throw new Error('Evaluation documents must omit prediction-only parameters.');
   const normalized = normalizeParameters(request);
   request.qIdxPos0 = normalized.qIdxPos0; request.tIdxPos0 = normalized.tIdxPos0;
   request.parameters = normalized;
+  if (request.task === 'mutation') request.copomus = normalizeCopomus(request.copomus);
   return request;
 }
