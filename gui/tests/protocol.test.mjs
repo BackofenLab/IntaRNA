@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { DEFAULTS, EVALUATION_EXAMPLE, parseSequence, parseFasta, prepareRequest, makeArguments, CSV_COLUMNS, sequenceOffset } from '../protocol.js';
 import { FIELDS } from '../options.js';
-import { CSV_CATALOG } from '../columns.js';
+import { CSV_CATALOG, CSV_GROUPS, defaultColumns } from '../columns.js';
 const request = (parameters = {}, extra = {}) => ({ ...DEFAULTS, parameters, ...extra });
 
 test('FASTA normalization, identifiers, bounded multi-record work and subsets', () => {
@@ -12,11 +12,11 @@ test('FASTA normalization, identifiers, bounded multi-record work and subsets', 
   const fasta = '>a\nGGGAGGAGGG\n>b\nGGGAGGAGGG';
   assert.equal(prepareRequest(request({}, { query: fasta })).query.records.length, 2);
   assert.throws(() => prepareRequest(request({}, { task: 'evaluation', query: fasta, rri: EVALUATION_EXAMPLE })), /exactly one/);
-  assert.throws(() => prepareRequest(request({}, { query: '>a\n'+'A'.repeat(2000)+'\n>b\n'+'A'.repeat(2000), target: 'C'.repeat(300) })), /1,000,000/);
-  assert.doesNotThrow(() => prepareRequest(request({ qSet: '2-2' }, { query: '>a\n'+'A'.repeat(2000)+'\n>b\n'+'A'.repeat(2000), target: 'C'.repeat(300) })));
+  assert.throws(() => prepareRequest(request({}, { query: '>a\n'+'A'.repeat(5000)+'\n>b\n'+'A'.repeat(2000), target: 'C'.repeat(300) })), /1,000,000/);
+  assert.doesNotThrow(() => prepareRequest(request({ qSet: '2-2' }, { query: '>a\n'+'A'.repeat(5000)+'\n>b\n'+'A'.repeat(2000), target: 'C'.repeat(300) })));
   assert.throws(() => prepareRequest(request({ outPairwise: true }, { query: fasta })), /same number/);
   assert.throws(() => prepareRequest(request({ qSet: '3-3' })), /within/);
-  assert.throws(() => prepareRequest(request({}, { query: 'A'.repeat(2001) })));
+  assert.throws(() => prepareRequest(request({}, { query: 'A'.repeat(5001) })));
 });
 
 test('CLI defaults, ranges and strict typed controls reject invalid values', () => {
@@ -68,4 +68,52 @@ test('browser catalog covers every native CSV column and every control names a C
   assert.deepEqual(CSV_CATALOG.map((c) => c.key).toSorted(), ids.toSorted());
   const source = readFileSync(new URL('../../src/bin/CommandLineParsing.cpp', import.meta.url), 'utf8');
   for (const field of FIELDS.filter((field) => field.key !== 'outSpotProbSpots')) assert.ok(source.includes(`"${field.key}"`), field.key);
+});
+
+test('JSON worker boundary embeds all inputs with typed non-default settings', async () => {
+  const { makeParameterDocument, JSON_SCHEMA } = await import('../protocol.js');
+  const prepared = prepareRequest(request({ temperature: 20, noSeed: true, qShape: '1 0.2' }, { outputs: ['qPu'] }));
+  const document = JSON.parse(JSON.stringify(makeParameterDocument(prepared)));
+  assert.equal(document.schema, JSON_SCHEMA);
+  assert.equal(document.parameters.query.text, prepared.query.fasta);
+  assert.equal(document.parameters.target.text, prepared.target.fasta);
+  assert.equal(document.parameters.qShape.text, '1 0.2\n');
+  assert.equal(document.parameters.temperature, 20);
+  assert.equal(document.parameters.noSeed, true);
+  assert.equal(document.parameters.qIdxPos0, undefined);
+  assert.deepEqual(document.parameters.out, ['/results.csv', 'qPu:/output/qPu.csv']);
+  const worker = readFileSync(new URL('../intarna-worker.js', import.meta.url), 'utf8');
+  assert.ok(worker.includes("callMain(['--parameterFile=/parameter.json'])"));
+});
+
+
+test('browser batches use longest selected strands and round-trip full FASTA inputs', async () => {
+  const batch = Array.from({ length: 50 }, (_, i) => `>q${i}\n${'A'.repeat(5000)}\n`).join('');
+  assert.equal(parseFasta(batch, 'Query').records.length, 50);
+  assert.throws(() => parseFasta(batch + '>extra\nAA', 'Query'), /50 FASTA/);
+  assert.doesNotThrow(() => prepareRequest(request({}, { query: batch, target: 'C'.repeat(200) })));
+  assert.throws(() => prepareRequest(request({}, { query: batch, target: 'C'.repeat(201) })), /1,000,000/);
+  const crossed = { query: '>q1\n' + 'A'.repeat(5000) + '\n>q2\nAA', target: '>t1\nCC\n>t2\n' + 'C'.repeat(5000) };
+  assert.throws(() => prepareRequest(request({ outPairwise: true, noSeed: true }, crossed)), /1,000,000/);
+  const { serializeParameters, importParameters } = await import('../parameter-file.js');
+  assert.equal(importParameters(serializeParameters(request({}, { query: batch }), 'test')).query, batch);
+  const parsed = parseFasta('>one\tdescription here\nACGU\n>two   \nACGU', 'Query');
+  assert.deepEqual(parsed.records.map((record) => record.id), ['one', 'two']);
+  assert.equal(parsed.warnings.length, 1);
+  assert.match(parsed.warnings[0], /one/);
+  assert.equal(parsed.fasta, '>one\nACGU\n>two\nACGU\n');
+});
+
+test('CSV groups cover native columns once and task defaults serialize explicitly', async () => {
+  assert.deepEqual(CSV_GROUPS.flatMap((group) => group.keys).toSorted(), CSV_CATALOG.map((column) => column.key).toSorted());
+  const energy = [...CSV_GROUPS.find((group) => group.label === 'Energy').keys, 'Etotal', 'Eall', 'Eall1', 'Eall2', 'EallTotal'];
+  for (const key of energy) assert.ok(defaultColumns('evaluation').includes(key), key);
+  for (const key of ['seedStart1', 'seedStart2', 'seedEnd1', 'seedEnd2']) assert.ok(!defaultColumns('evaluation').includes(key), key);
+  for (const key of ['ED1', 'ED2', 'seedE', 'seedStart1', 'seedStart2']) assert.ok(defaultColumns('prediction').includes(key), key);
+  const { exportParameters, importParameters } = await import('../parameter-file.js');
+  const input = request({ outNumber: 10 }, { csvColumns: defaultColumns('prediction') });
+  const saved = exportParameters(input, 'test');
+  assert.equal(saved.parameters.outNumber, 10);
+  assert.equal(saved.parameters.outCsvCols, input.csvColumns.join(','));
+  assert.deepEqual(prepareRequest(importParameters(saved)), prepareRequest(input));
 });

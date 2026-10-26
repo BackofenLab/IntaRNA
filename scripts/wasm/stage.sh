@@ -25,12 +25,13 @@ PYSOURCE
 )
 vienna_source="$build/sources/vienna-$vienna_version-$vienna_sha256/ViennaRNA-$vienna_version"
 mkdir -p "$site/licenses"
-cp -R "$repo/webinterface/assets" "$site/"
-for file in index.html styles.css app.js mark.svg protocol.js runner.js results.js options.js columns.js archive.js visualization.js; do
-  cp "$repo/webinterface/$file" "$site/$file"
+cp -R "$repo/gui/assets" "$repo/gui/examples" "$site/"
+for file in index.html styles.css app.js mark.svg protocol.js runner.js results.js options.js columns.js archive.js sessions.js visualization.js parameter-file.js uploads.js; do
+  cp "$repo/gui/$file" "$site/$file"
 done
-cp "$repo/webinterface/intarna-worker.js" "$site/intarna-worker.js"
+cp "$repo/gui/intarna-worker.js" "$site/intarna-worker.js"
 touch "$site/.nojekyll"
+cp "$repo/src/bin/nlohmann/LICENSE.MIT" "$site/licenses/nlohmann-json.txt"
 cp "$repo/LICENSE" "$site/licenses/IntaRNA.txt"
 cp "$repo/src/easylogging++.LICENCE.txt" "$site/licenses/easylogging.txt"
 cp "$repo/src/mdspan/LICENSE" "$site/licenses/mdspan.txt"
@@ -52,6 +53,7 @@ cat > "$site/licenses/index.html" <<HTML
 <p>This distribution uses ViennaRNA $vienna_version, Boost 1.87.0, zlib 1.3.1, bundled dlib ${dlib_directory#dlib-}, Kokkos mdspan, Easylogging++ and the Emscripten 4.0.23 runtime.</p>
 <ul>
 <li><a href="IntaRNA.txt">IntaRNA</a></li><li><a href="ViennaRNA.txt">ViennaRNA</a></li>
+<li><a href="nlohmann-json.txt">nlohmann/json</a></li>
 <li><a href="Boost.txt">Boost</a></li><li><a href="zlib.h">zlib</a></li>
 <li><a href="dlib.txt">dlib</a></li><li><a href="naview.c">Naview</a></li>
 <li><a href="mdspan.txt">Kokkos mdspan</a></li><li><a href="easylogging.txt">Easylogging++</a></li>

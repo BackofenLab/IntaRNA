@@ -5,10 +5,12 @@
 **Efficient RNA-RNA interaction prediction incorporating accessibility and
 seeding of interaction sites**
 
-Predict short RNA pairs or evaluate supplied structures locally with the [browser interface](https://backofenlab.github.io/IntaRNA/webinterface/).
-Select an interaction to view it in vaRRI, or download a ZIP with inputs, compiled versions, reproducible parameters and all outputs.
-See the [WebAssembly build instructions](webinterface/docs/step1-wasm-compilation.md) and
-[interface/deployment notes](webinterface/docs/step4-results-and-deployment.md).
+Predict short RNA pairs or evaluate supplied structures locally with the [browser interface](https://backofenlab.github.io/IntaRNA/gui/).
+The browser accepts up to 50 records per strand, 2–5,000 nucleotides each, with longest selected query × longest selected target at most 1,000,000. Prediction defaults to 10 interactions per pair and includes opening and seed energies; evaluation selects all energy columns.
+Computed runs stay in separate, foldable sessions under Results in the current tab. Name and select sessions to restore their inputs and compare results; editing or resetting parameters keeps earlier runs.
+Select an interaction to view it in vaRRI, or download a session’s ZIP with inputs, compiled versions, reproducible parameters and all outputs. Sessions are temporary and are cleared when the page is reloaded.
+See the [WebAssembly build instructions](gui/docs/step1-wasm-compilation.md) and
+[interface/deployment notes](gui/docs/step4-results-and-deployment.md).
 
 
 During the last few years, several new small regulatory RNAs
@@ -30,7 +32,7 @@ as well as the existence of a user-definable seed interaction. We successfully a
 IntaRNA to the prediction of bacterial sRNA targets and determined the exact
 locations of the interactions with a higher accuracy than competing programs.
 
-For testing or ad hoc use of IntaRNA, you can use its webinterface at the
+For testing or ad hoc use of IntaRNA, you can use its gui at the
 
 **==> [Freiburg RNA tools IntaRNA webserver](http://rna.informatik.uni-freiburg.de/IntaRNA/) <==**
 
@@ -503,6 +505,11 @@ using `configure --disable-multithreading`.
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
 <br />
 <a name="parameterFile" />
+
+JSON parameter files, including embedded FASTA, accessibility, SHAPE and energy
+parameter text, are also accepted by `--parameterFile` with automatic format
+detection. See [JSON format, examples and precedence](doc/json-parameters.md).
+
 
 ## Load arguments from file
 

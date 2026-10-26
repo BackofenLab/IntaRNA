@@ -85,7 +85,7 @@ python/intarnapvalue.*
 
 # Browser build outputs and local test dependencies
 /build-wasm/
-/webinterface/wasm/
-/webinterface/node_modules/
+/gui/wasm/
+/gui/node_modules/
 
 /scripts/wasm/__pycache__/

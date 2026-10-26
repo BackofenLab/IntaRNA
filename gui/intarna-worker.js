@@ -1,4 +1,4 @@
-import { prepareRequest, makeArguments } from './protocol.js';
+import { prepareRequest, makeParameterDocument } from './protocol.js';
 
 // Each task owns a worker; each CLI invocation owns a fresh WASM instance.
 let started = false;
@@ -20,14 +20,10 @@ self.onmessage = async ({ data }) => {
         locateFile: () => new URL('./wasm/intarna.wasm', import.meta.url).href,
         print: log, printErr: log,
       });
-      module.FS.writeFile('/query.fa', request.query.fasta);
-      module.FS.writeFile('/target.fa', request.target.fasta);
+      module.FS.writeFile('/parameter.json', JSON.stringify(makeParameterDocument(request, format)));
       module.FS.mkdir('/output');
-      for (const [key, value] of Object.entries(request.parameters)) {
-        if (/^(q|t)(Shape|AccFile)$/.test(key) && value) module.FS.writeFile(`/${key}.txt`, value + '\n');
-      }
       self.postMessage({ type: 'status', message: request.task === 'evaluation' ? 'Evaluating supplied RNA interactions…' : 'Predicting RNA interactions…' });
-      const code = module.callMain(makeArguments(request, format));
+      const code = module.callMain(['--parameterFile=/parameter.json']);
       if (code !== 0) throw new Error(`IntaRNA exited with status ${code}. Check the diagnostics and input settings.`);
       return module.FS;
     };
