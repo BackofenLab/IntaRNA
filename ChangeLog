@@ -16,7 +16,8 @@
 
 - --outNumberPerSeed selects each seed's best candidate sites before final
   deduplication, energy/overlap/count filtering; model P ranks left-most-anchor
-  ensembles; zero preserves ordinary prediction (#285, #288 review)
+  ensembles; zero preserves ordinary prediction; the GUI exposes the quota next
+  to the global output count (#285, #288 review)
   
 - refine GUI seed and CSV control widths, filter examples by task, cap result
   table height and use dark active tabs for additional output views (PR #303 review)
@@ -314,6 +315,12 @@ energies, restricted partition sums, and trackers.
      regions/windows and reset per region combination with --outPerRegion.
    * Reject positive unseeded quotas, ignore evaluation, and apply final overlap
      constraints to the retained union without refilling quotas (#285).
+ * gui/{options,protocol}.js, gui/tests/protocol.test.mjs,
+   scripts/wasm/{smoke-protocol.mjs,test-browser.py}
+   + Expose outNumberPerSeed in the first GUI output row between outNumber and
+     outOverlap; move energy/accessibility filters to a dedicated second row.
+   + Match native quota validation, window/region compatibility and JSON replay;
+     cover the default, range, rendered order and real WASM execution.
  * PredictorSeedOracle_test.cpp, OutputHandlerSeedCandidates_test.cpp,
    runOutputPerSeed.sh, library/test Makefile.am
    + Independent chain-enumeration, traceback, seed-only, mode-matrix, merge,

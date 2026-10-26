@@ -113,6 +113,7 @@ with sync_playwright() as playwright:
     expect(page.locator('.brand')).to_contain_text('IntaRNA package')
     expect(page.locator('#results-title')).to_have_text('Results')
     expect(page.locator('#outNumber')).to_have_value('10')
+    expect(page.locator('#outNumberPerSeed')).to_have_value('0')
     assert page.locator('.compute-bar').evaluate('node => node.firstElementChild.id') == 'compute'
     assert page.locator('.sequence-meta').first.evaluate('node => node.firstElementChild.tagName') == 'LABEL'
     fill('query', '>named\tignored description\n' + 'G' * 1000 + '\n' * 20 + 'GG')
@@ -174,6 +175,18 @@ with sync_playwright() as playwright:
     expect(page.locator('#seedBP')).to_be_enabled()
     expect(page.locator('#seedTQ')).to_be_disabled()
     open_group('output-options')
+    output_rows = [
+        [page.locator('#' + key).locator('xpath=..').bounding_box() for key in keys]
+        for keys in [
+            ['outNumber', 'outNumberPerSeed', 'outOverlap'],
+            ['outMaxE', 'outDeltaE', 'outMinPu'],
+            ['outBestSeedOnly', 'outNoLP', 'outNoGUend', 'outPerRegion', 'outPairwise'],
+        ]
+    ]
+    for boxes in output_rows:
+        assert max(box['y'] for box in boxes) - min(box['y'] for box in boxes) < 1, boxes
+    assert output_rows[0][0]['x'] < output_rows[0][1]['x'] < output_rows[0][2]['x']
+    assert output_rows[0][0]['y'] < output_rows[1][0]['y'] < output_rows[2][0]['y']
     output_labels = page.locator('#output-options .checkbox-grid label')
     assert output_labels.count() == 15
     assert all(label.get_attribute('title') for label in output_labels.all())
