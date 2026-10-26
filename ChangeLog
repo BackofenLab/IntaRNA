@@ -14,6 +14,9 @@
 
 ## Interface and handling
 
+- keep real-browser regression inputs stable when maintainers replace the GUI
+  examples, while continuing to verify that each task's example loads
+
 - refine GUI seed and CSV control widths, filter examples by task, cap result
   table height and use dark active tabs for additional output views (PR #303 review)
 
@@ -294,6 +297,11 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261026 Alexander Mitrofanov
+ * scripts/wasm/test-browser.py
+   * decouple deterministic numerical browser checks from replaceable GUI example
+     payloads while retaining real-browser coverage of prediction/evaluation loading
 
 261026 Alexander Mitrofanov
  * gui/app.js, gui/{index.html,styles.css}, scripts/wasm/test-browser.py
