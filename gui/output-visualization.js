@@ -67,7 +67,6 @@ function baseLayout(title) {
   return {
     title: { text: title, x: 0.04, xanchor: 'left', font: { size: 17 } },
     autosize: true,
-    height: 420,
     margin: { l: 72, r: 28, t: 62, b: 78 },
     paper_bgcolor: 'rgba(0,0,0,0)',
     plot_bgcolor: '#fff',
@@ -122,7 +121,7 @@ export function outputVisualization(file, request) {
   const z = parsed.rows.map((row) => row.slice(1).map(number));
   const target = context.target || 'Target', query = context.query || 'Query';
   return {
-    kind: 'matrix', context,
+    kind: 'matrix', context, axesSwapped: false,
     traces: [{
       type: 'heatmap', x, y, z, colorscale: matrix.colorscale, hoverongaps: false,
       colorbar: { title: { text: matrix.colorTitle, side: 'right' } },
@@ -134,6 +133,30 @@ export function outputVisualization(file, request) {
       yaxis: categoricalAxis(`${plotText(target)} index`, y),
     },
   };
+}
+
+export function swapVisualizationAxes(spec) {
+  if (spec.kind !== 'matrix') return spec;
+  const [trace, ...otherTraces] = spec.traces, axesSwapped = !spec.axesSwapped;
+  const target = spec.context.target || 'Target', query = spec.context.query || 'Query';
+  return {
+    ...spec,
+    axesSwapped,
+    traces: [{
+      ...trace,
+      x: [...trace.y], y: [...trace.x],
+      z: trace.x.map((_, column) => trace.z.map((row) => row[column])),
+      hovertemplate: axesSwapped
+        ? `${plotText(target)} %{x}<br>${plotText(query)} %{y}<br>Value %{z}<extra></extra>`
+        : `${plotText(target)} %{y}<br>${plotText(query)} %{x}<br>Value %{z}<extra></extra>`,
+    }, ...otherTraces],
+    layout: { ...spec.layout, xaxis: { ...spec.layout.yaxis }, yaxis: { ...spec.layout.xaxis } },
+  };
+}
+
+export function plotImageOptions(plot) {
+  const bounds = plot.getBoundingClientRect();
+  return { format: 'png', width: Math.round(bounds.width), height: Math.round(bounds.height) };
 }
 
 function button(text, className = '') {
@@ -195,15 +218,39 @@ export class AdditionalOutputView {
     exportButton.addEventListener('click', async () => {
       try {
         await this.ready;
-        const image = await globalThis.Plotly.toImage(this.plot, { format: 'png', width: 1400, height: 850 });
+        const image = await globalThis.Plotly.toImage(this.plot, plotImageOptions(this.plot));
         const encoded = image.slice(image.indexOf(',') + 1), bytes = Uint8Array.from(atob(encoded), (character) => character.charCodeAt(0));
         const url = URL.createObjectURL(new Blob([bytes], { type: 'image/png' }));
         const link = document.createElement('a'); link.href = url; link.download = file.name.replace(/\.csv$/i, '.png');
         document.body.append(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
       } catch (error) { status.textContent = `PNG export failed: ${error.message}`; }
     });
+    if (spec.kind === 'matrix') {
+      const swapButton = button('Swap X/Y', 'secondary'); swapButton.disabled = true;
+      swapButton.addEventListener('click', async () => {
+        const previous = this.spec;
+        swapButton.disabled = true;
+        try {
+          await this.ready;
+          this.spec = swapVisualizationAxes(this.spec);
+          this.ready = Promise.resolve(globalThis.Plotly.react(this.plot, this.spec.traces, this.spec.layout, this.plotConfig));
+          await this.ready; status.textContent = '';
+        } catch (error) {
+          this.spec = previous; status.textContent = `Axis swap failed: ${error.message}`;
+        } finally { swapButton.disabled = false; }
+      });
+      tools.append(swapButton); this.swapButton = swapButton;
+    }
     tools.append(exportButton); this.exportButton = exportButton;
     this.plot = document.createElement('div'); this.plot.className = 'output-plot'; visualizationPanel.append(this.plot); this.spec = spec;
+    this.plotConfig = {
+      responsive: true, displaylogo: false, scrollZoom: false,
+      modeBarButtonsToRemove: ['sendDataToCloud', 'lasso2d', 'select2d'],
+    };
+    if (globalThis.ResizeObserver) {
+      this.resizeObserver = new globalThis.ResizeObserver(() => this.resize());
+      this.resizeObserver.observe(this.plot);
+    }
     this.root.addEventListener('toggle', () => { if (this.root.open && !visualizationPanel.hidden) this.render(); });
     this.selectTab(0);
   }
@@ -212,11 +259,9 @@ export class AdditionalOutputView {
     if (!this.spec || this.rendered || !this.root.open) return;
     if (!globalThis.Plotly?.newPlot) { this.status.textContent = 'Visualization unavailable: Plotly did not load.'; return; }
     this.rendered = true; this.status.textContent = 'Rendering visualization…'; this.plot.setAttribute('aria-busy', 'true');
-    this.ready = Promise.resolve(globalThis.Plotly.newPlot(this.plot, this.spec.traces, this.spec.layout, {
-      responsive: true, displaylogo: false, scrollZoom: false,
-      modeBarButtonsToRemove: ['sendDataToCloud', 'lasso2d', 'select2d'],
-    })).then(() => {
+    this.ready = Promise.resolve(globalThis.Plotly.newPlot(this.plot, this.spec.traces, this.spec.layout, this.plotConfig)).then(() => {
       this.plot.removeAttribute('aria-busy'); this.status.textContent = ''; this.exportButton.disabled = false;
+      if (this.swapButton) this.swapButton.disabled = false;
     }).catch((error) => { this.plot.removeAttribute('aria-busy'); this.status.textContent = `Visualization unavailable: ${error.message}`; });
   }
 
@@ -225,6 +270,7 @@ export class AdditionalOutputView {
   }
 
   destroy() {
+    this.resizeObserver?.disconnect();
     if (this.rendered) globalThis.Plotly?.purge?.(this.plot);
   }
 }

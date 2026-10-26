@@ -330,6 +330,6 @@ export function defaultColumns(task) {
   // List them explicitly: seedEnd1/2 are coordinates, not energy columns.
   const extra = task === 'evaluation'
     ? [...CSV_CATALOG.filter(({ key }) => key.startsWith('E')).map(({ key }) => key), 'seedE', 'seedED1', 'seedED2']
-    : ['ED1', 'ED2', 'seedE', 'seedStart1', 'seedStart2'];
+    : ['ED1', 'ED2', 'seedE', 'seedStart1', 'seedEnd1', 'seedStart2', 'seedEnd2'];
   return [...new Set([...context, ...extra])];
 }
