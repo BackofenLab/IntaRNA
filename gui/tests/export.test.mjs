@@ -14,9 +14,23 @@ test('visualization retains full strand orientation, bulges, names and indices c
   assert.equal(url.searchParams.get('startIndex1'), '-5');
   assert.equal(url.searchParams.get('startIndex2'), '-3');
   assert.equal(url.searchParams.get('showRenderingOnly'), 'true');
+  assert.equal(url.searchParams.has('regionHighlights'), false);
   assert.throws(() => visualizationUrl({ id1: 'missing', hybridDP: '(&)' }, request), /not found/);
   assert.throws(() => visualizationUrl({ id1: 'target', id2: 'q_β', start1: -5, end1: -4, hybridDP: '(((&)))' }, request), /coordinates/);
   assert.throws(() => visualizationUrl({ id1: 'target', hybridDP: '(&)' }, { ...request, parameters: { ...request.parameters, tIdxPos0: 0 } }), /nonzero/);
+});
+
+test('visualization highlights every available seed region in transparent purple', () => {
+  const request = prepareRequest({ ...DEFAULTS, query: 'G'.repeat(20), target: 'C'.repeat(20), qIdxPos0: -3, tIdxPos0: -5 });
+  const row = {
+    id1: 'target', id2: 'query', start1: -5, end1: 15, start2: -3, end2: 17,
+    E: -1, hybridDP: `${'('.repeat(10)}${'.'.repeat(10)}&${'.'.repeat(10)}${')'.repeat(10)}`,
+    seedStart1: '-3:5', seedEnd1: '2:8', seedStart2: '-1:7', seedEnd2: '4:10',
+  };
+  const url = new URL(visualizationUrl(row, request));
+  assert.equal(url.searchParams.get('regionHighlights'), '-3-2&-1-4:800080:0.3,5-8&7-10:800080:0.3');
+  row.seedEnd2 = 'NAN';
+  assert.equal(new URL(visualizationUrl(row, request)).searchParams.has('regionHighlights'), false);
 });
 
 test('archive preserves effective non-default settings, selected CSV, auxiliary inputs and reports', () => {

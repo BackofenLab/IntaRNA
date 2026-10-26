@@ -31,6 +31,9 @@
 - refine GUI seed and CSV control widths, filter examples by task, cap result
   table height and use dark active tabs for additional output views (PR #303 review)
 
+- let users resize and transpose Plotly results, export their current dimensions,
+  and highlight all reported seed regions in vaRRI (#305)
+
 - compact and left-align GUI parameter rows, split CSV controls into their own
   tab, describe every additional output format and plot energy/probability files
   with sequence names, source tabs and PNG export (PR #287 review)
@@ -327,6 +330,16 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261026 Alexander Mitrofanov
+ * gui/output-visualization.js, gui/styles.css, gui/tests/output-visualization.test.mjs
+   + Add resizable Plotly canvases and matrix-axis transposition controls.
+   * Export PNGs at the current plotting dimensions instead of a fixed size.
+ * gui/visualization.js, gui/columns.js, gui/tests/{export,protocol}.test.mjs
+   + Pass every complete reported seed boundary to vaRRI as a translucent purple
+     region highlight and include seed ends in prediction CSV defaults (#305).
+ * gui/docs/step4-results-and-deployment.md
+   * Document plot resizing, axis swapping, current-size export and seed overlays.
 
 261024 Alexander Mitrofanov
  * python/tests/test_common_tools.py
