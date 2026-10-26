@@ -1,5 +1,22 @@
 import { sequenceOffset } from './protocol.js';
 
+const SEED_HIGHLIGHT = '800080:0.3';
+
+function seedHighlights(row) {
+  const values = ['seedStart1', 'seedEnd1', 'seedStart2', 'seedEnd2'].map((key) => row[key]);
+  if (values.some((value) => value === undefined || /^(?:NA|NAN)$/i.test(String(value).trim()))) return '';
+  const coordinates = values.map((value) => String(value).split(':').map(Number));
+  const count = coordinates[0].length;
+  if (!count || coordinates.some((list) => list.length !== count || list.some((value) => !Number.isInteger(value) || value === 0))) return '';
+  const highlights = [];
+  for (let index = 0; index < count; index++) {
+    const [start1, end1, start2, end2] = coordinates.map((list) => list[index]);
+    if (start1 > end1 || start2 > end2) return '';
+    highlights.push(`${start1}-${end1}&${start2}-${end2}:${SEED_HIGHLIGHT}`);
+  }
+  return highlights.join(',');
+}
+
 export function visualizationUrl(row, request) {
   // Native seq1 is target and seq2 is query; both structures run 5′ to 3′.
   const structures = row.hybridDP?.split('&');
@@ -16,13 +33,15 @@ export function visualizationUrl(row, request) {
     sequences.push(record.sequence); starts.push(start);
     fullStructures.push('.'.repeat(offset) + structure + '.'.repeat(record.sequence.length - end - 1));
   }
-  const url = new URL('https://backofenlab.github.io/vaRRI/');
-  url.search = new URLSearchParams({
+  const url = new URL('https://backofenlab.github.io/vaRRI/'), parameters = new URLSearchParams({
     sequence: sequences.join('&'), structure: fullStructures.join('&'),
     seqName1: row.id1, seqName2: row.id2, startIndex1: starts[0], startIndex2: starts[1],
     showRenderingOnly: 'true', forceLayout: 'false', forceLayoutLinearRRI: 'true',
     cropping: 2
   });
+  const highlights = seedHighlights(row);
+  if (highlights) parameters.set('regionHighlights', highlights);
+  url.search = parameters;
   return url.href;
 }
 

@@ -138,7 +138,7 @@ test('CSV groups cover native columns once and task defaults serialize explicitl
   const energy = [...CSV_GROUPS.find((group) => group.label === 'Energy').keys, 'Etotal', 'Eall', 'Eall1', 'Eall2', 'EallTotal'];
   for (const key of energy) assert.ok(defaultColumns('evaluation').includes(key), key);
   for (const key of ['seedStart1', 'seedStart2', 'seedEnd1', 'seedEnd2']) assert.ok(!defaultColumns('evaluation').includes(key), key);
-  for (const key of ['ED1', 'ED2', 'seedE', 'seedStart1', 'seedStart2']) assert.ok(defaultColumns('prediction').includes(key), key);
+  for (const key of ['ED1', 'ED2', 'seedE', 'seedStart1', 'seedEnd1', 'seedStart2', 'seedEnd2']) assert.ok(defaultColumns('prediction').includes(key), key);
   const { exportParameters, importParameters } = await import('../parameter-file.js');
   const input = request({ outNumber: 10, outNumberPerSeed: 2 }, { csvColumns: defaultColumns('prediction') });
   const saved = exportParameters(input, 'test');

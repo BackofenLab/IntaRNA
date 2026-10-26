@@ -42,7 +42,9 @@ and additional-file headers identify the target/query records covered by native
 `-t#q#` or `-s#` filename suffixes.
 
 Plotly renders locally from the pinned Cartesian bundle. A separate Export PNG
-button produces a 1400 × 850 image for the active plot; the normal file download
+button uses the active plot's current dimensions. The plotting area can be resized
+from its lower-right corner, and matrix plots provide Swap X/Y to transpose query
+and target axes without changing the data. The normal file download
 and reproducible ZIP retain untouched native data. Plots render lazily when their
 file is unfolded, resize with restored sessions, and are purged when a session is
 deleted. Non-plot formats keep the direct content view.
@@ -59,6 +61,9 @@ CSV identifiers to the completed run's normalized FASTA records (including
 semicolon-to-underscore ID conversion). It pads the interaction dot-bracket
 structure with unpaired positions to the full input lengths, using each start
 index and the native negative-to-positive transition that skips zero.
+When all four seed-boundary columns are present, each reported seed is passed to
+vaRRI as a translucent purple paired-region highlight. Prediction defaults select
+those columns; custom CSV selections without complete boundaries omit highlights.
 
 The URL follows [vaRRI's embedding API](https://github.com/BackofenLab/vaRRI/blob/main-v2/docs/sharing-and-input.md):
 `sequence`, `structure`, `seqName1/2`, `startIndex1/2`, and

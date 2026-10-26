@@ -720,11 +720,13 @@ tbody tr.selected { background:var(--table-selection); }
 .output-tab-panel {
   padding-top:12px;
   min-width:0;
+  overflow:auto;
 }
 
 .plot-tools {
   display:flex;
   justify-content:flex-end;
+  gap:.5rem;
   min-height:2.6rem;
 }
 
@@ -735,7 +737,12 @@ tbody tr.selected { background:var(--table-selection); }
 
 .output-plot {
   width:100%;
-  min-height:420px;
+  height:420px;
+  min-width:320px;
+  min-height:320px;
+  max-width:none;
+  resize:both;
+  overflow:hidden;
 }
 
 .output-plot-status {

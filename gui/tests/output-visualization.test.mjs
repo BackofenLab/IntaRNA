@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { outputFileContext, outputVisualization } from '../output-visualization.js';
+import { outputFileContext, outputVisualization, plotImageOptions, swapVisualizationAxes } from '../output-visualization.js';
 
 const request = {
   target: { records: [{ id: 'target-1' }, { id: 'target-2' }] },
@@ -31,6 +31,14 @@ test('pair energy and probability matrices use literal category axes', () => {
   assert.equal(energy.layout.xaxis.type, 'category');
   assert.equal(energy.layout.yaxis.type, 'category');
   assert.match(energy.layout.title.text, /target-2 : query-1/);
+  const swapped = swapVisualizationAxes(energy);
+  assert.deepEqual(swapped.traces[0].x, ['G_5', 'U_6']);
+  assert.deepEqual(swapped.traces[0].y, ['A_-1', 'C_1']);
+  assert.deepEqual(swapped.traces[0].z, [[-4.2, -2], [null, -1.5]]);
+  assert.equal(swapped.layout.xaxis.title.text, 'target-2 index');
+  assert.equal(swapped.layout.yaxis.title.text, 'query-1 index');
+  assert.match(swapped.traces[0].hovertemplate, /target-2 %\{x\}.*query-1 %\{y\}/);
+  assert.deepEqual(swapVisualizationAxes(swapped).traces, energy.traces);
 
   const spots = outputVisualization({
     name: 'spotProb-t1q2.csv',
@@ -39,6 +47,11 @@ test('pair energy and probability matrices use literal category axes', () => {
   assert.equal(spots.kind, 'matrix');
   assert.equal(spots.traces[0].type, 'heatmap');
   assert.deepEqual(spots.layout.xaxis.categoryarray, ['A_-1', 'C_1']);
+});
+
+test('PNG export uses the current rendered plot dimensions', () => {
+  assert.deepEqual(plotImageOptions({ getBoundingClientRect: () => ({ width: 812.4, height: 533.6 }) }),
+    { format: 'png', width: 812, height: 534 });
 });
 
 test('selected spot probabilities use a categorical bar plot', () => {
