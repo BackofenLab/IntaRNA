@@ -14,6 +14,13 @@
 
 ## Interface and handling
 
+- refine GUI seed and CSV control widths, filter examples by task, cap result
+  table height and use dark active tabs for additional output views (PR #303 review)
+
+- compact and left-align GUI parameter rows, split CSV controls into their own
+  tab, describe every additional output format and plot energy/probability files
+  with sequence names, source tabs and PNG export (PR #287 review)
+
 - reorganize GUI parameters, add conditional seed/accessibility controls and
   grouped CSV defaults, expand FASTA limits and refine result headers (PR #299)
 
@@ -289,6 +296,34 @@ energies, restricted partition sums, and trackers.
 ################################################################################
 
 261026 Alexander Mitrofanov
+ * gui/app.js, gui/{index.html,styles.css}, scripts/wasm/test-browser.py
+   * place Explicit seeds beside a half-width Seed constraint selector and halve
+     the CSV sort selector width; verify desktop/mobile control geometry
+   * show only examples for the selected task, retain complete CSV downloads while
+     scrolling result tables above 500 px, and match output tab selection styling
+     to the parameter tabs (PR #303 maintainer review)
+ * gui/docs/{json-workflow,step3-frontend-ui,step4-results-and-deployment}.md
+   * document task-specific examples, compact controls and the bounded result table
+
+261026 Alexander Mitrofanov
+ * gui/{app,options,sessions,output-visualization}.js,
+   gui/{index.html,styles.css}
+   * compact bounded parameter rows while preserving their grouping and align
+     wrapped labels above left-aligned controls
+   * move CSV sorting/column selection into a dedicated tab between Output and
+     Model & Energy; add content/use tooltips to all additional output formats
+   + show sequence-aware Plotly profiles, heatmaps and selected-spot bars beside
+     native file content; add header downloads and verified PNG export
+ * .gitattributes, gui/vendor/, scripts/wasm/stage.sh,
+   .github/workflows/build-wasm.yml
+   + vendor and checksum Plotly.js Cartesian 4.1.2, stage its MIT license and
+     verify both assets in the combined Pages artifact
+ * gui/tests/output-visualization.test.mjs, scripts/wasm/test-browser.py,
+   README.md, gui/docs/
+   + cover signed categorical axes, file/sequence mapping, malformed data,
+     responsive compact layout, plot rendering and PNG downloads in real
+     Chromium/Firefox with the existing WASM engine
+   * address https://github.com/BackofenLab/IntaRNA/pull/287#issuecomment-6416573560
  * src/IntaRNA/SeededPartitionFunction.cpp
    * Select sparse batch anchors by scanning admitted seeds instead of probing
      every possible pair in every source span; retain the grid lookup for dense

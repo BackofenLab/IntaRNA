@@ -86,7 +86,8 @@ export const GROUPS = [
     ['noSeed'], ['seedTQ'], ['seedBP', 'seedMaxUP', 'seedQMaxUP', 'seedTMaxUP'],
     ['seedMaxE', 'seedMinPu', 'seedMaxEhybrid'], ['seedQRange', 'seedTRange'], ['seedNoGU', 'seedNoGUend'],
   ]) },
-  { key: 'output-options', label: 'Output', fields: [...fields.values()].filter((field) => field.key.startsWith('out')) },
+  { key: 'output-options', label: 'Output', fields: [...fields.values()].filter((field) => field.key.startsWith('out') && field.key !== 'outCsvSort') },
+  { key: 'csv-options', label: 'CSV', fields: [fields.get('outCsvSort')] },
   { key: 'interaction-options', label: 'Model & Energy', rows: rows([
     ['model', 'mode'], ['energyVRNA', 'temperature', 'energyAdd'], ['energyNoDangles'],
     ['windowWidth', 'windowOverlap'], ['kineticScore'],
@@ -98,12 +99,20 @@ export const FIELDS = GROUPS.flatMap((group) => group.fields);
 export const PARAMETER_DEFAULTS = Object.freeze(Object.fromEntries(FIELDS.map((field) => [field.key, field.value])));
 export const UI_DEFAULTS = Object.freeze({ ...PARAMETER_DEFAULTS, outNumber: 10 });
 export const EXTRA_OUTPUTS = [
-  ['qMinE', 'Query minimum energies', true], ['tMinE', 'Target minimum energies', true],
-  ['qAcc', 'Query opening energies'], ['tAcc', 'Target opening energies'],
-  ['qPu', 'Query unpaired probabilities'], ['tPu', 'Target unpaired probabilities'],
-  ['qSpotProb', 'Query interaction probabilities', true], ['tSpotProb', 'Target interaction probabilities', true],
-  ['pMinE', 'Pair minimum energies', true], ['spotProb', 'Interaction spot probabilities', true],
-  ['bpProb', 'Actual base-pair probabilities (model P)', true], ['bpsvg', 'Base-pair probability SVG (model P)', true],
-  ['normal', 'ASCII interaction structures'], ['detailed', 'Detailed interaction report'], ['ensemble', 'Ensemble report'],
-].map(([key, label, predictionOnly = false]) => ({ key, label, prediction: predictionOnly }));
+  ['qMinE', 'Query minimum energies', true, 'CSV position profile of the lowest interaction energy covering each query nucleotide. Useful for locating favorable query sites.'],
+  ['tMinE', 'Target minimum energies', true, 'CSV position profile of the lowest interaction energy covering each target nucleotide. Useful for locating favorable target sites.'],
+  ['qAcc', 'Query opening energies', false, 'RNAplfold-style opening-energy matrix for the query. Use it to inspect or reproduce query accessibility.'],
+  ['tAcc', 'Target opening energies', false, 'RNAplfold-style opening-energy matrix for the target. Use it to inspect or reproduce target accessibility.'],
+  ['qPu', 'Query unpaired probabilities', false, 'RNAplfold-style query unpaired-probability matrix, converted from rounded opening energies.'],
+  ['tPu', 'Target unpaired probabilities', false, 'RNAplfold-style target unpaired-probability matrix, converted from rounded opening energies.'],
+  ['qSpotProb', 'Query interaction probabilities', true, 'CSV position profile estimating the probability that each query nucleotide is covered by an interaction.'],
+  ['tSpotProb', 'Target interaction probabilities', true, 'CSV position profile estimating the probability that each target nucleotide is covered by an interaction.'],
+  ['pMinE', 'Pair minimum energies', true, 'CSV target-by-query matrix of the minimum interaction energy covering each nucleotide pair. Useful as an energy heatmap.'],
+  ['spotProb', 'Interaction spot probabilities', true, 'CSV target-by-query matrix, or selected spots, estimating interaction coverage probabilities. Useful as a probability heatmap.'],
+  ['bpProb', 'Actual base-pair probabilities (model P)', true, 'CSV target-by-query matrix of actual base-pair probabilities for the model P interaction ensemble.'],
+  ['bpsvg', 'Base-pair probability SVG (model P)', true, 'SVG dot plot of model P base-pair probabilities with accessibility frames and seed/MFE outlines.'],
+  ['normal', 'ASCII interaction structures', false, 'Compact text report with ASCII interaction structures and their overall energies.'],
+  ['detailed', 'Detailed interaction report', false, 'Expanded text report with interaction structures, coordinates and energy contributions.'],
+  ['ensemble', 'Ensemble report', false, 'Text report of interaction and intramolecular ensemble energies and partition functions.'],
+].map(([key, label, predictionOnly, description]) => ({ key, label, prediction: predictionOnly, description }));
 export const ENSEMBLE_COLUMNS = ['Eall', 'Zall', 'EallTotal', 'P_E'];

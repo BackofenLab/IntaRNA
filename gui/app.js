@@ -90,16 +90,22 @@ function fieldRow(body, fields, suffix = '') {
 for (const definition of GROUPS) {
   const body = group(definition.key, definition.label);
   if (definition.key === 'seed-options') {
+    const primary = element('div', '', 'seed-primary-row');
     const wrapper = element('div', '', 'field seed-mode');
     const label = element('label', 'Seed constraint'); label.htmlFor = 'seed-mode';
     const select = element('select'); select.id = 'seed-mode';
     for (const [value, name] of [['none', 'Disable seed constraint'], ['explicit', 'Explicit seed'], ['identify', 'Identify seeds']]) {
       const option = element('option', name); option.value = value; select.append(option);
     }
-    select.value = 'identify'; wrapper.append(label, select); body.append(wrapper);
+    select.value = 'identify'; wrapper.append(label, select);
+    primary.append(wrapper, renderField(FIELDS.find((field) => field.key === 'seedTQ')));
+    body.append(primary);
   }
   if (definition.rows) {
-    for (const row of definition.rows) fieldRow(body, row);
+    for (const row of definition.rows) {
+      if (definition.key === 'seed-options' && row[0].key === 'seedTQ') continue;
+      fieldRow(body, row);
+    }
   } else fieldRow(body, definition.fields);
   if (definition.strand) {
     const p = definition.strand;
@@ -120,10 +126,10 @@ function checkbox(container, key, labelText, description) {
   if (description) label.title = description;
   label.append(input, document.createTextNode(labelText)); container.append(label); return input;
 }
-const outputBody = byId('output-options').querySelector('.group-body');
-outputBody.append(element('h3', 'CSV output columns', 'subheading'));
-outputBody.append(element('p', 'seq1 is the target; seq2 is the query. Hover over a column name for details. Select columns for the table and CSV download; table visibility can be changed after computation.', 'input-help'));
-const selectionTools = element('div', '', 'selection-tools'); outputBody.append(selectionTools);
+const csvBody = byId('csv-options').querySelector('.group-body');
+csvBody.append(element('h3', 'CSV output columns', 'subheading'));
+csvBody.append(element('p', 'seq1 is the target; seq2 is the query. Hover over a column name for details. Select columns for the table and CSV download; table visibility can be changed after computation.', 'input-help'));
+const selectionTools = element('div', '', 'selection-tools'); csvBody.append(selectionTools);
 const selectColumns = (selection) => {
   csvOrder = [...selection]; for (const input of csvInputs) input.checked = selection.includes(input.value); inputsChanged();
 };
@@ -142,16 +148,17 @@ for (const group of CSV_GROUPS) {
       inputsChanged();
     }); legend.append(button);
   }
-  const picker = element('div', '', 'checkbox-grid csv-columns'); section.append(legend, picker); outputBody.append(section);
+  const picker = element('div', '', 'checkbox-grid csv-columns'); section.append(legend, picker); csvBody.append(section);
   for (const key of group.keys) {
     const column = CSV_CATALOG.find((column) => column.key === key);
     csvInputs.push(checkbox(picker, key, key, column.description));
   }
 }
+const outputBody = byId('output-options').querySelector('.group-body');
 outputBody.append(element('h3', 'Additional output files', 'subheading'));
 outputBody.append(element('p', 'Reports are computed with the same settings. ASCII, detailed and ensemble reports each run a fresh engine instance and can take extra time.', 'input-help'));
 const outputPicker = element('div', '', 'checkbox-grid'); outputBody.append(outputPicker);
-for (const output of EXTRA_OUTPUTS) outputInputs.push(checkbox(outputPicker, output.key, output.label));
+for (const output of EXTRA_OUTPUTS) outputInputs.push(checkbox(outputPicker, output.key, output.label, output.description));
 const generalBody = group('general-options', 'CLI-only');
 generalBody.append(element('p', 'Process-level settings (threads, log paths, parameter-file paths and terminal help) are available in the CLI.'));
 const docs = element('a', 'Full CLI parameter documentation'); docs.href = 'https://github.com/BackofenLab/IntaRNA#readme'; generalBody.append(docs);
@@ -172,6 +179,9 @@ function updateLength(name) {
 }
 function updateAvailability() {
   const evaluation = getTask() === 'evaluation';
+  for (const button of byId('example-options').querySelectorAll('[data-example-task]')) {
+    button.hidden = button.dataset.exampleTask !== getTask();
+  }
   byId('evaluation-input').hidden = !evaluation;
   byId('task-help').textContent = evaluation ? 'Evaluate supplied structures for one query and one target. Prediction constraints are ignored.' : 'Predict interactions for all query–target sequence pairs.';
   byId('compute').textContent = evaluation ? 'Evaluate interactions' : 'Compute interactions';
@@ -313,6 +323,7 @@ async function loadExamples() {
     container.replaceChildren();
     for (const example of examples) {
       const button = element('button'); button.type = 'button';
+      button.dataset.exampleTask = example.request.task;
       button.append(element('strong', example.name), element('span', example.description));
       button.addEventListener('click', () => {
         if (byId('inputs').disabled) return;
@@ -321,6 +332,7 @@ async function loadExamples() {
       });
       container.append(button);
     }
+    updateAvailability();
   } catch (error) { container.replaceChildren(element('p', `${error.message} Reload to try again.`, 'input-help')); }
 }
 loadExamples();

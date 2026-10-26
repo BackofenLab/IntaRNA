@@ -4,10 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Predict or evaluate RNA–RNA interactions locally with IntaRNA.">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; worker-src 'self'; connect-src 'self'; frame-src https://backofenlab.github.io/vaRRI/; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; worker-src 'self'; connect-src 'self'; frame-src https://backofenlab.github.io/vaRRI/; img-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'none'">
   <title>IntaRNA · RNA–RNA interactions</title>
   <link rel="icon" href="mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
+  <link id="plotly.js-style-global" class="no-inline-styles" rel="stylesheet" href="vendor/plotly.css">
+  <script src="vendor/plotly-cartesian.min.js"></script>
   <script type="module" src="app.js"></script>
 </head>
 <body>
@@ -73,7 +75,7 @@
             <div data-role="results-view" hidden>
               <div class="table-tools"><label>Filter interactions <input data-role="search" type="search" placeholder="Search any column" autocomplete="off"></label><span data-role="visible-count" role="status" aria-live="polite"></span><div class="download-actions"><button data-role="download" class="secondary" type="button">Download CSV</button></div></div>
               <details class="column-picker"><summary>Show or hide table columns</summary><div data-role="visible-columns" class="checkbox-grid"></div></details>
-              <div class="table-scroll" tabindex="0" role="region" aria-label="Interaction results, scroll horizontally for all columns"><table><caption class="sr-only">Interactions. Select a heading to sort. mfe Δ is relative to the best reported interaction for the same sequence pair.</caption><thead><tr></tr></thead><tbody></tbody></table></div>
+              <div class="table-scroll" tabindex="0" role="region" aria-label="Interaction results, scroll to see more rows or columns"><table><caption class="sr-only">Interactions. Select a heading to sort. mfe Δ is relative to the best reported interaction for the same sequence pair.</caption><thead><tr></tr></thead><tbody></tbody></table></div>
               <p data-role="no-matches" hidden>No interactions match this filter. Clear the search to see all results.</p>
               <p class="table-note">mfe Δ is the energy difference from the best reported interaction for the same query–target pair; in evaluation, the reference is the best supplied structure. It is not a free-energy change. Coordinates are inclusive and use your start indices. Table visibility does not change the selected CSV download columns.</p>
               <section data-role="visualization" aria-label="Interaction visualization">

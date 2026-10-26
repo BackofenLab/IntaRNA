@@ -18,7 +18,9 @@ with sync_playwright() as playwright:
     browser = getattr(playwright, args.browser).launch(headless=True)
     page = browser.new_page(viewport={'width': 1440, 'height': 1100})
     errors = []
+    csp_errors = []
     page.on('pageerror', lambda error: errors.append(str(error)))
+    page.on('console', lambda message: csp_errors.append(message.text) if message.type == 'error' and ('Content Security Policy' in message.text or 'Refused to apply inline style' in message.text) else None)
     # Keep browser tests offline and inspect the exact third-party URL separately.
     visualization_urls = []
     def viewer(route):
@@ -76,7 +78,7 @@ with sync_playwright() as playwright:
     expect(page.locator('#version-info')).to_contain_text(f'ViennaRNA {vienna_version}')
     for logo in page.locator('.site-header img').all():
         assert logo.evaluate('node => node.complete && node.naturalWidth > 0')
-    for key in ['seed-options', 'output-options', 'interaction-options', 'query-options', 'target-options', 'general-options', 'sequence-input']:
+    for key in ['seed-options', 'output-options', 'csv-options', 'interaction-options', 'query-options', 'target-options', 'general-options', 'sequence-input']:
         open_group(key)
 
     expect(page.get_by_role('radio', name='Prediction')).to_be_checked()
@@ -87,6 +89,14 @@ with sync_playwright() as playwright:
     expect(page.locator('#task-help')).to_contain_text('Evaluate supplied structures')
     page.keyboard.press('ArrowLeft')
     expect(page.get_by_role('radio', name='Prediction')).to_be_checked()
+    page.locator('#examples-menu summary').click()
+    expect(page.get_by_role('button', name='Short duplex', exact=False)).to_be_visible()
+    expect(page.get_by_role('button', name='Evaluate a duplex', exact=False)).not_to_be_visible()
+    page.get_by_role('radio', name='Evaluation').check()
+    expect(page.get_by_role('button', name='Evaluate a duplex', exact=False)).to_be_visible()
+    expect(page.get_by_role('button', name='Short duplex', exact=False)).not_to_be_visible()
+    page.get_by_role('radio', name='Prediction').check()
+    page.locator('#examples-menu summary').click()
 
     # Tabs support keyboard navigation and wrap without page overflow.
     page.locator('#tab-sequence-input').focus()
@@ -99,7 +109,7 @@ with sync_playwright() as playwright:
     expect(page.locator('#tab-sequence-input')).to_be_focused()
 
     # Review layout, task defaults and modes work with native parameters.
-    assert page.locator('[role=tab]').all_text_contents() == ['Sequences', 'Seed', 'Output', 'Model & Energy', 'Query', 'Target', 'CLI-only']
+    assert page.locator('[role=tab]').all_text_contents() == ['Sequences', 'Seed', 'Output', 'CSV', 'Model & Energy', 'Query', 'Target', 'CLI-only']
     expect(page.locator('.brand')).to_contain_text('IntaRNA package')
     expect(page.locator('#results-title')).to_have_text('Results')
     expect(page.locator('#outNumber')).to_have_value('10')
@@ -114,10 +124,17 @@ with sync_playwright() as playwright:
 
     for prefix, group in [('q', 'query-options'), ('t', 'target-options')]:
         open_group(group)
-        # Each explicit row shares label height, including wrapped labels.
+        # Each explicit row shares label height, including wrapped labels, and
+        # compact controls stay left-aligned instead of filling the panel.
         for keys in [[prefix + suffix for suffix in ['Set', 'Region', 'IntLenMax', 'IntLoopMax', 'RegionLenMax']], [prefix + suffix for suffix in ['Acc', 'AccW', 'AccL', 'PfScale']]]:
             tops = [page.locator('#' + key).bounding_box()['y'] for key in keys]
             assert max(tops) - min(tops) < 1, tops
+            label_bottoms = [page.locator('#' + key).locator('xpath=preceding-sibling::label').bounding_box()['y'] + page.locator('#' + key).locator('xpath=preceding-sibling::label').bounding_box()['height'] for key in keys]
+            assert max(label_bottoms) - min(label_bottoms) < 1, label_bottoms
+        first = page.locator('#' + prefix + 'Set').bounding_box()
+        second = page.locator('#' + prefix + 'Region').bounding_box()
+        assert 8 <= second['x'] - first['x'] - first['width'] <= 20
+        assert page.locator('#' + prefix + 'AccW').bounding_box()['width'] <= 224
         expect(page.locator('#' + prefix + 'AccFile')).to_be_disabled()
         page.locator('#' + prefix + 'Acc').select_option('P')
         expect(page.locator('#' + prefix + 'AccFile')).to_be_enabled()
@@ -142,6 +159,11 @@ with sync_playwright() as playwright:
     expect(page.locator('#helixMinBP')).to_be_disabled()
     open_group('seed-options')
     expect(page.locator('#seedTQ')).to_be_disabled()
+    seed_box = page.locator('#seed-mode').bounding_box()
+    explicit_box = page.locator('#seedTQ').bounding_box()
+    assert abs(seed_box['y'] - explicit_box['y']) < 5
+    assert seed_box['x'] + seed_box['width'] < explicit_box['x']
+    assert seed_box['width'] < explicit_box['width']
     page.locator('#seed-mode').select_option('none')
     for key in ['seedBP', 'seedTQ', 'seedQRange', 'seedNoGU']:
         expect(page.locator('#' + key)).to_be_disabled()
@@ -152,6 +174,12 @@ with sync_playwright() as playwright:
     expect(page.locator('#seedBP')).to_be_enabled()
     expect(page.locator('#seedTQ')).to_be_disabled()
     open_group('output-options')
+    output_labels = page.locator('#output-options .checkbox-grid label')
+    assert output_labels.count() == 15
+    assert all(label.get_attribute('title') for label in output_labels.all())
+    expect(page.locator('#output-options input[value="pMinE"]').locator('xpath=..')).to_have_attribute('title', re.compile('energy heatmap'))
+    open_group('csv-options')
+    assert page.locator('#outCsvSort').bounding_box()['width'] < 310
     groups = page.locator('.csv-group')
     assert groups.count() == 5
     for group in groups.all():
@@ -166,7 +194,7 @@ with sync_playwright() as playwright:
     # Inspect all changed panels at desktop and mobile widths.
     for width in [1440, 390]:
         page.set_viewport_size({'width': width, 'height': 1100 if width == 1440 else 844})
-        for key in ['sequence-input', 'seed-options', 'output-options', 'interaction-options', 'query-options', 'target-options', 'general-options']:
+        for key in ['sequence-input', 'seed-options', 'output-options', 'csv-options', 'interaction-options', 'query-options', 'target-options', 'general-options']:
             open_group(key)
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'), (width, key)
             if args.screenshot:
@@ -250,9 +278,19 @@ with sync_playwright() as playwright:
 
     # Reference prediction, selectable CSV output and independent table visibility.
     fill('outNumber', 10)
+    open_group('csv-options')
     page.locator('#outCsvSort').select_option('E')
     predict()
     expect(rows).to_have_count(10)
+    assert active.locator('.table-scroll').evaluate('''node => {
+        const body = node.querySelector('tbody');
+        const copies = [...body.children].map(row => row.cloneNode(true));
+        body.append(...copies);
+        const scrolls = node.clientHeight <= 500 && node.scrollHeight > node.clientHeight
+            && getComputedStyle(node).overflowY === 'auto';
+        copies.forEach(copy => copy.remove());
+        return scrolls;
+    }''')
     assert rows.first.locator('td').all_text_contents()[1:7] == ['target', '1', '10', 'query', '1', '10']
     assert rows.first.locator('td').nth(9).inner_text() == '-21.40'
     assert rows.first.locator('td').last.inner_text() == '0.00'
@@ -337,9 +375,27 @@ with sync_playwright() as playwright:
     predict()
     expect(rows).to_have_count(2)
     assert rows.first.locator('td').all_text_contents()[1:7] == ['target', '-5', '5', 'q1', '-3', '7']
-    expect(active.locator('[data-role=file-list] details')).to_have_count(2)
-    active.locator('[data-role=file-list] summary').first.click()
-    expect(active.locator('[data-role=file-list] pre').first).to_contain_text('minE')
+    output_files = active.locator('[data-role=file-list] details')
+    expect(output_files).to_have_count(2)
+    expect(output_files.nth(0).locator('summary')).to_contain_text('target : q1')
+    expect(output_files.nth(1).locator('summary')).to_contain_text('target : q2')
+    output_files.first.locator('summary').click()
+    expect(output_files.first.get_by_role('tab', name='Visualization')).to_have_attribute('aria-selected', 'true')
+    assert output_files.first.get_by_role('tab', name='Visualization').evaluate('node => getComputedStyle(node).backgroundColor') == page.locator('#tab-output-options').evaluate('node => getComputedStyle(node).backgroundColor')
+    expect(output_files.first.locator('.js-plotly-plot')).to_be_visible(timeout=30000)
+    expect(output_files.first.locator('.gtitle')).to_contain_text('q1')
+    if args.screenshot:
+        path = Path(args.screenshot)
+        page.screenshot(path=str(path.with_name(f'{path.stem}-additional-output.png')), full_page=True)
+    with page.expect_download(timeout=30000) as image:
+        output_files.first.get_by_role('button', name='Export PNG').click()
+    assert Path(image.value.path()).read_bytes().startswith(b'\x89PNG\r\n\x1a\n')
+    output_files.first.get_by_role('tab', name='File Content').click()
+    expect(output_files.first.locator('pre')).to_be_visible()
+    expect(output_files.first.locator('pre')).to_contain_text('minE')
+    with page.expect_download() as output_download:
+        output_files.first.get_by_role('button', name=re.compile('^Download qMinE')).click()
+    assert 'minE' in Path(output_download.value.path()).read_text()
     archive = download_archive()
     assert len([name for name in archive if name.startswith('qMinE')]) == 2
     saved = json.loads(archive['parameter.json'])
@@ -370,7 +426,8 @@ with sync_playwright() as playwright:
     fill('rri', '1||||||||||&1||||||||||:1|||||||||&2|||||||||')
     open_group('output-options')
     page.locator('#output-options input[value="detailed"]').check()
-    page.locator('#output-options input[value="ED1"]').check()
+    open_group('csv-options')
+    page.locator('#csv-options input[value="ED1"]').check()
     predict()
     expect(status).to_contain_text('Evaluation complete')
     expect(rows).to_have_count(2)
@@ -390,9 +447,9 @@ with sync_playwright() as playwright:
     assert 'detailed' in saved['gui']['reports']
 
     # Visualization stays available when structure/identity columns are deselected.
-    open_group('output-options')
+    open_group('csv-options')
     page.get_by_role('button', name='Clear selection', exact=True).click()
-    page.locator('#output-options input[value="E"]').check()
+    page.locator('#csv-options input[value="E"]').check()
     predict()
     rows.first.get_by_role('button', name='Visualize').click()
     expect(active.locator('[data-role=varri-frame]')).to_be_visible()
@@ -495,6 +552,7 @@ with sync_playwright() as playwright:
     assert download_archive(first) == first_archive
 
     # A different task, CSV order and output report own a second result area.
+    page.get_by_role('radio', name='Evaluation').check()
     load_example('evaluation')
     with page.expect_download() as stored:
         page.locator('#store-parameters').click()
@@ -603,5 +661,6 @@ with sync_playwright() as playwright:
     page.wait_for_load_state('networkidle')
     expect(sessions).to_have_count(0)
     assert errors == [], errors
+    assert csp_errors == [], csp_errors
     browser.close()
 print(f'{args.browser}: real WASM, groups/defaults/versions, prediction/evaluation, FASTA/coordinates, tabs/keyboard, visualization URLs/selection, ZIP replay contents, columns/reports, mobile, abort/recovery and retained session lifecycle passed')

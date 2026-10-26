@@ -90,6 +90,9 @@ jobs:
           test -s _site/api/index.html
           test -s _site/gui/index.html
           test -s _site/gui/wasm/intarna.wasm
+          test -s _site/gui/vendor/plotly-cartesian.min.js
+          test -s _site/gui/vendor/plotly.css
+          test -s _site/gui/licenses/Plotly.txt
       - uses: actions/upload-artifact@v4
         with:
           name: intarna-pages-preview

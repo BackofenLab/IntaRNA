@@ -281,24 +281,36 @@ fieldset {
 
 .field-grid {
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
-  gap:20px 24px;
-  align-items:start;
-  margin-bottom:20px;
+  grid-template-columns:repeat(auto-fit,minmax(10rem,14rem));
+  gap:12px 16px;
+  align-items:end;
+  justify-content:start;
+  margin-bottom:12px;
 }
 
 /* Explicit rows preserve the requested grouping; subgrid aligns inputs below
-   labels of different heights without fixing a font-dependent label height. */
-.field-grid.columns-1 { grid-template-columns:minmax(0,1fr); }
-.field-grid.columns-2 { grid-template-columns:repeat(2,minmax(0,1fr)); }
-.field-grid.columns-3 { grid-template-columns:repeat(3,minmax(0,1fr)); }
-.field-grid.columns-4 { grid-template-columns:repeat(4,minmax(0,1fr)); }
-.field-grid.columns-5 { grid-template-columns:repeat(5,minmax(0,1fr)); }
+   labels of different heights without fixing a font-dependent label height.
+   Bounded tracks keep short rows left-aligned instead of stretching controls
+   across the complete panel. */
+.field-grid.columns-1 { grid-template-columns:minmax(10rem,38rem); }
+.field-grid.columns-2 { grid-template-columns:repeat(2,minmax(10rem,18rem)); }
+.field-grid.columns-3 { grid-template-columns:repeat(3,minmax(9rem,14rem)); }
+.field-grid.columns-4 { grid-template-columns:repeat(4,minmax(8.5rem,12rem)); }
+.field-grid.columns-5 { grid-template-columns:repeat(5,minmax(8rem,11rem)); }
 .field-grid > .field:not(.check) { display:grid; grid-row:span 4; grid-template-rows:subgrid; row-gap:5px; }
+.field-grid > .field:not(.check) > label { align-self:end; }
 .field-grid > .field:not(.check) > :nth-child(2) { align-self:start; }
-.accessibility-columns { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:24px; margin-top:20px; }
+.accessibility-columns { display:grid; grid-template-columns:repeat(2,minmax(16rem,32rem)); gap:16px; justify-content:start; margin-top:12px; }
 .accessibility-columns > div { min-width:0; }
-.seed-mode { max-width:24rem; margin-bottom:20px; }
+.seed-primary-row {
+  display:grid;
+  grid-template-columns:minmax(10rem,12rem) minmax(12rem,24rem);
+  gap:12px 16px;
+  align-items:start;
+  margin-bottom:12px;
+}
+.seed-primary-row .field { min-width:0; }
+#csv-options .field-grid.columns-1 { grid-template-columns:minmax(10rem,19rem); }
 .field-grid:has(#noSeed) { display:none; }
 #query,#target { 
   white-space:pre; 
@@ -463,6 +475,7 @@ fieldset {
 
 .table-scroll {
   width:100%;
+  max-height:500px;
   overflow:auto;
   border:1px solid var(--border);
 }
@@ -478,6 +491,9 @@ th {
   background:var(--table-header);
   text-align:left;
   padding:0 5px;
+  position:sticky;
+  top:0;
+  z-index:1;
 }
 
 th button {
@@ -571,6 +587,102 @@ tbody tr.selected { background:var(--table-selection); }
   border-top:1px solid var(--border);
   margin-top:12px;
   padding-top:12px;
+}
+
+.output-file-summary {
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:6px 10px;
+  min-height:2.2rem;
+  color:var(--brand-blue-dark);
+  font-weight:600;
+  list-style:none;
+}
+
+.output-file-summary::before {
+  content:'▸';
+  width:.8rem;
+}
+
+.output-file[open] > .output-file-summary::before {
+  content:'▾';
+}
+
+.output-file-name {
+  overflow-wrap:anywhere;
+}
+
+.output-file-context {
+  color:var(--muted);
+  font-size:.85rem;
+  font-weight:400;
+}
+
+.output-download {
+  padding:.1rem .35rem;
+}
+
+.output-file-body {
+  padding:.8rem 0 .25rem 1.15rem;
+}
+
+.output-tabs {
+  display:flex;
+  gap:4px;
+  padding:8px;
+  border-bottom:1px solid var(--border);
+  border-radius:5px 5px 0 0;
+  background:var(--brand-blue-soft);
+}
+
+.output-tab {
+  border:1px solid transparent;
+  border-radius:5px;
+  padding:.55rem .75rem;
+  color:var(--brand-blue-dark);
+  background:transparent;
+}
+
+.output-tab[aria-selected=true] {
+  border-color:var(--brand-blue);
+  background:var(--brand-blue);
+  color:white;
+}
+
+.output-tab:hover {
+  border-color:var(--brand-blue);
+}
+
+.output-tab-panel {
+  padding-top:12px;
+  min-width:0;
+}
+
+.plot-tools {
+  display:flex;
+  justify-content:flex-end;
+  min-height:2.6rem;
+}
+
+.plot-tools button {
+  font-size:.85rem;
+  padding:.35rem .7rem;
+}
+
+.output-plot {
+  width:100%;
+  min-height:420px;
+}
+
+.output-plot-status {
+  max-width:none;
+  color:var(--muted);
+  font-size:.85rem;
+}
+
+.output-tab-panel pre {
+  margin:0;
 }
 
 pre {
@@ -702,6 +814,8 @@ dialog::backdrop {
     grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr));
   }
   .field-grid[class*=columns-],.accessibility-columns { grid-template-columns:1fr; }
+  .seed-primary-row { grid-template-columns:1fr; }
+  #csv-options .field-grid.columns-1 { grid-template-columns:1fr; }
   .results {
     padding:14px;
   }
@@ -716,6 +830,9 @@ dialog::backdrop {
   }
   .group-body {
     padding:14px;
+  }
+  .output-file-body {
+    padding-left:0;
   }
 }
 

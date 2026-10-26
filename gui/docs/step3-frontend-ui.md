@@ -14,8 +14,13 @@ groups, followed by the compute button, results, additional files and versions.
 All working content is left aligned; two equally sized strand editors collapse
 into one column on mobile. The shared institutional header is the strongest
 visual element. The wrapping tab bar identifies parameter groups. Numeric inputs
-are 9 rem wide within a responsive grid of compact controls; text/data fields
-retain useful width.
+are at most 9 rem wide within bounded, left-aligned row grids; select/text inputs
+use compact type-specific tracks and text/data fields retain useful width. Rows
+keep their scientific grouping without stretching across the complete panel,
+use 16 px horizontal gaps and bottom-align labels above their controls.
+The Seed tab places the constraint selector (12 rem) beside Explicit seeds on
+desktop; the CSV sort selector uses a 19 rem track. Both controls stack at mobile
+widths.
 The institutional link reads “Bioinformatics - University of Freiburg” and opens
 the group website. Footer and table notes use the available width, wrapping only
 when the viewport requires it.
@@ -24,7 +29,7 @@ when the viewport requires it.
 Group logo       IntaRNA package / RNA–RNA interaction analysis        University logo
 RNA–RNA interactions                             Computations stay on your device
 Task: Prediction / Evaluation
-[ Sequences | Seed | Output | Model & Energy | Query | Target | CLI-only ]
+[ Sequences | Seed | Output | CSV | Model & Energy | Query | Target | CLI-only ]
 [ Active panel: e.g. query + target, start indices, evaluation structures      ]
 Compute     Input Parameters: Examples / Store / Load / Reset
 Results / Show-Hide / name / ZIP download / delete
@@ -49,7 +54,10 @@ one), and accepts 0–100. Zero enables accessibility-only output.
 the worker boundary. Query/target retain their distinct interior-loop defaults
 (16 and 10). Meta-options such as `acc`, `accW`, `accL`, `intLenMax` and
 `intLoopMax` are represented by per-strand controls to avoid conflicting values.
-FASTA headers supply sequence names instead of `qId`/`tId`. `outCsvSort` selects a native download sort column; table sorting is independent.
+FASTA headers supply sequence names instead of `qId`/`tId`. The dedicated CSV
+tab contains `outCsvSort` and the interaction-table column choices; Output keeps
+prediction filters and additional file formats. `outCsvSort` selects a native
+download sort column; table sorting is independent.
 CSV uses a fixed semicolon delimiter.
 Process settings (threads, file/log paths, parameter files, help/version commands)
 are replaced by the worker lifecycle, local data inputs, downloads and displayed
@@ -68,6 +76,8 @@ Function, with per-group selection actions and name-only labels with description
 tooltips. Prediction adds ED1, ED2, seedE, seedStart1 and seedStart2 to the native
 CSV columns; evaluation selects all energy outputs. JSON records these browser
 defaults explicitly so native replay retains the same output.
+Every additional output checkbox has a descriptive tooltip covering its content,
+format and intended use, including the model restrictions shown in its label.
 
 Prediction accepts plain sequence or up to 50 FASTA records per strand.
 Evaluation requires one query and target and 1–100 predefined structures.
