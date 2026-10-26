@@ -6,13 +6,13 @@
     "parameters": {
       "personality": "IntaRNAeval",
       "query": {
-        "text": ">query\nGGGAGGAGGG\n"
+        "text": ">ncRNA1\nAGGAUGGGGGAAACCCCAUACUCCUCACACACCAAAUCGCCCGAUUUAUCGGGCUUUUUU\n"
       },
       "target": {
-        "text": ">target\nCCCUCCUCCC\n"
+        "text": ">mRNA1\nUUUAAAUUAAAAAAUCAUAGAAAAAGUAUCGUUUGAUACUUGUGAUUAUACUCAGUUAUA\nCAGUAUCUUAAGGUGUUAUUAAUAGUGGUGAGGAGAAUUUAUGAAGCUUUUCAAAAGCUU\nGCUUGUGGCACCUGCAACUCUUGGUCUUUUAGCACCAAUGACCGCUACUGCUAAU\n"
       },
-      "rri": "1||||||||||&1||||||||||",
-      "outCsvCols": "id1,start1,end1,id2,start2,end2,subseqDP,hybridDP,E,Etotal,ED1,ED2,E_init,E_loops,E_dangleL,E_dangleR,E_endL,E_endR,E_hybrid,E_norm,E_hybridNorm,E_add,Eall,Eall1,Eall2,EallTotal,seedE,seedED1,seedED2"
+      "rri": "85|||||||||||&21||||||||.|||",
+      "outCsvCols": "id1,start1,end1,id2,start2,end2,subseqDP,hybridDP,E,Etotal,ED1,ED2,E_init,E_loops,E_dangleL,E_dangleR,E_endL,E_endR,E_hybrid,E_norm,E_hybridNorm,E_add,Eall,Eall1,Eall2,EallTotal"
     }
   }
 }

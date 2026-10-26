@@ -300,7 +300,11 @@ fieldset {
 .accessibility-columns > div { min-width:0; }
 .seed-mode { max-width:24rem; margin-bottom:20px; }
 .field-grid:has(#noSeed) { display:none; }
-#query,#target { white-space:pre; overflow:auto; }
+#query,#target { 
+  white-space:pre; 
+  overflow:auto; 
+  min-height:20rem;
+}
 #sequence-help,#general-options p { max-width:none; }
 .input-warning { font-size:.85rem; color:#79510b; max-width:none; overflow-wrap:anywhere; }
 

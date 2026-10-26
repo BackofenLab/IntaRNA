@@ -21,6 +21,7 @@ export function visualizationUrl(row, request) {
     sequence: sequences.join('&'), structure: fullStructures.join('&'),
     seqName1: row.id1, seqName2: row.id2, startIndex1: starts[0], startIndex2: starts[1],
     showRenderingOnly: 'true', forceLayout: 'false', forceLayoutLinearRRI: 'true',
+    cropping: 2
   });
   return url.href;
 }
