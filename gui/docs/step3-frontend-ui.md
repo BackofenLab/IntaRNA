@@ -18,6 +18,9 @@ are at most 9 rem wide within bounded, left-aligned row grids; select/text input
 use compact type-specific tracks and text/data fields retain useful width. Rows
 keep their scientific grouping without stretching across the complete panel,
 use 16 px horizontal gaps and bottom-align labels above their controls.
+The Seed tab places the constraint selector (12 rem) beside Explicit seeds on
+desktop; the CSV sort selector uses a 19 rem track. Both controls stack at mobile
+widths.
 The institutional link reads “Bioinformatics - University of Freiburg” and opens
 the group website. Footer and table notes use the available width, wrapping only
 when the viewport requires it.

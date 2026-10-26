@@ -89,6 +89,14 @@ with sync_playwright() as playwright:
     expect(page.locator('#task-help')).to_contain_text('Evaluate supplied structures')
     page.keyboard.press('ArrowLeft')
     expect(page.get_by_role('radio', name='Prediction')).to_be_checked()
+    page.locator('#examples-menu summary').click()
+    expect(page.get_by_role('button', name='Short duplex', exact=False)).to_be_visible()
+    expect(page.get_by_role('button', name='Evaluate a duplex', exact=False)).not_to_be_visible()
+    page.get_by_role('radio', name='Evaluation').check()
+    expect(page.get_by_role('button', name='Evaluate a duplex', exact=False)).to_be_visible()
+    expect(page.get_by_role('button', name='Short duplex', exact=False)).not_to_be_visible()
+    page.get_by_role('radio', name='Prediction').check()
+    page.locator('#examples-menu summary').click()
 
     # Tabs support keyboard navigation and wrap without page overflow.
     page.locator('#tab-sequence-input').focus()
@@ -151,6 +159,11 @@ with sync_playwright() as playwright:
     expect(page.locator('#helixMinBP')).to_be_disabled()
     open_group('seed-options')
     expect(page.locator('#seedTQ')).to_be_disabled()
+    seed_box = page.locator('#seed-mode').bounding_box()
+    explicit_box = page.locator('#seedTQ').bounding_box()
+    assert abs(seed_box['y'] - explicit_box['y']) < 5
+    assert seed_box['x'] + seed_box['width'] < explicit_box['x']
+    assert seed_box['width'] < explicit_box['width']
     page.locator('#seed-mode').select_option('none')
     for key in ['seedBP', 'seedTQ', 'seedQRange', 'seedNoGU']:
         expect(page.locator('#' + key)).to_be_disabled()
@@ -166,6 +179,7 @@ with sync_playwright() as playwright:
     assert all(label.get_attribute('title') for label in output_labels.all())
     expect(page.locator('#output-options input[value="pMinE"]').locator('xpath=..')).to_have_attribute('title', re.compile('energy heatmap'))
     open_group('csv-options')
+    assert page.locator('#outCsvSort').bounding_box()['width'] < 310
     groups = page.locator('.csv-group')
     assert groups.count() == 5
     for group in groups.all():
@@ -268,6 +282,15 @@ with sync_playwright() as playwright:
     page.locator('#outCsvSort').select_option('E')
     predict()
     expect(rows).to_have_count(10)
+    assert active.locator('.table-scroll').evaluate('''node => {
+        const body = node.querySelector('tbody');
+        const copies = [...body.children].map(row => row.cloneNode(true));
+        body.append(...copies);
+        const scrolls = node.clientHeight <= 500 && node.scrollHeight > node.clientHeight
+            && getComputedStyle(node).overflowY === 'auto';
+        copies.forEach(copy => copy.remove());
+        return scrolls;
+    }''')
     assert rows.first.locator('td').all_text_contents()[1:7] == ['target', '1', '10', 'query', '1', '10']
     assert rows.first.locator('td').nth(9).inner_text() == '-21.40'
     assert rows.first.locator('td').last.inner_text() == '0.00'
@@ -358,6 +381,7 @@ with sync_playwright() as playwright:
     expect(output_files.nth(1).locator('summary')).to_contain_text('target : q2')
     output_files.first.locator('summary').click()
     expect(output_files.first.get_by_role('tab', name='Visualization')).to_have_attribute('aria-selected', 'true')
+    assert output_files.first.get_by_role('tab', name='Visualization').evaluate('node => getComputedStyle(node).backgroundColor') == page.locator('#tab-output-options').evaluate('node => getComputedStyle(node).backgroundColor')
     expect(output_files.first.locator('.js-plotly-plot')).to_be_visible(timeout=30000)
     expect(output_files.first.locator('.gtitle')).to_contain_text('q1')
     if args.screenshot:
@@ -528,6 +552,7 @@ with sync_playwright() as playwright:
     assert download_archive(first) == first_archive
 
     # A different task, CSV order and output report own a second result area.
+    page.get_by_role('radio', name='Evaluation').check()
     load_example('evaluation')
     with page.expect_download() as stored:
         page.locator('#store-parameters').click()

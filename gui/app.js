@@ -90,16 +90,22 @@ function fieldRow(body, fields, suffix = '') {
 for (const definition of GROUPS) {
   const body = group(definition.key, definition.label);
   if (definition.key === 'seed-options') {
+    const primary = element('div', '', 'seed-primary-row');
     const wrapper = element('div', '', 'field seed-mode');
     const label = element('label', 'Seed constraint'); label.htmlFor = 'seed-mode';
     const select = element('select'); select.id = 'seed-mode';
     for (const [value, name] of [['none', 'Disable seed constraint'], ['explicit', 'Explicit seed'], ['identify', 'Identify seeds']]) {
       const option = element('option', name); option.value = value; select.append(option);
     }
-    select.value = 'identify'; wrapper.append(label, select); body.append(wrapper);
+    select.value = 'identify'; wrapper.append(label, select);
+    primary.append(wrapper, renderField(FIELDS.find((field) => field.key === 'seedTQ')));
+    body.append(primary);
   }
   if (definition.rows) {
-    for (const row of definition.rows) fieldRow(body, row);
+    for (const row of definition.rows) {
+      if (definition.key === 'seed-options' && row[0].key === 'seedTQ') continue;
+      fieldRow(body, row);
+    }
   } else fieldRow(body, definition.fields);
   if (definition.strand) {
     const p = definition.strand;
@@ -173,6 +179,9 @@ function updateLength(name) {
 }
 function updateAvailability() {
   const evaluation = getTask() === 'evaluation';
+  for (const button of byId('example-options').querySelectorAll('[data-example-task]')) {
+    button.hidden = button.dataset.exampleTask !== getTask();
+  }
   byId('evaluation-input').hidden = !evaluation;
   byId('task-help').textContent = evaluation ? 'Evaluate supplied structures for one query and one target. Prediction constraints are ignored.' : 'Predict interactions for all query–target sequence pairs.';
   byId('compute').textContent = evaluation ? 'Evaluate interactions' : 'Compute interactions';
@@ -314,6 +323,7 @@ async function loadExamples() {
     container.replaceChildren();
     for (const example of examples) {
       const button = element('button'); button.type = 'button';
+      button.dataset.exampleTask = example.request.task;
       button.append(element('strong', example.name), element('span', example.description));
       button.addEventListener('click', () => {
         if (byId('inputs').disabled) return;
@@ -322,6 +332,7 @@ async function loadExamples() {
       });
       container.append(button);
     }
+    updateAvailability();
   } catch (error) { container.replaceChildren(element('p', `${error.message} Reload to try again.`, 'input-help')); }
 }
 loadExamples();
