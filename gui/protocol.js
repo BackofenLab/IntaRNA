@@ -1,41 +1,41 @@
 import { FIELDS, PARAMETER_DEFAULTS, EXTRA_OUTPUTS, ENSEMBLE_COLUMNS } from './options.js';
 import { CSV_CATALOG } from './columns.js';
 
-// Bound total work as well as per-strand length, including all-vs-all FASTA jobs.
-export const LIMITS = Object.freeze({ minLength: 2, maxLength: 2000, maxRecords: 20, maxPairs: 1000000 });
+// Bound the largest pair's matrix while allowing batches of shorter sequences.
+export const LIMITS = Object.freeze({ minLength: 2, maxLength: 5000, maxRecords: 50, maxPairs: 1000000, maxFastaBytes: 1000000 });
 export const CSV_COLUMNS = 'id1,start1,end1,id2,start2,end2,subseqDP,hybridDP,E';
 export const CONTEXT_COLUMNS = ['id1', 'start1', 'end1', 'id2', 'start2', 'end2', 'E'];
 export const DEFAULTS = Object.freeze({ query: '>query\nGGGAGGAGGG', target: '>target\nCCCUCCUCCC', task: 'prediction' });
 export const EVALUATION_EXAMPLE = '1||||||||||&1||||||||||';
 
 export function parseFasta(text, label, multiple = true) {
-  if (typeof text !== 'string' || text.length > 60000 || !text.trim()) throw new Error(`${label}: enter a sequence or FASTA records.`);
+  if (typeof text !== 'string' || text.length > LIMITS.maxFastaBytes || !text.trim()) throw new Error(`${label}: enter a sequence or FASTA records (at most 1 MB).`);
   const lines = text.trim().split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
-  const records = [];
+  const records = [], warnings = [];
   let current;
   for (const line of lines) {
     if (line.startsWith('>')) {
-      current = { id: line.slice(1).trim(), sequence: '' };
+      const header = line.slice(1).trim();
+      current = { id: header.split(/\s+/)[0], sequence: '' };
       if (!current.id || current.id.length > 200 || /[\x00-\x1f\x7f]/.test(current.id)) throw new Error(`${label}: the FASTA header needs a name (at most 200 characters).`);
-      // The native FASTA parser takes the identifier before the first space.
-      current.id = current.id.split(/\s+/)[0];
+      if (/\s+\S/.test(header)) warnings.push(`${label}: ignoring FASTA description after the name “${current.id}”.`);
       records.push(current);
     } else {
       if (!current) { current = { id: label.toLowerCase(), sequence: '' }; records.push(current); }
       current.sequence += line.replace(/\s/g, '').toUpperCase().replaceAll('T', 'U');
     }
   }
-  if ((!multiple && records.length !== 1) || records.length > LIMITS.maxRecords) throw new Error(`${label}: ${multiple ? 'use at most 20 FASTA records' : 'evaluation requires exactly one FASTA record'}.`);
+  if ((!multiple && records.length !== 1) || records.length > LIMITS.maxRecords) throw new Error(`${label}: ${multiple ? 'use at most 50 FASTA records' : 'evaluation requires exactly one FASTA record'}.`);
   const ids = new Set();
   for (const record of records) {
     if (!record.sequence || /[^ACGUN]/.test(record.sequence)) throw new Error(`${label}: use only A, C, G, U, T or N in every sequence.`);
-    if (record.sequence.length < LIMITS.minLength || record.sequence.length > LIMITS.maxLength) throw new Error(`${label}: use 2–2,000 nucleotides per record.`);
+    if (record.sequence.length < LIMITS.minLength || record.sequence.length > LIMITS.maxLength) throw new Error(`${label}: use 2–5,000 nucleotides per record.`);
     // Native CSV replaces semicolons with underscores. Keep pair grouping unique.
     const id = record.id.replaceAll(';', '_');
     if (ids.has(id)) throw new Error(`${label}: FASTA identifiers must be unique (also after replacing semicolons with underscores).`);
     ids.add(id);
   }
-  return { records, fasta: records.map(({ id, sequence }) => `>${id}\n${sequence}\n`).join('') };
+  return { records, warnings, fasta: records.map(({ id, sequence }) => `>${id}\n${sequence}\n`).join('') };
 }
 export function parseSequence(text, label) {
   const parsed = parseFasta(text, label, false);
@@ -148,8 +148,8 @@ export function prepareRequest(request) {
   const parameters = normalizeParameters(request);
   const qRecords = selectedRecords(query, parameters.qSet, 'qSet'), tRecords = selectedRecords(target, parameters.tSet, 'tSet');
   if (parameters.outPairwise && qRecords.length !== tRecords.length) throw new Error('Pairwise output requires the same number of selected query and target records.');
-  const work = parameters.outPairwise ? qRecords.reduce((sum, q, i) => sum + q.sequence.length * tRecords[i].sequence.length, 0) : qRecords.reduce((sum, q) => sum + q.sequence.length, 0) * tRecords.reduce((sum, t) => sum + t.sequence.length, 0);
-  if (work > LIMITS.maxPairs) throw new Error('The total query × target length across selected sequence pairs must be at most 1,000,000.');
+  const work = Math.max(...qRecords.map((q) => q.sequence.length)) * Math.max(...tRecords.map((t) => t.sequence.length));
+  if (work > LIMITS.maxPairs) throw new Error('The longest selected query × longest selected target must be at most 1,000,000.');
 
   // Validate sequence-dependent settings before loading the engine.
   for (const [p, records] of [['q', qRecords], ['t', tRecords]]) {

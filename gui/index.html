@@ -14,7 +14,7 @@
   <a class="skip-link" href="#workspace">Skip to sequence inputs</a>
   <header class="site-header">
     <a href="https://www.bioinf.uni-freiburg.de" aria-label="Bioinformatics Group Freiburg"><img class="group-logo" src="assets/bioinf-fr-logo-blau.png" alt="Bioinformatics Group Freiburg"></a>
-    <a class="brand" href="./"><img src="mark.svg" width="44" height="44" alt=""><span>IntaRNA<small>RNA–RNA interaction analysis</small></span></a>
+    <a class="brand" href="./"><img src="mark.svg" width="44" height="44" alt=""><span>IntaRNA package<small>RNA–RNA interaction analysis</small></span></a>
     <a class="university-link" href="https://www.bioinf.uni-freiburg.de" aria-label="Bioinformatics - University of Freiburg"><span>Bioinformatics -<br>University of Freiburg</span><img class="uni-logo" src="assets/logo-uni-freiburg.png" alt="University of Freiburg"></a>
   </header>
   <main id="workspace">
@@ -38,33 +38,33 @@
             <div class="group-body">
               <div class="sequence-grid">
                 <section class="strand"><div class="strand-heading"><label for="query">Query RNA</label><span>5′ to 3′</span><div class="upload-controls"><button id="query-upload-button" type="button" class="secondary small-button" aria-label="Upload query FASTA">Upload</button><small>or drop in the field</small><input id="query-upload" type="file" accept=".fa,.fasta,.fna,.fas,.txt,text/plain" hidden></div></div>
-                  <textarea id="query" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="sequence-help query-length" placeholder=">query&#10;GGGAGGAGGG"></textarea>
-                  <div class="sequence-meta"><span id="query-length">No sequence entered</span><label for="qIdxPos0">Start index <input id="qIdxPos0" type="number" min="-2000000000" max="2000000000" step="1" value="1"></label></div>
+                  <textarea id="query" wrap="off" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="sequence-help query-length query-warning" placeholder=">query&#10;GGGAGGAGGG"></textarea>
+                  <div class="sequence-meta"><label for="qIdxPos0">Start index <input id="qIdxPos0" type="number" min="-2000000000" max="2000000000" step="1" value="1"></label><span id="query-length">No sequence entered</span></div><p id="query-warning" class="input-warning" role="status" hidden></p>
                 </section>
                 <section class="strand"><div class="strand-heading"><label for="target">Target RNA</label><span>5′ to 3′</span><div class="upload-controls"><button id="target-upload-button" type="button" class="secondary small-button" aria-label="Upload target FASTA">Upload</button><small>or drop in the field</small><input id="target-upload" type="file" accept=".fa,.fasta,.fna,.fas,.txt,text/plain" hidden></div></div>
-                  <textarea id="target" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="sequence-help target-length" placeholder=">target&#10;CCCUCCUCCC"></textarea>
-                  <div class="sequence-meta"><span id="target-length">No sequence entered</span><label for="tIdxPos0">Start index <input id="tIdxPos0" type="number" min="-2000000000" max="2000000000" step="1" value="1"></label></div>
+                  <textarea id="target" wrap="off" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="sequence-help target-length target-warning" placeholder=">target&#10;CCCUCCUCCC"></textarea>
+                  <div class="sequence-meta"><label for="tIdxPos0">Start index <input id="tIdxPos0" type="number" min="-2000000000" max="2000000000" step="1" value="1"></label><span id="target-length">No sequence entered</span></div><p id="target-warning" class="input-warning" role="status" hidden></p>
                 </section>
               </div>
-              <p id="sequence-help" class="input-help">Plain sequence or multi-FASTA (prediction only), A/C/G/U/T/N. Up to 20 records per field and 2–2,000 nt per record; total query × target length across selected pairs ≤ 1,000,000. Seed predictions also require at least as many nucleotides as seed base pairs. Signed start indices apply to every record on that strand; negative indexing skips zero.</p>
+              <p id="sequence-help" class="input-help">Plain sequence or multi-FASTA (prediction only), A/C/G/U/T/N. Up to 50 records per field and 2–5,000 nt per record; longest selected query × longest selected target ≤ 1,000,000. FASTA names stop at the first whitespace. Seed predictions also require at least as many nucleotides as seed base pairs. Signed start indices apply to every record on that strand; negative indexing skips zero.</p>
               <div id="evaluation-input" hidden><label for="rri">Interactions to evaluate (target &amp; query)</label><textarea id="rri" spellcheck="false" aria-describedby="rri-help" placeholder="1||||||||||&amp;1||||||||||"></textarea><p id="rri-help" class="input-help">Each strand uses its start coordinate and dots/bars in 5′ to 3′ order; pair bars antiparallel. Example: 1|||&amp;1|||. Separate structures with a colon. Evaluation retains energy/accessibility settings and ignores prediction filters.</p></div>
             </div>
           </section>
         </div>
-        <div class="compute-bar"><details id="examples-menu" class="examples-menu"><summary>Example</summary><div id="example-options"><p class="input-help">Loading examples…</p></div></details><button id="reset" type="button" class="secondary">Reset parameters</button><button id="load-parameters" type="button" class="secondary" title="Load settings and embedded inputs from JSON">Load</button><button id="store-parameters" type="button" class="secondary" title="Download current settings and embedded inputs as JSON">Store</button><input id="parameter-upload" type="file" accept=".json,application/json" hidden><button id="compute" type="submit" class="primary">Compute interactions</button></div>
+        <div class="compute-bar"><button id="compute" type="submit" class="primary">Compute interactions</button><span class="parameter-actions-label">Input Parameters:</span><details id="examples-menu" class="examples-menu"><summary>Examples</summary><div id="example-options"><p class="input-help">Loading examples…</p></div></details><button id="store-parameters" type="button" class="secondary" title="Download current settings and embedded inputs as JSON">Store</button><button id="load-parameters" type="button" class="secondary" title="Load settings and embedded inputs from JSON">Load</button><button id="reset" type="button" class="secondary">Reset</button><input id="parameter-upload" type="file" accept=".json,application/json" hidden></div>
       </fieldset>
       <p id="input-error" class="error" role="alert" hidden></p>
     </form>
     <section id="results" class="results" aria-labelledby="results-title" aria-busy="false">
-      <div class="results-heading"><h2 id="results-title">Sessions</h2><p id="result-status" role="status" aria-live="polite">Enter your sequences or choose an example, then compute.</p></div>
+      <div class="results-heading"><h2 id="results-title">Results</h2><p id="result-status" role="status" aria-live="polite">Enter your sequences or choose an example, then compute.</p></div>
       <p class="input-help">Completed runs stay in this tab until deleted or the page is reloaded. Select a session to restore its inputs; download its ZIP to keep a copy.</p>
       <div id="sessions"></div>
       <details id="diagnostics" hidden><summary>Computation diagnostics</summary><pre id="diagnostic-text"></pre></details>
       <template id="session-template">
         <article class="session">
           <div class="session-header">
+            <button data-role="toggle" class="secondary" type="button" aria-expanded="false">Show</button>
             <label class="session-name">Session name <input data-role="name" type="text" maxlength="120" autocomplete="off"></label>
-            <button data-role="toggle" class="secondary" type="button" aria-expanded="false">Show results</button>
             <button data-role="download-zip" class="secondary" type="button" title="Download this session’s parameter.json, CSV and all additional outputs.">Download ZIP</button>
             <button data-role="delete" class="secondary delete-session" type="button" title="Delete session"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 10v7m4-7v7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr-only">Delete session</span></button>
           </div>
