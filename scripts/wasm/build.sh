@@ -12,7 +12,7 @@ jobs=${JOBS:-2}
 for tool in emcc em++ emar emranlib emconfigure emmake curl pkg-config node python3; do
   command -v "$tool" >/dev/null || { echo "Missing tool: $tool" >&2; exit 1; }
 done
-mkdir -p "$build/downloads" "$build/sources" "$prefix" "$build/site/wasm"
+mkdir -p "$build/downloads" "$build/sources" "$prefix" "$build/site/wasm" "$build/site/vendor/pyodide"
 fetch() {
   bash "$repo/scripts/wasm/download.sh" "$1" "$build/downloads/$2" "$3"
 }
@@ -20,6 +20,19 @@ fetch https://zlib.net/fossils/zlib-1.3.1.tar.gz zlib-1.3.1.tar.gz \
   9a93b2b7dfdac77ceba5a558a580e74667dd6fede4585b91eefb60f03b72df23
 fetch https://archives.boost.io/release/1.87.0/source/boost_1_87_0.tar.bz2 boost_1_87_0.tar.bz2 \
   af57be25cb4c4f4b413ed692fe378affb4352ea50fbe294a11ef548f4d527d89
+pyodide_version=314.0.7
+fetch "https://registry.npmjs.org/pyodide/-/pyodide-$pyodide_version.tgz" "pyodide-$pyodide_version.tgz" \
+  66b7949e5a0cba2250b586d7e368bf12fb482800748d182c4618254b685ffaa0
+fetch "https://raw.githubusercontent.com/pyodide/pyodide/$pyodide_version/LICENSE" pyodide-LICENSE.txt \
+  1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5
+pyodide_source="$build/sources/pyodide-$pyodide_version"
+mkdir -p "$pyodide_source"
+if [[ ! -s "$pyodide_source/pyodide.mjs" ]]; then
+  tar -xzf "$build/downloads/pyodide-$pyodide_version.tgz" -C "$pyodide_source" --strip-components=1
+fi
+for file in pyodide.mjs pyodide.asm.mjs pyodide.asm.wasm pyodide-lock.json python_stdlib.zip; do
+  cp "$pyodide_source/$file" "$build/site/vendor/pyodide/$file"
+done
 # CI supplies the newest stable 2.x manifest; local builds use the checked-in pin.
 read -r vienna_version vienna_url vienna_sha256 < <(
   python3 "$repo/scripts/wasm/vienna-release.py" --fields \
@@ -109,5 +122,5 @@ printf '{"type":"module"}\n' > "$build/site/wasm/package.json"
 node "$repo/scripts/wasm/write-build-info.mjs" "$repo" "$build/site" \
   "$(emcc -dumpversion)" "$(git -C "$repo" rev-parse HEAD)" \
   "$(git -C "$repo" status --porcelain --untracked-files=no)" \
-  "$vienna_version" "$vienna_url" "$vienna_sha256"
+  "$vienna_version" "$vienna_url" "$vienna_sha256" "$pyodide_version"
 echo "WASM assets: $build/site/wasm"

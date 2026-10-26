@@ -6,6 +6,7 @@ import { downloadText } from './results.js';
 import { SessionsView } from './sessions.js';
 import { importParameters, serializeParameters, MAX_PARAMETER_BYTES } from './parameter-file.js';
 import { readFastaFile } from './uploads.js';
+import { COPOMUS_DEFAULTS, COPOMUS_FILTERS, COPOMUS_MEASURES } from './copomus-options.js';
 
 const byId = (id) => document.getElementById(id);
 const form = byId('prediction-form'), runner = new PredictionRunner();
@@ -23,6 +24,28 @@ function element(tag, text, className) {
   if (text) node.textContent = text;
   if (className) node.className = className;
   return node;
+}
+const copomusMeasureInputs = [], copomusMeasureRows = new Map();
+for (const [key, labelText] of COPOMUS_MEASURES) {
+  const input = checkbox(byId('copomus-measures'), key, labelText), label = input.parentElement;
+  const row = element('div', '', 'measure-choice'), actions = element('span', '', 'measure-priority');
+  label.replaceWith(row); row.append(label, actions); copomusMeasureRows.set(key, row); copomusMeasureInputs.push(input);
+  for (const [text, direction] of [['↑', -1], ['↓', 1]]) {
+    const button = element('button', text, 'text-button'); button.type = 'button';
+    button.setAttribute('aria-label', `Move ${labelText} ${direction < 0 ? 'earlier' : 'later'} in ranking priority`);
+    button.addEventListener('click', () => {
+      const sibling = direction < 0 ? row.previousElementSibling : row.nextElementSibling;
+      if (!sibling) return;
+      if (direction < 0) row.parentElement.insertBefore(row, sibling); else row.parentElement.insertBefore(sibling, row);
+      inputsChanged('CopomuS measure priority changed. Compute to update the mutations.');
+    });
+    actions.append(button);
+  }
+}
+const copomusFilterInputs = COPOMUS_FILTERS.map(([key, label]) => checkbox(byId('copomus-filters'), key, label));
+function orderCopomusMeasures(selected) {
+  const order = [...selected, ...COPOMUS_MEASURES.map(([key]) => key).filter((key) => !selected.includes(key))];
+  for (const key of order) byId('copomus-measures').append(copomusMeasureRows.get(key));
 }
 function activateGroup(key, focus = false) {
   for (const tab of byId('parameter-tabs').children) {
@@ -178,22 +201,25 @@ function updateLength(name) {
   } catch { byId(`${name}-length`).textContent = 'Check sequence format and length'; }
 }
 function updateAvailability() {
-  const evaluation = getTask() === 'evaluation';
+  const evaluation = getTask() === 'evaluation', mutation = getTask() === 'mutation';
   for (const button of byId('example-options').querySelectorAll('[data-example-task]')) {
     button.hidden = button.dataset.exampleTask !== getTask();
   }
   byId('evaluation-input').hidden = !evaluation;
-  byId('task-help').textContent = evaluation ? 'Evaluate supplied structures for one query and one target. Prediction constraints are ignored.' : 'Predict interactions for all query–target sequence pairs.';
-  byId('compute').textContent = evaluation ? 'Evaluate interactions' : 'Compute interactions';
+  byId('mutation-input').hidden = !mutation;
+  byId('task-help').textContent = evaluation ? 'Evaluate supplied structures for one query and one target. Prediction constraints are ignored.' : mutation ? 'Rank compensatory point mutations for one query and one target with CopomuS.' : 'Predict interactions for all query–target sequence pairs.';
+  byId('sequence-help').textContent = mutation ? 'One plain sequence or one FASTA record per field, A/C/G/U/T. CopomuS ranks mutations with repeated local IntaRNA predictions.' : 'Plain sequence or multi-FASTA (prediction only), A/C/G/U/T/N. Up to 50 records per field and 2–5,000 nt per record; longest selected query × longest selected target ≤ 1,000,000. FASTA names stop at the first whitespace. Seed predictions also require at least as many nucleotides as seed base pairs. Signed start indices apply to every record on that strand; negative indexing skips zero.';
+  byId('compute').textContent = evaluation ? 'Evaluate interactions' : mutation ? 'Design mutations' : 'Compute interactions';
   for (const definition of GROUPS) {
-    const tab = byId(`tab-${definition.key}`); tab.hidden = evaluation && !!definition.prediction;
+    const unavailable = evaluation && !!definition.prediction || mutation && ['output-options', 'csv-options'].includes(definition.key);
+    const tab = byId(`tab-${definition.key}`); tab.hidden = unavailable;
     if (tab.hidden) {
       byId(definition.key).hidden = true;
       if (tab.getAttribute('aria-selected') === 'true') activateGroup('sequence-input');
     }
     for (const field of definition.fields) {
       const input = byId(field.key);
-      input.disabled = evaluation && !!field.prediction || field.key.startsWith('helix') && byId('model').value !== 'B' || field.key === 'kineticScore' && byId('mode').value !== 'K';
+      input.disabled = unavailable || evaluation && !!field.prediction || field.key.startsWith('helix') && byId('model').value !== 'B' || field.key === 'kineticScore' && byId('mode').value !== 'K';
     }
   }
   byId('noSeed').checked = byId('seed-mode').value === 'none';
@@ -209,7 +235,10 @@ function updateAvailability() {
   }
   // Upload controls follow the text area they populate, including async reads.
   for (const upload of form.querySelectorAll('input[data-for]')) upload.disabled = byId(upload.dataset.for).disabled;
-  for (const input of outputInputs) { input.disabled = evaluation && EXTRA_OUTPUTS.find((entry) => entry.key === input.value).prediction; if (input.disabled) input.checked = false; }
+  for (const input of outputInputs) { input.disabled = mutation || evaluation && EXTRA_OUTPUTS.find((entry) => entry.key === input.value).prediction; if (input.disabled) input.checked = false; }
+  const explicitMutations = !!byId('copomus-mutation-encoding').value.trim();
+  for (const input of [byId('copomus-candidate-selection'), byId('copomus-generator'), ...copomusFilterInputs]) input.disabled = !mutation || explicitMutations;
+  for (const input of [...copomusMeasureInputs, byId('copomus-alpha'), byId('copomus-beta'), byId('copomus-mutation-encoding')]) input.disabled = !mutation;
   updateLength('query'); updateLength('target');
 }
 function resetParameters({ clearInputs = false } = {}) {
@@ -219,12 +248,19 @@ function resetParameters({ clearInputs = false } = {}) {
     for (const input of form.querySelectorAll('input[type=file]')) input.value = '';
     byId('examples-menu').open = false; activateGroup('sequence-input');
   }
-  csvOrder = defaultColumns(getTask());
+  csvOrder = getTask() === 'mutation' ? CSV_COLUMNS.split(',') : defaultColumns(getTask());
   byId('seed-mode').value = 'identify';
   for (const field of FIELDS) { const input = byId(field.key); if (field.type === 'checkbox') input.checked = UI_DEFAULTS[field.key]; else input.value = UI_DEFAULTS[field.key]; }
   syncAccessibilityFlags();
   for (const input of csvInputs) input.checked = csvOrder.includes(input.value);
   for (const input of outputInputs) input.checked = false;
+  for (const input of copomusMeasureInputs) input.checked = COPOMUS_DEFAULTS.measures.includes(input.value);
+  orderCopomusMeasures(COPOMUS_DEFAULTS.measures);
+  for (const input of copomusFilterInputs) input.checked = false;
+  byId('copomus-candidate-selection').value = COPOMUS_DEFAULTS.candidateSelection;
+  byId('copomus-generator').value = COPOMUS_DEFAULTS.generator;
+  byId('copomus-mutation-encoding').value = COPOMUS_DEFAULTS.mutationEncoding;
+  byId('copomus-alpha').value = COPOMUS_DEFAULTS.alpha; byId('copomus-beta').value = COPOMUS_DEFAULTS.beta;
   byId('qIdxPos0').value = 1; byId('tIdxPos0').value = 1; byId('rri').value = '';
   updateAvailability(); errorBox.hidden = true; inputsChanged(clearInputs ? 'Inputs cleared. Enter sequences or choose an example.' : 'Parameters reset to task defaults. Compute to update the interactions.');
 }
@@ -259,6 +295,14 @@ function applyParameters(request, message = 'Parameters loaded. Compute to analy
   csvOrder = [...request.csvColumns];
   for (const input of csvInputs) input.checked = request.csvColumns.includes(input.value);
   for (const input of outputInputs) input.checked = request.outputs.includes(input.value);
+  const copomus = request.copomus ?? COPOMUS_DEFAULTS;
+  orderCopomusMeasures(copomus.measures);
+  for (const input of copomusMeasureInputs) input.checked = copomus.measures.includes(input.value);
+  for (const input of copomusFilterInputs) input.checked = copomus.candidateFilters.includes(input.value);
+  byId('copomus-candidate-selection').value = copomus.candidateSelection;
+  byId('copomus-generator').value = copomus.generator;
+  byId('copomus-mutation-encoding').value = copomus.mutationEncoding;
+  byId('copomus-alpha').value = copomus.alpha; byId('copomus-beta').value = copomus.beta;
   updateAvailability(); activateGroup('sequence-input'); inputsChanged(message);
 }
 for (const strand of ['query', 'target']) {
@@ -360,6 +404,14 @@ function currentRequest() {
     task: getTask(), query: byId('query').value, target: byId('target').value,
     qIdxPos0: byId('qIdxPos0').value, tIdxPos0: byId('tIdxPos0').value, rri: byId('rri').value,
     parameters: currentParameters(),
+    copomus: {
+      measures: [...byId('copomus-measures').querySelectorAll('input:checked')].map((input) => input.value),
+      candidateSelection: byId('copomus-candidate-selection').value,
+      candidateFilters: copomusFilterInputs.filter((input) => input.checked).map((input) => input.value),
+      generator: byId('copomus-generator').value,
+      mutationEncoding: byId('copomus-mutation-encoding').value,
+      alpha: byId('copomus-alpha').value, beta: byId('copomus-beta').value,
+    },
     csvColumns: columns, outputs: outputInputs.filter((input) => input.checked && !input.disabled).map((input) => input.value),
   };
 }
@@ -394,5 +446,5 @@ const buildInfo = fetch(new URL('./build-info.txt', import.meta.url)).then((resp
 buildInfo.catch(() => {});
 fetch(new URL('./build-info.json', import.meta.url)).then((response) => {
   if (!response.ok) throw new Error('Missing build provenance'); return response.json();
-}).then((info) => { byId('version-info').textContent = `IntaRNA ${info.intarna} (${info.commit.slice(0, 12)}${info.dirty ? ', modified sources' : ''}) · ViennaRNA ${info.viennarna} · Emscripten ${info.emscripten}`; }).catch(() => { byId('version-info').textContent = 'Build versions unavailable. Serve the staged interface with its compiled engine and build-info files.'; });
+}).then((info) => { byId('version-info').textContent = `IntaRNA ${info.intarna} (${info.commit.slice(0, 12)}${info.dirty ? ', modified sources' : ''}) · ViennaRNA ${info.viennarna} · Emscripten ${info.emscripten}${info.pyodide ? ` · Pyodide ${info.pyodide}` : ''}`; }).catch(() => { byId('version-info').textContent = 'Build versions unavailable. Serve the staged interface with its compiled engine and build-info files.'; });
 if (!globalThis.Worker || !globalThis.WebAssembly) { byId('compute').disabled = true; errorBox.textContent = 'This browser needs WebAssembly and Web Workers. Use a current browser or the command line version.'; errorBox.hidden = false; }

@@ -1,7 +1,9 @@
 """CopomuS regressions for coordinates, mutation selection, profiles and ranking."""
 
 import csv
+import asyncio
 import io
+import json
 from pathlib import Path
 import sys
 import tempfile
@@ -17,6 +19,7 @@ from copomus.indexing import array_index_to_idx, idx_to_array_index, add_sub_idx
 from copomus.measures import MinDeltaEnergy, MFECover, Measure
 from copomus.mutation import Mutation, parse_mutation_encoding
 from copomus.mutation_generators import gen_specific
+from copomus.browser import run as run_browser
 
 
 class CopomuSTests(unittest.TestCase):
@@ -150,6 +153,42 @@ class CopomuSTests(unittest.TestCase):
         self.assertEqual(row['mutation'], 'G1C&C2G')
         self.assertEqual(row['minDeltaE_min'], '0')
         self.assertNotIn('\r', stdout.getvalue())
+
+    def test_browser_json_runner_reuses_scientific_workflow(self):
+        calls = []
+        energies = iter((-5, -1, -1, -4))
+
+        async def predict(payload):
+            call = json.loads(payload)
+            calls.append(call)
+            energy = next(energies)
+            columns = call['columns']
+            values = {
+                'id1': 'target', 'start1': 1, 'end1': 2,
+                'id2': 'query', 'start2': 1, 'end2': 2,
+                'subseqDP': 'GC&GC', 'hybridDP': '()&()', 'E': energy,
+            }
+            return json.dumps({'csv': ';'.join(columns) + '\n'
+                               + ';'.join(str(values[column]) for column in columns) + '\n',
+                               'files': {}})
+
+        progress = []
+        request = {
+            'query': 'GC', 'target': 'GC', 'qIdxPos0': 1, 'tIdxPos0': 1,
+            'copomus': {
+                'measures': ['E'], 'candidateSelection': 'mfe',
+                'candidateFilters': [], 'generator': 'flip',
+                'mutationEncoding': 'G1C&C2G', 'alpha': 1, 'beta': 1,
+            },
+        }
+        result = json.loads(asyncio.run(run_browser(json.dumps(request), predict, progress.append)))
+        self.assertEqual(len(calls), 4)
+        self.assertTrue(all(call['query'] and call['target'] for call in calls))
+        self.assertEqual(result['candidates'][0]['values']['mutation'], 'G1C&C2G')
+        self.assertEqual(result['candidates'][0]['values']['E_is_valid'], 1)
+        self.assertEqual(result['candidates'][0]['interactions']['mm']['E'], -4)
+        self.assertTrue(result['tsv'].startswith('mutation\trank\tqIndex\ttIndex'))
+        self.assertIn('Evaluating mutation 1 of 1', progress[-1])
 
 
 if __name__ == '__main__':

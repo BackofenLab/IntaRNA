@@ -49,6 +49,23 @@ test('evaluation validates antiparallel supplied structures in signed coordinate
   assert.throws(() => prepareRequest({ ...evalRequest, outputs: ['bpsvg'] }), /available/);
 });
 
+test('Mutation Design accepts one unambiguous pair and validates CopomuS settings', () => {
+  const mutation = request({}, { task: 'mutation', copomus: {
+    measures: ['E', 'minDeltaE'], candidateSelection: 'mfe', candidateFilters: ['GU'],
+    generator: 'flip', mutationEncoding: 'G1C&C10G', alpha: 1, beta: 2,
+  } });
+  const prepared = prepareRequest(mutation);
+  assert.equal(prepared.task, 'mutation');
+  assert.equal(prepared.query.records.length, 1);
+  assert.equal(prepared.copomus.mutationEncoding, 'G1C&C10G');
+  assert.deepEqual(prepared.copomus.measures, ['E', 'minDeltaE']);
+  assert.throws(() => prepareRequest({ ...mutation, query: '>one\nGGGAGGAGGG\n>two\nGGGAGGAGGG' }), /exactly one/);
+  assert.throws(() => prepareRequest({ ...mutation, query: 'GGNAGGAGGG' }), /unambiguous/);
+  assert.throws(() => prepareRequest({ ...mutation, copomus: { ...mutation.copomus, mutationEncoding: 'A1C&C10G' } }), /does not match/);
+  assert.throws(() => prepareRequest({ ...mutation, copomus: { ...mutation.copomus, measures: [] } }), /measures/);
+  assert.throws(() => prepareRequest({ ...mutation, outputs: ['qAcc'] }), /own extended/);
+});
+
 test('cross-option constraints, regions, probabilities, SHAPE and local file arguments', () => {
   for (const parameters of [{ noSeed: true, mode: 'S' }, { noSeed: true, outNumberPerSeed: 1 }, { mode: 'K', model: 'P' }, { model: 'B', mode: 'M' }, { model: 'B', helixMaxBP: 4 }, { qRegion: '8-2' }, { qAccConstr: 'b:1-20' }, { qAccConstr: 'bbb' }, { qShapeMethod: 'X' }, { tShapeConversion: 'bad' }, { qShape: '1 nope' }, { qAcc: 'P' }, { qAcc: 'P', qAccFile: 'bad' }, { outSpotProbSpots: '20&1' }, { windowWidth: 100 }, { qIntLenMax: 3 }, { qAcc: 'N', qRegionLenMax: 20 }, { qRegion: '1-10', qRegionLenMax: 20 }, { seedTQ: '1.|||||||||&1|||||||||.' }]) assert.throws(() => prepareRequest(request(parameters)));
   assert.doesNotThrow(() => prepareRequest(request({ noSeed: true, qAccConstr: 'b:1-2,p:8-9', qRegion: '1-10' })));

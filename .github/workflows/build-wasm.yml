@@ -92,7 +92,11 @@ jobs:
           test -s _site/gui/wasm/intarna.wasm
           test -s _site/gui/vendor/plotly-cartesian.min.js
           test -s _site/gui/vendor/plotly.css
+          test -s _site/gui/vendor/pyodide/pyodide.asm.wasm
+          test -s _site/gui/copomus-worker.js
+          test -s _site/gui/python/copomus/browser.py
           test -s _site/gui/licenses/Plotly.txt
+          test -s _site/gui/licenses/Pyodide.txt
       - uses: actions/upload-artifact@v4
         with:
           name: intarna-pages-preview

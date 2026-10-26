@@ -14,6 +14,9 @@
 
 ## Interface and handling
 
+- integrate CopomuS as the browser Mutation Design task with single-pair input,
+  native controls, extended tables and four-state vaRRI visualization (#307)
+
 - fix IntaRNApvalue both-strand sampling and parameter consistency, bound retries,
   validate FASTA/fits and expose empirical p-values (PR #298)
 
@@ -136,6 +139,9 @@
 - reject Zall/Eall-dependent output in window mode
 
 ## Technical changes and Optimizations
+
+- run the existing CopomuS Python workflow in checksum-pinned, self-hosted
+  Pyodide and replace subprocesses with validated JSON calls to IntaRNA WASM (#307)
 
 - share Python companion-tool command execution, input validation and atomic
   output handling after rebasing onto IntaRNA-fuse (PR #298 review)
@@ -332,6 +338,23 @@ energies, restricted partition sums, and trackers.
 ################################################################################
 
 261026 Alexander Mitrofanov
+ * gui/{index.html,app.js,styles.css,copomus*.js,runner.js,sessions.js},
+   gui/examples/, gui/tests/, scripts/wasm/test-browser.py
+   + Add Mutation Design after Prediction and Evaluation, enforce one unambiguous
+     sequence per strand, and expose CopomuS measures, selection, filters,
+     generators, thresholds and explicit encodings in the Sequences panel.
+   + Retain ranked extended TSV output in sessions and compare wildtype, both
+     single mutants and the compensatory mutant in vaRRI (issue #307).
+ * python/copomus/{browser.py,workflow.py}, python/CopomuS.py,
+   python/tests/test_copomus.py
+   + Share CLI/browser ranking and output logic; run the existing mutation,
+     filter and measure classes asynchronously against JSON prediction callbacks
+     without changing CopomuS CLI behavior or output.
+ * scripts/wasm/{build.sh,stage.sh,write-build-info.mjs},
+   .github/workflows/build-wasm.yml, README.md, gui/docs/
+   + Download and verify self-hosted Pyodide 314.0.7, stage the required Python
+     sources and MPL notice, record runtime digests, and validate the complete
+     Pyodide-to-IntaRNA-WASM workflow in Chromium and Firefox.
  * gui/output-visualization.js, gui/styles.css, gui/tests/output-visualization.test.mjs
    + Add resizable Plotly canvases and matrix-axis transposition controls.
    * Export PNGs at the current plotting dimensions instead of a fixed size.

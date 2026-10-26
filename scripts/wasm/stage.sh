@@ -7,20 +7,22 @@ site="$build/site"
 test -s "$site/wasm/intarna.js"
 test -s "$site/wasm/intarna.wasm"
 # Select notices from the archive used by these assets, including dlib upgrades.
-read -r vienna_version vienna_sha256 dlib_directory < <(python3 - "$site" "$build" <<'PYSOURCE'
+read -r vienna_version vienna_sha256 dlib_directory pyodide_version < <(python3 - "$site" "$build" <<'PYSOURCE'
 import json, re, sys
 from pathlib import Path
 site, build = map(Path, sys.argv[1:])
 metadata = json.loads((site / "build-info.json").read_text())
 archive = metadata["viennarnaArchive"]
-version, digest = archive["version"], archive["sha256"]
+version, digest, pyodide = archive["version"], archive["sha256"], metadata["pyodide"]
 if version != metadata["viennarna"] or not re.fullmatch(r"2\.\d+\.\d+", version) or not re.fullmatch(r"[0-9a-f]{64}", digest):
     raise SystemExit("Invalid compiled ViennaRNA archive identity")
+if not re.fullmatch(r"\d+\.\d+\.\d+", pyodide):
+    raise SystemExit("Invalid staged Pyodide version")
 source = build / "sources" / f"vienna-{version}-{digest}" / f"ViennaRNA-{version}"
 dlib = list((source / "src").glob("dlib-*/dlib/LICENSE.txt"))
 if len(dlib) != 1 or not re.fullmatch(r"dlib-[0-9.]+", dlib[0].parent.parent.name):
     raise SystemExit("Expected one bundled dlib license in the compiled ViennaRNA source")
-print(version, digest, dlib[0].parent.parent.name)
+print(version, digest, dlib[0].parent.parent.name, pyodide)
 PYSOURCE
 )
 vienna_source="$build/sources/vienna-$vienna_version-$vienna_sha256/ViennaRNA-$vienna_version"
@@ -28,13 +30,20 @@ mkdir -p "$site/licenses"
 cp -R "$repo/gui/assets" "$repo/gui/examples" "$repo/gui/vendor" "$site/"
 test "$(sha256sum "$repo/gui/vendor/plotly-cartesian.min.js" | cut -d' ' -f1)" = "aaf12ff1d4671f7e93f6df4291651ab4ca6b76c0ea5f1576ec1030e3c2819a20"
 test "$(sha256sum "$repo/gui/vendor/plotly.css" | cut -d' ' -f1)" = "3bcf2679b557067d8a3492b74092e946544d1cb8b2a72f278bcba95df59afd33"
-for file in index.html styles.css app.js mark.svg protocol.js runner.js results.js options.js columns.js archive.js sessions.js visualization.js output-visualization.js parameter-file.js uploads.js; do
+for file in index.html styles.css app.js mark.svg protocol.js runner.js results.js options.js columns.js archive.js sessions.js visualization.js output-visualization.js parameter-file.js uploads.js copomus.js copomus-options.js; do
   cp "$repo/gui/$file" "$site/$file"
 done
 cp "$repo/gui/intarna-worker.js" "$site/intarna-worker.js"
+cp "$repo/gui/copomus-worker.js" "$site/copomus-worker.js"
+mkdir -p "$site/python/copomus"
+cp "$repo/python/intarna_tools.py" "$site/python/intarna_tools.py"
+for file in __init__.py browser.py workflow.py IntaRNA.py indexing.py candidate_filters.py measures.py mutation.py mutation_generators.py; do
+  cp "$repo/python/copomus/$file" "$site/python/copomus/$file"
+done
 touch "$site/.nojekyll"
 cp "$repo/src/bin/nlohmann/LICENSE.MIT" "$site/licenses/nlohmann-json.txt"
 cp "$repo/gui/vendor/plotly-LICENSE.txt" "$site/licenses/Plotly.txt"
+cp "$build/downloads/pyodide-LICENSE.txt" "$site/licenses/Pyodide.txt"
 cp "$repo/LICENSE" "$site/licenses/IntaRNA.txt"
 cp "$repo/src/easylogging++.LICENCE.txt" "$site/licenses/easylogging.txt"
 cp "$repo/src/mdspan/LICENSE" "$site/licenses/mdspan.txt"
@@ -53,11 +62,12 @@ cat > "$site/licenses/index.html" <<HTML
 <!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>IntaRNA licenses</title>
 <h1>IntaRNA and third-party notices</h1>
 <p>IntaRNA: Bioinformatics Group of Prof. Backofen, University of Freiburg.<br>ViennaRNA: authors and Institute for Theoretical Chemistry, University of Vienna.</p>
-<p>This distribution uses ViennaRNA $vienna_version, Boost 1.87.0, zlib 1.3.1, bundled dlib ${dlib_directory#dlib-}, Plotly.js 4.1.2, Kokkos mdspan, Easylogging++ and the Emscripten 4.0.23 runtime.</p>
+<p>This distribution uses ViennaRNA $vienna_version, Boost 1.87.0, zlib 1.3.1, bundled dlib ${dlib_directory#dlib-}, Plotly.js 4.1.2, Pyodide $pyodide_version, Kokkos mdspan, Easylogging++ and the Emscripten 4.0.23 runtime.</p>
 <ul>
 <li><a href="IntaRNA.txt">IntaRNA</a></li><li><a href="ViennaRNA.txt">ViennaRNA</a></li>
 <li><a href="nlohmann-json.txt">nlohmann/json</a></li>
 <li><a href="Plotly.txt">Plotly.js</a></li>
+<li><a href="Pyodide.txt">Pyodide</a></li>
 <li><a href="Boost.txt">Boost</a></li><li><a href="zlib.h">zlib</a></li>
 <li><a href="dlib.txt">dlib</a></li><li><a href="naview.c">Naview</a></li>
 <li><a href="mdspan.txt">Kokkos mdspan</a></li><li><a href="easylogging.txt">Easylogging++</a></li>
@@ -78,5 +88,8 @@ if not (site / "build-info.txt").is_file():
 for name, digest in metadata["sha256"].items():
     if hashlib.sha256((site / "wasm" / name).read_bytes()).hexdigest() != digest:
         raise SystemExit(f"Mismatched engine: {name}")
+for name, digest in metadata["pyodideSha256"].items():
+    if hashlib.sha256((site / "vendor" / "pyodide" / name).read_bytes()).hexdigest() != digest:
+        raise SystemExit(f"Mismatched Pyodide runtime: {name}")
 PYINFO
 echo "Static site: $site"

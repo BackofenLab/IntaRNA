@@ -17,6 +17,9 @@ SPEC = importlib.util.spec_from_file_location("vienna_release", SCRIPT)
 resolver = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(resolver)
 DIGEST = "a" * 64
+PYODIDE_VERSION = "314.0.7"
+PYODIDE_FILES = ["pyodide.mjs", "pyodide.asm.mjs", "pyodide.asm.wasm",
+                  "pyodide-lock.json", "python_stdlib.zip"]
 
 
 def release(version, **fields):
@@ -91,6 +94,10 @@ class ReleaseTests(unittest.TestCase):
             site = Path(directory)
             assets = site / "wasm"
             assets.mkdir()
+            pyodide = site / "vendor" / "pyodide"
+            pyodide.mkdir(parents=True)
+            for name in PYODIDE_FILES:
+                (pyodide / name).write_bytes(f"test {name}".encode())
             (assets / "package.json").write_text('{"type":"module"}')
             (assets / "intarna.wasm").write_bytes(b"test engine")
             for version in ["2.7.0", manifest["version"]]:
@@ -103,6 +110,7 @@ class ReleaseTests(unittest.TestCase):
                     "node", str(SCRIPT.with_name("write-build-info.mjs")),
                     str(SCRIPT.parents[2]), str(site), "4.0.23", "test-commit", "",
                     manifest["version"], manifest["url"], manifest["sha256"],
+                    PYODIDE_VERSION,
                 ], capture_output=True, text=True)
                 if version == "2.7.0":
                     self.assertNotEqual(result.returncode, 0)
@@ -113,6 +121,8 @@ class ReleaseTests(unittest.TestCase):
                     metadata = json.loads((site / "build-info.json").read_text())
                     self.assertEqual(metadata["viennarna"], version)
                     self.assertEqual(metadata["viennarnaArchive"], manifest)
+                    self.assertEqual(metadata["pyodide"], PYODIDE_VERSION)
+                    self.assertEqual(set(metadata["pyodideSha256"]), set(PYODIDE_FILES))
                     self.assertIn(manifest["sha256"], (site / "build-info.txt").read_text())
 
 

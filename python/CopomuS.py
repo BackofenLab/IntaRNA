@@ -20,6 +20,7 @@ from copomus.IntaRNA import IntaRNA
 from copomus.candidate_selectors import get_selector
 from copomus.candidate_filters import get_filter
 from copomus.mutation_generators import get_generator
+from copomus.workflow import calculate_ranks, write_csv
 
 
 from intarna_tools import atomic_text_output, nonnegative_integer, read_sequence
@@ -186,28 +187,7 @@ class CopomuS:
                     measure.post_compute()
 
     def calculate_ranks(self, mutations: List[Mutation]):
-        # Calculate total ranking order
-        rank = 1
-        mutations[0].ranks['total'] = rank
-        for i in range(1, len(mutations)):
-            if mutations[i - 1] < mutations[i]:
-                rank += 1
-            mutations[i].ranks['total'] = rank
-
-        # Calculate ranking for each measurement
-        for i in range(len(self.measures)):
-            rank = 1
-            m_id = self.measures[i]
-
-            measures = [(x.measures[i], j) for j, x in enumerate(mutations)]
-            measures.sort(key=lambda x: x[0])
-
-            mutations[measures[0][1]].ranks[m_id] = rank
-            for j in range(1, len(measures)):
-                measure, mut_id = measures[j]
-                if measures[j - 1][0] < measures[j][0]:
-                    rank += 1
-                mutations[mut_id].ranks[m_id] = rank
+        calculate_ranks(mutations, self.measures)
 
     def output_csv(self, mutations: List[Mutation]):
         # Open a destination only after all predictions and ranking succeeded.
@@ -218,26 +198,7 @@ class CopomuS:
             self.write_csv(mutations, sys.stdout)
 
     def write_csv(self, mutations: List[Mutation], handle):
-        # CREATE CSV WRITER
-        writer = csv.writer(handle, delimiter=self.delimiter, lineterminator="\n")
-
-        # WRITE CSV
-        headers = [j for i in
-                   [[f'{m.id}_rank'] + [f'{m.id}_{k}' for k in m.score.keys()] for m in mutations[0].measures]
-                   for j in i]
-        writer.writerow(['mutation', 'rank', 'qIndex', 'tIndex', 'bpWildtype', 'bpMutated'] + headers)
-
-        for m in mutations:
-            values = []
-            for x in m.measures:
-                values.append(m.ranks[x.id])
-                scores = list(x.score.values())
-                for i in range(len(scores)):  # replace None with 'NA'
-                    if scores[i] is None:
-                        scores[i] = 'NA'
-                values += scores
-            # values = [j for i in [list(x.score.values()) for x in r.measures] for j in i]
-            writer.writerow([str(m), m.ranks['total'], m.query_n, m.target_n, m.bp_ww, m.bp_mm] + values)  # write csv
+        write_csv(mutations, handle, self.delimiter)
 
 
 def main(argv=None):

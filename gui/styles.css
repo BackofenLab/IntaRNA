@@ -356,6 +356,50 @@ fieldset {
   margin-top:20px;
 }
 
+.mutation-input {
+  margin-top:20px;
+  padding-top:18px;
+  border-top:1px solid var(--border);
+}
+
+.mutation-option-grid {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:16px;
+  margin:10px 0 14px;
+}
+
+.mutation-option-grid fieldset {
+  border:1px solid var(--border);
+  border-radius:5px;
+  padding:8px 12px;
+}
+
+.mutation-option-grid legend {
+  font-weight:600;
+  font-size:.9rem;
+}
+
+.measure-choice {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:6px;
+}
+
+.measure-priority {
+  display:flex;
+}
+
+.measure-priority .text-button {
+  padding:.05rem .25rem;
+  text-decoration:none;
+}
+
+#copomus-mutation-encoding {
+  min-height:5rem;
+}
+
 .field {
   display:flex;
   flex-direction:column;
@@ -463,7 +507,7 @@ fieldset {
   font-size:.9rem;
 }
 
-[data-role=visible-count] {
+[data-role=visible-count],[data-role=mutation-visible-count] {
   font-size:.85rem;
   color:var(--muted);
 }
@@ -563,7 +607,7 @@ tbody tr.selected { background:var(--table-selection); }
   gap:16px;
 }
 
-[data-role=varri-frame] {
+[data-role=varri-frame],[data-role=mutation-varri-frame] {
   display:block;
   width:100%;
   height:600px;
@@ -573,10 +617,29 @@ tbody tr.selected { background:var(--table-selection); }
   background:white;
 }
 
-[data-role=visualization-status] {
+[data-role=visualization-status],[data-role=mutation-visualization-status] {
   max-width:none;
   overflow-wrap:anywhere;
   font-size:.9rem;
+}
+
+.mutation-modes {
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-bottom:12px;
+}
+
+.mutation-modes button {
+  padding:.35rem .7rem;
+  background:var(--surface);
+  color:var(--brand-blue-dark);
+}
+
+.mutation-modes button[aria-pressed=true] {
+  color:white;
+  background:var(--brand-blue);
+  border-color:var(--brand-blue);
 }
 
 [data-role=output-files] {
@@ -820,7 +883,7 @@ dialog::backdrop {
   .field-grid {
     grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr));
   }
-  .field-grid[class*=columns-],.accessibility-columns { grid-template-columns:1fr; }
+  .field-grid[class*=columns-],.accessibility-columns,.mutation-option-grid { grid-template-columns:1fr; }
   .seed-primary-row { grid-template-columns:1fr; }
   #csv-options .field-grid.columns-1 { grid-template-columns:1fr; }
   .results {

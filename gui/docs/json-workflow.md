@@ -31,7 +31,7 @@ replays the JSON in fresh engines and compares every output byte.
 
 Each successful computation, including a run with no interaction rows, creates a
 new session with a unique ID within the page and a default name such as
-`Prediction 1` or `Evaluation 2`. The session retains the computed inputs in JSON,
+`Prediction 1`, `Evaluation 2` or `Mutation Design 3`. The session retains the computed inputs in JSON,
 CSV output, additional files and diagnostics. Editing parameters, Load, examples,
 Reset, invalid inputs, failed computations and cancellation preserve prior
 sessions. Failed or aborted computations do not create a session.
@@ -69,12 +69,12 @@ in the form for switching modes, but their values are omitted from executed and
 stored settings. Previously computed sessions remain available. Empty FASTA
 fields show the short demonstration sequences as placeholders only. The Examples
 disclosure menu follows the Input Parameters label and lists only examples for
-the selected Prediction or Evaluation task.
+the selected Prediction, Evaluation or Mutation Design task.
 
 Maintainers edit `gui/examples/index.json` (an array of local JSON filenames).
 Each listed file contains `name`, `description`, and `configuration`, where the
-configuration is the same native JSON document used by Load. Two replaceable
-examples cover prediction and evaluation. Loading validates their settings and
+configuration is the same native JSON document used by Load. Three replaceable
+examples cover prediction, evaluation and mutation design. Loading validates their settings and
 sequences through the same importer and computation validator. Missing or invalid
 examples show an error in the menu; they never overwrite the form.
 
@@ -83,8 +83,8 @@ examples show an error in the menu; they never overwrite the form.
 Each strand has an Upload button and accepts a text-file drop into its textarea.
 Files are read locally (at most 1 MB), validated with the same FASTA checks as
 manual entry, and replace only that strand after successful validation. Prediction
-accepts up to 50 FASTA records per strand, each 2–5,000 nt; evaluation requires
-one record. The longest selected query × longest selected target must be at most
+accepts up to 50 FASTA records per strand, each 2–5,000 nt; evaluation and
+mutation design require one record. The longest selected query × longest selected target must be at most
 1,000,000. Names end at the first whitespace; ignored header descriptions produce
 a warning below the corresponding field. Both FASTA fields scroll horizontally
 and vertically. Invalid files leave the

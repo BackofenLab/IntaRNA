@@ -2,6 +2,7 @@ import { ResultsView, downloadBlob } from './results.js';
 import { serializeParameters, importParameters } from './parameter-file.js';
 import { zipFiles } from './archive.js';
 import { AdditionalOutputView } from './output-visualization.js';
+import { CopomusResultsView } from './copomus.js';
 
 // Sessions live only in this page. Each owns a JSON snapshot and its own view;
 // editing the form or exploring another session cannot change an earlier run.
@@ -47,13 +48,16 @@ export class SessionsView {
     const parameterJson = serializeParameters({ ...request, qIdxPos0: request.parameters.qIdxPos0, tIdxPos0: request.parameters.tIdxPos0 }, provenance);
     const root = this.template.content.firstElementChild.cloneNode(true);
     const find = (role) => root.querySelector(`[data-role=${role}]`);
-    const id = `session-${this.nextNumber}`, task = request.task === 'evaluation' ? 'Evaluation' : 'Prediction';
+    const id = `session-${this.nextNumber}`, task = request.task === 'evaluation' ? 'Evaluation' : request.task === 'mutation' ? 'Mutation Design' : 'Prediction';
+    const mutation = request.task === 'mutation';
     const session = {
       id, name: `${task} ${this.nextNumber}`, parameterJson, root,
-      panel: find('panel'), toggle: find('toggle'), view: new ResultsView(find('results-view')), fileViews: [],
+      panel: find('panel'), toggle: find('toggle'),
+      view: mutation ? new CopomusResultsView(find('mutation-results-view')) : new ResultsView(find('results-view')),
+      fileViews: [],
     };
-    const count = session.view.show(result.csv, result.csvColumns, request);
-    const summary = count ? `${task} complete: ${count} interaction${count === 1 ? '' : 's'}.` : request.task === 'prediction' && request.parameters.outNumber === 0 ? 'Accessibility computation complete. No interaction rows requested.' : 'No favorable interactions found with these sequences and settings.';
+    const count = mutation ? session.view.show(result.mutation, request) : session.view.show(result.csv, result.csvColumns, request);
+    const summary = mutation ? `Mutation Design complete: ${count} ranked mutation${count === 1 ? '' : 's'}.` : count ? `${task} complete: ${count} interaction${count === 1 ? '' : 's'}.` : request.task === 'prediction' && request.parameters.outNumber === 0 ? 'Accessibility computation complete. No interaction rows requested.' : 'No favorable interactions found with these sequences and settings.';
     find('summary').textContent = summary;
     root.dataset.sessionId = id;
     session.panel.id = `${id}-panel`; session.toggle.setAttribute('aria-controls', session.panel.id);
@@ -93,7 +97,7 @@ export class SessionsView {
     // filtered table, or the session selected at download time.
     find('download-zip').addEventListener('click', () => {
       try {
-        const files = [{ name: 'parameter.json', text: parameterJson }, { name: 'intarna-interactions.csv', text: session.view.csv }, ...result.files];
+        const files = [{ name: 'parameter.json', text: parameterJson }, { name: mutation ? 'copomus-mutations.tsv' : 'intarna-interactions.csv', text: session.view.csv }, ...result.files];
         const filename = session.name.replace(/[^\p{L}\p{N}._-]+/gu, '-').replace(/^[.-]+|[.-]+$/g, '').slice(0, 80) || id;
         downloadBlob(`${filename}.zip`, new Blob([zipFiles(files)], { type: 'application/zip' }));
       } catch (error) { this.reportError(new Error(`ZIP download failed: ${error.message}`)); }
