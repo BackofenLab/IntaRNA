@@ -6,6 +6,7 @@
 EXTRA_DIST =	\
 			conda.txt \
 			api-documentation.md \
+			json-parameters.md \
 			build-api.sh \
 			check-api.py \
 			doxygen.cfg \

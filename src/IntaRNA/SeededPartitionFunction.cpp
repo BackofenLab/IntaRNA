@@ -61,10 +61,12 @@ computeAnchored(const Kernel::Domain & d,const StackSeedDomain & seeds,
 	for(size_t i=0;i<d.n;++i) for(size_t j=0;j<d.m;++j) valid(i,j)=w.valid({i,j});
 
 	// Publish complete boundaries once, in row-major order, without a global
-	// four-coordinate table. At most 256 left boundaries share a batch, with a
-	// 2 MiB budget per boundary table unless a single span already exceeds it.
-	// Anchors crossing batches are recomputed in the same reusable workspace.
-	constexpr size_t batchLimit=256,batchBytes=2*1024*1024;
+	// four-coordinate table. At most 256 left boundaries share a batch. Exact
+	// and outside computations target 2 MiB per table; the ordinary heuristic
+	// may use 16 MiB because it stores no boundary/adjoint table and benefits
+	// directly from recomputing each anchor across fewer batches.
+	constexpr size_t batchLimit=256;
+	const size_t batchBytes=w.selectRight && !pairs ? 16*1024*1024 : 2*1024*1024;
 	const size_t batchSize=std::max(size_t(1),std::min(batchLimit,batchBytes/sizeof(Z_type)/cells));
 	Matrix<Z_type> hybrid(batchSize,cells),boundary;
 	if(pairs) boundary.resize(batchSize,cells,false);
@@ -347,10 +349,24 @@ computeAnchored(const Kernel::Domain & d,const StackSeedDomain & seeds,
 	auto processBatch=[&]() {
 		reset(hybrid,starts.size(),cells); if(pairs) reset(boundary,starts.size(),cells);
 		candidates.clear(); initiation.clear();
-		// Query only anchor starts inside the batch's span boxes, then restore
-		// deterministic seed order independently of hash-table iteration order.
+		// Query only anchor starts inside the batch's span boxes. Sparse seed
+		// domains are cheaper to scan directly than probing every possible pair
+		// in every source span; dense domains retain the bounded grid probe.
 		for(const Pair p:starts) {
 			initiation.push_back(A::check(w.initiation(p)));
+		}
+		if(anchors.size()<cells) {
+			for(size_t a=0;a<anchors.size();++a) {
+				const auto & anchor=anchors[a];
+				for(const Pair p:starts) {
+					if(p.first>anchor.i || p.second>anchor.j) continue;
+					const size_t i=anchor.i-p.first,j=anchor.j-p.second;
+					if(i>=maxN || j>=maxM || anchor.length>maxN-i || anchor.length>maxM-j) continue;
+					included[a]=1; candidates.push_back(a); break;
+				}
+			}
+		} else {
+			for(const Pair p:starts)
 			for(size_t i=p.first;i<d.n && i-p.first<maxN;++i)
 			for(size_t j=p.second;j<d.m && j-p.second<maxM;++j) {
 				const auto found=anchorIndex.find({i,j});
@@ -359,8 +375,8 @@ computeAnchored(const Kernel::Domain & d,const StackSeedDomain & seeds,
 				if(anchor.length>maxN-(i-p.first) || anchor.length>maxM-(j-p.second)) continue;
 				included[found->second]=1; candidates.push_back(found->second);
 			}
+			std::sort(candidates.begin(),candidates.end());
 		}
-		std::sort(candidates.begin(),candidates.end());
 		for(const size_t a:candidates) { fill(a); contract(false); }
 		for(size_t b=0;b<starts.size();++b) {
 			const Pair p=starts[b];

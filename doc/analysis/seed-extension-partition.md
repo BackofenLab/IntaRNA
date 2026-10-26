@@ -125,20 +125,27 @@ mass exactly once. No pair is counted merely because it lies inside an outer
 boundary rectangle. Partition-only mode omits the outside storage and pass.
 
 Batching avoids storing all source/endpoint combinations across the sequences.
-The batch is additionally limited to a 2 MiB target for its hybrid table, with
-at least one left boundary even when a single span rectangle exceeds that
-budget. Pair output saves one equally sized table of boundary coefficients.
-The bound is independent of whether pair output is requested, preserving the
-forward computation in both modes. Larger batches reuse anchor factors across
-more sources but retain more boundary coefficients.
+Exact prediction and pair output target 2 MiB for each hybrid or boundary
+table, with at least one left boundary even when a single span rectangle
+exceeds that budget. Partition-only heuristic prediction can target 16 MiB for
+its sole hybrid table. This uses the existing cap of 256 boundaries to reuse
+anchor factors across more sources without enlarging exact or outside-pass
+workspaces.
+
+Candidate discovery also adapts to the admitted seed density. When the number
+of canonical anchors is smaller than one span rectangle, the backend scans
+those anchors against the current batch directly. Denser domains retain the
+bounded span-grid lookup. Both paths emit anchors in the same deterministic
+order and feed the unchanged recurrence.
 
 With `W1=min(span1,n)`, `W2=min(span2,m)`, maximum irredundant seed length
 `L`, and bounded batch size `B<=256`, workspace storage is
 `O(W1*W2*(max(2,L)+B) + n*m + S)` for `S` anchors. The `n*m` term includes
 a byte-valued validity cache and, for pair output, the returned mass matrix.
 Partition-only mode does not allocate adjoints or saved boundary factors.
-Its cost is repeated anchor-table work between batches. This is an explicit
-memory/runtime tradeoff, not a claim of a general speedup. The
+Its cost is repeated anchor-table work between batches. The larger heuristic
+batch is an explicit memory/runtime tradeoff; exact and pair-output bounds stay
+unchanged. The
 [benchmark records](../benchmarks/seed-extension/README.md) compare all complete
 boundary coefficients, partitions and pair numerators against `985ba44`, and
 report allocation calls, requested bytes, runtime and process RSS separately.

@@ -16,6 +16,7 @@ SH_LOG_COMPILER = $(SHELL)
 
 # the script needed for tests
 dist_check_SCRIPTS = \
+  runParameterFile.sh \
   runAccessibilityBinary.sh \
   runAccessibilityThreads.sh \
   runBasePairProbabilities.sh \
@@ -97,4 +98,4 @@ runApiTests_CXXFLAGS =	-I$(top_builddir)/src \
 
 
 
-EXTRA_DIST = tools/export-seeded-theory.py testBasePairProbabilities.py testBasePairProbabilitySvg.py
+EXTRA_DIST = testParameterFile.py tools/export-seeded-theory.py testBasePairProbabilities.py testBasePairProbabilitySvg.py

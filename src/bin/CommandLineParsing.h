@@ -12,6 +12,8 @@
 #include <boost/filesystem.hpp>
 #include <boost/spirit/include/qi.hpp>
 
+#include "ParameterFile.h"
+
 #include <cstdarg>
 #include <fstream>
 #include <iostream>
@@ -816,6 +818,9 @@ protected:
 	std::string logFileName;
 	//! (optional) file name for input parameter configuration file
 	std::string configFileName;
+
+	//! owns embedded parameter-file inputs until all predictions finish
+	ParameterFile parameterFile;
 
 	//! the vienna energy parameter handler initialized by #parse()
 	mutable VrnaHandler vrnaHandler;

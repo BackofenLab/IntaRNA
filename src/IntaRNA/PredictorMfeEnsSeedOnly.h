@@ -37,7 +37,7 @@ public:
 	/**
 	 * data cleanup
 	 */
-	virtual ~PredictorMfeEnsSeedOnly();
+	virtual ~PredictorMfeEnsSeedOnly() override;
 
 	/**
 	 * Computes the mfe seed for the given sequence ranges (i1-j1) in the first
@@ -51,7 +51,7 @@ public:
 	virtual
 	void
 	predict( const IndexRange & r1 = IndexRange(0,RnaSequence::lastPos)
-			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos) );
+			, const IndexRange & r2 = IndexRange(0,RnaSequence::lastPos) ) override;
 
 
 protected:
@@ -83,7 +83,7 @@ protected:
 	 */
 	virtual
 	void
-	traceBack( Interaction & interaction );
+	traceBack( Interaction & interaction ) override;
 
 };
 

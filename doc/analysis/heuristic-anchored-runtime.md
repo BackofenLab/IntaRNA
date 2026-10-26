@@ -43,6 +43,13 @@ passes join the same retained roots and use the same complete boundary factors.
 This reduces heuristic contraction work; one-sided paths can still require a
 full right table. See the [recurrence description](seed-extension-partition.md).
 
+For ordinary prediction without pair-probability output, each batch may use up
+to 16 MiB for its only complete-boundary table, still capped at 256 sources.
+This reduces how often anchors crossing batches are recomputed. Candidate
+discovery scans admitted anchors directly when they are sparser than a span
+rectangle and retains the original grid lookup for dense seed domains. Exact
+and pair-output computations keep their 2 MiB-per-table target.
+
 ## Correctness checks
 
 Release and debug validation each passed all seven test drivers. Both ran 115

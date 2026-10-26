@@ -24,12 +24,17 @@ IntaRNA_CXXFLAGS = $(AM_CXXFLAGS) @INTARNA_SYSTEM_CPPFLAGS@
 # generated intaRNA sources 
 nodist_IntaRNA_SOURCES = 	\
 					../config.h \
-					IntaRNA/intarna_config.h
+					../IntaRNA/intarna_config.h
 
 # intaRNA sources
 IntaRNA_SOURCES =	IntaRNA.cpp \
 					CommandLineParsing.h \
-					CommandLineParsing.cpp
+					CommandLineParsing.cpp \
+					ParameterFile.h \
+					ParameterFile.cpp \
+					nlohmann/json.hpp
+
+EXTRA_DIST = nlohmann/LICENSE.MIT nlohmann/README.md
 					
 IntaRNA_LDADD = 	$(top_builddir)/src/IntaRNA/libIntaRNA.a \
 					$(top_builddir)/src/libeasylogging.a

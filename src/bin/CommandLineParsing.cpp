@@ -1085,7 +1085,7 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 	    ("personality", value<std::string>(&(personalityParamValue))
 			, "IntaRNA personality to be used, which defines default values, available program arguments and tool behavior")
 	    ("parameterFile", value<std::string>(&(configFileName))
-			, "file from where to read additional command line arguments")
+			, "legacy key=value or JSON parameter file (auto-detected); JSON can embed text input files")
 	    ("help,h", "show the help page for basic parameters")
 	    ("fullhelp", "show the extended help page for all available parameters")
 	    ;
@@ -1148,7 +1148,7 @@ parse(int argc, char** argv)
 						LOG(ERROR) <<"Parsing of 'parameterFile' : could not open file  '"<<paramFileName<<"'";
 						updateParsingCode( ReturnCode::STOP_PARSING_ERROR );
 					} else {
-						store( parse_config_file<char>(paramfile, opts_cmdline_all), vm);
+						store( parameterFile.parse(paramfile, opts_cmdline_all), vm);
 					}
 				} catch (std::exception & ex) {
 					LOG(ERROR) <<"error while parsing of 'parameterFile="<<paramFileName<<"' : "<<ex.what();
@@ -1878,6 +1878,9 @@ void CommandLineParsing::validate_outCsvCols(const std::string & value) {
 ////////////////////////////////////////////////////////////////////////////
 
 void CommandLineParsing::validate_outCsvSort(const std::string & value) {
+	// An explicit empty value clears a sort inherited from a parameter file.
+	if (value.empty()) return;
+
 	OutputHandlerCsv::ColTypeList lst;
 	try {
 		// try to parse
@@ -3155,7 +3158,24 @@ getPersonality( int argc, char ** argv )
 
 	}
 
+	// File settings select defaults before parsing; an explicit CLI personality
+	// always wins, just as explicit CLI values override scalar file parameters.
+	if (!setViaParameter) {
+		for (int i = 1; i < argc; ++i) {
+			const std::string arg(argv[i]);
+			std::string filename;
+			if (boost::istarts_with(arg, "--parameterFile=")) filename = arg.substr(arg.find('=') + 1);
+			else if (boost::iequals(arg, "--parameterFile") && i + 1 < argc) filename = argv[++i];
+			if (!filename.empty()) {
+				const auto configured = ParameterFile::personality(filename);
+				if (!configured.empty()) { value = configured; setViaParameter = true; }
+				break;
+			}
+		}
+	}
+
 	// parse personality
+	if (value == "IntaRNA") return Personality::IntaRNA;
 	if (value == "IntaRNAsnap") {
 		return Personality::IntaRNAsnap;
 	}

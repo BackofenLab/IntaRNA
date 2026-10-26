@@ -43,7 +43,7 @@ public:
 	/**
 	 * destruction of this object and the wrapped seed handler
 	 */
-	virtual ~SeedHandlerIdxOffset();
+	virtual ~SeedHandlerIdxOffset() override;
 
 	/**
 	 * Access to the currently used index offset for sequence 1
@@ -79,7 +79,7 @@ public:
 	 */
 	virtual
 	const SeedConstraint&
-	getConstraint() const;
+	getConstraint() const override;
 
 	/**
 	 * Access to the underlying interaction energy function
@@ -87,7 +87,7 @@ public:
 	 */
 	virtual
 	const InteractionEnergy&
-	getInteractionEnergy() const;
+	getInteractionEnergy() const override;
 
 
 	/**
@@ -104,7 +104,7 @@ public:
 	 */
 	virtual
 	size_t
-	fillSeed(const size_t i1, const size_t j1, const size_t i2, const size_t j2);
+	fillSeed(const size_t i1, const size_t j1, const size_t i2, const size_t j2) override;
 
 	/**
 	 * Identifies the base pairs of the mfe seed interaction starting at i1,i2
@@ -120,7 +120,7 @@ public:
 	 */
 	virtual
 	void
-	traceBackSeed( Interaction & interaction, const size_t i1, const size_t i2) const;
+	traceBackSeed( Interaction & interaction, const size_t i1, const size_t i2) const override;
 
 
 	/**
@@ -134,7 +134,7 @@ public:
 	 */
 	virtual
 	E_type
-	getSeedE( const size_t i1, const size_t i2 ) const;
+	getSeedE( const size_t i1, const size_t i2 ) const override;
 
 	/**
 	 * Checks whether or not a given base pair is the left-most base pair of
@@ -146,7 +146,7 @@ public:
 	 */
 	virtual
 	bool
-	isSeedBound( const size_t i1, const size_t i2 ) const;
+	isSeedBound( const size_t i1, const size_t i2 ) const override;
 
 	/**
 	 * Access to the length in seq1 of the mfe seed with left-most base pair (i1,i2)
@@ -159,7 +159,7 @@ public:
 	 */
 	virtual
 	size_t
-	getSeedLength1( const size_t i1, const size_t i2 ) const;
+	getSeedLength1( const size_t i1, const size_t i2 ) const override;
 
 	/**
 	 * Access to the length in seq2 of the mfe seed with left-most base pair (i1,i2)
@@ -172,7 +172,7 @@ public:
 	 */
 	virtual
 	size_t
-	getSeedLength2( const size_t i1, const size_t i2 ) const;
+	getSeedLength2( const size_t i1, const size_t i2 ) const override;
 
 
 	/**
@@ -212,7 +212,7 @@ public:
 	updateToNextSeed( size_t & i1, size_t & i2
 			, const size_t i1min = 0, const size_t i1max = RnaSequence::lastPos
 			, const size_t i2min = 0, const size_t i2max = RnaSequence::lastPos
-			) const;
+			) const override;
 
 	/**
 	 * Adds all seeds to a given interaction that are completely covered by its
@@ -223,7 +223,7 @@ public:
 	 */
 	virtual
 	void
-	addSeeds( Interaction & i ) const;
+	addSeeds( Interaction & i ) const override;
 
 	/**
 	 * Checks whether or not two seeds are loop overlapping, ie. given i1 < k1, the
@@ -240,7 +240,7 @@ public:
 	virtual
 	bool
 	areLoopOverlapping( const size_t i1, const size_t i2
-					, const size_t k1, const size_t k2 ) const;
+					, const size_t k1, const size_t k2 ) const override;
 
 	/**
 	 * Checks whether or not a given index pair is a valid seed base pair
@@ -255,7 +255,7 @@ public:
 	bool
 	isFeasibleSeedBasePair( const size_t i1
 						, const size_t i2
-						, const bool atEndOfSeed = false ) const;
+						, const bool atEndOfSeed = false ) const override;
 
 protected:
 
