@@ -14,6 +14,9 @@
 
 ## Interface and handling
 
+- keep the real-browser CSV export check synchronized with the selected result
+  columns, including the new seed-end defaults (#305)
+
 - integrate CopomuS as the browser Mutation Design task with single-pair input,
   native controls, extended tables and four-state vaRRI visualization (#307)
 
@@ -336,6 +339,12 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261026 Alexander Mitrofanov
+ * scripts/wasm/test-browser.py
+   * Derive the expected CSV download header from the rendered result columns and
+     verify that prediction defaults include both seed boundaries, fixing the
+     master WebAssembly workflow after the #305 seed-overlay merge.
 
 261026 Alexander Mitrofanov
  * gui/{index.html,app.js,styles.css,copomus*.js,runner.js,sessions.js},

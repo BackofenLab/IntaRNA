@@ -355,7 +355,11 @@ with sync_playwright() as playwright:
     with page.expect_download() as downloaded:
         active.locator('[data-role=download]').click()
     csv = Path(downloaded.value.path()).read_text()
-    assert csv.splitlines()[0] == 'id1;start1;end1;id2;start2;end2;subseqDP;hybridDP;E;ED1;ED2;seedE;seedStart1;seedStart2'
+    result_columns = active.locator('[data-role=visible-columns] input').evaluate_all(
+        "inputs => inputs.map(input => input.value).filter(value => value !== 'deltaE')"
+    )
+    assert result_columns[-4:] == ['seedStart1', 'seedEnd1', 'seedStart2', 'seedEnd2']
+    assert csv.splitlines()[0].split(';') == result_columns
     assert 'target;1;10;query;1;10;' in csv
     assert 'deltaE' not in csv
     assert active.locator('thead th').first.inner_text() == ''
