@@ -76,7 +76,7 @@ with sync_playwright() as playwright:
     expect(page.locator('#version-info')).to_contain_text(f'ViennaRNA {vienna_version}')
     for logo in page.locator('.site-header img').all():
         assert logo.evaluate('node => node.complete && node.naturalWidth > 0')
-    for key in ['seed-options', 'output-options', 'interaction-options', 'query-options', 'target-options', 'general-options', 'sequence-input']:
+    for key in ['seed-options', 'output-options', 'csv-options', 'interaction-options', 'query-options', 'target-options', 'general-options', 'sequence-input']:
         open_group(key)
 
     expect(page.get_by_role('radio', name='Prediction')).to_be_checked()
@@ -99,7 +99,7 @@ with sync_playwright() as playwright:
     expect(page.locator('#tab-sequence-input')).to_be_focused()
 
     # Review layout, task defaults and modes work with native parameters.
-    assert page.locator('[role=tab]').all_text_contents() == ['Sequences', 'Seed', 'Output', 'Model & Energy', 'Query', 'Target', 'CLI-only']
+    assert page.locator('[role=tab]').all_text_contents() == ['Sequences', 'Seed', 'Output', 'CSV', 'Model & Energy', 'Query', 'Target', 'CLI-only']
     expect(page.locator('.brand')).to_contain_text('IntaRNA package')
     expect(page.locator('#results-title')).to_have_text('Results')
     expect(page.locator('#outNumber')).to_have_value('10')
@@ -158,7 +158,7 @@ with sync_playwright() as playwright:
     page.locator('#seed-mode').select_option('identify')
     expect(page.locator('#seedBP')).to_be_enabled()
     expect(page.locator('#seedTQ')).to_be_disabled()
-    open_group('output-options')
+    open_group('csv-options')
     groups = page.locator('.csv-group')
     assert groups.count() == 5
     for group in groups.all():
@@ -173,7 +173,7 @@ with sync_playwright() as playwright:
     # Inspect all changed panels at desktop and mobile widths.
     for width in [1440, 390]:
         page.set_viewport_size({'width': width, 'height': 1100 if width == 1440 else 844})
-        for key in ['sequence-input', 'seed-options', 'output-options', 'interaction-options', 'query-options', 'target-options', 'general-options']:
+        for key in ['sequence-input', 'seed-options', 'output-options', 'csv-options', 'interaction-options', 'query-options', 'target-options', 'general-options']:
             open_group(key)
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'), (width, key)
             if args.screenshot:
@@ -377,7 +377,8 @@ with sync_playwright() as playwright:
     fill('rri', '1||||||||||&1||||||||||:1|||||||||&2|||||||||')
     open_group('output-options')
     page.locator('#output-options input[value="detailed"]').check()
-    page.locator('#output-options input[value="ED1"]').check()
+    open_group('csv-options')
+    page.locator('#csv-options input[value="ED1"]').check()
     predict()
     expect(status).to_contain_text('Evaluation complete')
     expect(rows).to_have_count(2)
@@ -397,9 +398,9 @@ with sync_playwright() as playwright:
     assert 'detailed' in saved['gui']['reports']
 
     # Visualization stays available when structure/identity columns are deselected.
-    open_group('output-options')
+    open_group('csv-options')
     page.get_by_role('button', name='Clear selection', exact=True).click()
-    page.locator('#output-options input[value="E"]').check()
+    page.locator('#csv-options input[value="E"]').check()
     predict()
     rows.first.get_by_role('button', name='Visualize').click()
     expect(active.locator('[data-role=varri-frame]')).to_be_visible()

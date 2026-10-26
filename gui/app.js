@@ -120,10 +120,10 @@ function checkbox(container, key, labelText, description) {
   if (description) label.title = description;
   label.append(input, document.createTextNode(labelText)); container.append(label); return input;
 }
-const outputBody = byId('output-options').querySelector('.group-body');
-outputBody.append(element('h3', 'CSV output columns', 'subheading'));
-outputBody.append(element('p', 'seq1 is the target; seq2 is the query. Hover over a column name for details. Select columns for the table and CSV download; table visibility can be changed after computation.', 'input-help'));
-const selectionTools = element('div', '', 'selection-tools'); outputBody.append(selectionTools);
+const csvBody = byId('csv-options').querySelector('.group-body');
+csvBody.append(element('h3', 'CSV output columns', 'subheading'));
+csvBody.append(element('p', 'seq1 is the target; seq2 is the query. Hover over a column name for details. Select columns for the table and CSV download; table visibility can be changed after computation.', 'input-help'));
+const selectionTools = element('div', '', 'selection-tools'); csvBody.append(selectionTools);
 const selectColumns = (selection) => {
   csvOrder = [...selection]; for (const input of csvInputs) input.checked = selection.includes(input.value); inputsChanged();
 };
@@ -142,12 +142,13 @@ for (const group of CSV_GROUPS) {
       inputsChanged();
     }); legend.append(button);
   }
-  const picker = element('div', '', 'checkbox-grid csv-columns'); section.append(legend, picker); outputBody.append(section);
+  const picker = element('div', '', 'checkbox-grid csv-columns'); section.append(legend, picker); csvBody.append(section);
   for (const key of group.keys) {
     const column = CSV_CATALOG.find((column) => column.key === key);
     csvInputs.push(checkbox(picker, key, key, column.description));
   }
 }
+const outputBody = byId('output-options').querySelector('.group-body');
 outputBody.append(element('h3', 'Additional output files', 'subheading'));
 outputBody.append(element('p', 'Reports are computed with the same settings. ASCII, detailed and ensemble reports each run a fresh engine instance and can take extra time.', 'input-help'));
 const outputPicker = element('div', '', 'checkbox-grid'); outputBody.append(outputPicker);

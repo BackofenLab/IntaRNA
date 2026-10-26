@@ -86,7 +86,8 @@ export const GROUPS = [
     ['noSeed'], ['seedTQ'], ['seedBP', 'seedMaxUP', 'seedQMaxUP', 'seedTMaxUP'],
     ['seedMaxE', 'seedMinPu', 'seedMaxEhybrid'], ['seedQRange', 'seedTRange'], ['seedNoGU', 'seedNoGUend'],
   ]) },
-  { key: 'output-options', label: 'Output', fields: [...fields.values()].filter((field) => field.key.startsWith('out')) },
+  { key: 'output-options', label: 'Output', fields: [...fields.values()].filter((field) => field.key.startsWith('out') && field.key !== 'outCsvSort') },
+  { key: 'csv-options', label: 'CSV', fields: [fields.get('outCsvSort')] },
   { key: 'interaction-options', label: 'Model & Energy', rows: rows([
     ['model', 'mode'], ['energyVRNA', 'temperature', 'energyAdd'], ['energyNoDangles'],
     ['windowWidth', 'windowOverlap'], ['kineticScore'],
