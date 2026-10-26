@@ -44,7 +44,13 @@ with sync_playwright() as playwright:
     def load_example(task='prediction'):
         page.locator('#examples-menu summary').click()
         page.get_by_role('button', name='Evaluate a duplex' if task == 'evaluation' else 'Short duplex', exact=False).click()
-        expect(page.locator('#query')).to_have_value('>query\nGGGAGGAGGG\n')
+        # Exercise the maintained multi-FASTA example, then use a compact
+        # deterministic duplex for the exact native-reference assertions below.
+        expect(page.locator('#query')).to_have_value(re.compile(r'^>ncRNA1\n'))
+        page.locator('#query').fill('>query\nGGGAGGAGGG\n')
+        page.locator('#target').fill('>target\nCCCUCCUCCC\n')
+        if task == 'evaluation':
+            page.locator('#rri').fill('1||||||||||&1||||||||||')
 
     def download_archive(session=None):
         with page.expect_download() as downloaded:

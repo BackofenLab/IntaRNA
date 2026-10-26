@@ -321,6 +321,8 @@ energies, restricted partition sums, and trackers.
      outOverlap; move energy/accessibility filters to a dedicated second row.
    + Match native quota validation, window/region compatibility and JSON replay;
      cover the default, range, rendered order and real WASM execution.
+   * Keep exact browser-reference assertions on a compact deterministic duplex
+     after exercising the expanded maintainer example loaded from the GUI.
  * PredictorSeedOracle_test.cpp, OutputHandlerSeedCandidates_test.cpp,
    runOutputPerSeed.sh, library/test Makefile.am
    + Independent chain-enumeration, traceback, seed-only, mode-matrix, merge,
