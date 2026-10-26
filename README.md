@@ -136,8 +136,10 @@ The following topics are covered by this documentation:
       - [Scaling factors for partition function computation for accessibility estimation](#accPfScale)
       - [Read/write accessibility from/to file or stream](#accFromFile)
 - [Library for integration in external tools](#lib)
-- [Auxiliary R scripts for output visualization etc.](/R)
-- [Auxiliary python scripts for IntaRNA-based pipelines](/python)
+- [Auxiliary Python tools for output analysis, visualization and pipelines](python/README.md)
+  - [IntaRNA-fuse.py](python/README.md#intarna-fusepy) combines compatible
+    interaction sites using joint accessibility costs (requires Python 3.10+ and
+    RNAfold; installed by `make install`).
 
 
 <br /><br /><br /><br />
@@ -1999,44 +2001,40 @@ pairs using `--out=pMinE:MYPAIRMINE.csv`. This generates a CSV file (`;`separate
 holding for each index pair the minimal energy of any interaction covering this
 index combination or `NA` if no covers it at all.
 
-This information can be visualized with your preferred program. In the following,
-the provided R call is used to generate a heatmap visualization of the
-RNA-RNA interaction possibilities.
+This information can be visualized with Python, NumPy and Matplotlib (see the
+[optional Python dependencies](python/README.md#dependencies-and-installation)).
+The following example uses the coordinate labels from the CSV and masks missing
+or positive energies as zero:
 
-```R
-# read data, skip first column, and replace NA and E>0 values with 0
-d <- read.table("MYPAIRMINE.csv",header=T,sep=";");
-d <- d[,2:ncol(d)];
-d[is.na(d)] = 0;
-d[d>0] = 0;
-# plot
-image( 1:nrow(d), 1:ncol(d), as.matrix(d), col = heat.colors(100), xlab="index in sequence 1", ylab="index in sequence 2");
-box();
+```python
+import csv
+import numpy as np
+import matplotlib.pyplot as plt
+
+with open("MYPAIRMINE.csv", newline="") as handle:
+    rows = list(csv.reader(handle, delimiter=";"))
+# Labels have the form nucleotide_position; split at the final underscore.
+query = [int(label.rsplit("_", 1)[1]) for label in rows[0][1:]]
+target = [int(row[0].rsplit("_", 1)[1]) for row in rows[1:]]
+energy = np.array([[float(value) if value != "NA" else 0 for value in row[1:]]
+                   for row in rows[1:]])
+energy = np.minimum(energy, 0)
+figure, axis = plt.subplots()
+heatmap = axis.pcolormesh(target, query, energy.T, shading="nearest", cmap="hot")
+axis.set_xlabel("index in sequence 1")
+axis.set_ylabel("index in sequence 2")
+figure.colorbar(heatmap, ax=axis, label="energy [kcal/mol]")
+figure.savefig("pair-minE.png", dpi=150, bbox_inches="tight")
 ```
 
 The following plot (for the [minimal energy profile](#profileMinE) example from
-above) reveals, that the alternative stable (*E*<0) interactions all involve the
-mfe-site in the second sequence and are thus less likely to occure.
+above) reveals that the alternative stable (*E*<0) interactions all involve the
+MFE site in the second sequence and are thus less likely to occur.
 
 ![Minimal interaction energy index pair information](./doc/figures/pair-minE.png)
 
-A more sophisticated plot can be done using `ggplot2` from the `tidyverse` package.
-
-```R
-library(tidyverse)
-
-read_delim("pairMinE-t1q1.csv", delim=";") %>%
-  replace(is.na(.), 0) %>%
-  rename( target = minE ) %>%
-  pivot_longer( cols=-target, names_to = "query", values_to = "E" ) %>%
-  separate( query, into = c("qSeq","qIdx"), sep = "_") %>%
-  separate( target, into = c("tSeq","tIdx"), sep = "_") %>%
-  mutate(across(c(tIdx,qIdx,E),as.numeric)) %>%
-  mutate(E = ifelse( E>0, 0, E)) %>%
-  ggplot(aes(x=tIdx,y=qIdx, fill=E)) +
-    geom_tile() + 
-    scale_fill_gradient(low="blue",high="red")
-```
+For interval and coverage plots from standard interaction CSV output, use
+[IntaRNA_plotRegions.py](python/README.md#intarna_plotregionspy).
 
 
 [![up](doc/figures/icon-up.28.png) back to overview](#overview)
