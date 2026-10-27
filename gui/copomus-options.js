@@ -1,14 +1,20 @@
 export const COPOMUS_MEASURES = Object.freeze([
-  ['mfeCover', 'MFE coverage'], ['E', 'Interaction energy'],
-  ['minDeltaE', 'Minimum energy difference'], ['EDqi', 'Query accessibility'],
-  ['cEDqi', 'Constant query accessibility'], ['Eqi', 'Query energy profile'],
-  ['Eti', 'Target energy profile'],
+  ['mfeCover', 'MFE coverage', 'Prefers mutations whose designed positions lie inside both the wild-type and compensatory minimum-free-energy interactions.'],
+  ['E', 'Interaction energy', 'Checks that both matching pairs interact favorably while each single mutant weakens the interaction by the configured separation threshold.'],
+  ['minDeltaE', 'Minimum energy difference', 'Ranks by the smallest energy separation between a matching pair and either single-mutant combination.'],
+  ['EDqi', 'Query accessibility', 'Prefers mutations whose compensatory query nucleotide is less accessible than its wild-type counterpart.'],
+  ['cEDqi', 'Constant query accessibility', 'Prefers mutations that preserve the query nucleotide accessibility within one kcal/mol.'],
+  ['Eqi', 'Query energy profile', 'Checks the interaction-energy profile at the mutated query position across all four sequence combinations.'],
+  ['Eti', 'Target energy profile', 'Checks the interaction-energy profile at the mutated target position across all four sequence combinations.'],
 ]);
 export const COPOMUS_FILTERS = Object.freeze([
-  ['GU', 'Exclude GU/UG pairs'], ['AU', 'Exclude AU/UA pairs'],
-  ['GC', 'Exclude GC/CG pairs'], ['lp', 'Exclude unstackable lonely pairs'],
-  ['lpMfe', 'Exclude lonely pairs in the MFE'], ['he', 'Exclude potential helix ends'],
-  ['heMfe', 'Exclude helix ends in the MFE'],
+  ['GU', 'Exclude GU/UG pairs', 'Removes candidate positions whose wild-type base pair is GU or UG.'],
+  ['AU', 'Exclude AU/UA pairs', 'Removes candidate positions whose wild-type base pair is AU or UA.'],
+  ['GC', 'Exclude GC/CG pairs', 'Removes candidate positions whose wild-type base pair is GC or CG.'],
+  ['lp', 'Exclude unstackable lonely pairs', 'Removes candidates that cannot stack with a neighboring canonical base pair in the input sequences.'],
+  ['lpMfe', 'Exclude lonely pairs in the MFE', 'Removes candidates that form a lonely base pair in the wild-type minimum-free-energy interaction.'],
+  ['he', 'Exclude potential helix ends', 'Removes candidates that could occur at either end of an interaction helix.'],
+  ['heMfe', 'Exclude helix ends in the MFE', 'Removes candidates located at a helix end in the wild-type minimum-free-energy interaction.'],
 ]);
 export const COPOMUS_DEFAULTS = Object.freeze({
   measures: ['mfeCover', 'E', 'minDeltaE'],

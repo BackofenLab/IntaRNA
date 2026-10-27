@@ -82,6 +82,10 @@ with sync_playwright() as playwright:
     expect(page.locator('#query')).to_have_value('')
     expect(page.locator('#target')).to_have_value('')
     expect(page.locator('#query')).to_have_attribute('placeholder', '>query\nGGGAGGAGGG')
+    form_labels = page.locator('#prediction-form label')
+    assert form_labels.count() > 50
+    assert all(label.get_attribute('title') for label in form_labels.all())
+    assert page.locator('#query').evaluate('node => getComputedStyle(node).minHeight') == '400px'
     compute.click()
     expect(page.locator('#input-error')).to_contain_text('enter a sequence')
     metadata = page.request.get(urljoin(args.url, 'build-info.json')).json()
@@ -707,6 +711,8 @@ with sync_playwright() as playwright:
     expect(page.locator('#mutation-input')).to_be_visible()
     expect(page.locator('#tab-output-options')).not_to_be_visible()
     expect(page.locator('#tab-csv-options')).not_to_be_visible()
+    assert all(label.get_attribute('title') for label in page.locator('#copomus-measures label, #copomus-filters label').all())
+    expect(page.locator('#copomus-measures input[value="E"]').locator('xpath=..')).to_have_attribute('title', re.compile('single mutant'))
     for measure in ['mfeCover', 'minDeltaE']:
         page.locator(f'#copomus-measures input[value="{measure}"]').uncheck()
     page.locator('#copomus-measures input[value="EDqi"]').check()
@@ -720,11 +726,19 @@ with sync_playwright() as playwright:
     expect(mutation_view.locator('tbody tr')).to_have_count(1)
     expect(mutation_view.locator('tbody tr')).to_contain_text('G1C&C10G')
     mutation_view.locator('tbody tr').click()
-    expect(mutation_view.locator('[data-role=mutation-modes]')).to_be_visible()
-    expect(mutation_view.locator('[data-role=mutation-modes] button[value="mm"]')).to_have_attribute('aria-pressed', 'true')
     expect(mutation_view.locator('[data-role=mutation-varri-frame]')).to_be_visible()
+    expect(mutation_view.locator('[data-role=mutation-energy-plot]')).to_be_visible()
+    expect(mutation_view.locator('[data-role=mutation-energy-plot] .barlayer')).to_be_visible()
+    assert mutation_view.locator('[data-role=mutation-energy-plot] .xtick').all_text_contents() == ['ww', 'wm', 'mw', 'mm']
+    expect(mutation_view.locator('[data-role=mutation-energy-plot] .ytitle')).to_contain_text('E [kcal/mol]')
     mutation_url = mutation_view.locator('[data-role=mutation-varri-frame]').get_attribute('src')
-    assert parse_qs(urlparse(mutation_url).query)['sequence'] == ['CCCUCCUCCG&CGGAGGAGGG']
+    mutation_query = parse_qs(urlparse(mutation_url).query)
+    assert mutation_query['sequence'] == ['CCCUCCUCCC&GGGAGGAGGG']
+    assert mutation_query['mutations'] == ['1:10G:006400,2:1C:006400']
+    assert mutation_view.locator('[data-role=mutation-varri-frame]').bounding_box()['x'] < mutation_view.locator('[data-role=mutation-energy-plot]').bounding_box()['x']
+    if args.screenshot:
+        path = Path(args.screenshot)
+        page.screenshot(path=str(path.with_name(f'{path.stem}-mutation.png')), full_page=True)
     mutation_archive = download_archive(mutation_session)
     assert 'copomus-mutations.tsv' in mutation_archive
     assert mutation_archive['copomus-mutations.tsv'].startswith('mutation\trank\tqIndex\ttIndex')

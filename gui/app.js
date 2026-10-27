@@ -26,8 +26,8 @@ function element(tag, text, className) {
   return node;
 }
 const copomusMeasureInputs = [], copomusMeasureRows = new Map();
-for (const [key, labelText] of COPOMUS_MEASURES) {
-  const input = checkbox(byId('copomus-measures'), key, labelText), label = input.parentElement;
+for (const [key, labelText, description] of COPOMUS_MEASURES) {
+  const input = checkbox(byId('copomus-measures'), key, labelText, description), label = input.parentElement;
   const row = element('div', '', 'measure-choice'), actions = element('span', '', 'measure-priority');
   label.replaceWith(row); row.append(label, actions); copomusMeasureRows.set(key, row); copomusMeasureInputs.push(input);
   for (const [text, direction] of [['↑', -1], ['↓', 1]]) {
@@ -42,7 +42,7 @@ for (const [key, labelText] of COPOMUS_MEASURES) {
     actions.append(button);
   }
 }
-const copomusFilterInputs = COPOMUS_FILTERS.map(([key, label]) => checkbox(byId('copomus-filters'), key, label));
+const copomusFilterInputs = COPOMUS_FILTERS.map(([key, label, description]) => checkbox(byId('copomus-filters'), key, label, description));
 function orderCopomusMeasures(selected) {
   const order = [...selected, ...COPOMUS_MEASURES.map(([key]) => key).filter((key) => !selected.includes(key))];
   for (const key of order) byId('copomus-measures').append(copomusMeasureRows.get(key));
@@ -79,9 +79,10 @@ byId('parameter-tabs').addEventListener('keydown', (event) => {
 // labels do not push neighboring controls out of alignment.
 function renderField(field, id = field.key) {
   const wrapper = element('div', '', `field${field.type === 'checkbox' ? ' check' : ''}`);
-  const label = element('label', field.label); label.htmlFor = id; label.title = `--${field.key}`;
+  const label = element('label', field.label); label.htmlFor = id; label.title = field.help;
   const input = element(field.type === 'select' ? 'select' : field.type === 'textarea' ? 'textarea' : 'input'); input.id = id;
   if (input.tagName === 'INPUT') input.type = field.type;
+  input.title = field.help;
   if (field.type === 'select') for (const [value, name] of Object.entries(field.choices)) { const option = element('option', name); option.value = value; input.append(option); }
   if (field.type === 'number') { input.min = field.min; input.max = field.max; input.step = field.step ?? 1; }
   if (field.type === 'checkbox') { input.checked = field.value; wrapper.append(input, label); }
@@ -116,7 +117,9 @@ for (const definition of GROUPS) {
     const primary = element('div', '', 'seed-primary-row');
     const wrapper = element('div', '', 'field seed-mode');
     const label = element('label', 'Seed constraint'); label.htmlFor = 'seed-mode';
+    label.title = 'Chooses whether prediction uses no seed, one or more explicitly encoded seeds, or automatically identified seed interactions.';
     const select = element('select'); select.id = 'seed-mode';
+    select.title = label.title;
     for (const [value, name] of [['none', 'Disable seed constraint'], ['explicit', 'Explicit seed'], ['identify', 'Identify seeds']]) {
       const option = element('option', name); option.value = value; select.append(option);
     }
@@ -146,7 +149,7 @@ for (const definition of GROUPS) {
 }
 function checkbox(container, key, labelText, description) {
   const label = element('label'), input = element('input'); input.type = 'checkbox'; input.value = key;
-  if (description) label.title = description;
+  if (description) { label.title = description; input.title = description; }
   label.append(input, document.createTextNode(labelText)); container.append(label); return input;
 }
 const csvBody = byId('csv-options').querySelector('.group-body');

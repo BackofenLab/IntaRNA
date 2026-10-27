@@ -315,7 +315,7 @@ fieldset {
 #query,#target { 
   white-space:pre; 
   overflow:auto; 
-  min-height:20rem;
+  min-height:400px;
 }
 #sequence-help,#general-options p { max-width:none; }
 .input-warning { font-size:.85rem; color:#79510b; max-width:none; overflow-wrap:anywhere; }
@@ -623,23 +623,22 @@ tbody tr.selected { background:var(--table-selection); }
   font-size:.9rem;
 }
 
-.mutation-modes {
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-  margin-bottom:12px;
+.mutation-visualization-layout {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(260px,300px);
+  gap:16px;
+  align-items:start;
 }
 
-.mutation-modes button {
-  padding:.35rem .7rem;
+.mutation-energy-plot {
+  width:100%;
+  max-width:300px;
+  height:400px;
+  margin-top:12px;
+  justify-self:end;
+  border:1px solid var(--border);
+  border-radius:5px;
   background:var(--surface);
-  color:var(--brand-blue-dark);
-}
-
-.mutation-modes button[aria-pressed=true] {
-  color:white;
-  background:var(--brand-blue);
-  border-color:var(--brand-blue);
 }
 
 [data-role=output-files] {
@@ -884,6 +883,8 @@ dialog::backdrop {
     grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr));
   }
   .field-grid[class*=columns-],.accessibility-columns,.mutation-option-grid { grid-template-columns:1fr; }
+  .mutation-visualization-layout { grid-template-columns:1fr; }
+  .mutation-energy-plot { justify-self:start; }
   .seed-primary-row { grid-template-columns:1fr; }
   #csv-options .field-grid.columns-1 { grid-template-columns:1fr; }
   .results {

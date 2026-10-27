@@ -14,6 +14,10 @@
 
 ## Interface and handling
 
+- explain all browser input, CopomuS ranking and candidate-filter controls with
+  tooltips; annotate compensatory mutations in one vaRRI view and compare all
+  four-state energies in an adjacent Plotly chart (#313)
+
 - isolate real-browser numerical fixtures from editable GUI examples and keep
   CSV export checks synchronized with selected columns and seed-end defaults
 
@@ -336,6 +340,20 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261027 Alexander Mitrofanov
+ * gui/{index.html,app.js,options.js,copomus-options.js,styles.css}
+   + Add explanatory tooltips to every input label and all CopomuS ranking
+     measures and candidate filters; set both FASTA input minima to 400 pixels.
+ * gui/{copomus.js,visualization.js,index.html,styles.css}, gui/tests/,
+   scripts/wasm/test-browser.py
+   * Replace the four selectable mutation-state viewers with one wild-type vaRRI
+     view that annotates both designed substitutions in dark green at their
+     original signed coordinates.
+   + Plot the ww, wm, mw and mm interaction energies beside vaRRI, including a
+     dotted blue wild-type baseline and responsive stacked layout (issue #313).
+ * README.md, gui/docs/copomus.md
+   * Document the annotated single-view and four-state energy comparison.
 
 261026 Alexander Mitrofanov
  * scripts/wasm/test-browser.py

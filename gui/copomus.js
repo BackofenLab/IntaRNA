@@ -3,52 +3,84 @@ import { InteractionVisualization } from './visualization.js';
 export { COPOMUS_MEASURES, COPOMUS_FILTERS, COPOMUS_DEFAULTS, normalizeCopomus } from './copomus-options.js';
 
 const isObject = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
+const MUTATION_COLOR = '006400';
+const ENERGY_STATES = Object.freeze(['ww', 'wm', 'mw', 'mm']);
 
-const MODE_LABELS = Object.freeze({
-  ww: 'Wild type', wm: 'Target mutant', mw: 'Query mutant', mm: 'Compensatory mutant',
-});
+function numeric(value) {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+export function mutationAnnotations(candidate) {
+  const queryPosition = Number(candidate.values.qIndex), targetPosition = Number(candidate.values.tIndex);
+  const mutated = String(candidate.values.bpMutated ?? '');
+  if (!Number.isInteger(queryPosition) || queryPosition === 0 || !Number.isInteger(targetPosition) || targetPosition === 0 || !/^[ACGU]{2}$/.test(mutated)) throw new Error('The selected mutation has invalid sequence coordinates or bases.');
+  // vaRRI receives native sequence 1 (target) before sequence 2 (query), while
+  // CopomuS stores each mutation and base pair in query-first order.
+  return `1:${targetPosition}${mutated[1]}:${MUTATION_COLOR},2:${queryPosition}${mutated[0]}:${MUTATION_COLOR}`;
+}
+
+export function mutationEnergyPlot(candidate) {
+  const energies = ENERGY_STATES.map((state) => numeric(candidate.interactions[state]?.E));
+  const wildtype = energies[0];
+  return {
+    data: [{
+      type: 'bar', x: [...ENERGY_STATES], y: energies,
+      marker: { color: '#79a9cc', line: { color: '#145a96', width: 1 } },
+      hovertemplate: '%{x}: %{y:.2f} kcal/mol<extra></extra>',
+    }],
+    layout: {
+      autosize: true, height: 398, margin: { l: 58, r: 14, t: 18, b: 48 },
+      showlegend: false, paper_bgcolor: '#ffffff', plot_bgcolor: '#ffffff',
+      font: { family: '"Segoe UI", Tahoma, Geneva, sans-serif', color: '#1c2b39', size: 12 },
+      xaxis: { type: 'category', fixedrange: true },
+      yaxis: { title: { text: 'E [kcal/mol]' }, fixedrange: true, zerolinecolor: '#ccd9e5', gridcolor: '#e0e8f0' },
+      shapes: wildtype === null ? [] : [{
+        type: 'line', xref: 'paper', x0: 0, x1: 1, yref: 'y', y0: wildtype, y1: wildtype,
+        line: { color: '#145a96', width: 2, dash: 'dot' },
+      }],
+    },
+    config: { displayModeBar: false, responsive: true, staticPlot: false },
+  };
+}
 
 class MutationVisualization {
   constructor(root) {
     this.root = root;
     this.viewer = new InteractionVisualization(root, 'mutation-');
-    this.controls = root.querySelector('[data-role=mutation-modes]');
     this.title = root.querySelector('[data-role=mutation-visualization-title]');
-    for (const button of this.controls.querySelectorAll('button')) button.addEventListener('click', () => this.showMode(button.value));
+    this.plot = root.querySelector('[data-role=mutation-energy-plot]');
   }
 
   clear() {
-    this.candidate = null; this.request = null; this.controls.hidden = true;
+    this.candidate = null; this.request = null;
+    if (globalThis.Plotly?.purge) globalThis.Plotly.purge(this.plot);
+    this.plot.hidden = true;
     this.viewer.clear(); this.title.textContent = 'Compensatory-mutation visualization';
   }
 
   show(candidate, request) {
-    this.candidate = candidate; this.request = request; this.controls.hidden = false;
-    this.showMode(candidate.interactions.mm ? 'mm' : Object.keys(MODE_LABELS).find((mode) => candidate.interactions[mode]) ?? 'mm');
-  }
-
-  showMode(mode) {
-    for (const button of this.controls.querySelectorAll('button')) button.setAttribute('aria-pressed', String(button.value === mode));
-    this.title.textContent = `${this.candidate.values.mutation}: ${MODE_LABELS[mode]}`;
-    const interaction = this.candidate.interactions[mode];
+    this.candidate = candidate; this.request = request;
+    this.title.textContent = candidate.values.mutation;
+    const interaction = candidate.interactions.ww;
     if (!interaction) {
       this.viewer.clear();
-      this.viewer.status.textContent = `${MODE_LABELS[mode]} has no favorable reported interaction.`;
-      return;
+      this.viewer.status.textContent = 'The wild type has no favorable reported interaction to visualize.';
+    } else {
+      const visualRequest = {
+        ...request,
+        query: { ...request.query, records: [{ ...request.query.records[0], sequence: candidate.queryWildtype }] },
+        target: { ...request.target, records: [{ ...request.target.records[0], sequence: candidate.targetWildtype }] },
+      };
+      try {
+        this.viewer.show(interaction, visualRequest, { mutations: mutationAnnotations(candidate) });
+        if (!this.viewer.frame.hidden) this.viewer.status.textContent += ' Designed point mutations are annotated in dark green.';
+      } catch (error) { this.viewer.clear(); this.viewer.status.textContent = error.message; }
     }
-    const querySequence = mode[0] === 'w' ? this.candidate.queryWildtype : this.candidate.queryMutated;
-    const targetSequence = mode[1] === 'w' ? this.candidate.targetWildtype : this.candidate.targetMutated;
-    const visualRequest = {
-      ...this.request,
-      query: { ...this.request.query, records: [{ ...this.request.query.records[0], sequence: querySequence }] },
-      target: { ...this.request.target, records: [{ ...this.request.target.records[0], sequence: targetSequence }] },
-    };
-    this.viewer.show(interaction, visualRequest);
+    const plot = mutationEnergyPlot(candidate);
+    this.plot.hidden = false;
+    this.plot.setAttribute('aria-label', `Interaction energies for ${candidate.values.mutation}: ${ENERGY_STATES.map((state, index) => `${state} ${plot.data[0].y[index] ?? 'not available'}`).join(', ')} kcal/mol`);
+    if (globalThis.Plotly?.newPlot) globalThis.Plotly.newPlot(this.plot, plot.data, plot.layout, plot.config);
   }
-}
-
-function numeric(value) {
-  return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
 export class CopomusResultsView {
