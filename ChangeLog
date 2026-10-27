@@ -14,6 +14,9 @@
 
 ## Interface and handling
 
+- select and visualize the first rank-sorted CopomuS mutation automatically
+  when browser results arrive (#317)
+
 - select the first browser result and show its interaction visualization
   automatically; reuse CSV help text as result-header tooltips and store bundled
   examples in directly importable/exportable parameter JSON (#315)
@@ -344,6 +347,15 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261027 Alexander Mitrofanov
+ * gui/copomus.js, scripts/wasm/test-browser.py
+   * Select the first rank-sorted CopomuS mutation after populating the browser
+     result table and immediately show its vaRRI and energy-plot visualizations;
+     restore both after folding and reopening the session (issue #317).
+ * gui/{index.html,docs/copomus.md}
+   * Document the automatic initial mutation selection in the interface and
+     CopomuS browser guide.
 
 261027 Alexander Mitrofanov
  * gui/{results.js,sessions.js,index.html}, scripts/wasm/test-browser.py

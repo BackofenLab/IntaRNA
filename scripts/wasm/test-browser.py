@@ -724,16 +724,18 @@ with sync_playwright() as playwright:
     priority_up = page.get_by_role('button', name='Move Query accessibility earlier in ranking priority')
     priority_up.click()
     priority_up.click()
+    mutation_visualization_count = len(visualization_urls)
     predict()
-    mutation_session = active
+    mutation_session = page.locator(f'.session[data-session-id="{active.get_attribute("data-session-id")}"]')
     mutation_view = mutation_session.locator('[data-role=mutation-results-view]')
     expect(mutation_view).to_be_visible()
     expect(mutation_view.locator('tbody tr')).to_have_count(1)
     expect(mutation_view.locator('tbody tr')).to_contain_text('G1C&C10G')
-    mutation_view.locator('tbody tr').click()
+    expect(mutation_view.locator('tbody tr button')).to_have_attribute('aria-pressed', 'true')
     expect(mutation_view.locator('[data-role=mutation-varri-frame]')).to_be_visible()
     expect(mutation_view.locator('[data-role=mutation-energy-plot]')).to_be_visible()
     expect(mutation_view.locator('[data-role=mutation-energy-plot] .barlayer')).to_be_visible()
+    assert len(visualization_urls) == mutation_visualization_count + 1
     assert mutation_view.locator('[data-role=mutation-energy-plot] .xtick').all_text_contents() == ['ww', 'wm', 'mw', 'mm']
     expect(mutation_view.locator('[data-role=mutation-energy-plot] .ytitle')).to_contain_text('E [kcal/mol]')
     mutation_url = mutation_view.locator('[data-role=mutation-varri-frame]').get_attribute('src')
@@ -741,6 +743,12 @@ with sync_playwright() as playwright:
     assert mutation_query['sequence'] == ['CCCUCCUCCC&GGGAGGAGGG']
     assert mutation_query['mutations'] == ['1:10G:006400,2:1C:006400']
     assert mutation_view.locator('[data-role=mutation-varri-frame]').bounding_box()['x'] < mutation_view.locator('[data-role=mutation-energy-plot]').bounding_box()['x']
+    mutation_session.locator('[data-role=toggle]').click()
+    expect(mutation_session.locator('[data-role=panel]')).not_to_be_visible()
+    mutation_session.locator('[data-role=toggle]').click()
+    expect(mutation_view.locator('[data-role=mutation-varri-frame]')).to_be_visible()
+    expect(mutation_view.locator('[data-role=mutation-energy-plot]')).to_be_visible()
+    assert len(visualization_urls) == mutation_visualization_count + 2
     if args.screenshot:
         path = Path(args.screenshot)
         page.screenshot(path=str(path.with_name(f'{path.stem}-mutation.png')), full_page=True)

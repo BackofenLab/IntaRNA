@@ -47,6 +47,7 @@ class MutationVisualization {
   constructor(root) {
     this.root = root;
     this.viewer = new InteractionVisualization(root, 'mutation-');
+    this.frame = this.viewer.frame;
     this.title = root.querySelector('[data-role=mutation-visualization-title]');
     this.plot = root.querySelector('[data-role=mutation-energy-plot]');
   }
@@ -111,7 +112,7 @@ export class CopomusResultsView {
       label.append(input, document.createTextNode(key)); this.picker.append(label);
     }
     this.search.value = ''; this.key = this.columns.includes('rank') ? 'rank' : this.columns[0]; this.direction = 1;
-    this.root.hidden = false; this.render(); return this.candidates.length;
+    this.root.hidden = false; this.render(true); return this.candidates.length;
   }
 
   selectedCandidates() {
@@ -125,8 +126,16 @@ export class CopomusResultsView {
     });
   }
 
-  render() {
+  render(selectFirst = false) {
     const rows = this.selectedCandidates(), columns = this.columns.filter((key) => this.visible.has(key));
+    // A completed design opens on the top-ranked mutation; later table changes
+    // keep that selection, matching prediction and evaluation result handling.
+    if (selectFirst && rows.length) {
+      this.selected = rows[0];
+      // Session views populate before their template is attached. Defer Plotly
+      // to the session-expansion hook in that case so it can measure its panel.
+      if (this.root.isConnected) this.visualization.show(this.selected, this.request);
+    }
     this.header.replaceChildren();
     const viewHeading = document.createElement('th'); viewHeading.scope = 'col'; viewHeading.setAttribute('aria-label', 'Mutation visualization'); this.header.append(viewHeading);
     for (const key of columns) {
