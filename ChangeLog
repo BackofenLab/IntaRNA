@@ -14,6 +14,9 @@
 
 ## Interface and handling
 
+- isolate real-browser numerical fixtures from editable GUI examples and keep
+  CSV export checks synchronized with selected columns and seed-end defaults
+
 - integrate CopomuS as the browser Mutation Design task with single-pair input,
   native controls, extended tables and four-state vaRRI visualization (#307)
 
@@ -22,9 +25,6 @@
 
 - fix CopomuS explicit mutations, GC filters, signed indices, zero scores and
   shared profiles; validate inputs and preserve output on failure (PR #298)
-
-- isolate real-browser numerical fixtures from editable GUI examples and cover
-  the complete prediction seed-coordinate CSV defaults (#310)
 
 - --outNumberPerSeed selects each seed's best candidate sites before final
   deduplication, energy/overlap/count filtering; model P ranks left-most-anchor
@@ -341,8 +341,9 @@ energies, restricted partition sums, and trackers.
  * scripts/wasm/test-browser.py
    * Stop loading editable GUI examples as numerical browser-test fixtures; seed
      prediction, evaluation and mutation checks from explicit test-only inputs.
-   * Expect both seed start and end coordinates in the prediction CSV defaults,
-     restoring the WASM browser workflow after the GUI default changed (#310).
+   * Derive the expected CSV download header from the rendered result columns and
+     verify both seed boundaries, restoring the master WebAssembly workflow after
+     the GUI default changed.
 
 261026 Alexander Mitrofanov
  * gui/{index.html,app.js,styles.css,copomus*.js,runner.js,sessions.js},
