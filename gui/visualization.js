@@ -17,7 +17,7 @@ function seedHighlights(row) {
   return highlights.join(',');
 }
 
-export function visualizationUrl(row, request) {
+export function visualizationUrl(row, request, annotations = {}) {
   // Native seq1 is target and seq2 is query; both structures run 5′ to 3′.
   const structures = row.hybridDP?.split('&');
   if (structures?.length !== 2) throw new Error('The interaction has no dot-bracket structure.');
@@ -41,6 +41,7 @@ export function visualizationUrl(row, request) {
   });
   const highlights = seedHighlights(row);
   if (highlights) parameters.set('regionHighlights', highlights);
+  if (annotations.mutations) parameters.set('mutations', annotations.mutations);
   url.search = parameters;
   return url.href;
 }
@@ -55,10 +56,10 @@ export class InteractionVisualization {
     this.link.removeAttribute('href'); this.link.hidden = true;
     this.status.textContent = 'Select View on an interaction to visualize it.';
   }
-  show(row, request) {
+  show(row, request, annotations = {}) {
     this.clear();
     try {
-      const url = visualizationUrl(row, request);
+      const url = visualizationUrl(row, request, annotations);
       this.frame.src = url; this.frame.hidden = false;
       const fullUrl = new URL(url); fullUrl.searchParams.delete('showRenderingOnly');
       this.link.href = fullUrl.href; this.link.hidden = false;

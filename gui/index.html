@@ -30,9 +30,9 @@
         <legend class="sr-only">Task, sequences and parameters</legend>
         <fieldset id="task" class="task-selector" aria-describedby="task-help">
           <legend class="sr-only">Analysis task</legend>
-          <label class="task-choice"><input type="radio" name="task" value="prediction" checked><span>Prediction</span><small>IntaRNA</small></label>
-          <label class="task-choice"><input type="radio" name="task" value="evaluation"><span>Evaluation</span><small>IntaRNAeval</small></label>
-          <label class="task-choice"><input type="radio" name="task" value="mutation"><span>Mutation Design</span><small>CopomuS</small></label>
+          <label class="task-choice" title="Predicts favorable RNA–RNA interaction sites for every selected query-target sequence pair."><input type="radio" name="task" value="prediction" checked><span>Prediction</span><small>IntaRNA</small></label>
+          <label class="task-choice" title="Calculates energies and accessibility for interaction structures supplied by the user."><input type="radio" name="task" value="evaluation"><span>Evaluation</span><small>IntaRNAeval</small></label>
+          <label class="task-choice" title="Ranks compensatory point-mutation pairs that disrupt both single mutants and restore the double-mutant interaction."><input type="radio" name="task" value="mutation"><span>Mutation Design</span><small>CopomuS</small></label>
         </fieldset>
         <p id="task-help">Predict interactions for all query–target sequence pairs.</p>
         <div id="parameter-groups">
@@ -40,30 +40,30 @@
           <section class="parameter-group" id="sequence-input" role="tabpanel" aria-labelledby="tab-sequence-input">
             <div class="group-body">
               <div class="sequence-grid">
-                <section class="strand"><div class="strand-heading"><label for="query">Query RNA</label><span>5′ to 3′</span><div class="upload-controls"><button id="query-upload-button" type="button" class="secondary small-button" aria-label="Upload query FASTA">Upload</button><small>or drop in the field</small><input id="query-upload" type="file" accept=".fa,.fasta,.fna,.fas,.txt,text/plain" hidden></div></div>
+                <section class="strand"><div class="strand-heading"><label for="query" title="Provides the query RNA sequence as plain nucleotides or FASTA records for prediction, evaluation or mutation design.">Query RNA</label><span>5′ to 3′</span><div class="upload-controls"><button id="query-upload-button" type="button" class="secondary small-button" aria-label="Upload query FASTA">Upload</button><small>or drop in the field</small><input id="query-upload" type="file" accept=".fa,.fasta,.fna,.fas,.txt,text/plain" hidden></div></div>
                   <textarea id="query" wrap="off" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="sequence-help query-length query-warning" placeholder=">query&#10;GGGAGGAGGG"></textarea>
-                  <div class="sequence-meta"><label for="qIdxPos0">Start index <input id="qIdxPos0" type="number" min="-2000000000" max="2000000000" step="1" value="1"></label><span id="query-length">No sequence entered</span></div><p id="query-warning" class="input-warning" role="status" hidden></p>
+                  <div class="sequence-meta"><label for="qIdxPos0" title="Assigns this signed coordinate to the first query nucleotide; negative indexing skips zero.">Start index <input id="qIdxPos0" type="number" min="-2000000000" max="2000000000" step="1" value="1"></label><span id="query-length">No sequence entered</span></div><p id="query-warning" class="input-warning" role="status" hidden></p>
                 </section>
-                <section class="strand"><div class="strand-heading"><label for="target">Target RNA</label><span>5′ to 3′</span><div class="upload-controls"><button id="target-upload-button" type="button" class="secondary small-button" aria-label="Upload target FASTA">Upload</button><small>or drop in the field</small><input id="target-upload" type="file" accept=".fa,.fasta,.fna,.fas,.txt,text/plain" hidden></div></div>
+                <section class="strand"><div class="strand-heading"><label for="target" title="Provides the target RNA sequence as plain nucleotides or FASTA records for prediction, evaluation or mutation design.">Target RNA</label><span>5′ to 3′</span><div class="upload-controls"><button id="target-upload-button" type="button" class="secondary small-button" aria-label="Upload target FASTA">Upload</button><small>or drop in the field</small><input id="target-upload" type="file" accept=".fa,.fasta,.fna,.fas,.txt,text/plain" hidden></div></div>
                   <textarea id="target" wrap="off" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="sequence-help target-length target-warning" placeholder=">target&#10;CCCUCCUCCC"></textarea>
-                  <div class="sequence-meta"><label for="tIdxPos0">Start index <input id="tIdxPos0" type="number" min="-2000000000" max="2000000000" step="1" value="1"></label><span id="target-length">No sequence entered</span></div><p id="target-warning" class="input-warning" role="status" hidden></p>
+                  <div class="sequence-meta"><label for="tIdxPos0" title="Assigns this signed coordinate to the first target nucleotide; negative indexing skips zero.">Start index <input id="tIdxPos0" type="number" min="-2000000000" max="2000000000" step="1" value="1"></label><span id="target-length">No sequence entered</span></div><p id="target-warning" class="input-warning" role="status" hidden></p>
                 </section>
               </div>
               <p id="sequence-help" class="input-help">Plain sequence or multi-FASTA (prediction only), A/C/G/U/T/N. Up to 50 records per field and 2–5,000 nt per record; longest selected query × longest selected target ≤ 1,000,000. FASTA names stop at the first whitespace. Seed predictions also require at least as many nucleotides as seed base pairs. Signed start indices apply to every record on that strand; negative indexing skips zero.</p>
-              <div id="evaluation-input" hidden><label for="rri">Interactions to evaluate (target &amp; query)</label><textarea id="rri" spellcheck="false" aria-describedby="rri-help" placeholder="1||||||||||&amp;1||||||||||"></textarea><p id="rri-help" class="input-help">Each strand uses its start coordinate and dots/bars in 5′ to 3′ order; pair bars antiparallel. Example: 1|||&amp;1|||. Separate structures with a colon. Evaluation retains energy/accessibility settings and ignores prediction filters.</p></div>
+              <div id="evaluation-input" hidden><label for="rri" title="Supplies one or more target-and-query interaction structures whose energies and accessibility will be evaluated.">Interactions to evaluate (target &amp; query)</label><textarea id="rri" spellcheck="false" aria-describedby="rri-help" placeholder="1||||||||||&amp;1||||||||||"></textarea><p id="rri-help" class="input-help">Each strand uses its start coordinate and dots/bars in 5′ to 3′ order; pair bars antiparallel. Example: 1|||&amp;1|||. Separate structures with a colon. Evaluation retains energy/accessibility settings and ignores prediction filters.</p></div>
               <section id="mutation-input" class="mutation-input" hidden aria-labelledby="mutation-options-title">
                 <h3 id="mutation-options-title">Compensatory mutation settings</h3>
                 <div class="field-grid columns-4 mutation-primary-options">
-                  <div class="field"><label for="copomus-candidate-selection">Candidate selection</label><select id="copomus-candidate-selection"><option value="mfe">MFE base pairs</option><option value="mfeSO">MFE-region suboptimals</option></select></div>
-                  <div class="field"><label for="copomus-generator">Mutation generator</label><select id="copomus-generator"><option value="flip">Flip base pair</option><option value="any">All pairing substitutions</option></select></div>
-                  <div class="field"><label for="copomus-alpha">Wildtype separation α</label><input id="copomus-alpha" type="number" step="any" value="1"></div>
-                  <div class="field"><label for="copomus-beta">Compensatory separation β</label><input id="copomus-beta" type="number" step="any" value="1"></div>
+                  <div class="field"><label for="copomus-candidate-selection" title="Chooses candidate mutation positions from wild-type MFE base pairs or from suboptimal interactions in the MFE region.">Candidate selection</label><select id="copomus-candidate-selection"><option value="mfe">MFE base pairs</option><option value="mfeSO">MFE-region suboptimals</option></select></div>
+                  <div class="field"><label for="copomus-generator" title="Chooses whether each candidate base pair is flipped or expanded to every canonical pairing substitution.">Mutation generator</label><select id="copomus-generator"><option value="flip">Flip base pair</option><option value="any">All pairing substitutions</option></select></div>
+                  <div class="field"><label for="copomus-alpha" title="Requires each single mutant to be at least α kcal/mol weaker than the wild-type interaction for energy-based measures.">Wildtype separation α</label><input id="copomus-alpha" type="number" step="any" value="1"></div>
+                  <div class="field"><label for="copomus-beta" title="Requires each single mutant to be at least β kcal/mol weaker than the compensatory interaction for energy-based measures.">Compensatory separation β</label><input id="copomus-beta" type="number" step="any" value="1"></div>
                 </div>
                 <div class="mutation-option-grid">
                   <fieldset><legend>Ranking measures</legend><div id="copomus-measures" class="checkbox-grid"></div></fieldset>
                   <fieldset><legend>Candidate filters</legend><div id="copomus-filters" class="checkbox-grid"></div></fieldset>
                 </div>
-                <div class="field"><label for="copomus-mutation-encoding">Explicit mutations (optional)</label><textarea id="copomus-mutation-encoding" rows="2" spellcheck="false" placeholder="G1C&amp;C10G"></textarea><p class="field-hint">Query-first substitutions separated by commas. When supplied, explicit mutations replace candidate selection, filters and the generator. Browser runs are limited to 100 generated mutations.</p></div>
+                <div class="field"><label for="copomus-mutation-encoding" title="Evaluates the listed query-and-target substitutions directly instead of generating mutations from candidate positions.">Explicit mutations (optional)</label><textarea id="copomus-mutation-encoding" rows="2" spellcheck="false" placeholder="G1C&amp;C10G"></textarea><p class="field-hint">Query-first substitutions separated by commas. When supplied, explicit mutations replace candidate selection, filters and the generator. Browser runs are limited to 100 generated mutations.</p></div>
               </section>
             </div>
           </section>
@@ -108,12 +108,12 @@
               <p class="table-note">Ranks and scores follow the selected CopomuS measures. NA denotes an unavailable interaction or profile score.</p>
               <section data-role="visualization" aria-label="Compensatory mutation visualization">
                 <div class="visualization-heading"><h3 data-role="mutation-visualization-title">Compensatory-mutation visualization</h3><a data-role="mutation-varri-link" target="_blank" rel="noopener noreferrer" hidden>Open in vaRRI</a></div>
-                <div data-role="mutation-modes" class="mutation-modes" hidden aria-label="Mutation state">
-                  <button type="button" value="ww" aria-pressed="false">Wild type</button><button type="button" value="mw" aria-pressed="false">Query mutant</button><button type="button" value="wm" aria-pressed="false">Target mutant</button><button type="button" value="mm" aria-pressed="false">Compensatory</button>
+                <p data-role="mutation-visualization-status" role="status">Select View on a mutation to inspect its annotated interaction and energy states.</p>
+                <p class="input-help">vaRRI shows the wild-type interaction with the designed query and target substitutions annotated in dark green. The chart compares the wild-type, single-mutant and compensatory energies.</p>
+                <div class="mutation-visualization-layout">
+                  <iframe data-role="mutation-varri-frame" title="Selected mutation annotated in vaRRI" referrerpolicy="no-referrer" hidden></iframe>
+                  <div data-role="mutation-energy-plot" class="mutation-energy-plot" role="img" aria-label="Interaction energies for the selected mutation" hidden></div>
                 </div>
-                <p data-role="mutation-visualization-status" role="status">Select View on a mutation to compare its four interaction states.</p>
-                <p class="input-help">The compensatory state mutates both strands; the single-mutant states show the intended interaction disruption.</p>
-                <iframe data-role="mutation-varri-frame" title="Selected compensatory mutation in vaRRI" referrerpolicy="no-referrer" hidden></iframe>
               </section>
             </div>
             <section data-role="output-files" hidden aria-label="Additional output files"><h3 data-role="files-title">Additional output files</h3><div data-role="file-list"></div></section>

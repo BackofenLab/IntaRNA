@@ -7,7 +7,7 @@ seeding of interaction sites**
 
 Predict short RNA pairs, evaluate supplied structures or rank compensatory mutations locally with the [browser interface](https://backofenlab.github.io/IntaRNA/gui/).
 The browser accepts up to 50 records per strand, 2–5,000 nucleotides each, with longest selected query × longest selected target at most 1,000,000. Prediction defaults to 10 interactions per pair and includes opening and seed energies; evaluation selects all energy columns.
-Mutation Design accepts one unambiguous query/target pair, runs CopomuS in a self-hosted Pyodide worker, and uses the same IntaRNA WebAssembly engine for every wildtype, single-mutant and compensatory prediction. Its extended table and vaRRI controls compare all four mutation states.
+Mutation Design accepts one unambiguous query/target pair, runs CopomuS in a self-hosted Pyodide worker, and uses the same IntaRNA WebAssembly engine for every wildtype, single-mutant and compensatory prediction. Its extended table links one annotated vaRRI view with a four-state interaction-energy chart.
 Computed runs stay in separate, foldable sessions under Results in the current tab. Name and select sessions to restore their inputs and compare results; editing or resetting parameters keeps earlier runs.
 Select an interaction to view it in vaRRI, or download a session’s ZIP with inputs, compiled versions, reproducible parameters and all outputs. Sessions are temporary and are cleared when the page is reloaded.
 Minimum-energy and interaction-probability output files include local Plotly visualizations with PNG export; every additional file retains its original text view and download.
