@@ -20,15 +20,16 @@ computed **mfe Δ** is `E - min(reported E for the same query–target pair)`, r
 to hundredths. Evaluation uses the best supplied structure as its reference.
 This is relative suboptimality, not a free-energy change or probability.
 
-Every heading is a keyboard-operable sort button with `aria-sort`. Search covers
-all returned values. A separate checklist shows/hides table columns after the
-run; it does not change selected CSV output. All identifiers, output previews
-and diagnostics render with `textContent`. The table has a 500 px maximum height
-with vertical scrolling for longer results and a sticky heading; CSV downloads
-still contain every selected row. Selected extra files appear below the
-table with their original filename, covered sequence/sequence-pair names, a
-header-level download, and bounded text previews, including SVG source.
-Empty output is successful and still permits CSV/accessibility downloads.
+Every heading is a keyboard-operable sort button with `aria-sort`; its hover
+tooltip repeats the matching CSV-selection description. Search covers all
+returned values. A separate checklist shows/hides table columns after the run;
+it does not change selected CSV output. All identifiers, output previews and
+diagnostics render with `textContent`. The table has a 500 px maximum height with
+vertical scrolling for longer results and a sticky heading; CSV downloads still
+contain every selected row. Selected extra files appear below the table with
+their original filename, covered sequence/sequence-pair names, a header-level
+download, and bounded text previews, including SVG source. Empty output is
+successful and still permits CSV/accessibility downloads.
 
 ## Additional output visualizations
 
@@ -52,10 +53,11 @@ deleted. Non-plot formats keep the direct content view.
 ## Selected interaction in vaRRI
 
 Each row has a keyboard-accessible View button; clicking a row also selects it.
-Selection survives table sorting, filtering and visibility changes within each
-session. Input edits, new runs, errors and cancellation preserve prior sessions
-and their archive snapshots. Folding a session unloads its viewer; reopening
-restores its selected interaction.
+When computation returns interactions, the first row in the initial energy-sorted
+table is selected and visualized automatically. Selection survives table sorting,
+filtering and visibility changes within each session. Input edits, new runs, errors
+and cancellation preserve prior sessions and their archive snapshots. Folding a
+session unloads its viewer; reopening restores its selected interaction.
 `visualization.js` uses native seq1 = target, seq2 = query and maps the native
 CSV identifiers to the completed run's normalized FASTA records (including
 semicolon-to-underscore ID conversion). It pads the interaction dot-bracket
@@ -73,9 +75,9 @@ viewer. The local status always identifies the selected pair and coordinates.
 Zero-based CLI start indices remain accepted for computation/export, but vaRRI
 requires nonzero start indices; choosing View for such a run explains this limit.
 
-No external viewer loads until a row is selected. The interface explains that
-selection shares that pair and structure through vaRRI's URL. Computation and
-ZIP generation remain local. CSP permits frames only at the vaRRI deployment;
+The first successful interaction result loads the external viewer automatically;
+choosing another row shares that pair and structure through vaRRI's URL. Computation
+and ZIP generation remain local. CSP permits frames only at the vaRRI deployment;
 the iframe sends no referrer. Viewer availability depends on that external site;
 the full-viewer link permits retry, and scientific outputs remain downloadable.
 

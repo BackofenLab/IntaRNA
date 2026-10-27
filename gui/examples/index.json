@@ -1,1 +1,17 @@
-["prediction.json", "evaluation.json", "mutation-design.json"]
+[
+  {
+    "file": "prediction.json",
+    "name": "Short duplex",
+    "description": "Predict interactions between two complementary ten-nucleotide RNAs."
+  },
+  {
+    "file": "evaluation.json",
+    "name": "Evaluate a duplex",
+    "description": "Evaluate the energy of a supplied ten-base-pair RNA interaction."
+  },
+  {
+    "file": "mutation-design.json",
+    "name": "Compensatory duplex mutation",
+    "description": "Rank an explicit compensatory mutation for a short RNA duplex."
+  }
+]

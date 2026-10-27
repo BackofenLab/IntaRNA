@@ -71,12 +71,14 @@ fields show the short demonstration sequences as placeholders only. The Examples
 disclosure menu follows the Input Parameters label and lists only examples for
 the selected Prediction, Evaluation or Mutation Design task.
 
-Maintainers edit `gui/examples/index.json` (an array of local JSON filenames).
-Each listed file contains `name`, `description`, and `configuration`, where the
-configuration is the same native JSON document used by Load. Three replaceable
-examples cover prediction, evaluation and mutation design. Loading validates their settings and
-sequences through the same importer and computation validator. Missing or invalid
-examples show an error in the menu; they never overwrite the form.
+Maintainers edit `gui/examples/index.json`, whose entries provide a local JSON
+filename, display name and description. Each listed example file is directly the
+same native JSON parameter document used by Store and Load: a maintainer can set
+up an input in the GUI, download it with Store and replace an example file without
+adding an example-only wrapper. Three replaceable examples cover prediction,
+evaluation and mutation design. Loading validates their settings and sequences
+through the same importer and computation validator. Missing or invalid examples
+show an error in the menu; they never overwrite the form.
 
 ## Local FASTA files
 

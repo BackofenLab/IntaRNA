@@ -1,27 +1,23 @@
 {
-  "name": "Compensatory duplex mutation",
-  "description": "Rank an explicit compensatory mutation for a short RNA duplex.",
-  "configuration": {
-    "schema": "IntaRNA-parameters-v1",
-    "parameters": {
-      "query": {
-        "text": ">query\nGGGAGGAGGG\n"
-      },
-      "target": {
-        "text": ">target\nCCCUCCUCCC\n"
-      }
+  "schema": "IntaRNA-parameters-v1",
+  "parameters": {
+    "query": {
+      "text": ">query\nGGGAGGAGGG\n"
     },
-    "gui": {
-      "task": "mutation",
-      "copomus": {
-        "measures": ["mfeCover", "E", "minDeltaE"],
-        "candidateSelection": "mfe",
-        "candidateFilters": [],
-        "generator": "flip",
-        "mutationEncoding": "G1C&C10G",
-        "alpha": 1,
-        "beta": 1
-      }
+    "target": {
+      "text": ">target\nCCCUCCUCCC\n"
+    }
+  },
+  "gui": {
+    "task": "mutation",
+    "copomus": {
+      "measures": ["mfeCover", "E", "minDeltaE"],
+      "candidateSelection": "mfe",
+      "candidateFilters": [],
+      "generator": "flip",
+      "mutationEncoding": "G1C&C10G",
+      "alpha": 1,
+      "beta": 1
     }
   }
 }

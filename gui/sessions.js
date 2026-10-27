@@ -25,10 +25,11 @@ export class SessionsView {
     session.toggle.setAttribute('aria-expanded', String(expanded));
     session.toggle.textContent = expanded ? 'Hide' : 'Show';
     // Unload third-party viewers while folded. The table selection is retained
-    // and can be visualized again without recomputing the prediction.
+    // and can be visualized again without recomputing the prediction. A newly
+    // rendered result already has its initial viewer URL and must not reload it.
     if (!expanded) session.view.visualization.clear();
     else {
-      if (session.view.selected) session.view.visualization.show(session.view.selected, session.view.request);
+      if (session.view.selected && !session.view.visualization.frame.hasAttribute('src')) session.view.visualization.show(session.view.selected, session.view.request);
       for (const fileView of session.fileViews) fileView.resize();
     }
   }

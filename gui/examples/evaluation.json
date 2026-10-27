@@ -1,18 +1,14 @@
 {
-  "name": "Evaluate a duplex",
-  "description": "Evaluate the energy of a supplied ten-base-pair RNA interaction.",
-  "configuration": {
-    "schema": "IntaRNA-parameters-v1",
-    "parameters": {
-      "personality": "IntaRNAeval",
-      "query": {
-        "text": ">ncRNA1\nAGGAUGGGGGAAACCCCAUACUCCUCACACACCAAAUCGCCCGAUUUAUCGGGCUUUUUU\n"
-      },
-      "target": {
-        "text": ">mRNA1\nUUUAAAUUAAAAAAUCAUAGAAAAAGUAUCGUUUGAUACUUGUGAUUAUACUCAGUUAUA\nCAGUAUCUUAAGGUGUUAUUAAUAGUGGUGAGGAGAAUUUAUGAAGCUUUUCAAAAGCUU\nGCUUGUGGCACCUGCAACUCUUGGUCUUUUAGCACCAAUGACCGCUACUGCUAAU\n"
-      },
-      "rri": "85|||||||||||&21||||||||.|||",
-      "outCsvCols": "id1,start1,end1,id2,start2,end2,subseqDP,hybridDP,E,Etotal,ED1,ED2,E_init,E_loops,E_dangleL,E_dangleR,E_endL,E_endR,E_hybrid,E_norm,E_hybridNorm,E_add,Eall,Eall1,Eall2,EallTotal"
-    }
+  "schema": "IntaRNA-parameters-v1",
+  "parameters": {
+    "personality": "IntaRNAeval",
+    "query": {
+      "text": ">ncRNA1\nAGGAUGGGGGAAACCCCAUACUCCUCACACACCAAAUCGCCCGAUUUAUCGGGCUUUUUU\n"
+    },
+    "target": {
+      "text": ">mRNA1\nUUUAAAUUAAAAAAUCAUAGAAAAAGUAUCGUUUGAUACUUGUGAUUAUACUCAGUUAUA\nCAGUAUCUUAAGGUGUUAUUAAUAGUGGUGAGGAGAAUUUAUGAAGCUUUUCAAAAGCUU\nGCUUGUGGCACCUGCAACUCUUGGUCUUUUAGCACCAAUGACCGCUACUGCUAAU\n"
+    },
+    "rri": "85|||||||||||&21||||||||.|||",
+    "outCsvCols": "id1,start1,end1,id2,start2,end2,subseqDP,hybridDP,E,Etotal,ED1,ED2,E_init,E_loops,E_dangleL,E_dangleR,E_endL,E_endR,E_hybrid,E_norm,E_hybridNorm,E_add,Eall,Eall1,Eall2,EallTotal"
   }
 }

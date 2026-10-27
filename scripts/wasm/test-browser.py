@@ -319,8 +319,13 @@ with sync_playwright() as playwright:
     fill('outNumber', 10)
     open_group('csv-options')
     page.locator('#outCsvSort').select_option('E')
+    visualization_count = len(visualization_urls)
     predict()
     expect(rows).to_have_count(10)
+    expect(rows.first.locator('button')).to_have_attribute('aria-pressed', 'true')
+    expect(active.locator('[data-role=varri-frame]')).to_be_visible()
+    expect(active.frame_locator('[data-role=varri-frame]').get_by_role('heading', name='vaRRI viewer')).to_be_visible()
+    assert len(visualization_urls) == visualization_count + 1
     assert active.locator('[data-role=results-view] .table-scroll').evaluate('''node => {
         const body = node.querySelector('tbody');
         const copies = [...body.children].map(row => row.cloneNode(true));
@@ -357,11 +362,11 @@ with sync_playwright() as playwright:
     assert 'deltaE' not in csv
     assert active.locator('thead th').first.inner_text() == ''
     assert active.locator('thead th button br').count() >= 4
+    energy_heading = active.get_by_role('button', name='Sort by Energy (kcal/mol)', exact=False)
+    assert energy_heading.get_attribute('title') == page.locator('#csv-options input[value="E"]').get_attribute('title')
+    assert energy_heading.locator('xpath=..').get_attribute('title') == energy_heading.get_attribute('title')
     assert rows.first.locator('td').first.evaluate('node => getComputedStyle(node).paddingLeft') == '5px'
-    assert not visualization_urls  # Third-party content loads only on selection.
-    rows.first.get_by_role('button', name='Visualize').click()
-    expect(active.locator('[data-role=varri-frame]')).to_be_visible()
-    expect(active.frame_locator('[data-role=varri-frame]').get_by_role('heading', name='vaRRI viewer')).to_be_visible()
+    assert len(visualization_urls) == visualization_count + 1  # Sorting and filtering retain the initial selection.
     expect(rows.first.locator('button')).to_have_attribute('aria-pressed', 'true')
     query = parse_qs(urlparse(active.locator('[data-role=varri-frame]').get_attribute('src')).query)
     assert query['sequence'] == ['CCCUCCUCCC&GGGAGGAGGG']
