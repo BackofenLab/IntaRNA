@@ -23,8 +23,8 @@
 - fix CopomuS explicit mutations, GC filters, signed indices, zero scores and
   shared profiles; validate inputs and preserve output on failure (PR #298)
 
-- keep real-browser regression inputs stable when maintainers replace the GUI
-  examples, while continuing to verify that each task's example loads
+- isolate real-browser numerical fixtures from editable GUI examples and cover
+  the complete prediction seed-coordinate CSV defaults (#310)
 
 - --outNumberPerSeed selects each seed's best candidate sites before final
   deduplication, energy/overlap/count filtering; model P ranks left-most-anchor
@@ -336,6 +336,13 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261026 Alexander Mitrofanov
+ * scripts/wasm/test-browser.py
+   * Stop loading editable GUI examples as numerical browser-test fixtures; seed
+     prediction, evaluation and mutation checks from explicit test-only inputs.
+   * Expect both seed start and end coordinates in the prediction CSV defaults,
+     restoring the WASM browser workflow after the GUI default changed (#310).
 
 261026 Alexander Mitrofanov
  * gui/{index.html,app.js,styles.css,copomus*.js,runner.js,sessions.js},
