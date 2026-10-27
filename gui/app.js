@@ -357,15 +357,17 @@ async function loadExamples() {
     const response = await fetch(new URL('./examples/index.json', import.meta.url));
     if (!response.ok) throw new Error('Example list is unavailable.');
     const files = await response.json();
-    if (!Array.isArray(files) || !files.length || files.some((name) => typeof name !== 'string' || !/^[a-z0-9-]+\.json$/.test(name))) throw new Error('Invalid example list.');
-    const examples = await Promise.all(files.map(async (filename) => {
-      const response = await fetch(new URL(`./examples/${filename}`, import.meta.url));
+    if (!Array.isArray(files) || !files.length || files.some((example) =>
+      typeof example?.file !== 'string' || !/^[a-z0-9-]+\.json$/.test(example.file)
+      || typeof example.name !== 'string' || !example.name.trim()
+      || typeof example.description !== 'string' || !example.description.trim()
+    )) throw new Error('Invalid example list.');
+    const examples = await Promise.all(files.map(async (metadata) => {
+      const response = await fetch(new URL(`./examples/${metadata.file}`, import.meta.url));
       if (!response.ok) throw new Error('An example is unavailable.');
-      const example = await response.json();
-      if (typeof example.name !== 'string' || typeof example.description !== 'string') throw new Error('Invalid example description.');
-      const request = importParameters(example.configuration);
+      const request = importParameters(await response.json());
       prepareRequest(request);
-      return { ...example, request };
+      return { ...metadata, request };
     }));
     container.replaceChildren();
     for (const example of examples) {

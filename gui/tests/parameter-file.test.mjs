@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { DEFAULTS, EVALUATION_EXAMPLE, prepareRequest, CSV_COLUMNS } from '../protocol.js';
+import { DEFAULTS, EVALUATION_EXAMPLE, prepareRequest, CSV_COLUMNS, JSON_SCHEMA } from '../protocol.js';
 import { FIELDS } from '../options.js';
 import { exportParameters, serializeParameters, importParameters } from '../parameter-file.js';
 const provenance = 'IntaRNA test\nViennaRNA test\n';
@@ -50,10 +50,12 @@ test('maintainer examples use the same JSON import and prediction validation', a
   const examples = JSON.parse(await readFile(new URL('../examples/index.json', import.meta.url)));
   assert.equal(examples.length, 3);
   const tasks = new Set();
-  for (const file of examples) {
-    const example = JSON.parse(await readFile(new URL(`../examples/${file}`, import.meta.url)));
-    assert.ok(example.name && example.description);
-    tasks.add(prepareRequest(importParameters(example.configuration)).task);
+  for (const metadata of examples) {
+    assert.ok(metadata.file && metadata.name && metadata.description);
+    const example = JSON.parse(await readFile(new URL(`../examples/${metadata.file}`, import.meta.url)));
+    assert.equal(example.schema, JSON_SCHEMA);
+    assert.equal(example.configuration, undefined);
+    tasks.add(prepareRequest(importParameters(example)).task);
   }
   assert.deepEqual([...tasks].sort(), ['evaluation', 'mutation', 'prediction']);
 });

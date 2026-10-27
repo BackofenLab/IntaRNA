@@ -97,11 +97,17 @@ export class ResultsView {
       label.append(input, document.createTextNode(column.label)); this.picker.append(label);
     }
     this.search.value = ''; this.key = columns.includes('E') ? 'E' : columns[0]; this.direction = 1;
-    this.root.hidden = false; this.render(); return this.rows.length;
+    this.root.hidden = false; this.render(true); return this.rows.length;
   }
-  render() {
+  render(selectFirst = false) {
     const rows = selectRows(this.rows, this.search.value, this.key, this.direction);
     const columns = this.columns.filter((column) => this.visible.has(column.key));
+    // The completed run opens on the same interaction shown at the top of the
+    // initial table; later sorting and filtering retain that selection.
+    if (selectFirst && rows.length) {
+      this.selected = rows[0];
+      this.visualization.show(this.selected, this.request);
+    }
     this.header.replaceChildren();
     const viewHeading = document.createElement('th'); viewHeading.scope = 'col'; viewHeading.setAttribute('aria-label', 'Interaction visualization');
     this.header.append(viewHeading);
@@ -111,7 +117,7 @@ export class ResultsView {
       const split = column.numeric ? column.label.indexOf(' ') : -1;
       if (split > 0) button.append(document.createTextNode(column.label.slice(0, split)), document.createElement('br'), document.createTextNode(column.label.slice(split + 1)));
       else button.textContent = column.label;
-      button.title = column.description ?? column.label;
+      cell.title = button.title = column.description ?? column.label;
       const active = column.key === this.key, direction = this.direction === 1 ? 'ascending' : 'descending';
       cell.setAttribute('aria-sort', active ? direction : 'none');
       button.setAttribute('aria-label', `Sort by ${column.label}${active ? `, currently ${direction}` : ''}`);
