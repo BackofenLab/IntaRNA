@@ -37,16 +37,17 @@ folding runs; larger screens remain available through `python/CopomuS.py`.
 
 ## Results and reproducibility
 
-The sortable/filterable table contains the complete extended CopomuS TSV. Select
-**View** to show the wild-type interaction once in vaRRI, with both designed
-substitutions annotated at their original signed sequence coordinates in dark
-green. A compact Plotly bar chart beside it compares the `ww`, `wm`, `mw` and
-`mm` interaction energies and marks `ww` with a dotted baseline; unavailable
-interactions remain empty. Session ZIPs contain `parameter.json` and
-`copomus-mutations.tsv`. The JSON keeps native IntaRNA settings and records the
-task and CopomuS settings under `gui`, so Load restores the complete editable
-run. As with other GUI sessions, all data stays in the tab and disappears on
-reload unless downloaded.
+The sortable/filterable table contains the complete extended CopomuS TSV. The
+first rank-sorted mutation is selected automatically when results arrive; select
+another row or **View** button to change it. The visualization shows the wild-type
+interaction once in vaRRI, with both designed substitutions annotated at their
+original signed sequence coordinates in dark green. A compact Plotly bar chart
+beside it compares the `ww`, `wm`, `mw` and `mm` interaction energies and marks
+`ww` with a dotted baseline; unavailable interactions remain empty. Session ZIPs
+contain `parameter.json` and `copomus-mutations.tsv`. The JSON keeps native
+IntaRNA settings and records the task and CopomuS settings under `gui`, so Load
+restores the complete editable run. As with other GUI sessions, all data stays
+in the tab and disappears on reload unless downloaded.
 
 The WASM workflow vendors no generated runtime files in Git. Build staging
 downloads Pyodide 314.0.7 from its npm release, verifies the pinned SHA-256,
