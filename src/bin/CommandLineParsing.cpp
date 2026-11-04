@@ -3,6 +3,7 @@
 
 #include "IntaRNA/general.h"
 
+#include <algorithm>
 #include <cmath>
 #include <stdexcept>
 #include <fstream>
@@ -77,6 +78,7 @@ extern "C" {
 
 #include "IntaRNA/OutputHandlerCsv.h"
 #include "IntaRNA/OutputHandlerEnsemble.h"
+#include "IntaRNA/OutputHandlerMfe.h"
 #include "IntaRNA/OutputHandlerText.h"
 
 
@@ -86,6 +88,10 @@ using namespace IntaRNA;
 ////////////////////////////////////////////////////////////////////////////
 
 const std::string CommandLineParsing::outCsvCols_default = "id1,start1,end1,id2,start2,end2,subseqDP,hybridDP,E";
+
+////////////////////////////////////////////////////////////////////////////
+
+const std::string CommandLineParsing::outCsvCols_ensemble_default = outCsvCols_default + ",Eens";
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -1009,7 +1015,8 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 			, value<E_kcal_type>(&(outMaxE.val))
 				->default_value(outMaxE.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_numberArgument<E_kcal_type>,this,outMaxE,_1))
-			, std::string("only interactions with E < maxE are reported"
+			, std::string("only interactions with ranking energy < maxE are reported"
+					" (Eens for model P, E otherwise)"
 					" (arg in range ["+toString(outMaxE.min)+","+toString(outMaxE.max)+"])").c_str())
 	    (outMinPu.name.c_str()
 			, value<Z_type>(&(outMinPu.val))
@@ -1021,7 +1028,8 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 			, value<E_kcal_type>(&(outDeltaE.val))
 				->default_value(outDeltaE.def)
 				->notifier(boost::bind(&CommandLineParsing::validate_numberArgument<E_kcal_type>,this,outDeltaE,_1))
-			, std::string("suboptimal output : only interactions with E <= (minE+deltaE) are reported;"
+			, std::string("suboptimal output : only interactions with ranking energy <= (minimum+deltaE) are reported;"
+					" ranking energy is Eens for model P and E otherwise;"
 					" minE is per sequence pair, or per region combination with --outPerRegion"
 					" (arg in range ["+toString(outDeltaE.min)+","+toString(outDeltaE.max)+"])").c_str())
 	    ("outBestSeedOnly"
@@ -1046,12 +1054,13 @@ CommandLineParsing::CommandLineParsing( const Personality personality  )
 			, std::string("output : comma separated list of CSV column IDs to print if outMode=C."
 					" Using '*' or an empty argument ('') prints all possible columns from the following available ID list: "
 					+ OutputHandlerCsv::list2string(OutputHandlerCsv::string2list(""),", ")+"."
-					+ "\nDefault = '"+outCsvCols+"'."
+					+ "\nDefault = '"+outCsvCols+"'; model P additionally reports Eens."
 					).c_str())
 		("outCsvSort"
 			, value<std::string>(&(outCsvSort))
 				->notifier(boost::bind(&CommandLineParsing::validate_outCsvSort,this,_1))
-			, std::string("output : column ID from [outCsvCols] to be used for CSV row sorting if outMode=C.").c_str())
+			, std::string("output : column ID from [outCsvCols] to be used for CSV row sorting if outMode=C;"
+					" defaults to Eens for model P.").c_str())
 	    ("outPerRegion"
 	    		, value<bool>(&outPerRegion)
 						->default_value(outPerRegion)
@@ -1247,6 +1256,16 @@ parse(int argc, char** argv)
 	// if parsing was successful, continue with final parsing
 	if (parsingCode == ReturnCode::KEEP_GOING) {
 		try {
+			// Ensemble prediction reports a representative MFE as E and keeps the
+			// site-selection objective in Eens. Apply these defaults only when the
+			// user did not provide an explicit CSV selection or sort override.
+			if (rri.empty() && model.val == 'P' && outMode.val == 'C') {
+				if (vm.at("outCsvCols").defaulted()) outCsvCols = outCsvCols_ensemble_default;
+				const auto columns = OutputHandlerCsv::string2list(outCsvCols);
+				if (vm.count("outCsvSort") == 0
+						&& std::find(columns.begin(),columns.end(),OutputHandlerCsv::Eens) != columns.end())
+					outCsvSort = "Eens";
+			}
 
 
 			// parsing escape literals
@@ -2846,27 +2865,44 @@ OutputHandler*
 CommandLineParsing::
 getOutputHandler( const InteractionEnergy & energy ) const
 {
+	std::unique_ptr<OutputHandler> handler;
 	switch (outMode.val) {
 	case 'N' :
-		return new OutputHandlerText( getOutputConstraint(energy), outStreamHandler->getOutStream(), energy, 10, false );
+		handler.reset(new OutputHandlerText( getOutputConstraint(energy), outStreamHandler->getOutStream(), energy, 10, false ));
+		break;
 	case 'D' :
-		return new OutputHandlerText( getOutputConstraint(energy), outStreamHandler->getOutStream(), energy, 10, true );
+		handler.reset(new OutputHandlerText( getOutputConstraint(energy), outStreamHandler->getOutStream(), energy, 10, true ));
+		break;
 	case 'E' :
 		// ensure that Zall is computed
 		outNeedsZall = true;
 		// no interaction details needed
 		outNeedsBPs = false;
-		return new OutputHandlerEnsemble( getOutputConstraint(energy), outStreamHandler->getOutStream(), energy );
+		handler.reset(new OutputHandlerEnsemble( getOutputConstraint(energy), outStreamHandler->getOutStream(), energy ));
+		break;
 	case 'C' :
 		// ensure that Zall is computed if needed
 		outNeedsZall = outNeedsZall || OutputHandlerCsv::needsZall(OutputHandlerCsv::string2list( outCsvCols ));
 		// check whether interaction details are needed
 		outNeedsBPs = OutputHandlerCsv::needBPs(OutputHandlerCsv::string2list( outCsvCols ));;
 		// create output handler
-		return new OutputHandlerCsv( getOutputConstraint(energy), outStreamHandler->getOutStream(), energy, OutputHandlerCsv::string2list( outCsvCols ), outSep, false, outCsvLstSep );
+		handler.reset(new OutputHandlerCsv( getOutputConstraint(energy), outStreamHandler->getOutStream(), energy, OutputHandlerCsv::string2list( outCsvCols ), outSep, false, outCsvLstSep ));
+		break;
 	default :
 		INTARNA_NOT_IMPLEMENTED("Output mode "+toString(outMode.val)+" not implemented yet");
 	}
+	// Ensemble-only mode has no per-site structure. All other model-P formats
+	// receive one representative MFE traceback for each final reported site.
+	if (rri.empty() && model.val == 'P' && outMode.val != 'E') {
+		std::unique_ptr<SeedHandler> representativeSeed(
+				noSeedRequired ? NULL : getSeedHandler(energy));
+		auto decorated = std::make_unique<OutputHandlerMfe>(
+				handler.get(),energy,representativeSeed.get());
+		handler.release();
+		representativeSeed.release();
+		return decorated.release();
+	}
+	return handler.release();
 }
 
 ////////////////////////////////////////////////////////////////////////////

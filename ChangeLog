@@ -14,6 +14,10 @@
 
 ## Interface and handling
 
+- report a representative minimum-free-energy structure and its energy terms
+  for every ensemble-selected site; expose and sort by the retained `Eens`
+  value in native and browser output (#319)
+
 - select and visualize the first rank-sorted CopomuS mutation automatically
   when browser results arrive (#317)
 
@@ -347,6 +351,23 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261104 Alexander Mitrofanov
+ * src/IntaRNA/{Interaction,OutputConstraint,OutputHandlerMfe,OutputHandlerCsv,
+   OutputHandlerText,OutputHandlerSeedCandidates}.{h,cpp}, src/bin/
+   * Retain the ensemble energy used for model-P ranking and trace the
+     representative minimum-free-energy interaction only after final output
+     selection, including seeded and explicit-seed predictions.
+   + Add the Eens CSV column, make model-P CSV output include and sort by it by
+     default, and report both MFE and ensemble energies in text output.
+ * gui/{app.js,columns.js,options.js,parameter-file.js,protocol.js,results.js},
+   gui/tests/, scripts/wasm/test-browser.py
+   * Offer Eens only for ensemble predictions, use it for default browser
+     sorting and pair-relative energy differences, and preserve the MFE energy
+     and structure columns for visualization.
+ * README.md, tests/
+   * Document and test ensemble-site ranking with final MFE traceback (issue
+     #319).
 
 261027 Alexander Mitrofanov
  * gui/copomus.js, scripts/wasm/test-browser.py

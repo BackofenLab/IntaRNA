@@ -231,6 +231,9 @@ public:
 	//! energy of the interaction
 	E_type energy;
 
+	//! optional ensemble energy used to rank an ensemble-selected interaction
+	E_type ensembleEnergy;
+
 	//! optional: seed information
 	SeedSet * seed;
 
@@ -346,11 +349,10 @@ public:
 
 	/**
 	 * Checks whether or not this interaction is considered better (smaller)
-	 * than another interaction of the same sequences
+	 * than another interaction of the same sequences. The ensemble energy is
+	 * used when available, otherwise the interaction energy is used.
 	 * @param i the interaction to compare to (for the same sequences!)
-	 * @return energy < i.energy
-	 * 			|| (energy == i.energy && bpLeft < i.bpLeft)
-	 * 			|| (energy == i.energy && bpLeft == i.bpLeft && bpRight < i.bpRight)
+	 * @return rankingEnergy < i.rankingEnergy, with boundary tie breaking
 	 */
 	bool operator < ( const Interaction &i ) const;
 
@@ -366,11 +368,27 @@ public:
 	 *
 	 * @param energy the energy to compare to
 	 * @param hasLargerE the interaction that is supposed to have larger energy
-	 * @return (energy < (hasLargerE.energy-precisionDelta))
+	 * @return (energy < (hasLargerE.rankingEnergy-precisionDelta))
 	 */
 	static
 	bool
 	compareEnergy( const E_type& energy, const Interaction & hasLargerE );
+
+	/**
+	 * Whether this interaction was selected by an ensemble-based predictor.
+	 * @return true if ensembleEnergy is available
+	 */
+	bool
+	hasEnsembleEnergy() const;
+
+	/**
+	 * Energy used for ranking and output filtering. Ensemble-selected
+	 * interactions retain their ensemble energy after energy is replaced by the
+	 * representative structure's MFE.
+	 * @return ensembleEnergy when available, energy otherwise
+	 */
+	E_type
+	getRankingEnergy() const;
 
 	/**
 	 * Prints the interacting base pair to stream
@@ -468,6 +486,7 @@ Interaction::Interaction( const RnaSequence & s1, const RnaSequence & s2 )
 	, s2(&s2)
 	, basePairs()
 	, energy( E_INF )
+	, ensembleEnergy( E_INF )
 	, seed( NULL )
 {
 }
@@ -481,6 +500,7 @@ Interaction::Interaction( const Interaction & toCopy )
 	, s2(toCopy.s2)
 	, basePairs(toCopy.basePairs)
 	, energy( toCopy.energy )
+	, ensembleEnergy( toCopy.ensembleEnergy )
 	, seed( toCopy.seed == NULL ? NULL : new SeedSet() )
 {
 	// copy seed if needed
@@ -499,6 +519,7 @@ Interaction::Interaction( const InteractionRange & range )
 	, s2(NULL)
 	, basePairs()
 	, energy( E_INF )
+	, ensembleEnergy( E_INF )
 	, seed( NULL )
 {
 	// init data
@@ -545,6 +566,8 @@ clear()
 	basePairs.clear();
 	// clear energy
 	energy = E_INF;
+	// clear optional ensemble ranking energy
+	ensembleEnergy = E_INF;
 	// undo seed information
 	INTARNA_CLEANUP(seed);
 
@@ -557,7 +580,28 @@ bool
 Interaction::
 compareEnergy( const E_type & energy, const Interaction & hasLargerE )
 {
-	return energy < hasLargerE.energy && !(E_equal(energy,hasLargerE.energy));
+	return energy < hasLargerE.getRankingEnergy()
+			&& !(E_equal(energy,hasLargerE.getRankingEnergy()));
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+bool
+Interaction::
+hasEnsembleEnergy() const
+{
+	return E_isNotINF(ensembleEnergy);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+inline
+E_type
+Interaction::
+getRankingEnergy() const
+{
+	return hasEnsembleEnergy() ? ensembleEnergy : energy;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -572,11 +616,13 @@ operator < ( const Interaction &i ) const
 	if (basePairs.empty() || i.basePairs.empty()) throw std::runtime_error("Interaction::operator < () : comparing empty interactions");
 #endif
 	// check if energy is larger
-	if (energy > i.energy && !(E_equal(energy, i.energy))) {
+	const E_type rankEnergy = getRankingEnergy();
+	const E_type otherRankEnergy = i.getRankingEnergy();
+	if (rankEnergy > otherRankEnergy && !(E_equal(rankEnergy, otherRankEnergy))) {
 		return false;
 	}
 	// check if energy is equal
-	if (E_equal(energy, i.energy)) {
+	if (E_equal(rankEnergy, otherRankEnergy)) {
 		return
 		// i1 is smaller
 			basePairs.begin()->first < i.basePairs.begin()->first // i1
