@@ -15,6 +15,15 @@ test('native CSV orientation, numeric coordinates, energy and relative suboptima
   assert.equal(selectRows(rows, 'missing', 'id2', 1).length, 0);
 });
 
+test('ensemble output computes pair-relative differences and sorting from Eens', () => {
+  const csv = 'id1;start1;end1;id2;start2;end2;E;Eens\n' +
+    'target;1;8;query;1;8;-10;-5.2\n' +
+    'target;2;7;query;2;7;-12;-4.1\n';
+  const rows = parseResults(csv);
+  assert.deepEqual(rows.map((row) => row.deltaE), [0, 1.1]);
+  assert.deepEqual(selectRows(rows, '', 'Eens', 1).map((row) => row.E), [-10, -12]);
+});
+
 test('empty output and literal native ID quotes; malformed output fails clearly', () => {
   assert.deepEqual(parseResults(''), []);
   assert.deepEqual(parseResults(header), []);

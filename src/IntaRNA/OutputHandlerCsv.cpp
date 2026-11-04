@@ -22,7 +22,7 @@ const std::string OutputHandlerCsv::notAvailable = "NAN";
 const OutputHandlerCsv::ColTypeList OutputHandlerCsv::colTypeNumericSort(
 		OutputHandlerCsv::string2list(
 		"start1,end1,start2,end2"
-		",E,ED1,ED2,Pu1,Pu2,E_init,E_loops,E_dangleL,E_dangleR,E_endL,E_endR,E_hybrid,E_norm,E_hybridNorm,E_add"
+		",E,Eens,ED1,ED2,Pu1,Pu2,E_init,E_loops,E_dangleL,E_dangleR,E_endL,E_endR,E_hybrid,E_norm,E_hybridNorm,E_add"
 		",w"
 		",seedStart1,seedEnd1,seedStart2,seedEnd2,seedE,seedED1,seedED2,seedPu1,seedPu2"
 		",Eall,Eall1,Eall2"
@@ -202,6 +202,11 @@ add( const Interaction & i )
 
 			case E:
 				outTmp <<E_2_Ekcal(i.energy);
+				break;
+
+			case Eens:
+				if (i.hasEnsembleEnergy()) outTmp <<E_2_Ekcal(i.ensembleEnergy);
+				else outTmp <<notAvailable;
 				break;
 
 			case Etotal:
@@ -455,7 +460,7 @@ add( const Interaction & i )
 				break;
 
 			case P_E:
-				if ( !hasNonzeroZ() ) outTmp << notAvailable; else outTmp <<(energy.getBoltzmannWeight(i.energy)/Z);
+				if ( !hasNonzeroZ() ) outTmp << notAvailable; else outTmp <<(energy.getBoltzmannWeight(i.getRankingEnergy())/Z);
 				break;
 
 			case RT:

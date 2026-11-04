@@ -2,7 +2,10 @@ import { CSV_CATALOG } from './columns.js';
 import { CONTEXT_COLUMNS } from './protocol.js';
 import { InteractionVisualization } from './visualization.js';
 
-export const COLUMNS = Object.freeze([...CSV_CATALOG, { key: 'deltaE', label: 'mfe Δ (kcal/mol)', numeric: true }]);
+export const COLUMNS = Object.freeze([...CSV_CATALOG, {
+  key: 'deltaE', label: 'Energy Δ (kcal/mol)', numeric: true,
+  description: 'Difference from the best ranking energy for this sequence pair (Eens for model P, otherwise E).',
+}]);
 const catalog = new Map(COLUMNS.map((column) => [column.key, column]));
 
 // Native CSV is unquoted, semicolon-separated; unavailable optional fields use
@@ -28,11 +31,12 @@ export function parseResults(csv) {
   });
   // Each sequence pair has its own optimum in a multi-FASTA screen.
   const best = new Map();
+  const rankingEnergy = (row) => Number.isFinite(Number(row.Eens)) ? Number(row.Eens) : Number(row.E);
   for (const row of rows) {
     const pair = JSON.stringify([row.id1, row.id2]);
-    best.set(pair, Math.min(best.get(pair) ?? Infinity, row.E));
+    best.set(pair, Math.min(best.get(pair) ?? Infinity, rankingEnergy(row)));
   }
-  return rows.map((row) => ({ ...row, deltaE: Number((row.E - best.get(JSON.stringify([row.id1, row.id2]))).toFixed(2)) }));
+  return rows.map((row) => ({ ...row, deltaE: Number((rankingEnergy(row) - best.get(JSON.stringify([row.id1, row.id2]))).toFixed(2)) }));
 }
 function numeric(value) { return String(value).trim() && Number.isFinite(Number(value)) ? Number(value) : null; }
 export function selectRows(rows, search, key, direction) {
@@ -96,7 +100,7 @@ export class ResultsView {
       });
       label.append(input, document.createTextNode(column.label)); this.picker.append(label);
     }
-    this.search.value = ''; this.key = columns.includes('E') ? 'E' : columns[0]; this.direction = 1;
+    this.search.value = ''; this.key = columns.includes('Eens') ? 'Eens' : columns.includes('E') ? 'E' : columns[0]; this.direction = 1;
     this.root.hidden = false; this.render(true); return this.rows.length;
   }
   render(selectFirst = false) {
@@ -142,7 +146,7 @@ export class ResultsView {
       action.append(view); tr.append(action);
       for (const column of columns) {
         const cell = document.createElement('td');
-        cell.textContent = ['E', 'deltaE'].includes(column.key) ? Number(row[column.key]).toFixed(2) : String(row[column.key]);
+        cell.textContent = ['E', 'Eens', 'deltaE'].includes(column.key) ? Number(row[column.key]).toFixed(2) : String(row[column.key]);
         if (column.numeric) cell.className = 'number'; tr.append(cell);
       }
       this.body.append(tr);

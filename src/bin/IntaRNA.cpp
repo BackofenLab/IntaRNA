@@ -371,11 +371,11 @@ int main(int argc, char **argv){
 									// Independent per-region output retains each region's local window.
 									const E_type maxMergedE = parameters.reportBestPerRegion() || bestInteractions.empty()
 											? E_INF
-											: (*bestInteractions.begin())->energy + bestInteractions.getOutputConstraint().deltaE;
+											: (*bestInteractions.begin())->getRankingEnergy() + bestInteractions.getOutputConstraint().deltaE;
 									// The collector is sorted by energy, so all later entries are worse.
 									for( const Interaction * inter : bestInteractions) {
 										if (output->getOutputConstraint().reportMax==0) break;
-										if (inter->energy > maxMergedE) { break; }
+										if (inter->getRankingEnergy() > maxMergedE) { break; }
 										output->add(*inter);
 									}
 								}

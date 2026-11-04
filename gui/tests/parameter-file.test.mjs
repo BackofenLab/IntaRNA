@@ -43,6 +43,8 @@ test('invalid/native-only settings are rejected before replacing the form', () =
   assert.throws(() => importParameters('{invalid'));
   assert.throws(() => importParameters(' '.repeat(5000001)), /5 MB/);
   assert.deepEqual(importParameters('\ufeff'+JSON.stringify(base)).csvColumns, CSV_COLUMNS.split(','));
+  assert.deepEqual(importParameters({ ...base, parameters: { ...base.parameters, model: 'P' } }).csvColumns,
+    [...CSV_COLUMNS.split(','), 'Eens']);
 });
 
 test('maintainer examples use the same JSON import and prediction validation', async () => {

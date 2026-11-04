@@ -181,8 +181,10 @@ export function prepareRequest(request) {
     if (!/^(D(m-?\d+(\.\d+)?)?(b-?\d+(\.\d+)?)?|Z(b\d+(\.\d+)?)?|W)$/.test(parameters[`${p}ShapeMethod`])) throw new Error(`${p}ShapeMethod: invalid SHAPE method encoding.`);
     if (!/^(M|C(\d+(\.\d+)?)?|S|[LO](s-?\d+(\.\d+)?i-?\d+(\.\d+)?)?)$/.test(parameters[`${p}ShapeConversion`])) throw new Error(`${p}ShapeConversion: invalid SHAPE conversion encoding.`);
   }
-  const csvColumns = request.csvColumns ?? CSV_COLUMNS.split(',');
+  const csvColumns = request.csvColumns
+    ?? `${CSV_COLUMNS}${!evaluating && parameters.model === 'P' ? ',Eens' : ''}`.split(',');
   if (!Array.isArray(csvColumns) || !csvColumns.length || new Set(csvColumns).size !== csvColumns.length || csvColumns.some((key) => !CSV_CATALOG.some((c) => c.key === key))) throw new Error('Select at least one available CSV column, without duplicates.');
+  if (csvColumns.includes('Eens') && (evaluating || parameters.model !== 'P')) throw new Error('Eens output is available only for ensemble model P predictions.');
   if (parameters.outCsvSort && !csvColumns.includes(parameters.outCsvSort)) throw new Error('The CSV sort column must be selected for output.');
   const outputs = request.outputs ?? [];
   if (!Array.isArray(outputs) || new Set(outputs).size !== outputs.length || outputs.some((key) => !EXTRA_OUTPUTS.some((entry) => entry.key === key && (!evaluating || !entry.prediction)))) throw new Error('Choose available additional output formats for this task.');

@@ -778,7 +778,7 @@ protected:
 	NumberParameter<int> outNumberPerSeed;
 	//! whether or not reported interactions can to be overlapping
 	CharParameter outOverlap;
-	//! deltaE to mfe allowed to report an interaction
+	//! delta to the best ranking energy allowed for reported interactions
 	NumberParameter<E_kcal_type> outDeltaE;
 	//! max E allowed to report an interaction
 	NumberParameter<E_kcal_type> outMaxE;
@@ -800,6 +800,8 @@ protected:
 	std::string outCsvSort;
 	//! the CSV column selection
 	static const std::string outCsvCols_default;
+	//! default CSV columns for ensemble-based prediction
+	static const std::string outCsvCols_ensemble_default;
 	//! whether or not best interaction output should be provided independently
 	//! for all region combinations or only the best for each query-target
 	//! combination

@@ -338,6 +338,9 @@ add( const Interaction & i )
 			<<"\n"
 			<<"interaction energy = "<<E_2_Ekcal(i.energy) <<" kcal/mol\n"
 			;
+		if (i.hasEnsembleEnergy()) {
+			outTmp <<"site ensemble energy = "<<E_2_Ekcal(i.ensembleEnergy) <<" kcal/mol\n";
+		}
 
 		if (detailedOutput) {
 			outTmp

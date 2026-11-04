@@ -36,6 +36,10 @@ test('CLI defaults, ranges and strict typed controls reject invalid values', () 
   assert.equal(sequenceOffset(-1, -3), 2);
   assert.throws(() => prepareRequest(request({}, { csvColumns: [] })), /at least one/);
   assert.throws(() => prepareRequest(request({}, { outputs: ['../other'] })), /available/);
+  const ensemble = prepareRequest(request({ model: 'P' }));
+  assert.ok(ensemble.csvColumns.includes('Eens'));
+  assert.ok(makeArguments(ensemble).some((arg) => arg.includes('Eens')));
+  assert.throws(() => prepareRequest(request({ model: 'X' }, { csvColumns: [...CSV_COLUMNS.split(','), 'Eens'] })), /model P/);
 });
 
 test('evaluation validates antiparallel supplied structures in signed coordinates', () => {
@@ -135,10 +139,12 @@ test('browser batches use longest selected strands and round-trip full FASTA inp
 
 test('CSV groups cover native columns once and task defaults serialize explicitly', async () => {
   assert.deepEqual(CSV_GROUPS.flatMap((group) => group.keys).toSorted(), CSV_CATALOG.map((column) => column.key).toSorted());
-  const energy = [...CSV_GROUPS.find((group) => group.label === 'Energy').keys, 'Etotal', 'Eall', 'Eall1', 'Eall2', 'EallTotal'];
+  const energy = [...CSV_GROUPS.find((group) => group.label === 'Energy').keys.filter((key) => key !== 'Eens'), 'Etotal', 'Eall', 'Eall1', 'Eall2', 'EallTotal'];
   for (const key of energy) assert.ok(defaultColumns('evaluation').includes(key), key);
   for (const key of ['seedStart1', 'seedStart2', 'seedEnd1', 'seedEnd2']) assert.ok(!defaultColumns('evaluation').includes(key), key);
   for (const key of ['ED1', 'ED2', 'seedE', 'seedStart1', 'seedEnd1', 'seedStart2', 'seedEnd2']) assert.ok(defaultColumns('prediction').includes(key), key);
+  assert.ok(defaultColumns('prediction', 'P').includes('Eens'));
+  assert.ok(!defaultColumns('prediction', 'X').includes('Eens'));
   const { exportParameters, importParameters } = await import('../parameter-file.js');
   const input = request({ outNumber: 10, outNumberPerSeed: 2 }, { csvColumns: defaultColumns('prediction') });
   const saved = exportParameters(input, 'test');

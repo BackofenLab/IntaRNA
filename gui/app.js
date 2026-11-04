@@ -157,9 +157,10 @@ csvBody.append(element('h3', 'CSV output columns', 'subheading'));
 csvBody.append(element('p', 'seq1 is the target; seq2 is the query. Hover over a column name for details. Select columns for the table and CSV download; table visibility can be changed after computation.', 'input-help'));
 const selectionTools = element('div', '', 'selection-tools'); csvBody.append(selectionTools);
 const selectColumns = (selection) => {
-  csvOrder = [...selection]; for (const input of csvInputs) input.checked = selection.includes(input.value); inputsChanged();
+  const available = selection.filter((key) => !csvInputs.find((input) => input.value === key)?.disabled);
+  csvOrder = [...available]; for (const input of csvInputs) input.checked = available.includes(input.value); inputsChanged();
 };
-for (const [name, selection] of [['Select all', () => CSV_CATALOG.map((c) => c.key)], ['Task defaults', () => defaultColumns(getTask())], ['Clear selection', () => []]]) {
+for (const [name, selection] of [['Select all', () => CSV_CATALOG.map((c) => c.key)], ['Task defaults', () => defaultColumns(getTask(), byId('model').value)], ['Clear selection', () => []]]) {
   const button = element('button', name); button.type = 'button';
   button.addEventListener('click', () => selectColumns(selection())); selectionTools.append(button);
 }
@@ -170,7 +171,7 @@ for (const group of CSV_GROUPS) {
     const button = element('button', name, 'text-button'); button.type = 'button';
     button.setAttribute('aria-label', `${name} ${group.label} columns`);
     button.addEventListener('click', () => {
-      for (const input of csvInputs.filter((input) => group.keys.includes(input.value))) input.checked = checked;
+      for (const input of csvInputs.filter((input) => group.keys.includes(input.value) && !input.disabled)) input.checked = checked;
       inputsChanged();
     }); legend.append(button);
   }
@@ -203,7 +204,7 @@ function updateLength(name) {
     byId(`${name}-length`).textContent = `${parsed.records.length} record${parsed.records.length === 1 ? '' : 's'}, ${parsed.records.reduce((sum, r) => sum + r.sequence.length, 0).toLocaleString()} nucleotides`;
   } catch { byId(`${name}-length`).textContent = 'Check sequence format and length'; }
 }
-function updateAvailability() {
+function updateAvailability({ preserveCsv = false } = {}) {
   const evaluation = getTask() === 'evaluation', mutation = getTask() === 'mutation';
   for (const button of byId('example-options').querySelectorAll('[data-example-task]')) {
     button.hidden = button.dataset.exampleTask !== getTask();
@@ -239,6 +240,25 @@ function updateAvailability() {
   // Upload controls follow the text area they populate, including async reads.
   for (const upload of form.querySelectorAll('input[data-for]')) upload.disabled = byId(upload.dataset.for).disabled;
   for (const input of outputInputs) { input.disabled = mutation || evaluation && EXTRA_OUTPUTS.find((entry) => entry.key === input.value).prediction; if (input.disabled) input.checked = false; }
+  // A site ensemble energy exists only for model-P predictions. On first
+  // entering that model, select and sort by Eens by default; later user edits
+  // remain untouched until the model becomes unavailable again.
+  const eens = csvInputs.find((input) => input.value === 'Eens');
+  const ensemble = !evaluation && !mutation && byId('model').value === 'P';
+  const becomingAvailable = eens.disabled && ensemble;
+  eens.disabled = !ensemble;
+  eens.parentElement.hidden = !ensemble;
+  const eensSort = [...byId('outCsvSort').options].find((option) => option.value === 'Eens');
+  eensSort.disabled = !ensemble;
+  if (!ensemble) {
+    eens.checked = false;
+    csvOrder = csvOrder.filter((key) => key !== 'Eens');
+    if (byId('outCsvSort').value === 'Eens') byId('outCsvSort').value = '';
+  } else if (becomingAvailable && !preserveCsv) {
+    eens.checked = true;
+    if (!csvOrder.includes('Eens')) csvOrder.splice(csvOrder.indexOf('E')+1,0,'Eens');
+    byId('outCsvSort').value = 'Eens';
+  }
   const explicitMutations = !!byId('copomus-mutation-encoding').value.trim();
   for (const input of [byId('copomus-candidate-selection'), byId('copomus-generator'), ...copomusFilterInputs]) input.disabled = !mutation || explicitMutations;
   for (const input of [...copomusMeasureInputs, byId('copomus-alpha'), byId('copomus-beta'), byId('copomus-mutation-encoding')]) input.disabled = !mutation;
@@ -251,7 +271,7 @@ function resetParameters({ clearInputs = false } = {}) {
     for (const input of form.querySelectorAll('input[type=file]')) input.value = '';
     byId('examples-menu').open = false; activateGroup('sequence-input');
   }
-  csvOrder = getTask() === 'mutation' ? CSV_COLUMNS.split(',') : defaultColumns(getTask());
+  csvOrder = getTask() === 'mutation' ? CSV_COLUMNS.split(',') : defaultColumns(getTask(), UI_DEFAULTS.model);
   byId('seed-mode').value = 'identify';
   for (const field of FIELDS) { const input = byId(field.key); if (field.type === 'checkbox') input.checked = UI_DEFAULTS[field.key]; else input.value = UI_DEFAULTS[field.key]; }
   syncAccessibilityFlags();
@@ -306,7 +326,7 @@ function applyParameters(request, message = 'Parameters loaded. Compute to analy
   byId('copomus-generator').value = copomus.generator;
   byId('copomus-mutation-encoding').value = copomus.mutationEncoding;
   byId('copomus-alpha').value = copomus.alpha; byId('copomus-beta').value = copomus.beta;
-  updateAvailability(); activateGroup('sequence-input'); inputsChanged(message);
+  updateAvailability({ preserveCsv: true }); activateGroup('sequence-input'); inputsChanged(message);
 }
 for (const strand of ['query', 'target']) {
   const input = byId(strand), picker = byId(`${strand}-upload`);

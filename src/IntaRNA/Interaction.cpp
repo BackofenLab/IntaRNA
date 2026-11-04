@@ -171,6 +171,8 @@ operator= ( const Interaction & toCopy )
 
 	// copy energy value
 	energy = toCopy.energy;
+	// copy optional ensemble ranking energy
+	ensembleEnergy = toCopy.ensembleEnergy;
 
 	// copy seed data
 	if (toCopy.seed != NULL) {
@@ -216,6 +218,8 @@ operator= ( const InteractionRange & range )
 
 	// copy energy value
 	energy = range.energy;
+	// ranges do not encode an ensemble ranking energy
+	ensembleEnergy = E_INF;
 
 	return *this;
 }
@@ -229,6 +233,8 @@ operator == ( const Interaction &i ) const
 	return 	   s1 == i.s1
 			&& s2 == i.s2
 			&& E_equal( energy, i.energy )
+			&& ((E_isINF(ensembleEnergy) && E_isINF(i.ensembleEnergy))
+					|| E_equal(ensembleEnergy, i.ensembleEnergy))
 			&& basePairs == i.basePairs
 			&& (seed == i.seed
 					|| (seed != NULL && i.seed != NULL && *seed == *(i.seed)))
