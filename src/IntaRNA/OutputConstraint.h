@@ -38,10 +38,10 @@ public:
 	//! defines whether and where overlapping interaction sites are allowed for reporting
 	const ReportOverlap reportOverlap;
 
-	//! upper bound (exclusive) for the energy of a reported interaction (E(interaction) < maxE)
+	//! upper bound (exclusive) for the ranking energy of a reported interaction
 	const E_type maxE;
 
-	//! the maximal energy difference to the mfe of a reported interaction
+	//! maximal ranking-energy difference to the best reported interaction
 	const E_type deltaE;
 
 	//! whether or not only the best or all putative seeds are to be reported
@@ -74,8 +74,8 @@ public:
 	 *            reported to the output handler
 	 * @param reportOverlap defines whether and where overlapping interaction
 	 *            sites are allowed for reporting
-	 * @param maxE upper bound (exclusive) for the energy of a reported interaction (E(interaction) < maxE)
-	 * @param deltaE maximal energy difference of a reported interaction to mfe
+	 * @param maxE upper bound (exclusive) for a reported interaction's ranking energy
+	 * @param deltaE maximal ranking-energy difference to the best interaction
 	 * @param bestSeedOnly whether or not only the best seed is to be reported
 	 * @param noLP whether or not lonely (non-stacked) inter-molecular bps are allowed
 	 * @param noGUend whether or not inter-molecular UG base pairs are allowed at interaction ends

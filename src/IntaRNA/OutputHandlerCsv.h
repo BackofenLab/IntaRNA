@@ -49,7 +49,8 @@ public:
 		hybridDPfull, //!< hybrid in VRNA dot-bracket notation for full sequence lengths
 		hybridDBfull, //!< hybrid in dot-bar notation for full sequence lengths
 		bpList, //!< list of hybrid base pairs like (1,3),(4,2),...
-		E, //!< overall interaction energy
+		E, //!< overall MFE of the reported interaction structure
+		Eens, //!< ensemble energy used to select the interaction site
 		Etotal, //!< overall energy of the interaction including the intra-molecular ensemble energies (E+Eall1+Eall2)
 		ED1, //!< ED value of seq1
 		ED2, //!< ED value of seq2
@@ -132,6 +133,7 @@ protected:
 			colType2string[hybridDBfull] = "hybridDBfull";
 			colType2string[bpList] = "bpList";
 			colType2string[E] = "E";
+			colType2string[Eens] = "Eens";
 			colType2string[Etotal] = "Etotal";
 			colType2string[ED1] = "ED1";
 			colType2string[ED2] = "ED2";

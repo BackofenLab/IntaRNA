@@ -223,9 +223,24 @@ with sync_playwright() as playwright:
     assert groups.count() == 5
     for group in groups.all():
         group.get_by_role('button', name=re.compile('^Select all')).click()
-        assert group.locator('input:not(:checked)').count() == 0
+        assert group.locator('input:enabled:not(:checked)').count() == 0
         group.get_by_role('button', name='Deselect all').click()
         assert group.locator('input:checked').count() == 0
+    eens = page.locator('.csv-group input[value="Eens"]')
+    expect(eens).to_be_disabled()
+    expect(eens.locator('xpath=..')).not_to_be_visible()
+    open_group('interaction-options')
+    page.locator('#model').select_option('P')
+    open_group('csv-options')
+    expect(eens).to_be_enabled()
+    expect(eens.locator('xpath=..')).to_be_visible()
+    expect(eens).to_be_checked()
+    expect(page.locator('#outCsvSort')).to_have_value('Eens')
+    open_group('interaction-options')
+    page.locator('#model').select_option('X')
+    open_group('csv-options')
+    expect(eens).to_be_disabled()
+    expect(eens).not_to_be_checked()
     page.get_by_role('button', name='Task defaults', exact=True).click()
     for key in ['ED1', 'ED2', 'seedE', 'seedStart1', 'seedStart2']:
         expect(page.locator('.csv-group input[value="' + key + '"]')).to_be_checked()

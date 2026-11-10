@@ -127,6 +127,8 @@ export function importParameters(source) {
   const normalized = normalizeParameters(request);
   request.qIdxPos0 = normalized.qIdxPos0; request.tIdxPos0 = normalized.tIdxPos0;
   request.parameters = normalized;
+  if (request.task === 'prediction' && normalized.model === 'P'
+      && !Object.hasOwn(document.parameters, 'outCsvCols')) request.csvColumns.push('Eens');
   if (request.task === 'mutation') request.copomus = normalizeCopomus(request.copomus);
   return request;
 }

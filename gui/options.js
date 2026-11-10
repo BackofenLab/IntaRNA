@@ -185,4 +185,4 @@ export const EXTRA_OUTPUTS = [
   ['detailed', 'Detailed interaction report', false, 'Expanded text report with interaction structures, coordinates and energy contributions.'],
   ['ensemble', 'Ensemble report', false, 'Text report of interaction and intramolecular ensemble energies and partition functions.'],
 ].map(([key, label, predictionOnly, description]) => ({ key, label, prediction: predictionOnly, description }));
-export const ENSEMBLE_COLUMNS = ['Eall', 'Zall', 'EallTotal', 'P_E'];
+export const ENSEMBLE_COLUMNS = ['Eens', 'Eall', 'Zall', 'EallTotal', 'P_E'];

@@ -666,12 +666,16 @@ for the given site `S` multiplied with the Boltzmann weights of the respective
 accessibility penalties `ED1` and `ED2`.
 Here, `R` denotes the gas constant and `T` the temperature of the system.
 At `T=37` degree Celsius, the product `RT` is about `RT=0.6163173043012`. 
-The site's partition function can be 
+The site's partition function can be
 used to compute the ensemble energy of all interactions of a given site via
-`E(S) = -RT log(Z(S))` (`log` = natural logarithm), which is reported for the optimal site 
-(see [CSV output](#outModeCsv)).  
-This abstracts from individual inter-molecular base pairing and incorporates the 
-dynamics and flexibility of the interactions formed by two regions.
+`Eens(S) = -RT log(Z(S))` (`log` = natural logarithm). IntaRNA selects and ranks
+sites by `Eens`, then traces the minimum-free-energy interaction within each
+finally reported site. Thus, the reported base pairs and `E` energy terms
+describe a concrete representative structure, while the `Eens` CSV column and
+the additional line in text output retain the site's ensemble energy. The MFE
+traceback is performed only for interactions that reach final output (see
+[CSV output](#outModeCsv)). This combines the dynamics and flexibility captured
+by the site ensemble with a representative inter-molecular base-pair pattern.
 
 The overall partition function is given by
 `Zall = sum Z(S)`, i.e. summation over all possible sites,
@@ -1582,7 +1586,8 @@ are
 - `hybridDB` : hybrid in dot-bar notation (interactin sites only)
 - `hybridDBfull` : hybrid in dot-bar notation (full sequence length)
 - `bpList` : list of hybrid base pairs, e.g. '(4,3):(5,2):(7,1)'
-- `E` : overall interaction energy = E_hybrid + ED1 + ED2
+- `E` : minimum free energy of the reported interaction structure = E_hybrid + ED1 + ED2
+- `Eens` : ensemble energy used to select and rank a `--model=P` interaction site
 - `ED1` : ED value of seq1
 - `ED2` : ED value of seq2
 - `Pu1` : probability to be accessible for seq1
@@ -1627,6 +1632,10 @@ Note further, `Pu` values are recomputed from rounded `ED` values and are thus n
 to the RNAplfold values from which the ED values are derived from!
 
 Using `--outCsvCols '*'`, all available columns are added to the output.
+
+For `--model=P`, the default CSV columns additionally contain `Eens`, and rows
+are sorted by `Eens` unless `--outCsvSort` is set explicitly. For other models,
+`Eens` is not available and is printed as `NAN` when requested.
 
 Energies are provided in unit *kcal/mol*, probabilities in the interval [0,1].
 Position annotations start indexing with 1 (or the values set via `--qIdxPos0` and `--tIdxPos0`).

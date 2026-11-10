@@ -61,6 +61,7 @@ libIntaRNA_a_HEADERS =    \
 					OutputHandlerEnsemble.h \
 					OutputHandlerHub.h \
 					OutputHandlerInteractionList.h \
+					OutputHandlerMfe.h \
 					OutputHandlerSeedCandidates.h \
 					OutputHandlerText.h \
 					PredictionTracker.h \
@@ -133,6 +134,7 @@ libIntaRNA_a_SOURCES = \
 					OutputHandlerEnsemble.cpp \
 					OutputHandlerCsv.cpp \
 					OutputHandlerInteractionList.cpp \
+					OutputHandlerMfe.cpp \
 					OutputHandlerSeedCandidates.cpp \
 					OutputHandlerText.cpp \
 					PredictionTrackerPairMinE.cpp \

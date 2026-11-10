@@ -31,7 +31,7 @@ void OutputHandlerSeedCandidates::add(const Interaction &)
 
 void OutputHandlerSeedCandidates::addSeed(const Interaction::BasePair & seed, const Interaction & interaction)
 {
-	if (interaction.isEmpty() || E_isINF(interaction.energy) || !outConstraint.reportMax) return;
+	if (interaction.isEmpty() || E_isINF(interaction.getRankingEnergy()) || !outConstraint.reportMax) return;
 	// Window workers share this collector. Forward exceptions outside the block.
 	std::exception_ptr failure;
 #if INTARNA_MULITHREADING
@@ -74,10 +74,11 @@ void OutputHandlerSeedCandidates::report(OutputHandler & destination) const
 
 	// Apply final restrictions once to the selected union, without quota refills.
 	const auto & c = outConstraint;
-	const auto cutoff = std::int64_t(ranked.front().energy) + c.deltaE;
+	const auto cutoff = std::int64_t(ranked.front().getRankingEnergy()) + c.deltaE;
 	std::vector<const Interaction *> reported;
 	for (const auto & interaction : ranked) {
-		if (reported.size() >= c.reportMax || interaction.energy >= c.maxE || interaction.energy > cutoff) break;
+		if (reported.size() >= c.reportMax || interaction.getRankingEnergy() >= c.maxE
+				|| interaction.getRankingEnergy() > cutoff) break;
 		bool overlaps = false;
 		for (const auto * previous : reported) {
 			const bool target = interaction.basePairs.front().first <= previous->basePairs.back().first
