@@ -2942,7 +2942,7 @@ isToShortTarget( const size_t targetNumber ) const
 {
 	checkIfParsed();
 	// check if seed is required & target sequence is too short for seed length if seed is required
-	if (!noSeedRequired & target.at(targetNumber).size() < seedBP.val) {
+	if (!noSeedRequired && target.at(targetNumber).size() < seedBP.val) {
 		return true;
 	}
 	// check if target sequence is too short for helix length if helix is required
