@@ -51,6 +51,9 @@ test('evaluation validates antiparallel supplied structures in signed coordinate
   for (const rri of ['', '1|||&1||', '1|||||||||||&1|||||||||||', '0|||&1|||', '1|||&1|||:', '1|||&1...']) assert.throws(() => prepareRequest({ ...evalRequest, rri }));
   assert.doesNotThrow(() => prepareRequest({ ...evalRequest, qIdxPos0: -3, tIdxPos0: -5, rri: '-5||||||||||&-3||||||||||' }));
   assert.throws(() => prepareRequest({ ...evalRequest, outputs: ['bpsvg'] }), /available/);
+  const evaluationColumns = CSV_CATALOG.map((c) => c.key).filter((key) => key !== 'Eens');
+  assert.deepEqual(prepareRequest({ ...evalRequest, csvColumns: evaluationColumns }).csvColumns, evaluationColumns);
+  assert.throws(() => prepareRequest({ ...evalRequest, csvColumns: [...evaluationColumns, 'Eens'] }), /ensemble model P predictions/);
 });
 
 test('Mutation Design accepts one unambiguous pair and validates CopomuS settings', () => {

@@ -13,6 +13,10 @@ parser.add_argument('url')
 parser.add_argument('--browser', choices=['chromium', 'firefox'], default='chromium')
 parser.add_argument('--screenshot')
 args = parser.parse_args()
+intarna_version = re.search(
+    r'AC_INIT\(\[IntaRNA\],\s*\[([^\]]+)\]',
+    (Path(__file__).resolve().parents[2] / 'configure.ac').read_text(),
+).group(1)
 
 with sync_playwright() as playwright:
     browser = getattr(playwright, args.browser).launch(headless=True)
@@ -89,6 +93,7 @@ with sync_playwright() as playwright:
     compute.click()
     expect(page.locator('#input-error')).to_contain_text('enter a sequence')
     metadata = page.request.get(urljoin(args.url, 'build-info.json')).json()
+    assert metadata['intarna'] == intarna_version
     vienna_version = metadata['viennarna']
     assert re.fullmatch(r'2\.\d+\.\d+', vienna_version)
     assert metadata['viennarnaArchive']['version'] == vienna_version
@@ -395,7 +400,7 @@ with sync_playwright() as playwright:
     saved = json.loads(archive['parameter.json'])
     assert set(archive) == {'parameter.json', 'intarna-interactions.csv'}
     assert saved['parameters']['query']['text'] == '>query\nGGGAGGAGGG\n'
-    assert 'IntaRNA 3.4.1' in archive['parameter.json']
+    assert f'IntaRNA {intarna_version}' in archive['parameter.json']
     assert f'Vienna RNA package {vienna_version}' in archive['parameter.json']
     assert saved['parameters']['outNumber'] == 10
     assert 'IntaRNA --parameterFile=parameter.json' in archive['parameter.json']

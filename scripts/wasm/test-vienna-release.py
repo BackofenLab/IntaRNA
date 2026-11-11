@@ -5,6 +5,7 @@ import importlib.util
 from io import BytesIO
 import json
 from pathlib import Path
+import re
 import subprocess
 from tempfile import TemporaryDirectory
 import unittest
@@ -20,6 +21,16 @@ DIGEST = "a" * 64
 PYODIDE_VERSION = "314.0.7"
 PYODIDE_FILES = ["pyodide.mjs", "pyodide.asm.mjs", "pyodide.asm.wasm",
                   "pyodide-lock.json", "python_stdlib.zip"]
+# These offline tests run before dependencies are installed. Read the selected
+# Boost archive version from the build recipe, not an unrelated native install.
+INTARNA_VERSION = re.search(
+    r"AC_INIT\(\[IntaRNA\],\s*\[([^\]]+)\]",
+    (SCRIPT.parents[2] / "configure.ac").read_text(),
+).group(1)
+BOOST_VERSION = re.search(
+    r"^fetch https://archives\.boost\.io/release/([^/]+)/source/",
+    SCRIPT.with_name("build.sh").read_text(), re.MULTILINE,
+).group(1)
 
 
 def release(version, **fields):
@@ -103,7 +114,7 @@ class ReleaseTests(unittest.TestCase):
             for version in ["2.7.0", manifest["version"]]:
                 (assets / "intarna.js").write_text(
                     "export default async ({print}) => ({callMain() {"
-                    f"print('IntaRNA 3.4.1 using Vienna RNA package {version} and boost 1.87.0');"
+                    f"print('IntaRNA {INTARNA_VERSION} using Vienna RNA package {version} and boost {BOOST_VERSION}');"
                     "return 0;}});"
                 )
                 result = subprocess.run([
@@ -119,6 +130,8 @@ class ReleaseTests(unittest.TestCase):
                 else:
                     self.assertEqual(result.returncode, 0, result.stderr)
                     metadata = json.loads((site / "build-info.json").read_text())
+                    self.assertEqual(metadata["intarna"], INTARNA_VERSION)
+                    self.assertEqual(metadata["boost"], BOOST_VERSION)
                     self.assertEqual(metadata["viennarna"], version)
                     self.assertEqual(metadata["viennarnaArchive"], manifest)
                     self.assertEqual(metadata["pyodide"], PYODIDE_VERSION)

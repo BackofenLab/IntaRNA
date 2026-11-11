@@ -32,7 +32,10 @@ assert.ok(multi.rows.every((row) => row.deltaE === 0));
 assert.equal(multi.fs.readdir('/output').filter((name) => name.endsWith('.csv')).length, 8);
 const pairwise = await run({ query: '>q1\nGGGAGGAGGG\n>q2\nGGGAGGAGGG', target: '>t1\nCCCUCCUCCC\n>t2\nCCCUCCUCCC', parameters: { outPairwise: true } });
 assert.equal(pairwise.rows.length, 2);
-const evaluation = await run({ task: 'evaluation', rri: EVALUATION_EXAMPLE + ':1|||||||||&2|||||||||', outputs: ['qAcc', 'tPu'], csvColumns: CSV_CATALOG.map((c) => c.key) });
+// Eens describes a predicted site ensemble, not an evaluated structure.
+const evaluationColumns = CSV_CATALOG.map((c) => c.key).filter((key) => key !== 'Eens');
+const evaluation = await run({ task: 'evaluation', rri: EVALUATION_EXAMPLE + ':1|||||||||&2|||||||||', outputs: ['qAcc', 'tPu'], csvColumns: evaluationColumns });
+assert.deepEqual(evaluation.text.split('\n')[0].split(';'), evaluationColumns);
 assert.equal(evaluation.rows.length, 2);
 assert.equal(evaluation.rows[0].E, -21.4);
 assert.equal(evaluation.rows[0].seedE, 'NAN');
@@ -40,6 +43,10 @@ assert.ok((await run({ task: 'evaluation', rri: EVALUATION_EXAMPLE }, 'D')).text
 assert.ok((await run({ task: 'evaluation', rri: EVALUATION_EXAMPLE }, 'E')).text.length > 0);
 const probabilities = await run({ parameters: { model: 'P' }, csvColumns: CSV_CATALOG.map((c) => c.key), outputs: ['bpProb', 'bpsvg', 'qSpotProb', 'tSpotProb', 'spotProb', 'pMinE'] });
 assert.equal(probabilities.rows.length, 1);
+assert.deepEqual(probabilities.text.split('\n')[0].split(';'), CSV_CATALOG.map((c) => c.key));
+const ensembleEnergy = Number(probabilities.rows[0].Eens);
+assert.ok(Number.isFinite(ensembleEnergy));
+assert.ok(ensembleEnergy <= probabilities.rows[0].E);
 assert.ok(probabilities.fs.readFile('/output/bpsvg.svg', { encoding: 'utf8' }).includes('<svg'));
 const accessibility = await run({ parameters: { outNumber: 0 }, outputs: ['qPu'] });
 const imported = await run({ parameters: { qAcc: 'P', qAccFile: accessibility.fs.readFile('/output/qPu.csv', { encoding: 'utf8' }) } });
