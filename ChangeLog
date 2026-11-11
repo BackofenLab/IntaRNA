@@ -155,6 +155,9 @@
 
 ## Technical changes and Optimizations
 
+- fix WASM evaluation smoke coverage after the Eens addition and derive test
+  version expectations from configure.ac and the selected Boost archive (#321)
+
 - run the existing CopomuS Python workflow in checksum-pinned, self-hosted
   Pyodide and replace subprocesses with validated JSON calls to IntaRNA WASM (#307)
 
@@ -351,6 +354,16 @@ energies, restricted partition sums, and trackers.
 
 ################################################################################  
 ################################################################################
+
+261111 Alexander Mitrofanov
+ * scripts/wasm/smoke-protocol.mjs, gui/tests/protocol.test.mjs
+   * Exclude prediction-only Eens from evaluation's all-column request while
+     retaining full model-P coverage and checking finite ensemble energies.
+   + Check evaluation/model-P CSV headers and rejection of Eens for evaluation.
+ * scripts/wasm/{test-vienna-release.py,test-browser.py}
+   * Parse the IntaRNA version from configure.ac and the selected Boost version
+     from the WASM build recipe instead of duplicating fixed release strings;
+     assert the corresponding generated provenance fields (issue #321).
 
 261104 Alexander Mitrofanov
  * src/IntaRNA/{Interaction,OutputConstraint,OutputHandlerMfe,OutputHandlerCsv,
